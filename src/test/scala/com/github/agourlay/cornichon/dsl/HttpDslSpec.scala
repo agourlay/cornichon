@@ -2,13 +2,19 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.ScenarioUtilSpec
 import com.github.agourlay.cornichon.core.Scenario
+import com.github.agourlay.cornichon.examples.ExampleServer
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import akka.http.scaladsl.model.StatusCodes._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import spray.json.lenses.JsonLenses._
 
-class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with BeforeAndAfterAll {
+class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with ExampleServer {
+
+  // use to start Superheroes exampleAPI
+  lazy val port = 8080
+
+  val baseUrl = s"http://localhost:$port"
 
   "HTTP Dsls" must {
     "execute scenarios" in {
@@ -93,14 +99,6 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Befo
       printlnFailedScenario(featureReport)
       featureReport.success should be(true)
     }
-  }
-
-  // Start test server with test data
-  val port = 8080
-  val baseUrl = s"http://localhost:$port"
-  val server = startTestDataHttpServer(port)
-  override def afterAll() = {
-    server.unbind()
   }
 
 }

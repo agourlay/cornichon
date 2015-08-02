@@ -12,6 +12,7 @@ See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/
 - build request abstraction
 - call resolver on assertion
 - errors with JSON Diff if possible
+- JSON assertion ignoring fields
 - data table
 - string based DSL with parboiled2
 - hook Before/After Feature

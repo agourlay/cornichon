@@ -1,9 +1,7 @@
 package com.github.agourlay.cornichon.examples
 
 import akka.http.scaladsl.model.StatusCodes._
-import com.github.agourlay.cornichon.ScenarioUtilSpec
 import com.github.agourlay.cornichon.core.CornichonFeature
-import org.scalatest.BeforeAndAfterAll
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import spray.json.lenses.JsonLenses._
@@ -11,7 +9,11 @@ import spray.json.lenses.JsonLenses._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
-class HttpExamplesSpec extends CornichonFeature with ScenarioUtilSpec with BeforeAndAfterAll {
+class HttpExamplesSpec extends CornichonFeature with ExampleServer {
+
+  // use to start Superheroes exampleAPI
+  lazy val port = 8080
+  val baseUrl = s"http://localhost:$port"
 
   // Mandatory feature name
   lazy val featureName = "HTTP DSL"
@@ -117,13 +119,4 @@ class HttpExamplesSpec extends CornichonFeature with ScenarioUtilSpec with Befor
       ))
     )
   )
-
-  // Start test server with test data
-  val port = 8080
-  val baseUrl = s"http://localhost:$port"
-  val server = startTestDataHttpServer(port)
-  override def afterAll() = {
-    server.unbind()
-  }
-  ///////////////////////////////////
 }
