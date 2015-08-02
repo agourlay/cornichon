@@ -1,17 +1,19 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon.dsl
 
 import cats.data.Xor
-import com.github.agourlay.cornichon.core.{ Session, CornichonError, Step }
-import com.github.agourlay.cornichon.http.JsonHttpResponse
-
-import com.github.agourlay.cornichon.http._
 import spray.json.JsValue
+import scala.concurrent.duration._
+
+import com.github.agourlay.cornichon.core.{ Session, CornichonError, Step }
+import com.github.agourlay.cornichon.http._
 
 trait HttpDsl extends Dsl {
   this: HttpFeature ⇒
 
   val LastResponseJsonKey = "last-response-json"
   val LastResponseStatusKey = "last-response-status"
+
+  implicit val requestTimeout: FiniteDuration
 
   def GET(url: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
     Step[Xor[CornichonError, JsonHttpResponse]](s"HTTP GET to $url",
@@ -52,9 +54,4 @@ trait HttpDsl extends Dsl {
 
   def showLastReponseJson =
     showSession(LastResponseJsonKey)
-
-  // TODO
-  // assert status code
-  // assert complete JSON
-  // assert json field with lens extractor
 }

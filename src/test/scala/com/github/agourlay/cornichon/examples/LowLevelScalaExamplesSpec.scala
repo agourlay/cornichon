@@ -5,9 +5,14 @@ import com.github.agourlay.cornichon.core.CornichonFeature
 import spray.json.DefaultJsonProtocol._
 import spray.json.lenses.JsonLenses._
 
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
+
 class LowLevelScalaExamplesSpec extends CornichonFeature {
 
-  lazy val featureName = "Lol level Scala Dsl test"
+  lazy implicit val requestTimeout: FiniteDuration = 2000 millis
+
+  lazy val featureName = "Low level Scala Dsl test"
 
   lazy val scenarios = Seq(
     scenario("test scenario")(

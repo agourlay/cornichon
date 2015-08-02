@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.examples.HttpDsl
+import com.github.agourlay.cornichon.dsl.HttpDsl
 import com.github.agourlay.cornichon.http.HttpFeature
 import org.scalatest.{ Matchers, WordSpec }
 

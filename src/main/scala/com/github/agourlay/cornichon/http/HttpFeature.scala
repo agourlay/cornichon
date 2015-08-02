@@ -18,10 +18,7 @@ trait HttpFeature extends Feature {
   implicit val ec: ExecutionContext = system.dispatcher
   val httpService = new HttpService
 
-  //TODO extract in config
-  val timeout = 2000 millis
-
-  def Post(payload: String, url: String, expected: Option[StatusCode] = None)(s: Session): Xor[CornichonError, JsonHttpResponse] = {
+  def Post(payload: String, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
     for {
       payloadResolved ← resolver.fillPlaceHolder(payload)(s.content)
       urlResolved ← resolver.fillPlaceHolder(url)(s.content)
@@ -32,7 +29,7 @@ trait HttpFeature extends Feature {
     }
   }
 
-  def Get(url: String, expected: Option[StatusCode] = None)(s: Session): Xor[CornichonError, JsonHttpResponse] = {
+  def Get(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
     for {
       urlResolved ← resolver.fillPlaceHolder(url)(s.content)
       res ← Await.result(httpService.getJson(urlResolved, expected), timeout)

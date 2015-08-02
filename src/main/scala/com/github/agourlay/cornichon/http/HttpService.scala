@@ -4,7 +4,7 @@ import java.util.concurrent.TimeoutException
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ HttpResponse, StatusCode }
+import akka.http.scaladsl.model.{ HttpHeader, HttpResponse, StatusCode }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.stream.Materializer
@@ -13,36 +13,37 @@ import cats.data.Xor.{ left, right }
 import spray.json.{ JsValue, JsObject }
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
+import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
 class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer) {
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-  def postJson(payload: JsObject, url: String, expected: Option[StatusCode]): Future[Xor[HttpError, JsonHttpResponse]] = {
+  def postJson(payload: JsObject, url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
     Http()
-      .singleRequest(Post(url, payload))
+      .singleRequest(Post(url, payload).withHeaders(headers))
       .flatMap(expectJson(expected))
       .recover(exceptionMapper)
   }
 
-  def putJson(payload: JsObject, url: String, expected: Option[StatusCode]): Future[Xor[HttpError, JsonHttpResponse]] = {
+  def putJson(payload: JsObject, url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
     Http()
-      .singleRequest(Put(url, payload))
+      .singleRequest(Put(url, payload).withHeaders(headers))
       .flatMap(expectJson(expected))
       .recover(exceptionMapper)
   }
 
-  def getJson(url: String, expected: Option[StatusCode]): Future[Xor[HttpError, JsonHttpResponse]] = {
+  def getJson(url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
     Http()
-      .singleRequest(Get(url))
+      .singleRequest(Get(url).withHeaders(headers))
       .flatMap(expectJson(expected))
       .recover(exceptionMapper)
   }
 
-  def deleteJson(url: String, expected: Option[StatusCode]): Future[Xor[HttpError, JsonHttpResponse]] = {
+  def deleteJson(url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
     Http()
-      .singleRequest(Delete(url))
+      .singleRequest(Delete(url).withHeaders(headers))
       .flatMap(expectJson(expected))
       .recover(exceptionMapper)
   }

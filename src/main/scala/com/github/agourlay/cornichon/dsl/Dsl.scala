@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon.dsl
 
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
