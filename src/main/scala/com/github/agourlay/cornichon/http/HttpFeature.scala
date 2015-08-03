@@ -22,7 +22,7 @@ trait HttpFeature extends Feature {
     for {
       payloadResolved ← resolver.fillPlaceHolder(payload)(s.content)
       urlResolved ← resolver.fillPlaceHolder(url)(s.content)
-      jsPayload = payloadResolved.toJson.asJsObject
+      jsPayload = payloadResolved.parseJson.asJsObject
       res ← Await.result(httpService.postJson(jsPayload, urlResolved, expected), timeout)
     } yield {
       res

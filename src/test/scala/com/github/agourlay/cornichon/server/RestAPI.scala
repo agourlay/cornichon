@@ -58,7 +58,7 @@ class RestAPI() extends JsonSupport {
         post {
           entity(as[Publisher]) { p: Publisher ⇒
             onSuccess(testData.addPublisher(p)) { created: Publisher ⇒
-              complete(ToResponseMarshallable(OK -> created))
+              complete(ToResponseMarshallable(Created -> created))
             }
           }
         }
@@ -79,7 +79,7 @@ class RestAPI() extends JsonSupport {
           post {
             entity(as[SuperHero]) { s: SuperHero ⇒
               onSuccess(testData.addSuperhero(s)) { created: SuperHero ⇒
-                complete(ToResponseMarshallable(OK -> created))
+                complete(ToResponseMarshallable(Created -> created))
               }
             }
           }

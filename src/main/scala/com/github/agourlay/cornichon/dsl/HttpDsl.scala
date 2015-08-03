@@ -25,7 +25,7 @@ trait HttpDsl extends Dsl {
     )
   }
 
-  def POST(payload: String, url: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
+  def POST(url: String, payload: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
     Step[Xor[CornichonError, JsonHttpResponse]](s"HTTP POST to $url",
       s ⇒ {
         val x = Post(payload, url)(s)

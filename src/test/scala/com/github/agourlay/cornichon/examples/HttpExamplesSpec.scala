@@ -96,6 +96,32 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Extract from body using lense
       When(GET(s"$baseUrl/superheroes/Scalaman", _.body.extract[String]('error) == "Superhero Scalaman not found")),
 
+      // Create Scalaman!
+      When(POST(s"$baseUrl/superheroes",
+        payload = """
+        |{
+        |  "name": "Scalaman",
+        |  "realName": "Oleg Ilyenko",
+        |  "city": "Berlin",
+        |  "publisher": "DC"
+        | }
+      """.stripMargin.trim)),
+
+      // Status Created
+      Then(status_is(201)),
+
+      // Query Scalaman
+      When(GET(s"$baseUrl/superheroes/Scalaman", _.body ==
+        """
+          |{
+          |  "name": "Scalaman",
+          |  "realName": "Oleg Ilyenko",
+          |  "city": "Berlin",
+          |  "publisher": "DC"
+          |}
+        """.stripMargin.parseJson
+      )),
+
       // Let's play with the session
 
       // Debug steps printing into console
