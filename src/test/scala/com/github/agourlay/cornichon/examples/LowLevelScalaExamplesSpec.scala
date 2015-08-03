@@ -8,7 +8,9 @@ import spray.json.lenses.JsonLenses._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
-class LowLevelScalaExamplesSpec extends CornichonFeature {
+class LowLevelScalaExamplesSpec extends CornichonFeature with ExampleServer {
+
+  val baseUrl = s"http://localhost:$port"
 
   lazy implicit val requestTimeout: FiniteDuration = 2000 millis
 
@@ -32,7 +34,7 @@ class LowLevelScalaExamplesSpec extends CornichonFeature {
       }(_.contains("crazy value")),
       Then("The result should be") { s ⇒
         val x = "Batman!"
-        val s1 = s.addValue("test-url", "http://jsonip.com")
+        val s1 = s.addValue("test-url", s"$baseUrl/superheroes/Batman")
         (x, s1)
       }(_.endsWith("!")),
       Then("Checking status of call to <test-url> ") { s ⇒
@@ -42,7 +44,7 @@ class LowLevelScalaExamplesSpec extends CornichonFeature {
       Then("When I contact <test-url>") { s ⇒
         val x = Get("<test-url>")(s)
         (x, s)
-      }(r ⇒ Xor2Predicate(r)(_.body.extract[String]('about) == "/about"))
+      }(r ⇒ Xor2Predicate(r)(_.body.extract[String]('name) == "Batman"))
     )
   )
 }

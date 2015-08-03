@@ -82,6 +82,13 @@ class RestAPI() extends JsonSupport {
                 complete(ToResponseMarshallable(Created -> created))
               }
             }
+          } ~
+          put {
+            entity(as[SuperHero]) { s: SuperHero ⇒
+              onSuccess(testData.updateSuperhero(s)) { updated: SuperHero ⇒
+                complete(ToResponseMarshallable(OK -> updated))
+              }
+            }
           }
       } ~
       path("superheroes" / Rest) { name: String ⇒

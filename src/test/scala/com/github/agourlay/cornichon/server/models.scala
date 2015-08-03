@@ -12,35 +12,40 @@ case class SuperHero(name: String, realName: String, city: String, publisher: St
 
 class TestData(implicit executionContext: ExecutionContext) {
 
+  def publisherByName(name: String) = Future {
+    publishers.find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
+  }
+
   def addPublisher(p: Publisher) = Future {
-    if (publishers.exists(_.name == p.name))
-      throw new PublisherAlreadyExists(p.name)
+    if (publishers.exists(_.name == p.name)) throw new PublisherAlreadyExists(p.name)
     else {
       publishers.+=(p)
       p
     }
   }
 
-  def addSuperhero(s: SuperHero) = {
-    publisherByName(s.publisher).map { p ⇒
-      if (superHeroes.exists(_.name == s.name))
-        throw new SuperHeroAlreadyExists(s.name)
+  def updateSuperhero(s: SuperHero) =
+    for {
+      _ ← superheroByName(s.name)
+      _ ← publisherByName(s.publisher)
+      _ ← deleteSuperhero(s.name)
+      updated ← addSuperhero(s)
+    } yield updated
+
+  def addSuperhero(s: SuperHero) =
+    publisherByName(s.publisher).map { _ ⇒
+      if (superHeroes.exists(_.name == s.name)) throw new SuperHeroAlreadyExists(s.name)
       else {
         superHeroes.+=(s)
         s
       }
     }
-  }
 
   def deleteSuperhero(name: String) =
     superheroByName(name).map { sh ⇒
       superHeroes.-=(sh)
       sh
     }
-
-  def publisherByName(name: String) = Future {
-    publishers.find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
-  }
 
   def superheroByName(name: String) = Future {
     superHeroes.find(_.name == name).fold(throw new SuperHeroNotFound(name)) { c ⇒ c }

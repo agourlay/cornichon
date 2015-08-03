@@ -5,10 +5,9 @@ Scala DSL for testing JSON HTTP API
 
 Work in progress...
 
-See [example](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/HttpExamplesSpec.scala) for usage.
+See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples) for usage.
 
 // TODOs
-- add test cases for PUT
 - build request abstraction
 - call resolver on assertion
 - errors with JSON Diff if possible

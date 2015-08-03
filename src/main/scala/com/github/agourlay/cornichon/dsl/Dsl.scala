@@ -5,23 +5,17 @@ import com.github.agourlay.cornichon.core._
 
 trait Dsl {
 
+  sealed trait Starters {
+    def apply[Step[_]](step: Step[_]): Step[_] = step
+    def apply[A](title: String)(instruction: Session ⇒ (A, Session))(assertion: A ⇒ Boolean): Step[A] =
+      Step[A](title, instruction, assertion)
+  }
+  case object When extends Starters
+  case object Then extends Starters
+  case object And extends Starters
+  case object Given extends Starters
+
   def scenario(name: String)(steps: Step[_]*): Scenario = Scenario(name, steps)
-
-  def When(step: Step[_]) = step
-  def When[A](title: String)(instruction: Session ⇒ (A, Session))(assertion: A ⇒ Boolean): Step[A] =
-    Step[A](title, instruction, assertion)
-
-  def Then(step: Step[_]) = step
-  def Then[A](title: String)(instruction: Session ⇒ (A, Session))(assertion: A ⇒ Boolean): Step[A] =
-    Step[A](title, instruction, assertion)
-
-  def And(step: Step[_]) = step
-  def And[A](title: String)(instruction: Session ⇒ (A, Session))(assertion: A ⇒ Boolean): Step[A] =
-    Step[A](title, instruction, assertion)
-
-  def Given(step: Step[_]) = step
-  def Given[A](title: String)(instruction: Session ⇒ (A, Session))(assertion: A ⇒ Boolean): Step[A] =
-    Step[A](title, instruction, assertion)
 
   def Xor2Predicate[A, B](input: Xor[A, B])(p: B ⇒ Boolean): Boolean =
     input.fold(a ⇒ false, b ⇒ p(b))
