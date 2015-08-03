@@ -10,7 +10,7 @@ import scala.concurrent.Await
 trait ExampleServer extends BeforeAndAfterAll {
   self: WordSpec ⇒
 
-  val port: Int
+  val port = 8080
   val server = Await.result(new RestAPI().start(port), 5 second)
 
   override def afterAll() = {

@@ -11,8 +11,6 @@ import scala.concurrent.duration._
 
 class HttpExamplesSpec extends CornichonFeature with ExampleServer {
 
-  // use to start Superheroes exampleAPI
-  lazy val port = 8080
   val baseUrl = s"http://localhost:$port"
 
   // Mandatory feature name
@@ -121,17 +119,29 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
         """.parseJson
       )),
 
+      // Another Scalaman?
+      When(POST(s"$baseUrl/superheroes",
+        payload = """
+          |{
+          |  "name": "Scalaman",
+          |  "realName": "Martin Odersky",
+          |  "city": "Lausane",
+          |  "publisher": "Marvel"
+          |}
+        """.stripMargin.trim, _.status == Conflict)),
+
+      // Let's delete someone we don't like
+      When(GET(s"$baseUrl/superheroes/GreenLantern", _.status == OK)),
+
+      When(DELETE(s"$baseUrl/superheroes/GreenLantern")),
+
+      When(GET(s"$baseUrl/superheroes/GreenLantern", _.status == NotFound)),
+
       // Let's play with the session
-
-      // Debug steps printing into console
-      Then(showSession),
-      Then(showLastStatus),
-      Then(showLastReponseJson),
-
       // Set a key/value in the Scenario's session
       Given(Set("favorite-superhero", "Batman")),
 
-      // Retrieve dynamically from session with <key>
+      // Retrieve dynamically from session with <key> for URL construction
       When(GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body ==
         """
           {
@@ -141,7 +151,12 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
         """.parseJson
-      ))
+      )),
+
+      // To make debugging easier, here are some debug steps printing into console
+      Then(showSession),
+      Then(showLastStatus),
+      Then(showLastReponseJson)
     )
   )
 }

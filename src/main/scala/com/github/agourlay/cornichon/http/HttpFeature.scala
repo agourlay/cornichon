@@ -6,7 +6,6 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
@@ -29,10 +28,30 @@ trait HttpFeature extends Feature {
     }
   }
 
+  def Put(payload: String, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+    for {
+      payloadResolved ← resolver.fillPlaceHolder(payload)(s.content)
+      urlResolved ← resolver.fillPlaceHolder(url)(s.content)
+      jsPayload = payloadResolved.parseJson.asJsObject
+      res ← Await.result(httpService.putJson(jsPayload, urlResolved, expected), timeout)
+    } yield {
+      res
+    }
+  }
+
   def Get(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
     for {
       urlResolved ← resolver.fillPlaceHolder(url)(s.content)
       res ← Await.result(httpService.getJson(urlResolved, expected), timeout)
+    } yield {
+      res
+    }
+  }
+
+  def Delete(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+    for {
+      urlResolved ← resolver.fillPlaceHolder(url)(s.content)
+      res ← Await.result(httpService.deleteJson(urlResolved, expected), timeout)
     } yield {
       res
     }

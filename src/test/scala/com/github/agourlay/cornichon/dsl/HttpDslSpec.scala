@@ -11,9 +11,6 @@ import spray.json.lenses.JsonLenses._
 
 class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with ExampleServer {
 
-  // use to start Superheroes exampleAPI
-  lazy val port = 8080
-
   val baseUrl = s"http://localhost:$port"
 
   "HTTP Dsls" must {

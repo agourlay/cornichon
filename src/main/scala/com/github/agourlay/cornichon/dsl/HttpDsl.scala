@@ -25,10 +25,30 @@ trait HttpDsl extends Dsl {
     )
   }
 
+  def DELETE(url: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
+    Step[Xor[CornichonError, JsonHttpResponse]](s"HTTP DELETE to $url",
+      s ⇒ {
+        val x = Delete(url)(s)
+        (x, x.fold(e ⇒ s, req ⇒ fillInSession(s, req)))
+      },
+      result ⇒ Xor2Predicate(result)(p(_))
+    )
+  }
+
   def POST(url: String, payload: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
     Step[Xor[CornichonError, JsonHttpResponse]](s"HTTP POST to $url",
       s ⇒ {
         val x = Post(payload, url)(s)
+        (x, x.fold(e ⇒ s, req ⇒ fillInSession(s, req)))
+      },
+      result ⇒ Xor2Predicate(result)(p(_))
+    )
+  }
+
+  def PUT(url: String, payload: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
+    Step[Xor[CornichonError, JsonHttpResponse]](s"HTTP PUT to $url",
+      s ⇒ {
+        val x = Put(payload, url)(s)
         (x, x.fold(e ⇒ s, req ⇒ fillInSession(s, req)))
       },
       result ⇒ Xor2Predicate(result)(p(_))

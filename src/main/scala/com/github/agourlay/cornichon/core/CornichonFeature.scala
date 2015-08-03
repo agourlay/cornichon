@@ -8,9 +8,11 @@ abstract class CornichonFeature extends WordSpec with Matchers with HttpFeature 
 
   def failedFeatureErrorMsg(report: FailedFeatureReport): Seq[String] = {
     report.failedScenariosResult.map { r ⇒
-      s"""Scenario "${r.scenarioName}" failed
-         |at step "${r.failedStep.step}"
-         |with error "${r.failedStep.error.msg}" """.stripMargin
+      s"""
+      |Scenario "${r.scenarioName}" failed
+      |at step "${r.failedStep.step}"
+      |with error "${r.failedStep.error.msg}"
+      | """.trim.stripMargin
     }
   }
 

@@ -89,7 +89,12 @@ class RestAPI() extends JsonSupport {
           onSuccess(testData.superheroByName(name)) { s: SuperHero ⇒
             complete(ToResponseMarshallable(OK -> s))
           }
-        }
+        } ~
+          delete {
+            onSuccess(testData.deleteSuperhero(name)) { s: SuperHero ⇒
+              complete(ToResponseMarshallable(OK -> s))
+            }
+          }
       }
 
   def start(httpPort: Int) = Http(system).bindAndHandle(route, "localhost", port = httpPort)

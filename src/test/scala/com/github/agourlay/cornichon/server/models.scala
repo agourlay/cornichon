@@ -32,6 +32,12 @@ class TestData(implicit executionContext: ExecutionContext) {
     }
   }
 
+  def deleteSuperhero(name: String) =
+    superheroByName(name).map { sh ⇒
+      superHeroes.-=(sh)
+      sh
+    }
+
   def publisherByName(name: String) = Future {
     publishers.find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
   }
@@ -44,16 +50,17 @@ class TestData(implicit executionContext: ExecutionContext) {
 
   def allSuperheroes = Future { superHeroes.toSeq }
 
-  val publishers = mutable.MutableList(
+  val publishers = mutable.ListBuffer(
     Publisher("DC", "1934", "Burbank, California"),
     Publisher("Marvel", "1939", "135 W. 50th Street, New York City")
   )
 
-  val superHeroes = mutable.MutableList(
+  val superHeroes = mutable.ListBuffer(
     SuperHero("Batman", "Bruce Wayne", "Gotham city", "DC"),
     SuperHero("Superman", "Clark Kent", "Metropolis", "DC"),
+    SuperHero("GreenLantern", "Hal Jordan", "Coast City", "DC"),
     SuperHero("Spiderman", "Peter Parker", "New York", "Marvel"),
-    SuperHero("Iron Man", "Tony Stark", "New York", "Marvel")
+    SuperHero("IronMan", "Tony Stark", "New York", "Marvel")
   )
 
 }
