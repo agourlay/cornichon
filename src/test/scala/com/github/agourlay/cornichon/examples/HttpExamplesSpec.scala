@@ -36,8 +36,7 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
 
       // Test body of previous request body as String
       Then(response_body_is(
-        """
-          |{
+        """ {
           |  "name": "Batman",
           |  "realName": "Bruce Wayne",
           |  "city": "Gotham city",
@@ -49,13 +48,13 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Or provide predicate for response body as JsValue
       When(GET(s"$baseUrl/superheroes/Batman", _.body ==
         """
-          |{
-          |  "name": "Batman",
-          |  "realName": "Bruce Wayne",
-          |  "city": "Gotham city",
-          |  "publisher": "DC"
-          |}
-        """.stripMargin.parseJson
+          {
+          "name": "Batman",
+          "realName": "Bruce Wayne",
+          "city": "Gotham city",
+          "publisher": "DC"
+          }
+        """.parseJson
       )),
 
       // Extract from body using lense
@@ -64,13 +63,13 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
       // It is just a function ;)
       When(GET(s"$baseUrl/superheroes/Batman", r ⇒ r.status == OK &&
         r.body == """
-          |{
-          |  "name": "Batman",
-          |  "realName": "Bruce Wayne",
-          |  "city": "Gotham city",
-          |  "publisher": "DC"
-          |}
-        """.stripMargin.parseJson
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
+        """.parseJson
       )),
 
       // Let's try some 404's
@@ -87,10 +86,10 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Or provide predicate for response body as JsValue
       When(GET(s"$baseUrl/superheroes/Scalaman", _.body ==
         """
-          |{
-          |  "error": "Superhero Scalaman not found"
-          |}
-        """.stripMargin.parseJson
+          {
+            "error": "Superhero Scalaman not found"
+          }
+        """.parseJson
       )),
 
       // Extract from body using lense
@@ -104,7 +103,7 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
         |  "realName": "Oleg Ilyenko",
         |  "city": "Berlin",
         |  "publisher": "DC"
-        | }
+        |}
       """.stripMargin.trim)),
 
       // Status Created
@@ -113,13 +112,13 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Query Scalaman
       When(GET(s"$baseUrl/superheroes/Scalaman", _.body ==
         """
-          |{
-          |  "name": "Scalaman",
-          |  "realName": "Oleg Ilyenko",
-          |  "city": "Berlin",
-          |  "publisher": "DC"
-          |}
-        """.stripMargin.parseJson
+         {
+          "name": "Scalaman",
+          "realName": "Oleg Ilyenko",
+          "city": "Berlin",
+          "publisher": "DC"
+         }
+        """.parseJson
       )),
 
       // Let's play with the session
@@ -135,13 +134,13 @@ class HttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Retrieve dynamically from session with <key>
       When(GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body ==
         """
-          |{
-          |  "name": "Batman",
-          |  "realName": "Bruce Wayne",
-          |  "city": "Gotham city",
-          |  "publisher": "DC"
-          |}
-        """.stripMargin.parseJson
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
+        """.parseJson
       ))
     )
   )

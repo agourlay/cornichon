@@ -14,6 +14,8 @@ See [example](https://github.com/agourlay/cornichon/blob/master/src/test/scala/c
 - errors with JSON Diff if possible
 - JSON assertion ignoring fields
 - data table
+- session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
+- provide extractors in body assert (with syntaxic suger if possible)
 - string based DSL with parboiled2
 - hook Before/After Feature
 - hook Before/After Scenario

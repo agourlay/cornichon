@@ -32,14 +32,12 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
 
             // Test body of previous request
             Then(response_body_is(
-              """
-                |{
+              """ {
                 |  "name": "Batman",
                 |  "realName": "Bruce Wayne",
                 |  "city": "Gotham city",
                 |  "publisher": "DC"
-                |}
-              """.stripMargin.trim)
+                |} """.stripMargin.trim)
             ),
 
             // Provide predicate for response status
@@ -48,13 +46,13 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
             // Provide predicate for response body
             When(GET(s"$baseUrl/superheroes/Batman", _.body ==
               """
-                |{
-                |  "name": "Batman",
-                |  "realName": "Bruce Wayne",
-                |  "city": "Gotham city",
-                |  "publisher": "DC"
-                |}
-              """.stripMargin.parseJson
+                {
+                  "name": "Batman",
+                  "realName": "Bruce Wayne",
+                  "city": "Gotham city",
+                  "publisher": "DC"
+                }
+              """.parseJson
             )),
 
             // Debug steps printing into console
@@ -68,13 +66,13 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
             // It is just a function ;)
             When(GET(s"$baseUrl/superheroes/Batman", r ⇒ r.status == OK &&
               r.body == """
-                |{
-                |  "name": "Batman",
-                |  "realName": "Bruce Wayne",
-                |  "city": "Gotham city",
-                |  "publisher": "DC"
-                |}
-              """.stripMargin.parseJson
+                {
+                  "name": "Batman",
+                  "realName": "Bruce Wayne",
+                  "city": "Gotham city",
+                  "publisher": "DC"
+                }
+              """.parseJson
             )),
 
             // Set a key/value in the Scenario's session
@@ -83,13 +81,13 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
             // Retrieve dynamically from session with <key>
             When(GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body ==
               """
-                |{
-                |  "name": "Batman",
-                |  "realName": "Bruce Wayne",
-                |  "city": "Gotham city",
-                |  "publisher": "DC"
-                |}
-              """.stripMargin.parseJson
+                {
+                  "name": "Batman",
+                  "realName": "Bruce Wayne",
+                  "city": "Gotham city",
+                  "publisher": "DC"
+                }
+              """.parseJson
             ))
           )
         )
