@@ -10,7 +10,7 @@ class Engine(resolver: Resolver) {
 
   def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] = {
     for {
-      newTitle ← resolver.fillPlaceHolder(step.title)(session.content)
+      newTitle ← resolver.fillPlaceholder(step.title)(session.content)
       stepResult ← runStepInstruction(step.copy(title = newTitle), session)
     } yield stepResult
   }

@@ -8,7 +8,6 @@ import scala.concurrent.duration._
 
 import spray.json._
 
-// TODO
 class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
   val baseUrl = s"http://localhost:$port"

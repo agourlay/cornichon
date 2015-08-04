@@ -4,12 +4,13 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import spray.json._
 
 import scala.annotation.tailrec
 
 class Resolver {
 
-  private def findPlaceHolders(input: String): List[String] = {
+  private def findPlaceholders(input: String): List[String] = {
     @tailrec
     def loop(input: String, acc: List[String]): List[String] =
       if (input.isEmpty) acc
@@ -30,7 +31,7 @@ class Resolver {
     else source.get(cleanInput.toString).map(right).getOrElse(left(ResolverError(cleanInput)))
   }
 
-  def fillPlaceHolder(input: String)(source: Map[String, String]): Xor[ResolverError, String] = {
+  def fillPlaceholder(input: String)(source: Map[String, String]): Xor[ResolverError, String] = {
     def loop(placeholders: List[String], acc: String): Xor[ResolverError, String] = {
       if (placeholders.isEmpty) right(acc)
       else {
@@ -40,6 +41,9 @@ class Resolver {
         )
       }
     }
-    loop(findPlaceHolders(input), input)
+    loop(findPlaceholders(input), input)
   }
+
+  def fillPlaceholder(js: JsValue)(source: Map[String, String]): Xor[ResolverError, JsValue] =
+    fillPlaceholder(js.toString())(source).map(_.parseJson)
 }

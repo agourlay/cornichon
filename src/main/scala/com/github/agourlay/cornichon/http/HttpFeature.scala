@@ -17,23 +17,21 @@ trait HttpFeature extends Feature {
   implicit val ec: ExecutionContext = system.dispatcher
   val httpService = new HttpService
 
-  def Post(payload: String, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+  def Post(payload: JsValue, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
     for {
-      payloadResolved ← resolver.fillPlaceHolder(payload)(s.content)
-      urlResolved ← resolver.fillPlaceHolder(url)(s.content)
-      jsPayload = payloadResolved.parseJson.asJsObject
-      res ← Await.result(httpService.postJson(jsPayload, urlResolved, expected), timeout)
+      payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
+      urlResolved ← resolver.fillPlaceholder(url)(s.content)
+      res ← Await.result(httpService.postJson(payloadResolved, urlResolved, expected), timeout)
     } yield {
       res
     }
   }
 
-  def Put(payload: String, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+  def Put(payload: JsValue, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
     for {
-      payloadResolved ← resolver.fillPlaceHolder(payload)(s.content)
-      urlResolved ← resolver.fillPlaceHolder(url)(s.content)
-      jsPayload = payloadResolved.parseJson.asJsObject
-      res ← Await.result(httpService.putJson(jsPayload, urlResolved, expected), timeout)
+      payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
+      urlResolved ← resolver.fillPlaceholder(url)(s.content)
+      res ← Await.result(httpService.putJson(payloadResolved, urlResolved, expected), timeout)
     } yield {
       res
     }
@@ -41,7 +39,7 @@ trait HttpFeature extends Feature {
 
   def Get(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
     for {
-      urlResolved ← resolver.fillPlaceHolder(url)(s.content)
+      urlResolved ← resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.getJson(urlResolved, expected), timeout)
     } yield {
       res
@@ -50,13 +48,10 @@ trait HttpFeature extends Feature {
 
   def Delete(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
     for {
-      urlResolved ← resolver.fillPlaceHolder(url)(s.content)
+      urlResolved ← resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.deleteJson(urlResolved, expected), timeout)
     } yield {
       res
     }
   }
-
-  private def fillPlaceholderInJson(js: JsValue)(s: Session): Xor[ResolverError, JsValue] =
-    resolver.fillPlaceHolder(js.toString())(s.content).map(_.parseJson)
 }

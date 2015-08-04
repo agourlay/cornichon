@@ -37,7 +37,7 @@ trait HttpDsl extends Dsl {
     )
   }
 
-  def POST(url: String, payload: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
+  def POST(url: String, payload: JsValue, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
     Step[Xor[CornichonError, JsonHttpResponse]](s"HTTP POST to $url",
       s ⇒ {
         val x = Post(payload, url)(s)
@@ -47,7 +47,7 @@ trait HttpDsl extends Dsl {
     )
   }
 
-  def PUT(url: String, payload: String, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
+  def PUT(url: String, payload: JsValue, p: JsonHttpResponse ⇒ Boolean = _ ⇒ true) = {
     Step[Xor[CornichonError, JsonHttpResponse]](s"HTTP PUT to $url",
       s ⇒ {
         val x = Put(payload, url)(s)

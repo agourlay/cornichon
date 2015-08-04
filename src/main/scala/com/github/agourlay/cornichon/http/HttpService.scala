@@ -20,14 +20,14 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-  def postJson(payload: JsObject, url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
+  def postJson(payload: JsValue, url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
     Http()
       .singleRequest(Post(url, payload).withHeaders(headers))
       .flatMap(expectJson(expected))
       .recover(exceptionMapper)
   }
 
-  def putJson(payload: JsObject, url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
+  def putJson(payload: JsValue, url: String, expected: Option[StatusCode], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Future[Xor[HttpError, JsonHttpResponse]] = {
     Http()
       .singleRequest(Put(url, payload).withHeaders(headers))
       .flatMap(expectJson(expected))

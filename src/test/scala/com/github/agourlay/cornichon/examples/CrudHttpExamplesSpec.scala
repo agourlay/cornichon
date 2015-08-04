@@ -68,13 +68,13 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
       When(POST(s"$baseUrl/superheroes",
         payload =
           """
-            |{
-            |  "name": "Scalaman",
-            |  "realName": "Oleg Ilyenko",
-            |  "city": "Berlin",
-            |  "publisher": "DC"
-            |}
-          """.stripMargin.trim)),
+            {
+              "name": "Scalaman",
+              "realName": "Oleg Ilyenko",
+              "city": "Berlin",
+              "publisher": "DC"
+            }
+          """.parseJson)),
 
       // Status Created
       Then(status_is(201)),
@@ -95,13 +95,13 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
       When(PUT(s"$baseUrl/superheroes",
         payload =
           """
-            |{
-            |  "name": "Scalaman",
-            |  "realName": "Oleg Ilyenko",
-            |  "city": "Pankow",
-            |  "publisher": "DC"
-            |}
-          """.stripMargin.trim)),
+            {
+              "name": "Scalaman",
+              "realName": "Oleg Ilyenko",
+              "city": "Pankow",
+              "publisher": "DC"
+            }
+          """.parseJson)),
 
       // Status updated
       Then(status_is(200)),

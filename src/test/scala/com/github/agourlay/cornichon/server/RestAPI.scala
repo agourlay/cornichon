@@ -2,13 +2,11 @@ package com.github.agourlay.cornichon.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server._
 import Directives._
-import spray.json.JsString
 
 import scala.concurrent.ExecutionContext
 
