@@ -65,12 +65,20 @@ trait HttpDsl extends Dsl {
   def status_is(status: Int) =
     assertSession(LastResponseStatusKey, status.toString)
 
-  def showLastStatus =
-    showSession(LastResponseStatusKey)
+  def showLastStatus = showSession(LastResponseStatusKey)
 
   def response_body_is(jsValue: JsValue) =
     assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ sessionValue.parseJson)
 
-  def showLastResponseJson =
-    showSession(LastResponseJsonKey)
+  def showLastResponseJson = showSession(LastResponseJsonKey)
+
+  def response_body_array_is(p: JsArray ⇒ Boolean) = {
+    assertSessionPredicateWithMap[JsArray](LastResponseJsonKey, p, sessionValue ⇒ {
+      val sessionJSON = sessionValue.parseJson
+      sessionJSON match {
+        case arr: JsArray ⇒ arr
+        case _            ⇒ throw new RuntimeException(s"Expected JSON Array but got $sessionJSON")
+      }
+    })
+  }
 }

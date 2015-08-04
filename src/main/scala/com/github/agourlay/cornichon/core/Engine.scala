@@ -11,23 +11,31 @@ class Engine(resolver: Resolver) {
   def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] = {
     for {
       newTitle ← resolver.fillPlaceHolder(step.title)(session.content)
-      stepResult ← {
-        val uStep = step.copy(title = newTitle)
-        Try { uStep.instruction(session) } match {
-          case Failure(e) ⇒
-            e match {
-              case KeyNotFoundInSession(key) ⇒ left(SessionError(step.title, key))
-              case _                         ⇒ left(StepExecutionError(step.title, e))
-            }
-          case Success((res, newSession)) ⇒
-            Try { step.assertion(res) } match {
-              case Success(result) if result  ⇒ right(newSession)
-              case Success(result) if !result ⇒ left(StepAssertionError(step.title, res))
-              case Failure(e)                 ⇒ left(StepPredicateError(step.title, e))
-            }
-        }
-      }
+      stepResult ← runStepInstruction(step.copy(title = newTitle), session)
     } yield stepResult
+  }
+
+  def runStepInstruction[A](step: Step[A], session: Session): Xor[CornichonError, Session] = {
+    Try {
+      step.instruction(session)
+    } match {
+      case Success((res, newSession)) ⇒ runStepPredicate(step, res, newSession)
+      case Failure(e) ⇒
+        e match {
+          case KeyNotFoundInSession(key) ⇒ left(SessionError(step.title, key))
+          case _                         ⇒ left(StepExecutionError(step.title, e))
+        }
+    }
+  }
+
+  def runStepPredicate[A](step: Step[A], res: A, newSession: Session): Xor[CornichonError, Session] = {
+    Try {
+      step.assertion(res)
+    } match {
+      case Success(result) if result  ⇒ right(newSession)
+      case Success(result) if !result ⇒ left(StepAssertionError(step.title, res))
+      case Failure(e)                 ⇒ left(StepPredicateError(step.title, e))
+    }
   }
 
   def runScenario(scenario: Scenario)(session: Session): Xor[FailedScenarioReport, SuccessScenarioReport] = {

@@ -8,7 +8,6 @@ Work in progress...
 See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples) for usage.
 
 // TODOs
-- collection assertion
 - payload also as Json directly
 - build request abstraction
 - call resolver on assertion
@@ -21,4 +20,5 @@ See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/
 - hook Before/After Feature
 - hook Before/After Scenario
 - use infix notation? Given GET() ...
+- support Server Sent Event predicate
 - Improve scalatest integration, display step progression

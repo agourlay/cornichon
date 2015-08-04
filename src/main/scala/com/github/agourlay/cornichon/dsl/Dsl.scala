@@ -31,14 +31,16 @@ trait Dsl {
         (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s)
       }, _ == value)
 
+  def assertSessionPredicateWithMap[A](key: String, p: A ⇒ Boolean, mapValue: String ⇒ A): Step[A] =
+    Step(s"assert session '$key' against predicate",
+      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), p(_))
+
   def assertSession[A](key: String, value: String): Step[String] =
     assertSessionWithMap(key, value, identity[String])
 
   def assertSession(key: String, p: String ⇒ Boolean): Step[String] =
     Step(s"assert '$key' against predicate",
-      s ⇒ {
-        (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s)
-      }, p(_))
+      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), p(_))
 
   def showSession: Step[Boolean] =
     Step(s"show session",
