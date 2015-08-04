@@ -118,8 +118,6 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
         """.parseJson
       )),
 
-      showLastResponseJson,
-
       // Let's delete someone we don't like
       When(GET(s"$baseUrl/superheroes/GreenLantern", _.status == OK)),
 

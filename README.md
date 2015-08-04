@@ -9,6 +9,7 @@ See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/
 
 // TODOs
 - collection assertion
+- payload also as Json directly
 - build request abstraction
 - call resolver on assertion
 - errors with JSON Diff if possible

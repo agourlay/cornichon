@@ -13,20 +13,18 @@ class Engine(resolver: Resolver) {
       newTitle ← resolver.fillPlaceHolder(step.title)(session.content)
       stepResult ← {
         val uStep = step.copy(title = newTitle)
-        Try {
-          uStep.instruction(session)
-        } match {
+        Try { uStep.instruction(session) } match {
           case Failure(e) ⇒
             e match {
               case KeyNotFoundInSession(key) ⇒ left(SessionError(step.title, key))
               case _                         ⇒ left(StepExecutionError(step.title, e))
             }
           case Success((res, newSession)) ⇒
-            // TODO wrap in a Try again, running assertion could fail
-            if (step.assertion(res))
-              right(newSession)
-            else
-              left(StepAssertionError(step.title, res))
+            Try { step.assertion(res) } match {
+              case Success(result) if result  ⇒ right(newSession)
+              case Success(result) if !result ⇒ left(StepAssertionError(step.title, res))
+              case Failure(e)                 ⇒ left(StepPredicateError(step.title, e))
+            }
         }
       }
     } yield stepResult

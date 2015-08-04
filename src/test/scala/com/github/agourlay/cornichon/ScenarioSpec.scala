@@ -30,6 +30,19 @@ class ScenarioSpec extends WordSpec with Matchers {
       engine.runScenario(s)(session).isLeft should be(true)
     }
 
+    "fail if predicate throws exception" in {
+      val session = Session.newSession
+      val steps = Seq(
+        Step[Int]("stupid predicate", s ⇒ {
+          (2, s)
+        }, { v ⇒
+          v / 0
+          v > 0
+        }))
+      val s = Scenario("scenario with stupid test", steps)
+      engine.runScenario(s)(session).isLeft should be(true)
+    }
+
     "stop at first failed step" in {
       val session = Session.newSession
       val step1 = Step[Int]("first step", s ⇒ (2, s), _ > 0)
