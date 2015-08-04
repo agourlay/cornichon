@@ -8,6 +8,7 @@ Work in progress...
 See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples) for usage.
 
 // TODOs
+- collection assertion
 - build request abstraction
 - call resolver on assertion
 - errors with JSON Diff if possible

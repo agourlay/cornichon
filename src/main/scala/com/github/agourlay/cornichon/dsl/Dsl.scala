@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.dsl
 
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
+import scala.language.higherKinds
 
 trait Dsl {
 
@@ -24,11 +25,14 @@ trait Dsl {
     Step(s"add '$key'->'$value' to session",
       s ⇒ (true, s.addValue(key, value)), _ ⇒ true)
 
-  def assertSession(key: String, value: String): Step[String] =
+  def assertSessionWithMap[A](key: String, value: A, mapValue: String ⇒ A): Step[A] =
     Step(s"assert session '$key' with '$value'",
       s ⇒ {
-        (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s)
+        (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s)
       }, _ == value)
+
+  def assertSession[A](key: String, value: String): Step[String] =
+    assertSessionWithMap(key, value, identity[String])
 
   def assertSession(key: String, p: String ⇒ Boolean): Step[String] =
     Step(s"assert '$key' against predicate",

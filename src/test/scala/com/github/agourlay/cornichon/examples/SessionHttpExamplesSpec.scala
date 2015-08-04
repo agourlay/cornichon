@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.examples
 
 import akka.http.scaladsl.model.StatusCodes._
+import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -31,13 +32,14 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
       // Test body of previous request body as String
       Then(response_body_is(
-        """ {
-          |  "name": "Batman",
-          |  "realName": "Bruce Wayne",
-          |  "city": "Gotham city",
-          |  "publisher": "DC"
-          |}
-        """.stripMargin.trim)),
+        """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
+        """.parseJson)),
 
       // Set a key/value in the Scenario's session
       Given(Set("favorite-superhero", "Batman")),
@@ -57,7 +59,7 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       // To make debugging easier, here are some debug steps printing into console
       Then(showSession),
       Then(showLastStatus),
-      Then(showLastReponseJson)
+      Then(showLastResponseJson)
     )
   )
 }

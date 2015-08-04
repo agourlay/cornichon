@@ -7,6 +7,8 @@ import scala.concurrent.duration._
 import com.github.agourlay.cornichon.core.{ Session, CornichonError, Step }
 import com.github.agourlay.cornichon.http._
 
+import spray.json._
+
 trait HttpDsl extends Dsl {
   this: HttpFeature ⇒
 
@@ -66,12 +68,9 @@ trait HttpDsl extends Dsl {
   def showLastStatus =
     showSession(LastResponseStatusKey)
 
-  def response_body_is(jsString: String) =
-    assertSession(LastResponseJsonKey, jsString)
-
   def response_body_is(jsValue: JsValue) =
-    assertSession(LastResponseJsonKey, jsValue.toString)
+    assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ sessionValue.parseJson)
 
-  def showLastReponseJson =
+  def showLastResponseJson =
     showSession(LastResponseJsonKey)
 }

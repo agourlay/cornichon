@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.examples
 
 import akka.http.scaladsl.model.StatusCodes._
+import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -117,7 +118,7 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
         """.parseJson
       )),
 
-      showLastReponseJson,
+      showLastResponseJson,
 
       // Let's delete someone we don't like
       When(GET(s"$baseUrl/superheroes/GreenLantern", _.status == OK)),

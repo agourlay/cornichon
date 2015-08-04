@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.examples
 
 import akka.http.scaladsl.model.StatusCodes._
+import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 import spray.json.DefaultJsonProtocol._
 import spray.json.lenses.JsonLenses._

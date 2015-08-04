@@ -22,6 +22,7 @@ class Engine(resolver: Resolver) {
               case _                         ⇒ left(StepExecutionError(step.title, e))
             }
           case Success((res, newSession)) ⇒
+            // TODO wrap in a Try again, running assertion could fail
             if (step.assertion(res))
               right(newSession)
             else

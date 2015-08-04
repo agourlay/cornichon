@@ -1,11 +1,10 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.server.RestAPI
-import org.scalatest.{ WordSpec, BeforeAndAfterAll }
-
-import scala.concurrent.duration._
+import org.scalatest.{ BeforeAndAfterAll, WordSpec }
 
 import scala.concurrent.Await
+import scala.concurrent.duration._
 
 trait ExampleServer extends BeforeAndAfterAll {
   self: WordSpec ⇒

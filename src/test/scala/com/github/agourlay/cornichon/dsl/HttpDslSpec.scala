@@ -1,8 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.ScenarioUtilSpec
+import com.github.agourlay.cornichon.{ ExampleServer, ScenarioUtilSpec }
 import com.github.agourlay.cornichon.core.Scenario
-import com.github.agourlay.cornichon.examples.ExampleServer
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import akka.http.scaladsl.model.StatusCodes._
 import spray.json.DefaultJsonProtocol._
@@ -29,13 +28,14 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
 
             // Test body of previous request
             Then(response_body_is(
-              """ {
-                |  "name": "Batman",
-                |  "realName": "Bruce Wayne",
-                |  "city": "Gotham city",
-                |  "publisher": "DC"
-                |} """.stripMargin.trim)
-            ),
+              """
+                {
+                  "name": "Batman",
+                  "realName": "Bruce Wayne",
+                  "city": "Gotham city",
+                  "publisher": "DC"
+                }
+              """.parseJson)),
 
             // Provide predicate for response status
             When(GET(s"$baseUrl/superheroes/Batman", _.status == OK)),
@@ -55,7 +55,7 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
             // Debug steps printing into console
             Then(showSession),
             Then(showLastStatus),
-            Then(showLastReponseJson),
+            Then(showLastResponseJson),
 
             // Extract from body using lense
             When(GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city) == "Gotham city")),
