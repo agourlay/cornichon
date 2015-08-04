@@ -55,11 +55,28 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Test nb of elements
       Then(response_body_array_is(_.elements.size == 5)),
 
+      Then(response_body_array_contains("""
+        {
+          "name": "GreenLantern",
+          "realName": "Hal Jordan",
+          "city": "Coast City",
+          "publisher": "DC"
+        } """.parseJson)),
+
       When(DELETE(s"$baseUrl/superheroes/GreenLantern")),
 
       When(GET(s"$baseUrl/superheroes")),
 
-      Then(response_body_array_is(_.elements.size == 4))
+      // Shortcut
+      Then(response_body_array_size_is(4)),
+
+      Then(response_body_array_is(!_.elements.contains("""
+        {
+          "name": "GreenLantern",
+          "realName": "Hal Jordan",
+          "city": "Coast City",
+          "publisher": "DC"
+        } """.parseJson)))
     )
   )
 

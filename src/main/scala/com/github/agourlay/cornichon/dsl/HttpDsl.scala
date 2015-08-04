@@ -81,4 +81,8 @@ trait HttpDsl extends Dsl {
       }
     })
   }
+
+  def response_body_array_size_is(size: Int) = response_body_array_is(_.elements.size == size)
+
+  def response_body_array_contains(element: JsValue) = response_body_array_is(_.elements.contains(element))
 }
