@@ -33,7 +33,19 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Or provide predicate for response status
       When(GET(s"$baseUrl/superheroes/Batman", expectedStatusCode = OK)),
 
-      // Assert body using Spray lens
+      // Query Batman
+      When(GET(s"$baseUrl/superheroes/Batman", expectedBody =
+        """
+         {
+           "name": "Batman",
+           "realName": "Bruce Wayne",
+           "city": "Gotham city",
+           "publisher": "DC"
+         }
+        """.parseJson
+      )),
+
+      // Assert body using any function, here e.g with Spray lens
       When(GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city), "Gotham city")),
 
       // Let's try some 404's

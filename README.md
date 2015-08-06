@@ -8,14 +8,14 @@ Work in progress...
 See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples) for usage.
 
 // TODOs
-- build request abstraction
+- HTTP params
 - JSON assertion ignoring fields
-- data table
+- data table (Json input and HTTP param)
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
-- provide extractors in body assert (with syntaxic sugar if possible)
+- provide extractors in body assert (with syntactic sugar if possible)
 - string based DSL with parboiled2
-- hook Before/After Feature
-- hook Before/After Scenario
+- hook Before/After Feature/Scenario
 - use infix notation? Given GET() ...
+- eventually (repeat action until success n times or during n seconds)
 - support Server Sent Event predicate
 - improve Scalatest integration, display step progression
