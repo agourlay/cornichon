@@ -21,39 +21,41 @@ trait HttpDsl extends Dsl {
   sealed trait Request { val name: String }
 
   sealed trait WithoutPayload extends Request {
-    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A): Step[A] =
+    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A = true, params: Map[String, String] = Map.empty): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
           val x = this match {
-            case GET    ⇒ Get(url)(s).map { case (response, session) ⇒ (mapFct(response), session) }
-            case DELETE ⇒ Delete(url)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case GET    ⇒ Get(url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case DELETE ⇒ Delete(url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
           }
           xor2A(x, s)
         },
         expected = expected)
 
-    def apply(url: String): Step[Boolean] = apply(url, _ ⇒ true, true)
-    def apply(url: String, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true)
+    def apply(url: String): Step[Boolean] = apply(url, _ ⇒ true)
+    def apply(url: String, withParams: Map[String, String]) = apply[Boolean](url, _ ⇒ true, true, withParams)
+    def apply(url: String, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, r ⇒ expectedHeaders.forall(r.headers.contains(_)))
     def apply(url: String, expectedBody: JsValue) = apply[JsValue](url, _.body, expectedBody)
     def apply(url: String, expectedStatusCode: StatusCode) = apply[StatusCode](url, _.status, expectedStatusCode)
   }
 
   sealed trait WithPayload extends Request {
-    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A): Step[A] =
+    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A = true, params: Map[String, String] = Map.empty): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
           val x = this match {
-            case POST ⇒ Post(payload, url)(s).map { case (response, session) ⇒ (mapFct(response), session) }
-            case PUT  ⇒ Put(payload, url)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case POST ⇒ Post(payload, url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case PUT  ⇒ Put(payload, url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
           }
           xor2A(x, s)
         },
         expected = expected)
 
-    def apply(url: String, payload: JsValue): Step[Boolean] = apply(url, payload, _ ⇒ true, true)
-    def apply(url: String, payload: JsValue, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, payload, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true)
+    def apply(url: String, payload: JsValue): Step[Boolean] = apply(url, payload, _ ⇒ true)
+    def apply(url: String, payload: JsValue, withParams: Map[String, String]) = apply[Boolean](url, payload, _ ⇒ true, true, withParams)
+    def apply(url: String, payload: JsValue, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, payload, r ⇒ expectedHeaders.forall(r.headers.contains(_)))
     def apply(url: String, payload: JsValue, expectedBody: JsValue) = apply[JsValue](url, payload, _.body, expectedBody)
     def apply(url: String, payload: JsValue, expectedStatusCode: StatusCode) = apply[StatusCode](url, payload, _.status, expectedStatusCode)
   }

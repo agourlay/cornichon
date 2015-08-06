@@ -1,14 +1,15 @@
 package com.github.agourlay.cornichon.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.StatusCode
+import akka.http.scaladsl.model.{ HttpHeader, StatusCode }
 import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import spray.json._
 
+import scala.collection.immutable
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{ Future, Await, ExecutionContext }
 
 trait HttpFeature extends Feature {
 
@@ -20,51 +21,56 @@ trait HttpFeature extends Feature {
   val LastResponseJsonKey = "last-response-json"
   val LastResponseStatusKey = "last-response-status"
 
-  def Post(payload: JsValue, url: String)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
+  def Post(payload: JsValue, url: String, params: Map[String, String], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
       payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.postJson(payloadResolved, urlResolved), timeout)
+      res ← Await.result(httpService.postJson(payloadResolved, encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
     }
-  }
 
-  def Put(payload: JsValue, url: String)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
+  def Put(payload: JsValue, url: String, params: Map[String, String], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
       payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.putJson(payloadResolved, urlResolved), timeout)
+      res ← Await.result(httpService.putJson(payloadResolved, encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
     }
-  }
 
-  def Get(url: String)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
+  def Get(url: String, params: Map[String, String], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.getJson(urlResolved), timeout)
+      res ← Await.result(httpService.getJson(encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
     }
-  }
 
-  def Delete(url: String)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
+  def Delete(url: String, params: Map[String, String], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.deleteJson(urlResolved), timeout)
+      res ← Await.result(httpService.deleteJson(encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
     }
+
+  // rewrite later :)
+  private def encodeParams(url: String, params: Map[String, String]) = {
+    def formatEntry(entry: (String, String)) = s"${entry._1}=${entry._2}"
+    val encoded =
+      if (params.isEmpty) ""
+      else if (params.size == 1) s"?${formatEntry(params.head)}"
+      else s"?${formatEntry(params.head)}" + params.tail.map { e ⇒ s"&${formatEntry(e)}" }.mkString
+    url + encoded
   }
 
-  def fillInHttpSession(session: Session, response: JsonHttpResponse): Session = {
+  def fillInHttpSession(session: Session, response: JsonHttpResponse): Session =
     session.addValue(LastResponseStatusKey, response.status.intValue().toString)
       .addValue(LastResponseJsonKey, response.body.prettyPrint)
-  }
 
 }
