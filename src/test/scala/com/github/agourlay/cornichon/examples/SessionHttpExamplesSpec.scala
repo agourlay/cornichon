@@ -45,10 +45,10 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       Given(Set("favorite-superhero", "Batman")),
 
       // Retrieve dynamically from session with <key> for URL construction
-      When(GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body ==
+      When(GET(s"$baseUrl/superheroes/<favorite-superhero>", expectedBody =
         """
           {
-            "name": "Batman",
+            "name": "<favorite-superhero>",
             "realName": "Bruce Wayne",
             "city": "Gotham city",
             "publisher": "DC"

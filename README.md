@@ -9,8 +9,6 @@ See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/
 
 // TODOs
 - build request abstraction
-- call resolver on assertion
-- errors with JSON Diff if possible
 - JSON assertion ignoring fields
 - data table
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)

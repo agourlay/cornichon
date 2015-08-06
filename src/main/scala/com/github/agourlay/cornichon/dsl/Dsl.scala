@@ -8,8 +8,7 @@ trait Dsl {
 
   sealed trait Starters {
     def apply[Step[_]](step: Step[_]): Step[_] = step
-    def apply[A](title: String)(instruction: Session ⇒ (A, Session))(assertion: A ⇒ Boolean): Step[A] =
-      Step[A](title, instruction, assertion)
+    def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): Step[A] = Step[A](title, action, expected)
   }
   case object When extends Starters
   case object Then extends Starters
@@ -23,37 +22,28 @@ trait Dsl {
 
   def Set(key: String, value: String): Step[Boolean] =
     Step(s"add '$key'->'$value' to session",
-      s ⇒ (true, s.addValue(key, value)), _ ⇒ true)
+      s ⇒ (true, s.addValue(key, value)), true)
 
-  def assertSessionWithMap[A](key: String, value: A, mapValue: String ⇒ A): Step[A] =
-    Step(s"assert session '$key' with '$value'",
-      s ⇒ {
-        (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s)
-      }, _ == value)
-
-  def assertSessionPredicateWithMap[A](key: String, p: A ⇒ Boolean, mapValue: String ⇒ A): Step[A] =
+  def assertSessionWithMap[A](key: String, expected: A, mapValue: String ⇒ A) =
     Step(s"assert session '$key' against predicate",
-      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), p(_))
+      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), expected)
 
-  def assertSession[A](key: String, value: String): Step[String] =
-    assertSessionWithMap(key, value, identity[String])
-
-  def assertSession(key: String, p: String ⇒ Boolean): Step[String] =
+  def assertSession[A](key: String, value: String) =
     Step(s"assert '$key' against predicate",
-      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), p(_))
+      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value)
 
-  def showSession: Step[Boolean] =
+  def showSession =
     Step(s"show session",
       s ⇒ {
         println(s.content)
         (true, s)
-      }, _ ⇒ true)
+      }, true)
 
-  def showSession(key: String): Step[Boolean] =
+  def showSession(key: String) =
     Step(s"show session",
       s ⇒ {
         val value = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v)
         println(value)
         (true, s)
-      }, _ ⇒ true)
+      }, true)
 }

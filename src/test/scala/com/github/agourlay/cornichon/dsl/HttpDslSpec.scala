@@ -38,10 +38,10 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
               """.parseJson)),
 
             // Provide predicate for response status
-            When(GET(s"$baseUrl/superheroes/Batman", _.status == OK)),
+            When(GET(s"$baseUrl/superheroes/Batman", _.status, OK)),
 
             // Provide predicate for response body
-            When(GET(s"$baseUrl/superheroes/Batman", _.body ==
+            When(GET(s"$baseUrl/superheroes/Batman", _.body,
               """
                 {
                   "name": "Batman",
@@ -58,32 +58,20 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
             Then(showLastResponseJson),
 
             // Extract from body using lense
-            When(GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city) == "Gotham city")),
-
-            // It is just a function ;)
-            When(GET(s"$baseUrl/superheroes/Batman", r ⇒ r.status == OK &&
-              r.body == """
-                {
-                  "name": "Batman",
-                  "realName": "Bruce Wayne",
-                  "city": "Gotham city",
-                  "publisher": "DC"
-                }
-              """.parseJson
-            )),
+            When(GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city), "Gotham city")),
 
             // Set a key/value in the Scenario's session
             Given(Set("favorite-superhero", "Batman")),
 
-            // Retrieve dynamically from session with <key>
-            When(GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body ==
+            // Retrieve dynamically from session with <key> for URL construction
+            When(GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body,
               """
-                {
-                  "name": "Batman",
-                  "realName": "Bruce Wayne",
-                  "city": "Gotham city",
-                  "publisher": "DC"
-                }
+          {
+            "name": "<favorite-superhero>",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
               """.parseJson
             ))
           )

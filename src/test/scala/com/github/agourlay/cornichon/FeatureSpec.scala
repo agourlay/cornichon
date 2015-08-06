@@ -7,11 +7,13 @@ class FeatureSpec extends WordSpec with Matchers {
 
   "A feature" must {
     "execute all scenarios" in {
-      val steps1 = Seq(Step[Int]("first step", s ⇒ (2, s), _ > 0))
+      val steps1 = Seq(Step[Int]("first step", s ⇒ (2 + 2, s), 4))
       val scenario1 = Scenario("test", steps1)
 
       val steps2 = Seq(
-        Step[Int]("first step", s ⇒ (2, s), _ > 0), Step[Int]("second step", s ⇒ (5, s), _ > 0), Step[Int]("third step", s ⇒ (1, s), _ > 0)
+        Step[Int]("first step", s ⇒ (2 + 2, s), 4),
+        Step[Int]("second step", s ⇒ (5 * 2, s), 10),
+        Step[Int]("third step", s ⇒ (1 - 1, s), 0)
       )
       val scenario2 = Scenario("test", steps2)
 
@@ -24,11 +26,13 @@ class FeatureSpec extends WordSpec with Matchers {
     }
 
     "report failed scenario" in {
-      val steps1 = Seq(Step[Int]("first step", s ⇒ (2, s), _ < 0))
+      val steps1 = Seq(Step[Int]("first step", s ⇒ (2 + 2, s), 3))
       val scenario1 = Scenario("test", steps1)
 
       val steps2 = Seq(
-        Step[Int]("first step", s ⇒ (2, s), _ > 0), Step[Int]("second step", s ⇒ (5, s), _ > 0), Step[Int]("third step", s ⇒ (1, s), _ > 0)
+        Step[Int]("first step", s ⇒ (2 + 2, s), 4),
+        Step[Int]("second step", s ⇒ (5 * 2, s), 10),
+        Step[Int]("third step", s ⇒ (1 - 1, s), 0)
       )
       val scenario2 = Scenario("test", steps2)
 

@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import spray.json.JsValue
 
 import scala.annotation.tailrec
 import scala.util._
@@ -9,17 +10,16 @@ import scala.util._
 class Engine(resolver: Resolver) {
 
   def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] = {
-    for {
-      newTitle ← resolver.fillPlaceholder(step.title)(session.content)
-      stepResult ← runStepInstruction(step.copy(title = newTitle), session)
-    } yield stepResult
-  }
-
-  def runStepInstruction[A](step: Step[A], session: Session): Xor[CornichonError, Session] = {
     Try {
-      step.instruction(session)
+      val (res, newSession) = step.action(session)
+      val resolvedExpected: A = step.expected match {
+        case s: String  ⇒ resolver.fillPlaceholder(s)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
+        case j: JsValue ⇒ resolver.fillPlaceholder(j)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
+        case _          ⇒ step.expected
+      }
+      (res, resolvedExpected, newSession)
     } match {
-      case Success((res, newSession)) ⇒ runStepPredicate(step, res, newSession)
+      case Success((res, expected, newSession)) ⇒ runStepPredicate(step.title, res, expected, newSession)
       case Failure(e) ⇒
         e match {
           case KeyNotFoundInSession(key) ⇒ left(SessionError(step.title, key))
@@ -28,13 +28,10 @@ class Engine(resolver: Resolver) {
     }
   }
 
-  def runStepPredicate[A](step: Step[A], res: A, newSession: Session): Xor[CornichonError, Session] = {
-    Try {
-      step.assertion(res)
-    } match {
-      case Success(result) if result  ⇒ right(newSession)
-      case Success(result) if !result ⇒ left(StepAssertionError(step.title, res))
-      case Failure(e)                 ⇒ left(StepPredicateError(step.title, e))
+  def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] = {
+    StepAssertionResult(actual == expected, expected, actual) match {
+      case StepAssertionResult(true, _, _)              ⇒ right(newSession)
+      case StepAssertionResult(false, expected, actual) ⇒ left(StepAssertionError(title, expected, actual))
     }
   }
 

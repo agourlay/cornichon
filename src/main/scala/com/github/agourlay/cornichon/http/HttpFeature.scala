@@ -17,41 +17,54 @@ trait HttpFeature extends Feature {
   implicit val ec: ExecutionContext = system.dispatcher
   val httpService = new HttpService
 
-  def Post(payload: JsValue, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+  val LastResponseJsonKey = "last-response-json"
+  val LastResponseStatusKey = "last-response-status"
+
+  def Post(payload: JsValue, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
     for {
       payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.postJson(payloadResolved, urlResolved, expected), timeout)
+      newSession = fillInHttpSession(s, res)
     } yield {
-      res
+      (res, newSession)
     }
   }
 
-  def Put(payload: JsValue, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+  def Put(payload: JsValue, url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
     for {
       payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.putJson(payloadResolved, urlResolved, expected), timeout)
+      newSession = fillInHttpSession(s, res)
     } yield {
-      res
+      (res, newSession)
     }
   }
 
-  def Get(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+  def Get(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
     for {
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.getJson(urlResolved, expected), timeout)
+      newSession = fillInHttpSession(s, res)
     } yield {
-      res
+      (res, newSession)
     }
   }
 
-  def Delete(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, JsonHttpResponse] = {
+  def Delete(url: String, expected: Option[StatusCode] = None)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] = {
     for {
       urlResolved ← resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.deleteJson(urlResolved, expected), timeout)
+      newSession = fillInHttpSession(s, res)
     } yield {
-      res
+      (res, newSession)
     }
   }
+
+  def fillInHttpSession(session: Session, response: JsonHttpResponse): Session = {
+    session.addValue(LastResponseStatusKey, response.status.intValue().toString)
+      .addValue(LastResponseJsonKey, response.body.prettyPrint)
+  }
+
 }

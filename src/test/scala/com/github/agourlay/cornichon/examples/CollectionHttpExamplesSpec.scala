@@ -23,7 +23,7 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
     scenario("Collection Superheroes")(
 
       // Simple GET
-      When(GET(s"$baseUrl/superheroes", _.body == """
+      When(GET(s"$baseUrl/superheroes", _.body, """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -53,7 +53,7 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       )),
 
       // Test nb of elements
-      Then(response_body_array_is(_.elements.size == 5)),
+      Then(response_body_array_is(_.elements.size, 5)),
 
       Then(response_body_array_contains("""
         {
@@ -70,13 +70,13 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       // Shortcut
       Then(response_body_array_size_is(4)),
 
-      Then(response_body_array_is(!_.elements.contains("""
+      Then(response_body_array_is(_.elements.contains("""
         {
           "name": "GreenLantern",
           "realName": "Hal Jordan",
           "city": "Coast City",
           "publisher": "DC"
-        } """.parseJson)))
+        } """.parseJson), false))
     )
   )
 
