@@ -28,7 +28,7 @@ trait Dsl {
   def Xor2Predicate[A, B](input: Xor[A, B])(p: B ⇒ Boolean): Boolean =
     input.fold(a ⇒ false, b ⇒ p(b))
 
-  def Set(input: (String, String)): Step[Boolean] = {
+  def SET(input: (String, String)): Step[Boolean] = {
     val (key, value) = input
     Step(s"add '$key'->'$value' to session",
       s ⇒ (true, s.addValue(key, value)), true)

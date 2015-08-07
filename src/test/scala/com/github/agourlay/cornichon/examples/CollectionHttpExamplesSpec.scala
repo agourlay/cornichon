@@ -12,7 +12,9 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       scenario("Collection Superheroes")(
 
         // Simple GET
-        When I GET(s"$baseUrl/superheroes", expectedBody =
+        When I GET(s"$baseUrl/superheroes"),
+
+        Then assert response_body_is(
           """
           [{
             "name": "Batman",
@@ -42,8 +44,7 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
           }]""".parseJson
         ),
 
-        // Test nb of elements
-        Then assert response_body_array_is(_.elements.size, 5),
+        Then assert response_body_array_size_is(5),
 
         And assert response_body_array_contains(
           """
@@ -58,7 +59,6 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         And I GET(s"$baseUrl/superheroes"),
 
-        // Shortcut
         Then assert response_body_array_size_is(4),
 
         And assert response_body_array_not_contain(

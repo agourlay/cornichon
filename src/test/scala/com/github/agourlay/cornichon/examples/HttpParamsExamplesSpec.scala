@@ -14,7 +14,9 @@ class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
       scenario("Collection Superheroes with params")(
 
         // Simple GET
-        When I GET(s"$baseUrl/superheroes", expectedBody =
+        When I GET(s"$baseUrl/superheroes"),
+
+        Then assert response_body_is(
           """
           [{
             "name": "Batman",

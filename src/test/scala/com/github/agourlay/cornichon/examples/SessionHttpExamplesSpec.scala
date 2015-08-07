@@ -28,10 +28,12 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
         """.parseJson),
 
         // Set a key/value in the Scenario's session
-        And I Set("favorite-superhero" -> "Batman"),
+        And I SET("favorite-superhero" -> "Batman"),
 
         // Retrieve dynamically from session with <key> for URL construction
-        When I GET(s"$baseUrl/superheroes/<favorite-superhero>", expectedBody =
+        When I GET(s"$baseUrl/superheroes/<favorite-superhero>"),
+
+        Then assert response_body_is(
           """
           {
             "name": "<favorite-superhero>",

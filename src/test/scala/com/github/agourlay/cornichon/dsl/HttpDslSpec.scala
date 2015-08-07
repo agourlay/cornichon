@@ -58,7 +58,7 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
             When I GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city), "Gotham city"),
 
             // Set a key/value in the Scenario's session
-            And I Set("favorite-superhero", "Batman"),
+            And I SET("favorite-superhero", "Batman"),
 
             // Retrieve dynamically from session with <key> for URL construction
             When I GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body,
