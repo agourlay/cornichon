@@ -14,7 +14,7 @@ trait ScenarioReport {
   val scenarioName: String
   val success: Boolean
 }
-case class SuccessScenarioReport(scenarioName: String) extends ScenarioReport {
+case class SuccessScenarioReport(scenarioName: String, successSteps: Seq[String]) extends ScenarioReport {
   val success = true
 }
 case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, successSteps: Seq[String], notExecutedStep: Seq[String]) extends ScenarioReport {

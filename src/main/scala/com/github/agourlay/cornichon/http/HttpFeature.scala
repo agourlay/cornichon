@@ -11,15 +11,16 @@ import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
 
-trait HttpFeature extends Feature {
+trait HttpFeature {
+  this: Feature ⇒
 
   implicit val system = ActorSystem("cornichon-http-feature")
   implicit val mat = ActorMaterializer()
   implicit val ec: ExecutionContext = system.dispatcher
   val httpService = new HttpService
 
-  val LastResponseJsonKey = "last-response-json"
-  val LastResponseStatusKey = "last-response-status"
+  lazy val LastResponseJsonKey = "last-response-json"
+  lazy val LastResponseStatusKey = "last-response-status"
 
   def Post(payload: JsValue, url: String, params: Map[String, String], headers: immutable.Seq[HttpHeader] = immutable.Seq.empty)(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {

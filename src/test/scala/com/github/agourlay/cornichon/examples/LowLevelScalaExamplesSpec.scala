@@ -5,26 +5,23 @@ import com.github.agourlay.cornichon.core.CornichonFeature
 
 class LowLevelScalaExamplesSpec extends CornichonFeature with ExampleServer {
 
-  val baseUrl = s"http://localhost:$port"
-
-  lazy val featureName = "Low level Scala Dsl test"
-
-  val scenarios = Seq(
-    scenario("test scenario")(
-      Given("A value") { s ⇒
-        val x = 33 + 33
-        val s2 = s.addValue("my-key", "crazy value")
-        val s3 = s2.addValue("name-in-title", "String")
-        (x, s3)
-      }(66),
-      When("I take a letter <name-in-title>") { s ⇒
-        val x = 'A'
-        (x, s)
-      }('A'),
-      When("I check the session") { s ⇒
-        val x = s.getKey("my-key")
-        (x, s)
-      }(Some("crazy value"))
-    )
-  )
+  lazy val feat =
+    feature("Low level Scala Dsl test") {
+      scenario("test scenario")(
+        Given("A value") { s ⇒
+          val x = 33 + 33
+          val s2 = s.addValue("my-key", "crazy value")
+          val s3 = s2.addValue("name-in-title", "String")
+          (x, s3)
+        }(66),
+        When("I take a letter <name-in-title>") { s ⇒
+          val x = 'A'
+          (x, s)
+        }('A'),
+        When("I check the session") { s ⇒
+          val x = s.getKey("my-key")
+          (x, s)
+        }(Some("crazy value"))
+      )
+    }
 }

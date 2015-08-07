@@ -9,17 +9,13 @@ import spray.json._
 
 class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
 
-  val baseUrl = s"http://localhost:$port"
+  lazy val feat =
+    feature("HTTP params Example") {
+      scenario("Collection Superheroes with params")(
 
-  // Mandatory feature name
-  lazy val featureName = "HTTP params Example"
-
-  // Mandatory Scenarios definition
-  val scenarios = Seq(
-    scenario("Collection Superheroes with params")(
-
-      // Simple GET
-      When(GET(s"$baseUrl/superheroes", expectedBody = """
+        // Simple GET
+        When(GET(s"$baseUrl/superheroes", expectedBody =
+          """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -46,13 +42,12 @@ class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }]""".parseJson
-      )),
+        )),
 
-      When(GET(s"$baseUrl/superheroes", withParams = HashMap(
-        "key1" -> "value1",
-        "key2" -> "value2",
-        "key3" -> "value3")))
-    )
-  )
-
+        When(GET(s"$baseUrl/superheroes", withParams = HashMap(
+          "key1" -> "value1",
+          "key2" -> "value2",
+          "key3" -> "value3")))
+      )
+    }
 }

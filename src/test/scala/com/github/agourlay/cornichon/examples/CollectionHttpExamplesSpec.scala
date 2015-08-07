@@ -7,17 +7,13 @@ import spray.json._
 
 class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
-  val baseUrl = s"http://localhost:$port"
+  lazy val feat =
+    feature("Collection HTTP Example") {
+      scenario("Collection Superheroes")(
 
-  // Mandatory feature name
-  lazy val featureName = "Collection HTTP Example"
-
-  // Mandatory Scenarios definition
-  val scenarios = Seq(
-    scenario("Collection Superheroes")(
-
-      // Simple GET
-      When(GET(s"$baseUrl/superheroes", expectedBody = """
+        // Simple GET
+        When(GET(s"$baseUrl/superheroes", expectedBody =
+          """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -44,12 +40,13 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }]""".parseJson
-      )),
+        )),
 
-      // Test nb of elements
-      Then(response_body_array_is(_.elements.size, 5)),
+        // Test nb of elements
+        Then(response_body_array_is(_.elements.size, 5)),
 
-      Then(response_body_array_contains("""
+        Then(response_body_array_contains(
+          """
         {
           "name": "GreenLantern",
           "realName": "Hal Jordan",
@@ -57,21 +54,21 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
           "publisher": "DC"
         } """.parseJson)),
 
-      When(DELETE(s"$baseUrl/superheroes/GreenLantern")),
+        When(DELETE(s"$baseUrl/superheroes/GreenLantern")),
 
-      When(GET(s"$baseUrl/superheroes")),
+        When(GET(s"$baseUrl/superheroes")),
 
-      // Shortcut
-      Then(response_body_array_size_is(4)),
+        // Shortcut
+        Then(response_body_array_size_is(4)),
 
-      Then(response_body_array_not_contain("""
+        Then(response_body_array_not_contain(
+          """
         {
           "name": "GreenLantern",
           "realName": "Hal Jordan",
           "city": "Coast City",
           "publisher": "DC"
         } """.parseJson))
-    )
-  )
-
+      )
+    }
 }

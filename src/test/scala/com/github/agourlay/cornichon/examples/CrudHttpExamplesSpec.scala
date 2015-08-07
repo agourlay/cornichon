@@ -9,60 +9,57 @@ import spray.json.lenses.JsonLenses._
 
 class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
-  val baseUrl = s"http://localhost:$port"
+  lazy val feat =
+    feature("CRUD HTTP Example") {
+      scenario("CRUD Superheroes")(
 
-  // Mandatory feature name
-  lazy val featureName = "CRUD HTTP Example"
+        // Simple GET
+        When(GET(s"$baseUrl/superheroes/Batman")),
 
-  // Mandatory Scenarios definition
-  val scenarios = Seq(
-    scenario("CRUD Superheroes")(
+        // Test status of previous request
+        Then(status_is(200)),
 
-      // Simple GET
-      When(GET(s"$baseUrl/superheroes/Batman")),
+        // Or provide predicate for response status
+        When(GET(s"$baseUrl/superheroes/Batman", expectedStatusCode = OK)),
 
-      // Test status of previous request
-      Then(status_is(200)),
+        // Query Batman
+        When(GET(s"$baseUrl/superheroes/Batman")),
 
-      // Or provide predicate for response status
-      When(GET(s"$baseUrl/superheroes/Batman", expectedStatusCode = OK)),
+        // Check body of previous request body
+        Then(response_body_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
+        """.parseJson)),
 
-      // Query Batman
-      When(GET(s"$baseUrl/superheroes/Batman", expectedBody =
-        """
-         {
-           "name": "Batman",
-           "realName": "Bruce Wayne",
-           "city": "Gotham city",
-           "publisher": "DC"
-         }
-        """.parseJson
-      )),
+        // Assert body directly using any function, here e.g with Spray lens
+        When(GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city), "Gotham city")),
 
-      // Assert body using any function, here e.g with Spray lens
-      When(GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city), "Gotham city")),
+        // Let's try some 404's
 
-      // Let's try some 404's
+        // Provide predicate for response status
+        When(GET(s"$baseUrl/superheroes/Scalaman", expectedStatusCode = NotFound)),
 
-      // Provide predicate for response status
-      When(GET(s"$baseUrl/superheroes/Scalaman", expectedStatusCode = NotFound)),
-
-      // Or provide predicate for response body as JsValue
-      When(GET(s"$baseUrl/superheroes/Scalaman", expectedBody =
-        """
+        // Or provide predicate for response body as JsValue
+        When(GET(s"$baseUrl/superheroes/Scalaman", expectedBody =
+          """
           {
             "error": "Superhero Scalaman not found"
           }
         """.parseJson
-      )),
+        )),
 
-      // Extract from body using lense
-      When(GET(s"$baseUrl/superheroes/Scalaman", _.body.extract[String]('error), "Superhero Scalaman not found")),
+        // Extract from body using lense
+        When(GET(s"$baseUrl/superheroes/Scalaman", _.body.extract[String]('error), "Superhero Scalaman not found")),
 
-      // Create Scalaman!
-      When(POST(s"$baseUrl/superheroes",
-        payload =
-          """
+        // Create Scalaman!
+        When(POST(s"$baseUrl/superheroes",
+          payload =
+            """
             {
               "name": "Scalaman",
               "realName": "Oleg Ilyenko",
@@ -71,12 +68,12 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
             }
           """.parseJson)),
 
-      // Status Created
-      Then(status_is(201)),
+        // Status Created
+        Then(status_is(201)),
 
-      // Query Scalaman
-      When(GET(s"$baseUrl/superheroes/Scalaman", expectedBody =
-        """
+        // Query Scalaman
+        When(GET(s"$baseUrl/superheroes/Scalaman", expectedBody =
+          """
          {
           "name": "Scalaman",
           "realName": "Oleg Ilyenko",
@@ -84,12 +81,12 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
           "publisher": "DC"
          }
         """.parseJson
-      )),
+        )),
 
-      // Update Scalaman
-      When(PUT(s"$baseUrl/superheroes",
-        payload =
-          """
+        // Update Scalaman
+        When(PUT(s"$baseUrl/superheroes",
+          payload =
+            """
             {
               "name": "Scalaman",
               "realName": "Oleg Ilyenko",
@@ -98,12 +95,12 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
             }
           """.parseJson)),
 
-      // Status updated
-      Then(status_is(200)),
+        // Status updated
+        Then(status_is(200)),
 
-      // Query updated Scalaman
-      When(GET(s"$baseUrl/superheroes/Scalaman", expectedBody =
-        """
+        // Query updated Scalaman
+        When(GET(s"$baseUrl/superheroes/Scalaman", expectedBody =
+          """
          {
           "name": "Scalaman",
           "realName": "Oleg Ilyenko",
@@ -111,13 +108,14 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
           "publisher": "DC"
          }
         """.parseJson
-      )),
+        )),
 
-      // Let's delete someone we don't like
-      When(GET(s"$baseUrl/superheroes/GreenLantern", expectedStatusCode = OK)),
+        // Let's delete someone we don't like
+        When(GET(s"$baseUrl/superheroes/GreenLantern", expectedStatusCode = OK)),
 
-      When(DELETE(s"$baseUrl/superheroes/GreenLantern")),
+        When(DELETE(s"$baseUrl/superheroes/GreenLantern")),
 
-      When(GET(s"$baseUrl/superheroes/GreenLantern", expectedStatusCode = NotFound)))
-  )
+        When(GET(s"$baseUrl/superheroes/GreenLantern", expectedStatusCode = NotFound))
+      )
+    }
 }

@@ -6,24 +6,19 @@ import spray.json._
 
 class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
-  val baseUrl = s"http://localhost:$port"
+  lazy val feat =
+    feature("Session DSL") {
+      scenario("Playing with the http DSL")(
 
-  // Mandatory feature name
-  lazy val featureName = "MoreHTTP DSL"
+        // Simple GET
+        When(GET(s"$baseUrl/superheroes/Batman")),
 
-  // Mandatory Scenarios definition
-  val scenarios = Seq(
-    scenario("Playing with the http DSL")(
+        // Test status of previous request
+        Then(status_is(200)),
 
-      // Simple GET
-      When(GET(s"$baseUrl/superheroes/Batman")),
-
-      // Test status of previous request
-      Then(status_is(200)),
-
-      // Test body of previous request body as String
-      Then(response_body_is(
-        """
+        // Test body of previous request body as Json
+        Then(response_body_is(
+          """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -32,12 +27,12 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
           }
         """.parseJson)),
 
-      // Set a key/value in the Scenario's session
-      Given(Set("favorite-superhero", "Batman")),
+        // Set a key/value in the Scenario's session
+        Given(Set("favorite-superhero" -> "Batman")),
 
-      // Retrieve dynamically from session with <key> for URL construction
-      When(GET(s"$baseUrl/superheroes/<favorite-superhero>", expectedBody =
-        """
+        // Retrieve dynamically from session with <key> for URL construction
+        When(GET(s"$baseUrl/superheroes/<favorite-superhero>", expectedBody =
+          """
           {
             "name": "<favorite-superhero>",
             "realName": "Bruce Wayne",
@@ -45,12 +40,12 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
         """.parseJson
-      )),
+        )),
 
-      // To make debugging easier, here are some debug steps printing into console
-      Then(showSession),
-      Then(showLastStatus),
-      Then(showLastResponseJson)
-    )
-  )
+        // To make debugging easier, here are some debug steps printing into console
+        Then(showSession),
+        Then(showLastStatus),
+        Then(showLastResponseJson)
+      )
+    }
 }

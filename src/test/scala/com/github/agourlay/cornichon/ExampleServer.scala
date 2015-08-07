@@ -9,7 +9,8 @@ import scala.concurrent.duration._
 trait ExampleServer extends BeforeAndAfterAll {
   self: WordSpec ⇒
 
-  val port = 8080
+  lazy val port = 8080
+  lazy val baseUrl = s"http://localhost:$port"
   val server = Await.result(new RestAPI().start(port), 5 second)
 
   override def afterAll() = {

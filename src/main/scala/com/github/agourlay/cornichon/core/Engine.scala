@@ -38,7 +38,7 @@ class Engine(resolver: Resolver) {
   def runScenario(scenario: Scenario)(session: Session): Xor[FailedScenarioReport, SuccessScenarioReport] = {
     @tailrec
     def loop(steps: Seq[Step[_]], session: Session): Xor[FailedScenarioReport, SuccessScenarioReport] = {
-      if (steps.isEmpty) right(SuccessScenarioReport(scenario.name))
+      if (steps.isEmpty) right(SuccessScenarioReport(scenario.name, scenario.steps.map(_.title)))
       else {
         val currentStep = steps.head
         runStep(currentStep)(session) match {

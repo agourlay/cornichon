@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon
 
+import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core.{ Feature, Scenario, Step }
 import org.scalatest.{ Matchers, WordSpec }
 
@@ -18,8 +19,7 @@ class FeatureSpec extends WordSpec with Matchers {
       val scenario2 = Scenario("test", steps2)
 
       val feature = new Feature {
-        val featureName = "Playing with Numbers"
-        val scenarios: Seq[Scenario] = Seq(scenario1, scenario2)
+        val feat = FeatureDef("Playing with Numbers", Seq(scenario1, scenario2))
       }
 
       feature.runFeature().success should be(true)
@@ -37,8 +37,7 @@ class FeatureSpec extends WordSpec with Matchers {
       val scenario2 = Scenario("test", steps2)
 
       val feature = new Feature {
-        val featureName = "Playing with Numbers"
-        val scenarios: Seq[Scenario] = Seq(scenario1, scenario2)
+        val feat = FeatureDef("Playing with Numbers", Seq(scenario1, scenario2))
       }
 
       val report = feature.runFeature()

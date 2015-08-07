@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import cats.data.Xor
+import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._
 import scala.language.higherKinds
 
@@ -17,12 +18,16 @@ trait Dsl {
 
   def scenario(name: String)(steps: Step[_]*): Scenario = Scenario(name, steps)
 
+  def feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
+
   def Xor2Predicate[A, B](input: Xor[A, B])(p: B ⇒ Boolean): Boolean =
     input.fold(a ⇒ false, b ⇒ p(b))
 
-  def Set(key: String, value: String): Step[Boolean] =
+  def Set(input: (String, String)): Step[Boolean] = {
+    val (key, value) = input
     Step(s"add '$key'->'$value' to session",
       s ⇒ (true, s.addValue(key, value)), true)
+  }
 
   def assertSessionWithMap[A](key: String, expected: A, mapValue: String ⇒ A) =
     Step(s"assert session '$key' against predicate",

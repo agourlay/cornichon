@@ -10,14 +10,11 @@ import spray.json.lenses.JsonLenses._
 
 class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with ExampleServer {
 
-  val baseUrl = s"http://localhost:$port"
-
   "HTTP Dsls" must {
     "execute scenarios" in {
-      val feature = new DslTest {
+      val featureTest = new DslTest {
 
-        override def featureName: String = "HTTP Dsl"
-        override def scenarios: Seq[Scenario] = Seq(
+        val feat = feature("HTTP Dsl") {
           scenario("Playing with the http DSL")(
 
             // Simple GET
@@ -75,10 +72,10 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
               """.parseJson
             ))
           )
-        )
+        }
       }
 
-      val featureReport = feature.runFeature()
+      val featureReport = featureTest.runFeature()
       printlnFailedScenario(featureReport)
       featureReport.success should be(true)
     }
