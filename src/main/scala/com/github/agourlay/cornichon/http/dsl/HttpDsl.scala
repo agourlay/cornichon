@@ -6,6 +6,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.dsl.Dsl
 import com.github.agourlay.cornichon.http._
 import spray.json.{ JsValue, _ }
+import spray.json.DefaultJsonProtocol._
 
 import scala.collection.immutable
 import scala.concurrent.duration._
@@ -74,7 +75,11 @@ trait HttpDsl extends Dsl {
 
   def showLastStatus = showSession(LastResponseStatusKey)
 
-  def response_body_is(jsValue: JsValue) = assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ sessionValue.parseJson)
+  def response_body_is(jsValue: JsValue, ignoredKeys: Seq[String] = Seq.empty) =
+    assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+      if (ignoredKeys.isEmpty) sessionValue.parseJson
+      else sessionValue.parseJson.asJsObject.fields.filterKeys(!ignoredKeys.contains(_)).toJson
+    })
 
   def showLastResponseJson = showSession(LastResponseJsonKey)
 

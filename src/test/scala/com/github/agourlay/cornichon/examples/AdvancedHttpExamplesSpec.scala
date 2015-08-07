@@ -45,11 +45,23 @@ class AdvancedHttpExamplesSpec extends CornichonFeature with ExampleServer {
           }]""".parseJson
         ),
 
+        // TODO implem feature in example API
         // HTTP Params as a Map
         When I GET(s"$baseUrl/superheroes", withParams = Map(
           "key1" -> "value1",
           "key2" -> "value2",
-          "key3" -> "value3"))
+          "key3" -> "value3")),
+
+        When I GET(s"$baseUrl/superheroes/Batman"),
+
+        // Ignoring keys for Json assertion
+        And assert response_body_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne"
+          }
+          """.parseJson, ignoredKeys = List("publisher", "city"))
       )
     }
 }
