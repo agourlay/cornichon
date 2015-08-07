@@ -15,7 +15,6 @@ See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/
 - provide extractors in body assert (with syntactic sugar if possible)
 - string based DSL with parboiled2
 - hook Before/After Feature/Scenario
-- use infix notation? Given GET() ...
 - eventually (repeat action until success n times or during n seconds)
 - support Server Sent Event predicate
 - improve Scalatest integration, display step progression

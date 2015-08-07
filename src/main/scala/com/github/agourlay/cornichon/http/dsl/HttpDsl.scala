@@ -1,14 +1,13 @@
-package com.github.agourlay.cornichon.dsl
+package com.github.agourlay.cornichon.http.dsl
 
 import akka.http.scaladsl.model.{ HttpHeader, StatusCode }
 import cats.data.Xor
-import spray.json.JsValue
-import scala.concurrent.duration._
-
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.dsl.Dsl
 import com.github.agourlay.cornichon.http._
+import spray.json.{ JsValue, _ }
 
-import spray.json._
+import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
   this: HttpFeature ⇒

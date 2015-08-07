@@ -1,13 +1,13 @@
 package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.server.RestAPI
-import org.scalatest.{ BeforeAndAfterAll, WordSpec }
+import org.scalatest.{ Suite, BeforeAndAfterAll }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 trait ExampleServer extends BeforeAndAfterAll {
-  self: WordSpec ⇒
+  self: Suite ⇒
 
   lazy val port = 8080
   lazy val baseUrl = s"http://localhost:$port"

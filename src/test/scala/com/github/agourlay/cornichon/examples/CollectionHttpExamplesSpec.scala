@@ -12,7 +12,7 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       scenario("Collection Superheroes")(
 
         // Simple GET
-        When(GET(s"$baseUrl/superheroes", expectedBody =
+        When I GET(s"$baseUrl/superheroes", expectedBody =
           """
           [{
             "name": "Batman",
@@ -40,35 +40,35 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }]""".parseJson
-        )),
+        ),
 
         // Test nb of elements
-        Then(response_body_array_is(_.elements.size, 5)),
+        Then assert response_body_array_is(_.elements.size, 5),
 
-        Then(response_body_array_contains(
+        And assert response_body_array_contains(
           """
         {
           "name": "GreenLantern",
           "realName": "Hal Jordan",
           "city": "Coast City",
           "publisher": "DC"
-        } """.parseJson)),
+        } """.parseJson),
 
-        When(DELETE(s"$baseUrl/superheroes/GreenLantern")),
+        When I DELETE(s"$baseUrl/superheroes/GreenLantern"),
 
-        When(GET(s"$baseUrl/superheroes")),
+        And I GET(s"$baseUrl/superheroes"),
 
         // Shortcut
-        Then(response_body_array_size_is(4)),
+        Then assert response_body_array_size_is(4),
 
-        Then(response_body_array_not_contain(
+        And assert response_body_array_not_contain(
           """
         {
           "name": "GreenLantern",
           "realName": "Hal Jordan",
           "city": "Coast City",
           "publisher": "DC"
-        } """.parseJson))
+        } """.parseJson)
       )
     }
 }

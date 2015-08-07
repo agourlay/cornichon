@@ -11,13 +11,13 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
       scenario("Playing with the http DSL")(
 
         // Simple GET
-        When(GET(s"$baseUrl/superheroes/Batman")),
+        When I GET(s"$baseUrl/superheroes/Batman"),
 
         // Test status of previous request
-        Then(status_is(200)),
+        Then assert status_is(200),
 
         // Test body of previous request body as Json
-        Then(response_body_is(
+        Then assert response_body_is(
           """
           {
             "name": "Batman",
@@ -25,13 +25,13 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-        """.parseJson)),
+        """.parseJson),
 
         // Set a key/value in the Scenario's session
-        Given(Set("favorite-superhero" -> "Batman")),
+        And I Set("favorite-superhero" -> "Batman"),
 
         // Retrieve dynamically from session with <key> for URL construction
-        When(GET(s"$baseUrl/superheroes/<favorite-superhero>", expectedBody =
+        When I GET(s"$baseUrl/superheroes/<favorite-superhero>", expectedBody =
           """
           {
             "name": "<favorite-superhero>",
@@ -40,12 +40,12 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
         """.parseJson
-        )),
+        ),
 
         // To make debugging easier, here are some debug steps printing into console
-        Then(showSession),
-        Then(showLastStatus),
-        Then(showLastResponseJson)
+        And I showSession,
+        And I showLastStatus,
+        And I showLastResponseJson
       )
     }
 }

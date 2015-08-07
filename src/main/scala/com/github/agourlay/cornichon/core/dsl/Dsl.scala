@@ -1,19 +1,24 @@
-package com.github.agourlay.cornichon.dsl
+package com.github.agourlay.cornichon.core.dsl
 
 import cats.data.Xor
 import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._
+
 import scala.language.higherKinds
 
 trait Dsl {
 
   sealed trait Starters {
-    def apply[Step[_]](step: Step[_]): Step[_] = step
+    def I[Step[_]](step: Step[_]): Step[_] = step
     def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): Step[A] = Step[A](title, action, expected)
   }
   case object When extends Starters
-  case object Then extends Starters
-  case object And extends Starters
+  case object Then extends Starters {
+    def assert[Step[_]](step: Step[_]): Step[_] = step
+  }
+  case object And extends Starters {
+    def assert[Step[_]](step: Step[_]): Step[_] = step
+  }
   case object Given extends Starters
 
   def scenario(name: String)(steps: Step[_]*): Scenario = Scenario(name, steps)

@@ -14,7 +14,7 @@ class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
       scenario("Collection Superheroes with params")(
 
         // Simple GET
-        When(GET(s"$baseUrl/superheroes", expectedBody =
+        When I GET(s"$baseUrl/superheroes", expectedBody =
           """
           [{
             "name": "Batman",
@@ -42,12 +42,12 @@ class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }]""".parseJson
-        )),
+        ),
 
-        When(GET(s"$baseUrl/superheroes", withParams = HashMap(
+        When I GET(s"$baseUrl/superheroes", withParams = HashMap(
           "key1" -> "value1",
           "key2" -> "value2",
-          "key3" -> "value3")))
+          "key3" -> "value3"))
       )
     }
 }

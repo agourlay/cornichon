@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.dsl
+package com.github.agourlay.cornichon.http.dsl
 
 import com.github.agourlay.cornichon.http.HttpFeature
 
