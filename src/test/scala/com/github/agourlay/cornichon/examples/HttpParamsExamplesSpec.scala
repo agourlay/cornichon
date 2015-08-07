@@ -4,8 +4,6 @@ import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 
 import scala.collection.immutable.HashMap
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
 
 import spray.json._
 
@@ -16,11 +14,8 @@ class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
   // Mandatory feature name
   lazy val featureName = "HTTP params Example"
 
-  // Mandatory request Timeout duration
-  lazy val requestTimeout: FiniteDuration = 2000 millis
-
   // Mandatory Scenarios definition
-  lazy val scenarios = Seq(
+  val scenarios = Seq(
     scenario("Collection Superheroes with params")(
 
       // Simple GET

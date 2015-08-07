@@ -13,7 +13,7 @@ import spray.json._
 trait HttpDsl extends Dsl {
   this: HttpFeature ⇒
 
-  implicit val requestTimeout: FiniteDuration
+  implicit val requestTimeout: FiniteDuration = 2000 millis
 
   private def xor2A[A](x: Xor[CornichonError, (A, Session)], formerSession: Session) =
     (x.fold(e ⇒ throw e, res ⇒ res._1), x.fold(e ⇒ formerSession, res ⇒ res._2))

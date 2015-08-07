@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{ HttpHeader, StatusCode }
+import akka.http.scaladsl.model.HttpHeader
 import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
@@ -9,7 +9,7 @@ import spray.json._
 
 import scala.collection.immutable
 import scala.concurrent.duration._
-import scala.concurrent.{ Future, Await, ExecutionContext }
+import scala.concurrent.{ Await, ExecutionContext }
 
 trait HttpFeature extends Feature {
 

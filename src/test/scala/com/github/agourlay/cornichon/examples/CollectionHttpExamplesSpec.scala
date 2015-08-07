@@ -3,9 +3,6 @@ package com.github.agourlay.cornichon.examples
 import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
-
 import spray.json._
 
 class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
@@ -15,11 +12,8 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
   // Mandatory feature name
   lazy val featureName = "Collection HTTP Example"
 
-  // Mandatory request Timeout duration
-  lazy val requestTimeout: FiniteDuration = 2000 millis
-
   // Mandatory Scenarios definition
-  lazy val scenarios = Seq(
+  val scenarios = Seq(
     scenario("Collection Superheroes")(
 
       // Simple GET

@@ -7,9 +7,6 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 import spray.json.lenses.JsonLenses._
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
-
 class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
   val baseUrl = s"http://localhost:$port"
@@ -17,11 +14,8 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
   // Mandatory feature name
   lazy val featureName = "CRUD HTTP Example"
 
-  // Mandatory request Timeout duration
-  lazy val requestTimeout: FiniteDuration = 2000 millis
-
   // Mandatory Scenarios definition
-  lazy val scenarios = Seq(
+  val scenarios = Seq(
     scenario("CRUD Superheroes")(
 
       // Simple GET

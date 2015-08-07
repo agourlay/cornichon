@@ -8,6 +8,7 @@ Work in progress...
 See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples) for usage.
 
 // TODOs
+- get rid of the lazy val for featureName
 - JSON assertion ignoring fields
 - data table (Json input and HTTP param)
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)

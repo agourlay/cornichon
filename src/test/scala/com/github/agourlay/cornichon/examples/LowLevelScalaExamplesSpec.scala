@@ -3,18 +3,13 @@ package com.github.agourlay.cornichon.examples
 import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
-
 class LowLevelScalaExamplesSpec extends CornichonFeature with ExampleServer {
 
   val baseUrl = s"http://localhost:$port"
 
-  lazy implicit val requestTimeout: FiniteDuration = 2000 millis
-
   lazy val featureName = "Low level Scala Dsl test"
 
-  lazy val scenarios = Seq(
+  val scenarios = Seq(
     scenario("test scenario")(
       Given("A value") { s ⇒
         val x = 33 + 33

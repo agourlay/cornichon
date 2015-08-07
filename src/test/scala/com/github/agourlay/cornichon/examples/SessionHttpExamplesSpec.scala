@@ -4,9 +4,6 @@ import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 import spray.json._
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
-
 class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
   val baseUrl = s"http://localhost:$port"
@@ -14,11 +11,8 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
   // Mandatory feature name
   lazy val featureName = "MoreHTTP DSL"
 
-  // Mandatory request Timeout duration
-  lazy val requestTimeout: FiniteDuration = 2000 millis
-
   // Mandatory Scenarios definition
-  lazy val scenarios = Seq(
+  val scenarios = Seq(
     scenario("Playing with the http DSL")(
 
       // Simple GET
