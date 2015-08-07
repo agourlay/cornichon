@@ -24,7 +24,7 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-        """.parseJson),
+          """.parseJson),
 
         When I GET(s"$baseUrl/superheroes/Scalaman"),
 
@@ -40,12 +40,12 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I POST(s"$baseUrl/superheroes", payload =
           """
-            {
-              "name": "Scalaman",
-              "realName": "Oleg Ilyenko",
-              "city": "Berlin",
-              "publisher": "DC"
-            }
+          {
+            "name": "Scalaman",
+            "realName": "Oleg Ilyenko",
+            "city": "Berlin",
+            "publisher": "DC"
+          }
           """.parseJson),
 
         Then assert status_is(201),
@@ -54,12 +54,12 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert response_body_is(
           """
-           {
+          {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
             "city": "Berlin",
             "publisher": "DC"
-           }
+          }
           """.parseJson),
 
         When I PUT(s"$baseUrl/superheroes", payload =
@@ -76,12 +76,12 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert response_body_is(
           """
-           {
+          {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
             "city": "Pankow",
             "publisher": "DC"
-           }
+          }
           """.parseJson
         ),
 

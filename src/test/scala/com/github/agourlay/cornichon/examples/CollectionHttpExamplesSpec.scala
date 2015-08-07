@@ -48,12 +48,13 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         And assert response_body_array_contains(
           """
-        {
-          "name": "GreenLantern",
-          "realName": "Hal Jordan",
-          "city": "Coast City",
-          "publisher": "DC"
-        } """.parseJson),
+          {
+            "name": "GreenLantern",
+            "realName": "Hal Jordan",
+            "city": "Coast City",
+            "publisher": "DC"
+          }
+           """.parseJson),
 
         When I DELETE(s"$baseUrl/superheroes/GreenLantern"),
 
@@ -63,12 +64,13 @@ class CollectionHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         And assert response_body_array_not_contain(
           """
-        {
-          "name": "GreenLantern",
-          "realName": "Hal Jordan",
-          "city": "Coast City",
-          "publisher": "DC"
-        } """.parseJson)
+          {
+            "name": "GreenLantern",
+            "realName": "Hal Jordan",
+            "city": "Coast City",
+            "publisher": "DC"
+          }
+          """.parseJson)
       )
     }
 }

@@ -25,7 +25,7 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-        """.parseJson),
+          """.parseJson),
 
         // Set a key/value in the Scenario's session
         And I SET("favorite-superhero" -> "Batman"),
@@ -41,7 +41,7 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-        """.parseJson
+          """.parseJson
         ),
 
         // To make debugging easier, here are some debug steps printing into console
