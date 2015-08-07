@@ -17,13 +17,10 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
         val feat = feature("HTTP Dsl") {
           scenario("Playing with the http DSL")(
 
-            // Simple GET
             When I GET(s"$baseUrl/superheroes/Batman"),
 
-            // Test status of previous request
             Then assert status_is(200),
 
-            // Test body of previous request
             Then assert response_body_is(
               """
                 {
@@ -34,10 +31,8 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
                 }
               """.parseJson),
 
-            // Provide predicate for response status
             When I GET(s"$baseUrl/superheroes/Batman", _.status, OK),
 
-            // Provide predicate for response body
             When I GET(s"$baseUrl/superheroes/Batman", _.body,
               """
                 {
@@ -49,18 +44,10 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
               """.parseJson
             ),
 
-            // Debug steps printing into console
-            And I showSession,
-            And I showLastStatus,
-            And I showLastResponseJson,
-
-            // Extract from body using lense
             When I GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city), "Gotham city"),
 
-            // Set a key/value in the Scenario's session
             And I SET("favorite-superhero", "Batman"),
 
-            // Retrieve dynamically from session with <key> for URL construction
             When I GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body,
               """
               {

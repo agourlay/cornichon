@@ -7,16 +7,15 @@ import scala.collection.immutable.HashMap
 
 import spray.json._
 
-class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
+class AdvancedHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
   lazy val feat =
     feature("HTTP params Example") {
       scenario("Collection Superheroes with params")(
 
-        // Simple GET
-        When I GET(s"$baseUrl/superheroes"),
-
-        Then assert response_body_is(
+        // Fail fast with direct predicate
+        // Available options : expectedBody, expectedStatus, expectedHeaders
+        When I GET(s"$baseUrl/superheroes", expectedBody =
           """
           [{
             "name": "Batman",
@@ -46,7 +45,8 @@ class HttpParamsExamplesSpec extends CornichonFeature with ExampleServer {
           }]""".parseJson
         ),
 
-        When I GET(s"$baseUrl/superheroes", withParams = HashMap(
+        // HTTP Params as a Map
+        When I GET(s"$baseUrl/superheroes", withParams = Map(
           "key1" -> "value1",
           "key2" -> "value2",
           "key3" -> "value3"))

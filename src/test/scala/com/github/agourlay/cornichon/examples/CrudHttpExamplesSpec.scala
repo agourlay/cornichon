@@ -14,9 +14,7 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert status_is(200),
 
-        When I GET(s"$baseUrl/superheroes/Batman"),
-
-        Then assert response_body_is(
+        And assert response_body_is(
           """
           {
             "name": "Batman",
@@ -30,7 +28,7 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert status_is(404),
 
-        Then assert response_body_is(
+        And assert response_body_is(
           """
           {
             "error": "Superhero Scalaman not found"

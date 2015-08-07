@@ -7,6 +7,7 @@ import com.github.agourlay.cornichon.core.dsl.Dsl
 import com.github.agourlay.cornichon.http._
 import spray.json.{ JsValue, _ }
 
+import scala.collection.immutable
 import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
@@ -20,13 +21,14 @@ trait HttpDsl extends Dsl {
   sealed trait Request { val name: String }
 
   sealed trait WithoutPayload extends Request {
-    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A = true, params: Map[String, String] = Map.empty): Step[A] =
+    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A = true,
+                 params: Map[String, String] = Map.empty, headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
           val x = this match {
-            case GET    ⇒ Get(url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
-            case DELETE ⇒ Delete(url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case GET    ⇒ Get(url, params, headers)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case DELETE ⇒ Delete(url, params, headers)(s).map { case (response, session) ⇒ (mapFct(response), session) }
           }
           xor2A(x, s)
         },
@@ -40,13 +42,14 @@ trait HttpDsl extends Dsl {
   }
 
   sealed trait WithPayload extends Request {
-    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A = true, params: Map[String, String] = Map.empty): Step[A] =
+    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A = true,
+                 params: Map[String, String] = Map.empty, headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
           val x = this match {
-            case POST ⇒ Post(payload, url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
-            case PUT  ⇒ Put(payload, url, params)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case POST ⇒ Post(payload, url, params, headers)(s).map { case (response, session) ⇒ (mapFct(response), session) }
+            case PUT  ⇒ Put(payload, url, params, headers)(s).map { case (response, session) ⇒ (mapFct(response), session) }
           }
           xor2A(x, s)
         },
