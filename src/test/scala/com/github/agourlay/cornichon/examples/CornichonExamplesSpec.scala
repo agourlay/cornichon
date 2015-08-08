@@ -76,8 +76,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           }
           """.parseJson),
 
-        When I GET(s"$baseUrl/superheroes/Scalaman", params = Seq(
-          "protectIdentity" -> "true")),
+        When I GET(s"$baseUrl/superheroes/Scalaman", params =
+          "protectIdentity" -> "true",
+          "random-useless-header" -> "test"),
 
         Then assert response_body_is(
           """

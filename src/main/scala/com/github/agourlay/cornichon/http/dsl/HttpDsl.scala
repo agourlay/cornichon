@@ -1,11 +1,10 @@
 package com.github.agourlay.cornichon.http.dsl
 
-import akka.http.scaladsl.model.{ HttpHeader, StatusCode }
-import cats.data.Xor
+import akka.http.scaladsl.model.HttpHeader
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.dsl.Dsl
 import com.github.agourlay.cornichon.http._
-import spray.json.{ JsValue, _ }
+import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 import scala.concurrent.duration._
@@ -18,7 +17,7 @@ trait HttpDsl extends Dsl {
   sealed trait Request { val name: String }
 
   sealed trait WithoutPayload extends Request {
-    def apply(url: String, params: Seq[(String, String)] = Seq.empty, headers: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
@@ -32,7 +31,7 @@ trait HttpDsl extends Dsl {
   }
 
   sealed trait WithPayload extends Request {
-    def apply(url: String, payload: JsValue, params: Seq[(String, String)] = Seq.empty, headers: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, payload: JsValue, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
