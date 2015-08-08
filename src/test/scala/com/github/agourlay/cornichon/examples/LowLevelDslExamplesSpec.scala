@@ -3,11 +3,11 @@ package com.github.agourlay.cornichon.examples
 import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 
-class LowLevelScalaExamplesSpec extends CornichonFeature with ExampleServer {
+class LowLevelDslExamplesSpec extends CornichonFeature with ExampleServer {
 
   lazy val feat =
-    feature("Low level Scala Dsl test") {
-      scenario("test scenario")(
+    Feature("Low level Scala Dsl test") {
+      Scenario("test scenario")(
         Given("A value") { s ⇒
           val x = 33 + 33
           val s2 = s.addValue("my-key", "crazy value")

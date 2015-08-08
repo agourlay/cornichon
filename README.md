@@ -5,7 +5,7 @@ Scala DSL for testing JSON HTTP API
 
 Work in progress...
 
-See [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples) for usage.
+See [example](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) for usage.
 
 // TODOs
 - get rid of colon in step definition

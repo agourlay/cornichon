@@ -12,8 +12,8 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
     "execute scenarios" in {
       val featureTest = new DslTest {
 
-        val feat = feature("HTTP Dsl") {
-          scenario("Playing with the http DSL")(
+        val feat = Feature("HTTP Dsl") {
+          Scenario("Playing with the http DSL")(
 
             When I GET(s"$baseUrl/superheroes/Batman"),
 

@@ -72,6 +72,12 @@ trait HttpDsl extends Dsl {
 
   def status_is(status: Int) = assertSession(LastResponseStatusKey, status.toString)
 
+  def headers_contain(headers: (String, String)*) =
+    assertSessionWithMap(LastResponseHeadersKey, true, sessionHeaders ⇒ {
+      val sessionHeadersValue = sessionHeaders.split(",")
+      headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
+    })
+
   def showLastStatus = showSession(LastResponseStatusKey)
 
   def response_body_is(jsValue: JsValue, ignoredKeys: String*) =
@@ -86,6 +92,8 @@ trait HttpDsl extends Dsl {
     })
 
   def showLastResponseJson = showSession(LastResponseJsonKey)
+
+  def showLastResponseHeaders = showSession(LastResponseHeadersKey)
 
   def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A) = {
     assertSessionWithMap[A](LastResponseJsonKey, expected, sessionValue ⇒ {

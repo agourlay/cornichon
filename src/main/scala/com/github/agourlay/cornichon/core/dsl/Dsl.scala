@@ -20,9 +20,9 @@ trait Dsl {
   }
   case object Given extends Starters
 
-  def scenario(name: String)(steps: Step[_]*): Scenario = Scenario(name, steps)
+  def Scenario(name: String)(steps: Step[_]*): Scenario = Scenario(name, steps)
 
-  def feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
+  def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
 
   def SET(input: (String, String)): Step[Boolean] = {
     val (key, value) = input

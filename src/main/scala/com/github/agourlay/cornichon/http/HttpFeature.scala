@@ -21,6 +21,7 @@ trait HttpFeature {
 
   lazy val LastResponseJsonKey = "last-response-json"
   lazy val LastResponseStatusKey = "last-response-status"
+  lazy val LastResponseHeadersKey = "last-response-headers"
 
   def Post(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
@@ -71,7 +72,9 @@ trait HttpFeature {
   }
 
   def fillInHttpSession(session: Session, response: JsonHttpResponse): Session =
-    session.addValue(LastResponseStatusKey, response.status.intValue().toString)
+    session
+      .addValue(LastResponseStatusKey, response.status.intValue().toString)
       .addValue(LastResponseJsonKey, response.body.prettyPrint)
+      .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}:${h.value()}").mkString(","))
 
 }
