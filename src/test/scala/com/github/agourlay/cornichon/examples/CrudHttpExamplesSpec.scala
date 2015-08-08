@@ -73,7 +73,7 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
           }
           """.parseJson),
 
-        When I GET(s"$baseUrl/superheroes/Scalaman", withParams = Map(
+        When I GET(s"$baseUrl/superheroes/Scalaman", withParams = Seq(
           "protectIdentity" -> "true")),
 
         Then assert response_body_is(

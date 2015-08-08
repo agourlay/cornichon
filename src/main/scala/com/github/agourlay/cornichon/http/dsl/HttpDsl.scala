@@ -8,7 +8,6 @@ import com.github.agourlay.cornichon.http._
 import spray.json.{ JsValue, _ }
 import spray.json.DefaultJsonProtocol._
 
-import scala.collection.immutable
 import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
@@ -22,7 +21,7 @@ trait HttpDsl extends Dsl {
   sealed trait Request { val name: String }
 
   sealed trait WithoutPayload extends Request {
-    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A, params: Map[String, String], headers: Seq[HttpHeader]): Step[A] =
+    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A, params: Seq[(String, String)], headers: Seq[HttpHeader]): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
@@ -34,16 +33,16 @@ trait HttpDsl extends Dsl {
         },
         expected = expected)
 
-    def apply(url: String, withParams: Map[String, String] = Map.empty, withHeaders: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, withHeaders: Seq[HttpHeader] = Seq.empty, withParams: Seq[(String, String)] = Seq.empty) =
       apply[Boolean](url, _ ⇒ true, true, withParams, withHeaders)
 
-    def apply(url: String, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true, Map.empty, Seq.empty)
-    def apply(url: String, expectedBody: JsValue) = apply[JsValue](url, _.body, expectedBody, Map.empty, Seq.empty)
-    def apply(url: String, expectedStatusCode: StatusCode) = apply[StatusCode](url, _.status, expectedStatusCode, Map.empty, Seq.empty)
+    def apply(url: String, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true, Seq.empty, Seq.empty)
+    def apply(url: String, expectedBody: JsValue) = apply[JsValue](url, _.body, expectedBody, Seq.empty, Seq.empty)
+    def apply(url: String, expectedStatusCode: StatusCode) = apply[StatusCode](url, _.status, expectedStatusCode, Seq.empty, Seq.empty)
   }
 
   sealed trait WithPayload extends Request {
-    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A, params: Map[String, String], headers: Seq[HttpHeader]): Step[A] =
+    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A, params: Seq[(String, String)], headers: Seq[HttpHeader]): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
@@ -55,12 +54,12 @@ trait HttpDsl extends Dsl {
         },
         expected = expected)
 
-    def apply(url: String, payload: JsValue, withParams: Map[String, String] = Map.empty, withHeaders: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, payload: JsValue, withParams: Seq[(String, String)] = Seq.empty, withHeaders: Seq[HttpHeader] = Seq.empty) =
       apply[Boolean](url, payload, _ ⇒ true, true, withParams, withHeaders)
 
-    def apply(url: String, payload: JsValue, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, payload, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true, Map.empty, Seq.empty)
-    def apply(url: String, payload: JsValue, expectedBody: JsValue) = apply[JsValue](url, payload, _.body, expectedBody, Map.empty, Seq.empty)
-    def apply(url: String, payload: JsValue, expectedStatusCode: StatusCode) = apply[StatusCode](url, payload, _.status, expectedStatusCode, Map.empty, Seq.empty)
+    def apply(url: String, payload: JsValue, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, payload, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true, Seq.empty, Seq.empty)
+    def apply(url: String, payload: JsValue, expectedBody: JsValue) = apply[JsValue](url, payload, _.body, expectedBody, Seq.empty, Seq.empty)
+    def apply(url: String, payload: JsValue, expectedStatusCode: StatusCode) = apply[StatusCode](url, payload, _.status, expectedStatusCode, Seq.empty, Seq.empty)
   }
 
   case object GET extends WithoutPayload { val name = "GET" }
