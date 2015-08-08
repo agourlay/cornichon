@@ -9,7 +9,7 @@ import spray.json.DefaultJsonProtocol._
 class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
   lazy val feat =
-    Feature("Cornichon feature Example") {
+    Feature("Cornichon feature Example")(
 
       Scenario("CRUD Feature demo")(
 
@@ -121,7 +121,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I GET(s"$baseUrl/superheroes/GreenLantern"),
 
-        Then assert status_is(404))
+        Then assert status_is(404)),
 
       Scenario("Collection Feature demo")(
 
@@ -141,11 +141,6 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Metropolis",
             "publisher": "DC"
           }, {
-            "name": "GreenLantern",
-            "realName": "Hal Jordan",
-            "city": "Coast City",
-            "publisher": "DC"
-          }, {
             "name": "Spiderman",
             "realName": "Peter Parker",
             "city": "New York",
@@ -155,6 +150,12 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "realName": "Tony Stark",
             "city": "New York",
             "publisher": "Marvel"
+          },
+          {
+            "name": "Scalaman",
+            "realName": "Oleg Ilyenko",
+            "city": "Pankow",
+            "publisher": "DC"
           }]""".parseJson
         ),
 
@@ -163,14 +164,16 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         And assert response_body_array_contains(
           """
           {
-            "name": "GreenLantern",
-            "realName": "Hal Jordan",
-            "city": "Coast City",
-            "publisher": "DC"
+            "name": "IronMan",
+            "realName": "Tony Stark",
+            "city": "New York",
+            "publisher": "Marvel"
           }
           """.parseJson),
 
-        When I DELETE(s"$baseUrl/superheroes/GreenLantern"),
+        When I DELETE(s"$baseUrl/superheroes/IronMan"),
+
+        Then assert status_is(200),
 
         And I GET(s"$baseUrl/superheroes"),
 
@@ -179,13 +182,13 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         And assert response_body_array_not_contain(
           """
           {
-            "name": "GreenLantern",
-            "realName": "Hal Jordan",
-            "city": "Coast City",
-            "publisher": "DC"
+            "name": "IronMan",
+            "realName": "Tony Stark",
+            "city": "New York",
+            "publisher": "Marvel"
           }
           """.parseJson)
-      )
+      ),
 
       Scenario("Session feature demo")(
 
@@ -224,5 +227,5 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         And I showLastResponseJson,
         And I showLastResponseHeaders
       )
-    }
+    )
 }
