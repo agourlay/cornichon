@@ -10,13 +10,8 @@ class SessionHttpExamplesSpec extends CornichonFeature with ExampleServer {
     feature("Session DSL") {
       scenario("Playing with the http DSL")(
 
-        // Simple GET
         When I GET(s"$baseUrl/superheroes/Batman"),
 
-        // Test status of previous request
-        Then assert status_is(200),
-
-        // Test body of previous request body as Json
         Then assert response_body_is(
           """
           {

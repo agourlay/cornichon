@@ -3,6 +3,8 @@ package com.github.agourlay.cornichon.examples
 import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
 import spray.json._
+import spray.json.lenses.JsonLenses._
+import spray.json.DefaultJsonProtocol._
 
 class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
 
@@ -23,6 +25,17 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """.parseJson),
+
+        And assert response_body_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne"
+          }
+          """.parseJson, ignoredKeys = "publisher", "city"),
+
+        // Test response body as a String by providing a transformation fct (here using spray json-lenses)
+        Then assert response_body_is(_.extract[String]('city), "Gotham city"),
 
         When I GET(s"$baseUrl/superheroes/Scalaman"),
 
@@ -55,6 +68,19 @@ class CrudHttpExamplesSpec extends CornichonFeature with ExampleServer {
           {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
+            "city": "Berlin",
+            "publisher": "DC"
+          }
+          """.parseJson),
+
+        When I GET(s"$baseUrl/superheroes/Scalaman", withParams = Map(
+          "protectIdentity" -> "true")),
+
+        Then assert response_body_is(
+          """
+          {
+            "name": "Scalaman",
+            "realName": "XXXXX",
             "city": "Berlin",
             "publisher": "DC"
           }

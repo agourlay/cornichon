@@ -91,9 +91,12 @@ class RestAPI() extends JsonSupport {
       } ~
       path("superheroes" / Rest) { name: String ⇒
         get {
-          onSuccess(testData.superheroByName(name)) { s: SuperHero ⇒
-            complete(ToResponseMarshallable(OK -> s))
+          parameters('protectIdentity ? false) { protectIdentity: Boolean ⇒
+            onSuccess(testData.superheroByName(name, protectIdentity)) { s: SuperHero ⇒
+              complete(ToResponseMarshallable(OK -> s))
+            }
           }
+
         } ~
           delete {
             onSuccess(testData.deleteSuperhero(name)) { s: SuperHero ⇒

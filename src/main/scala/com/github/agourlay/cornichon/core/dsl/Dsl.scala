@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.core.dsl
 
-import cats.data.Xor
 import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._
 
@@ -24,9 +23,6 @@ trait Dsl {
   def scenario(name: String)(steps: Step[_]*): Scenario = Scenario(name, steps)
 
   def feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
-
-  def Xor2Predicate[A, B](input: Xor[A, B])(p: B ⇒ Boolean): Boolean =
-    input.fold(a ⇒ false, b ⇒ p(b))
 
   def SET(input: (String, String)): Step[Boolean] = {
     val (key, value) = input

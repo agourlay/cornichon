@@ -22,8 +22,7 @@ trait HttpDsl extends Dsl {
   sealed trait Request { val name: String }
 
   sealed trait WithoutPayload extends Request {
-    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A = true,
-                 params: Map[String, String] = Map.empty, headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Step[A] =
+    def apply[A](url: String, mapFct: JsonHttpResponse ⇒ A, expected: A, params: Map[String, String], headers: Seq[HttpHeader]): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
@@ -35,16 +34,16 @@ trait HttpDsl extends Dsl {
         },
         expected = expected)
 
-    def apply(url: String): Step[Boolean] = apply(url, _ ⇒ true)
-    def apply(url: String, withParams: Map[String, String]) = apply[Boolean](url, _ ⇒ true, true, withParams)
-    def apply(url: String, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, r ⇒ expectedHeaders.forall(r.headers.contains(_)))
-    def apply(url: String, expectedBody: JsValue) = apply[JsValue](url, _.body, expectedBody)
-    def apply(url: String, expectedStatusCode: StatusCode) = apply[StatusCode](url, _.status, expectedStatusCode)
+    def apply(url: String, withParams: Map[String, String] = Map.empty, withHeaders: Seq[HttpHeader] = Seq.empty) =
+      apply[Boolean](url, _ ⇒ true, true, withParams, withHeaders)
+
+    def apply(url: String, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true, Map.empty, Seq.empty)
+    def apply(url: String, expectedBody: JsValue) = apply[JsValue](url, _.body, expectedBody, Map.empty, Seq.empty)
+    def apply(url: String, expectedStatusCode: StatusCode) = apply[StatusCode](url, _.status, expectedStatusCode, Map.empty, Seq.empty)
   }
 
   sealed trait WithPayload extends Request {
-    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A = true,
-                 params: Map[String, String] = Map.empty, headers: immutable.Seq[HttpHeader] = immutable.Seq.empty): Step[A] =
+    def apply[A](url: String, payload: JsValue, mapFct: JsonHttpResponse ⇒ A, expected: A, params: Map[String, String], headers: Seq[HttpHeader]): Step[A] =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
@@ -56,11 +55,12 @@ trait HttpDsl extends Dsl {
         },
         expected = expected)
 
-    def apply(url: String, payload: JsValue): Step[Boolean] = apply(url, payload, _ ⇒ true)
-    def apply(url: String, payload: JsValue, withParams: Map[String, String]) = apply[Boolean](url, payload, _ ⇒ true, true, withParams)
-    def apply(url: String, payload: JsValue, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, payload, r ⇒ expectedHeaders.forall(r.headers.contains(_)))
-    def apply(url: String, payload: JsValue, expectedBody: JsValue) = apply[JsValue](url, payload, _.body, expectedBody)
-    def apply(url: String, payload: JsValue, expectedStatusCode: StatusCode) = apply[StatusCode](url, payload, _.status, expectedStatusCode)
+    def apply(url: String, payload: JsValue, withParams: Map[String, String] = Map.empty, withHeaders: Seq[HttpHeader] = Seq.empty) =
+      apply[Boolean](url, payload, _ ⇒ true, true, withParams, withHeaders)
+
+    def apply(url: String, payload: JsValue, expectedHeaders: Seq[HttpHeader]) = apply[Boolean](url, payload, r ⇒ expectedHeaders.forall(r.headers.contains(_)), true, Map.empty, Seq.empty)
+    def apply(url: String, payload: JsValue, expectedBody: JsValue) = apply[JsValue](url, payload, _.body, expectedBody, Map.empty, Seq.empty)
+    def apply(url: String, payload: JsValue, expectedStatusCode: StatusCode) = apply[StatusCode](url, payload, _.status, expectedStatusCode, Map.empty, Seq.empty)
   }
 
   case object GET extends WithoutPayload { val name = "GET" }
@@ -75,10 +75,15 @@ trait HttpDsl extends Dsl {
 
   def showLastStatus = showSession(LastResponseStatusKey)
 
-  def response_body_is(jsValue: JsValue, ignoredKeys: Seq[String] = Seq.empty) =
+  def response_body_is(jsValue: JsValue, ignoredKeys: String*) =
     assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ {
       if (ignoredKeys.isEmpty) sessionValue.parseJson
       else sessionValue.parseJson.asJsObject.fields.filterKeys(!ignoredKeys.contains(_)).toJson
+    })
+
+  def response_body_is(mapFct: JsValue ⇒ String, jsValue: String) =
+    assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+      mapFct(sessionValue.parseJson)
     })
 
   def showLastResponseJson = showSession(LastResponseJsonKey)

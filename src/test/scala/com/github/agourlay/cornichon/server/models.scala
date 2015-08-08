@@ -47,8 +47,11 @@ class TestData(implicit executionContext: ExecutionContext) {
       sh
     }
 
-  def superheroByName(name: String) = Future {
-    superHeroes.find(_.name == name).fold(throw new SuperHeroNotFound(name)) { c ⇒ c }
+  def superheroByName(name: String, protectIdentity: Boolean = false) = Future {
+    superHeroes.find(_.name == name).fold(throw new SuperHeroNotFound(name)) { c ⇒
+      if (protectIdentity) c.copy(realName = "XXXXX")
+      else c
+    }
   }
 
   def allPublishers = Future { publishers.toSeq }

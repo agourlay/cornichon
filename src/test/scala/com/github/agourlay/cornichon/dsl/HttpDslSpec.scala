@@ -1,9 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.{ ExampleServer, ScenarioUtilSpec }
-import com.github.agourlay.cornichon.core.Scenario
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
-import akka.http.scaladsl.model.StatusCodes._
+import org.scalatest.{ Matchers, WordSpec }
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import spray.json.lenses.JsonLenses._
@@ -31,33 +29,19 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
                 }
               """.parseJson),
 
-            When I GET(s"$baseUrl/superheroes/Batman", _.status, OK),
+            Then assert response_body_is(_.extract[String]('city), "Gotham city"),
 
-            When I GET(s"$baseUrl/superheroes/Batman", _.body,
+            And I SET("favorite-superhero", "Batman"),
+
+            Then assert response_body_is(
               """
                 {
-                  "name": "Batman",
+                  "name": "<favorite-superhero>",
                   "realName": "Bruce Wayne",
                   "city": "Gotham city",
                   "publisher": "DC"
                 }
-              """.parseJson
-            ),
-
-            When I GET(s"$baseUrl/superheroes/Batman", _.body.extract[String]('city), "Gotham city"),
-
-            And I SET("favorite-superhero", "Batman"),
-
-            When I GET(s"$baseUrl/superheroes/<favorite-superhero>", _.body,
-              """
-              {
-                "name": "<favorite-superhero>",
-                "realName": "Bruce Wayne",
-                "city": "Gotham city",
-                "publisher": "DC"
-              }
-              """.parseJson
-            )
+              """.parseJson)
           )
         }
       }

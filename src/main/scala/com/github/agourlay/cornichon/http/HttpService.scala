@@ -26,17 +26,17 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
       .flatMap(expectJson)
       .recover(exceptionMapper)
 
-  def postJson(payload: JsValue, url: String, headers: immutable.Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
-    requestRunner(Post(url, payload).withHeaders(headers))
+  def postJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+    requestRunner(Post(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
 
-  def putJson(payload: JsValue, url: String, headers: immutable.Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
-    requestRunner(Put(url, payload).withHeaders(headers))
+  def putJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+    requestRunner(Put(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
 
-  def getJson(url: String, headers: immutable.Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
-    requestRunner(Get(url).withHeaders(headers))
+  def getJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+    requestRunner(Get(url).withHeaders(collection.immutable.Seq(headers: _*)))
 
-  def deleteJson(url: String, headers: immutable.Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
-    requestRunner(Delete(url).withHeaders(headers))
+  def deleteJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+    requestRunner(Delete(url).withHeaders(collection.immutable.Seq(headers: _*)))
 
   def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, JsonHttpResponse]] = {
     case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))
