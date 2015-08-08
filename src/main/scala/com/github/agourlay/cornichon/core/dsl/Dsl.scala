@@ -20,7 +20,7 @@ trait Dsl {
   }
   case object Given extends Starters
 
-  def Scenario(name: String)(steps: Step[_]*): Scenario = Scenario(name, steps)
+  def Scenario(name: String)(steps: Step[_]*): Scenario = new Scenario(name, steps)
 
   def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
 
