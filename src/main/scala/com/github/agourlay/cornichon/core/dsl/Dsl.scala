@@ -30,22 +30,30 @@ trait Dsl {
       s ⇒ (true, s.addValue(key, value)), true)
   }
 
-  def assertSessionWithMap[A](key: String, expected: A, mapValue: String ⇒ A) =
+  def transformAndAssertSession[A](key: String, expected: A, mapValue: String ⇒ A) =
     Step(s"assert session '$key' against predicate",
       s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), expected)
 
-  def assertSession[A](key: String, value: String) =
+  def extractFromSession(key: String, extractor: String ⇒ String, target: String) = {
+    Step(s"extract from session '$key' to '$target' using an extractor",
+      s ⇒ {
+        val extracted = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ extractor(v))
+        (true, s.addValue(target, extracted))
+      }, true)
+  }
+
+  def session_contain[A](key: String, value: String) =
     Step(s"assert '$key' against predicate",
       s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value)
 
-  def showSession =
+  def show_session =
     Step(s"show session",
       s ⇒ {
         println(s.content)
         (true, s)
       }, true)
 
-  def showSession(key: String) =
+  def show_session(key: String) =
     Step(s"show session",
       s ⇒ {
         val value = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v)

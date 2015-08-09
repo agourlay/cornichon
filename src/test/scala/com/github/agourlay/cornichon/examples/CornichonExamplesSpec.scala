@@ -221,8 +221,24 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           """.parseJson
         ),
 
+        // Extract value from response into session for reuse
+        And I extractFromResponseBody(_.extract[String]('city), "batman-city"),
+
+        Then assert session_contain("batman-city", "Gotham city"),
+
+        Then assert response_body_is(
+          """
+          {
+            "name": "<favorite-superhero>",
+            "realName": "Bruce Wayne",
+            "city": "<batman-city>",
+            "publisher": "DC"
+          }
+          """.parseJson
+        ),
+
         // To make debugging easier, here are some debug steps printing into console
-        And I showSession,
+        And I show_session,
         And I showLastStatus,
         And I showLastResponseJson,
         And I showLastResponseHeaders

@@ -23,7 +23,6 @@ See the following [example](https://github.com/agourlay/cornichon/blob/master/sr
 - get rid of the lazy val for feature definition
 - data table (Json input and HTTP param)
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
-- provide extractors in body assert (with syntactic sugar if possible)
+- improve Scalatest integration, display step progression
 - eventually (repeat action until success n times or during n seconds)
 - support Server Sent Event predicate
-- improve Scalatest integration, display step progression

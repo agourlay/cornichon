@@ -52,33 +52,37 @@ trait HttpDsl extends Dsl {
 
   case object PUT extends WithPayload { val name = "PUT" }
 
-  def status_is(status: Int) = assertSession(LastResponseStatusKey, status.toString)
+  def status_is(status: Int) = session_contain(LastResponseStatusKey, status.toString)
 
   def headers_contain(headers: (String, String)*) =
-    assertSessionWithMap(LastResponseHeadersKey, true, sessionHeaders ⇒ {
+    transformAndAssertSession(LastResponseHeadersKey, true, sessionHeaders ⇒ {
       val sessionHeadersValue = sessionHeaders.split(",")
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
     })
 
-  def showLastStatus = showSession(LastResponseStatusKey)
+  def showLastStatus = show_session(LastResponseStatusKey)
 
   def response_body_is(jsValue: JsValue, ignoredKeys: String*) =
-    assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+    transformAndAssertSession(LastResponseJsonKey, jsValue, sessionValue ⇒ {
       if (ignoredKeys.isEmpty) sessionValue.parseJson
       else sessionValue.parseJson.asJsObject.fields.filterKeys(!ignoredKeys.contains(_)).toJson
     })
 
+  def extractFromResponseBody(extractor: JsValue ⇒ String, target: String) = {
+    extractFromSession(LastResponseJsonKey, s ⇒ extractor(s.parseJson), target)
+  }
+
   def response_body_is(mapFct: JsValue ⇒ String, jsValue: String) =
-    assertSessionWithMap(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+    transformAndAssertSession(LastResponseJsonKey, jsValue, sessionValue ⇒ {
       mapFct(sessionValue.parseJson)
     })
 
-  def showLastResponseJson = showSession(LastResponseJsonKey)
+  def showLastResponseJson = show_session(LastResponseJsonKey)
 
-  def showLastResponseHeaders = showSession(LastResponseHeadersKey)
+  def showLastResponseHeaders = show_session(LastResponseHeadersKey)
 
   def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A) = {
-    assertSessionWithMap[A](LastResponseJsonKey, expected, sessionValue ⇒ {
+    transformAndAssertSession[A](LastResponseJsonKey, expected, sessionValue ⇒ {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
         case arr: JsArray ⇒ mapFct(arr)

@@ -23,14 +23,15 @@ class Engine(resolver: Resolver) {
       case Failure(e) ⇒
         e match {
           case KeyNotFoundInSession(key) ⇒ left(SessionError(step.title, key))
+          case ce: CornichonError        ⇒ left(ce)
           case _                         ⇒ left(StepExecutionError(step.title, e))
         }
     }
   }
   def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] = {
     StepAssertionResult(actual == expected, expected, actual) match {
-      case StepAssertionResult(true, _, _)              ⇒ right(newSession)
-      case StepAssertionResult(false, expected, actual) ⇒ left(StepAssertionError(title, expected, actual))
+      case StepAssertionResult(true, _, _)      ⇒ right(newSession)
+      case StepAssertionResult(false, exp, act) ⇒ left(StepAssertionError(title, exp, act))
     }
   }
 
