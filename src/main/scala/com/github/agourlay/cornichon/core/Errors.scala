@@ -16,8 +16,8 @@ case class StepAssertionError[A](title: String, expected: A, actual: A) extends 
        |expected was:
        |'$expected'
        |but actual result is:
-       |'$actual
-       |'""".stripMargin.trim
+       |'$actual'
+       |""".stripMargin.trim
 
   // TODO offer better diff
   val msg = actual match {

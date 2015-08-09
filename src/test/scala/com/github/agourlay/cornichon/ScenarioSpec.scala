@@ -42,7 +42,12 @@ class ScenarioSpec extends WordSpec with Matchers {
       val res = engine.runScenario(s)(session)
       println(res)
       res.isLeft should be(true)
-      res.toEither.left.get.failedStep.error.msg should be("step 'second step' did not pass assertion, expected was '4' but actual result is '5'")
+      res.toEither.left.get.failedStep.error.msg should be("""
+        |step 'second step' did not pass assertion
+        |expected was:
+        |'4'
+        |but actual result is:
+        |'5'""".stripMargin.trim)
       res.toEither.left.get.successSteps should be(Seq(step1.title))
       res.toEither.left.get.notExecutedStep should be(Seq(step3.title))
     }
