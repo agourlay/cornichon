@@ -31,7 +31,7 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
 
             Then assert response_body_is(_.extract[String]('city), "Gotham city"),
 
-            And I SET("favorite-superhero", "Batman"),
+            And I save("favorite-superhero" -> "Batman"),
 
             Then assert response_body_is(
               """

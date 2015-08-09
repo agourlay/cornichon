@@ -52,37 +52,36 @@ trait HttpDsl extends Dsl {
 
   case object PUT extends WithPayload { val name = "PUT" }
 
-  def status_is(status: Int) = session_contain(LastResponseStatusKey, status.toString)
+  def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString)
 
   def headers_contain(headers: (String, String)*) =
-    transformAndAssertSession(LastResponseHeadersKey, true, sessionHeaders ⇒ {
+    transform_assert_session(LastResponseHeadersKey, true, sessionHeaders ⇒ {
       val sessionHeadersValue = sessionHeaders.split(",")
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
     })
 
-  def showLastStatus = show_session(LastResponseStatusKey)
-
   def response_body_is(jsValue: JsValue, ignoredKeys: String*) =
-    transformAndAssertSession(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+    transform_assert_session(LastResponseJsonKey, jsValue, sessionValue ⇒ {
       if (ignoredKeys.isEmpty) sessionValue.parseJson
       else sessionValue.parseJson.asJsObject.fields.filterKeys(!ignoredKeys.contains(_)).toJson
     })
 
-  def extractFromResponseBody(extractor: JsValue ⇒ String, target: String) = {
-    extractFromSession(LastResponseJsonKey, s ⇒ extractor(s.parseJson), target)
-  }
+  def extract_from_response_body(extractor: JsValue ⇒ String, target: String) =
+    extract_from_session(LastResponseJsonKey, s ⇒ extractor(s.parseJson), target)
 
   def response_body_is(mapFct: JsValue ⇒ String, jsValue: String) =
-    transformAndAssertSession(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+    transform_assert_session(LastResponseJsonKey, jsValue, sessionValue ⇒ {
       mapFct(sessionValue.parseJson)
     })
 
-  def showLastResponseJson = show_session(LastResponseJsonKey)
+  def show_last_status = show_session(LastResponseStatusKey)
 
-  def showLastResponseHeaders = show_session(LastResponseHeadersKey)
+  def show_last_response_json = show_session(LastResponseJsonKey)
+
+  def show_last_response_headers = show_session(LastResponseHeadersKey)
 
   def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A) = {
-    transformAndAssertSession[A](LastResponseJsonKey, expected, sessionValue ⇒ {
+    transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
         case arr: JsArray ⇒ mapFct(arr)
@@ -95,5 +94,5 @@ trait HttpDsl extends Dsl {
 
   def response_body_array_contains(element: JsValue) = response_body_array_is(_.elements.contains(element), true)
 
-  def response_body_array_not_contain(element: JsValue) = response_body_array_is(_.elements.contains(element), false)
+  def response_body_array_does_not_contain(element: JsValue) = response_body_array_is(_.elements.contains(element), false)
 }

@@ -10,7 +10,7 @@ WIP - no release yet
 
 ## Structure
 
-A ```Feature``` can have several ```Scenario``` which can have several ```Step```
+A ```Feature``` can have several ```Scenarios``` which can have several ```Steps```
 
 
 ## Usage

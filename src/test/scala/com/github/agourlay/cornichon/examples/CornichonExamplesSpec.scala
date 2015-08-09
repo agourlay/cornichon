@@ -125,7 +125,6 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
       Scenario("Collection Feature demo")(
 
-        // Simple GET
         When I GET(s"$baseUrl/superheroes"),
 
         Then assert response_body_is(
@@ -179,7 +178,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert response_body_array_size_is(4),
 
-        And assert response_body_array_not_contain(
+        And assert response_body_array_does_not_contain(
           """
           {
             "name": "IronMan",
@@ -205,9 +204,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           """.parseJson),
 
         // Set a key/value in the Scenario's session
-        And I SET("favorite-superhero" -> "Batman"),
+        And I save("favorite-superhero" -> "Batman"),
 
-        Then assert session_contain("favorite-superhero" -> "Batman"),
+        Then assert session_contains("favorite-superhero" -> "Batman"),
 
         // Retrieve dynamically from session with <key> for URL construction
         When I GET(s"$baseUrl/superheroes/<favorite-superhero>"),
@@ -224,9 +223,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         ),
 
         // Extract value from response into session for reuse
-        And I extractFromResponseBody(_.extract[String]('city), "batman-city"),
+        And I extract_from_response_body(_.extract[String]('city), "batman-city"),
 
-        Then assert session_contain("batman-city" -> "Gotham city"),
+        Then assert session_contains("batman-city" -> "Gotham city"),
 
         Then assert response_body_is(
           """
@@ -241,9 +240,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session,
-        And I showLastStatus,
-        And I showLastResponseJson,
-        And I showLastResponseHeaders
+        And I show_last_status,
+        And I show_last_response_json,
+        And I show_last_response_headers
       )
     )
 }
