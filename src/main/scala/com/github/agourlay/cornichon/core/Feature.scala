@@ -13,15 +13,15 @@ trait Feature {
 
   def beforeFeature(featureName: String): Unit = ()
   def afterFeature(featureName: String): Unit = ()
-  def beforeEachScenario(scenarioName: String): Unit = ()
-  def afterEachScenario(scenarioName: String): Unit = ()
+
+  def beforeEachScenario(): Seq[Step[_]] = Seq.empty
+  def afterEachScenario(): Seq[Step[_]] = Seq.empty
 
   def runFeature(): FeatureReport = {
     beforeFeature(feat.name)
     val scenarioReports = feat.scenarios.map { s ⇒
-      beforeEachScenario(s.name)
-      val report = engine.runScenario(s)(session)
-      afterEachScenario(s.name)
+      val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
+      val report = engine.runScenario(completeScenario)(session)
       report
     }
     afterFeature(feat.name)
