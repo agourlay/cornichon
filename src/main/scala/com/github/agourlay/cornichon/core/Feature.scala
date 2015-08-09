@@ -11,8 +11,20 @@ trait Feature {
 
   val feat: FeatureDef
 
+  def beforeFeature(featureName: String): Unit = ()
+  def afterFeature(featureName: String): Unit = ()
+  def beforeEachScenario(scenarioName: String): Unit = ()
+  def afterEachScenario(scenarioName: String): Unit = ()
+
   def runFeature(): FeatureReport = {
-    val scenarioReports = feat.scenarios.map(engine.runScenario(_)(session))
+    beforeFeature(feat.name)
+    val scenarioReports = feat.scenarios.map { s ⇒
+      beforeEachScenario(s.name)
+      val report = engine.runScenario(s)(session)
+      afterEachScenario(s.name)
+      report
+    }
+    afterFeature(feat.name)
     val (failedReport, successReport) = scenarioReports.partition(_.isLeft)
     if (failedReport.isEmpty)
       SuccessFeatureReport(successReport.collect { case Xor.Right(sr) ⇒ sr })

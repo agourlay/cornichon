@@ -7,6 +7,12 @@ Scala DSL for testing JSON HTTP API
 
 WIP - no release yet
 
+
+## Structure
+
+A ```Feature``` can have several ```Scenario``` which can have several ```Step```
+
+
 ## Usage
 
 See the following [example](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) for the current API.
@@ -18,7 +24,6 @@ See the following [example](https://github.com/agourlay/cornichon/blob/master/sr
 - data table (Json input and HTTP param)
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
 - provide extractors in body assert (with syntactic sugar if possible)
-- hook Before/After Feature/Scenario
 - eventually (repeat action until success n times or during n seconds)
 - support Server Sent Event predicate
 - improve Scalatest integration, display step progression
