@@ -42,7 +42,9 @@ trait Dsl {
       }, true)
   }
 
-  def session_contain[A](key: String, value: String) =
+  def session_contain(input: (String, String)): Step[String] = session_contain(input._1, input._2)
+
+  def session_contain(key: String, value: String) =
     Step(s"assert '$key' against predicate",
       s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value)
 

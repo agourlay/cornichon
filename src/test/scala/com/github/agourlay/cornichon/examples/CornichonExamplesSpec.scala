@@ -207,6 +207,8 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         // Set a key/value in the Scenario's session
         And I SET("favorite-superhero" -> "Batman"),
 
+        Then assert session_contain("favorite-superhero" -> "Batman"),
+
         // Retrieve dynamically from session with <key> for URL construction
         When I GET(s"$baseUrl/superheroes/<favorite-superhero>"),
 
@@ -224,7 +226,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         // Extract value from response into session for reuse
         And I extractFromResponseBody(_.extract[String]('city), "batman-city"),
 
-        Then assert session_contain("batman-city", "Gotham city"),
+        Then assert session_contain("batman-city" -> "Gotham city"),
 
         Then assert response_body_is(
           """
