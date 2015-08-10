@@ -31,13 +31,13 @@ trait HttpDsl extends Dsl {
   }
 
   sealed trait WithPayload extends Request {
-    def apply(url: String, payload: JsValue, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(
         title = s"HTTP $name to $url",
         action = s ⇒ {
           val x = this match {
-            case POST ⇒ Post(payload, url, params, headers)(s)
-            case PUT  ⇒ Put(payload, url, params, headers)(s)
+            case POST ⇒ Post(payload.parseJson, url, params, headers)(s)
+            case PUT  ⇒ Put(payload.parseJson, url, params, headers)(s)
           }
           x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
         },
@@ -59,6 +59,9 @@ trait HttpDsl extends Dsl {
       val sessionHeadersValue = sessionHeaders.split(",")
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
     })
+
+  def response_body_is(jsString: String, ignoredKeys: String*): Step[JsValue] =
+    response_body_is(jsString.parseJson, ignoredKeys: _*)
 
   def response_body_is(jsValue: JsValue, ignoredKeys: String*) =
     transform_assert_session(LastResponseJsonKey, jsValue, sessionValue ⇒ {
@@ -92,7 +95,11 @@ trait HttpDsl extends Dsl {
 
   def response_body_array_size_is(size: Int) = response_body_array_is(_.elements.size, size)
 
+  def response_body_array_contains(element: String) = response_body_array_is(_.elements.contains(element.parseJson), true)
+
   def response_body_array_contains(element: JsValue) = response_body_array_is(_.elements.contains(element), true)
+
+  def response_body_array_does_not_contain(element: String) = response_body_array_is(_.elements.contains(element.parseJson), false)
 
   def response_body_array_does_not_contain(element: JsValue) = response_body_array_is(_.elements.contains(element), false)
 }

@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.examples
 
 import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
-import spray.json._
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
 
@@ -25,7 +24,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-          """.parseJson),
+          """),
 
         And assert response_body_is(
           """
@@ -33,7 +32,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "name": "Batman",
             "realName": "Bruce Wayne"
           }
-          """.parseJson, ignoredKeys = "publisher", "city"),
+          """, ignoredKeys = "publisher", "city"),
 
         // Test response body as a String by providing a transformation fct (here using spray json-lenses)
         Then assert response_body_is(_.extract[String]('city), "Gotham city"),
@@ -49,7 +48,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           {
             "error": "Superhero Scalaman not found"
           }
-          """.parseJson
+          """
         ),
 
         When I POST(s"$baseUrl/superheroes", payload =
@@ -60,7 +59,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Berlin",
             "publisher": "DC"
           }
-          """.parseJson),
+          """),
 
         Then assert status_is(201),
 
@@ -74,7 +73,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Berlin",
             "publisher": "DC"
           }
-          """.parseJson),
+          """),
 
         When I GET(s"$baseUrl/superheroes/Scalaman", params =
           "protectIdentity" -> "true",
@@ -88,7 +87,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Berlin",
             "publisher": "DC"
           }
-          """.parseJson),
+          """),
 
         When I PUT(s"$baseUrl/superheroes", payload =
           """
@@ -98,7 +97,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Pankow",
             "publisher": "DC"
           }
-          """.parseJson),
+          """),
 
         Then assert status_is(200),
 
@@ -110,7 +109,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Pankow",
             "publisher": "DC"
           }
-          """.parseJson
+          """
         ),
 
         When I GET(s"$baseUrl/superheroes/GreenLantern"),
@@ -155,7 +154,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "realName": "Oleg Ilyenko",
             "city": "Pankow",
             "publisher": "DC"
-          }]""".parseJson
+          }]"""
         ),
 
         Then assert response_body_array_size_is(5),
@@ -168,7 +167,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }
-          """.parseJson),
+          """),
 
         When I DELETE(s"$baseUrl/superheroes/IronMan"),
 
@@ -186,7 +185,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }
-          """.parseJson)
+          """)
       ),
 
       Scenario("Session feature demo")(
@@ -201,7 +200,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-          """.parseJson),
+          """),
 
         // Set a key/value in the Scenario's session
         And I save("favorite-superhero" -> "Batman"),
@@ -219,7 +218,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-          """.parseJson
+          """
         ),
 
         // Extract value from response into session for reuse
@@ -235,7 +234,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "<batman-city>",
             "publisher": "DC"
           }
-          """.parseJson
+          """
         ),
 
         // To make debugging easier, here are some debug steps printing into console
