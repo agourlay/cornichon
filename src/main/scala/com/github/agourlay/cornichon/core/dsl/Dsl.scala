@@ -3,22 +3,22 @@ package com.github.agourlay.cornichon.core.dsl
 import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._
 
-import scala.language.higherKinds
-
 trait Dsl {
 
   sealed trait Starters {
-    def I[Step[_]](step: Step[_]): Step[_] = step
-    def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): Step[A] = Step[A](title, action, expected)
+    val name: String
+    def I[A](step: Step[A]): Step[A] = step.copy(s"$name I ${step.title}")
+    def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): Step[A] = Step[A](s"$name $title", action, expected)
   }
-  case object When extends Starters
-  case object Then extends Starters {
-    def assert[Step[_]](step: Step[_]): Step[_] = step
+  case object When extends Starters { val name = "When" }
+  case object Given extends Starters { val name = "Given" }
+
+  sealed trait WithAssert {
+    self: Starters ⇒
+    def assert[A](step: Step[A]): Step[A] = step.copy(s"$name assert ${step.title}")
   }
-  case object And extends Starters {
-    def assert[Step[_]](step: Step[_]): Step[_] = step
-  }
-  case object Given extends Starters
+  case object Then extends Starters with WithAssert { val name = "Then" }
+  case object And extends Starters with WithAssert { val name = "And" }
 
   def Scenario(name: String)(steps: Step[_]*): Scenario = new Scenario(name, steps)
 
@@ -31,7 +31,7 @@ trait Dsl {
   }
 
   def transform_assert_session[A](key: String, expected: A, mapValue: String ⇒ A) =
-    Step(s"assert session '$key' against predicate",
+    Step(s"session key '$key' against predicate",
       s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), expected)
 
   def extract_from_session(key: String, extractor: String ⇒ String, target: String) = {
@@ -45,7 +45,7 @@ trait Dsl {
   def session_contains(input: (String, String)): Step[String] = session_contains(input._1, input._2)
 
   def session_contains(key: String, value: String) =
-    Step(s"assert '$key' against predicate",
+    Step(s"session '$key' equals '$value'",
       s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value)
 
   def show_session =
