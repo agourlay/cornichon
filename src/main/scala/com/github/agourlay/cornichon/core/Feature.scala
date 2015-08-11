@@ -24,23 +24,20 @@ trait Feature {
       val report = engine.runScenario(completeScenario)(session)
       report
     }
-    afterFeature(feat.name)
     val (failedReport, successReport) = scenarioReports.partition(_.isLeft)
     if (failedReport.isEmpty)
       SuccessFeatureReport(successReport.collect { case Xor.Right(sr) ⇒ sr })
     else
-      FailedFeatureReport(successReport.collect { case Xor.Right(sr) ⇒ sr }, failedReport.collect { case Xor.Left(fr) ⇒ fr })
+      FailedFeatureReport(scenarioReports.map(_.fold(identity, identity)))
   }
 
-  def failedFeatureErrorMsg(report: FailedFeatureReport): Seq[String] = {
-    report.failedScenariosResult.map { r ⇒
-      s"""
-         |Scenario "${r.scenarioName}" failed
-         |at step "${r.failedStep.step}"
-         |with error "${r.failedStep.error.msg}"
-         | """.trim.stripMargin
-    }
-  }
+  def failedFeatureErrorMsg(r: FailedScenarioReport): String =
+    s"""
+       |
+       |Scenario "${r.scenarioName}" failed at step "${r.failedStep.step} with error:
+       |${r.failedStep.error.msg}
+       | """.trim.stripMargin
+
 }
 
 object Feature {

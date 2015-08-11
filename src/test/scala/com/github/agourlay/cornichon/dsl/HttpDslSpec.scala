@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.dsl
 import com.github.agourlay.cornichon.{ ExampleServer, ScenarioUtilSpec }
 import org.scalatest.{ Matchers, WordSpec }
 import spray.json.DefaultJsonProtocol._
-import spray.json._
 import spray.json.lenses.JsonLenses._
 
 class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with ExampleServer {
@@ -27,7 +26,7 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
                   "city": "Gotham city",
                   "publisher": "DC"
                 }
-              """.parseJson),
+              """),
 
             Then assert response_body_is(_.extract[String]('city), "Gotham city"),
 
@@ -41,7 +40,7 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
                   "city": "Gotham city",
                   "publisher": "DC"
                 }
-              """.parseJson)
+              """)
           )
         }
       }

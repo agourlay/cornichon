@@ -12,7 +12,7 @@ case class StepExecutionError[A](title: String, exception: Throwable) extends Co
 
 case class StepAssertionError[A](expected: A, actual: A) extends CornichonError {
   private val baseMsg =
-    s"""|expected was:
+    s"""|expected result was:
         |'$expected'
         |but actual result is:
         |'$actual'

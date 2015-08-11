@@ -61,10 +61,7 @@ trait HttpDsl extends Dsl {
     })
 
   def response_body_is(jsString: String, ignoredKeys: String*): Step[JsValue] =
-    response_body_is(jsString.parseJson, ignoredKeys: _*)
-
-  def response_body_is(jsValue: JsValue, ignoredKeys: String*) =
-    transform_assert_session(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+    transform_assert_session(LastResponseJsonKey, jsString.parseJson, sessionValue ⇒ {
       if (ignoredKeys.isEmpty) sessionValue.parseJson
       else sessionValue.parseJson.asJsObject.fields.filterKeys(!ignoredKeys.contains(_)).toJson
     })
@@ -83,11 +80,8 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def response_body_array_is(ordered: Boolean, expected: String): Step[Boolean] =
-    response_body_array_is(ordered, expected.parseJson)
-
-  def response_body_array_is(ordered: Boolean, expected: JsValue): Step[Boolean] = {
-    expected match {
+  def response_body_array_is(expected: String, ordered: Boolean = true): Step[Boolean] = {
+    expected.parseJson match {
       case expectedArray: JsArray ⇒
         if (ordered) response_body_array_is(_.elements == expectedArray.elements, true)
         else response_body_array_is(s ⇒ s.elements.toSet == expectedArray.elements.toSet, true)

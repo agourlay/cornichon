@@ -126,7 +126,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I GET(s"$baseUrl/superheroes"),
 
-        Then assert response_body_array_is(ordered = true,
+        Then assert response_body_array_is(
           """
           [{
             "name": "Batman",
@@ -160,7 +160,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           }]"""
         ),
 
-        Then assert response_body_array_is(ordered = false,
+        Then assert response_body_array_is(
           """
           [{
             "name": "Superman",
@@ -191,7 +191,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "realName": "Oleg Ilyenko",
             "city": "Pankow",
             "publisher": "DC"
-          }]"""
+          }]""", ordered = false
         ),
 
         Then assert response_body_array_size_is(5),
