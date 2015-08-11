@@ -43,7 +43,7 @@ class ScenarioSpec extends WordSpec with Matchers {
       println(res)
       res.isLeft should be(true)
       res.toEither.left.get.failedStep.error.msg should be("""
-        |expected was:
+        |expected result was:
         |'4'
         |but actual result is:
         |'5'""".stripMargin.trim)
