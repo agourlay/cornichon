@@ -126,24 +126,61 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I GET(s"$baseUrl/superheroes"),
 
-        Then assert response_body_is(
+        Then assert response_body_array_is(ordered = true,
           """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
             "city": "Gotham city",
             "publisher": "DC"
-          }, {
+          },
+          {
             "name": "Superman",
             "realName": "Clark Kent",
             "city": "Metropolis",
             "publisher": "DC"
-          }, {
+          },
+          {
             "name": "Spiderman",
             "realName": "Peter Parker",
             "city": "New York",
             "publisher": "Marvel"
-          }, {
+          },
+          {
+            "name": "IronMan",
+            "realName": "Tony Stark",
+            "city": "New York",
+            "publisher": "Marvel"
+          },
+          {
+            "name": "Scalaman",
+            "realName": "Oleg Ilyenko",
+            "city": "Pankow",
+            "publisher": "DC"
+          }]"""
+        ),
+
+        Then assert response_body_array_is(ordered = false,
+          """
+          [{
+            "name": "Superman",
+            "realName": "Clark Kent",
+            "city": "Metropolis",
+            "publisher": "DC"
+          },
+          {
+            "name": "Spiderman",
+            "realName": "Peter Parker",
+            "city": "New York",
+            "publisher": "Marvel"
+          },
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          },
+          {
             "name": "IronMan",
             "realName": "Tony Stark",
             "city": "New York",

@@ -83,7 +83,19 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A) = {
+  def response_body_array_is(ordered: Boolean, expected: String): Step[Boolean] =
+    response_body_array_is(ordered, expected.parseJson)
+
+  def response_body_array_is(ordered: Boolean, expected: JsValue): Step[Boolean] = {
+    expected match {
+      case expectedArray: JsArray ⇒
+        if (ordered) response_body_array_is(_.elements == expectedArray.elements, true)
+        else response_body_array_is(s ⇒ s.elements.toSet == expectedArray.elements.toSet, true)
+      case _ ⇒ throw new RuntimeException(s"Expected JSON Array but got $expected")
+    }
+  }
+
+  def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A): Step[A] = {
     transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
