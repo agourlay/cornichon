@@ -43,7 +43,6 @@ class ScenarioSpec extends WordSpec with Matchers {
       println(res)
       res.isLeft should be(true)
       res.toEither.left.get.failedStep.error.msg should be("""
-        |step 'second step' did not pass assertion
         |expected was:
         |'4'
         |but actual result is:

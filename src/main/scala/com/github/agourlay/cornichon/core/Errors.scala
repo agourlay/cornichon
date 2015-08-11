@@ -10,14 +10,13 @@ case class StepExecutionError[A](title: String, exception: Throwable) extends Co
   val msg = s"step '$title' failed by throwing exception ${exception.printStackTrace()}"
 }
 
-case class StepAssertionError[A](title: String, expected: A, actual: A) extends CornichonError {
+case class StepAssertionError[A](expected: A, actual: A) extends CornichonError {
   private val baseMsg =
-    s"""step '$title' did not pass assertion
-       |expected was:
-       |'$expected'
-       |but actual result is:
-       |'$actual'
-       |""".stripMargin.trim
+    s"""|expected was:
+        |'$expected'
+        |but actual result is:
+        |'$actual'
+        |""".stripMargin.trim
 
   // TODO offer better diff
   val msg = actual match {

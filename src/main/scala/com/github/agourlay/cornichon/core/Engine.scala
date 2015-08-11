@@ -31,7 +31,7 @@ class Engine(resolver: Resolver) {
   def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] = {
     StepAssertionResult(actual == expected, expected, actual) match {
       case StepAssertionResult(true, _, _)      ⇒ right(newSession)
-      case StepAssertionResult(false, exp, act) ⇒ left(StepAssertionError(title, exp, act))
+      case StepAssertionResult(false, exp, act) ⇒ left(StepAssertionError(exp, act))
     }
   }
 
