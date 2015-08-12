@@ -3,8 +3,7 @@ package com.github.agourlay.cornichon.core.dsl
 import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._
 
-trait Dsl {
-  this: Feature ⇒
+trait Dsl extends CornichonLogger {
 
   sealed trait Starters {
     val name: String
@@ -31,8 +30,8 @@ trait Dsl {
       s ⇒ (true, s.addValue(key, value)), true)
   }
 
-  def transform_assert_session[A](key: String, expected: A, mapValue: String ⇒ A) =
-    Step(s"session key '$key' against predicate",
+  def transform_assert_session[A](key: String, expected: A, mapValue: String ⇒ A, title: Option[String] = None) =
+    Step(title.getOrElse(s"session key '$key' against predicate"),
       s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), expected)
 
   def extract_from_session(key: String, extractor: String ⇒ String, target: String) = {
@@ -45,22 +44,22 @@ trait Dsl {
 
   def session_contains(input: (String, String)): Step[String] = session_contains(input._1, input._2)
 
-  def session_contains(key: String, value: String) =
-    Step(s"session '$key' equals '$value'",
+  def session_contains(key: String, value: String, title: Option[String] = None) =
+    Step(title.getOrElse(s"session '$key' equals '$value'"),
       s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value)
 
   def show_session =
     Step(s"show session",
       s ⇒ {
-        log.info(s"Session content is \n '${s.content}}'")
+        log.info(s"Session content : \n${s.content.map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")}")
         (true, s)
       }, true)
 
   def show_session(key: String) =
-    Step(s"show session",
+    Step(s"show session key '$key'",
       s ⇒ {
         val value = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v)
-        log.info(s"Session content for key $key is \n '$value'")
+        log.info(s"Session content for key '$key' is '$value'")
         (true, s)
       }, true)
 }

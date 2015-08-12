@@ -10,7 +10,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
-  this: HttpFeature with Feature ⇒
+  this: HttpFeature ⇒
 
   implicit val requestTimeout: FiniteDuration = 2000 millis
 
@@ -19,7 +19,7 @@ trait HttpDsl extends Dsl {
   sealed trait WithoutPayload extends Request {
     def apply(url: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(
-        title = s"HTTP $name to $url",
+        title = s"$name $url",
         action = s ⇒ {
           val x = this match {
             case GET    ⇒ Get(url, params, headers)(s)
@@ -33,7 +33,7 @@ trait HttpDsl extends Dsl {
   sealed trait WithPayload extends Request {
     def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(
-        title = s"HTTP $name to $url",
+        title = s"$name to $url with payload $payload",
         action = s ⇒ {
           val x = this match {
             case POST ⇒ Post(payload.parseJson, url, params, headers)(s)
@@ -52,27 +52,27 @@ trait HttpDsl extends Dsl {
 
   case object PUT extends WithPayload { val name = "PUT" }
 
-  def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString)
+  def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString, Some(s"HTTP status is $status"))
 
   def headers_contain(headers: (String, String)*) =
     transform_assert_session(LastResponseHeadersKey, true, sessionHeaders ⇒ {
       val sessionHeadersValue = sessionHeaders.split(",")
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
-    })
+    }, Some(s"HTTP headers contain ${headers: _*}"))
 
   def response_body_is(jsString: String, ignoredKeys: String*): Step[JsValue] =
     transform_assert_session(LastResponseJsonKey, jsString.parseJson, sessionValue ⇒ {
       if (ignoredKeys.isEmpty) sessionValue.parseJson
       else sessionValue.parseJson.asJsObject.fields.filterKeys(!ignoredKeys.contains(_)).toJson
-    })
+    }, Some(s"HTTP response body is $jsString"))
 
   def extract_from_response_body(extractor: JsValue ⇒ String, target: String) =
     extract_from_session(LastResponseJsonKey, s ⇒ extractor(s.parseJson), target)
 
-  def response_body_is(mapFct: JsValue ⇒ String, jsValue: String) =
-    transform_assert_session(LastResponseJsonKey, jsValue, sessionValue ⇒ {
+  def response_body_is(mapFct: JsValue ⇒ String, jsString: String) =
+    transform_assert_session(LastResponseJsonKey, jsString, sessionValue ⇒ {
       mapFct(sessionValue.parseJson)
-    })
+    }, Some(s"HTTP response body with transformation is $jsString"))
 
   def show_last_status = show_session(LastResponseStatusKey)
 
@@ -83,29 +83,26 @@ trait HttpDsl extends Dsl {
   def response_body_array_is(expected: String, ordered: Boolean = true): Step[Boolean] = {
     expected.parseJson match {
       case expectedArray: JsArray ⇒
-        if (ordered) response_body_array_is(_.elements == expectedArray.elements, true)
-        else response_body_array_is(s ⇒ s.elements.toSet == expectedArray.elements.toSet, true)
+        if (ordered) response_body_array_is(_.elements == expectedArray.elements, true, Some(s"response body array is $expected"))
+        else response_body_array_is(s ⇒ s.elements.toSet == expectedArray.elements.toSet, true, Some(s"response body array not ordered is $expected"))
       case _ ⇒ throw new RuntimeException(s"Expected JSON Array but got $expected")
     }
   }
 
-  def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A): Step[A] = {
+  def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A, title: Option[String]): Step[A] = {
     transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
         case arr: JsArray ⇒ mapFct(arr)
         case _            ⇒ throw new RuntimeException(s"Expected JSON Array but got $sessionJSON")
       }
-    })
+    }, title)
   }
 
-  def response_body_array_size_is(size: Int) = response_body_array_is(_.elements.size, size)
+  def response_body_array_size_is(size: Int) = response_body_array_is(_.elements.size, size, Some(s"response body array size is $size"))
 
-  def response_body_array_contains(element: String) = response_body_array_is(_.elements.contains(element.parseJson), true)
+  def response_body_array_contains(element: String) = response_body_array_is(_.elements.contains(element.parseJson), true, Some(s"response body array contains $element"))
 
-  def response_body_array_contains(element: JsValue) = response_body_array_is(_.elements.contains(element), true)
+  def response_body_array_does_not_contain(element: String) = response_body_array_is(_.elements.contains(element.parseJson), false, Some(s"response body array does not contain $element"))
 
-  def response_body_array_does_not_contain(element: String) = response_body_array_is(_.elements.contains(element.parseJson), false)
-
-  def response_body_array_does_not_contain(element: JsValue) = response_body_array_is(_.elements.contains(element), false)
 }

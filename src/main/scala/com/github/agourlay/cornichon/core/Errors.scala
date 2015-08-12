@@ -20,10 +20,10 @@ case class StepAssertionError[A](expected: A, actual: A) extends CornichonError 
 
   // TODO offer better diff
   val msg = actual match {
-    case s: String   ⇒ s"$baseMsg - diff is '${s.diff(expected.asInstanceOf[String])}'"
-    case j: JsArray  ⇒ s"$baseMsg - JsArray diff is '${j.elements.diff(expected.asInstanceOf[JsArray].elements)}'"
-    case j: JsObject ⇒ s"$baseMsg - JsObject diff is '${j.fields.toSet.diff(expected.asInstanceOf[JsValue].asJsObject.fields.toSet)}'"
-    case j: JsValue  ⇒ s"$baseMsg - JsValue diff is '${j.prettyPrint.diff(expected.asInstanceOf[JsValue].prettyPrint)}'"
+    case s: String   ⇒ s"$baseMsg \n String diff is '${s.diff(expected.asInstanceOf[String])}'"
+    case j: JsArray  ⇒ s"$baseMsg \n JsArray diff is '${j.elements.diff(expected.asInstanceOf[JsArray].elements)}'"
+    case j: JsObject ⇒ s"$baseMsg \n JsObject diff is '${j.fields.toSet.diff(expected.asInstanceOf[JsValue].asJsObject.fields.toSet)}'"
+    case j: JsValue  ⇒ s"$baseMsg \n JsValue diff is '${j.prettyPrint.diff(expected.asInstanceOf[JsValue].prettyPrint)}'"
     case _           ⇒ baseMsg
   }
 

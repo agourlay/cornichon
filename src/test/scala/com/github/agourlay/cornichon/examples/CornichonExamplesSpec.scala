@@ -37,8 +37,6 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         // Test response body as a String by providing a transformation fct (here using spray json-lenses)
         Then assert response_body_is(_.extract[String]('city), "Gotham city"),
 
-        Then assert headers_contain("Server" -> "akka-http/2.3.12"),
-
         When I GET(s"$baseUrl/superheroes/Scalaman"),
 
         Then assert status_is(404),
@@ -273,6 +271,8 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           }
           """
         ),
+
+        Then assert headers_contain("Server" -> "akka-http/2.3.12"),
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session,

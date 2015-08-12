@@ -6,8 +6,9 @@ import spray.json.JsValue
 
 import scala.annotation.tailrec
 import scala.util._
+import Console._
 
-class Engine(resolver: Resolver) {
+class Engine(resolver: Resolver) extends CornichonLogger {
 
   def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try {
@@ -30,8 +31,14 @@ class Engine(resolver: Resolver) {
 
   def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] =
     StepAssertionResult(actual == expected, expected, actual) match {
-      case StepAssertionResult(true, _, _)      ⇒ right(newSession)
-      case StepAssertionResult(false, exp, act) ⇒ left(StepAssertionError(exp, act))
+      case StepAssertionResult(true, _, _) ⇒
+        log.info(GREEN + s"   $title" + RESET)
+        right(newSession)
+      case StepAssertionResult(false, exp, act) ⇒
+        val error = StepAssertionError(exp, act)
+        log.error(RED + s"   $title *** FAILED ***" + RESET)
+        log.error(RED + s"${error.msg}" + RESET)
+        left(error)
     }
 
   def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
