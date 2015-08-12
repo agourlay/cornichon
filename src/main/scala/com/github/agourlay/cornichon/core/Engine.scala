@@ -23,9 +23,8 @@ class Engine(resolver: Resolver) extends CornichonLogger {
       case Success((res, expected, newSession)) ⇒ runStepPredicate(step.title, res, expected, newSession)
       case Failure(e) ⇒
         e match {
-          case KeyNotFoundInSession(key) ⇒ left(SessionError(step.title, key))
-          case ce: CornichonError        ⇒ left(ce)
-          case _                         ⇒ left(StepExecutionError(step.title, e))
+          case ce: CornichonError ⇒ left(ce)
+          case _                  ⇒ left(StepExecutionError(step.title, e))
         }
     }
 

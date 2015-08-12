@@ -33,8 +33,10 @@ case class ResolverError(key: String) extends CornichonError {
   val msg = s"key '<$key>' can not be resolved"
 }
 
-case class SessionError(title: String, key: String) extends CornichonError {
-  val msg = s"key '$key' can not be found session for step '$title'"
+case class KeyNotFoundInSession(key: String) extends CornichonError {
+  val msg = s"key '$key' can not be found in session"
 }
 
-case class KeyNotFoundInSession(key: String) extends Exception
+case class WhileListError(msg: String) extends CornichonError
+
+case class NotAnArrayError(msg: String) extends CornichonError

@@ -1,7 +1,5 @@
 import scalariform.formatter.preferences._
 
-import bintray.Plugin._
-
 name := "cornichon"
 
 organization := "com.github.agourlay"
@@ -56,5 +54,3 @@ libraryDependencies ++= {
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
   )
 }
-
-Seq(bintraySettings:_*)

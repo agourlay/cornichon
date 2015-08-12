@@ -24,7 +24,8 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-          """),
+          """
+        ),
 
         And assert response_body_is(
           """
@@ -32,7 +33,17 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "name": "Batman",
             "realName": "Bruce Wayne"
           }
-          """, ignoredKeys = "publisher", "city"),
+          """, ignoredKeys = "publisher", "city"
+        ),
+
+        And assert response_body_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne"
+          }
+          """, whiteList = true
+        ),
 
         // Test response body as a String by providing a transformation fct (here using spray json-lenses)
         Then assert response_body_is(_.extract[String]('city), "Gotham city"),
@@ -71,11 +82,12 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Berlin",
             "publisher": "DC"
           }
-          """),
+          """
+        ),
 
         When I GET(s"$baseUrl/superheroes/Scalaman", params =
-          "protectIdentity" -> "true",
-          "random-useless-header" -> "test"),
+          "protectIdentity" → "true",
+          "random-useless-header" → "test"),
 
         Then assert response_body_is(
           """
@@ -85,7 +97,8 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Berlin",
             "publisher": "DC"
           }
-          """),
+          """
+        ),
 
         When I PUT(s"$baseUrl/superheroes", payload =
           """
@@ -118,7 +131,8 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I GET(s"$baseUrl/superheroes/GreenLantern"),
 
-        Then assert status_is(404)),
+        Then assert status_is(404)
+      ),
 
       Scenario("Collection Feature demo")(
 
@@ -202,7 +216,8 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }
-          """),
+          """
+        ),
 
         When I DELETE(s"$baseUrl/superheroes/IronMan"),
 
@@ -220,7 +235,8 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "New York",
             "publisher": "Marvel"
           }
-          """)
+          """
+        )
       ),
 
       Scenario("Session feature demo")(
@@ -235,12 +251,13 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Gotham city",
             "publisher": "DC"
           }
-          """),
+          """
+        ),
 
         // Set a key/value in the Scenario's session
-        And I save("favorite-superhero" -> "Batman"),
+        And I save("favorite-superhero" → "Batman"),
 
-        Then assert session_contains("favorite-superhero" -> "Batman"),
+        Then assert session_contains("favorite-superhero" → "Batman"),
 
         // Retrieve dynamically from session with <key> for URL construction
         When I GET(s"$baseUrl/superheroes/<favorite-superhero>"),
@@ -259,7 +276,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         // Extract value from response into session for reuse
         And I extract_from_response_body(_.extract[String]('city), "batman-city"),
 
-        Then assert session_contains("batman-city" -> "Gotham city"),
+        Then assert session_contains("batman-city" → "Gotham city"),
 
         Then assert response_body_is(
           """
@@ -272,7 +289,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           """
         ),
 
-        Then assert headers_contain("Server" -> "akka-http/2.3.12"),
+        Then assert headers_contain("Server" → "akka-http/2.3.12"),
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session,

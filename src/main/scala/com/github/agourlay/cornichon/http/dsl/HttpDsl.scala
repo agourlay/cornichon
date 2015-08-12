@@ -19,29 +19,39 @@ trait HttpDsl extends Dsl {
   sealed trait WithoutPayload extends Request {
     def apply(url: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(
-        title = s"$name $url",
+        title = {
+        val base = s"$name $url"
+        if (params.isEmpty) base
+        else s"$base with params ${params}"
+      },
         action = s ⇒ {
-          val x = this match {
-            case GET    ⇒ Get(url, params, headers)(s)
-            case DELETE ⇒ Delete(url, params, headers)(s)
-          }
-          x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
-        },
-        expected = true)
+        val x = this match {
+          case GET    ⇒ Get(url, params, headers)(s)
+          case DELETE ⇒ Delete(url, params, headers)(s)
+        }
+        x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
+      },
+        expected = true
+      )
   }
 
   sealed trait WithPayload extends Request {
     def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(
-        title = s"$name to $url with payload $payload",
+        title = {
+        val base = s"$name to $url with payload $payload"
+        if (params.isEmpty) base
+        else s"$base with params ${params}"
+      },
         action = s ⇒ {
-          val x = this match {
-            case POST ⇒ Post(payload.parseJson, url, params, headers)(s)
-            case PUT  ⇒ Put(payload.parseJson, url, params, headers)(s)
-          }
-          x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
-        },
-        expected = true)
+        val x = this match {
+          case POST ⇒ Post(payload.parseJson, url, params, headers)(s)
+          case PUT  ⇒ Put(payload.parseJson, url, params, headers)(s)
+        }
+        x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
+      },
+        expected = true
+      )
   }
 
   case object GET extends WithoutPayload { val name = "GET" }
@@ -59,6 +69,21 @@ trait HttpDsl extends Dsl {
       val sessionHeadersValue = sessionHeaders.split(",")
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
     }, Some(s"HTTP headers contain ${headers: _*}"))
+
+  def response_body_is(jsString: String, whiteList: Boolean = false): Step[JsValue] = {
+    val jsonInput = jsString.parseJson
+    transform_assert_session(LastResponseJsonKey, jsonInput, sessionValue ⇒ {
+      val sessionValueJson = sessionValue.parseJson
+      if (whiteList) {
+        jsonInput.asJsObject.fields.map {
+          case (k, v) ⇒
+            val value = sessionValueJson.asJsObject.getFields(k)
+            if (value.isEmpty) throw new WhileListError(s"White list error - key '$k' is not defined in object '$sessionValueJson")
+            else (k, v)
+        }.toJson
+      } else sessionValueJson
+    }, Some(s"HTTP response body is $jsString with whiteList=$whiteList"))
+  }
 
   def response_body_is(jsString: String, ignoredKeys: String*): Step[JsValue] =
     transform_assert_session(LastResponseJsonKey, jsString.parseJson, sessionValue ⇒ {
@@ -85,7 +110,7 @@ trait HttpDsl extends Dsl {
       case expectedArray: JsArray ⇒
         if (ordered) response_body_array_is(_.elements == expectedArray.elements, true, Some(s"response body array is $expected"))
         else response_body_array_is(s ⇒ s.elements.toSet == expectedArray.elements.toSet, true, Some(s"response body array not ordered is $expected"))
-      case _ ⇒ throw new RuntimeException(s"Expected JSON Array but got $expected")
+      case _ ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $expected")
     }
   }
 
@@ -94,7 +119,7 @@ trait HttpDsl extends Dsl {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
         case arr: JsArray ⇒ mapFct(arr)
-        case _            ⇒ throw new RuntimeException(s"Expected JSON Array but got $sessionJSON")
+        case _            ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $sessionJSON")
       }
     }, title)
   }

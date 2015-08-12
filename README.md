@@ -20,7 +20,6 @@ See the following [example](https://github.com/agourlay/cornichon/blob/master/sr
 
 ## Todos
 
-- assert Json with white-list of keys
 - get rid of colon in Seq step definition
 - get rid of the lazy val for feature definition
 - abstraction to propagate authentication throughout a scenario
