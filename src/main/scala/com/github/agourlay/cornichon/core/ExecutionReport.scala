@@ -6,7 +6,7 @@ trait FeatureReport {
 case class SuccessFeatureReport(scenariosResult: Seq[SuccessScenarioReport]) extends FeatureReport {
   val success = true
 }
-case class FailedFeatureReport(scenarioReport: Seq[ScenarioReport]) extends FeatureReport {
+case class FailedFeatureReport(scenarioReport: Seq[ScenarioReport], errors: Seq[String]) extends FeatureReport {
   val success = false
 }
 

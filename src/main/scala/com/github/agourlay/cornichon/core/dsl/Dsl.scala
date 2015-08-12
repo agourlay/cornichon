@@ -4,6 +4,7 @@ import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._
 
 trait Dsl {
+  this: Feature ⇒
 
   sealed trait Starters {
     val name: String
@@ -51,7 +52,7 @@ trait Dsl {
   def show_session =
     Step(s"show session",
       s ⇒ {
-        println(s.content)
+        log.info(s"Session content is \n '${s.content}}'")
         (true, s)
       }, true)
 
@@ -59,7 +60,7 @@ trait Dsl {
     Step(s"show session",
       s ⇒ {
         val value = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v)
-        println(value)
+        log.info(s"Session content for key $key is \n '$value'")
         (true, s)
       }, true)
 }

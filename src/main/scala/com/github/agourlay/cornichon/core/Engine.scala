@@ -9,7 +9,7 @@ import scala.util._
 
 class Engine(resolver: Resolver) {
 
-  def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] = {
+  def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try {
       val (res, newSession) = step.action(session)
       val resolvedExpected: A = step.expected match {
@@ -27,18 +27,17 @@ class Engine(resolver: Resolver) {
           case _                         ⇒ left(StepExecutionError(step.title, e))
         }
     }
-  }
-  def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] = {
+
+  def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] =
     StepAssertionResult(actual == expected, expected, actual) match {
       case StepAssertionResult(true, _, _)      ⇒ right(newSession)
       case StepAssertionResult(false, exp, act) ⇒ left(StepAssertionError(exp, act))
     }
-  }
 
-  def runScenario(scenario: Scenario)(session: Session): Xor[FailedScenarioReport, SuccessScenarioReport] = {
+  def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
     @tailrec
-    def loop(steps: Seq[Step[_]], session: Session): Xor[FailedScenarioReport, SuccessScenarioReport] = {
-      if (steps.isEmpty) right(SuccessScenarioReport(scenario.name, scenario.steps.map(_.title)))
+    def loop(steps: Seq[Step[_]], session: Session): ScenarioReport = {
+      if (steps.isEmpty) SuccessScenarioReport(scenario.name, scenario.steps.map(_.title))
       else {
         val currentStep = steps.head
         runStep(currentStep)(session) match {
@@ -46,7 +45,7 @@ class Engine(resolver: Resolver) {
             val failedStep = FailedStep(steps.head.title, e)
             val successStep = scenario.steps.takeWhile(_ != steps.head).map(_.title)
             val notExecutedStep = steps.tail.map(_.title)
-            left(FailedScenarioReport(scenario.name, failedStep, successStep, notExecutedStep))
+            FailedScenarioReport(scenario.name, failedStep, successStep, notExecutedStep)
           case Xor.Right(currentSession) ⇒
             loop(steps.tail, currentSession)
         }

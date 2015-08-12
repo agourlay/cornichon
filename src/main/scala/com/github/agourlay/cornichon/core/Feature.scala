@@ -1,9 +1,11 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.Xor
 import com.github.agourlay.cornichon.core.Feature.FeatureDef
+import org.slf4j.LoggerFactory
 
 trait Feature {
+
+  val log = LoggerFactory.getLogger("Cornichon")
 
   val resolver = new Resolver
   val engine = new Engine(resolver)
@@ -22,13 +24,35 @@ trait Feature {
     val scenarioReports = feat.scenarios.map { s ⇒
       val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
       val report = engine.runScenario(completeScenario)(session)
+      report match {
+        case s: SuccessScenarioReport ⇒ logSuccessScenario(s)
+        case f: FailedScenarioReport  ⇒ logFailedScenario(f)
+      }
       report
     }
-    val (failedReport, successReport) = scenarioReports.partition(_.isLeft)
-    if (failedReport.isEmpty)
-      SuccessFeatureReport(successReport.collect { case Xor.Right(sr) ⇒ sr })
-    else
-      FailedFeatureReport(scenarioReports.map(_.fold(identity, identity)))
+    val failedReports = scenarioReports.collect { case f: FailedScenarioReport ⇒ f }
+    val successReports = scenarioReports.collect { case s: SuccessScenarioReport ⇒ s }
+    if (failedReports.isEmpty)
+      SuccessFeatureReport(successReports)
+    else {
+      val errors = failedReports.map(failedFeatureErrorMsg)
+      FailedFeatureReport(failedReports, errors)
+    }
+  }
+
+  def logFailedScenario(scenario: FailedScenarioReport): Unit = {
+    log.error(s"Scenario ${scenario.scenarioName}")
+    scenario.successSteps foreach { step ⇒
+      log.info(s"   $step")
+    }
+    log.error(s"   ${scenario.failedStep.step}")
+  }
+
+  def logSuccessScenario(scenario: SuccessScenarioReport): Unit = {
+    log.info(s"Scenario ${scenario.scenarioName}")
+    scenario.successSteps foreach { step ⇒
+      log.info(s"   $step")
+    }
   }
 
   def failedFeatureErrorMsg(r: FailedScenarioReport): String =

@@ -16,7 +16,7 @@ class ScenarioSpec extends WordSpec with Matchers {
       val session = Session.newSession
       val steps = Seq(Step[Int]("first step", s ⇒ (2 + 1, s), 3))
       val s = Scenario("test", steps)
-      engine.runScenario(s)(session).isRight should be(true)
+      engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
     }
 
     "fail if instruction throws exception" in {
@@ -27,7 +27,7 @@ class ScenarioSpec extends WordSpec with Matchers {
           (2, s)
         }, 2))
       val s = Scenario("scenario with stupid test", steps)
-      engine.runScenario(s)(session).isLeft should be(true)
+      engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
     }
 
     "stop at first failed step" in {
@@ -39,16 +39,17 @@ class ScenarioSpec extends WordSpec with Matchers {
         step1, step2, step3
       )
       val s = Scenario("test", steps)
-      val res = engine.runScenario(s)(session)
-      println(res)
-      res.isLeft should be(true)
-      res.toEither.left.get.failedStep.error.msg should be("""
-        |expected result was:
-        |'4'
-        |but actual result is:
-        |'5'""".stripMargin.trim)
-      res.toEither.left.get.successSteps should be(Seq(step1.title))
-      res.toEither.left.get.notExecutedStep should be(Seq(step3.title))
+      engine.runScenario(s)(session) match {
+        case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
+        case f: FailedScenarioReport ⇒
+          f.failedStep.error.msg should be("""
+           |expected result was:
+           |'4'
+           |but actual result is:
+           |'5'""".stripMargin.trim)
+          f.successSteps should be(Seq(step1.title))
+          f.notExecutedStep should be(Seq(step3.title))
+      }
     }
   }
 

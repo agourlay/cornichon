@@ -10,7 +10,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
-  this: HttpFeature ⇒
+  this: HttpFeature with Feature ⇒
 
   implicit val requestTimeout: FiniteDuration = 2000 millis
 
