@@ -117,8 +117,10 @@ trait HttpDsl extends Dsl {
     transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
-        case arr: JsArray ⇒ mapFct(arr)
-        case _            ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $sessionJSON")
+        case arr: JsArray ⇒
+          log.debug(s"response_body_array_is applied to ${arr.toString}")
+          mapFct(arr)
+        case _ ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $sessionJSON")
       }
     }, title)
 
