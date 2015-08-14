@@ -22,7 +22,7 @@ trait HttpDsl extends Dsl {
         title = {
         val base = s"$name $url"
         if (params.isEmpty) base
-        else s"$base with params ${params}"
+        else s"$base with params ${params.mkString(", ")}"
       },
         action = s ⇒ {
         val x = this match {
@@ -41,7 +41,7 @@ trait HttpDsl extends Dsl {
         title = {
         val base = s"$name to $url with payload $payload"
         if (params.isEmpty) base
-        else s"$base with params ${params}"
+        else s"$base with params ${params.mkString(", ")}"
       },
         action = s ⇒ {
         val x = this match {
@@ -68,7 +68,7 @@ trait HttpDsl extends Dsl {
     transform_assert_session(LastResponseHeadersKey, true, sessionHeaders ⇒ {
       val sessionHeadersValue = sessionHeaders.split(",")
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
-    }, Some(s"HTTP headers contain ${headers: _*}"))
+    }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
   def response_body_is(jsString: String, whiteList: Boolean = false): Step[JsValue] = {
     val jsonInput = jsString.parseJson
@@ -105,16 +105,15 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def response_body_array_is(expected: String, ordered: Boolean = true): Step[Boolean] = {
+  def response_body_array_is(expected: String, ordered: Boolean = true): Step[Iterable[JsValue]] =
     expected.parseJson match {
       case expectedArray: JsArray ⇒
-        if (ordered) response_body_array_is(_.elements == expectedArray.elements, true, Some(s"response body array is $expected"))
-        else response_body_array_is(s ⇒ s.elements.toSet == expectedArray.elements.toSet, true, Some(s"response body array not ordered is $expected"))
+        if (ordered) response_body_array_is(_.elements, expectedArray.elements, Some(s"response body array is $expected"))
+        else response_body_array_is(s ⇒ s.elements.toSet, expectedArray.elements.toSet, Some(s"response body array not ordered is $expected"))
       case _ ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $expected")
     }
-  }
 
-  def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A, title: Option[String]): Step[A] = {
+  def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A, title: Option[String]): Step[A] =
     transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
@@ -122,7 +121,6 @@ trait HttpDsl extends Dsl {
         case _            ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $sessionJSON")
       }
     }, title)
-  }
 
   def response_body_array_size_is(size: Int) = response_body_array_is(_.elements.size, size, Some(s"response body array size is $size"))
 

@@ -23,7 +23,7 @@ See the following [example](https://github.com/agourlay/cornichon/blob/master/sr
 - get rid of colon in Seq step definition
 - get rid of the lazy val for feature definition
 - abstraction to propagate authentication throughout a scenario
-- data table (Json input and HTTP param)
+- string data table for JSON input and HTTP params using Parboiled2
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
 - eventually (repeat action until success n times or during n seconds)
 - support Server Sent Event predicate
