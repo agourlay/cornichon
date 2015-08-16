@@ -30,7 +30,6 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
   .setPreference(AlignParameters, true)
   .setPreference(DoubleIndentClassDeclaration, true)
-  .setPreference(PreserveDanglingCloseParenthesis, true)
   .setPreference(RewriteArrowSymbols, true)
 
 libraryDependencies ++= {
@@ -41,6 +40,7 @@ libraryDependencies ++= {
   val catsV = "0.1.2"
   val sprayJsonV = "1.3.2"
   val logbackV = "1.1.3"
+  val parboiledV = "2.1.0"
   Seq(
      "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV
     ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV
@@ -52,5 +52,6 @@ libraryDependencies ++= {
     ,"org.spire-math"    %% "cats-std"                          % catsV
     ,"org.scalatest"     %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
+    ,"org.parboiled"     %% "parboiled"                         % parboiledV
   )
 }
