@@ -15,16 +15,16 @@ class DataTableParser(val input: ParserInput) extends Parser {
   val delimeter = '|'
 
   def dataTableRule = rule {
-    optional(NL) ~ RowRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ EOI ~> DataTable
+    optional(NL) ~ RowRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ optional(NL) ~ EOI ~> DataTable
   }
 
-  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~> (x ⇒ Row(x)) }
+  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x)) }
 
   val delims = s"$delimeter\r\n"
 
   def TXT = rule(capture(oneOrMore(CharPredicate.Visible -- delims)))
 
-  def NL = rule { optional('\r') ~ '\n' }
+  def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
 
   def Spaces = rule { zeroOrMore(' ') }
 

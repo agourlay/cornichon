@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.core.dsl.{ Row, DataTable, DataTableParser 
 import org.parboiled2.{ ErrorFormatter, ParseError }
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.util.Failure
+import scala.util._
 
 class DataTableSpec extends WordSpec with Matchers {
 
@@ -24,7 +24,7 @@ class DataTableSpec extends WordSpec with Matchers {
       val p = new DataTableParser(input)
       p.dataTableRule.run() match {
         case Failure(e: ParseError) ⇒ fail(p.formatError(e, new ErrorFormatter(showTraces = true)))
-        case x                      ⇒ x should be(expected)
+        case Success(x)             ⇒ x should be(expected)
       }
     }
 
@@ -43,7 +43,7 @@ class DataTableSpec extends WordSpec with Matchers {
       val p = new DataTableParser(input)
       p.dataTableRule.run() match {
         case Failure(e: ParseError) ⇒ fail(p.formatError(e, new ErrorFormatter(showTraces = true)))
-        case x                      ⇒ x should be(expected)
+        case Success(x)             ⇒ x should be(expected)
       }
     }
 
@@ -62,7 +62,7 @@ class DataTableSpec extends WordSpec with Matchers {
       val p = new DataTableParser(input)
       p.dataTableRule.run() match {
         case Failure(e: ParseError) ⇒ fail(p.formatError(e, new ErrorFormatter(showTraces = true)))
-        case x                      ⇒ x should be(expected)
+        case Success(x)             ⇒ x should be(expected)
       }
     }
 
@@ -83,7 +83,7 @@ class DataTableSpec extends WordSpec with Matchers {
       val p = new DataTableParser(input)
       p.dataTableRule.run() match {
         case Failure(e: ParseError) ⇒ fail(p.formatError(e))
-        case x                      ⇒ x should be(expected)
+        case Success(x)             ⇒ x should be(expected)
       }
     }
   }
