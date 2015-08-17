@@ -39,4 +39,6 @@ case class KeyNotFoundInSession(key: String) extends CornichonError {
 
 case class WhileListError(msg: String) extends CornichonError
 
-case class NotAnArrayError(msg: String) extends CornichonError
+case class NotAnArrayError(badPayload: String) extends CornichonError {
+  val msg = s"Expected JSON Array but got $badPayload"
+}

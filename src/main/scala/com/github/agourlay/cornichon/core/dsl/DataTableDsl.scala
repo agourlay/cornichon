@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.core.dsl
 
+import com.github.agourlay.cornichon.core.NotAnArrayError
 import org.parboiled2._
-import spray.json.JsValue
+import spray.json.{ JsObject, JsArray, JsValue }
+import spray.json.DefaultJsonProtocol._
 
 trait DataTableDsl {
   this: Dsl ⇒
@@ -20,7 +22,6 @@ class DataTableParser(val input: ParserInput) extends Parser {
   }
 
   import spray.json._
-  import spray.json.DefaultJsonProtocol._
 
   def HeaderRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> Headers }
 
@@ -40,6 +41,18 @@ class DataTableParser(val input: ParserInput) extends Parser {
 
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
+
+  def asMap: Map[String, Seq[JsValue]] =
+    headers.fields.zipWithIndex.map {
+      case (header, index) ⇒
+        header → rows.map(r ⇒ r.fields(index))
+    }.groupBy(_._1).map { case (k, v) ⇒ (k, v.flatMap(_._2)) }
+
+  def asJson: JsArray = {
+    val map = asMap
+    val tmp = for (i ← rows.indices) yield map.mapValues(v ⇒ v(i))
+    JsArray(tmp.map(JsObject(_)).toVector)
+  }
 }
 
 case class Headers(fields: Seq[String])

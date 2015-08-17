@@ -4,7 +4,8 @@ import com.github.agourlay.cornichon.core.dsl.{ Row, Headers, DataTable, DataTab
 import org.parboiled2.{ ErrorFormatter, ParseError }
 import org.scalatest.{ TryValues, Matchers, WordSpec }
 import spray.json.JsString
-
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 import scala.util._
 
 class DataTableSpec extends WordSpec with Matchers with TryValues {
@@ -12,14 +13,14 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
   "DataTable parser" must {
 
     "process a single line with 1 value without new line on first" in {
-      val input = """ |   Key   |
-                      |  "k-1"  |
+      val input = """ |   Name   |
+                      |  "John"  |
                   """
 
       val expected = DataTable(
-        headers = Headers(Seq("Key")),
+        headers = Headers(Seq("Name")),
         rows = Seq(
-          Row(Seq(JsString("k-1")))
+          Row(Seq(JsString("John")))
         )
       )
       val p = new DataTableParser(input)
@@ -31,14 +32,14 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
 
     "process a single line with 1 value" in {
       val input = """
-        |   Key   |
-        |  "k-1"  |
+        |   Name   |
+        |  "John"  |
         """
 
       val expected = DataTable(
-        headers = Headers(Seq("Key")),
+        headers = Headers(Seq("Name")),
         rows = Seq(
-          Row(Seq(JsString("k-1")))
+          Row(Seq(JsString("John")))
         )
       )
       val p = new DataTableParser(input)
@@ -50,14 +51,14 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
 
     "process a single line with 2 values" in {
       val input = """
-        |   Key  |  Value  |
-        |  "k-1" |  "v-1"  |
+        |   Name  |   Age   |
+        |  "John" |   50    |
       """
 
       val expected = DataTable(
-        headers = Headers(Seq("Key", "Value")),
+        headers = Headers(Seq("Name", "Age")),
         rows = Seq(
-          Row(Seq(JsString("k-1"), JsString("v-1")))
+          Row(Seq(JsString("John"), JsNumber(50)))
         )
       )
       val p = new DataTableParser(input)
@@ -69,16 +70,16 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
 
     "process multiline string" in {
       val input = """
-        |  Key  |  Value   |
-        | "k-1" |  "v-1"   |
-        | "k-2" |  "v-2"   |
+        |  Name  |   Age  |
+        | "John" |   50   |
+        | "Bob"  |   11   |
       """
 
       val expected = DataTable(
-        headers = Headers(Seq("Key", "Value")),
+        headers = Headers(Seq("Name", "Age")),
         rows = Seq(
-          Row(Seq(JsString("k-1"), JsString("v-1"))),
-          Row(Seq(JsString("k-2"), JsString("v-2")))
+          Row(Seq(JsString("John"), JsNumber(50))),
+          Row(Seq(JsString("Bob"), JsNumber(11)))
         )
       )
       val p = new DataTableParser(input)
@@ -90,13 +91,33 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
 
     "notify malformed table" in {
       val input = """
-        |  Key   |   Value  |
-        | "k-1"  |   "v-1"  | "blah" |
-        | "k-2"  |   "v-2"  | "blah" |
+        |  Name   |   Age  |
+        | "John"  |   50   | "blah" |
       """
 
       val p = new DataTableParser(input)
       p.dataTableRule.run().failure.exception should have message "requirement failed: Datatable is malformed, all rows must have the same number of elements"
+    }
+
+    "produce valid Json Array" in {
+      val input =
+        """
+          |  Name  |   Age  |
+          | "John" |   50   |
+          | "Bob"  |   11   |
+        """
+
+      val p = new DataTableParser(input)
+      p.dataTableRule.run().success.value.asJson should be("""
+        [{
+          "Name":"John",
+          "Age":50
+        },
+        {
+          "Name":"Bob",
+          "Age":11
+        }]
+      """.parseJson)
     }
   }
 }

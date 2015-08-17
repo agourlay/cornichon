@@ -110,7 +110,7 @@ trait HttpDsl extends Dsl {
       case expectedArray: JsArray ⇒
         if (ordered) response_body_array_is(_.elements, expectedArray.elements, Some(s"response body array is $expected"))
         else response_body_array_is(s ⇒ s.elements.toSet, expectedArray.elements.toSet, Some(s"response body array not ordered is $expected"))
-      case _ ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $expected")
+      case _ ⇒ throw new NotAnArrayError(expected)
     }
 
   def response_body_array_is[A](mapFct: JsArray ⇒ A, expected: A, title: Option[String]): Step[A] =
@@ -120,7 +120,7 @@ trait HttpDsl extends Dsl {
         case arr: JsArray ⇒
           log.debug(s"response_body_array_is applied to ${arr.toString}")
           mapFct(arr)
-        case _ ⇒ throw new NotAnArrayError(s"Expected JSON Array but got $sessionJSON")
+        case _ ⇒ throw new NotAnArrayError(sessionJSON.toString())
       }
     }, title)
 
