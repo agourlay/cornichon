@@ -26,40 +26,52 @@ trait Dsl extends CornichonLogger {
 
   def save(input: (String, String)): Step[Boolean] = {
     val (key, value) = input
-    Step(s"add '$key'->'$value' to session",
-      s ⇒ (true, s.addValue(key, value)), true)
+    Step(
+      s"add '$key'->'$value' to session",
+      s ⇒ (true, s.addValue(key, value)), true
+    )
   }
 
   def transform_assert_session[A](key: String, expected: A, mapValue: String ⇒ A, title: Option[String] = None) =
-    Step(title.getOrElse(s"session key '$key' against predicate"),
-      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), expected)
+    Step(
+      title.getOrElse(s"session key '$key' against predicate"),
+      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), expected
+    )
 
   def extract_from_session(key: String, extractor: String ⇒ String, target: String) = {
-    Step(s"extract from session '$key' to '$target' using an extractor",
+    Step(
+      s"extract from session '$key' to '$target' using an extractor",
       s ⇒ {
         val extracted = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ extractor(v))
         (true, s.addValue(target, extracted))
-      }, true)
+      }, true
+    )
   }
 
   def session_contains(input: (String, String)): Step[String] = session_contains(input._1, input._2)
 
   def session_contains(key: String, value: String, title: Option[String] = None) =
-    Step(title.getOrElse(s"session '$key' equals '$value'"),
-      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value)
+    Step(
+      title.getOrElse(s"session '$key' equals '$value'"),
+      s ⇒ (s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value
+    )
 
   def show_session =
-    Step(s"show session",
+    Step(
+      s"show session",
       s ⇒ {
         log.info(s"Session content : \n${s.content.map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")}")
         (true, s)
-      }, true)
+      }, true
+    )
 
   def show_session(key: String) =
-    Step(s"show session key '$key'",
+    Step(
+      s"show session key '$key'",
       s ⇒ {
         val value = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v)
         log.info(s"Session content for key '$key' is '$value'")
         (true, s)
-      }, true)
+      }, true
+    )
 }

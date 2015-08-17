@@ -174,6 +174,17 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert response_body_array_is(
           """
+            |   name      |   realName     |    city       | publisher  |
+            | "Batman"    | "Bruce Wayne"  | "Gotham city" |   "DC"     |
+            | "Superman"  | "Clark Kent"   | "Metropolis"  |   "DC"     |
+            | "Spiderman" | "Peter Parker" | "New York"    |   "Marvel" |
+            | "IronMan"   | "Tony Stark"   | "New York"    |   "Marvel" |
+            | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |   "DC"     |
+          """
+        ),
+
+        Then assert response_body_array_is(
+          """
           [{
             "name": "Superman",
             "realName": "Clark Kent",

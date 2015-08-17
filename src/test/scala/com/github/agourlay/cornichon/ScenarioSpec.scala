@@ -25,7 +25,8 @@ class ScenarioSpec extends WordSpec with Matchers {
         Step[Int]("stupid step", s ⇒ {
           6 / 0
           (2, s)
-        }, 2))
+        }, 2)
+      )
       val s = Scenario("scenario with stupid test", steps)
       engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
     }

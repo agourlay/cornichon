@@ -37,8 +37,7 @@ class Resolver {
       else {
         val ph = placeholders.head
         resolvePlaceholder(ph)(source).fold(e ⇒ left(e), resolvedValue ⇒
-          loop(placeholders.tail, acc.replace(ph, resolvedValue))
-        )
+          loop(placeholders.tail, acc.replace(ph, resolvedValue)))
       }
     }
     loop(findPlaceholders(input), input)

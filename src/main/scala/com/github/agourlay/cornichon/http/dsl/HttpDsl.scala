@@ -2,11 +2,11 @@ package com.github.agourlay.cornichon.http.dsl
 
 import akka.http.scaladsl.model.HttpHeader
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.dsl.Dsl
+import com.github.agourlay.cornichon.core.dsl.{ DataTableParser, Dsl }
 import com.github.agourlay.cornichon.http._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-
+import scala.util._
 import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
@@ -106,7 +106,7 @@ trait HttpDsl extends Dsl {
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
   def response_body_array_is(expected: String, ordered: Boolean = true): Step[Iterable[JsValue]] =
-    expected.parseJson match {
+    stringToJson(expected) match {
       case expectedArray: JsArray ⇒
         if (ordered) response_body_array_is(_.elements, expectedArray.elements, Some(s"response body array is $expected"))
         else response_body_array_is(s ⇒ s.elements.toSet, expectedArray.elements.toSet, Some(s"response body array not ordered is $expected"))
@@ -130,4 +130,7 @@ trait HttpDsl extends Dsl {
 
   def response_body_array_does_not_contain(element: String) = response_body_array_is(_.elements.contains(element.parseJson), false, Some(s"response body array does not contain $element"))
 
+  private def stringToJson(input: String): JsValue =
+    if (input.trim.head != '|') input.parseJson
+    else DataTableParser.parseDataTable(input).asJson
 }

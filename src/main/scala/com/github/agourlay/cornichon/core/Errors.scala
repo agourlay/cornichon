@@ -42,3 +42,5 @@ case class WhileListError(msg: String) extends CornichonError
 case class NotAnArrayError(badPayload: String) extends CornichonError {
   val msg = s"Expected JSON Array but got $badPayload"
 }
+
+case class DataTableError(msg: String) extends CornichonError

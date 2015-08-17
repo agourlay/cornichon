@@ -1,15 +1,21 @@
 package com.github.agourlay.cornichon.core.dsl
 
-import com.github.agourlay.cornichon.core.NotAnArrayError
+import com.github.agourlay.cornichon.core.{ DataTableError, NotAnArrayError }
 import org.parboiled2._
 import spray.json.{ JsObject, JsArray, JsValue }
 import spray.json.DefaultJsonProtocol._
 
-trait DataTableDsl {
-  this: Dsl ⇒
+import scala.util.{ Success, Failure }
 
+object DataTableParser {
   def parseDataTable(input: String) = {
-    new DataTableParser(input).dataTableRule.run()
+    val p = new DataTableParser(input)
+    p.dataTableRule.run() match {
+      case Failure(e: ParseError) ⇒
+        println(p.formatError(e, new ErrorFormatter(showTraces = true)))
+        throw new DataTableError(p.formatError(e, new ErrorFormatter(showTraces = true)))
+      case Success(dt) ⇒ dt
+    }
   }
 }
 
@@ -23,13 +29,13 @@ class DataTableParser(val input: ParserInput) extends Parser {
 
   import spray.json._
 
-  def HeaderRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> Headers }
+  def HeaderRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Headers(x.map(_.trim))) }
 
   def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(_.parseJson))) }
 
   val delims = s"$delimeter\r\n"
 
-  def TXT = rule(capture(oneOrMore(CharPredicate.Visible -- delims)))
+  def TXT = rule(capture(oneOrMore(CharPredicate.Printable -- delims)))
 
   def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
 

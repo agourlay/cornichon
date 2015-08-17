@@ -22,27 +22,27 @@ class RestAPI() extends JsonSupport {
 
     case e: PublisherNotFound ⇒
       extractUri { uri ⇒
-        complete(ToResponseMarshallable(NotFound -> HttpError(s"Publisher ${e.id} not found")))
+        complete(ToResponseMarshallable(NotFound → HttpError(s"Publisher ${e.id} not found")))
       }
 
     case e: PublisherAlreadyExists ⇒
       extractUri { uri ⇒
-        complete(ToResponseMarshallable(Conflict -> HttpError(s"Publisher ${e.id} already exist")))
+        complete(ToResponseMarshallable(Conflict → HttpError(s"Publisher ${e.id} already exist")))
       }
 
     case e: SuperHeroNotFound ⇒
       extractUri { uri ⇒
-        complete(ToResponseMarshallable(NotFound -> HttpError(s"Superhero ${e.id} not found")))
+        complete(ToResponseMarshallable(NotFound → HttpError(s"Superhero ${e.id} not found")))
       }
 
     case e: SuperHeroAlreadyExists ⇒
       extractUri { uri ⇒
-        complete(ToResponseMarshallable(Conflict -> HttpError(s"Superhero ${e.id} already exist")))
+        complete(ToResponseMarshallable(Conflict → HttpError(s"Superhero ${e.id} already exist")))
       }
 
     case e: Exception ⇒
       extractUri { uri ⇒
-        complete(ToResponseMarshallable(InternalServerError -> HttpError("An unexpected error occured")))
+        complete(ToResponseMarshallable(InternalServerError → HttpError("An unexpected error occured")))
       }
   }
 
@@ -50,13 +50,13 @@ class RestAPI() extends JsonSupport {
     path("publishers") {
       get {
         onSuccess(testData.allPublishers) { publishers: Seq[Publisher] ⇒
-          complete(ToResponseMarshallable(OK -> publishers))
+          complete(ToResponseMarshallable(OK → publishers))
         }
       } ~
         post {
           entity(as[Publisher]) { p: Publisher ⇒
             onSuccess(testData.addPublisher(p)) { created: Publisher ⇒
-              complete(ToResponseMarshallable(Created -> created))
+              complete(ToResponseMarshallable(Created → created))
             }
           }
         }
@@ -64,27 +64,27 @@ class RestAPI() extends JsonSupport {
       path("publishers" / Rest) { name: String ⇒
         get {
           onSuccess(testData.publisherByName(name)) { pub: Publisher ⇒
-            complete(ToResponseMarshallable(OK -> pub))
+            complete(ToResponseMarshallable(OK → pub))
           }
         }
       } ~
       path("superheroes") {
         get {
           onSuccess(testData.allSuperheroes) { superheroes: Seq[SuperHero] ⇒
-            complete(ToResponseMarshallable(OK -> superheroes))
+            complete(ToResponseMarshallable(OK → superheroes))
           }
         } ~
           post {
             entity(as[SuperHero]) { s: SuperHero ⇒
               onSuccess(testData.addSuperhero(s)) { created: SuperHero ⇒
-                complete(ToResponseMarshallable(Created -> created))
+                complete(ToResponseMarshallable(Created → created))
               }
             }
           } ~
           put {
             entity(as[SuperHero]) { s: SuperHero ⇒
               onSuccess(testData.updateSuperhero(s)) { updated: SuperHero ⇒
-                complete(ToResponseMarshallable(OK -> updated))
+                complete(ToResponseMarshallable(OK → updated))
               }
             }
           }
@@ -93,14 +93,14 @@ class RestAPI() extends JsonSupport {
         get {
           parameters('protectIdentity ? false) { protectIdentity: Boolean ⇒
             onSuccess(testData.superheroByName(name, protectIdentity)) { s: SuperHero ⇒
-              complete(ToResponseMarshallable(OK -> s))
+              complete(ToResponseMarshallable(OK → s))
             }
           }
 
         } ~
           delete {
             onSuccess(testData.deleteSuperhero(name)) { s: SuperHero ⇒
-              complete(ToResponseMarshallable(OK -> s))
+              complete(ToResponseMarshallable(OK → s))
             }
           }
       }
