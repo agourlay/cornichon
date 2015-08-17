@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.core.dsl
 
 import org.parboiled2._
+import spray.json.JsValue
 
 trait DataTableDsl {
   this: Dsl ⇒
@@ -15,10 +16,15 @@ class DataTableParser(val input: ParserInput) extends Parser {
   val delimeter = '|'
 
   def dataTableRule = rule {
-    optional(NL) ~ RowRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ optional(NL) ~ EOI ~> DataTable
+    optional(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ optional(NL) ~ EOI ~> DataTable
   }
 
-  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x)) }
+  import spray.json._
+  import spray.json.DefaultJsonProtocol._
+
+  def HeaderRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> Headers }
+
+  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(_.parseJson))) }
 
   val delims = s"$delimeter\r\n"
 
@@ -32,8 +38,9 @@ class DataTableParser(val input: ParserInput) extends Parser {
 
 }
 
-case class DataTable(header: Row, rows: Seq[Row]) {
-  require(rows.forall(_.fields.size == header.fields.size), "Datatable is malformed, all rows must have the same number of elements")
+case class DataTable(headers: Headers, rows: Seq[Row]) {
+  require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
 }
 
-case class Row(fields: Seq[String])
+case class Headers(fields: Seq[String])
+case class Row(fields: Seq[JsValue])
