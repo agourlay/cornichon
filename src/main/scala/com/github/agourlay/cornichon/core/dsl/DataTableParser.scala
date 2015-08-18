@@ -29,11 +29,13 @@ class DataTableParser(val input: ParserInput) extends Parser {
 
   import spray.json._
 
-  def HeaderRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Headers(x.map(_.trim))) }
+  def HeaderRule = rule { Separator ~ oneOrMore(HeaderTXT).separatedBy(Separator) ~ Separator ~> Headers }
 
   def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(_.parseJson))) }
 
   val delims = s"$delimeter\r\n"
+
+  def HeaderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- delims)))
 
   def TXT = rule(capture(oneOrMore(CharPredicate.Printable -- delims)))
 
