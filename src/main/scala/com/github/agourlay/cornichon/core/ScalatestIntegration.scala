@@ -1,19 +1,21 @@
 package com.github.agourlay.cornichon.core
 
+import com.github.agourlay.cornichon.CornichonFeature
 import org.scalatest.{ Matchers, WordSpec }
 
-trait ScalatestIntegration extends WordSpec with Matchers {
-  this: Feature ⇒
+trait ScalaTestIntegration extends WordSpec with Matchers {
+  this: CornichonFeature ⇒
 
-  feat.name must {
+  feature.name must {
     "pass all scenarios" in {
       val featureExecution = runFeature()
       featureExecution match {
         case s: SuccessFeatureReport ⇒
           assert(true)
-        case FailedFeatureReport(_, errors) ⇒
+        case FailedFeatureReport(_, _, errors) ⇒
           fail(errors.mkString(" "))
       }
     }
   }
+
 }

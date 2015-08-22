@@ -8,14 +8,14 @@ import scala.annotation.tailrec
 import scala.util._
 import Console._
 
-class Engine(resolver: Resolver) extends CornichonLogger {
+class Engine extends CornichonLogger {
 
   def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try {
       val (res, newSession) = step.action(session)
       val resolvedExpected: A = step.expected match {
-        case s: String  ⇒ resolver.fillPlaceholder(s)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
-        case j: JsValue ⇒ resolver.fillPlaceholder(j)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
+        case s: String  ⇒ Resolver.fillPlaceholder(s)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
+        case j: JsValue ⇒ Resolver.fillPlaceholder(j)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
         case _          ⇒ step.expected
       }
       (res, resolvedExpected, newSession)

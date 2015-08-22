@@ -12,12 +12,11 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
 
 trait HttpFeature {
-  this: Feature ⇒
 
-  implicit val system = ActorSystem("cornichon-http-feature")
-  implicit val mat = ActorMaterializer()
-  implicit val ec: ExecutionContext = system.dispatcher
-  val httpService = new HttpService
+  implicit private val system = ActorSystem("cornichon-http-feature")
+  implicit private val mat = ActorMaterializer()
+  implicit private val ec: ExecutionContext = system.dispatcher
+  private val httpService = new HttpService
 
   lazy val LastResponseJsonKey = "last-response-json"
   lazy val LastResponseStatusKey = "last-response-status"
@@ -25,8 +24,8 @@ trait HttpFeature {
 
   def Post(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
-      payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
-      urlResolved ← resolver.fillPlaceholder(url)(s.content)
+      payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.postJson(payloadResolved, encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
@@ -35,8 +34,8 @@ trait HttpFeature {
 
   def Put(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
-      payloadResolved ← resolver.fillPlaceholder(payload)(s.content)
-      urlResolved ← resolver.fillPlaceholder(url)(s.content)
+      payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.putJson(payloadResolved, encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
@@ -45,7 +44,7 @@ trait HttpFeature {
 
   def Get(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
-      urlResolved ← resolver.fillPlaceholder(url)(s.content)
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.getJson(encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
@@ -54,7 +53,7 @@ trait HttpFeature {
 
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
-      urlResolved ← resolver.fillPlaceholder(url)(s.content)
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.deleteJson(encodeParams(urlResolved, params), headers), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {

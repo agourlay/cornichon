@@ -1,12 +1,13 @@
 package com.github.agourlay.cornichon.core
 
 trait FeatureReport {
+  val name: String
   val success: Boolean
 }
-case class SuccessFeatureReport(scenariosResult: Seq[SuccessScenarioReport]) extends FeatureReport {
+case class SuccessFeatureReport(name: String, scenariosResult: Seq[SuccessScenarioReport]) extends FeatureReport {
   val success = true
 }
-case class FailedFeatureReport(scenarioReport: Seq[ScenarioReport], errors: Seq[String]) extends FeatureReport {
+case class FailedFeatureReport(name: String, scenarioReport: Seq[ScenarioReport], errors: Seq[String]) extends FeatureReport {
   val success = false
 }
 

@@ -1,13 +1,13 @@
 package com.github.agourlay.cornichon.examples
 
-import com.github.agourlay.cornichon.core.CornichonFeature
+import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.server.ExampleServer
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
 
 class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
-  lazy val feat =
+  def feature =
     Feature("Cornichon feature Example")(
 
       Scenario("CRUD Feature demo") { implicit b ⇒

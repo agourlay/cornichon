@@ -20,9 +20,8 @@ See the following [example](https://github.com/agourlay/cornichon/blob/master/sr
 
 ## Todos
 
-- get rid of the lazy val for feature definition
 - abstraction to propagate authentication throughout a scenario
 - shortcut to execute a single scenario
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
-- eventually (repeat action until success n times or during n seconds)
-- support Server Sent Event predicate
+- eventually bloc - repeat action until success during a period of time
+- assert Server Sent Event stream

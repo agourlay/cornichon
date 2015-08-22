@@ -8,7 +8,7 @@ import spray.json._
 
 import scala.annotation.tailrec
 
-class Resolver {
+object Resolver {
 
   private def findPlaceholders(input: String): List[String] = {
     @tailrec

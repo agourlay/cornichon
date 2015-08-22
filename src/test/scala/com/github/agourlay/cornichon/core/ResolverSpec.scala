@@ -7,7 +7,7 @@ import scala.collection.immutable.HashMap
 
 class ResolverSpec extends WordSpec with Matchers {
 
-  val resolver = new Resolver
+  val resolver = Resolver
 
   "A resolver" must {
     "replace a single string" in {

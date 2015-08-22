@@ -2,12 +2,11 @@ package com.github.agourlay.cornichon.core
 
 import org.scalatest.{ Matchers, WordSpec }
 
-class ScenarioSpec extends WordSpec with Matchers {
+class EngineSpec extends WordSpec with Matchers {
 
-  val resolver = new Resolver
-  val engine = new Engine(resolver)
+  val engine = new Engine()
 
-  "A scenario" must {
+  "An engine" must {
     "execute all steps" in {
       val session = Session.newSession
       val steps = Seq(Step[Int]("first step", s ⇒ (2 + 1, s), 3))

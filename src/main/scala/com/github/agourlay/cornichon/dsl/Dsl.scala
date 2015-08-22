@@ -1,9 +1,10 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._
 
 trait Dsl extends CornichonLogger {
+
+  def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
 
   sealed trait Starters {
     val name: String
@@ -33,8 +34,6 @@ trait Dsl extends CornichonLogger {
     builder(sb)
     new Scenario(name, sb.steps)
   }
-
-  def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
 
   def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder): Unit = {
     Seq.fill(times)(steps)
