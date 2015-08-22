@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.core.dsl
+package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.Feature.FeatureDef
 import com.github.agourlay.cornichon.core._

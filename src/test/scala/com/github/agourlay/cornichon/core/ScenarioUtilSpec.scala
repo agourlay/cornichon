@@ -1,6 +1,4 @@
-package com.github.agourlay.cornichon
-
-import com.github.agourlay.cornichon.core.{ FailedFeatureReport, FeatureReport }
+package com.github.agourlay.cornichon.core
 
 trait ScenarioUtilSpec {
 

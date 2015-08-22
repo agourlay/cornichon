@@ -1,10 +1,6 @@
-package com.github.agourlay.cornichon
+package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.core._
 import org.scalatest.{ Matchers, WordSpec }
-
-import cats.data.Xor
-import Xor.{ left, right }
 
 class ScenarioSpec extends WordSpec with Matchers {
 

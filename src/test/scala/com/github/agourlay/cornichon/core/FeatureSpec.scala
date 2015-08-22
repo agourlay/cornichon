@@ -1,7 +1,6 @@
-package com.github.agourlay.cornichon
+package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.core.Feature.FeatureDef
-import com.github.agourlay.cornichon.core.{ Feature, Scenario, Step }
 import org.scalatest.{ Matchers, WordSpec }
 
 class FeatureSpec extends WordSpec with Matchers {

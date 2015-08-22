@@ -1,12 +1,11 @@
-package com.github.agourlay.cornichon.http.dsl
+package com.github.agourlay.cornichon.dsl
 
 import akka.http.scaladsl.model.HttpHeader
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.dsl.{ DataTableParser, Dsl }
 import com.github.agourlay.cornichon.http._
-import spray.json._
 import spray.json.DefaultJsonProtocol._
-import scala.util._
+import spray.json._
+
 import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
@@ -118,7 +117,7 @@ trait HttpDsl extends Dsl {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
         case arr: JsArray ⇒
-          log.debug(s"response_body_array_is applied to ${arr.toString}")
+          log.debug(s"response_body_array_is applied to ${arr.toString()}")
           mapFct(arr)
         case _ ⇒ throw new NotAnArrayError(sessionJSON.toString())
       }

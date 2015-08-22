@@ -24,6 +24,7 @@ case class StepAssertionError[A](expected: A, actual: A) extends CornichonError 
     case j: JsArray  ⇒ s"$baseMsg \n JsArray diff is '${j.elements.diff(expected.asInstanceOf[JsArray].elements)}'"
     case j: JsObject ⇒ s"$baseMsg \n JsObject diff is '${j.fields.toSet.diff(expected.asInstanceOf[JsValue].asJsObject.fields.toSet)}'"
     case j: JsValue  ⇒ s"$baseMsg \n JsValue diff is '${j.prettyPrint.diff(expected.asInstanceOf[JsValue].prettyPrint)}'"
+    case j: Seq[A]   ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]])}'"
     case _           ⇒ baseMsg
   }
 

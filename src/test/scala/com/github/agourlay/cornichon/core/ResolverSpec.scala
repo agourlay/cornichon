@@ -1,11 +1,9 @@
-package com.github.agourlay.cornichon
+package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.core.Resolver
+import cats.data.Xor._
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.collection.immutable.HashMap
-
-import cats.data.Xor._
 
 class ResolverSpec extends WordSpec with Matchers {
 

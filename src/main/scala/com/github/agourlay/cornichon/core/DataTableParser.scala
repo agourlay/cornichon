@@ -1,11 +1,9 @@
-package com.github.agourlay.cornichon.core.dsl
+package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.core.{ DataTableError, NotAnArrayError }
 import org.parboiled2._
-import spray.json.{ JsObject, JsArray, JsValue }
-import spray.json.DefaultJsonProtocol._
+import spray.json.{ JsArray, JsObject, JsValue }
 
-import scala.util.{ Success, Failure }
+import scala.util.{ Failure, Success }
 
 object DataTableParser {
   def parseDataTable(input: String) = {

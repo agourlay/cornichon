@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.examples
 
-import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
+import com.github.agourlay.cornichon.server.ExampleServer
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
 
@@ -174,7 +174,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert response_body_array_is(
           """
-            |   name      |   realName     |    city       | publisher  |
+            |    name     |    realName    |     city      |  publisher |
             | "Batman"    | "Bruce Wayne"  | "Gotham city" |   "DC"     |
             | "Superman"  | "Clark Kent"   | "Metropolis"  |   "DC"     |
             | "Spiderman" | "Peter Parker" | "New York"    |   "Marvel" |

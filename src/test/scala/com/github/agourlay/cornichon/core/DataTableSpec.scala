@@ -1,11 +1,9 @@
-package com.github.agourlay.cornichon
+package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.core.dsl.{ Row, Headers, DataTable, DataTableParser }
 import org.parboiled2.{ ErrorFormatter, ParseError }
-import org.scalatest.{ TryValues, Matchers, WordSpec }
-import spray.json.JsString
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import org.scalatest.{ Matchers, TryValues, WordSpec }
+import spray.json.{ JsString, _ }
+
 import scala.util._
 
 class DataTableSpec extends WordSpec with Matchers with TryValues {

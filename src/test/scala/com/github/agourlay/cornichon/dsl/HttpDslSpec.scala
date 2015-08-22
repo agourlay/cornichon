@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.{ ExampleServer, ScenarioUtilSpec }
+import com.github.agourlay.cornichon.core.ScenarioUtilSpec
+import com.github.agourlay.cornichon.server.ExampleServer
 import org.scalatest.{ Matchers, WordSpec }
 import spray.json.DefaultJsonProtocol._
 import spray.json.lenses.JsonLenses._

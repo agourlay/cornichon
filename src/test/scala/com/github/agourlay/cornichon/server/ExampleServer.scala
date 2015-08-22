@@ -1,7 +1,6 @@
-package com.github.agourlay.cornichon
+package com.github.agourlay.cornichon.server
 
-import com.github.agourlay.cornichon.server.RestAPI
-import org.scalatest.{ Suite, BeforeAndAfterAll }
+import org.scalatest.{ BeforeAndAfterAll, Suite }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

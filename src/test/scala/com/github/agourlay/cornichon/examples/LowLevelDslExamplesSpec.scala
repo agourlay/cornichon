@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.examples
 
-import com.github.agourlay.cornichon.ExampleServer
 import com.github.agourlay.cornichon.core.CornichonFeature
+import com.github.agourlay.cornichon.server.ExampleServer
 
 class LowLevelDslExamplesSpec extends CornichonFeature with ExampleServer {
 
