@@ -307,6 +307,14 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         And I show_last_status,
         And I show_last_response_json,
         And I show_last_response_headers
+      ),
+
+      Scenario("Advanced feature demo")(
+        repeat(3)(
+          When I GET(s"$baseUrl/superheroes/Batman"),
+
+          Then assert status_is(200)
+        ): _*
       )
     )
 }

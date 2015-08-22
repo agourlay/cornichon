@@ -24,6 +24,10 @@ trait Dsl extends CornichonLogger {
 
   def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
 
+  def repeat(times: Int)(steps: Step[_]*) = {
+    Seq.fill(times)(steps).flatten
+  }
+
   def save(input: (String, String)): Step[Boolean] = {
     val (key, value) = input
     Step(
