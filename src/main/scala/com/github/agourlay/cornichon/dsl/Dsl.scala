@@ -7,7 +7,11 @@ trait Dsl extends CornichonLogger {
 
   sealed trait Starters {
     val name: String
-    def I[A](step: Step[A]): Step[A] = step.copy(s"$name I ${step.title}")
+    def I[A](step: Step[A])(implicit sb: ScenarioBuilder): Step[A] = {
+      val s: Step[A] = step.copy(s"$name I ${step.title}")
+      sb.addStep(s)
+      s
+    }
     def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): Step[A] = Step[A](s"$name $title", action, expected)
   }
   case object When extends Starters { val name = "When" }
@@ -15,17 +19,25 @@ trait Dsl extends CornichonLogger {
 
   sealed trait WithAssert {
     self: Starters ⇒
-    def assert[A](step: Step[A]): Step[A] = step.copy(s"$name assert ${step.title}")
+    def assert[A](step: Step[A])(implicit sb: ScenarioBuilder): Step[A] = {
+      val s: Step[A] = step.copy(s"$name assert ${step.title}")
+      sb.addStep(s)
+      s
+    }
   }
   case object Then extends Starters with WithAssert { val name = "Then" }
   case object And extends Starters with WithAssert { val name = "And" }
 
-  def Scenario(name: String)(steps: Step[_]*): Scenario = new Scenario(name, steps)
+  def Scenario(name: String)(builder: ScenarioBuilder ⇒ Unit): Scenario = {
+    val sb = new ScenarioBuilder()
+    builder(sb)
+    new Scenario(name, sb.steps)
+  }
 
   def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
 
-  def repeat(times: Int)(steps: Step[_]*) = {
-    Seq.fill(times)(steps).flatten
+  def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder): Unit = {
+    Seq.fill(times)(steps)
   }
 
   def save(input: (String, String)): Step[Boolean] = {

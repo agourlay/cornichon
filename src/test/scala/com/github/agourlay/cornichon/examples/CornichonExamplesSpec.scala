@@ -10,11 +10,11 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
   lazy val feat =
     Feature("Cornichon feature Example")(
 
-      Scenario("CRUD Feature demo")(
+      Scenario("CRUD Feature demo") { implicit b ⇒
 
-        When I GET(s"$baseUrl/superheroes/Batman"),
+        When I GET(s"$baseUrl/superheroes/Batman")
 
-        Then assert status_is(200),
+        Then assert status_is(200)
 
         And assert response_body_is(
           """
@@ -25,7 +25,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """
-        ),
+        )
 
         And assert response_body_is(
           """
@@ -34,7 +34,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "realName": "Bruce Wayne"
           }
           """, ignoredKeys = "publisher", "city"
-        ),
+        )
 
         And assert response_body_is(
           """
@@ -43,14 +43,14 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "realName": "Bruce Wayne"
           }
           """, whiteList = true
-        ),
+        )
 
         // Test response body as a String by providing a transformation fct (here using spray json-lenses)
-        Then assert response_body_is(_.extract[String]('city), "Gotham city"),
+        Then assert response_body_is(_.extract[String]('city), "Gotham city")
 
-        When I GET(s"$baseUrl/superheroes/Scalaman"),
+        When I GET(s"$baseUrl/superheroes/Scalaman")
 
-        Then assert status_is(404),
+        Then assert status_is(404)
 
         And assert response_body_is(
           """
@@ -58,7 +58,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "error": "Superhero Scalaman not found"
           }
           """
-        ),
+        )
 
         When I POST(s"$baseUrl/superheroes", payload =
           """
@@ -68,11 +68,11 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Berlin",
             "publisher": "DC"
           }
-          """),
+          """)
 
-        Then assert status_is(201),
+        Then assert status_is(201)
 
-        When I GET(s"$baseUrl/superheroes/Scalaman"),
+        When I GET(s"$baseUrl/superheroes/Scalaman")
 
         Then assert response_body_is(
           """
@@ -83,11 +83,11 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """
-        ),
+        )
 
         When I GET(s"$baseUrl/superheroes/Scalaman", params =
           "protectIdentity" → "true",
-          "random-useless-header" → "test"),
+          "random-useless-header" → "test")
 
         Then assert response_body_is(
           """
@@ -98,7 +98,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """
-        ),
+        )
 
         When I PUT(s"$baseUrl/superheroes", payload =
           """
@@ -108,9 +108,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Pankow",
             "publisher": "DC"
           }
-          """),
+          """)
 
-        Then assert status_is(200),
+        Then assert status_is(200)
 
         Then assert response_body_is(
           """
@@ -121,22 +121,22 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """
-        ),
+        )
 
-        When I GET(s"$baseUrl/superheroes/GreenLantern"),
+        When I GET(s"$baseUrl/superheroes/GreenLantern")
 
-        Then assert status_is(200),
+        Then assert status_is(200)
 
-        When I DELETE(s"$baseUrl/superheroes/GreenLantern"),
+        When I DELETE(s"$baseUrl/superheroes/GreenLantern")
 
-        When I GET(s"$baseUrl/superheroes/GreenLantern"),
+        When I GET(s"$baseUrl/superheroes/GreenLantern")
 
         Then assert status_is(404)
-      ),
+      },
 
-      Scenario("Collection Feature demo")(
+      Scenario("Collection Feature demo") { implicit b ⇒
 
-        When I GET(s"$baseUrl/superheroes"),
+        When I GET(s"$baseUrl/superheroes")
 
         Then assert response_body_array_is(
           """
@@ -170,7 +170,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Pankow",
             "publisher": "DC"
           }]"""
-        ),
+        )
 
         Then assert response_body_array_is(
           """
@@ -181,7 +181,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             | "IronMan"   | "Tony Stark"   | "New York"    |   "Marvel" |
             | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |   "DC"     |
           """
-        ),
+        )
 
         Then assert response_body_array_is(
           """
@@ -215,9 +215,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "city": "Pankow",
             "publisher": "DC"
           }]""", ordered = false
-        ),
+        )
 
-        Then assert response_body_array_size_is(5),
+        Then assert response_body_array_size_is(5)
 
         And assert response_body_array_contains(
           """
@@ -228,15 +228,15 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "Marvel"
           }
           """
-        ),
+        )
 
-        When I DELETE(s"$baseUrl/superheroes/IronMan"),
+        When I DELETE(s"$baseUrl/superheroes/IronMan")
 
-        Then assert status_is(200),
+        Then assert status_is(200)
 
-        And I GET(s"$baseUrl/superheroes"),
+        And I GET(s"$baseUrl/superheroes")
 
-        Then assert response_body_array_size_is(4),
+        Then assert response_body_array_size_is(4)
 
         And assert response_body_array_does_not_contain(
           """
@@ -248,11 +248,11 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           }
           """
         )
-      ),
+      },
 
-      Scenario("Session feature demo")(
+      Scenario("Session feature demo") { implicit b ⇒
 
-        When I GET(s"$baseUrl/superheroes/Batman"),
+        When I GET(s"$baseUrl/superheroes/Batman")
 
         Then assert response_body_is(
           """
@@ -263,15 +263,15 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """
-        ),
+        )
 
         // Set a key/value in the Scenario's session
-        And I save("favorite-superhero" → "Batman"),
+        And I save("favorite-superhero" → "Batman")
 
-        Then assert session_contains("favorite-superhero" → "Batman"),
+        Then assert session_contains("favorite-superhero" → "Batman")
 
         // Retrieve dynamically from session with <key> for URL construction
-        When I GET(s"$baseUrl/superheroes/<favorite-superhero>"),
+        When I GET(s"$baseUrl/superheroes/<favorite-superhero>")
 
         Then assert response_body_is(
           """
@@ -282,12 +282,12 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """
-        ),
+        )
 
         // Extract value from response into session for reuse
-        And I extract_from_response_body(_.extract[String]('city), "batman-city"),
+        And I extract_from_response_body(_.extract[String]('city), "batman-city")
 
-        Then assert session_contains("batman-city" → "Gotham city"),
+        Then assert session_contains("batman-city" → "Gotham city")
 
         Then assert response_body_is(
           """
@@ -298,23 +298,23 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
             "publisher": "DC"
           }
           """
-        ),
+        )
 
-        Then assert headers_contain("Server" → "akka-http/2.3.12"),
+        Then assert headers_contain("Server" → "akka-http/2.3.12")
 
         // To make debugging easier, here are some debug steps printing into console
-        And I show_session,
-        And I show_last_status,
-        And I show_last_response_json,
+        And I show_session
+        And I show_last_status
+        And I show_last_response_json
         And I show_last_response_headers
-      ),
+      },
 
-      Scenario("Advanced feature demo")(
-        repeat(3)(
-          When I GET(s"$baseUrl/superheroes/Batman"),
+      Scenario("Advanced feature demo") { implicit b ⇒
+        Repeat(3) {
+          When I GET(s"$baseUrl/superheroes/Batman")
 
           Then assert status_is(200)
-        ): _*
-      )
+        }
+      }
     )
 }

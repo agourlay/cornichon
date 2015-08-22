@@ -20,9 +20,7 @@ See the following [example](https://github.com/agourlay/cornichon/blob/master/sr
 
 ## Todos
 
-- get rid of colon in Seq step definition
 - get rid of the lazy val for feature definition
-- get rid of ": _*" in repeat dsl
 - abstraction to propagate authentication throughout a scenario
 - shortcut to execute a single scenario
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)

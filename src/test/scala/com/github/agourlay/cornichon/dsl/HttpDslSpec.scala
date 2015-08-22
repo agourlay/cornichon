@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.core.ScenarioUtilSpec
+import com.github.agourlay.cornichon.core.{ ScenarioBuilder, ScenarioUtilSpec }
 import com.github.agourlay.cornichon.server.ExampleServer
 import org.scalatest.{ Matchers, WordSpec }
 import spray.json.DefaultJsonProtocol._
@@ -11,13 +11,12 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
   "HTTP Dsls" must {
     "execute scenarios" in {
       val featureTest = new DslTest {
-
         val feat = Feature("HTTP Dsl") {
-          Scenario("Playing with the http DSL")(
+          Scenario("Playing with the http DSL") { implicit b ⇒
 
-            When I GET(s"$baseUrl/superheroes/Batman"),
+            When I GET(s"$baseUrl/superheroes/Batman")
 
-            Then assert status_is(200),
+            Then assert status_is(200)
 
             Then assert response_body_is(
               """
@@ -28,11 +27,11 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
                   "publisher": "DC"
                 }
               """
-            ),
+            )
 
-            Then assert response_body_is(_.extract[String]('city), "Gotham city"),
+            Then assert response_body_is(_.extract[String]('city), "Gotham city")
 
-            And I save("favorite-superhero" → "Batman"),
+            And I save("favorite-superhero" → "Batman")
 
             Then assert response_body_is(
               """
@@ -44,7 +43,7 @@ class HttpDslSpec extends WordSpec with Matchers with ScenarioUtilSpec with Exam
                 }
               """
             )
-          )
+          }
         }
       }
 
