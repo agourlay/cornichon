@@ -7,7 +7,6 @@ import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import spray.json._
 
-import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
 

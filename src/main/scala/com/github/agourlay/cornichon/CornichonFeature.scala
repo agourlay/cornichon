@@ -16,7 +16,7 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
        |${r.failedStep.error.msg}
        | """.trim.stripMargin
 
-  def runFeature(): FeatureReport = {
+  protected def runFeature(): FeatureReport = {
     val feat = feature
     beforeFeature(feat.name)
     val scenarioReports = feat.scenarios.map { s ⇒

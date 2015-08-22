@@ -4,7 +4,7 @@ import java.util.concurrent.TimeoutException
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ HttpRequest, HttpHeader, HttpResponse, StatusCode }
+import akka.http.scaladsl.model.{ HttpRequest, HttpHeader, HttpResponse }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.stream.Materializer
@@ -12,8 +12,6 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import spray.json.JsValue
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-
-import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 
 class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer) {
