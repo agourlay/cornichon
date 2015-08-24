@@ -41,10 +41,12 @@ libraryDependencies ++= {
   val sprayJsonV = "1.3.2"
   val logbackV = "1.1.3"
   val parboiledV = "2.1.0"
+  val akkaSseV = "1.1.0"
   Seq(
      "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV
     ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV
     ,"com.typesafe.akka" %% "akka-slf4j"                        % akkaV
+    ,"de.heikoseeberger" %% "akka-sse"                          % akkaSseV
     ,"io.spray"          %% "spray-json"                        % sprayJsonV
     ,"net.virtual-void"  %% "json-lenses"                       % jsonLensesV
     ,"org.spire-math"    %% "cats-macros"                       % catsV

@@ -3,8 +3,10 @@ package com.github.agourlay.cornichon.http
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpHeader
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Source
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
+import de.heikoseeberger.akkasse.ServerSentEvent
 import spray.json._
 
 import scala.concurrent.duration._
@@ -48,6 +50,14 @@ trait HttpFeature {
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
+    }
+
+  def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration) =
+    for {
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
+    } yield {
+      val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers), timeout)
+      (res, s)
     }
 
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =

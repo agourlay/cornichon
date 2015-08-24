@@ -53,6 +53,26 @@ trait HttpDsl extends Dsl {
       )
   }
 
+  // WIP
+  sealed trait Streamed extends Request {
+    def apply(url: String, takeWithin: FiniteDuration, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
+      Step(
+        title = {
+        val base = s"$name $url"
+        if (params.isEmpty) base
+        else s"$base with params ${params.mkString(", ")}"
+      },
+        action = s ⇒ {
+        val x = this match {
+          case GET_SSE ⇒ GetSSE(url, takeWithin, params, headers)(s)
+          case GET_WS  ⇒ ???
+        }
+        x.map { case (source, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
+      },
+        expected = true
+      )
+  }
+
   case object GET extends WithoutPayload { val name = "GET" }
 
   case object DELETE extends WithoutPayload { val name = "DELETE" }
@@ -60,6 +80,10 @@ trait HttpDsl extends Dsl {
   case object POST extends WithPayload { val name = "POST" }
 
   case object PUT extends WithPayload { val name = "PUT" }
+
+  case object GET_SSE extends Streamed { val name = "GET SSE" }
+
+  case object GET_WS extends Streamed { val name = "GET WS" }
 
   def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString, Some(s"HTTP status is $status"))
 
