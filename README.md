@@ -46,7 +46,7 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 - assert response body JSON
 - assert http status
 - assert http headers
-- assert JSON array using Data table
+- assert JSON array using data table
 - experimental support SSE
 - asserting value in Session
 - setting a value in session
@@ -54,10 +54,10 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 
 ## Placeholders
 
-Json content assertion can use placeholder that will be resolved from the session.
+Most built-in steps can use placeholder in their arguments that will be resolved from the session.
 
 ```scala
- And I save("favorite-superhero" → "Batman")
+Given I save("favorite-superhero" → "Batman")
 
 Then assert session_contains("favorite-superhero" → "Batman")
 
@@ -79,8 +79,37 @@ Then assert response_is(
 
 ## Usage
 
+Create a test Scala class extending ```CornichonFeature``` and implement the ```feature``` function as presented below.
 
-For more complete examples see the following [file](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
+```scala
+class CornichonReadmeExample extends CornichonFeature {
+
+  def feature =
+    Feature("Cornichon feature Example")(
+
+      Scenario("Test read demo") { implicit b ⇒
+        When I GET("myUrl/superheroes/Batman")
+
+        Then assert status_is(200)
+
+        And assert response_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
+          """
+        )
+      }
+    )
+}
+```
+
+Cornichon is currently integrated with ScalaTest, so you just have to run ```sbt run``` to trigger features execution.
+
+For more examples see the following [file](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
 
 
 ## Todos
