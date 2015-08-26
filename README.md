@@ -24,4 +24,3 @@ See the following [example](https://github.com/agourlay/cornichon/blob/master/sr
 - shortcut to execute a single scenario
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
 - eventually bloc - repeat action until success during a period of time
-- assert Server Sent Event stream

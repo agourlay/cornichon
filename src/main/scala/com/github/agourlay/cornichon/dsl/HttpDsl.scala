@@ -54,7 +54,6 @@ trait HttpDsl extends Dsl {
       )
   }
 
-  // WIP
   sealed trait Streamed extends Request {
     def apply(url: String, takeWithin: FiniteDuration, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
       Step(

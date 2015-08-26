@@ -1,13 +1,26 @@
 package com.github.agourlay.cornichon.examples
 
+import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.server.ExampleServer
-import spray.json.JsValue
+import com.github.agourlay.cornichon.server.RestAPI
+
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
+import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
+class CornichonExamplesSpec extends CornichonFeature {
+
+  lazy val port = 8080
+  var server: ServerBinding = _
+
+  override def beforeFeature() =
+    server = Await.result(new RestAPI().start(port), 5 second)
+
+  override def afterFeature() =
+    Await.result(server.unbind(), 5 second)
+
+  lazy val baseUrl = s"http://localhost:$port"
 
   def feature =
     Feature("Cornichon feature Example")(

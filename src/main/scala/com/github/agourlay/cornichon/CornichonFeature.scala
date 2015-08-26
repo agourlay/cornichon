@@ -18,7 +18,7 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
 
   protected def runFeature(): FeatureReport = {
     val feat = feature
-    beforeFeature(feat.name)
+    beforeFeature()
     val scenarioReports = feat.scenarios.map { s ⇒
       log.info(s"Scenario : ${s.name}")
       val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
@@ -34,8 +34,8 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
 
   def feature: FeatureDef
 
-  def beforeFeature(featureName: String): Unit = ()
-  def afterFeature(featureName: String): Unit = ()
+  def beforeFeature(): Unit = ()
+  def afterFeature(): Unit = ()
 
   def beforeEachScenario(): Seq[Step[_]] = Seq.empty
   def afterEachScenario(): Seq[Step[_]] = Seq.empty

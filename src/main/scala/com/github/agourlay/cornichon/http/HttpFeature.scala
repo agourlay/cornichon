@@ -1,10 +1,8 @@
 package com.github.agourlay.cornichon.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.HttpHeader
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Source
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import de.heikoseeberger.akkasse.ServerSentEvent
