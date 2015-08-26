@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.http
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.HttpHeader
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
@@ -8,6 +9,7 @@ import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import de.heikoseeberger.akkasse.ServerSentEvent
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }
@@ -22,6 +24,13 @@ trait HttpFeature {
   lazy val LastResponseJsonKey = "last-response-json"
   lazy val LastResponseStatusKey = "last-response-status"
   lazy val LastResponseHeadersKey = "last-response-headers"
+
+  case class InternalSSE(data: String, eventType: Option[String] = None, id: Option[String] = None)
+
+  object InternalSSE {
+    def build(sse: ServerSentEvent): InternalSSE = InternalSSE(sse.data, sse.eventType, sse.id)
+    implicit val formatServerSentEvent = jsonFormat3(InternalSSE.apply)
+  }
 
   def Post(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
@@ -52,12 +61,13 @@ trait HttpFeature {
       (res, newSession)
     }
 
-  def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration) =
+  def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session) =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
     } yield {
-      val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers), timeout)
-      (res, s)
+      val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers), takeWithin + 1.second)
+      val jsonRes = res.map(s ⇒ InternalSSE.build(s)).toVector.toJson
+      (jsonRes, s.addValue(LastResponseJsonKey, jsonRes.prettyPrint))
     }
 
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
@@ -84,5 +94,4 @@ trait HttpFeature {
       .addValue(LastResponseStatusKey, response.status.intValue().toString)
       .addValue(LastResponseJsonKey, response.body.prettyPrint)
       .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}:${h.value()}").mkString(","))
-
 }

@@ -2,8 +2,10 @@ package com.github.agourlay.cornichon.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.server.ExampleServer
+import spray.json.JsValue
 import spray.json.lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
+import scala.concurrent.duration._
 
 class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
@@ -11,12 +13,11 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
     Feature("Cornichon feature Example")(
 
       Scenario("CRUD Feature demo") { implicit b ⇒
-
         When I GET(s"$baseUrl/superheroes/Batman")
 
         Then assert status_is(200)
 
-        And assert response_body_is(
+        And assert response_is(
           """
           {
             "name": "Batman",
@@ -27,7 +28,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           """
         )
 
-        And assert response_body_is(
+        And assert response_is(
           """
           {
             "name": "Batman",
@@ -36,7 +37,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           """, ignoredKeys = "publisher", "city"
         )
 
-        And assert response_body_is(
+        And assert response_is(
           """
           {
             "name": "Batman",
@@ -46,13 +47,13 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         )
 
         // Test response body as a String by providing a transformation fct (here using spray json-lenses)
-        Then assert response_body_is(_.extract[String]('city), "Gotham city")
+        Then assert response_is(_.extract[String]('city), "Gotham city")
 
         When I GET(s"$baseUrl/superheroes/Scalaman")
 
         Then assert status_is(404)
 
-        And assert response_body_is(
+        And assert response_is(
           """
           {
             "error": "Superhero Scalaman not found"
@@ -74,7 +75,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I GET(s"$baseUrl/superheroes/Scalaman")
 
-        Then assert response_body_is(
+        Then assert response_is(
           """
           {
             "name": "Scalaman",
@@ -85,11 +86,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           """
         )
 
-        When I GET(s"$baseUrl/superheroes/Scalaman", params =
-          "protectIdentity" → "true",
-          "random-useless-header" → "test")
+        When I GET(s"$baseUrl/superheroes/Scalaman", params = "protectIdentity" → "true")
 
-        Then assert response_body_is(
+        Then assert response_is(
           """
           {
             "name": "Scalaman",
@@ -112,7 +111,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         Then assert status_is(200)
 
-        Then assert response_body_is(
+        Then assert response_is(
           """
           {
             "name": "Scalaman",
@@ -138,7 +137,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I GET(s"$baseUrl/superheroes")
 
-        Then assert response_body_array_is(
+        Then assert response_as_array_is(
           """
           [{
             "name": "Batman",
@@ -172,7 +171,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           }]"""
         )
 
-        Then assert response_body_array_is(
+        Then assert response_as_array_is(
           """
             |    name     |    realName    |     city      |  publisher |
             | "Batman"    | "Bruce Wayne"  | "Gotham city" |   "DC"     |
@@ -183,7 +182,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           """
         )
 
-        Then assert response_body_array_is(
+        Then assert response_as_array_is(
           """
           [{
             "name": "Superman",
@@ -217,9 +216,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
           }]""", ordered = false
         )
 
-        Then assert response_body_array_size_is(5)
+        Then assert response_as_array_size_is(5)
 
-        And assert response_body_array_contains(
+        And assert response_as_array_contains(
           """
           {
             "name": "IronMan",
@@ -236,9 +235,9 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         And I GET(s"$baseUrl/superheroes")
 
-        Then assert response_body_array_size_is(4)
+        Then assert response_as_array_size_is(4)
 
-        And assert response_body_array_does_not_contain(
+        And assert response_as_array_does_not_contain(
           """
           {
             "name": "IronMan",
@@ -254,7 +253,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
 
         When I GET(s"$baseUrl/superheroes/Batman")
 
-        Then assert response_body_is(
+        Then assert response_is(
           """
           {
             "name": "Batman",
@@ -273,7 +272,7 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         // Retrieve dynamically from session with <key> for URL construction
         When I GET(s"$baseUrl/superheroes/<favorite-superhero>")
 
-        Then assert response_body_is(
+        Then assert response_is(
           """
           {
             "name": "<favorite-superhero>",
@@ -285,11 +284,11 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
         )
 
         // Extract value from response into session for reuse
-        And I extract_from_response_body(_.extract[String]('city), "batman-city")
+        And I extract_from_response(_.extract[String]('city), "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
 
-        Then assert response_body_is(
+        Then assert response_is(
           """
           {
             "name": "<favorite-superhero>",
@@ -310,11 +309,28 @@ class CornichonExamplesSpec extends CornichonFeature with ExampleServer {
       },
 
       Scenario("Advanced feature demo") { implicit b ⇒
+
+        // Repeat serie of Steps
         Repeat(3) {
           When I GET(s"$baseUrl/superheroes/Batman")
 
           Then assert status_is(200)
         }
+
+        // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
+        When I GET_SSE(s"$baseUrl/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
+
+        Then assert response_as_array_size_is(4)
+
+        Then assert response_as_array_is(
+          """
+            |   eventType      |    data     |
+            | "superhero name" | "Batman"    |
+            | "superhero name" | "Superman"  |
+            | "superhero name" | "Spiderman" |
+            | "superhero name" | "Scalaman"  |
+          """
+        )
       }
     )
 }

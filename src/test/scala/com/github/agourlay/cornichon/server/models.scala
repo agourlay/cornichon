@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.server
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import de.heikoseeberger.akkasse.ServerSentEvent
 import spray.json.DefaultJsonProtocol
 
 import scala.collection.mutable
@@ -91,4 +92,7 @@ trait JsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val formatCP = jsonFormat3(Publisher)
   implicit val formatSH = jsonFormat4(SuperHero)
   implicit val formatHE = jsonFormat1(HttpError)
+  implicit def toServerSentEvent(sh: SuperHero): ServerSentEvent = {
+    ServerSentEvent(eventType = "superhero", data = formatSH.write(sh).compactPrint)
+  }
 }
