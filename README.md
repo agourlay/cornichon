@@ -1,7 +1,7 @@
 cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon)
 =========
 
-Scala DSL for testing JSON HTTP API
+a Scala DSL for testing JSON HTTP API that looks like [this](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
 
 ## Status 
 
@@ -17,14 +17,14 @@ A feature fails if one or more scenarios fail, a scenario fail if one step fails
 
 ## DSL
 
-Steps starts with either :
+Steps start with either :
 
-- Given I ...
-- When I ...
-- Then I ...
-- Then assert ...
-- And I ...
-- And assert ...
+- Given I
+- When I
+- Then I
+- And I
+- Then assert
+- And assert
 
 They do not change the behaviour of the Steps, they are just here for readability.
 
