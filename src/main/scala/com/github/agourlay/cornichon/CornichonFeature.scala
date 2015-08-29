@@ -24,6 +24,7 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
       val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
       engine.runScenario(completeScenario)(session)
     }
+    afterFeature()
     val failedReports = scenarioReports.collect { case f: FailedScenarioReport ⇒ f }
     val successReports = scenarioReports.collect { case s: SuccessScenarioReport ⇒ s }
     if (failedReports.isEmpty)
@@ -37,7 +38,7 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
   def beforeFeature(): Unit = ()
   def afterFeature(): Unit = ()
 
-  def beforeEachScenario(): Seq[Step[_]] = Seq.empty
-  def afterEachScenario(): Seq[Step[_]] = Seq.empty
+  def beforeEachScenario(): Seq[ExecutableStep[_]] = Seq.empty
+  def afterEachScenario(): Seq[ExecutableStep[_]] = Seq.empty
 
 }

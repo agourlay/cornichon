@@ -11,15 +11,17 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{ FlattenStrategy, Sink, Source }
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import com.github.agourlay.cornichon.core.CornichonLogger
 import de.heikoseeberger.akkasse.{ EventStreamUnmarshalling, ServerSentEvent }
 import EventStreamUnmarshalling._
 import spray.json.JsValue
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import scala.Console._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
-class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer) {
+class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer) extends CornichonLogger {
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
@@ -48,7 +50,7 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
       .mapAsync(1)(expectSSE)
       .map { sse ⇒
         sse.fold(e ⇒ {
-          println(s"runFold error $e")
+          log.error(RED + s"SSE connection error $e" + RESET)
           Source.empty[ServerSentEvent]
         }, s ⇒ s)
       }
@@ -71,7 +73,7 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
     Unmarshal(httpResponse).to[Source[ServerSentEvent, Any]].map { sse ⇒
       right(sse)
     }.recover {
-      case e: Exception ⇒ left(JsonError(e))
+      case e: Exception ⇒ left(SseError(e))
     }
 
   def expectJson(httpResponse: HttpResponse): Future[Xor[HttpError, JsonHttpResponse]] =

@@ -5,12 +5,13 @@ import cats.data.Xor.{ left, right }
 import spray.json.JsValue
 
 import scala.annotation.tailrec
+import scala.concurrent.duration.Duration
 import scala.util._
 import Console._
 
 class Engine extends CornichonLogger {
 
-  def runStep[A](step: Step[A])(implicit session: Session): Xor[CornichonError, Session] =
+  def runStep[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try {
       val (res, newSession) = step.action(session)
       val resolvedExpected: A = step.expected match {
@@ -42,21 +43,45 @@ class Engine extends CornichonLogger {
 
   def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
     @tailrec
-    def loop(steps: Seq[Step[_]], session: Session): ScenarioReport = {
-      if (steps.isEmpty) SuccessScenarioReport(scenario.name, scenario.steps.map(_.title))
-      else {
-        val currentStep = steps.head
-        runStep(currentStep)(session) match {
-          case Xor.Left(e) ⇒
-            val failedStep = FailedStep(steps.head.title, e)
-            val successStep = scenario.steps.takeWhile(_ != steps.head).map(_.title)
-            val notExecutedStep = steps.tail.map(_.title)
-            FailedScenarioReport(scenario.name, failedStep, successStep, notExecutedStep)
-          case Xor.Right(currentSession) ⇒
-            loop(steps.tail, currentSession)
+    def loop(steps: Seq[Step], session: Session, eventuallyConf: EventuallyConf, snapshot: Option[RollbackSnapshot]): ScenarioReport = {
+      if (steps.isEmpty)
+        SuccessScenarioReport(
+          scenarioName = scenario.name,
+          successSteps = scenario.steps.collect { case ExecutableStep(title, _, _) ⇒ title }
+        )
+      else
+        steps.head match {
+          case currentStep: ExecutableStep[_] ⇒
+            val now = System.nanoTime
+            val stepResult = runStep(currentStep)(session)
+            val executionTime = Duration.fromNanos(System.nanoTime - now)
+            stepResult match {
+              case Xor.Left(e) ⇒
+                val remainingTime = eventuallyConf.maxTime - executionTime
+                if (remainingTime.gt(Duration.Zero)) {
+                  Thread.sleep(eventuallyConf.interval.toMillis)
+                  loop(snapshot.get.steps, snapshot.get.session, eventuallyConf.consume(executionTime + eventuallyConf.interval), snapshot)
+                } else buildFailedScenarioReport(scenario, steps, currentStep, e)
+              case Xor.Right(currentSession) ⇒
+                loop(steps.tail, currentSession, eventuallyConf.consume(executionTime), snapshot)
+            }
+          case EventuallyStart(conf) ⇒
+            log.info(s"Eventually bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}")
+            loop(steps.tail, session, conf, Some(RollbackSnapshot(steps.tail, session)))
+          case EventuallyStop(conf) ⇒
+            log.info(s"Eventually bloc succeeded in ${conf.maxTime.toSeconds - eventuallyConf.maxTime.toSeconds} sec.")
+            loop(steps.tail, session, EventuallyConf.empty, None)
         }
-      }
     }
-    loop(scenario.steps, session)
+    loop(scenario.steps, session, EventuallyConf.empty, None)
   }
+
+  def buildFailedScenarioReport(scenario: Scenario, steps: Seq[Step], currentStep: ExecutableStep[_], e: CornichonError): FailedScenarioReport = {
+    val failedStep = FailedStep(currentStep.title, e)
+    val successStep = scenario.steps.takeWhile(_ != steps.head).collect { case ExecutableStep(title, _, _) ⇒ title }
+    val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _) ⇒ title }
+    FailedScenarioReport(scenario.name, failedStep, successStep, notExecutedStep)
+  }
+
+  case class RollbackSnapshot(steps: Seq[Step], session: Session)
 }

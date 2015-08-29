@@ -9,7 +9,7 @@ class EngineSpec extends WordSpec with Matchers {
   "An engine" must {
     "execute all steps" in {
       val session = Session.newSession
-      val steps = Seq(Step[Int]("first step", s ⇒ (2 + 1, s), 3))
+      val steps = Seq(ExecutableStep[Int]("first step", s ⇒ (2 + 1, s), 3))
       val s = Scenario("test", steps)
       engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
     }
@@ -17,7 +17,7 @@ class EngineSpec extends WordSpec with Matchers {
     "fail if instruction throws exception" in {
       val session = Session.newSession
       val steps = Seq(
-        Step[Int]("stupid step", s ⇒ {
+        ExecutableStep[Int]("stupid step", s ⇒ {
           6 / 0
           (2, s)
         }, 2)
@@ -28,9 +28,9 @@ class EngineSpec extends WordSpec with Matchers {
 
     "stop at first failed step" in {
       val session = Session.newSession
-      val step1 = Step[Int]("first step", s ⇒ (2, s), 2)
-      val step2 = Step[Int]("second step", s ⇒ (5, s), 4)
-      val step3 = Step[Int]("third step", s ⇒ (1, s), 1)
+      val step1 = ExecutableStep[Int]("first step", s ⇒ (2, s), 2)
+      val step2 = ExecutableStep[Int]("second step", s ⇒ (5, s), 4)
+      val step3 = ExecutableStep[Int]("third step", s ⇒ (1, s), 1)
       val steps = Seq(
         step1, step2, step3
       )

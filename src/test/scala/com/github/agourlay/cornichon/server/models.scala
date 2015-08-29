@@ -6,6 +6,7 @@ import spray.json.DefaultJsonProtocol
 
 import scala.collection.mutable
 import scala.concurrent._
+import scala.util.Random
 
 case class Publisher(name: String, foundationDate: String, location: String)
 
@@ -49,7 +50,11 @@ class TestData(implicit executionContext: ExecutionContext) {
     }
 
   def superheroByName(name: String, protectIdentity: Boolean = false) = Future {
-    superHeroes.find(_.name == name).fold(throw new SuperHeroNotFound(name)) { c ⇒
+    val sh = {
+      if (name == "random") Some(randomSuperhero)
+      else superHeroes.find(_.name == name)
+    }
+    sh.fold(throw new SuperHeroNotFound(name)) { c ⇒
       if (protectIdentity) c.copy(realName = "XXXXX")
       else c
     }
@@ -58,6 +63,9 @@ class TestData(implicit executionContext: ExecutionContext) {
   def allPublishers = Future { publishers.toSeq }
 
   def allSuperheroes = Future { superHeroes.toSeq }
+
+  def randomSuperhero: SuperHero =
+    Random.shuffle(superHeroes).head
 
   val publishers = mutable.ListBuffer(
     Publisher("DC", "1934", "Burbank, California"),

@@ -151,7 +151,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I GET(s"$baseUrl/superheroes")
 
-        Then assert response_as_array_is(
+        Then assert response_array_is(
           """
           [{
             "name": "Batman",
@@ -185,7 +185,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           }]"""
         )
 
-        Then assert response_as_array_is(
+        Then assert response_array_is(
           """
             |    name     |    realName    |     city      |  publisher |
             | "Batman"    | "Bruce Wayne"  | "Gotham city" |   "DC"     |
@@ -196,7 +196,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        Then assert response_as_array_is(
+        Then assert response_array_is(
           """
           [{
             "name": "Superman",
@@ -230,9 +230,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           }]""", ordered = false
         )
 
-        Then assert response_as_array_size_is(5)
+        Then assert response_array_size_is(5)
 
-        And assert response_as_array_contains(
+        And assert response_array_contains(
           """
           {
             "name": "IronMan",
@@ -249,9 +249,9 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         And I GET(s"$baseUrl/superheroes")
 
-        Then assert response_as_array_size_is(4)
+        Then assert response_array_size_is(4)
 
-        And assert response_as_array_does_not_contain(
+        And assert response_array_does_not_contain(
           """
           {
             "name": "IronMan",
@@ -334,9 +334,9 @@ class CornichonExamplesSpec extends CornichonFeature {
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE(s"$baseUrl/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
 
-        Then assert response_as_array_size_is(4)
+        Then assert response_array_size_is(4)
 
-        Then assert response_as_array_is(
+        Then assert response_array_is(
           """
             |   eventType      |    data     |
             | "superhero name" | "Batman"    |
@@ -345,6 +345,22 @@ class CornichonExamplesSpec extends CornichonFeature {
             | "superhero name" | "Scalaman"  |
           """
         )
+
+        // Repeat serie of Steps until it succeed
+        Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
+          When I GET(s"$baseUrl/superheroes/random")
+
+          Then assert response_is(
+            """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
+          """
+          )
+        }
       }
     )
 }

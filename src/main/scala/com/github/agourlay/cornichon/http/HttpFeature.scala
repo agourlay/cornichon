@@ -65,6 +65,7 @@ trait HttpFeature {
     } yield {
       val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers), takeWithin + 1.second)
       val jsonRes = res.map(s ⇒ InternalSSE.build(s)).toVector.toJson
+      // TODO add Headers and Status Code
       (jsonRes, s.addValue(LastResponseJsonKey, jsonRes.prettyPrint))
     }
 
