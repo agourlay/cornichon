@@ -52,8 +52,8 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 - experimental support SSE
 - asserting value in Session
 - setting a value in session
-- repeat a serie of Steps
-- repeat a serie of Steps until it succeed over a period of time at a specified interval
+- repeat a series of Steps
+- repeat a series of Steps until it succeed over a period of time at a specified interval
 
 
 ## Placeholders
@@ -121,3 +121,5 @@ For more examples see the following [file](https://github.com/agourlay/cornichon
 - abstraction to propagate authentication throughout a scenario
 - shortcut to execute a single scenario
 - session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
+- validate requests against JSON Schema
+- generate requests from JSON schema

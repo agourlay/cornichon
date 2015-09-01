@@ -331,6 +331,19 @@ class CornichonExamplesSpec extends CornichonFeature {
           Then assert status_is(200)
         }
 
+        // Nested Repeats
+        Repeat(3) {
+          When I GET(s"$baseUrl/superheroes/Superman")
+
+          Then assert status_is(200)
+
+          Repeat(2) {
+            When I GET(s"$baseUrl/superheroes/Batman")
+
+            Then assert status_is(200)
+          }
+        }
+
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE(s"$baseUrl/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
 
@@ -339,14 +352,14 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert response_array_is(
           """
             |   eventType      |    data     |
-            | "superhero name" | "Batman"    |
+            | "superhero name" |  "Batman"   |
             | "superhero name" | "Superman"  |
             | "superhero name" | "Spiderman" |
             | "superhero name" | "Scalaman"  |
           """
         )
 
-        // Repeat serie of Steps until it succeed
+        // Repeat series of Steps until it succeed
         Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
           When I GET(s"$baseUrl/superheroes/random")
 

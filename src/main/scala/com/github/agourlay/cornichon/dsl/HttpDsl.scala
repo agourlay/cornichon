@@ -131,12 +131,12 @@ trait HttpDsl extends Dsl {
   def response_array_is(expected: String, ordered: Boolean = true): ExecutableStep[Iterable[JsValue]] =
     stringToJson(expected) match {
       case expectedArray: JsArray ⇒
-        if (ordered) response_array_is(_.elements, expectedArray.elements, Some(s"response array is $expected"))
-        else response_array_is(s ⇒ s.elements.toSet, expectedArray.elements.toSet, Some(s"response array not ordered is $expected"))
+        if (ordered) response_array_transform(_.elements, expectedArray.elements, Some(s"response array is $expected"))
+        else response_array_transform(s ⇒ s.elements.toSet, expectedArray.elements.toSet, Some(s"response array not ordered is $expected"))
       case _ ⇒ throw new NotAnArrayError(expected)
     }
 
-  def response_array_is[A](mapFct: JsArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
+  def response_array_transform[A](mapFct: JsArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
     transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
       val sessionJSON = sessionValue.parseJson
       sessionJSON match {
@@ -147,11 +147,11 @@ trait HttpDsl extends Dsl {
       }
     }, title)
 
-  def response_array_size_is(size: Int) = response_array_is(_.elements.size, size, Some(s"response array size is $size"))
+  def response_array_size_is(size: Int) = response_array_transform(_.elements.size, size, Some(s"response array size is $size"))
 
-  def response_array_contains(element: String) = response_array_is(_.elements.contains(element.parseJson), true, Some(s"response array contains $element"))
+  def response_array_contains(element: String) = response_array_transform(_.elements.contains(element.parseJson), true, Some(s"response array contains $element"))
 
-  def response_array_does_not_contain(element: String) = response_array_is(_.elements.contains(element.parseJson), false, Some(s"response array does not contain $element"))
+  def response_array_does_not_contain(element: String) = response_array_transform(_.elements.contains(element.parseJson), false, Some(s"response array does not contain $element"))
 
   private def stringToJson(input: String): JsValue =
     if (input.trim.head != '|') input.parseJson

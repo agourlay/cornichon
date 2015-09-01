@@ -37,7 +37,7 @@ libraryDependencies ++= {
   val jsonLensesV = "0.6.0"
   val akkaHttpV = "1.0"
   val akkaV = "2.3.12"
-  val catsV = "0.1.2"
+  val catsV = "0.2.0"
   val sprayJsonV = "1.3.2"
   val logbackV = "1.1.3"
   val parboiledV = "2.1.0"
@@ -51,7 +51,6 @@ libraryDependencies ++= {
     ,"net.virtual-void"  %% "json-lenses"                       % jsonLensesV
     ,"org.spire-math"    %% "cats-macros"                       % catsV
     ,"org.spire-math"    %% "cats-core"                         % catsV
-    ,"org.spire-math"    %% "cats-std"                          % catsV
     ,"org.scalatest"     %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
     ,"org.parboiled"     %% "parboiled"                         % parboiledV
