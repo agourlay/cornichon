@@ -54,6 +54,7 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 - setting a value in session
 - repeat a series of Steps
 - repeat a series of Steps until it succeed over a period of time at a specified interval
+- Json4s DSL integration
 
 
 ## Placeholders

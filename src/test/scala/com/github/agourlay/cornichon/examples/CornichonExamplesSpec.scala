@@ -3,9 +3,6 @@ package com.github.agourlay.cornichon.examples
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.server.RestAPI
-
-import spray.json.lenses.JsonLenses._
-import spray.json.DefaultJsonProtocol._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -41,27 +38,6 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
           """
         )
-
-        And assert response_is(
-          """
-          {
-            "name": "Batman",
-            "realName": "Bruce Wayne"
-          }
-          """, ignoredKeys = "publisher", "city"
-        )
-
-        And assert response_is(
-          """
-          {
-            "name": "Batman",
-            "realName": "Bruce Wayne"
-          }
-          """, whiteList = true
-        )
-
-        // Test response body as a String by providing a transformation fct (here using spray json-lenses)
-        Then assert response_is(_.extract[String]('city), "Gotham city")
 
         When I GET(s"$baseUrl/superheroes/Scalaman")
 
@@ -298,7 +274,10 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Extract value from response into session for reuse
-        And I extract_from_response(_.extract[String]('city), "batman-city")
+        And I extract_from_response("city", "batman-city")
+
+        // Can be done using an extractor for deeper values
+        And I extract_from_response(_ \ "city", "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
 
@@ -313,7 +292,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        Then assert headers_contain("Server" → "akka-http/2.3.12")
+        Then assert headers_contain("Server" → "akka-http/2.3.13")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
@@ -323,6 +302,42 @@ class CornichonExamplesSpec extends CornichonFeature {
       },
 
       Scenario("Advanced feature demo") { implicit b ⇒
+
+        When I GET(s"$baseUrl/superheroes/Batman")
+
+        And assert response_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "publisher": "DC"
+          }
+          """
+        )
+
+        // Ignore keys
+        And assert response_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne"
+          }
+          """, ignoredKeys = "publisher", "city"
+        )
+
+        // Compare only against provided keys
+        And assert response_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne"
+          }
+          """, whiteList = true
+        )
+
+        // Test response body as a String by providing an extractor
+        Then assert response_is(_ \ "city", "Gotham city")
 
         // Repeat serie of Steps
         Repeat(3) {

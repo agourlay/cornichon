@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.core
 
-import spray.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 
 trait CornichonError extends Exception {
   val msg: String
@@ -18,16 +19,24 @@ case class StepAssertionError[A](expected: A, actual: A) extends CornichonError 
         |'$actual'
         |""".stripMargin.trim
 
-  // TODO offer better diff
   val msg = actual match {
-    case s: String   ⇒ s"$baseMsg \n String diff is '${s.diff(expected.asInstanceOf[String])}'"
-    case j: JsArray  ⇒ s"$baseMsg \n JsArray diff is '${j.elements.diff(expected.asInstanceOf[JsArray].elements)}'"
-    case j: JsObject ⇒ s"$baseMsg \n JsObject diff is '${j.fields.toSet.diff(expected.asInstanceOf[JsValue].asJsObject.fields.toSet)}'"
-    case j: JsValue  ⇒ s"$baseMsg \n JsValue diff is '${j.prettyPrint.diff(expected.asInstanceOf[JsValue].prettyPrint)}'"
-    case j: Seq[A]   ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]])}'"
-    case _           ⇒ baseMsg
+    case s: String ⇒
+      s"$baseMsg \n String diff is '${s.diff(expected.asInstanceOf[String])}'"
+    case JString(s) ⇒
+      s"$baseMsg \n String diff is '${s.diff(expected.asInstanceOf[JString].s)}'"
+    case j: JValue ⇒
+      val Diff(changed, added, deleted) = j diff expected.asInstanceOf[JValue]
+      s"""|expected result was:
+          |'${pretty(render(expected.asInstanceOf[JValue]))}'
+          |but actual result is:
+          |'${pretty(render(actual.asInstanceOf[JValue]))}'
+          |changed = ${if (changed == JNothing) "..." else pretty(render(changed))}
+          |added   = ${if (added == JNothing) "..." else pretty(render(added))}
+          |deleted = ${if (deleted == JNothing) "..." else pretty(render(deleted))}
+      """.stripMargin.trim
+    case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]])}'"
+    case _         ⇒ baseMsg
   }
-
 }
 
 case class ResolverError(key: String) extends CornichonError {

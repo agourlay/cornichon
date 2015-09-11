@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import spray.json.JsValue
+import org.json4s._
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.Duration
@@ -15,9 +15,9 @@ class Engine extends CornichonLogger {
     Try {
       val (res, newSession) = step.action(session)
       val resolvedExpected: A = step.expected match {
-        case s: String  ⇒ Resolver.fillPlaceholder(s)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
-        case j: JsValue ⇒ Resolver.fillPlaceholder(j)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
-        case _          ⇒ step.expected
+        case s: String ⇒ Resolver.fillPlaceholder(s)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
+        case j: JValue ⇒ Resolver.fillPlaceholder(j)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
+        case _         ⇒ step.expected
       }
       (res, resolvedExpected, newSession)
     } match {

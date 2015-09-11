@@ -6,6 +6,9 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import de.heikoseeberger.akkasse.ServerSentEvent
+import org.json4s._
+import org.json4s.native.JsonMethods._
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -30,7 +33,7 @@ trait HttpFeature {
     implicit val formatServerSentEvent = jsonFormat3(InternalSSE.apply)
   }
 
-  def Post(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
+  def Post(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
@@ -40,7 +43,7 @@ trait HttpFeature {
       (res, newSession)
     }
 
-  def Put(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
+  def Put(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
@@ -93,4 +96,6 @@ trait HttpFeature {
       .addValue(LastResponseStatusKey, response.status.intValue().toString)
       .addValue(LastResponseJsonKey, response.body.prettyPrint)
       .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}:${h.value()}").mkString(","))
+
+  implicit def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
 }

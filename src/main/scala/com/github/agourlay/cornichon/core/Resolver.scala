@@ -4,7 +4,8 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import spray.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 
 import scala.annotation.tailrec
 
@@ -43,6 +44,11 @@ object Resolver {
     loop(findPlaceholders(input), input)
   }
 
-  def fillPlaceholder(js: JsValue)(source: Map[String, String]): Xor[ResolverError, JsValue] =
-    fillPlaceholder(js.toString())(source).map(_.parseJson)
+  def fillPlaceholder(js: JValue)(source: Map[String, String]): Xor[ResolverError, JValue] =
+    fillPlaceholder(compact(render(js)))(source).map { v ⇒
+      if (js.children.isEmpty)
+        JString(v.substring(1, v.size - 1))
+      else
+        parse(v)
+    }
 }

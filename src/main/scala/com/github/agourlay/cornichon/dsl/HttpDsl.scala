@@ -3,9 +3,8 @@ package com.github.agourlay.cornichon.dsl
 import akka.http.scaladsl.model.HttpHeader
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http._
-import spray.json.DefaultJsonProtocol._
-import spray.json._
-import spray.json.lenses.JsonLenses._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 
 import scala.concurrent.duration._
 
@@ -45,8 +44,8 @@ trait HttpDsl extends Dsl {
       },
         action = s ⇒ {
         val x = this match {
-          case POST ⇒ Post(payload.parseJson, url, params, headers)(s)
-          case PUT  ⇒ Put(payload.parseJson, url, params, headers)(s)
+          case POST ⇒ Post(parse(payload), url, params, headers)(s)
+          case PUT  ⇒ Put(parse(payload), url, params, headers)(s)
         }
         x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
       },
@@ -93,34 +92,43 @@ trait HttpDsl extends Dsl {
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
     }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
-  def response_is(jsString: String, whiteList: Boolean = false): ExecutableStep[JsValue] = {
-    val jsonInput = jsString.parseJson
+  def response_is(jsString: String, whiteList: Boolean = false): ExecutableStep[JValue] = {
+    val jsonInput = parse(jsString)
     transform_assert_session(LastResponseJsonKey, jsonInput, sessionValue ⇒ {
-      val sessionValueJson = sessionValue.parseJson
+      val sessionValueJson = parse(sessionValue)
       if (whiteList) {
-        jsonInput.asJsObject.fields.map {
-          case (k, v) ⇒
-            val value = sessionValueJson.asJsObject.getFields(k)
-            if (value.isEmpty) throw new WhileListError(s"White list error - key '$k' is not defined in object '$sessionValueJson")
-            else (k, v)
-        }.toJson
+        val Diff(changed, _, deleted) = jsonInput.diff(sessionValueJson)
+        if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
+        if (changed != JNothing) changed else jsonInput
       } else sessionValueJson
     }, Some(s"HTTP response is $jsString with whiteList=$whiteList"))
   }
 
-  def response_is(jsString: String, ignoredKeys: String*): ExecutableStep[JsValue] =
-    transform_assert_session(LastResponseJsonKey, jsString.parseJson, sessionValue ⇒ {
-      if (ignoredKeys.isEmpty) sessionValue.parseJson
-      else sessionValue.parseJson.asJsObject.fields.filterKeys(!ignoredKeys.contains(_)).toJson
-    }, Some(s"HTTP response is $jsString"))
+  def response_is(jsString: String, ignoredKeys: String*): ExecutableStep[JValue] =
+    transform_assert_session(LastResponseJsonKey, parse(jsString), sessionValue ⇒ {
+      val jsonSessionValue = parse(sessionValue)
+      if (ignoredKeys.isEmpty) jsonSessionValue
+      else filterJsonKeys(jsonSessionValue, ignoredKeys)
+    },
+      title = if (ignoredKeys.isEmpty) Some(s"HTTP response is $jsString")
+    else Some(s"HTTP response is $jsString ignoring keys ${ignoredKeys.map(v ⇒ s"'$v'").mkString(", ")}"))
 
-  def extract_from_response(extractor: JsValue ⇒ String, target: String) =
-    extract_from_session(LastResponseJsonKey, s ⇒ extractor(s.parseJson), target)
+  def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
+    keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
-  def response_is(mapFct: JsValue ⇒ String, jsString: String) =
-    transform_assert_session(LastResponseJsonKey, jsString, sessionValue ⇒ {
-      mapFct(sessionValue.parseJson)
-    }, Some(s"HTTP response with transformation is $jsString"))
+  def extract_from_response(extractor: JValue ⇒ JValue, target: String) =
+    extract_from_session(LastResponseJsonKey, s ⇒ extractor(parse(s)).values.toString, target)
+
+  def extract_from_response(rootKey: String, target: String) =
+    extract_from_session(LastResponseJsonKey, s ⇒ (parse(s) \ rootKey).values.toString, target)
+
+  def response_is(mapFct: JValue ⇒ JValue, jsString: String) = {
+    transform_assert_session(
+      LastResponseJsonKey,
+      expected = JString(jsString),
+      sessionValue ⇒ mapFct(parse(sessionValue)), Some(s"HTTP response with transformation is $jsString")
+    )
+  }
 
   def show_last_status = show_session(LastResponseStatusKey)
 
@@ -128,32 +136,32 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def response_array_is(expected: String, ordered: Boolean = true): ExecutableStep[Iterable[JsValue]] =
+  def response_array_is(expected: String, ordered: Boolean = true): ExecutableStep[Iterable[JValue]] =
     stringToJson(expected) match {
-      case expectedArray: JsArray ⇒
-        if (ordered) response_array_transform(_.elements, expectedArray.elements, Some(s"response array is $expected"))
-        else response_array_transform(s ⇒ s.elements.toSet, expectedArray.elements.toSet, Some(s"response array not ordered is $expected"))
-      case _ ⇒ throw new NotAnArrayError(expected)
+      case expectedArray: JArray ⇒
+        if (ordered) response_array_transform(_.arr, expectedArray.arr, Some(s"response array is $expected"))
+        else response_array_transform(s ⇒ s.arr.toSet, expectedArray.arr.toSet, Some(s"response array not ordered is $expected"))
+      case _ ⇒
+        throw new NotAnArrayError(expected)
     }
 
-  def response_array_transform[A](mapFct: JsArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
+  def response_array_transform[A](mapFct: JArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
     transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
-      val sessionJSON = sessionValue.parseJson
-      sessionJSON match {
-        case arr: JsArray ⇒
-          log.debug(s"response_body_array_is applied to ${arr.toString()}")
+      parse(sessionValue) match {
+        case arr: JArray ⇒
+          log.debug(s"response_body_array_is applied to ${pretty(render(arr))}")
           mapFct(arr)
-        case _ ⇒ throw new NotAnArrayError(sessionJSON.toString())
+        case _ ⇒ throw new NotAnArrayError(sessionValue)
       }
     }, title)
 
-  def response_array_size_is(size: Int) = response_array_transform(_.elements.size, size, Some(s"response array size is $size"))
+  def response_array_size_is(size: Int) = response_array_transform(_.arr.size, size, Some(s"response array size is $size"))
 
-  def response_array_contains(element: String) = response_array_transform(_.elements.contains(element.parseJson), true, Some(s"response array contains $element"))
+  def response_array_contains(element: String) = response_array_transform(_.arr.contains(parse(element)), true, Some(s"response array contains $element"))
 
-  def response_array_does_not_contain(element: String) = response_array_transform(_.elements.contains(element.parseJson), false, Some(s"response array does not contain $element"))
+  def response_array_does_not_contain(element: String) = response_array_transform(_.arr.contains(parse(element)), false, Some(s"response array does not contain $element"))
 
-  private def stringToJson(input: String): JsValue =
-    if (input.trim.head != '|') input.parseJson
-    else DataTableParser.parseDataTable(input).asJson
+  private def stringToJson(input: String): JValue =
+    if (input.trim.head != '|') parse(input)
+    else parse(DataTableParser.parseDataTable(input).asJson.toString)
 }
