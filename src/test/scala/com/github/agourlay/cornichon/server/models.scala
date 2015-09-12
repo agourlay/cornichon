@@ -10,7 +10,7 @@ import scala.util.Random
 
 case class Publisher(name: String, foundationDate: String, location: String)
 
-case class SuperHero(name: String, realName: String, city: String, publisher: String)
+case class SuperHero(name: String, realName: String, city: String, publisher: Publisher)
 
 class TestData(implicit executionContext: ExecutionContext) {
 
@@ -29,13 +29,13 @@ class TestData(implicit executionContext: ExecutionContext) {
   def updateSuperhero(s: SuperHero) =
     for {
       _ ← superheroByName(s.name)
-      _ ← publisherByName(s.publisher)
+      _ ← publisherByName(s.publisher.name)
       _ ← deleteSuperhero(s.name)
       updated ← addSuperhero(s)
     } yield updated
 
   def addSuperhero(s: SuperHero) =
-    publisherByName(s.publisher).map { _ ⇒
+    publisherByName(s.publisher.name).map { _ ⇒
       if (superHeroes.exists(_.name == s.name)) throw new SuperHeroAlreadyExists(s.name)
       else {
         superHeroes.+=(s)
@@ -73,11 +73,11 @@ class TestData(implicit executionContext: ExecutionContext) {
   )
 
   val superHeroes = mutable.ListBuffer(
-    SuperHero("Batman", "Bruce Wayne", "Gotham city", "DC"),
-    SuperHero("Superman", "Clark Kent", "Metropolis", "DC"),
-    SuperHero("GreenLantern", "Hal Jordan", "Coast City", "DC"),
-    SuperHero("Spiderman", "Peter Parker", "New York", "Marvel"),
-    SuperHero("IronMan", "Tony Stark", "New York", "Marvel")
+    SuperHero("Batman", "Bruce Wayne", "Gotham city", publishers.head),
+    SuperHero("Superman", "Clark Kent", "Metropolis", publishers.head),
+    SuperHero("GreenLantern", "Hal Jordan", "Coast City", publishers.head),
+    SuperHero("Spiderman", "Peter Parker", "New York", publishers.tail.head),
+    SuperHero("IronMan", "Tony Stark", "New York", publishers.tail.head)
   )
 
 }

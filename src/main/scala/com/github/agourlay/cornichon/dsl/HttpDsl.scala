@@ -105,14 +105,13 @@ trait HttpDsl extends Dsl {
     }, Some(s"HTTP response is $jsString with whiteList=$whiteList"))
   }
 
-  def response_is(jsString: String, ignoredKeys: String*): ExecutableStep[JValue] =
+  def response_is(jsString: String, ignoring: String*): ExecutableStep[JValue] =
     transform_assert_session(LastResponseJsonKey, parse(jsString), sessionValue ⇒ {
       val jsonSessionValue = parse(sessionValue)
-      if (ignoredKeys.isEmpty) jsonSessionValue
-      else filterJsonKeys(jsonSessionValue, ignoredKeys)
+      if (ignoring.isEmpty) jsonSessionValue
+      else filterJsonKeys(jsonSessionValue, ignoring)
     },
-      title = if (ignoredKeys.isEmpty) Some(s"HTTP response is $jsString")
-    else Some(s"HTTP response is $jsString ignoring keys ${ignoredKeys.map(v ⇒ s"'$v'").mkString(", ")}"))
+      title = titleBuilder(s"HTTP response is $jsString", ignoring))
 
   def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
@@ -137,11 +136,18 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def response_array_is(expected: String, ordered: Boolean = true): ExecutableStep[Iterable[JValue]] =
+  private def titleBuilder(baseTitle: String, ignoring: Seq[String]): Option[String] = {
+    if (ignoring.isEmpty) Some(baseTitle)
+    else Some(s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'$v'").mkString(", ")}")
+  }
+
+  def response_array_is(expected: String, ordered: Boolean, ignoring: String*): ExecutableStep[Iterable[JValue]] =
     stringToJson(expected) match {
       case expectedArray: JArray ⇒
-        if (ordered) response_array_transform(_.arr, expectedArray.arr, Some(s"response array is $expected"))
-        else response_array_transform(s ⇒ s.arr.toSet, expectedArray.arr.toSet, Some(s"response array not ordered is $expected"))
+        if (ordered)
+          response_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response array is $expected", ignoring))
+        else
+          response_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response array not ordered is $expected", ignoring))
       case _ ⇒
         throw new NotAnArrayError(expected)
     }
