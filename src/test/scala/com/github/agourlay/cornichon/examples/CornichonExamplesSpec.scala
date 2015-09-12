@@ -65,6 +65,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Test response body as a String by providing an extractor
         Then assert response_is(_ \ "city", "Gotham city")
 
+        Then assert response_is(_ \ "publisher", """
+          {
+            "name":"DC",
+            "foundationDate":"1934",
+            "location":"Burbank, California"
+          } """)
+
         Then assert response_is(_ \ "publisher" \ "name", "DC")
 
         When I GET(s"$baseUrl/superheroes/Scalaman")

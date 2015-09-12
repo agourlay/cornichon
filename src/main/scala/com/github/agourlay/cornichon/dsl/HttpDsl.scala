@@ -125,7 +125,7 @@ trait HttpDsl extends Dsl {
   def response_is(mapFct: JValue ⇒ JValue, jsString: String) = {
     transform_assert_session(
       LastResponseJsonKey,
-      expected = JString(jsString),
+      expected = parseMaybeStringInput(jsString),
       sessionValue ⇒ mapFct(parse(sessionValue)), Some(s"HTTP response with transformation is $jsString")
     )
   }
@@ -180,4 +180,8 @@ trait HttpDsl extends Dsl {
   private def stringToJson(input: String): JValue =
     if (input.trim.head != '|') parse(input)
     else parse(DataTableParser.parseDataTable(input).asJson.toString())
+
+  // FIXME
+  private def parseMaybeStringInput(input: String): JValue =
+    if (input.trim.startsWith("{")) parse(input) else JString(input)
 }
