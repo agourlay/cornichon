@@ -7,6 +7,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 
 import scala.concurrent.duration._
+import scala.util.{ Success, Try }
 
 trait HttpDsl extends Dsl {
   this: HttpFeature ⇒
@@ -161,7 +162,16 @@ trait HttpDsl extends Dsl {
 
   def response_array_does_not_contain(element: String) = response_array_transform(_.arr.contains(parse(element)), false, Some(s"response array does not contain $element"))
 
+  def response_against_schema(schemaUrl: String) = {
+    val jsonSchema = loadJsonSchemaFile(schemaUrl)
+    transform_assert_session(LastResponseJsonKey, Success, sessionValue ⇒ {
+      val jsonNode = mapper.readTree(sessionValue)
+      Try { jsonSchema.validate(jsonNode) }
+    },
+      title = Some(s"HTTP response is valid against JSON schema $schemaUrl"))
+  }
+
   private def stringToJson(input: String): JValue =
     if (input.trim.head != '|') parse(input)
-    else parse(DataTableParser.parseDataTable(input).asJson.toString)
+    else parse(DataTableParser.parseDataTable(input).asJson.toString())
 }

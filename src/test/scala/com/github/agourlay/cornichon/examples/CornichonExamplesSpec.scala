@@ -336,6 +336,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, whiteList = true
         )
 
+        // TODO setup proper schema for superheroes
+        //And assert response_against_schema("https://api.sphere.io/documentation/json-schema/inline/payment.schema.json")
+
         // Test response body as a String by providing an extractor
         Then assert response_is(_ \ "city", "Gotham city")
 

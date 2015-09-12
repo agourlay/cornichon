@@ -4,7 +4,9 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpHeader
 import akka.stream.ActorMaterializer
 import cats.data.Xor
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.core._
+import com.github.fge.jsonschema.main.{ JsonSchemaFactory, JsonSchema }
 import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -25,6 +27,8 @@ trait HttpFeature {
   lazy val LastResponseJsonKey = "last-response-json"
   lazy val LastResponseStatusKey = "last-response-status"
   lazy val LastResponseHeadersKey = "last-response-headers"
+
+  val mapper = new ObjectMapper()
 
   case class InternalSSE(data: String, eventType: Option[String] = None, id: Option[String] = None)
 
@@ -96,6 +100,9 @@ trait HttpFeature {
       .addValue(LastResponseStatusKey, response.status.intValue().toString)
       .addValue(LastResponseJsonKey, response.body.prettyPrint)
       .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}:${h.value()}").mkString(","))
+
+  def loadJsonSchemaFile(fileLocation: String): JsonSchema =
+    JsonSchemaFactory.newBuilder().freeze().getJsonSchema(fileLocation)
 
   implicit def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
 }
