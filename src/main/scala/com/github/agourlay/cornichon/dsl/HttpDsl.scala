@@ -93,25 +93,53 @@ trait HttpDsl extends Dsl {
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
     }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
-  def response_is(jsString: String, whiteList: Boolean = false): ExecutableStep[JValue] = {
-    val jsonInput = parse(jsString)
-    transform_assert_session(LastResponseJsonKey, jsonInput, sessionValue ⇒ {
-      val sessionValueJson = parse(sessionValue)
-      if (whiteList) {
-        val Diff(changed, _, deleted) = jsonInput.diff(sessionValueJson)
-        if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
-        if (changed != JNothing) changed else jsonInput
-      } else sessionValueJson
-    }, Some(s"HTTP response is $jsString with whiteList=$whiteList"))
+  def response_is(mapFct: JValue ⇒ JValue, input: String) =
+    transform_assert_session(
+      key = LastResponseJsonKey,
+      expected = dslInput(input),
+      sessionValue ⇒ mapFct(parse(sessionValue)),
+      title = Some(s"HTTP response with transformation is $input")
+    )
+
+  def response_is(input: String, whiteList: Boolean = false): ExecutableStep[JValue] = {
+    val jsonInput = dslInput(input)
+    transform_assert_session(
+      key = LastResponseJsonKey,
+      title = Some(s"HTTP response is $input with whiteList=$whiteList"),
+      expected = jsonInput,
+      mapValue = sessionValue ⇒ {
+        val sessionValueJson = parse(sessionValue)
+        if (whiteList) {
+          val Diff(changed, _, deleted) = jsonInput.diff(sessionValueJson)
+          if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
+          if (changed != JNothing) changed else jsonInput
+        } else sessionValueJson
+      }
+    )
   }
 
   def response_is(jsString: String, ignoring: String*): ExecutableStep[JValue] =
-    transform_assert_session(LastResponseJsonKey, parse(jsString), sessionValue ⇒ {
-      val jsonSessionValue = parse(sessionValue)
-      if (ignoring.isEmpty) jsonSessionValue
-      else filterJsonKeys(jsonSessionValue, ignoring)
-    },
-      title = titleBuilder(s"HTTP response is $jsString", ignoring))
+    transform_assert_session(
+      key = LastResponseJsonKey,
+      title = titleBuilder(s"HTTP response is $jsString", ignoring),
+      expected = parse(jsString),
+      mapValue = sessionValue ⇒ {
+        val jsonSessionValue = parse(sessionValue)
+        if (ignoring.isEmpty) jsonSessionValue
+        else filterJsonKeys(jsonSessionValue, ignoring)
+      }
+    )
+
+  def response_is(expected: String, ordered: Boolean, ignoring: String*): ExecutableStep[Iterable[JValue]] =
+    dslInput(expected) match {
+      case expectedArray: JArray ⇒
+        if (ordered)
+          response_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response array is $expected", ignoring))
+        else
+          response_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response array not ordered is $expected", ignoring))
+      case _ ⇒
+        failWith(new NotAnArrayError(dslInput(expected)), titleBuilder(s"response array is $expected", ignoring).get, Seq.empty[JValue])
+    }
 
   def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
@@ -121,14 +149,6 @@ trait HttpDsl extends Dsl {
 
   def extract_from_response(rootKey: String, target: String) =
     extract_from_session(LastResponseJsonKey, s ⇒ (parse(s) \ rootKey).values.toString, target)
-
-  def response_is(mapFct: JValue ⇒ JValue, jsString: String) = {
-    transform_assert_session(
-      LastResponseJsonKey,
-      expected = parseMaybeStringInput(jsString),
-      sessionValue ⇒ mapFct(parse(sessionValue)), Some(s"HTTP response with transformation is $jsString")
-    )
-  }
 
   def show_last_status = show_session(LastResponseStatusKey)
 
@@ -141,26 +161,20 @@ trait HttpDsl extends Dsl {
     else Some(s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'$v'").mkString(", ")}")
   }
 
-  def response_array_is(expected: String, ordered: Boolean, ignoring: String*): ExecutableStep[Iterable[JValue]] =
-    stringToJson(expected) match {
-      case expectedArray: JArray ⇒
-        if (ordered)
-          response_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response array is $expected", ignoring))
-        else
-          response_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response array not ordered is $expected", ignoring))
-      case _ ⇒
-        throw new NotAnArrayError(expected)
-    }
-
   def response_array_transform[A](mapFct: JArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
-    transform_assert_session[A](LastResponseJsonKey, expected, sessionValue ⇒ {
+    transform_assert_session[A](
+      title = title,
+      key = LastResponseJsonKey,
+      expected = expected,
+      mapValue = sessionValue ⇒ {
       parse(sessionValue) match {
         case arr: JArray ⇒
           log.debug(s"response_body_array_is applied to ${pretty(render(arr))}")
           mapFct(arr)
         case _ ⇒ throw new NotAnArrayError(sessionValue)
       }
-    }, title)
+    }
+    )
 
   def response_array_size_is(size: Int) = response_array_transform(_.arr.size, size, Some(s"response array size is $size"))
 
@@ -177,11 +191,14 @@ trait HttpDsl extends Dsl {
       title = Some(s"HTTP response is valid against JSON schema $schemaUrl"))
   }
 
-  private def stringToJson(input: String): JValue =
-    if (input.trim.head != '|') parse(input)
-    else parse(DataTableParser.parseDataTable(input).asJson.toString())
-
-  // FIXME
-  private def parseMaybeStringInput(input: String): JValue =
-    if (input.trim.startsWith("{")) parse(input) else JString(input)
+  private def dslInput[A](input: A): JValue = input match {
+    case s: String if s.trim.head == '|' ⇒ parse(DataTableParser.parseDataTable(s).asJson.toString())
+    case s: String if s.trim.head == '{' ⇒ parse(s)
+    case s: String if s.trim.head == '[' ⇒ parse(s)
+    case s: String                       ⇒ JString(s)
+    case d: Double                       ⇒ JDouble(d)
+    case i: Int                          ⇒ JInt(i)
+    case l: Long                         ⇒ JLong(l)
+    case b: Boolean                      ⇒ JBool(b)
+  }
 }

@@ -48,6 +48,8 @@ trait Dsl extends CornichonLogger {
     b.addStep(EventuallyStop(conf))
   }
 
+  def failWith[A](e: Exception, title: String, expected: A) = ExecutableStep(title, s ⇒ throw e, expected)
+
   def save(input: (String, String)): ExecutableStep[Boolean] = {
     val (key, value) = input
     ExecutableStep(

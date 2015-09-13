@@ -166,7 +166,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I GET(s"$baseUrl/superheroes")
 
-        Then assert response_array_is(
+        Then assert response_is(
           """
           [{
             "name": "Batman",
@@ -195,7 +195,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           }]""", ordered = true, ignoring = "publisher"
         )
 
-        Then assert response_array_is(
+        Then assert response_is(
           """
             |    name     |    realName    |     city      |
             | "Batman"    | "Bruce Wayne"  | "Gotham city" |
@@ -206,7 +206,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ordered = true, ignoring = "publisher"
         )
 
-        Then assert response_array_is(
+        Then assert response_is(
           """
           [{
             "name": "Superman",
@@ -311,7 +311,6 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Extract value from response into session for reuse
         And I extract_from_response("city", "batman-city")
 
-        // Can be done using an extractor for deeper values
         And I extract_from_response(_ \ "city", "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
@@ -366,7 +365,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert response_array_size_is(4)
 
-        Then assert response_array_is(
+        Then assert response_is(
           """
             |   eventType      |    data     |
             | "superhero name" |  "Batman"   |

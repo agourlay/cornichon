@@ -30,9 +30,10 @@ case class StepAssertionError[A](expected: A, actual: A) extends CornichonError 
           |'${pretty(render(expected.asInstanceOf[JValue]))}'
           |but actual result is:
           |'${pretty(render(actual.asInstanceOf[JValue]))}'
-          |changed = ${if (changed == JNothing) "..." else pretty(render(changed))}
-          |added   = ${if (added == JNothing) "..." else pretty(render(added))}
-          |deleted = ${if (deleted == JNothing) "..." else pretty(render(deleted))}
+          |diff:
+          |${if (changed == JNothing) "" else "changed = " + pretty(render(changed))}
+          |${if (added == JNothing) "" else "added = " + pretty(render(added))}
+          |${if (deleted == JNothing) "" else "deleted = " + pretty(render(deleted))}
       """.stripMargin.trim
     case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]])}'"
     case _         ⇒ baseMsg
@@ -49,7 +50,7 @@ case class KeyNotFoundInSession(key: String) extends CornichonError {
 
 case class WhileListError(msg: String) extends CornichonError
 
-case class NotAnArrayError(badPayload: String) extends CornichonError {
+case class NotAnArrayError[A](badPayload: A) extends CornichonError {
   val msg = s"Expected JSON Array but got $badPayload"
 }
 
