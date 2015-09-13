@@ -91,13 +91,11 @@ trait HttpDsl extends Dsl {
 
   case object GET_WS extends Streamed { val name = "GET WS" }
 
-  private def parseHttpHeaders(headers: Seq[(String, String)]): Seq[HttpHeader] = {
-    val httpHeaders = headers.map(v ⇒ HttpHeader.parse(v._1, v._2))
-    httpHeaders.map {
+  private def parseHttpHeaders(headers: Seq[(String, String)]): Seq[HttpHeader] =
+    headers.map(v ⇒ HttpHeader.parse(v._1, v._2)).map {
       case ParsingResult.Ok(h, e) ⇒ h
       case ParsingResult.Error(e) ⇒ throw new MalformedHeadersError(e.formatPretty)
     }
-  }
 
   def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString, Some(s"HTTP status is $status"))
 
