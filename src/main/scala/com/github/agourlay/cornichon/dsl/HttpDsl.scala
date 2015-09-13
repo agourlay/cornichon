@@ -96,19 +96,19 @@ trait HttpDsl extends Dsl {
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
     }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
-  def response_is(mapFct: JValue ⇒ JValue, input: String) =
+  def body_is(mapFct: JValue ⇒ JValue, expected: String) =
     transform_assert_session(
-      key = LastResponseJsonKey,
-      expected = dslParse(input),
+      key = LastResponseBodyKey,
+      expected = dslParse(expected),
       sessionValue ⇒ mapFct(dslParse(sessionValue)),
-      title = Some(s"HTTP response with transformation is $input")
+      title = Some(s"HTTP response body with transformation is '$expected'")
     )
 
-  def response_is(whiteList: Boolean = false, expected: String): ExecutableStep[Any] = {
+  def body_is(whiteList: Boolean = false, expected: String): ExecutableStep[JValue] = {
     val jsonInput = dslParse(expected)
     transform_assert_session(
-      key = LastResponseJsonKey,
-      title = Some(s"HTTP response is $expected with whiteList=$whiteList"),
+      key = LastResponseBodyKey,
+      title = Some(s"HTTP response body is '$expected' with whiteList=$whiteList"),
       expected = jsonInput,
       mapValue =
         sessionValue ⇒ {
@@ -122,10 +122,10 @@ trait HttpDsl extends Dsl {
     )
   }
 
-  def response_is(expected: String, ignoring: String*): ExecutableStep[JValue] =
+  def body_is(expected: String, ignoring: String*): ExecutableStep[JValue] =
     transform_assert_session(
-      key = LastResponseJsonKey,
-      title = titleBuilder(s"HTTP response is '$expected'", ignoring),
+      key = LastResponseBodyKey,
+      title = titleBuilder(s"HTTP response body is '$expected'", ignoring),
       expected = dslParse(expected),
       mapValue =
         sessionValue ⇒ {
@@ -135,29 +135,29 @@ trait HttpDsl extends Dsl {
         }
     )
 
-  def response_is(ordered: Boolean, expected: String, ignoring: String*): ExecutableStep[Iterable[Any]] =
+  def body_is(ordered: Boolean, expected: String, ignoring: String*): ExecutableStep[Iterable[JValue]] =
     dslParse(expected) match {
       case expectedArray: JArray ⇒
         if (ordered)
-          response_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response array is $expected", ignoring))
+          body_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response body is '$expected'", ignoring))
         else
-          response_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response array not ordered is $expected", ignoring))
+          body_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring))
       case _ ⇒
-        failWith(new NotAnArrayError(dslParse(expected)), titleBuilder(s"response array is $expected", ignoring).get, Seq.empty[JValue])
+        failWith(new NotAnArrayError(dslParse(expected)), titleBuilder(s"response body array is '$expected'", ignoring).get, Seq.empty[JValue])
     }
 
   def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
   def extract_from_response(extractor: JValue ⇒ JValue, target: String) =
-    extract_from_session(LastResponseJsonKey, s ⇒ extractor(dslParse(s)).values.toString, target)
+    extract_from_session(LastResponseBodyKey, s ⇒ extractor(dslParse(s)).values.toString, target)
 
   def extract_from_response(rootKey: String, target: String) =
-    extract_from_session(LastResponseJsonKey, s ⇒ (dslParse(s) \ rootKey).values.toString, target)
+    extract_from_session(LastResponseBodyKey, s ⇒ (dslParse(s) \ rootKey).values.toString, target)
 
   def show_last_status = show_session(LastResponseStatusKey)
 
-  def show_last_response_json = show_session(LastResponseJsonKey)
+  def show_last_response_body = show_session(LastResponseBodyKey)
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
@@ -165,10 +165,10 @@ trait HttpDsl extends Dsl {
     if (ignoring.isEmpty) Some(baseTitle)
     else Some(s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'$v'").mkString(", ")}")
 
-  def response_array_transform[A](mapFct: JArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
+  def body_array_transform[A](mapFct: JArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
     transform_assert_session[A](
       title = title,
-      key = LastResponseJsonKey,
+      key = LastResponseBodyKey,
       expected = expected,
       mapValue =
       sessionValue ⇒ {
@@ -181,17 +181,17 @@ trait HttpDsl extends Dsl {
       }
     )
 
-  def response_array_size_is(size: Int) = response_array_transform(_.arr.size, size, Some(s"response array size is $size"))
+  def response_array_size_is(size: Int) = body_array_transform(_.arr.size, size, Some(s"response array size is $size"))
 
-  def response_array_contains(element: String) = response_array_transform(_.arr.contains(parse(element)), true, Some(s"response array contains $element"))
+  def response_array_contains(element: String) = body_array_transform(_.arr.contains(parse(element)), true, Some(s"response array contains $element"))
 
-  def response_array_does_not_contain(element: String) = response_array_transform(_.arr.contains(parse(element)), false, Some(s"response array does not contain $element"))
+  def response_array_does_not_contain(element: String) = body_array_transform(_.arr.contains(parse(element)), false, Some(s"response array does not contain $element"))
 
-  def response_against_schema(schemaUrl: String) =
+  def body_against_schema(schemaUrl: String) =
     transform_assert_session(
-      key = LastResponseJsonKey,
+      key = LastResponseBodyKey,
       expected = Success,
-      title = Some(s"HTTP response is valid against JSON schema $schemaUrl"),
+      title = Some(s"HTTP response body is valid against JSON schema $schemaUrl"),
       mapValue =
         sessionValue ⇒ {
           val jsonNode = mapper.readTree(sessionValue)

@@ -27,7 +27,7 @@ class CornichonExamplesSpec extends CornichonFeature {
       Scenario("CRUD Feature demo") { implicit b ⇒
         When I GET(s"$baseUrl/superheroes/Batman")
         Then assert status_is(200)
-        And assert response_is(
+        And assert body_is(
           """
           {
             "name": "Batman",
@@ -41,7 +41,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
           """
         )
-        And assert response_is(
+        And assert body_is(
           """
           {
             "name": "Batman",
@@ -50,24 +50,24 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "city", "publisher"
         )
         // Compare only against provided keys
-        And assert response_is(whiteList = true, expected = """
+        And assert body_is(whiteList = true, expected = """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
           }
           """)
         // Test part of response body by providing an extractor
-        Then assert response_is(_ \ "city", "Gotham city")
-        Then assert response_is(_ \ "publisher", """
+        Then assert body_is(_ \ "city", "Gotham city")
+        Then assert body_is(_ \ "publisher", expected = """
           {
             "name":"DC",
             "foundationDate":"1934",
             "location":"Burbank, California"
           } """)
-        Then assert response_is(_ \ "publisher" \ "name", "DC")
+        Then assert body_is(_ \ "publisher" \ "name", "DC")
         When I GET(s"$baseUrl/superheroes/Scalaman")
         Then assert status_is(404)
-        And assert response_is(
+        And assert body_is(
           """
           {
             "error": "Superhero Scalaman not found"
@@ -88,7 +88,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
           """)
         Then assert status_is(401)
-        Then assert response_is("The resource requires authentication, which was not supplied with the request")
+        Then assert body_is("The resource requires authentication, which was not supplied with the request")
         // Try again with authentication
         When I POST(s"$baseUrl/superheroes", payload =
           """
@@ -102,10 +102,10 @@ class CornichonExamplesSpec extends CornichonFeature {
               "location":"Burbank, California"
             }
           }
-          """)(Seq(Authorization(BasicHttpCredentials("admin", "cornichon"))))
+          """)(headers = Seq(Authorization(BasicHttpCredentials("admin", "cornichon"))))
         Then assert status_is(201)
         When I GET(s"$baseUrl/superheroes/Scalaman")
-        Then assert response_is(
+        Then assert body_is(
           """
           {
             "name": "Scalaman",
@@ -114,7 +114,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "publisher", "city"
         )
         When I GET(s"$baseUrl/superheroes/Scalaman", params = "protectIdentity" → "true")
-        Then assert response_is(
+        Then assert body_is(
           """
           {
             "name": "Scalaman",
@@ -135,9 +135,9 @@ class CornichonExamplesSpec extends CornichonFeature {
               "location":"Burbank, California"
             }
           }
-          """)(Seq(Authorization(BasicHttpCredentials("admin", "cornichon"))))
+          """)(headers = Seq(Authorization(BasicHttpCredentials("admin", "cornichon"))))
         Then assert status_is(200)
-        Then assert response_is(
+        Then assert body_is(
           """
           {
             "name": "Scalaman",
@@ -155,7 +155,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("Collection Feature demo") { implicit b ⇒
         When I GET(s"$baseUrl/superheroes")
-        Then assert response_is(ordered = true, expected = """
+        Then assert body_is(ordered = true, expected = """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -181,7 +181,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "realName": "Oleg Ilyenko",
             "city": "Pankow"
           }]""", ignoring = "publisher")
-        Then assert response_is(ordered = true, expected = """
+        Then assert body_is(ordered = true, expected = """
           |    name     |    realName    |     city      |
           | "Batman"    | "Bruce Wayne"  | "Gotham city" |
           | "Superman"  | "Clark Kent"   | "Metropolis"  |
@@ -189,7 +189,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           | "IronMan"   | "Tony Stark"   | "New York"    |
           | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |
         """, ignoring = "publisher")
-        Then assert response_is(ordered = false, expected = """
+        Then assert body_is(ordered = false, expected = """
           [{
             "name": "Superman",
             "realName": "Clark Kent",
@@ -252,7 +252,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("Session feature demo") { implicit b ⇒
         When I GET(s"$baseUrl/superheroes/Batman")
-        Then assert response_is(
+        Then assert body_is(
           """
           {
             "name": "Batman",
@@ -266,7 +266,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert session_contains("favorite-superhero" → "Batman")
         // Retrieve dynamically from session with <key> for URL construction
         When I GET(s"$baseUrl/superheroes/<favorite-superhero>")
-        Then assert response_is(
+        Then assert body_is(
           """
           {
             "name": "<favorite-superhero>",
@@ -280,7 +280,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Or with extractor
         And I extract_from_response(_ \ "city", "batman-city")
         Then assert session_contains("batman-city" → "Gotham city")
-        Then assert response_is(
+        Then assert body_is(
           """
           {
             "name": "<favorite-superhero>",
@@ -293,7 +293,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
         And I show_last_status
-        And I show_last_response_json
+        And I show_last_response_body
         And I show_last_response_headers
       },
 
@@ -318,7 +318,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE(s"$baseUrl/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
         Then assert response_array_size_is(4)
-        Then assert response_is("""
+        Then assert body_is("""
           |   eventType      |    data     |
           | "superhero name" |  "Batman"   |
           | "superhero name" | "Superman"  |
@@ -328,7 +328,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Repeat series of Steps until it succeed
         Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
           When I GET(s"$baseUrl/superheroes/random")
-          Then assert response_is(
+          Then assert body_is(
             """
           {
             "name": "Batman",

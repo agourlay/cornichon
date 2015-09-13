@@ -24,7 +24,7 @@ trait HttpFeature {
   implicit private val ec: ExecutionContext = system.dispatcher
   private val httpService = new HttpService
 
-  lazy val LastResponseJsonKey = "last-response-json"
+  lazy val LastResponseBodyKey = "last-response-body"
   lazy val LastResponseStatusKey = "last-response-status"
   lazy val LastResponseHeadersKey = "last-response-headers"
 
@@ -73,7 +73,7 @@ trait HttpFeature {
       val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers), takeWithin + 1.second)
       val jsonRes = res.map(s ⇒ InternalSSE.build(s)).toVector.toJson
       // TODO add Headers and Status Code
-      (jsonRes, s.addValue(LastResponseJsonKey, jsonRes.prettyPrint))
+      (jsonRes, s.addValue(LastResponseBodyKey, jsonRes.prettyPrint))
     }
 
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
@@ -98,7 +98,7 @@ trait HttpFeature {
   def fillInHttpSession(session: Session, response: CornichonHttpResponse): Session =
     session
       .addValue(LastResponseStatusKey, response.status.intValue().toString)
-      .addValue(LastResponseJsonKey, response.body)
+      .addValue(LastResponseBodyKey, response.body)
       .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}:${h.value()}").mkString(","))
 
   def loadJsonSchemaFile(fileLocation: String): JsonSchema =
