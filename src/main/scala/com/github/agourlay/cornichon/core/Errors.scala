@@ -39,6 +39,10 @@ case class StepAssertionError[A](expected: A, actual: A) extends CornichonError 
   }
 }
 
+case class MalformedHeadersError(error: String) extends CornichonError {
+  val msg = s"Error thrown while parsing headers $error"
+}
+
 case class ResolverError(key: String) extends CornichonError {
   val msg = s"key '<$key>' can not be resolved"
 }

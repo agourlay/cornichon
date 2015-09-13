@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import akka.http.scaladsl.model.HttpHeader
+import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http._
 import org.json4s._
@@ -37,7 +38,7 @@ trait HttpDsl extends Dsl {
   }
 
   sealed trait WithPayload extends Request {
-    def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
       ExecutableStep(
         title = {
         val base = s"$name to $url with payload $payload"
@@ -46,9 +47,10 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
+          val httpHeaders = parseHttpHeaders(headers)
           val x = this match {
-            case POST ⇒ Post(dslParse(payload), url, params, headers)(s)
-            case PUT  ⇒ Put(dslParse(payload), url, params, headers)(s)
+            case POST ⇒ Post(dslParse(payload), url, params, httpHeaders)(s)
+            case PUT  ⇒ Put(dslParse(payload), url, params, httpHeaders)(s)
           }
           x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
         },
@@ -57,7 +59,7 @@ trait HttpDsl extends Dsl {
   }
 
   sealed trait Streamed extends Request {
-    def apply(url: String, takeWithin: FiniteDuration, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, takeWithin: FiniteDuration, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
       ExecutableStep(
         title = {
         val base = s"$name $url"
@@ -66,8 +68,9 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
+          val httpHeaders = parseHttpHeaders(headers)
           val x = this match {
-            case GET_SSE ⇒ GetSSE(url, takeWithin, params, headers)(s)
+            case GET_SSE ⇒ GetSSE(url, takeWithin, params, httpHeaders)(s)
             case GET_WS  ⇒ ???
           }
           x.map { case (source, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
@@ -87,6 +90,14 @@ trait HttpDsl extends Dsl {
   case object GET_SSE extends Streamed { val name = "GET SSE" }
 
   case object GET_WS extends Streamed { val name = "GET WS" }
+
+  private def parseHttpHeaders(headers: Seq[(String, String)]): Seq[HttpHeader] = {
+    val httpHeaders = headers.map(v ⇒ HttpHeader.parse(v._1, v._2))
+    httpHeaders.map {
+      case ParsingResult.Ok(h, e) ⇒ h
+      case ParsingResult.Error(e) ⇒ throw new MalformedHeadersError(e.formatPretty)
+    }
+  }
 
   def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString, Some(s"HTTP status is $status"))
 

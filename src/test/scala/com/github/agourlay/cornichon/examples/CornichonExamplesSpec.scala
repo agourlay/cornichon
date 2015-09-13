@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.examples
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+
 import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.model.headers.{ Authorization, BasicHttpCredentials }
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.server.RestAPI
 import scala.concurrent.Await
@@ -102,7 +104,7 @@ class CornichonExamplesSpec extends CornichonFeature {
               "location":"Burbank, California"
             }
           }
-          """)(headers = Seq(Authorization(BasicHttpCredentials("admin", "cornichon"))))
+          """)(headers = Seq(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))))
         Then assert status_is(201)
         When I GET(s"$baseUrl/superheroes/Scalaman")
         Then assert body_is(
@@ -135,7 +137,7 @@ class CornichonExamplesSpec extends CornichonFeature {
               "location":"Burbank, California"
             }
           }
-          """)(headers = Seq(Authorization(BasicHttpCredentials("admin", "cornichon"))))
+          """)(headers = Seq(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))))
         Then assert status_is(200)
         Then assert body_is(
           """
