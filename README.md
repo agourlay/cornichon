@@ -45,7 +45,7 @@ Then assert status_is(200)
 Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.
 
 - usual GET/POST/UPDATE/DELETE
-- assert response body JSON
+- assert response body
 - assert http status
 - assert http headers
 - assert JSON array using data table
@@ -69,7 +69,7 @@ Then assert session_contains("favorite-superhero" → "Batman")
 
 When I GET("http://localhost:8080/superheroes/<favorite-superhero>")
 
-Then assert response_is(
+Then assert body_is(
   """
   {
     "name": "<favorite-superhero>",
@@ -98,7 +98,7 @@ class CornichonReadmeExample extends CornichonFeature {
 
         Then assert status_is(200)
 
-        And assert response_is(
+        And assert body_is(
           """
           {
             "name": "Batman",
