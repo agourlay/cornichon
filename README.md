@@ -56,6 +56,7 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 - JSON4s XPath integration (usage of ```\```, ```\\```, ```find```, ```filter```, ```transform``` etc)
 - validate response against Json schemas
 - experimental support for Server-Sent-Event assertion
+- logging statement
 
 
 ## Placeholders

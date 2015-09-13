@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core._
 
+import scala.Console._
 import scala.concurrent.duration.Duration
 
 trait Dsl extends CornichonLogger {
@@ -86,7 +87,7 @@ trait Dsl extends CornichonLogger {
     ExecutableStep(
       s"show session",
       s ⇒ {
-        log.info(s"Session content : \n${s.content.map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")}")
+        log(s"Session content : \n${s.content.map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")}")
         (true, s)
       }, true
     )
@@ -96,8 +97,12 @@ trait Dsl extends CornichonLogger {
       s"show session key '$key'",
       s ⇒ {
         val value = s.getKey(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v)
-        log.info(s"Session content for key '$key' is '$value'")
+        log(s"Session content for key '$key' is '$value'")
         (true, s)
       }, true
     )
+
+  def log(msg: String): Unit = {
+    logger.info(CYAN + s"   $msg" + RESET)
+  }
 }

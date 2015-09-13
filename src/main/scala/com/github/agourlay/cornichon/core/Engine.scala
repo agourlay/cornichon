@@ -32,12 +32,12 @@ class Engine extends CornichonLogger {
   def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] =
     StepAssertionResult(actual == expected, expected, actual) match {
       case StepAssertionResult(true, _, _) ⇒
-        log.info(GREEN + s"   $title" + RESET)
+        logger.info(GREEN + s"   $title" + RESET)
         right(newSession)
       case StepAssertionResult(false, exp, act) ⇒
         val error = StepAssertionError(exp, act)
-        log.error(RED + s"   $title *** FAILED ***" + RESET)
-        log.error(RED + s"${error.msg}" + RESET)
+        logger.error(RED + s"   $title *** FAILED ***" + RESET)
+        logger.error(RED + s"${error.msg}" + RESET)
         left(error)
     }
 
@@ -66,10 +66,10 @@ class Engine extends CornichonLogger {
                 loop(steps.tail, currentSession, eventuallyConf.consume(executionTime), snapshot)
             }
           case EventuallyStart(conf) ⇒
-            log.info(s"Eventually bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}")
+            logger.info(s"Eventually bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}")
             loop(steps.tail, session, conf, Some(RollbackSnapshot(steps.tail, session)))
           case EventuallyStop(conf) ⇒
-            log.info(s"Eventually bloc succeeded in ${conf.maxTime.toSeconds - eventuallyConf.maxTime.toSeconds} sec.")
+            logger.info(s"Eventually bloc succeeded in ${conf.maxTime.toSeconds - eventuallyConf.maxTime.toSeconds} sec.")
             loop(steps.tail, session, EventuallyConf.empty, None)
         }
     }

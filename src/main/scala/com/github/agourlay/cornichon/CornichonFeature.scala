@@ -20,7 +20,7 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
     val feat = feature
     beforeFeature()
     val scenarioReports = feat.scenarios.map { s ⇒
-      log.info(s"Scenario : ${s.name}")
+      logger.info(s"Scenario : ${s.name}")
       val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
       engine.runScenario(completeScenario)(session)
     }

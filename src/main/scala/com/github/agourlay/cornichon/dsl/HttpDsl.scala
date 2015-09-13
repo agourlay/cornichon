@@ -169,7 +169,7 @@ trait HttpDsl extends Dsl {
       mapValue = sessionValue ⇒ {
       parse(sessionValue) match {
         case arr: JArray ⇒
-          log.debug(s"response_body_array_is applied to ${pretty(render(arr))}")
+          logger.debug(s"response_body_array_is applied to ${pretty(render(arr))}")
           mapFct(arr)
         case _ ⇒ throw new NotAnArrayError(sessionValue)
       }

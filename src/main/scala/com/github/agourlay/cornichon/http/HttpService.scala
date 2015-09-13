@@ -50,7 +50,7 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
       .mapAsync(1)(expectSSE)
       .map { sse ⇒
         sse.fold(e ⇒ {
-          log.error(RED + s"SSE connection error $e" + RESET)
+          logger.error(RED + s"SSE connection error $e" + RESET)
           Source.empty[ServerSentEvent]
         }, s ⇒ s)
       }
