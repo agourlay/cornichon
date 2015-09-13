@@ -20,8 +20,7 @@ case class StepAssertionError[A](expected: A, actual: A) extends CornichonError 
         |""".stripMargin.trim
 
   val msg = actual match {
-    case s: String ⇒
-      s"$baseMsg \n String diff is '${s.diff(expected.asInstanceOf[String])}'"
+    case s: String ⇒ baseMsg
     case JString(s) ⇒
       s"$baseMsg \n String diff is '${s.diff(expected.asInstanceOf[JString].s)}'"
     case j: JValue ⇒

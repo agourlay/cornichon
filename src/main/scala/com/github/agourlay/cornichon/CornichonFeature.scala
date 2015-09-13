@@ -18,13 +18,16 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
 
   protected def runFeature(): FeatureReport = {
     val feat = feature
-    beforeFeature()
-    val scenarioReports = feat.scenarios.map { s ⇒
-      logger.info(s"Scenario : ${s.name}")
-      val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
-      engine.runScenario(completeScenario)(session)
-    }
-    afterFeature()
+    val scenarioReports = try {
+      beforeFeature()
+      feat.scenarios.map { s ⇒
+        logger.info(s"Scenario : ${s.name}")
+        val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
+        engine.runScenario(completeScenario)(session)
+      }
+    } finally
+      afterFeature()
+
     val failedReports = scenarioReports.collect { case f: FailedScenarioReport ⇒ f }
     val successReports = scenarioReports.collect { case s: SuccessScenarioReport ⇒ s }
     if (failedReports.isEmpty)

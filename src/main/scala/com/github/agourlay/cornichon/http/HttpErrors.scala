@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http
 
-import akka.http.scaladsl.model.StatusCode
+import akka.http.scaladsl.model.{ HttpResponse, StatusCode }
 import com.github.agourlay.cornichon.core.CornichonError
 import spray.json.JsValue
 
@@ -10,8 +10,8 @@ case class StatusError(expected: StatusCode, actual: StatusCode, body: JsValue) 
   val msg = s"Unexpected status code. Expected $expected. Actual: $actual, $body"
 }
 
-case class JsonError(e: Exception) extends HttpError {
-  val msg = s"Expected Json but got ${e.printStackTrace()}"
+case class ResponseError(e: Exception, response: HttpResponse) extends HttpError {
+  val msg = s"HTTP response '$response' generated error ${e.printStackTrace()}"
 }
 
 case class SseError(e: Exception) extends HttpError {

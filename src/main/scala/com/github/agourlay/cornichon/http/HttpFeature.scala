@@ -37,7 +37,7 @@ trait HttpFeature {
     implicit val formatServerSentEvent = jsonFormat3(InternalSSE.apply)
   }
 
-  def Post(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
+  def Post(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
@@ -47,7 +47,7 @@ trait HttpFeature {
       (res, newSession)
     }
 
-  def Put(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
+  def Put(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
@@ -57,7 +57,7 @@ trait HttpFeature {
       (res, newSession)
     }
 
-  def Get(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
+  def Get(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.getJson(encodeParams(urlResolved, params), headers), timeout)
@@ -76,7 +76,7 @@ trait HttpFeature {
       (jsonRes, s.addValue(LastResponseJsonKey, jsonRes.prettyPrint))
     }
 
-  def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (JsonHttpResponse, Session)] =
+  def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
       res ← Await.result(httpService.deleteJson(encodeParams(urlResolved, params), headers), timeout)
@@ -95,10 +95,10 @@ trait HttpFeature {
     url + encoded
   }
 
-  def fillInHttpSession(session: Session, response: JsonHttpResponse): Session =
+  def fillInHttpSession(session: Session, response: CornichonHttpResponse): Session =
     session
       .addValue(LastResponseStatusKey, response.status.intValue().toString)
-      .addValue(LastResponseJsonKey, response.body.prettyPrint)
+      .addValue(LastResponseJsonKey, response.body)
       .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}:${h.value()}").mkString(","))
 
   def loadJsonSchemaFile(fileLocation: String): JsonSchema =

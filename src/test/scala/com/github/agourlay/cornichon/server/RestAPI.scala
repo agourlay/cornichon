@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.server.directives.UserCredentials
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server._
 import Directives._
@@ -78,16 +79,20 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
           }
         } ~
           post {
-            entity(as[SuperHero]) { s: SuperHero ⇒
-              onSuccess(testData.addSuperhero(s)) { created: SuperHero ⇒
-                complete(ToResponseMarshallable(Created → created))
+            authenticateBasicPF(realm = "secure site", login) { userName ⇒
+              entity(as[SuperHero]) { s: SuperHero ⇒
+                onSuccess(testData.addSuperhero(s)) { created: SuperHero ⇒
+                  complete(ToResponseMarshallable(Created → created))
+                }
               }
             }
           } ~
           put {
-            entity(as[SuperHero]) { s: SuperHero ⇒
-              onSuccess(testData.updateSuperhero(s)) { updated: SuperHero ⇒
-                complete(ToResponseMarshallable(OK → updated))
+            authenticateBasicPF(realm = "secure site", login) { userName ⇒
+              entity(as[SuperHero]) { s: SuperHero ⇒
+                onSuccess(testData.updateSuperhero(s)) { updated: SuperHero ⇒
+                  complete(ToResponseMarshallable(OK → updated))
+                }
               }
             }
           }
@@ -129,4 +134,8 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
       }
 
   def start(httpPort: Int) = Http(system).bindAndHandle(route, "localhost", port = httpPort)
+
+  def login: PartialFunction[UserCredentials, String] = {
+    case u @ UserCredentials.Provided(username) if username == "admin" && u.verifySecret("cornichon") ⇒ "admin"
+  }
 }

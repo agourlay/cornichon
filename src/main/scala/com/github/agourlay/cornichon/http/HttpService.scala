@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.{ HttpRequest, HttpHeader, HttpResponse }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ FlattenStrategy, Sink, Source }
+import akka.stream.scaladsl.{ FlattenStrategy, Source }
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonLogger
@@ -18,8 +18,7 @@ import spray.json.JsValue
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import scala.Console._
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Future }
 
 class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer) extends CornichonLogger {
 
@@ -31,13 +30,13 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
       .flatMap(expectJson)
       .recover(exceptionMapper)
 
-  def postJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+  def postJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Post(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
 
-  def putJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+  def putJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Put(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
 
-  def getJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+  def getJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Get(url).withHeaders(collection.immutable.Seq(headers: _*)))
 
   def getSSE(url: String, takeWithin: FiniteDuration, headers: Seq[HttpHeader]) = {
@@ -62,10 +61,10 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
 
   }
 
-  def deleteJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, JsonHttpResponse]] =
+  def deleteJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Delete(url).withHeaders(collection.immutable.Seq(headers: _*)))
 
-  def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, JsonHttpResponse]] = {
+  def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, CornichonHttpResponse]] = {
     case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))
   }
 
@@ -76,10 +75,11 @@ class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer)
       case e: Exception ⇒ left(SseError(e))
     }
 
-  def expectJson(httpResponse: HttpResponse): Future[Xor[HttpError, JsonHttpResponse]] =
-    Unmarshal(httpResponse).to[JsValue].map { body: JsValue ⇒
-      right(JsonHttpResponse.fromResponse(httpResponse, body))
+  def expectJson(httpResponse: HttpResponse): Future[Xor[HttpError, CornichonHttpResponse]] =
+    Unmarshal(httpResponse).to[String].map { body: String ⇒
+      right(CornichonHttpResponse.fromResponse(httpResponse, body))
     }.recover {
-      case e: Exception ⇒ left(JsonError(e))
+      case e: Exception ⇒
+        left(ResponseError(e, httpResponse))
     }
 }

@@ -45,8 +45,8 @@ trait HttpDsl extends Dsl {
       },
         action = s ⇒ {
         val x = this match {
-          case POST ⇒ Post(parse(payload), url, params, headers)(s)
-          case PUT  ⇒ Put(parse(payload), url, params, headers)(s)
+          case POST ⇒ Post(dslInput(payload), url, params, headers)(s)
+          case PUT  ⇒ Put(dslInput(payload), url, params, headers)(s)
         }
         x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
       },
@@ -97,7 +97,7 @@ trait HttpDsl extends Dsl {
     transform_assert_session(
       key = LastResponseJsonKey,
       expected = dslInput(input),
-      sessionValue ⇒ mapFct(parse(sessionValue)),
+      sessionValue ⇒ mapFct(dslInput(sessionValue)),
       title = Some(s"HTTP response with transformation is $input")
     )
 
@@ -108,7 +108,7 @@ trait HttpDsl extends Dsl {
       title = Some(s"HTTP response is $input with whiteList=$whiteList"),
       expected = jsonInput,
       mapValue = sessionValue ⇒ {
-        val sessionValueJson = parse(sessionValue)
+        val sessionValueJson = dslInput(sessionValue)
         if (whiteList) {
           val Diff(changed, _, deleted) = jsonInput.diff(sessionValueJson)
           if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
@@ -121,10 +121,10 @@ trait HttpDsl extends Dsl {
   def response_is(jsString: String, ignoring: String*): ExecutableStep[JValue] =
     transform_assert_session(
       key = LastResponseJsonKey,
-      title = titleBuilder(s"HTTP response is $jsString", ignoring),
-      expected = parse(jsString),
+      title = titleBuilder(s"HTTP response is '$jsString'", ignoring),
+      expected = dslInput(jsString),
       mapValue = sessionValue ⇒ {
-        val jsonSessionValue = parse(sessionValue)
+        val jsonSessionValue = dslInput(sessionValue)
         if (ignoring.isEmpty) jsonSessionValue
         else filterJsonKeys(jsonSessionValue, ignoring)
       }
@@ -145,10 +145,10 @@ trait HttpDsl extends Dsl {
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
   def extract_from_response(extractor: JValue ⇒ JValue, target: String) =
-    extract_from_session(LastResponseJsonKey, s ⇒ extractor(parse(s)).values.toString, target)
+    extract_from_session(LastResponseJsonKey, s ⇒ extractor(dslInput(s)).values.toString, target)
 
   def extract_from_response(rootKey: String, target: String) =
-    extract_from_session(LastResponseJsonKey, s ⇒ (parse(s) \ rootKey).values.toString, target)
+    extract_from_session(LastResponseJsonKey, s ⇒ (dslInput(s) \ rootKey).values.toString, target)
 
   def show_last_status = show_session(LastResponseStatusKey)
 
