@@ -104,11 +104,11 @@ trait HttpDsl extends Dsl {
       title = Some(s"HTTP response with transformation is $input")
     )
 
-  def response_is(input: String, whiteList: Boolean = false): ExecutableStep[JValue] = {
-    val jsonInput = dslParse(input)
+  def response_is(whiteList: Boolean = false, expected: String): ExecutableStep[Any] = {
+    val jsonInput = dslParse(expected)
     transform_assert_session(
       key = LastResponseJsonKey,
-      title = Some(s"HTTP response is $input with whiteList=$whiteList"),
+      title = Some(s"HTTP response is $expected with whiteList=$whiteList"),
       expected = jsonInput,
       mapValue =
         sessionValue ⇒ {
@@ -122,11 +122,11 @@ trait HttpDsl extends Dsl {
     )
   }
 
-  def response_is(jsString: String, ignoring: String*): ExecutableStep[JValue] =
+  def response_is(expected: String, ignoring: String*): ExecutableStep[JValue] =
     transform_assert_session(
       key = LastResponseJsonKey,
-      title = titleBuilder(s"HTTP response is '$jsString'", ignoring),
-      expected = dslParse(jsString),
+      title = titleBuilder(s"HTTP response is '$expected'", ignoring),
+      expected = dslParse(expected),
       mapValue =
         sessionValue ⇒ {
           val jsonSessionValue = dslParse(sessionValue)
@@ -135,7 +135,7 @@ trait HttpDsl extends Dsl {
         }
     )
 
-  def response_is(expected: String, ordered: Boolean, ignoring: String*): ExecutableStep[Iterable[JValue]] =
+  def response_is(ordered: Boolean, expected: String, ignoring: String*): ExecutableStep[Iterable[Any]] =
     dslParse(expected) match {
       case expectedArray: JArray ⇒
         if (ordered)
@@ -191,12 +191,12 @@ trait HttpDsl extends Dsl {
     transform_assert_session(
       key = LastResponseJsonKey,
       expected = Success,
+      title = Some(s"HTTP response is valid against JSON schema $schemaUrl"),
       mapValue =
-      sessionValue ⇒ {
-        val jsonNode = mapper.readTree(sessionValue)
-        Try { loadJsonSchemaFile(schemaUrl).validate(jsonNode) }
-      },
-      title = Some(s"HTTP response is valid against JSON schema $schemaUrl")
+        sessionValue ⇒ {
+          val jsonNode = mapper.readTree(sessionValue)
+          Try { loadJsonSchemaFile(schemaUrl).validate(jsonNode) }
+        }
     )
 
   private def dslParse[A](input: A): JValue = input match {

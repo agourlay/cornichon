@@ -50,14 +50,12 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "city", "publisher"
         )
         // Compare only against provided keys
-        And assert response_is(
-          """
+        And assert response_is(whiteList = true, expected = """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
           }
-          """, whiteList = true
-        )
+          """)
         // Test part of response body by providing an extractor
         Then assert response_is(_ \ "city", "Gotham city")
         Then assert response_is(_ \ "publisher", """
@@ -157,8 +155,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("Collection Feature demo") { implicit b ⇒
         When I GET(s"$baseUrl/superheroes")
-        Then assert response_is(
-          """
+        Then assert response_is(ordered = true, expected = """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -183,20 +180,16 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
             "city": "Pankow"
-          }]""", ordered = true, ignoring = "publisher"
-        )
-        Then assert response_is(
-          """
-            |    name     |    realName    |     city      |
-            | "Batman"    | "Bruce Wayne"  | "Gotham city" |
-            | "Superman"  | "Clark Kent"   | "Metropolis"  |
-            | "Spiderman" | "Peter Parker" | "New York"    |
-            | "IronMan"   | "Tony Stark"   | "New York"    |
-            | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |
-          """, ordered = true, ignoring = "publisher"
-        )
-        Then assert response_is(
-          """
+          }]""", ignoring = "publisher")
+        Then assert response_is(ordered = true, expected = """
+          |    name     |    realName    |     city      |
+          | "Batman"    | "Bruce Wayne"  | "Gotham city" |
+          | "Superman"  | "Clark Kent"   | "Metropolis"  |
+          | "Spiderman" | "Peter Parker" | "New York"    |
+          | "IronMan"   | "Tony Stark"   | "New York"    |
+          | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |
+        """, ignoring = "publisher")
+        Then assert response_is(ordered = false, expected = """
           [{
             "name": "Superman",
             "realName": "Clark Kent",
@@ -221,8 +214,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
             "city": "Pankow"
-          }]""", ordered = false, ignoring = "publisher"
-        )
+          }]""", ignoring = "publisher")
         Then assert response_array_size_is(5)
         And assert response_array_contains(
           """
@@ -326,15 +318,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE(s"$baseUrl/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
         Then assert response_array_size_is(4)
-        Then assert response_is(
-          """
-            |   eventType      |    data     |
-            | "superhero name" |  "Batman"   |
-            | "superhero name" | "Superman"  |
-            | "superhero name" | "Spiderman" |
-            | "superhero name" | "Scalaman"  |
-          """, ordered = true
-        )
+        Then assert response_is("""
+          |   eventType      |    data     |
+          | "superhero name" |  "Batman"   |
+          | "superhero name" | "Superman"  |
+          | "superhero name" | "Spiderman" |
+          | "superhero name" | "Scalaman"  |
+        """)
         // Repeat series of Steps until it succeed
         Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
           When I GET(s"$baseUrl/superheroes/random")
