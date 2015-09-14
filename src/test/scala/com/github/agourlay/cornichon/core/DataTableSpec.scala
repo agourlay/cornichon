@@ -100,20 +100,22 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
     "produce valid Json Array" in {
       val input =
         """
-          |  Name  |   Age  |
-          | "John" |   50   |
-          | "Bob"  |   11   |
+          |  Name  |   Age  | 2LettersName |
+          | "John" |   50   |    false     |
+          | "Bob"  |   11   |    true      |
         """
 
       val p = new DataTableParser(input)
       p.dataTableRule.run().success.value.asJson should be("""
         [{
           "Name":"John",
-          "Age":50
+          "Age":50,
+          "2LettersName": false
         },
         {
           "Name":"Bob",
-          "Age":11
+          "Age":11,
+          "2LettersName": true
         }]
       """.parseJson)
     }

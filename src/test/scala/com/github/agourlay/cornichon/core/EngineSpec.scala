@@ -7,7 +7,7 @@ class EngineSpec extends WordSpec with Matchers {
   val engine = new Engine()
 
   "An engine" must {
-    "execute all steps" in {
+    "execute all steps of a scenario" in {
       val session = Session.newSession
       val steps = Seq(ExecutableStep[Int]("first step", s ⇒ (2 + 1, s), 3))
       val s = Scenario("test", steps)
