@@ -146,19 +146,21 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "publisher"
         )
 
-        When I PUT(s"$baseUrl/superheroes", payload =
-          """
-          {
-            "name": "Scalaman",
-            "realName": "Oleg Ilyenko",
-            "city": "Pankow",
-            "publisher":{
-              "name":"DC",
-              "foundationDate":"1934",
-              "location":"Burbank, California"
+        WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))) {
+          When I PUT(s"$baseUrl/superheroes", payload =
+            """
+            {
+              "name": "Scalaman",
+              "realName": "Oleg Ilyenko",
+              "city": "Pankow",
+              "publisher":{
+                "name":"DC",
+                "foundationDate":"1934",
+                "location":"Burbank, California"
+              }
             }
-          }
-          """)(headers = Seq(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))))
+            """)
+        }
 
         Then assert status_is(200)
 
@@ -351,7 +353,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("Advanced feature demo") { implicit b ⇒
 
-        //When I GET(s"$baseUrl/superheroes/Batman")
+        When I GET(s"$baseUrl/superheroes/Batman")
 
         // TODO setup proper schema for superheroes
         //And assert response_against_schema("https://api.sphere.io/documentation/json-schema/inline/payment.schema.json")

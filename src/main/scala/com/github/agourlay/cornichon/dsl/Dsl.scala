@@ -59,6 +59,13 @@ trait Dsl extends CornichonLogger {
     )
   }
 
+  def remove(key: String): ExecutableStep[Boolean] = {
+    ExecutableStep(
+      s"remove '$key' from session",
+      s ⇒ (true, s.removeKey(key)), true
+    )
+  }
+
   def transform_assert_session[A](key: String, expected: A, mapValue: String ⇒ A, title: Option[String] = None) =
     ExecutableStep(
       title.getOrElse(s"session key '$key' against predicate"),

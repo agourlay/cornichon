@@ -18,7 +18,7 @@ trait HttpDsl extends Dsl {
   sealed trait Request { val name: String }
 
   sealed trait WithoutPayload extends Request {
-    def apply(url: String, params: (String, String)*)(implicit headers: Seq[HttpHeader] = Seq.empty) =
+    def apply(url: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
       ExecutableStep(
         title = {
         val base = s"$name $url"
@@ -27,9 +27,10 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
+          val httpHeaders = parseHttpHeaders(headers)
           val x = this match {
-            case GET    ⇒ Get(url, params, headers)(s)
-            case DELETE ⇒ Delete(url, params, headers)(s)
+            case GET    ⇒ Get(url, params, httpHeaders)(s)
+            case DELETE ⇒ Delete(url, params, httpHeaders)(s)
           }
           x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
         },
@@ -91,18 +92,12 @@ trait HttpDsl extends Dsl {
 
   case object GET_WS extends Streamed { val name = "GET WS" }
 
-  private def parseHttpHeaders(headers: Seq[(String, String)]): Seq[HttpHeader] =
-    headers.map(v ⇒ HttpHeader.parse(v._1, v._2)).map {
-      case ParsingResult.Ok(h, e) ⇒ h
-      case ParsingResult.Error(e) ⇒ throw new MalformedHeadersError(e.formatPretty)
-    }
-
   def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString, Some(s"HTTP status is $status"))
 
   def headers_contain(headers: (String, String)*) =
     transform_assert_session(LastResponseHeadersKey, true, sessionHeaders ⇒ {
       val sessionHeadersValue = sessionHeaders.split(",")
-      headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name:$value") }
+      headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
     }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
   def body_is(mapFct: JValue ⇒ JValue, expected: String) =
@@ -207,6 +202,12 @@ trait HttpDsl extends Dsl {
           Try { loadJsonSchemaFile(schemaUrl).validate(jsonNode) }
         }
     )
+
+  def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
+    b.addStep(save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")))
+    steps
+    b.addStep(remove(WithHeadersKey))
+  }
 
   private def dslParse[A](input: A): JValue = input match {
     case s: String if s.trim.head == '|' ⇒ parse(DataTableParser.parseDataTable(s).asJson.toString())

@@ -11,12 +11,13 @@ import scala.annotation.tailrec
 
 object Resolver {
 
+  // Migrate to PB2 if too many errors
   private def findPlaceholders(input: String): List[String] = {
     @tailrec
     def loop(input: String, acc: List[String]): List[String] =
       if (input.isEmpty) acc
-      else if (input.head == '<' && input.contains('>')) {
-        val placeHolder = input.takeWhile(_ != '>') + ">"
+      else if (placeholderStarts(input)) {
+        val placeHolder = input.takeWhile(c ⇒ c != '>') + ">"
         loop(input.drop(placeHolder.length), acc.::(placeHolder))
       } else if (input.contains('<')) loop(input.tail, acc)
       else acc
@@ -24,6 +25,12 @@ object Resolver {
     // could be in the wrong orders but good enough
     if (input.count(_ == '<') != input.count(_ == '>')) List.empty
     else loop(input, List.empty)
+  }
+
+  private def placeholderStarts(input: String) = {
+    if (input.head == '<' && input.contains('>')) {
+      !input.substring(0, input.indexOfSlice(">")).contains(' ')
+    } else false
   }
 
   private def resolvePlaceholder(input: String)(source: Map[String, String]): Xor[ResolverError, String] = {

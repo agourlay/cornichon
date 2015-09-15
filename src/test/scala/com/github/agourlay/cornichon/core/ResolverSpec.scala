@@ -22,6 +22,12 @@ class ResolverSpec extends WordSpec with Matchers {
       resolver.fillPlaceholder(content)(source) should be(right("This project is named >project-name<"))
     }
 
+    "not be confused if key contains emtpy string" in {
+      val source = new HashMap[String, String].+("project-name" → "cornichon")
+      val content = "This project is named <project name>"
+      resolver.fillPlaceholder(content)(source) should be(right("This project is named <project name>"))
+    }
+
     "return ResolverError if placeholder not found" in {
       val source = new HashMap[String, String].+("project-name" → "cornichon")
       val content = "This project is named <project-new-name>"

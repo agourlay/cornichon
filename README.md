@@ -116,11 +116,3 @@ class CornichonReadmeExample extends CornichonFeature {
 Cornichon is currently integrated with ScalaTest, so you just have to run ```sbt run``` to trigger features execution.
 
 For more examples see the following [file](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
-
-
-## Todos
-
-- abstraction to propagate authentication throughout a scenario
-- shortcut to execute a single scenario
-- session is a multimap (adding on the head the last-response-body & offering API to fetch older values)
-- generate requests from JSON schema
