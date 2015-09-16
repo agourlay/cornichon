@@ -355,8 +355,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I GET(s"$baseUrl/superheroes/Batman")
 
-        // TODO setup proper schema for superheroes
-        //And assert response_against_schema("https://api.sphere.io/documentation/json-schema/inline/payment.schema.json")
+        And assert body_against_schema(s"$baseUrl/superhero.schema.json")
 
         // Repeat series of Steps
         Repeat(3) {

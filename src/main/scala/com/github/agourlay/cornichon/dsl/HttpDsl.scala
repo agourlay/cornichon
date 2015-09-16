@@ -194,12 +194,14 @@ trait HttpDsl extends Dsl {
   def body_against_schema(schemaUrl: String) =
     transform_assert_session(
       key = LastResponseBodyKey,
-      expected = Success,
+      expected = Success(true),
       title = Some(s"HTTP response body is valid against JSON schema $schemaUrl"),
       mapValue =
         sessionValue ⇒ {
           val jsonNode = mapper.readTree(sessionValue)
-          Try { loadJsonSchemaFile(schemaUrl).validate(jsonNode) }
+          Try {
+            loadJsonSchemaFile(schemaUrl).validate(jsonNode).isSuccess
+          }
         }
     )
 
