@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://jsonschema.net",
+  "type": "object",
+  "required": [
+    "name",
+    "realName",
+    "city",
+    "publisher"
+  ],
+  "properties": {
+    "name": {
+      "id": "http://jsonschema.net/name",
+      "type": "string"
+    },
+    "realName": {
+      "id": "http://jsonschema.net/realName",
+      "type": "string"
+    },
+    "city": {
+      "id": "http://jsonschema.net/city",
+      "type": "string"
+    },
+    "publisher": {
+      "id": "http://jsonschema.net/publisher",
+      "type": "object",
+      "properties": {
+        "name": {
+          "id": "http://jsonschema.net/publisher/name",
+          "type": "string"
+        },
+        "foundationDate": {
+          "id": "http://jsonschema.net/publisher/foundationDate",
+          "type": "string"
+        },
+        "location": {
+          "id": "http://jsonschema.net/publisher/location",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
