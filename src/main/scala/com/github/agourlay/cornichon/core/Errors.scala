@@ -11,9 +11,9 @@ case class StepExecutionError[A](title: String, exception: Throwable) extends Co
   val msg = s"step '$title' failed by throwing exception ${exception.printStackTrace()}"
 }
 
-case class StepAssertionError[A](expected: A, actual: A) extends CornichonError {
+case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extends CornichonError {
   private val baseMsg =
-    s"""|expected result was:
+    s"""|expected result was ${if (negate) "different than:" else ":"}
         |'$expected'
         |but actual result is:
         |'$actual'
@@ -21,11 +21,9 @@ case class StepAssertionError[A](expected: A, actual: A) extends CornichonError 
 
   val msg = actual match {
     case s: String ⇒ baseMsg
-    case JString(s) ⇒
-      s"$baseMsg \n String diff is '${s.diff(expected.asInstanceOf[JString].s)}'"
     case j: JValue ⇒
       val Diff(changed, added, deleted) = j diff expected.asInstanceOf[JValue]
-      s"""|expected result was:
+      s"""|expected result was ${if (negate) "different than:" else ":"}
           |'${pretty(render(expected.asInstanceOf[JValue]))}'
           |but actual result is:
           |'${pretty(render(actual.asInstanceOf[JValue]))}'

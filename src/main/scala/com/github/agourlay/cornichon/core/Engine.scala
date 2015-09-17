@@ -21,7 +21,7 @@ class Engine extends CornichonLogger {
       }
       (res, resolvedExpected, newSession)
     } match {
-      case Success((res, expected, newSession)) ⇒ runStepPredicate(step.title, res, expected, newSession)
+      case Success((res, expected, newSession)) ⇒ runStepPredicate(step, res, expected, newSession)
       case Failure(e) ⇒
         e match {
           case ce: CornichonError ⇒ left(ce)
@@ -29,17 +29,20 @@ class Engine extends CornichonLogger {
         }
     }
 
-  def runStepPredicate[A](title: String, actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] =
-    StepAssertionResult(actual == expected, expected, actual) match {
-      case StepAssertionResult(true, _, _) ⇒
-        logger.info(GREEN + s"   $title" + RESET)
-        right(newSession)
-      case StepAssertionResult(false, exp, act) ⇒
-        val error = StepAssertionError(exp, act)
-        logger.error(RED + s"   $title *** FAILED ***" + RESET)
-        logger.error(RED + s"${error.msg}" + RESET)
-        left(error)
+  def runStepPredicate[A](step: ExecutableStep[A], actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] = {
+    val succeedAsExpected = actual == expected && !step.negate
+    val failedAsExpected = actual != expected && step.negate
+
+    if (succeedAsExpected || failedAsExpected) {
+      if (step.show) logger.info(GREEN + s"   ${step.title}" + RESET)
+      right(newSession)
+    } else {
+      val error = StepAssertionError(expected, actual, step.negate)
+      logger.error(RED + s"   ${step.title} *** FAILED ***" + RESET)
+      logger.error(RED + s"${error.msg}" + RESET)
+      left(error)
     }
+  }
 
   def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
     @tailrec
@@ -47,7 +50,7 @@ class Engine extends CornichonLogger {
       if (steps.isEmpty)
         SuccessScenarioReport(
           scenarioName = scenario.name,
-          successSteps = scenario.steps.collect { case ExecutableStep(title, _, _) ⇒ title }
+          successSteps = scenario.steps.collect { case ExecutableStep(title, _, _, _, _) ⇒ title }
         )
       else
         steps.head match {
@@ -78,8 +81,8 @@ class Engine extends CornichonLogger {
 
   def buildFailedScenarioReport(scenario: Scenario, steps: Seq[Step], currentStep: ExecutableStep[_], e: CornichonError): FailedScenarioReport = {
     val failedStep = FailedStep(currentStep.title, e)
-    val successStep = scenario.steps.takeWhile(_ != steps.head).collect { case ExecutableStep(title, _, _) ⇒ title }
-    val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _) ⇒ title }
+    val successStep = scenario.steps.takeWhile(_ != steps.head).collect { case ExecutableStep(title, _, _, _, _) ⇒ title }
+    val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _, _, _) ⇒ title }
     FailedScenarioReport(scenario.name, failedStep, successStep, notExecutedStep)
   }
 

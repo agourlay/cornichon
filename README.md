@@ -27,6 +27,8 @@ Steps start with either :
 - And I
 - Then assert
 - And assert
+- Then assert_not
+- And assert_not
 
 They do not change the behaviour of the Steps, they are just here for readability.
 
@@ -57,6 +59,9 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 - validate response against Json schemas
 - experimental support for Server-Sent-Event assertion
 
+## How to build a custom step
+
+todo
 
 ## Placeholders
 

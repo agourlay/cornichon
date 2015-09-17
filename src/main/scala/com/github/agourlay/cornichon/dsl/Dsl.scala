@@ -28,6 +28,12 @@ trait Dsl extends CornichonLogger {
       sb.addStep(s)
       s
     }
+
+    def assert_not[A](step: ExecutableStep[A])(implicit sb: ScenarioBuilder): ExecutableStep[A] = {
+      val s: ExecutableStep[A] = step.copy(s"$name assert not ${step.title}").copy(negate = true)
+      sb.addStep(s)
+      s
+    }
   }
   case object Then extends Starters with WithAssert { val name = "Then" }
   case object And extends Starters with WithAssert { val name = "And" }

@@ -27,11 +27,10 @@ object Resolver {
     else loop(input, List.empty)
   }
 
-  private def placeholderStarts(input: String) = {
+  private def placeholderStarts(input: String) =
     if (input.head == '<' && input.contains('>')) {
       !input.substring(0, input.indexOfSlice(">")).contains(' ')
     } else false
-  }
 
   private def resolvePlaceholder(input: String)(source: Map[String, String]): Xor[ResolverError, String] = {
     val cleanInput = input.substring(1, input.length - 1)
@@ -53,9 +52,13 @@ object Resolver {
 
   def fillPlaceholder(js: JValue)(source: Map[String, String]): Xor[ResolverError, JValue] =
     fillPlaceholder(compact(render(js)))(source).map { v ⇒
-      if (js.children.isEmpty)
-        JString(v.substring(1, v.size - 1))
-      else
+      if (js.children.isEmpty) {
+        //FIXME
+        js match {
+          case JString(s) ⇒ JString(v.substring(1, v.size - 1))
+          case JBool(b)   ⇒ JBool(b)
+        }
+      } else
         parse(v)
     }
 }

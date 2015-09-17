@@ -51,7 +51,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
           {
             "name": "Batman",
-            "realName": "Bruce Wayne",
+            "realName": "Bruce Wayne"
           }
           """, ignoring = "city", "publisher"
         )
@@ -60,7 +60,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         And assert body_is(whiteList = true, expected = """
           {
             "name": "Batman",
-            "realName": "Bruce Wayne",
+            "realName": "Bruce Wayne"
           }
           """)
 
@@ -276,7 +276,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert response_array_size_is(4)
 
-        And assert response_array_does_not_contain(
+        And assert_not response_array_contains(
           """
           {
             "name": "IronMan",
@@ -342,7 +342,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "publisher"
         )
 
-        Then assert headers_contain("Server" → "akka-http/2.3.13")
+        Then assert headers_contain("Server" → "akka-http/2.3.14")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session

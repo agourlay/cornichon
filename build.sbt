@@ -28,14 +28,13 @@ scalariformSettings
 ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(AlignSingleLineCaseStatements, true)
   .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
-  .setPreference(AlignParameters, true)
   .setPreference(DoubleIndentClassDeclaration, true)
   .setPreference(RewriteArrowSymbols, true)
 
 libraryDependencies ++= {
   val scalaTestV = "2.2.5"
   val akkaHttpV = "1.0"
-  val akkaV = "2.3.13"
+  val akkaV = "2.3.14"
   val catsV = "0.2.0"
   val sprayJsonV = "1.3.2"
   val json4sV = "3.3.0.RC5"

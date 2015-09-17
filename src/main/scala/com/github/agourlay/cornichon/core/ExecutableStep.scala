@@ -4,7 +4,13 @@ import scala.concurrent.duration.Duration
 
 trait Step
 
-case class ExecutableStep[A](title: String, action: Session ⇒ (A, Session), expected: A) extends Step
+case class ExecutableStep[A](
+  title: String,
+  action: Session ⇒ (A, Session),
+  expected: A,
+  negate: Boolean = false,
+  show: Boolean = true
+) extends Step
 
 case class EventuallyConf(maxTime: Duration, interval: Duration) {
   def consume(duration: Duration) = copy(maxTime = maxTime - duration)
@@ -19,5 +25,3 @@ trait EventuallyStep extends Step
 case class EventuallyStart(conf: EventuallyConf) extends EventuallyStep
 
 case class EventuallyStop(conf: EventuallyConf) extends EventuallyStep
-
-case class StepAssertionResult[A](result: Boolean, expected: A, actual: A)

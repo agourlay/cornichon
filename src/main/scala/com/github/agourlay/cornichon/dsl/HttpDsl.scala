@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.dsl
 
-import akka.http.scaladsl.model.HttpHeader
-import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http._
 import org.json4s._
@@ -100,7 +98,7 @@ trait HttpDsl extends Dsl {
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
     }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
-  def body_is(mapFct: JValue ⇒ JValue, expected: String) =
+  def body_is[A](mapFct: JValue ⇒ JValue, expected: A) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = dslParse(expected),
@@ -108,7 +106,7 @@ trait HttpDsl extends Dsl {
       title = Some(s"HTTP response body with transformation is '$expected'")
     )
 
-  def body_is(whiteList: Boolean = false, expected: String): ExecutableStep[JValue] = {
+  def body_is[A](whiteList: Boolean = false, expected: A): ExecutableStep[JValue] = {
     val jsonInput = dslParse(expected)
     transform_assert_session(
       key = LastResponseBodyKey,
@@ -126,6 +124,7 @@ trait HttpDsl extends Dsl {
     )
   }
 
+  // TODO Cannot be parametrized?
   def body_is(expected: String, ignoring: String*): ExecutableStep[JValue] =
     transform_assert_session(
       key = LastResponseBodyKey,
@@ -139,7 +138,7 @@ trait HttpDsl extends Dsl {
         }
     )
 
-  def body_is(ordered: Boolean, expected: String, ignoring: String*): ExecutableStep[Iterable[JValue]] =
+  def body_is[A](ordered: Boolean, expected: A, ignoring: String*): ExecutableStep[Iterable[JValue]] =
     dslParse(expected) match {
       case expectedArray: JArray ⇒
         if (ordered)
@@ -189,8 +188,6 @@ trait HttpDsl extends Dsl {
 
   def response_array_contains(element: String) = body_array_transform(_.arr.contains(parse(element)), true, Some(s"response array contains $element"))
 
-  def response_array_does_not_contain(element: String) = body_array_transform(_.arr.contains(parse(element)), false, Some(s"response array does not contain $element"))
-
   def body_against_schema(schemaUrl: String) =
     transform_assert_session(
       key = LastResponseBodyKey,
@@ -206,9 +203,13 @@ trait HttpDsl extends Dsl {
     )
 
   def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
-    b.addStep(save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")))
+    b.addStep {
+      save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
+    }
     steps
-    b.addStep(remove(WithHeadersKey))
+    b.addStep {
+      remove(WithHeadersKey).copy(show = false)
+    }
   }
 
   private def dslParse[A](input: A): JValue = input match {
