@@ -13,7 +13,7 @@ case class StepExecutionError[A](title: String, exception: Throwable) extends Co
 
 case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extends CornichonError {
   private val baseMsg =
-    s"""|expected result was ${if (negate) "different than:" else ":"}
+    s"""|expected result was${if (negate) " different than:" else ":"}
         |'$expected'
         |but actual result is:
         |'$actual'
@@ -23,7 +23,7 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
     case s: String ⇒ baseMsg
     case j: JValue ⇒
       val Diff(changed, added, deleted) = j diff expected.asInstanceOf[JValue]
-      s"""|expected result was ${if (negate) "different than:" else ":"}
+      s"""|expected result was${if (negate) " different than:" else ":"}
           |'${pretty(render(expected.asInstanceOf[JValue]))}'
           |but actual result is:
           |'${pretty(render(actual.asInstanceOf[JValue]))}'
