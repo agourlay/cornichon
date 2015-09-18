@@ -38,6 +38,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Batman",
             "realName": "Bruce Wayne",
             "city": "Gotham city",
+            "hasSuperpowers": false,
             "publisher":{
               "name":"DC",
               "foundationYear":1934,
@@ -51,7 +52,8 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
           {
             "name": "Batman",
-            "realName": "Bruce Wayne"
+            "realName": "Bruce Wayne",
+            "hasSuperpowers": false
           }
           """, ignoring = "city", "publisher"
         )
@@ -66,6 +68,8 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         // Test part of response body by providing an extractor
         Then assert body_is(_ \ "city", "Gotham city")
+
+        Then assert body_is(_ \ "hasSuperpowers", false)
 
         Then assert body_is(_ \ "publisher", expected = """
           {
@@ -96,6 +100,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
             "city": "Berlin",
+            "hasSuperpowers": false,
             "publisher":{
               "name":"DC",
               "foundationYear":1934,
@@ -115,6 +120,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
             "city": "Berlin",
+            "hasSuperpowers": false,
             "publisher":{
               "name":"DC",
               "foundationYear":1934,
@@ -133,7 +139,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko"
           }
-          """, ignoring = "publisher", "city"
+          """, ignoring = "publisher", "hasSuperpowers", "city"
         )
 
         When I GET(s"$baseUrl/superheroes/Scalaman", params = "protectIdentity" → "true")
@@ -143,6 +149,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           {
             "name": "Scalaman",
             "realName": "XXXXX",
+            "hasSuperpowers": false,
             "city": "Berlin"
           }
           """, ignoring = "publisher"
@@ -155,6 +162,7 @@ class CornichonExamplesSpec extends CornichonFeature {
               "name": "Scalaman",
               "realName": "Oleg Ilyenko",
               "city": "Pankow",
+              "hasSuperpowers": true,
               "publisher":{
                 "name":"DC",
                 "foundationYear":1934,
@@ -171,6 +179,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
+            "hasSuperpowers": true,
             "city": "Pankow"
           }
           """, ignoring = "publisher"
@@ -194,36 +203,41 @@ class CornichonExamplesSpec extends CornichonFeature {
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
+            "hasSuperpowers": false,
             "city": "Gotham city"
           },
           {
             "name": "Superman",
             "realName": "Clark Kent",
+            "hasSuperpowers": true,
             "city": "Metropolis"
           },
           {
             "name": "Spiderman",
             "realName": "Peter Parker",
+            "hasSuperpowers": true,
             "city": "New York"
           },
           {
             "name": "IronMan",
             "realName": "Tony Stark",
+            "hasSuperpowers": false,
             "city": "New York"
           },
           {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
+            "hasSuperpowers": true,
             "city": "Pankow"
           }]""", ignoring = "publisher")
 
         Then assert body_is(ordered = true, expected = """
-          |    name     |    realName    |     city      |
-          | "Batman"    | "Bruce Wayne"  | "Gotham city" |
-          | "Superman"  | "Clark Kent"   | "Metropolis"  |
-          | "Spiderman" | "Peter Parker" | "New York"    |
-          | "IronMan"   | "Tony Stark"   | "New York"    |
-          | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |
+          |    name     |    realName    |     city      |  hasSuperpowers |
+          | "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
+          | "Superman"  | "Clark Kent"   | "Metropolis"  |      true       |
+          | "Spiderman" | "Peter Parker" | "New York"    |      true       |
+          | "IronMan"   | "Tony Stark"   | "New York"    |      false      |
+          | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |      true       |
         """, ignoring = "publisher")
 
         Then assert body_is(ordered = false, expected = """
@@ -251,7 +265,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
             "city": "Pankow"
-          }]""", ignoring = "publisher")
+          }]""", ignoring = "hasSuperpowers", "publisher")
 
         Then assert response_array_size_is(5)
 
@@ -261,6 +275,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "IronMan",
             "realName": "Tony Stark",
             "city": "New York",
+            "hasSuperpowers": false,
             "publisher":{
               "name":"Marvel",
               "foundationYear":1939,
@@ -284,6 +299,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "IronMan",
             "realName": "Tony Stark",
             "city": "New York",
+            "hasSuperpowers": false,
             "publisher":{
               "name":"Marvel",
               "foundationYear":1939,
@@ -305,7 +321,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "realName": "Bruce Wayne",
             "city": "Gotham city",
           }
-          """, ignoring = "publisher"
+          """, ignoring = "hasSuperpowers", "publisher"
         )
 
         // Set a key/value in the Scenario's session
@@ -323,7 +339,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "realName": "Bruce Wayne",
             "city": "Gotham city"
           }
-          """, ignoring = "publisher"
+          """, ignoring = "hasSuperpowers", "publisher"
         )
 
         // Extract value from response into session for reuse
@@ -341,7 +357,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "realName": "Bruce Wayne",
             "city": "<batman-city>"
           }
-          """, ignoring = "publisher"
+          """, ignoring = "hasSuperpowers", "publisher"
         )
 
         Then assert headers_contain("Server" → "akka-http/2.3.14")
@@ -406,7 +422,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "realName": "Bruce Wayne",
             "city": "Gotham city"
           }
-          """, ignoring = "publisher"
+          """, ignoring = "hasSuperpowers", "publisher"
           )
         }
       }

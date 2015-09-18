@@ -10,7 +10,7 @@ import scala.util.Random
 
 case class Publisher(name: String, foundationYear: Int, location: String)
 
-case class SuperHero(name: String, realName: String, city: String, publisher: Publisher)
+case class SuperHero(name: String, realName: String, city: String, hasSuperpowers: Boolean, publisher: Publisher)
 
 class TestData(implicit executionContext: ExecutionContext) {
 
@@ -73,11 +73,11 @@ class TestData(implicit executionContext: ExecutionContext) {
   )
 
   val superHeroes = mutable.ListBuffer(
-    SuperHero("Batman", "Bruce Wayne", "Gotham city", publishers.head),
-    SuperHero("Superman", "Clark Kent", "Metropolis", publishers.head),
-    SuperHero("GreenLantern", "Hal Jordan", "Coast City", publishers.head),
-    SuperHero("Spiderman", "Peter Parker", "New York", publishers.tail.head),
-    SuperHero("IronMan", "Tony Stark", "New York", publishers.tail.head)
+    SuperHero("Batman", "Bruce Wayne", "Gotham city", hasSuperpowers = false, publishers.head),
+    SuperHero("Superman", "Clark Kent", "Metropolis", hasSuperpowers = true, publishers.head),
+    SuperHero("GreenLantern", "Hal Jordan", "Coast City", hasSuperpowers = true, publishers.head),
+    SuperHero("Spiderman", "Peter Parker", "New York", hasSuperpowers = true, publishers.tail.head),
+    SuperHero("IronMan", "Tony Stark", "New York", hasSuperpowers = false, publishers.tail.head)
   )
 
 }
@@ -98,7 +98,7 @@ case class HttpError(error: String)
 
 trait JsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val formatCP = jsonFormat3(Publisher)
-  implicit val formatSH = jsonFormat4(SuperHero)
+  implicit val formatSH = jsonFormat5(SuperHero)
   implicit val formatHE = jsonFormat1(HttpError)
   implicit def toServerSentEvent(sh: SuperHero): ServerSentEvent = {
     ServerSentEvent(eventType = "superhero", data = formatSH.write(sh).compactPrint)
