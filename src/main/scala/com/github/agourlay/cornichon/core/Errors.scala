@@ -55,4 +55,8 @@ case class NotAnArrayError[A](badPayload: A) extends CornichonError {
   val msg = s"Expected JSON Array but got $badPayload"
 }
 
+case class MalformedJsonError[A](input: A, exception: Throwable) extends CornichonError {
+  val msg = s"Malformed JSON input $input with ${exception.getMessage}"
+}
+
 case class DataTableError(msg: String) extends CornichonError

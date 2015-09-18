@@ -1,12 +1,14 @@
 package com.github.agourlay.cornichon.dsl
 
+import cats.data.Xor
+import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http._
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
 import scala.concurrent.duration._
-import scala.util.{ Success, Try }
+import scala.util.{ Success, Failure, Try }
 
 trait HttpDsl extends Dsl {
   this: HttpFeature ⇒
@@ -98,55 +100,69 @@ trait HttpDsl extends Dsl {
       headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
     }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
-  def body_is[A](mapFct: JValue ⇒ JValue, expected: A) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = dslParse(expected),
-      sessionValue ⇒ mapFct(dslParse(sessionValue)),
-      title = Some(s"HTTP response body with transformation is '$expected'")
-    )
+  def body_is[A](mapFct: JValue ⇒ JValue, expected: A) = {
+    val stepTitle = s"HTTP response body with transformation is '$expected'"
+    jsonInputStep(expected, stepTitle) { jsonExpected ⇒
+      transform_assert_session(
+        key = LastResponseBodyKey,
+        expected = jsonExpected,
+        sessionValue ⇒ mapFct(dslParse(sessionValue)),
+        title = Some(stepTitle)
+      )
+    }
+  }
 
   def body_is[A](whiteList: Boolean = false, expected: A): ExecutableStep[JValue] = {
-    val jsonInput = dslParse(expected)
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      title = Some(s"HTTP response body is '$expected' with whiteList=$whiteList"),
-      expected = jsonInput,
-      mapValue =
-        sessionValue ⇒ {
-          val sessionValueJson = dslParse(sessionValue)
-          if (whiteList) {
-            val Diff(changed, _, deleted) = jsonInput.diff(sessionValueJson)
-            if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
-            if (changed != JNothing) changed else jsonInput
-          } else sessionValueJson
-        }
-    )
+    val stepTitle = s"HTTP response body is '$expected' with whiteList=$whiteList"
+    jsonInputStep(expected, stepTitle) { jsonInput ⇒
+      transform_assert_session(
+        key = LastResponseBodyKey,
+        title = Some(stepTitle),
+        expected = jsonInput,
+        mapValue =
+          sessionValue ⇒ {
+            val sessionValueJson = dslParse(sessionValue)
+            if (whiteList) {
+              val Diff(changed, _, deleted) = jsonInput.diff(sessionValueJson)
+              if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
+              if (changed != JNothing) changed else jsonInput
+            } else sessionValueJson
+          }
+      )
+    }
   }
 
   // TODO Cannot be parametrized?
-  def body_is(expected: String, ignoring: String*): ExecutableStep[JValue] =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      title = titleBuilder(s"HTTP response body is '$expected'", ignoring),
-      expected = dslParse(expected),
-      mapValue =
+  def body_is(expected: String, ignoring: String*): ExecutableStep[JValue] = {
+    val stepTitle = titleBuilder(s"HTTP response body is '$expected'", ignoring)
+    jsonInputStep(expected, stepTitle.get) { jsonExpected ⇒
+      transform_assert_session(
+        key = LastResponseBodyKey,
+        title = stepTitle,
+        expected = jsonExpected,
+        mapValue =
         sessionValue ⇒ {
           val jsonSessionValue = dslParse(sessionValue)
           if (ignoring.isEmpty) jsonSessionValue
           else filterJsonKeys(jsonSessionValue, ignoring)
         }
-    )
+      )
+    }
+  }
 
+  //FIXME make 'jsonInputStep' work in this case
   def body_is[A](ordered: Boolean, expected: A, ignoring: String*): ExecutableStep[Iterable[JValue]] =
-    dslParse(expected) match {
-      case expectedArray: JArray ⇒
-        if (ordered)
-          body_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response body is '$expected'", ignoring))
-        else
-          body_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring))
-      case _ ⇒
-        failWith(new NotAnArrayError(dslParse(expected)), titleBuilder(s"response body array is '$expected'", ignoring).get, Seq.empty[JValue])
+    Try { dslParse(expected) } match {
+      case Failure(e) ⇒ failWith(new MalformedJsonError(expected, e), s"response body is '$expected'", Seq.empty[JValue])
+      case Success(json) ⇒ json match {
+        case expectedArray: JArray ⇒
+          if (ordered)
+            body_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response body is '$expected'", ignoring))
+          else
+            body_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring))
+        case _ ⇒
+          failWith(new NotAnArrayError(json), titleBuilder(s"response body array is '$expected'", ignoring).get, Seq.empty[JValue])
+      }
     }
 
   def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
@@ -201,6 +217,15 @@ trait HttpDsl extends Dsl {
           }
         }
     )
+
+  def jsonInputStep[A](input: A, stepTitle: String)(f: JValue ⇒ ExecutableStep[JValue]): ExecutableStep[JValue] =
+    parseJsonOrFailStep(input, stepTitle).fold(identity, jvalue ⇒ f(jvalue))
+
+  def parseJsonOrFailStep[A](input: A, stepTitle: String): Xor[ExecutableStep[JValue], JValue] =
+    Try { dslParse(input) } match {
+      case Success(json) ⇒ right(json)
+      case Failure(e)    ⇒ left(failWith(new MalformedJsonError(input, e), stepTitle, JNothing))
+    }
 
   def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
     b.addStep {
