@@ -8,7 +8,7 @@ import scala.collection.mutable
 import scala.concurrent._
 import scala.util.Random
 
-case class Publisher(name: String, foundationDate: String, location: String)
+case class Publisher(name: String, foundationYear: Int, location: String)
 
 case class SuperHero(name: String, realName: String, city: String, publisher: Publisher)
 
@@ -68,8 +68,8 @@ class TestData(implicit executionContext: ExecutionContext) {
     Random.shuffle(superHeroes).head
 
   val publishers = mutable.ListBuffer(
-    Publisher("DC", "1934", "Burbank, California"),
-    Publisher("Marvel", "1939", "135 W. 50th Street, New York City")
+    Publisher("DC", 1934, "Burbank, California"),
+    Publisher("Marvel", 1939, "135 W. 50th Street, New York City")
   )
 
   val superHeroes = mutable.ListBuffer(

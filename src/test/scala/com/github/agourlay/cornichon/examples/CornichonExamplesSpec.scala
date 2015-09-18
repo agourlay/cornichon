@@ -40,7 +40,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "Gotham city",
             "publisher":{
               "name":"DC",
-              "foundationDate":"1934",
+              "foundationYear":1934,
               "location":"Burbank, California"
             }
           }
@@ -70,11 +70,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert body_is(_ \ "publisher", expected = """
           {
             "name":"DC",
-            "foundationDate":"1934",
+            "foundationYear":1934,
             "location":"Burbank, California"
           } """)
 
         Then assert body_is(_ \ "publisher" \ "name", "DC")
+
+        Then assert body_is(_ \ "publisher" \ "foundationYear", 1934)
 
         When I GET(s"$baseUrl/superheroes/Scalaman")
 
@@ -96,7 +98,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "Berlin",
             "publisher":{
               "name":"DC",
-              "foundationDate":"1934",
+              "foundationYear":1934,
               "location":"Burbank, California"
             }
           }
@@ -115,7 +117,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "Berlin",
             "publisher":{
               "name":"DC",
-              "foundationDate":"1934",
+              "foundationYear":1934,
               "location":"Burbank, California"
             }
           }
@@ -155,7 +157,7 @@ class CornichonExamplesSpec extends CornichonFeature {
               "city": "Pankow",
               "publisher":{
                 "name":"DC",
-                "foundationDate":"1934",
+                "foundationYear":1934,
                 "location":"Burbank, California"
               }
             }
@@ -261,7 +263,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "New York",
             "publisher":{
               "name":"Marvel",
-              "foundationDate":"1939",
+              "foundationYear":1939,
               "location":"135 W. 50th Street, New York City"
             }
           }
@@ -284,7 +286,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "New York",
             "publisher":{
               "name":"Marvel",
-              "foundationDate":"1939",
+              "foundationYear":1939,
               "location":"135 W. 50th Street, New York City"
             }
           }

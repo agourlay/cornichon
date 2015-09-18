@@ -52,13 +52,12 @@ object Resolver {
 
   def fillPlaceholder(js: JValue)(source: Map[String, String]): Xor[ResolverError, JValue] =
     fillPlaceholder(compact(render(js)))(source).map { v ⇒
-      if (js.children.isEmpty) {
-        //FIXME
+      if (js.children.isEmpty)
         js match {
           case JString(s) ⇒ JString(v.substring(1, v.size - 1))
-          case JBool(b)   ⇒ JBool(b)
+          case _          ⇒ js
         }
-      } else
+      else
         parse(v)
     }
 }
