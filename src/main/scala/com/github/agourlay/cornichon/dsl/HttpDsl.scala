@@ -2,8 +2,10 @@ package com.github.agourlay.cornichon.dsl
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http._
+import com.github.fge.jsonschema.main.{ JsonSchemaFactory, JsonSchema }
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
@@ -14,6 +16,7 @@ trait HttpDsl extends Dsl {
   this: HttpFeature ⇒
 
   implicit val requestTimeout: FiniteDuration = 2000 millis
+  private val mapper = new ObjectMapper()
 
   sealed trait Request { val name: String }
 
@@ -165,7 +168,7 @@ trait HttpDsl extends Dsl {
       }
     }
 
-  def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
+  private def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
   def extract_from_response(extractor: JValue ⇒ JValue, target: String) =
@@ -218,10 +221,13 @@ trait HttpDsl extends Dsl {
         }
     )
 
-  def jsonInputStep[A](input: A, stepTitle: String)(f: JValue ⇒ ExecutableStep[JValue]): ExecutableStep[JValue] =
-    parseJsonOrFailStep(input, stepTitle).fold(identity, jvalue ⇒ f(jvalue))
+  private def loadJsonSchemaFile(fileLocation: String): JsonSchema =
+    JsonSchemaFactory.newBuilder().freeze().getJsonSchema(fileLocation)
 
-  def parseJsonOrFailStep[A](input: A, stepTitle: String): Xor[ExecutableStep[JValue], JValue] =
+  def jsonInputStep[A](input: A, stepTitle: String)(f: JValue ⇒ ExecutableStep[JValue]): ExecutableStep[JValue] =
+    parseJsonOrFailStep(input, stepTitle).fold(identity, f(_))
+
+  private def parseJsonOrFailStep[A](input: A, stepTitle: String): Xor[ExecutableStep[JValue], JValue] =
     Try { dslParse(input) } match {
       case Success(json) ⇒ right(json)
       case Failure(e)    ⇒ left(failWith(new MalformedJsonError(input, e), stepTitle, JNothing))

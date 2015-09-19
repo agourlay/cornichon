@@ -117,6 +117,8 @@ trait Dsl extends CornichonLogger {
     )
 
   def log(msg: String): Unit = {
-    logger.info(CYAN + s"   $msg" + RESET)
+    msg.split('\n').foreach { m ⇒
+      logger.info(CYAN + s"   $m" + RESET)
+    }
   }
 }

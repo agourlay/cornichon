@@ -51,7 +51,7 @@ libraryDependencies ++= {
     ,"io.spray"          %% "spray-json"                        % sprayJsonV
     ,"org.spire-math"    %% "cats-macros"                       % catsV
     ,"org.spire-math"    %% "cats-core"                         % catsV
-    ,"com.github.fge"    % "json-schema-validator"              % schemaValidatorV
+    ,"com.github.fge"    %  "json-schema-validator"             % schemaValidatorV
     ,"org.scalatest"     %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
     ,"org.parboiled"     %% "parboiled"                         % parboiledV

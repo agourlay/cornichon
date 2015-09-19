@@ -36,12 +36,8 @@ class Engine extends CornichonLogger {
     if (succeedAsExpected || failedAsExpected) {
       if (step.show) logger.info(GREEN + s"   ${step.title}" + RESET)
       right(newSession)
-    } else {
-      val error = StepAssertionError(expected, actual, step.negate)
-      logger.error(RED + s"   ${step.title} *** FAILED ***" + RESET)
-      logger.error(RED + s"${error.msg}" + RESET)
-      left(error)
-    }
+    } else
+      left(StepAssertionError(expected, actual, step.negate))
   }
 
   def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
@@ -62,21 +58,32 @@ class Engine extends CornichonLogger {
               case Xor.Left(e) ⇒
                 val remainingTime = eventuallyConf.maxTime - executionTime
                 if (remainingTime.gt(Duration.Zero)) {
+                  logStepErrorResult(currentStep, e, CYAN)
                   Thread.sleep(eventuallyConf.interval.toMillis)
                   loop(snapshot.get.steps, snapshot.get.session, eventuallyConf.consume(executionTime + eventuallyConf.interval), snapshot)
-                } else buildFailedScenarioReport(scenario, steps, currentStep, e)
+                } else {
+                  logStepErrorResult(currentStep, e, RED)
+                  buildFailedScenarioReport(scenario, steps, currentStep, e)
+                }
               case Xor.Right(currentSession) ⇒
                 loop(steps.tail, currentSession, eventuallyConf.consume(executionTime), snapshot)
             }
           case EventuallyStart(conf) ⇒
-            logger.info(s"Eventually bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}")
+            logger.info(s"   Eventually bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}")
             loop(steps.tail, session, conf, Some(RollbackSnapshot(steps.tail, session)))
           case EventuallyStop(conf) ⇒
-            logger.info(s"Eventually bloc succeeded in ${conf.maxTime.toSeconds - eventuallyConf.maxTime.toSeconds} sec.")
+            logger.info(s"   Eventually bloc succeeded in ${conf.maxTime.toSeconds - eventuallyConf.maxTime.toSeconds} sec.")
             loop(steps.tail, session, EventuallyConf.empty, None)
         }
     }
     loop(scenario.steps, session, EventuallyConf.empty, None)
+  }
+
+  private def logStepErrorResult(step: ExecutableStep[_], error: CornichonError, ansiColor: String): Unit = {
+    logger.error(ansiColor + s"   ${step.title} *** FAILED ***" + RESET)
+    error.msg.split('\n').foreach { m ⇒
+      logger.error(ansiColor + s"   $m" + RESET)
+    }
   }
 
   def buildFailedScenarioReport(scenario: Scenario, steps: Seq[Step], currentStep: ExecutableStep[_], e: CornichonError): FailedScenarioReport = {

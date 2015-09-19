@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import com.github.agourlay.cornichon.CornichonFeature
 import org.scalatest.{ Matchers, WordSpec }
 
-trait ScalaTestIntegration extends WordSpec with Matchers {
+trait ScalaTestIntegration extends WordSpec {
   this: CornichonFeature ⇒
 
   feature.name must {
@@ -17,5 +17,4 @@ trait ScalaTestIntegration extends WordSpec with Matchers {
       }
     }
   }
-
 }

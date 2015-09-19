@@ -5,9 +5,7 @@ import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.stream.ActorMaterializer
 import cats.data.Xor
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.core._
-import com.github.fge.jsonschema.main.{ JsonSchemaFactory, JsonSchema }
 import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -31,11 +29,10 @@ trait HttpFeature {
   lazy val WithHeadersKey = "with-headers"
 
   val HeadersKeyValueDelim = '|'
-  val mapper = new ObjectMapper()
 
-  case class InternalSSE(data: String, eventType: Option[String] = None, id: Option[String] = None)
+  private case class InternalSSE(data: String, eventType: Option[String] = None, id: Option[String] = None)
 
-  object InternalSSE {
+  private object InternalSSE {
     def build(sse: ServerSentEvent): InternalSSE = InternalSSE(sse.data, sse.eventType, sse.id)
     implicit val formatServerSentEvent = jsonFormat3(InternalSSE.apply)
   }
@@ -44,7 +41,7 @@ trait HttpFeature {
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.postJson(payloadResolved, encodeParams(urlResolved, params), headers ++ sessionWithHeaders(s)), timeout)
+      res ← Await.result(httpService.postJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -54,7 +51,7 @@ trait HttpFeature {
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.putJson(payloadResolved, encodeParams(urlResolved, params), headers ++ sessionWithHeaders(s)), timeout)
+      res ← Await.result(httpService.putJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -63,7 +60,7 @@ trait HttpFeature {
   def Get(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.getJson(encodeParams(urlResolved, params), headers ++ sessionWithHeaders(s)), timeout)
+      res ← Await.result(httpService.getJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -73,7 +70,7 @@ trait HttpFeature {
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
     } yield {
-      val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers ++ sessionWithHeaders(s)), takeWithin + 1.second)
+      val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers ++ extractWithHeadersSession(s)), takeWithin + 1.second)
       val jsonRes = res.map(s ⇒ InternalSSE.build(s)).toVector.toJson
       // TODO add Headers and Status Code
       (jsonRes, s.addValue(LastResponseBodyKey, jsonRes.prettyPrint))
@@ -82,7 +79,7 @@ trait HttpFeature {
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(httpService.deleteJson(encodeParams(urlResolved, params), headers ++ sessionWithHeaders(s)), timeout)
+      res ← Await.result(httpService.deleteJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -104,16 +101,13 @@ trait HttpFeature {
       .addValue(LastResponseBodyKey, response.body)
       .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(","))
 
-  def loadJsonSchemaFile(fileLocation: String): JsonSchema =
-    JsonSchemaFactory.newBuilder().freeze().getJsonSchema(fileLocation)
-
   def parseHttpHeaders(headers: Seq[(String, String)]): Seq[HttpHeader] =
     headers.map(v ⇒ HttpHeader.parse(v._1, v._2)).map {
       case ParsingResult.Ok(h, e) ⇒ h
       case ParsingResult.Error(e) ⇒ throw new MalformedHeadersError(e.formatPretty)
     }
 
-  def sessionWithHeaders(session: Session): Seq[HttpHeader] =
+  private def extractWithHeadersSession(session: Session): Seq[HttpHeader] =
     session.getKey(WithHeadersKey).fold(Seq.empty[HttpHeader]) { headers ⇒
       val tuples = headers.split(',').toSeq.map { header ⇒
         val elms = header.split(HeadersKeyValueDelim)
@@ -122,5 +116,5 @@ trait HttpFeature {
       parseHttpHeaders(tuples)
     }
 
-  implicit def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
+  implicit private def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
 }
