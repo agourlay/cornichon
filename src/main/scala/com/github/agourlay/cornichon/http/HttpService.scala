@@ -4,18 +4,19 @@ import java.util.concurrent.TimeoutException
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ HttpRequest, HttpHeader, HttpResponse }
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.client.RequestBuilding._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.{ HttpHeader, HttpRequest, HttpResponse }
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ FlattenStrategy, Source }
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonLogger
-import de.heikoseeberger.akkasse.{ EventStreamUnmarshalling, ServerSentEvent }
-import EventStreamUnmarshalling._
+import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
+import de.heikoseeberger.akkasse.ServerSentEvent
 import spray.json.JsValue
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+
 import scala.Console._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }

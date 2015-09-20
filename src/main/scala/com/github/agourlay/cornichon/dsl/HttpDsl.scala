@@ -5,12 +5,12 @@ import cats.data.Xor.{ left, right }
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http._
-import com.github.fge.jsonschema.main.{ JsonSchemaFactory, JsonSchema }
+import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
 import scala.concurrent.duration._
-import scala.util.{ Success, Failure, Try }
+import scala.util.{ Failure, Success, Try }
 
 trait HttpDsl extends Dsl {
   this: HttpFeature ⇒

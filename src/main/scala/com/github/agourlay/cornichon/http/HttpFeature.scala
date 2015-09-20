@@ -9,9 +9,8 @@ import com.github.agourlay.cornichon.core._
 import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.native.JsonMethods._
-
-import spray.json._
 import spray.json.DefaultJsonProtocol._
+import spray.json._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext }

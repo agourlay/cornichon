@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.WordSpec
 
 trait ScalaTestIntegration extends WordSpec {
   this: CornichonFeature ⇒

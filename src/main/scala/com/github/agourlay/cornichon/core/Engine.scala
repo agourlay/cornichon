@@ -4,10 +4,10 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import org.json4s._
 
+import scala.Console._
 import scala.annotation.tailrec
 import scala.concurrent.duration.Duration
 import scala.util._
-import Console._
 
 class Engine extends CornichonLogger {
 

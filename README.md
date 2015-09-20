@@ -7,10 +7,16 @@ Quick example? It looks like [this](https://github.com/agourlay/cornichon/blob/m
 
 Inside a Scala project, place your Cornichon tests in ```src/test/scala``` and run them using ```sbt test```.
 
-## Status 
+## Installation
 
-WIP - no release yet
+``` scala
+resolvers += "agourlay at bintray" at "http://dl.bintray.com/agourlay/maven"
 
+libraryDependencies ++= List(
+  "com.github.agourlay" %% "cornichon" % "0.0.0",
+  ...
+)
+```
 
 ## Structure
 

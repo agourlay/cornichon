@@ -360,7 +360,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "hasSuperpowers", "publisher"
         )
 
-        Then assert headers_contain("Server" → "akka-http/2.3.14")
+        Then assert headers_contain("Server" → "akka-http/2.3.12")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session

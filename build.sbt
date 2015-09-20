@@ -34,7 +34,6 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 libraryDependencies ++= {
   val scalaTestV = "2.2.5"
   val akkaHttpV = "1.0"
-  val akkaV = "2.3.14"
   val catsV = "0.2.0"
   val sprayJsonV = "1.3.2"
   val json4sV = "3.3.0.RC5"
@@ -43,9 +42,8 @@ libraryDependencies ++= {
   val akkaSseV = "1.1.0"
   val schemaValidatorV = "2.2.6"
   Seq(
-     "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV
+     "com.typesafe.akka" %% "akka-http-core-experimental"       % akkaHttpV
     ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV
-    ,"com.typesafe.akka" %% "akka-slf4j"                        % akkaV
     ,"de.heikoseeberger" %% "akka-sse"                          % akkaSseV
     ,"org.json4s"        %% "json4s-native"                     % json4sV
     ,"io.spray"          %% "spray-json"                        % sprayJsonV
@@ -55,5 +53,6 @@ libraryDependencies ++= {
     ,"org.scalatest"     %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
     ,"org.parboiled"     %% "parboiled"                         % parboiledV
+    ,"com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV  % "test"
   )
 }
