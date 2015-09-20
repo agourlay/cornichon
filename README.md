@@ -1,4 +1,4 @@
-cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon)
+cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon)   [ ![Download](https://api.bintray.com/packages/agourlay/maven/cornichon/images/download.svg) ](https://bintray.com/agourlay/maven/cornichon/_latestVersion)
 =========
 
 A Scala DSL for testing JSON HTTP API 
@@ -197,7 +197,7 @@ body_is(whiteList = true, expected = """
   """)
 ```
 
-It also possible to use [Json4s XPath](http://json4s.org/#xpath--hofs extractor
+It also possible to use [Json4s XPath](http://json4s.org/#xpath--hofs extractor)
   
 ```scala
 body_is(_ \ "city", "Gotham city")
