@@ -59,33 +59,271 @@ Those prefix do not change the behaviour of the steps, generally step definition
 
 ## Steps
 
-A step is an abstraction describing an action which result can be compared against an expected value. 
+A step is an abstraction describing an action which result can be compared against an expected value.
 
-todo
+In terms of Scala data type a ```step``` is
+
+```scala
+case class ExecutableStep[A](
+  title: String,
+  action: Session ⇒ (A, Session),
+  expected: A
+)
+```
+
+A ```step``` can access and return a modified ```Session``` object. A ```Session``` is a Map-like object used to propagate state throughout a ```Scenario```.
+
+
+So the simplest executable statement in the DSL is
+
+```scala
+When I ExecutableStep("do nothing", s => (true, s), true)
+```
+
+Let's try to assert the result of a computation
+
+```scala
+When I ExecutableStep("do nothing", s => (2 + 2, s), 4)
+```
+
+The session is used to store the result of a computation in order to reuse it or to apply more advanced assertion on it late.
+
+
+```scala
+When I ExecutableStep(
+  title = "run crazy computation",
+  action = s => {
+  val res = crazy-computation()
+  (res.isSuccess, s.add("result", res.infos))
+  },
+  expected =  true)
+
+Then assert ExecutableStep(
+  title = "check computation infos",
+  action = s => {
+  val resInfos = s.get("result)
+  (resInfos, s)
+  },
+  expected =  "Everything is fine")
+```
+
+This is extremely low level and you should never write your test like that.
+
+Fortunately a bunch of built-in steps and primitive building bloc is already available.
+
 
 ## Built-in steps
+
 Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.
 
-- usual GET/POST/UPDATE/DELETE
-- assert response body
-- assert http status
-- assert http headers
-- assert JSON array using data table
-- asserting value in Session
-- setting a value in Session
-- repeat a series of Steps
-- repeat a series of Steps until it succeed over a period of time at a specified interval
-- JSON4s XPath integration (usage of ```\```, ```\\```, ```find```, ```filter```, ```transform``` etc)
+
+- GET and DELETE share the same signature: (url, optional params String tuples*)(optional tuples headers Seq)
+
+```scala
+GET("http://superhero.io/daredevil")
+
+GET("http://superhero.io/daredevil", params = "firstParam" → "value1", "secondParam" → "value2")
+
+DELETE("http://superhero.io/daredevil")(headers = Seq(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")))
+```
+
+- POST and UPDATE share the same signature: (url, payload as String, optional params String tuples*)(optional tuples headers Seq)
+
+```scala
+POST("http://superhero.io/batman", payload = "JSON description of Batman goes here")
+
+PUT("http://superhero.io/batman", payload = "JSON description of Batman goes here", params = "firstParam" → "value1", "secondParam" → "value2")
+
+POST("http://superhero.io/batman", payload = "JSON description of Batman goes here")(headers = Seq(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")))
+```
+
+- assert response status
+
+```scala
+status_is(200)
+
+```
+
+- assert response headers
+
+```scala
+headers_contain("cache-control" → "no-cache")
+
+```
+
+- assert response body comes with different flavours (ignoringKeys, whiteList, [Json4s XPath](http://json4s.org/#xpath--hofs))
+
+```scala
+body_is(
+  """
+  {
+    "name": "Batman",
+    "realName": "Bruce Wayne",
+    "city": "Gotham city",
+    "hasSuperpowers": false,
+    "publisher":{
+      "name":"DC",
+      "foundationYear":1934,
+      "location":"Burbank, California"
+    }
+  }
+  """)
+
+body_is(
+  """
+  {
+    "name": "Batman",
+    "realName": "Bruce Wayne"
+  }
+  """, ignoring = "city", "hasSuperpowers", "publisher")
+
+body_is(whiteList = true, expected = """
+  {
+    "name": "Batman",
+    "realName": "Bruce Wayne"
+  }
+  """)
+  
+body_is(_ \ "city", "Gotham city")
+
+body_is(_ \ "hasSuperpowers", false)
+
+body_is(_ \ "publisher" \ "name", "DC")
+
+body_is(_ \ "publisher" \ "foundationYear", 1934)
+
+```
+
+- assert response body if the endpoint returns a collection has several options (ordered, ignoring and using data table)
+
+```scala
+body_is(ordered = true,
+  """
+  [{
+    "name": "Batman",
+    "realName": "Bruce Wayne"
+  },
+  {
+    "name": "Superman",
+    "realName": "Clark Kent"
+  }]
+  """, ignoring = "city", "hasSuperpowers", "publisher")
+
+body_is(ordered = false,
+  """
+  [{
+    "name": "Superman",
+    "realName": "Clark Kent"
+  },
+  {
+    "name": "Batman",
+    "realName": "Bruce Wayne"
+  }]
+  """, ignoring = "city", "hasSuperpowers", "publisher")
+  
+body_is(ordered = true, expected = """
+  |    name     |    realName    |     city      |  hasSuperpowers |
+  | "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
+  | "Superman"  | "Clark Kent"   | "Metropolis"  |      true       |
+""", ignoring = "publisher")  
+  
+response_array_size_is(2)
+  
+response_array_contains("""
+  {
+    "name": "Batman",
+    "realName": "Bruce Wayne",
+    "city": "Gotham city",
+    "hasSuperpowers": false,
+    "publisher":{
+      "name":"DC",
+      "foundationYear":1934,
+      "location":"Burbank, California"
+    }
+  }
+  """)
+  
+```
+
+- setting a value in ```session```
+
+```scala
+save("favorite-superhero" → "Batman")
+```
+
+- asserting value in ```session```
+
+```scala
+session_contains("favorite-superhero" → "Batman")
+```
+
+- repeat a series of ```steps``` (can be nested)
+
+```scala
+Repeat(3) {
+  When I GET("http://superhero.io/batman")
+
+  Then assert status_is(200)
+}
+```
+
+- repeat a series of ```steps``` until it succeed over a period of time at a specified interval (handy for eventually consistent endpoint)
+
+```scala
+Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
+
+    When I GET("http://superhero.io/random")
+
+    Then assert body_is(
+      """
+    {
+      "name": "Batman",
+      "realName": "Bruce Wayne",
+      "city": "Gotham city"
+    }
+    """, ignoring = "hasSuperpowers", "publisher"
+    )
+  }
+```
+
+- WithHeaders blocs automatically set headers for several steps useful for authenticated scenario.
+
+```scala
+WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
+  When I GET("http://superhero.io/secured")
+  When I GET("http://superhero.io/secured")
+}
+
+```
+        
 - validate response against Json schemas
-- experimental support for Server-Sent-Event assertion
 
-## How to build a custom step
+```scala
+body_against_schema("http://link.to.json.schema")
 
-todo
+```
+
+- experimental support for Server-Sent-Event. SSE streams are aggregated over a period of time in an Array, the array predicate can be reused.
+
+```scala
+When I GET_SSE(s"http://superhero.io/stream", takeWithin = 1.seconds, params = "justName" → "true")
+
+Then assert response_array_size_is(2)
+
+Then assert body_is("""
+  |   eventType      |    data     |
+  | "superhero name" |  "Batman"   |
+  | "superhero name" | "Superman"  |
+""")
+```
+
+Those descriptions might be already outdated, in case of doubt always refer to the [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
+                                              
+Those examples are executed as part of Cornichon's test suite.
 
 ## Placeholders
 
-Most built-in steps can use placeholder in their arguments that will be resolved from the session.
+Most built-in steps can use placeholder in their arguments, those will be automatically resolved from the session.
 
 ```scala
 Given I save("favorite-superhero" → "Batman")
@@ -105,8 +343,22 @@ Then assert body_is(
   """
 )
 
-```
+And I extract_from_response("city", "batman-city")
 
+Then assert session_contains("batman-city" → "Gotham city")
+
+Then assert body_is(
+  """
+  {
+    "name": "<favorite-superhero>",
+    "realName": "Bruce Wayne",
+    "city": "<batman-city>",
+    "publisher": "DC"
+  }
+  """
+)
+
+```
 
 ## Usage
 
@@ -144,6 +396,8 @@ For more examples see the following [file](https://github.com/agourlay/cornichon
 
 ## Implicit builder
 
-Cornichon's DSL uses mutation to improve readability. The argument ```implicit b =>``` represent an implicit step builder required to construct a ```scenario```.
+Cornichon uses mutation to build the ```scenario``` in order to have a clean look. The argument ```implicit b =>``` represent an implicit step builder required to construct a ```scenario```.
 
-Until a better solution is found, do not forget it :)
+The ```feature``` construction uses a varargs of ```scenario```, that is why it is not using curly braces and still require ```,``` between ```scenario```.
+
+Until a better solution is implemented, do not forget those :)
