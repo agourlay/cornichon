@@ -13,14 +13,14 @@ Inside a Scala project, place your Cornichon tests in ```src/test/scala``` and r
 resolvers += "agourlay at bintray" at "http://dl.bintray.com/agourlay/maven"
 
 libraryDependencies ++= List(
-  "com.github.agourlay" %% "cornichon" % "0.0.0",
+  "com.github.agourlay" %% "cornichon" % "0.0.0" % "test",
   ...
 )
 ```
 
 ## Structure
 
-A Cornichon test is the definition of a so called ```feature```. 
+A Cornichon test is the definition of a so-called ```feature```. 
 
 A ```feature``` can have several ```scenarios``` which can have several ```steps```.
 
@@ -40,9 +40,9 @@ class CornichonExamplesSpec extends CornichonFeature {
 }
 ```
 
-A feature fails - if one or more scenarios fail
+A feature fails - if one or more scenarios fail.
 
-A scenario fails - if at a step fails. 
+A scenario fails - if at least one step fails. 
 
 A scenario will stop at the first failed step and ignore the remaining steps.
 
@@ -50,7 +50,7 @@ Check this [section](#implicit-builder) if you wonder what this ```implicit b =>
 
 ## DSL
 
-Steps start with one of the following prefix followed by a step definition :
+Statements start with one of the prefixes below followed by a step definition :
 
 - Given I
 - When I
@@ -61,7 +61,7 @@ Steps start with one of the following prefix followed by a step definition :
 - Then assert_not (expects the step to fail)
 - And assert_not (expects the step to fail)
 
-Those prefix do not change the behaviour of the steps, generally step definitions with "I" are reserved for steps with side effects, like HTTP calls and definition with "assert" for assertion.
+Those prefixes do not change the behaviour of the steps, generally statement definitions with "I" are reserved for steps with side effects, like HTTP calls and definition with "assert" for assertion.
 
 ## Steps
 
@@ -77,7 +77,7 @@ case class ExecutableStep[A](
 )
 ```
 
-A ```step``` can access and return a modified ```Session``` object. A ```Session``` is a Map-like object used to propagate state throughout a ```Scenario```.
+A ```step``` can access and return a modified ```session``` object. A ```session``` is a Map-like object used to propagate state throughout a ```scenario```.
 
 
 So the simplest executable statement in the DSL is
@@ -92,7 +92,7 @@ Let's try to assert the result of a computation
 When I ExecutableStep("do nothing", s => (2 + 2, s), 4)
 ```
 
-The session is used to store the result of a computation in order to reuse it or to apply more advanced assertion on it late.
+The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertion on it later.
 
 
 ```scala
@@ -123,7 +123,7 @@ Fortunately a bunch of built-in steps and primitive building bloc is already ava
 Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.
 
 
-- GET and DELETE share the same signature: (url, optional params String tuples*)(optional tuples headers Seq)
+- GET and DELETE share the same signature: (url, optional params String tuples*)(optional tuple headers Seq)
 
 ```scala
 GET("http://superhero.io/daredevil")
@@ -133,7 +133,7 @@ GET("http://superhero.io/daredevil", params = "firstParam" → "value1", "second
 DELETE("http://superhero.io/daredevil")(headers = Seq(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")))
 ```
 
-- POST and UPDATE share the same signature: (url, payload as String, optional params String tuples*)(optional tuples headers Seq)
+- POST and UPDATE share the same signature: (url, payload as String, optional params String tuples*)(optional tuple headers Seq)
 
 ```scala
 POST("http://superhero.io/batman", payload = "JSON description of Batman goes here")
