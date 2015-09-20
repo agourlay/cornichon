@@ -1,4 +1,4 @@
-cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon)   [ ![Download](https://api.bintray.com/packages/agourlay/maven/cornichon/images/download.svg) ](https://bintray.com/agourlay/maven/cornichon/_latestVersion)
+cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon)  [![Download](https://api.bintray.com/packages/agourlay/maven/cornichon/images/download.svg)](https://bintray.com/agourlay/maven/cornichon/_latestVersion)
 =========
 
 A Scala DSL for testing JSON HTTP API 
@@ -7,15 +7,18 @@ Quick example? It looks like [this](https://github.com/agourlay/cornichon/blob/m
 
 Inside a Scala project, place your Cornichon tests in ```src/test/scala``` and run them using ```sbt test```.
 
+## Motivation
+
+Offering an extensible DSL to specify behaviours of JSON HTTP APIs in Scala.
+
+
 ## Installation
 
 ``` scala
 resolvers += "agourlay at bintray" at "http://dl.bintray.com/agourlay/maven"
 
-libraryDependencies ++= List(
-  "com.github.agourlay" %% "cornichon" % "0.0.0" % "test",
-  ...
-)
+"com.github.agourlay" %% "cornichon" % "0.0.0" % "test"
+ 
 ```
 
 ## Structure
@@ -40,17 +43,17 @@ class CornichonExamplesSpec extends CornichonFeature {
 }
 ```
 
-A feature fails - if one or more scenarios fail.
+A ```feature``` fails - if one or more ```scenarios``` fail.
 
-A scenario fails - if at least one step fails. 
+A ```scenario``` fails - if at least one ```step``` fails.
 
-A scenario will stop at the first failed step and ignore the remaining steps.
+A ```scenario``` will stop at the first failed step encountered and ignore the remaining ```steps```.
 
 Check this [section](#implicit-builder) if you wonder what this ```implicit b =>``` thingy is.
 
 ## DSL
 
-Statements start with one of the prefixes below followed by a step definition :
+Statements start with one of the prefixes below followed by a ```step``` definition :
 
 - Given I
 - When I
@@ -63,13 +66,13 @@ Statements start with one of the prefixes below followed by a step definition :
 
 Those prefixes do not change the behaviour of the steps.
 
-First run a step with a side effect or a result then in a second step assert its value.
+First run a ```step``` with a side effect or a result then assert its value in a second ```step```.
 
 ## Steps
 
-A step is an abstraction describing an action which result can be compared against an expected value.
+A ```step``` is an abstraction describing an action - its result can be compared against an expected value.
 
-In terms of Scala data type a ```step``` is
+In terms of Scala data type it is
 
 ```scala
 case class ExecutableStep[A](
@@ -94,7 +97,7 @@ Let's try to assert the result of a computation
 When I ExecutableStep("calculate", s => (2 + 2, s), 4)
 ```
 
-The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertion on it later.
+The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
 
 
 ```scala
@@ -117,7 +120,7 @@ Then assert ExecutableStep(
 
 This is extremely low level and you should never write your test like that.
 
-Fortunately a bunch of built-in steps and primitive building bloc is already available.
+Fortunately a bunch of built-in steps and primitive building blocs are already available.
 
 
 ## Built-in steps
@@ -197,7 +200,7 @@ body_is(whiteList = true, expected = """
   """)
 ```
 
-It also possible to use [Json4s XPath](http://json4s.org/#xpath--hofs extractor)
+It also possible to use [Json4s XPath](http://json4s.org/#xpath--hofs) extractors
   
 ```scala
 body_is(_ \ "city", "Gotham city")
@@ -210,7 +213,7 @@ body_is(_ \ "publisher" \ "foundationYear", 1934)
 
 ```
 
-- assert response body if the endpoint returns a collection has several options (ordered, ignoring and using data table)
+If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
 body_is(ordered = true,
@@ -273,7 +276,7 @@ save("favorite-superhero" → "Batman")
 session_contains("favorite-superhero" → "Batman")
 ```
 
-- repeats a series of ```steps``` (can be nested)
+- repeating a series of ```steps``` (can be nested)
 
 ```scala
 Repeat(3) {
@@ -283,7 +286,7 @@ Repeat(3) {
 }
 ```
 
-- repeats a series of ```steps``` until it succeed over a period of time at a specified interval (handy for eventually consistent endpoints)
+- repeating a series of ```steps``` until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)
 
 ```scala
 Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
@@ -312,7 +315,7 @@ WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
 
 ```
         
-- validate response against Json schemas
+- validating response against Json schema
 
 ```scala
 body_against_schema("http://link.to.json.schema")
@@ -321,7 +324,7 @@ body_against_schema("http://link.to.json.schema")
 
 - experimental support for Server-Sent-Event.
  
- SSE streams are aggregated over a period of time in an array therefore the previous array predicates can be reused.
+ SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
 
 ```scala
 When I GET_SSE(s"http://superhero.io/stream", takeWithin = 1.seconds, params = "justName" → "true")
@@ -335,13 +338,11 @@ Then assert body_is("""
 """)
 ```
 
-Those descriptions might be already outdated, in case of doubt always refer to the [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
-                                              
-Those examples are executed as part of Cornichon's test suite.
+Those descriptions might be already outdated, in case of doubt always refer to these [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
 ## Placeholders
 
-Most built-in steps can use placeholder in their arguments, those will be automatically resolved from the session.
+Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the '''session'''.
 
 ```scala
 Given I save("favorite-superhero" → "Batman")
@@ -408,28 +409,28 @@ class CornichonReadmeExample extends CornichonFeature {
 }
 ```
 
-Cornichon is currently integrated with ScalaTest, so you just have to run ```sbt run``` to trigger features execution.
+Cornichon is currently integrated with ScalaTest, so you just have to run ```sbt run``` to trigger its execution.
 
 For more examples see the following [file](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
 
 ## Before and after hooks
 
-Hooks are available to setup and tear down things as usual but this feature is not integrated into the DSL.
+Hooks are available to set up and tear down things as usual but this feature is not integrated into the DSL.
 
-Four functions are available to be overridden in ```CornichonFeature``` with self explanatory names:
+Four functions are available to be overridden in ```CornichonFeature``` with self-explanatory names:
 
 ```scala
-  def beforeFeature(): Unit
-  def afterFeature(): Unit
+def beforeFeature(): Unit
+def afterFeature(): Unit
 
-  def beforeEachScenario(): Seq[ExecutableStep[_]]
-  def afterEachScenario(): Seq[ExecutableStep[_]]
+def beforeEachScenario(): Seq[ExecutableStep[_]]
+def afterEachScenario(): Seq[ExecutableStep[_]]
 ```
 
 ## Implicit builder
 
-Cornichon uses mutation to build the ```scenario``` in order to have a clean look. The argument ```implicit b =>``` represent an implicit step builder required to construct a ```scenario```.
+In order to have a clean look Cornichon uses mutation to build a ```scenario```. The argument ```implicit b =>``` represents an implicit step builder required to construct a ```scenario```.
 
-The ```feature``` construction uses a varargs of ```scenario```, that is why it is not using curly braces and still require ```,``` between ```scenario```.
+The ```feature``` construction uses a varargs of ```scenario```, that is why it is not using curly braces and still requires ```,``` between ```scenarios```.
 
 Until a better solution is implemented, do not forget those :)
