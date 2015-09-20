@@ -25,7 +25,7 @@ class Engine extends CornichonLogger {
       case Failure(e) ⇒
         e match {
           case ce: CornichonError ⇒ left(ce)
-          case _                  ⇒ left(StepExecutionError(step.title, e))
+          case _                  ⇒ left(StepExecutionError(e))
         }
     }
 

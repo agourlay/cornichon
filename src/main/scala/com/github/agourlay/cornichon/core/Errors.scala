@@ -7,8 +7,8 @@ trait CornichonError extends Exception {
   val msg: String
 }
 
-case class StepExecutionError[A](title: String, exception: Throwable) extends CornichonError {
-  val msg = s"step '$title' failed by throwing exception ${exception.printStackTrace()}"
+case class StepExecutionError[A](exception: Throwable) extends CornichonError {
+  val msg = s"exception thrown '${exception.getMessage}'"
 }
 
 case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extends CornichonError {
@@ -38,7 +38,7 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
 }
 
 case class MalformedHeadersError(error: String) extends CornichonError {
-  val msg = s"Error thrown while parsing headers $error"
+  val msg = s"error thrown while parsing headers $error"
 }
 
 case class ResolverError(key: String) extends CornichonError {
@@ -52,11 +52,11 @@ case class KeyNotFoundInSession(key: String) extends CornichonError {
 case class WhileListError(msg: String) extends CornichonError
 
 case class NotAnArrayError[A](badPayload: A) extends CornichonError {
-  val msg = s"Expected JSON Array but got $badPayload"
+  val msg = s"expected JSON Array but got $badPayload"
 }
 
 case class MalformedJsonError[A](input: A, exception: Throwable) extends CornichonError {
-  val msg = s"Malformed JSON input $input with ${exception.getMessage}"
+  val msg = s"malformed JSON input $input with ${exception.getMessage}"
 }
 
 case class DataTableError(msg: String) extends CornichonError

@@ -61,7 +61,9 @@ Statements start with one of the prefixes below followed by a step definition :
 - Then assert_not (expects the step to fail)
 - And assert_not (expects the step to fail)
 
-Those prefixes do not change the behaviour of the steps, generally statement definitions with "I" are reserved for steps with side effects, like HTTP calls and definition with "assert" for assertion.
+Those prefixes do not change the behaviour of the steps.
+
+First run a step with a side effect or a result then in a second step assert its value.
 
 ## Steps
 
@@ -89,7 +91,7 @@ When I ExecutableStep("do nothing", s => (true, s), true)
 Let's try to assert the result of a computation
 
 ```scala
-When I ExecutableStep("do nothing", s => (2 + 2, s), 4)
+When I ExecutableStep("calculate", s => (2 + 2, s), 4)
 ```
 
 The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertion on it later.
@@ -123,7 +125,9 @@ Fortunately a bunch of built-in steps and primitive building bloc is already ava
 Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.
 
 
-- GET and DELETE share the same signature: (url, optional params String tuples*)(optional tuple headers Seq)
+- GET and DELETE share the same signature
+
+ (url, optional params String tuples*)(optional tuple headers Seq)
 
 ```scala
 GET("http://superhero.io/daredevil")
@@ -133,7 +137,9 @@ GET("http://superhero.io/daredevil", params = "firstParam" → "value1", "second
 DELETE("http://superhero.io/daredevil")(headers = Seq(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")))
 ```
 
-- POST and UPDATE share the same signature: (url, payload as String, optional params String tuples*)(optional tuple headers Seq)
+- POST and UPDATE share the same signature
+
+ (url, payload as String, optional params String tuples*)(optional tuple headers Seq)
 
 ```scala
 POST("http://superhero.io/batman", payload = "JSON description of Batman goes here")
@@ -263,7 +269,7 @@ save("favorite-superhero" → "Batman")
 session_contains("favorite-superhero" → "Batman")
 ```
 
-- repeat a series of ```steps``` (can be nested)
+- repeats a series of ```steps``` (can be nested)
 
 ```scala
 Repeat(3) {
@@ -273,7 +279,7 @@ Repeat(3) {
 }
 ```
 
-- repeat a series of ```steps``` until it succeed over a period of time at a specified interval (handy for eventually consistent endpoint)
+- repeats a series of ```steps``` until it succeed over a period of time at a specified interval (handy for eventually consistent endpoints)
 
 ```scala
 Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
@@ -292,7 +298,7 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-- WithHeaders blocs automatically set headers for several steps useful for authenticated scenario.
+- WithHeaders bloc automatically sets headers for several steps useful for authenticated scenario.
 
 ```scala
 WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
@@ -309,7 +315,9 @@ body_against_schema("http://link.to.json.schema")
 
 ```
 
-- experimental support for Server-Sent-Event. SSE streams are aggregated over a period of time in an Array, the array predicate can be reused.
+- experimental support for Server-Sent-Event.
+ 
+ SSE streams are aggregated over a period of time in an array therefore the previous array predicates can be reused.
 
 ```scala
 When I GET_SSE(s"http://superhero.io/stream", takeWithin = 1.seconds, params = "justName" → "true")
