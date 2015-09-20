@@ -163,7 +163,7 @@ headers_contain("cache-control" → "no-cache")
 
 ```
 
-- assert response body comes with different flavours (ignoringKeys, whiteList, [Json4s XPath](http://json4s.org/#xpath--hofs))
+- assert response body comes with different flavours (ignoringKeys, whiteList))
 
 ```scala
 body_is(
@@ -195,7 +195,11 @@ body_is(whiteList = true, expected = """
     "realName": "Bruce Wayne"
   }
   """)
+```
+
+It also possible to use [Json4s XPath](http://json4s.org/#xpath--hofs extractor
   
+```scala
 body_is(_ \ "city", "Gotham city")
 
 body_is(_ \ "hasSuperpowers", false)
@@ -407,6 +411,20 @@ class CornichonReadmeExample extends CornichonFeature {
 Cornichon is currently integrated with ScalaTest, so you just have to run ```sbt run``` to trigger features execution.
 
 For more examples see the following [file](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
+
+## Before and after hooks
+
+Hooks are available to setup and tear down things as usual but this feature is not integrated into the DSL.
+
+Four functions are available to be overridden in ```CornichonFeature``` with self explanatory names:
+
+```scala
+  def beforeFeature(): Unit
+  def afterFeature(): Unit
+
+  def beforeEachScenario(): Seq[ExecutableStep[_]]
+  def afterEachScenario(): Seq[ExecutableStep[_]]
+```
 
 ## Implicit builder
 

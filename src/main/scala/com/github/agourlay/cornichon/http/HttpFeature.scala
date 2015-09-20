@@ -84,7 +84,7 @@ trait HttpFeature {
       (res, newSession)
     }
 
-  // rewrite later :)
+  // TODO rewrite fragile code
   private def encodeParams(url: String, params: Seq[(String, String)]) = {
     def formatEntry(entry: (String, String)) = s"${entry._1}=${entry._2}"
     val encoded =
