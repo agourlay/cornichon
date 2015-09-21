@@ -5,14 +5,13 @@ cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=m
 
 A Scala DSL for testing JSON HTTP API 
 
-Quick example? It looks like [this](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
+Quick example? It looks like [this](#usage)
 
 Inside a Scala project, place your Cornichon tests in ```src/test/scala``` and run them using ```sbt test```.
 
 ## Motivation
 
 Offering an extensible DSL to specify behaviours of JSON HTTP APIs in Scala.
-
 
 ## Installation
 
@@ -66,61 +65,6 @@ Statements start with one of the prefixes below followed by a ```step``` definit
 Those prefixes do not change the behaviour of the steps.
 
 First run a ```step``` with a side effect or a result then assert its value in a second ```step```.
-
-## Steps
-
-A ```step``` is an abstraction describing an action - its result can be compared against an expected value.
-
-In terms of Scala data type it is
-
-```scala
-case class ExecutableStep[A](
-  title: String,
-  action: Session ⇒ (A, Session),
-  expected: A
-)
-```
-
-A ```step``` can access and return a modified ```session``` object. A ```session``` is a Map-like object used to propagate state throughout a ```scenario```.
-
-
-So the simplest executable statement in the DSL is
-
-```scala
-When I ExecutableStep("do nothing", s => (true, s), true)
-```
-
-Let's try to assert the result of a computation
-
-```scala
-When I ExecutableStep("calculate", s => (2 + 2, s), 4)
-```
-
-The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
-
-
-```scala
-When I ExecutableStep(
-  title = "run crazy computation",
-  action = s => {
-  val res = crazy-computation()
-  (res.isSuccess, s.add("result", res.infos))
-  },
-  expected =  true)
-
-Then assert ExecutableStep(
-  title = "check computation infos",
-  action = s => {
-  val resInfos = s.get("result)
-  (resInfos, s)
-  },
-  expected =  "Everything is fine")
-```
-
-This is extremely low level and you should never write your test like that.
-
-Fortunately a bunch of built-in steps and primitive building blocs are already available.
-
 
 ## Built-in steps
 
@@ -338,6 +282,60 @@ Then assert body_is("""
 ```
 
 Those descriptions might be already outdated, in case of doubt always refer to these [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
+
+## Steps
+
+A ```step``` is an abstraction describing an action - its result can be compared against an expected value.
+
+In terms of Scala data type it is
+
+```scala
+case class ExecutableStep[A](
+  title: String,
+  action: Session ⇒ (A, Session),
+  expected: A
+)
+```
+
+A ```step``` can access and return a modified ```session``` object. A ```session``` is a Map-like object used to propagate state throughout a ```scenario```.
+
+
+So the simplest executable statement in the DSL is
+
+```scala
+When I ExecutableStep("do nothing", s => (true, s), true)
+```
+
+Let's try to assert the result of a computation
+
+```scala
+When I ExecutableStep("calculate", s => (2 + 2, s), 4)
+```
+
+The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
+
+
+```scala
+When I ExecutableStep(
+  title = "run crazy computation",
+  action = s => {
+  val res = crazy-computation()
+  (res.isSuccess, s.add("result", res.infos))
+  },
+  expected =  true)
+
+Then assert ExecutableStep(
+  title = "check computation infos",
+  action = s => {
+  val resInfos = s.get("result)
+  (resInfos, s)
+  },
+  expected =  "Everything is fine")
+```
+
+This is extremely low level and you should never write your test like that.
+
+Fortunately a bunch of built-in steps and primitive building blocs are already available.
 
 ## Placeholders
 
