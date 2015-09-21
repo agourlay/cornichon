@@ -1,4 +1,4 @@
-cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon)  [![Download](https://api.bintray.com/packages/agourlay/maven/cornichon/images/download.svg)](https://bintray.com/agourlay/maven/cornichon/_latestVersion)
+cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon)  [![Download](https://api.bintray.com/packages/agourlay/maven/cornichon/images/download.svg)](https://bintray.com/agourlay/maven/cornichon/_latestVersion)  [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 =========
 
 A Scala DSL for testing JSON HTTP API 
@@ -17,7 +17,7 @@ Offering an extensible DSL to specify behaviours of JSON HTTP APIs in Scala.
 ``` scala
 resolvers += "agourlay at bintray" at "http://dl.bintray.com/agourlay/maven"
 
-"com.github.agourlay" %% "cornichon" % "0.0.0" % "test"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.0.0" % "test"
  
 ```
 

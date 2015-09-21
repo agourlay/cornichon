@@ -1,86 +1,119 @@
 package com.github.agourlay.cornichon.http
 
-import java.util.concurrent.TimeoutException
-
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding._
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.{ HttpHeader, HttpRequest, HttpResponse }
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.Materializer
-import akka.stream.scaladsl.{ FlattenStrategy, Source }
+import akka.http.scaladsl.model.HttpHeader
+import akka.http.scaladsl.model.HttpHeader.ParsingResult
+import akka.stream.ActorMaterializer
 import cats.data.Xor
-import cats.data.Xor.{ left, right }
-import com.github.agourlay.cornichon.core.CornichonLogger
-import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
+import com.github.agourlay.cornichon.core._
 import de.heikoseeberger.akkasse.ServerSentEvent
-import spray.json.JsValue
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import spray.json.DefaultJsonProtocol._
+import spray.json._
 
-import scala.Console._
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration._
+import scala.concurrent.{ Await, ExecutionContext }
 
-class HttpService(implicit actorSystem: ActorSystem, materializer: Materializer) extends CornichonLogger {
+trait HttpService {
 
-  implicit val ec: ExecutionContext = actorSystem.dispatcher
+  implicit private val system = ActorSystem("cornichon-http-feature")
+  implicit private val mat = ActorMaterializer()
+  implicit private val ec: ExecutionContext = system.dispatcher
+  private val httpService = new HttpClient
 
-  private def requestRunner(req: HttpRequest) =
-    Http()
-      .singleRequest(req)
-      .flatMap(expectJson)
-      .recover(exceptionMapper)
+  lazy val LastResponseBodyKey = "last-response-body"
+  lazy val LastResponseStatusKey = "last-response-status"
+  lazy val LastResponseHeadersKey = "last-response-headers"
+  lazy val WithHeadersKey = "with-headers"
 
-  def postJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Post(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
+  val HeadersKeyValueDelim = '|'
 
-  def putJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Put(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
+  private case class InternalSSE(data: String, eventType: Option[String] = None, id: Option[String] = None)
 
-  def getJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Get(url).withHeaders(collection.immutable.Seq(headers: _*)))
+  private object InternalSSE {
+    def build(sse: ServerSentEvent): InternalSSE = InternalSSE(sse.data, sse.eventType, sse.id)
+    implicit val formatServerSentEvent = jsonFormat3(InternalSSE.apply)
+  }
 
-  def getSSE(url: String, takeWithin: FiniteDuration, headers: Seq[HttpHeader]) = {
-    val request = Get(url).withHeaders(collection.immutable.Seq(headers: _*))
-    val host = request.uri.authority.host.toString()
-    val port = request.uri.effectivePort
+  def Post(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+    for {
+      payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
+      res ← Await.result(httpService.postJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      newSession = fillInHttpSession(s, res)
+    } yield {
+      (res, newSession)
+    }
 
-    Source.single(request)
-      .via(Http().outgoingConnection(host, port))
-      .mapAsync(1)(expectSSE)
-      .map { sse ⇒
-        sse.fold(e ⇒ {
-          logger.error(RED + s"SSE connection error $e" + RESET)
-          Source.empty[ServerSentEvent]
-        }, s ⇒ s)
+  def Put(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+    for {
+      payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
+      res ← Await.result(httpService.putJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      newSession = fillInHttpSession(s, res)
+    } yield {
+      (res, newSession)
+    }
+
+  def Get(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+    for {
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
+      res ← Await.result(httpService.getJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      newSession = fillInHttpSession(s, res)
+    } yield {
+      (res, newSession)
+    }
+
+  def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session) =
+    for {
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
+    } yield {
+      val res = Await.result(httpService.getSSE(encodeParams(urlResolved, params), takeWithin, headers ++ extractWithHeadersSession(s)), takeWithin + 1.second)
+      val jsonRes = res.map(s ⇒ InternalSSE.build(s)).toVector.toJson
+      // TODO add Headers and Status Code
+      (jsonRes, s.addValue(LastResponseBodyKey, jsonRes.prettyPrint))
+    }
+
+  def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+    for {
+      urlResolved ← Resolver.fillPlaceholder(url)(s.content)
+      res ← Await.result(httpService.deleteJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      newSession = fillInHttpSession(s, res)
+    } yield {
+      (res, newSession)
+    }
+
+  // TODO rewrite fragile code
+  private def encodeParams(url: String, params: Seq[(String, String)]) = {
+    def formatEntry(entry: (String, String)) = s"${entry._1}=${entry._2}"
+    val encoded =
+      if (params.isEmpty) ""
+      else if (params.size == 1) s"?${formatEntry(params.head)}"
+      else s"?${formatEntry(params.head)}" + params.tail.map { e ⇒ s"&${formatEntry(e)}" }.mkString
+    url + encoded
+  }
+
+  def fillInHttpSession(session: Session, response: CornichonHttpResponse): Session =
+    session
+      .addValue(LastResponseStatusKey, response.status.intValue().toString)
+      .addValue(LastResponseBodyKey, response.body)
+      .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(","))
+
+  def parseHttpHeaders(headers: Seq[(String, String)]): Seq[HttpHeader] =
+    headers.map(v ⇒ HttpHeader.parse(v._1, v._2)).map {
+      case ParsingResult.Ok(h, e) ⇒ h
+      case ParsingResult.Error(e) ⇒ throw new MalformedHeadersError(e.formatPretty)
+    }
+
+  private def extractWithHeadersSession(session: Session): Seq[HttpHeader] =
+    session.getKey(WithHeadersKey).fold(Seq.empty[HttpHeader]) { headers ⇒
+      val tuples = headers.split(',').toSeq.map { header ⇒
+        val elms = header.split(HeadersKeyValueDelim)
+        (elms.head, elms.tail.head)
       }
-      .flatten(FlattenStrategy.concat[ServerSentEvent])
-      .filter(_.data.nonEmpty)
-      .takeWithin(takeWithin).runFold(List.empty[ServerSentEvent])((acc, sse) ⇒ {
-        acc :+ sse
-      })
-
-  }
-
-  def deleteJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Delete(url).withHeaders(collection.immutable.Seq(headers: _*)))
-
-  def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, CornichonHttpResponse]] = {
-    case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))
-  }
-
-  def expectSSE(httpResponse: HttpResponse): Future[Xor[HttpError, Source[ServerSentEvent, Any]]] =
-    Unmarshal(httpResponse).to[Source[ServerSentEvent, Any]].map { sse ⇒
-      right(sse)
-    }.recover {
-      case e: Exception ⇒ left(SseError(e))
+      parseHttpHeaders(tuples)
     }
 
-  def expectJson(httpResponse: HttpResponse): Future[Xor[HttpError, CornichonHttpResponse]] =
-    Unmarshal(httpResponse).to[String].map { body: String ⇒
-      right(CornichonHttpResponse.fromResponse(httpResponse, body))
-    }.recover {
-      case e: Exception ⇒
-        left(ResponseError(e, httpResponse))
-    }
+  implicit private def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
 }
