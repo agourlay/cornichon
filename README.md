@@ -36,7 +36,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   
         When I GET("http://google.com")
   
-        Then assert status_is(200)
+        Then assert status_is(302)
       }
   )
 }
