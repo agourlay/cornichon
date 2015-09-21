@@ -2,8 +2,9 @@ package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.HttpDsl
+import org.scalatest.WordSpec
 
-trait CornichonFeature extends ScalaTestIntegration with HttpDsl {
+trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
 
   private val engine = new Engine()
 
