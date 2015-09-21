@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import org.scalatest.{ Matchers, WordSpec }
+import scala.concurrent.duration._
 
 class EngineSpec extends WordSpec with Matchers {
 
@@ -46,6 +47,67 @@ class EngineSpec extends WordSpec with Matchers {
           f.successSteps should be(Seq(step1.title))
           f.notExecutedStep should be(Seq(step3.title))
       }
+    }
+
+    "fail if expected value contains unresolved placeholder" in {
+      val session = Session.newSession
+      val steps = Seq(
+        ExecutableStep("unresolved step", s ⇒ {
+          ("blah", s)
+        }, "<unknown>")
+      )
+      val s = Scenario("scenario with unresolved", steps)
+      engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
+    }
+
+    "resolve placeholder in expected value" in {
+      val session = Session.newSession.addValue("unknown", "blah")
+      val steps = Seq(
+        ExecutableStep("resolved step", s ⇒ {
+          ("blah", s)
+        }, "<unknown>")
+      )
+      val s = Scenario("scenario with resolved", steps)
+      engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
+    }
+
+    "replay eventually wrapped steps" in {
+      val session = Session.newSession
+      val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 100.milliseconds)
+      val steps = Seq(
+        EventuallyStart(eventuallyConf),
+        ExecutableStep("random value step", s ⇒ {
+          (scala.util.Random.nextInt(10), s)
+        }, 5),
+        EventuallyStart(eventuallyConf)
+      )
+      val s = Scenario("scenario with eventually", steps)
+      engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
+    }
+
+    "replay eventually wrapped steps until limit" in {
+      val session = Session.newSession
+      val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 100.milliseconds)
+      val steps = Seq(
+        EventuallyStart(eventuallyConf),
+        ExecutableStep("random value step", s ⇒ {
+          (scala.util.Random.nextInt(10), s)
+        }, 11),
+        EventuallyStart(eventuallyConf)
+      )
+      val s = Scenario("scenario with eventually that fails", steps)
+      engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
+    }
+
+    "success if non equality was expected" in {
+      val session = Session.newSession
+      val steps = Seq(
+        ExecutableStep("non equals step", s ⇒ {
+          (1, s)
+        }, 2, negate = true)
+      )
+      val s = Scenario("scenario with unresolved", steps)
+      engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
     }
   }
 

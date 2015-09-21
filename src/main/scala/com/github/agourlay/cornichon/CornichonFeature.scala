@@ -2,12 +2,10 @@ package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.HttpDsl
-import com.github.agourlay.cornichon.http.HttpFeature
 
-trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeature {
+trait CornichonFeature extends ScalaTestIntegration with HttpDsl {
 
   private val engine = new Engine()
-  private val session = Session.newSession
 
   private def failedFeatureErrorMsg(r: FailedScenarioReport): String =
     s"""
@@ -23,7 +21,7 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
       feat.scenarios.map { s ⇒
         logger.info(s"Scenario : ${s.name}")
         val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
-        engine.runScenario(completeScenario)(session)
+        engine.runScenario(completeScenario)(Session.newSession)
       }
     } finally
       afterFeature()
@@ -36,6 +34,7 @@ trait CornichonFeature extends ScalaTestIntegration with HttpDsl with HttpFeatur
       FailedFeatureReport(feat.name, failedReports, failedReports.map(failedFeatureErrorMsg))
   }
 
+  // TODO switch to val
   def feature: FeatureDef
 
   def beforeFeature(): Unit = ()

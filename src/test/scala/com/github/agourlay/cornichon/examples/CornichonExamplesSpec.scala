@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 
 class CornichonExamplesSpec extends CornichonFeature {
 
-  lazy val port = 8080
+  val port = 8080
   var server: ServerBinding = _
 
   // Starts up test server
@@ -21,7 +21,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   // Stops test server
   override def afterFeature() = Await.result(server.unbind(), 5 second)
 
-  lazy val baseUrl = s"http://localhost:$port"
+  val baseUrl = s"http://localhost:$port"
 
   def feature =
     Feature("Cornichon feature Example")(

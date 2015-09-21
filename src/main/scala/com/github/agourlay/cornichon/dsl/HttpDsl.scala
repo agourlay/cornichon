@@ -13,10 +13,10 @@ import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
 
 trait HttpDsl extends Dsl {
-  this: HttpFeature ⇒
 
   implicit val requestTimeout: FiniteDuration = 2000 millis
   private val mapper = new ObjectMapper()
+  private val http = new HttpService()
 
   sealed trait Request { val name: String }
 
@@ -30,10 +30,10 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
-          val httpHeaders = parseHttpHeaders(headers)
+          val httpHeaders = http.parseHttpHeaders(headers)
           val x = this match {
-            case GET    ⇒ Get(url, params, httpHeaders)(s)
-            case DELETE ⇒ Delete(url, params, httpHeaders)(s)
+            case GET    ⇒ http.Get(url, params, httpHeaders)(s)
+            case DELETE ⇒ http.Delete(url, params, httpHeaders)(s)
           }
           x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
         },
@@ -51,10 +51,10 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
-          val httpHeaders = parseHttpHeaders(headers)
+          val httpHeaders = http.parseHttpHeaders(headers)
           val x = this match {
-            case POST ⇒ Post(dslParse(payload), url, params, httpHeaders)(s)
-            case PUT  ⇒ Put(dslParse(payload), url, params, httpHeaders)(s)
+            case POST ⇒ http.Post(dslParse(payload), url, params, httpHeaders)(s)
+            case PUT  ⇒ http.Put(dslParse(payload), url, params, httpHeaders)(s)
           }
           x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
         },
@@ -72,9 +72,9 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
-          val httpHeaders = parseHttpHeaders(headers)
+          val httpHeaders = http.parseHttpHeaders(headers)
           val x = this match {
-            case GET_SSE ⇒ GetSSE(url, takeWithin, params, httpHeaders)(s)
+            case GET_SSE ⇒ http.GetSSE(url, takeWithin, params, httpHeaders)(s)
             case GET_WS  ⇒ ???
           }
           x.map { case (source, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
@@ -95,19 +95,21 @@ trait HttpDsl extends Dsl {
 
   case object GET_WS extends Streamed { val name = "GET WS" }
 
-  def status_is(status: Int) = session_contains(LastResponseStatusKey, status.toString, Some(s"HTTP status is $status"))
+  def status_is(status: Int) = {
+    session_contains(http.LastResponseStatusKey, status.toString, Some(s"HTTP status is $status"))
+  }
 
   def headers_contain(headers: (String, String)*) =
-    transform_assert_session(LastResponseHeadersKey, true, sessionHeaders ⇒ {
+    transform_assert_session(http.LastResponseHeadersKey, true, sessionHeaders ⇒ {
       val sessionHeadersValue = sessionHeaders.split(",")
-      headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
+      headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name${http.HeadersKeyValueDelim}$value") }
     }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
 
   def body_is[A](mapFct: JValue ⇒ JValue, expected: A) = {
     val stepTitle = s"HTTP response body with transformation is '$expected'"
     jsonInputStep(expected, stepTitle) { jsonExpected ⇒
       transform_assert_session(
-        key = LastResponseBodyKey,
+        key = http.LastResponseBodyKey,
         expected = jsonExpected,
         sessionValue ⇒ mapFct(dslParse(sessionValue)),
         title = Some(stepTitle)
@@ -119,7 +121,7 @@ trait HttpDsl extends Dsl {
     val stepTitle = s"HTTP response body is '$expected' with whiteList=$whiteList"
     jsonInputStep(expected, stepTitle) { jsonInput ⇒
       transform_assert_session(
-        key = LastResponseBodyKey,
+        key = http.LastResponseBodyKey,
         title = Some(stepTitle),
         expected = jsonInput,
         mapValue =
@@ -140,7 +142,7 @@ trait HttpDsl extends Dsl {
     val stepTitle = titleBuilder(s"HTTP response body is '$expected'", ignoring)
     jsonInputStep(expected, stepTitle.get) { jsonExpected ⇒
       transform_assert_session(
-        key = LastResponseBodyKey,
+        key = http.LastResponseBodyKey,
         title = stepTitle,
         expected = jsonExpected,
         mapValue =
@@ -172,16 +174,16 @@ trait HttpDsl extends Dsl {
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
   def extract_from_response(extractor: JValue ⇒ JValue, target: String) =
-    extract_from_session(LastResponseBodyKey, s ⇒ extractor(dslParse(s)).values.toString, target)
+    extract_from_session(http.LastResponseBodyKey, s ⇒ extractor(dslParse(s)).values.toString, target)
 
   def extract_from_response(rootKey: String, target: String) =
-    extract_from_session(LastResponseBodyKey, s ⇒ (dslParse(s) \ rootKey).values.toString, target)
+    extract_from_session(http.LastResponseBodyKey, s ⇒ (dslParse(s) \ rootKey).values.toString, target)
 
-  def show_last_status = show_session(LastResponseStatusKey)
+  def show_last_status = show_session(http.LastResponseStatusKey)
 
-  def show_last_response_body = show_session(LastResponseBodyKey)
+  def show_last_response_body = show_session(http.LastResponseBodyKey)
 
-  def show_last_response_headers = show_session(LastResponseHeadersKey)
+  def show_last_response_headers = show_session(http.LastResponseHeadersKey)
 
   private def titleBuilder(baseTitle: String, ignoring: Seq[String]): Option[String] =
     if (ignoring.isEmpty) Some(baseTitle)
@@ -190,7 +192,7 @@ trait HttpDsl extends Dsl {
   def body_array_transform[A](mapFct: JArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
     transform_assert_session[A](
       title = title,
-      key = LastResponseBodyKey,
+      key = http.LastResponseBodyKey,
       expected = expected,
       mapValue =
       sessionValue ⇒ {
@@ -209,7 +211,7 @@ trait HttpDsl extends Dsl {
 
   def body_against_schema(schemaUrl: String) =
     transform_assert_session(
-      key = LastResponseBodyKey,
+      key = http.LastResponseBodyKey,
       expected = Success(true),
       title = Some(s"HTTP response body is valid against JSON schema $schemaUrl"),
       mapValue =
@@ -235,11 +237,11 @@ trait HttpDsl extends Dsl {
 
   def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
     b.addStep {
-      save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
+      save(http.WithHeadersKey, headers.map { case (name, value) ⇒ s"$name${http.HeadersKeyValueDelim}$value" }.mkString(",")).copy(show = false)
     }
     steps
     b.addStep {
-      remove(WithHeadersKey).copy(show = false)
+      remove(http.WithHeadersKey).copy(show = false)
     }
   }
 

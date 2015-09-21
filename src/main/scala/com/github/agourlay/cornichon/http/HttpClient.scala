@@ -21,7 +21,7 @@ import scala.Console._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
 
-class HttpClient(implicit actorSystem: ActorSystem, materializer: Materializer) extends CornichonLogger {
+class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends CornichonLogger {
 
   implicit private val ec: ExecutionContext = actorSystem.dispatcher
 
