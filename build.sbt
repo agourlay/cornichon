@@ -1,16 +1,14 @@
 import scalariform.formatter.preferences._
 
 name := "cornichon"
-
 organization := "com.github.agourlay"
-
 version := "0.1.SNAPSHOT"
 
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+description := "Scala DSL for testing HTTP JSON API"
+licenses := Seq("Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
 scalaVersion := "2.11.7"
-
-scalacOptions := Seq(
+scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
   "-encoding", "UTF-8",
@@ -56,3 +54,24 @@ libraryDependencies ++= {
     ,"com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV  % "test"
   )
 }
+
+// Publishing
+
+publishMavenStyle := true
+publishArtifact in Test := false
+pomIncludeRepository := (_ => false)
+publishTo := Some(
+  if (version.value.trim.endsWith("SNAPSHOT"))
+    "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+  else
+    "releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+
+// Additional meta-info required by maven central
+
+startYear := Some(2015)
+organizationHomepage := Some(url("https://github.com/agourlay/cornichon"))
+developers := Developer("agourlay", "Arnaud Gourlay", "", url("https://github.com/agourlay")) :: Nil
+scmInfo := Some(ScmInfo(
+  browseUrl = url("https://github.com/agourlay/cornichon.git"),
+  connection = "scm:git:git@github.com:agourlay/cornichon.git"
+))

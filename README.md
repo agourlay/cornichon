@@ -15,10 +15,7 @@ Offering an extensible DSL to specify behaviours of JSON HTTP APIs in Scala.
 ## Installation
 
 ``` scala
-resolvers += "agourlay at bintray" at "http://dl.bintray.com/agourlay/maven"
-
 libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.0.0" % "test"
- 
 ```
 
 ## Structure
