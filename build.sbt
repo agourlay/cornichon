@@ -2,7 +2,7 @@ import scalariform.formatter.preferences._
 
 name := "cornichon"
 organization := "com.github.agourlay"
-version := "0.1.SNAPSHOT"
+version := "0.1.0-SNAPSHOT"
 
 description := "Scala DSL for testing HTTP JSON API"
 licenses := Seq("Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
@@ -56,7 +56,6 @@ libraryDependencies ++= {
 }
 
 // Publishing
-useGpg := true
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 publishMavenStyle := true
@@ -69,7 +68,6 @@ publishTo := Some(
     "releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 
 // Additional meta-info required by maven central
-
 startYear := Some(2015)
 organizationHomepage := Some(url("https://github.com/agourlay/cornichon"))
 developers := Developer("agourlay", "Arnaud Gourlay", "", url("https://github.com/agourlay")) :: Nil
