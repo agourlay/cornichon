@@ -57,6 +57,8 @@ libraryDependencies ++= {
 
 // Publishing
 
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
 publishMavenStyle := true
 publishArtifact in Test := false
 pomIncludeRepository := (_ => false)
