@@ -56,7 +56,7 @@ libraryDependencies ++= {
 }
 
 // Publishing
-
+useGpg := true
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 publishMavenStyle := true
