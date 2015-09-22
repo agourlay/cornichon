@@ -2,10 +2,10 @@ import scalariform.formatter.preferences._
 
 name := "cornichon"
 organization := "com.github.agourlay"
-version := "0.1.0-SNAPSHOT"
 
 description := "Scala DSL for testing HTTP JSON API"
 licenses := Seq("Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+homepage := Some(url("https://github.com/agourlay/cornichon"))
 
 scalaVersion := "2.11.7"
 scalacOptions ++= Seq(
