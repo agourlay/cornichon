@@ -45,5 +45,11 @@ class ResolverSpec extends WordSpec with Matchers {
       val content = "This project is named <project-name> and is super <new-taste>"
       resolver.fillPlaceholder(content)(source) should be(left(ResolverError("new-taste")))
     }
+
+    "generate random-uuid" in {
+      val source = HashMap.empty[String, String]
+      val content = "<random-uuid>"
+      resolver.fillPlaceholder(content)(source) should not be (right("<random-uuid>"))
+    }
   }
 }

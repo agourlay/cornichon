@@ -397,6 +397,16 @@ Then assert body_is(
 
 ```
 
+It is also possible to inject random values inside placeholders, so far only UUID are supported
+
+```scala
+POST("http://url.io/somethingWithAnId", payload = """
+  {
+    "id" : "<random-uuid>"
+  }
+""")
+```
+
 ## Usage
 
 Create a test Scala class extending ```CornichonFeature``` and implement the ```feature``` function as presented below.
