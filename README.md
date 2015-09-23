@@ -215,7 +215,7 @@ save("favorite-superhero" → "Batman")
 
 - extracting value to ```session``
 
-``scala
+```scala
 extract_from_response("city", "batman-city")
 
 extract_from_response(_ \ "city", "batman-city")
@@ -226,6 +226,18 @@ extract_from_response(_ \ "city", "batman-city")
 
 ```scala
 session_contains("favorite-superhero" → "Batman")
+```
+
+- showing sessing content for debugging purpose
+
+```scala
+ show_session
+
+ show_last_status
+
+ show_last_response_body
+
+ show_last_response_headers
 ```
 
 - repeating a series of ```steps``` (can be nested)
