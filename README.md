@@ -213,6 +213,15 @@ response_array_contains("""
 save("favorite-superhero" → "Batman")
 ```
 
+- extracting value to ```session``
+
+``scala
+extract_from_response("city", "batman-city")
+
+extract_from_response(_ \ "city", "batman-city")
+
+```
+
 - asserting value in ```session```
 
 ```scala
