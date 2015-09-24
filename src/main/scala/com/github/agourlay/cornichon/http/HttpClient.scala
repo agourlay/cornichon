@@ -5,6 +5,7 @@ import java.util.concurrent.TimeoutException
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
+import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.{ HttpHeader, HttpRequest, HttpResponse }
 import akka.http.scaladsl.unmarshalling.Unmarshal
@@ -70,14 +71,14 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
   }
 
   private def expectSSE(httpResponse: HttpResponse): Future[Xor[HttpError, Source[ServerSentEvent, Any]]] =
-    Unmarshal(httpResponse).to[Source[ServerSentEvent, Any]].map { sse ⇒
+    Unmarshal(Gzip.decode(httpResponse)).to[Source[ServerSentEvent, Any]].map { sse ⇒
       right(sse)
     }.recover {
       case e: Exception ⇒ left(SseError(e))
     }
 
   private def expectJson(httpResponse: HttpResponse): Future[Xor[HttpError, CornichonHttpResponse]] =
-    Unmarshal(httpResponse).to[String].map { body: String ⇒
+    Unmarshal(Gzip.decode(httpResponse)).to[String].map { body: String ⇒
       right(CornichonHttpResponse.fromResponse(httpResponse, body))
     }.recover {
       case e: Exception ⇒
