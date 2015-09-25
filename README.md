@@ -445,14 +445,14 @@ For more examples see the following [file](https://github.com/agourlay/cornichon
 
 Hooks are available to set up and tear down things as usual but this feature is not integrated into the DSL.
 
-Four functions are available to be overridden in ```CornichonFeature``` with self-explanatory names:
+Four hooks are available to be overridden in ```CornichonFeature``` with self-explanatory names:
 
 ```scala
 def beforeFeature(): Unit
 def afterFeature(): Unit
 
-def beforeEachScenario(): Seq[ExecutableStep[_]]
-def afterEachScenario(): Seq[ExecutableStep[_]]
+val beforeEachScenario: Seq[ExecutableStep[_]]
+val afterEachScenario: Seq[ExecutableStep[_]]
 ```
 
 ## Implicit builder

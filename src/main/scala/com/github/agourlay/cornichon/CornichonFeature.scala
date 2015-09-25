@@ -19,11 +19,10 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
     val feat = feature
     val scenarioReports = try {
       beforeFeature()
-      feat.scenarios.map { s ⇒
-        logger.info(s"Scenario : ${s.name}")
-        val completeScenario = s.copy(steps = beforeEachScenario() ++ s.steps ++ afterEachScenario())
-        engine.runScenario(completeScenario)(Session.newSession)
-      }
+      if (parallelExecution)
+        feat.scenarios.par.map(runScenario).seq
+      else
+        feat.scenarios map runScenario
     } finally
       afterFeature()
 
@@ -35,13 +34,21 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
       FailedFeatureReport(feat.name, failedReports, failedReports.map(failedFeatureErrorMsg))
   }
 
+  private def runScenario(s: Scenario): ScenarioReport = {
+    logger.info(s"Scenario : ${s.name}")
+    val completeScenario = s.copy(steps = beforeEachScenario ++ s.steps ++ afterEachScenario)
+    engine.runScenario(completeScenario)(Session.newSession)
+  }
+
   // TODO switch to val
   def feature: FeatureDef
+
+  val parallelExecution: Boolean = false
 
   def beforeFeature(): Unit = ()
   def afterFeature(): Unit = ()
 
-  def beforeEachScenario(): Seq[ExecutableStep[_]] = Seq.empty
-  def afterEachScenario(): Seq[ExecutableStep[_]] = Seq.empty
+  val beforeEachScenario: Seq[ExecutableStep[_]] = Seq.empty
+  val afterEachScenario: Seq[ExecutableStep[_]] = Seq.empty
 
 }

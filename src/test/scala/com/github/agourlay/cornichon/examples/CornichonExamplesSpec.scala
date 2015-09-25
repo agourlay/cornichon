@@ -13,6 +13,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
   val port = 8080
   var server: ServerBinding = _
+  val baseUrl = s"http://localhost:$port"
 
   // Starts up test server
   override def beforeFeature() =
@@ -21,11 +22,10 @@ class CornichonExamplesSpec extends CornichonFeature {
   // Stops test server
   override def afterFeature() = Await.result(server.unbind(), 5 second)
 
-  override def afterEachScenario() = Seq(
+  // List of Steps to be executed after each scenario
+  override val afterEachScenario = Seq(
     GET(s"$baseUrl/reset")
   )
-
-  val baseUrl = s"http://localhost:$port"
 
   def feature =
     Feature("Cornichon feature Example")(
