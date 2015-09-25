@@ -14,6 +14,13 @@ case class SuperHero(name: String, realName: String, city: String, hasSuperpower
 
 class TestData(implicit executionContext: ExecutionContext) {
 
+  def reset() = Future {
+    publishers.clear()
+    publishers.++=(initialPublishers)
+    superHeroes.clear()
+    superHeroes.++=(initialSuperheroes)
+  }
+
   def publisherByName(name: String) = Future {
     publishers.find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
   }
@@ -67,18 +74,22 @@ class TestData(implicit executionContext: ExecutionContext) {
   def randomSuperhero: SuperHero =
     Random.shuffle(superHeroes).head
 
-  val publishers = mutable.ListBuffer(
+  private val initialPublishers = Seq(
     Publisher("DC", 1934, "Burbank, California"),
     Publisher("Marvel", 1939, "135 W. 50th Street, New York City")
   )
 
-  val superHeroes = mutable.ListBuffer(
+  val publishers = mutable.ListBuffer.empty[Publisher].++=(initialPublishers)
+
+  private val initialSuperheroes = Seq(
     SuperHero("Batman", "Bruce Wayne", "Gotham city", hasSuperpowers = false, publishers.head),
     SuperHero("Superman", "Clark Kent", "Metropolis", hasSuperpowers = true, publishers.head),
     SuperHero("GreenLantern", "Hal Jordan", "Coast City", hasSuperpowers = true, publishers.head),
     SuperHero("Spiderman", "Peter Parker", "New York", hasSuperpowers = true, publishers.tail.head),
     SuperHero("IronMan", "Tony Stark", "New York", hasSuperpowers = false, publishers.tail.head)
   )
+
+  val superHeroes = mutable.ListBuffer.empty[SuperHero].++=(initialSuperheroes)
 
 }
 

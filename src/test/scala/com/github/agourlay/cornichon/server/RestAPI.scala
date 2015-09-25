@@ -51,20 +51,27 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
   }
 
   val route: Route = encodeResponse {
-    path("publishers") {
+    path("reset") {
       get {
-        onSuccess(testData.allPublishers) { publishers: Seq[Publisher] ⇒
-          complete(ToResponseMarshallable(OK → publishers))
+        onSuccess(testData.reset()) { _ ⇒
+          complete(ToResponseMarshallable(OK → "reset complete"))
         }
-      } ~
-        post {
-          entity(as[Publisher]) { p: Publisher ⇒
-            onSuccess(testData.addPublisher(p)) { created: Publisher ⇒
-              complete(ToResponseMarshallable(Created → created))
+      }
+    } ~
+      path("publishers") {
+        get {
+          onSuccess(testData.allPublishers) { publishers: Seq[Publisher] ⇒
+            complete(ToResponseMarshallable(OK → publishers))
+          }
+        } ~
+          post {
+            entity(as[Publisher]) { p: Publisher ⇒
+              onSuccess(testData.addPublisher(p)) { created: Publisher ⇒
+                complete(ToResponseMarshallable(Created → created))
+              }
             }
           }
-        }
-    } ~
+      } ~
       path("publishers" / Rest) { name: String ⇒
         get {
           onSuccess(testData.publisherByName(name)) { pub: Publisher ⇒

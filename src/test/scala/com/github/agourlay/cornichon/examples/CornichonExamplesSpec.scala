@@ -21,6 +21,10 @@ class CornichonExamplesSpec extends CornichonFeature {
   // Stops test server
   override def afterFeature() = Await.result(server.unbind(), 5 second)
 
+  override def afterEachScenario() = Seq(
+    GET(s"$baseUrl/reset")
+  )
+
   val baseUrl = s"http://localhost:$port"
 
   def feature =
@@ -217,6 +221,12 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "Metropolis"
           },
           {
+            "name": "GreenLantern",
+            "realName": "Hal Jordan",
+            "hasSuperpowers": true,
+            "city": "Coast City"
+          },
+          {
             "name": "Spiderman",
             "realName": "Peter Parker",
             "hasSuperpowers": true,
@@ -227,21 +237,15 @@ class CornichonExamplesSpec extends CornichonFeature {
             "realName": "Tony Stark",
             "hasSuperpowers": false,
             "city": "New York"
-          },
-          {
-            "name": "Scalaman",
-            "realName": "Oleg Ilyenko",
-            "hasSuperpowers": true,
-            "city": "Pankow"
           }]""", ignoring = "publisher")
 
         Then assert body_is(ordered = true, expected = """
-          |    name     |    realName    |     city      |  hasSuperpowers |
-          | "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
-          | "Superman"  | "Clark Kent"   | "Metropolis"  |      true       |
-          | "Spiderman" | "Peter Parker" | "New York"    |      true       |
-          | "IronMan"   | "Tony Stark"   | "New York"    |      false      |
-          | "Scalaman"  | "Oleg Ilyenko" | "Pankow"      |      true       |
+          |      name      |    realName    |     city      |  hasSuperpowers |
+          |    "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
+          |   "Superman"   | "Clark Kent"   | "Metropolis"  |      true       |
+          | "GreenLantern" | "Hal Jordan"   | "Coast City"  |      true       |
+          |   "Spiderman"  | "Peter Parker" | "New York"    |      true       |
+          |    "IronMan"   | "Tony Stark"   | "New York"    |      false      |
         """, ignoring = "publisher")
 
         Then assert body_is(ordered = false, expected = """
@@ -266,9 +270,9 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "New York"
           },
           {
-            "name": "Scalaman",
-            "realName": "Oleg Ilyenko",
-            "city": "Pankow"
+            "name": "GreenLantern",
+            "realName": "Hal Jordan",
+            "city": "Coast City"
           }]""", ignoring = "hasSuperpowers", "publisher")
 
         Then assert response_array_size_is(5)
@@ -404,14 +408,15 @@ class CornichonExamplesSpec extends CornichonFeature {
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE(s"$baseUrl/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
 
-        Then assert response_array_size_is(4)
+        Then assert response_array_size_is(5)
 
         Then assert body_is("""
-          |   eventType      |    data     |
-          | "superhero name" |  "Batman"   |
-          | "superhero name" | "Superman"  |
-          | "superhero name" | "Spiderman" |
-          | "superhero name" | "Scalaman"  |
+          |   eventType      |      data      |
+          | "superhero name" |    "Batman"    |
+          | "superhero name" |   "Superman"   |
+          | "superhero name" | "GreenLantern" |
+          | "superhero name" |   "Spiderman"  |
+          | "superhero name" |    "IronMan"   |
         """)
 
         // Repeat series of Steps until it succeed
