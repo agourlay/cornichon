@@ -20,7 +20,7 @@ class HttpService {
   implicit private val system = ActorSystem("cornichon-http-feature")
   implicit private val mat = ActorMaterializer()
   implicit private val ec: ExecutionContext = system.dispatcher
-  private val http = new HttpClient
+  private val client = new HttpClient
 
   val LastResponseBodyKey = "last-response-body"
   lazy val LastResponseStatusKey = "last-response-status"
@@ -40,7 +40,7 @@ class HttpService {
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(http.postJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.postJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -50,7 +50,7 @@ class HttpService {
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(http.putJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.putJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -59,7 +59,7 @@ class HttpService {
   def Get(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(http.getJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.getJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -69,7 +69,7 @@ class HttpService {
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
     } yield {
-      val res = Await.result(http.getSSE(encodeParams(urlResolved, params), takeWithin, headers ++ extractWithHeadersSession(s)), takeWithin + 1.second)
+      val res = Await.result(client.getSSE(encodeParams(urlResolved, params), takeWithin, headers ++ extractWithHeadersSession(s)), takeWithin + 1.second)
       val jsonRes = res.map(s ⇒ InternalSSE.build(s)).toVector.toJson
       // TODO add Headers and Status Code
       (jsonRes, s.addValue(LastResponseBodyKey, jsonRes.prettyPrint))
@@ -78,7 +78,7 @@ class HttpService {
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(http.deleteJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.deleteJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)

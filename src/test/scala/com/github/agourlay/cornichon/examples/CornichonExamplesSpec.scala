@@ -169,7 +169,11 @@ class CornichonExamplesSpec extends CornichonFeature {
                 "location":"Burbank, California"
               }
             }
-            """)
+            """)(headers = Seq(("Accept-Encoding", "gzip")))
+
+          Then assert headers_contain("Content-Encoding" → "gzip")
+
+          Then assert body_is(_ \ "city", "Pankow")
         }
 
         Then assert status_is(200)

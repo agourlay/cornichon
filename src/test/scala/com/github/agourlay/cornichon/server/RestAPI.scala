@@ -50,7 +50,7 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
       }
   }
 
-  val route: Route =
+  val route: Route = encodeResponse {
     path("publishers") {
       get {
         onSuccess(testData.allPublishers) { publishers: Seq[Publisher] ⇒
@@ -132,6 +132,7 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
           }
         }
       } ~ getFromResourceDirectory("web")
+  }
 
   def start(httpPort: Int) = Http(system).bindAndHandle(route, "localhost", port = httpPort)
 
