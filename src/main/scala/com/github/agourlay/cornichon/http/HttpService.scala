@@ -107,7 +107,7 @@ class HttpService {
     }
 
   def extractWithHeadersSession(session: Session): Seq[HttpHeader] =
-    session.getKey(WithHeadersKey).fold(Seq.empty[HttpHeader]) { headers ⇒
+    session.getOpt(WithHeadersKey).fold(Seq.empty[HttpHeader]) { headers ⇒
       val tuples = headers.split(',').toSeq.map { header ⇒
         val elms = header.split(HeadersKeyValueDelim)
         (elms.head, elms.tail.head)
