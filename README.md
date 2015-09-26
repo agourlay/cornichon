@@ -455,6 +455,34 @@ val beforeEachScenario: Seq[ExecutableStep[_]]
 val afterEachScenario: Seq[ExecutableStep[_]]
 ```
 
+# Execution model
+
+By default everything is executed sequentially:
+
+- for each ```Feature```
+- for each ```Scenario```
+- execute each ```Step```
+
+This makes it really easy to follow what is going on.
+
+It is also possible to run the ```Scenario``` of specific ```Features``` in parallel by overriding the property ```parallelExecution``` in ```CornichonFeature```.
+
+```scala
+class ParallelFeatureExample extends CornichonFeature {
+
+  override val parallelExecution = true
+
+  def feature =
+    Feature("Cornichon parallel scenarios Example")(
+    ...
+    )
+}
+```
+
+Before using this feature make sure that the scenarios are completely independent as it would create race-condition otherwise.
+
+It is important to notice that the logging of ```Steps``` execution still happens in real-time making it more difficult to follow the execution.
+
 ## Implicit builder
 
 In order to have a clean look Cornichon uses mutation to build a ```scenario```. The argument ```implicit b =>``` represents an implicit step builder required to construct a ```scenario```.
