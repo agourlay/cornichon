@@ -213,12 +213,12 @@ response_array_contains("""
 save("favorite-superhero" → "Batman")
 ```
 
-- extracting value to ```session``
+- saving value to ```session``
 
 ```scala
-extract_from_response("city", "batman-city")
+save_body_key("city", "batman-city")
 
-extract_from_response(_ \ "city", "batman-city")
+save_from_body(_ \ "city", "batman-city")
 
 ```
 
@@ -380,7 +380,7 @@ Then assert body_is(
   """
 )
 
-And I extract_from_response("city", "batman-city")
+And I save_body_key("city", "batman-city")
 
 Then assert session_contains("batman-city" → "Gotham city")
 

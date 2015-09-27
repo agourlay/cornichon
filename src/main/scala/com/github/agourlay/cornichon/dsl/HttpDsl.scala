@@ -173,11 +173,25 @@ trait HttpDsl extends Dsl {
   private def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
-  def extract_from_response(extractor: JValue ⇒ JValue, target: String) =
-    extract_from_session(http.LastResponseBodyKey, s ⇒ extractor(dslParse(s)).values.toString, target)
+  def save_from_body(extractor: JValue ⇒ JValue, target: String) =
+    save_from_session(http.LastResponseBodyKey, s ⇒ extractor(dslParse(s)).values.toString, target)
 
-  def extract_from_response(rootKey: String, target: String) =
-    extract_from_session(http.LastResponseBodyKey, s ⇒ (dslParse(s) \ rootKey).values.toString, target)
+  def save_from_body(args: (JValue ⇒ JValue, String)*) = {
+    val inputs = args.map {
+      case (e, t) ⇒ FromSessionSetter(http.LastResponseBodyKey, s ⇒ e(dslParse(s)).values.toString, t)
+    }
+    save_from_session(inputs)
+  }
+
+  def save_body_key(rootKey: String, target: String) =
+    save_from_session(http.LastResponseBodyKey, s ⇒ (dslParse(s) \ rootKey).values.toString, target)
+
+  def save_body_keys(args: (String, String)*) = {
+    val inputs = args.map {
+      case (e, t) ⇒ FromSessionSetter(http.LastResponseBodyKey, s ⇒ (dslParse(s) \ e).values.toString, t)
+    }
+    save_from_session(inputs)
+  }
 
   def show_last_status = show_session(http.LastResponseStatusKey)
 

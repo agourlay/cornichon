@@ -11,7 +11,7 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   private def failedFeatureErrorMsg(r: FailedScenarioReport): String =
     s"""
        |
-       |Scenario "${r.scenarioName}" failed at step "${r.failedStep.step} with error:
+       |Scenario "${r.scenarioName}" failed at step "${r.failedStep.step}" with error:
        |${r.failedStep.error.msg}
        | """.trim.stripMargin
 

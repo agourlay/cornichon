@@ -76,15 +76,30 @@ trait Dsl extends CornichonLogger {
   def transform_assert_session[A](key: String, expected: A, mapValue: String ⇒ A, title: Option[String] = None) =
     ExecutableStep(
       title.getOrElse(s"session key '$key' against predicate"),
-      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ mapValue(v)), s), expected
+      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(v)), s), expected
     )
 
-  def extract_from_session(key: String, extractor: String ⇒ String, target: String) = {
+  def save_from_session(key: String, extractor: String ⇒ String, target: String) =
     ExecutableStep(
-      s"extract from session '$key' to '$target' using an extractor",
+      s"save from session '$key' to '$target'",
       s ⇒ {
-        val extracted = s.getOpt(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ extractor(v))
+        val extracted = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ extractor(v))
         (true, s.addValue(target, extracted))
+      }, true
+    )
+
+  case class FromSessionSetter(fromKey: String, trans: String ⇒ String, target: String)
+
+  def save_from_session(args: Seq[FromSessionSetter]) = {
+    val keys = args.map(_.fromKey)
+    val extractors = args.map(_.trans)
+    val targets = args.map(_.target)
+    ExecutableStep(
+      s"save from session '$keys' to '$targets'",
+      s ⇒ {
+        val extracted = s.getList(keys).zip(extractors).map { case (v, e) ⇒ e(v) }
+        val sFull = targets.zip(extracted).foldLeft(s)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
+        (true, sFull)
       }, true
     )
   }
@@ -94,14 +109,14 @@ trait Dsl extends CornichonLogger {
   def session_contains(key: String, value: String, title: Option[String] = None) =
     ExecutableStep(
       title.getOrElse(s"session '$key' equals '$value'"),
-      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v), s), value
+      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ v), s), value
     )
 
   def show_session =
     ExecutableStep(
       s"show session",
       s ⇒ {
-        log(s"Session content : \n${s.content.map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")}")
+        log(s"Session content : \n${s.prettyPrint}")
         (true, s)
       }, true
     )
@@ -110,7 +125,7 @@ trait Dsl extends CornichonLogger {
     ExecutableStep(
       s"show session key '$key'",
       s ⇒ {
-        val value = s.getOpt(key).fold(throw new KeyNotFoundInSession(key))(v ⇒ v)
+        val value = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ v)
         log(s"Session content for key '$key' is '$value'")
         (true, s)
       }, true

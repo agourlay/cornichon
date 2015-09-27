@@ -351,10 +351,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Extract value from response into session for reuse
-        And I extract_from_response("city", "batman-city")
+        And I save_body_keys(
+          "city" → "batman-city",
+          "realName" → "batman-real-name"
+        )
 
         // Or with extractor
-        And I extract_from_response(_ \ "city", "batman-city")
+        And I save_from_body(_ \ "city", "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
 
