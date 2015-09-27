@@ -5,6 +5,7 @@ import cats.data.Xor.{ left, right }
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.ExecutableStep._
 import com.github.agourlay.cornichon.http._
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
@@ -29,13 +30,13 @@ trait HttpDsl extends Dsl {
 
   sealed trait WithoutPayload extends Request {
     def apply(url: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      ExecutableStep(
+      effectStep(
         title = {
         val base = s"$name $url"
         if (params.isEmpty) base
         else s"$base with params ${params.mkString(", ")}"
       },
-        action =
+        effect =
         s ⇒ {
           val fullUrl = urlBuilder(url)
           val httpHeaders = http.parseHttpHeaders(headers)
@@ -43,21 +44,20 @@ trait HttpDsl extends Dsl {
             case GET    ⇒ http.Get(fullUrl, params, httpHeaders)(s)
             case DELETE ⇒ http.Delete(fullUrl, params, httpHeaders)(s)
           }
-          x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
-        },
-        expected = true
+          x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+        }
       )
   }
 
   sealed trait WithPayload extends Request {
     def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      ExecutableStep(
+      effectStep(
         title = {
         val base = s"$name to $url with payload $payload"
         if (params.isEmpty) base
         else s"$base with params ${params.mkString(", ")}"
       },
-        action =
+        effect =
         s ⇒ {
           val fullUrl = urlBuilder(url)
           val httpHeaders = http.parseHttpHeaders(headers)
@@ -65,21 +65,20 @@ trait HttpDsl extends Dsl {
             case POST ⇒ http.Post(dslParse(payload), fullUrl, params, httpHeaders)(s)
             case PUT  ⇒ http.Put(dslParse(payload), fullUrl, params, httpHeaders)(s)
           }
-          x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
-        },
-        expected = true
+          x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+        }
       )
   }
 
   sealed trait Streamed extends Request {
     def apply(url: String, takeWithin: FiniteDuration, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      ExecutableStep(
+      effectStep(
         title = {
         val base = s"$name $url"
         if (params.isEmpty) base
         else s"$base with params ${params.mkString(", ")}"
       },
-        action =
+        effect =
         s ⇒ {
           val fullUrl = urlBuilder(url)
           val httpHeaders = http.parseHttpHeaders(headers)
@@ -87,9 +86,8 @@ trait HttpDsl extends Dsl {
             case GET_SSE ⇒ http.GetSSE(fullUrl, takeWithin, params, httpHeaders)(s)
             case GET_WS  ⇒ ???
           }
-          x.map { case (source, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
-        },
-        expected = true
+          x.map { case (source, session) ⇒ session }.fold(e ⇒ throw e, identity)
+        }
       )
   }
 

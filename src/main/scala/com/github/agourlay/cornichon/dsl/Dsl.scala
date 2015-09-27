@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.ExecutableStep._
 
 import scala.Console._
 import scala.concurrent.duration.Duration
@@ -60,16 +61,16 @@ trait Dsl extends CornichonLogger {
 
   def save(input: (String, String)): ExecutableStep[Boolean] = {
     val (key, value) = input
-    ExecutableStep(
+    effectStep(
       s"add '$key'->'$value' to session",
-      s ⇒ (true, s.addValue(key, value)), true
+      s ⇒ s.addValue(key, value)
     )
   }
 
   def remove(key: String): ExecutableStep[Boolean] = {
-    ExecutableStep(
+    effectStep(
       s"remove '$key' from session",
-      s ⇒ (true, s.removeKey(key)), true
+      s ⇒ s.removeKey(key)
     )
   }
 
@@ -80,12 +81,12 @@ trait Dsl extends CornichonLogger {
     )
 
   def save_from_session(key: String, extractor: String ⇒ String, target: String) =
-    ExecutableStep(
+    effectStep(
       s"save from session '$key' to '$target'",
       s ⇒ {
         val extracted = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ extractor(v))
-        (true, s.addValue(target, extracted))
-      }, true
+        s.addValue(target, extracted)
+      }
     )
 
   case class FromSessionSetter(fromKey: String, trans: String ⇒ String, target: String)
@@ -94,13 +95,12 @@ trait Dsl extends CornichonLogger {
     val keys = args.map(_.fromKey)
     val extractors = args.map(_.trans)
     val targets = args.map(_.target)
-    ExecutableStep(
+    effectStep(
       s"save from session '$keys' to '$targets'",
       s ⇒ {
         val extracted = s.getList(keys).zip(extractors).map { case (v, e) ⇒ e(v) }
-        val sFull = targets.zip(extracted).foldLeft(s)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
-        (true, sFull)
-      }, true
+        targets.zip(extracted).foldLeft(s)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
+      }
     )
   }
 
@@ -113,22 +113,22 @@ trait Dsl extends CornichonLogger {
     )
 
   def show_session =
-    ExecutableStep(
+    effectStep(
       s"show session",
       s ⇒ {
         log(s"Session content : \n${s.prettyPrint}")
-        (true, s)
-      }, true
+        s
+      }
     )
 
   def show_session(key: String) =
-    ExecutableStep(
+    effectStep(
       s"show session key '$key'",
       s ⇒ {
         val value = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ v)
         log(s"Session content for key '$key' is '$value'")
-        (true, s)
-      }, true
+        s
+      }
     )
 
   def log(msg: String): Unit = {

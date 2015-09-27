@@ -12,6 +12,17 @@ case class ExecutableStep[A](
   show: Boolean = true
 ) extends Step
 
+object ExecutableStep {
+  def effectStep(title: String, effect: Session ⇒ Session, negate: Boolean = false, show: Boolean = true) =
+    ExecutableStep[Boolean](
+      title = title,
+      action = s ⇒ (true, effect(s)),
+      expected = true,
+      negate = negate,
+      show = show
+    )
+}
+
 case class EventuallyConf(maxTime: Duration, interval: Duration) {
   def consume(duration: Duration) = copy(maxTime = maxTime - duration)
 }
