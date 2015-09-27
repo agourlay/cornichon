@@ -44,6 +44,7 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   def feature: FeatureDef
 
   val parallelExecution: Boolean = false
+  val baseUrl = ""
 
   def beforeFeature(): Unit = ()
   def afterFeature(): Unit = ()

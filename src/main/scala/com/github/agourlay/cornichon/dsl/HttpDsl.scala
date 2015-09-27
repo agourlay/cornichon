@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.dsl
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http._
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
@@ -13,10 +14,16 @@ import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
 
 trait HttpDsl extends Dsl {
+  this: CornichonFeature ⇒
 
   implicit val requestTimeout: FiniteDuration = 2000 millis
   private val mapper = new ObjectMapper()
   private val http = new HttpService()
+
+  private def urlBuilder(input: String) = {
+    if (baseUrl.isEmpty) input
+    else baseUrl + input
+  }
 
   sealed trait Request { val name: String }
 
@@ -30,10 +37,11 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
+          val fullUrl = urlBuilder(url)
           val httpHeaders = http.parseHttpHeaders(headers)
           val x = this match {
-            case GET    ⇒ http.Get(url, params, httpHeaders)(s)
-            case DELETE ⇒ http.Delete(url, params, httpHeaders)(s)
+            case GET    ⇒ http.Get(fullUrl, params, httpHeaders)(s)
+            case DELETE ⇒ http.Delete(fullUrl, params, httpHeaders)(s)
           }
           x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
         },
@@ -51,10 +59,11 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
+          val fullUrl = urlBuilder(url)
           val httpHeaders = http.parseHttpHeaders(headers)
           val x = this match {
-            case POST ⇒ http.Post(dslParse(payload), url, params, httpHeaders)(s)
-            case PUT  ⇒ http.Put(dslParse(payload), url, params, httpHeaders)(s)
+            case POST ⇒ http.Post(dslParse(payload), fullUrl, params, httpHeaders)(s)
+            case PUT  ⇒ http.Put(dslParse(payload), fullUrl, params, httpHeaders)(s)
           }
           x.map { case (jsonRes, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
         },
@@ -72,9 +81,10 @@ trait HttpDsl extends Dsl {
       },
         action =
         s ⇒ {
+          val fullUrl = urlBuilder(url)
           val httpHeaders = http.parseHttpHeaders(headers)
           val x = this match {
-            case GET_SSE ⇒ http.GetSSE(url, takeWithin, params, httpHeaders)(s)
+            case GET_SSE ⇒ http.GetSSE(fullUrl, takeWithin, params, httpHeaders)(s)
             case GET_WS  ⇒ ???
           }
           x.map { case (source, session) ⇒ (true, session) }.fold(e ⇒ throw e, identity)
