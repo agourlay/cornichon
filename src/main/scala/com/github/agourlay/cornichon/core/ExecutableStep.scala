@@ -6,8 +6,7 @@ trait Step
 
 case class ExecutableStep[A](
   title: String,
-  action: Session ⇒ (A, Session),
-  expected: A,
+  action: Session ⇒ (A, Session, A),
   negate: Boolean = false,
   show: Boolean = true
 ) extends Step
@@ -16,8 +15,7 @@ object ExecutableStep {
   def effectStep(title: String, effect: Session ⇒ Session, negate: Boolean = false, show: Boolean = true) =
     ExecutableStep[Boolean](
       title = title,
-      action = s ⇒ (true, effect(s)),
-      expected = true,
+      action = s ⇒ (true, effect(s), true),
       negate = negate,
       show = show
     )

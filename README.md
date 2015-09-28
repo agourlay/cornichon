@@ -306,15 +306,14 @@ Those descriptions might be already outdated, in case of doubt always refer to t
 
 ## Steps
 
-A ```step``` is an abstraction describing an action - its result can be compared against an expected value.
+A ```step``` is an abstraction describing an action which is a function turning a ```Session``` into a result, a new ```Session``` and an expected result value.
 
 In terms of Scala data type it is
 
 ```scala
 case class ExecutableStep[A](
   title: String,
-  action: Session ⇒ (A, Session),
-  expected: A
+  action: Session ⇒ (A, Session, A)
 )
 ```
 
@@ -324,13 +323,13 @@ A ```step``` can access and return a modified ```session``` object. A ```session
 So the simplest executable statement in the DSL is
 
 ```scala
-When I ExecutableStep("do nothing", s => (true, s), true)
+When I ExecutableStep("do nothing", s => (true, s, true))
 ```
 
 Let's try to assert the result of a computation
 
 ```scala
-When I ExecutableStep("calculate", s => (2 + 2, s), 4)
+When I ExecutableStep("calculate", s => (2 + 2, s, 4))
 ```
 
 The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
@@ -340,18 +339,16 @@ The ```session``` is used to store the result of a computation in order to reuse
 When I ExecutableStep(
   title = "run crazy computation",
   action = s => {
-  val res = crazy-computation()
-  (res.isSuccess, s.add("result", res.infos))
-  },
-  expected =  true)
+    val res = crazy-computation()
+    (res.isSuccess, s.add("result", res.infos), true)
+  })
 
 Then assert ExecutableStep(
   title = "check computation infos",
   action = s => {
-  val resInfos = s.get("result)
-  (resInfos, s)
-  },
-  expected =  "Everything is fine")
+    val resInfos = s.get("result)
+    (resInfos, s, "Everything is fine")
+  })
 ```
 
 This is extremely low level and you should never write your test like that.

@@ -17,7 +17,14 @@ trait Dsl extends CornichonLogger {
       sb.addStep(s)
       s
     }
-    def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): ExecutableStep[A] = ExecutableStep[A](s"$name $title", action, expected)
+    def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): ExecutableStep[A] =
+      ExecutableStep[A](
+        title = s"$name $title",
+        action = s ⇒ {
+        val (res, newSession) = action(s)
+        (res, newSession, expected)
+      }
+      )
   }
   case object When extends Starters { val name = "When" }
   case object Given extends Starters { val name = "Given" }
@@ -56,8 +63,10 @@ trait Dsl extends CornichonLogger {
     b.addStep(EventuallyStop(conf))
   }
 
-  // FIXME expected arg value is not used
-  def failWith[A](e: Throwable, title: String, expected: A) = ExecutableStep[A](title, s ⇒ throw e, expected)
+  def resolveInput[A](input: A): Session ⇒ A = s ⇒ input match {
+    case string: String ⇒ Resolver.fillPlaceholderUnsafe(string)(s.content).asInstanceOf[A]
+    case _              ⇒ input
+  }
 
   def save(input: (String, String)): ExecutableStep[Boolean] = {
     val (key, value) = input
@@ -74,10 +83,10 @@ trait Dsl extends CornichonLogger {
     )
   }
 
-  def transform_assert_session[A](key: String, expected: A, mapValue: String ⇒ A, title: Option[String] = None) =
+  def transform_assert_session[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: Option[String] = None) =
     ExecutableStep(
       title.getOrElse(s"session key '$key' against predicate"),
-      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(v)), s), expected
+      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(s, v)), s, expected(s))
     )
 
   def save_from_session(key: String, extractor: String ⇒ String, target: String) =
@@ -108,8 +117,10 @@ trait Dsl extends CornichonLogger {
 
   def session_contains(key: String, value: String, title: Option[String] = None) =
     ExecutableStep(
-      title.getOrElse(s"session '$key' equals '$value'"),
-      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ v), s), value
+      title = title.getOrElse(s"session '$key' equals '$value'"),
+      action = s ⇒ {
+        (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(identity), s, value)
+      }
     )
 
   def show_session =

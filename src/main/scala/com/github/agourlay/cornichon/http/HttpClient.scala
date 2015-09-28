@@ -26,20 +26,23 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
 
   implicit private val ec: ExecutionContext = actorSystem.dispatcher
 
-  private def requestRunner(req: HttpRequest) =
+  private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader]) =
     Http()
-      .singleRequest(req)
+      .singleRequest(req.withHeaders(collection.immutable.Seq(headers: _*)))
       .flatMap(expectJson)
       .recover(exceptionMapper)
 
   def postJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Post(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
+    requestRunner(Post(url, payload), headers)
 
   def putJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Put(url, payload).withHeaders(collection.immutable.Seq(headers: _*)))
+    requestRunner(Put(url, payload), headers)
+
+  def deleteJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
+    requestRunner(Delete(url), headers)
 
   def getJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Get(url).withHeaders(collection.immutable.Seq(headers: _*)))
+    requestRunner(Get(url), headers)
 
   def getSSE(url: String, takeWithin: FiniteDuration, headers: Seq[HttpHeader]) = {
     val request = Get(url).withHeaders(collection.immutable.Seq(headers: _*))
@@ -60,11 +63,7 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
       .takeWithin(takeWithin).runFold(List.empty[ServerSentEvent])((acc, sse) ⇒ {
         acc :+ sse
       })
-
   }
-
-  def deleteJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Delete(url).withHeaders(collection.immutable.Seq(headers: _*)))
 
   private def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, CornichonHttpResponse]] = {
     case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))

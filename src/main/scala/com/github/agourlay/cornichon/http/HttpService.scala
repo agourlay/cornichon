@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.http.CornichonJson._
 import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -36,21 +37,26 @@ class HttpService {
     implicit val formatServerSentEvent = jsonFormat3(InternalSSE.apply)
   }
 
-  def Post(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+  //TODO resolve placeholders in param and then transform it
+  //TODO factorize with/without payload?
+
+  def Post(payload: String, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
+      json ← parseJson(payloadResolved)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(client.postJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.postJson(json, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
     }
 
-  def Put(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+  def Put(payload: String, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
+      json ← parseJson(payloadResolved)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(client.putJson(payloadResolved, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.putJson(json, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -100,6 +106,7 @@ class HttpService {
       .addValue(LastResponseBodyKey, response.body)
       .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(","))
 
+  // TODO return XOR
   def parseHttpHeaders(headers: Seq[(String, String)]): Seq[HttpHeader] =
     headers.map(v ⇒ HttpHeader.parse(v._1, v._2)).map {
       case ParsingResult.Ok(h, e) ⇒ h

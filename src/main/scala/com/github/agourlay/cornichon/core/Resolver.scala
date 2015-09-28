@@ -4,8 +4,6 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import org.json4s._
-import org.json4s.native.JsonMethods._
 
 import scala.annotation.tailrec
 
@@ -50,14 +48,7 @@ object Resolver {
     loop(findPlaceholders(input), input)
   }
 
-  def fillPlaceholder(js: JValue)(source: Map[String, String]): Xor[ResolverError, JValue] =
-    fillPlaceholder(compact(render(js)))(source).map { v ⇒
-      if (js.children.isEmpty)
-        js match {
-          case JString(s) ⇒ JString(v.substring(1, v.size - 1))
-          case _          ⇒ js
-        }
-      else
-        parse(v)
-    }
+  def fillPlaceholderUnsafe(input: String)(source: Map[String, String]): String =
+    fillPlaceholder(input)(source).fold(e ⇒ throw e, identity)
+
 }

@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import org.json4s._
 
 import scala.Console._
 import scala.annotation.tailrec
@@ -12,16 +11,8 @@ import scala.util._
 class Engine extends CornichonLogger {
 
   def runStep[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
-    Try {
-      val (res, newSession) = step.action(session)
-      val resolvedExpected: A = step.expected match {
-        case s: String ⇒ Resolver.fillPlaceholder(s)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
-        case j: JValue ⇒ Resolver.fillPlaceholder(j)(newSession.content).fold(error ⇒ throw error, v ⇒ v).asInstanceOf[A]
-        case _         ⇒ step.expected
-      }
-      (res, resolvedExpected, newSession)
-    } match {
-      case Success((res, expected, newSession)) ⇒ runStepPredicate(step, res, expected, newSession)
+    Try { step.action(session) } match {
+      case Success((res, newSession, expected)) ⇒ runStepPredicate(step, res, expected, newSession)
       case Failure(e) ⇒
         e match {
           case ce: CornichonError ⇒ left(ce)
@@ -46,7 +37,7 @@ class Engine extends CornichonLogger {
       if (steps.isEmpty)
         SuccessScenarioReport(
           scenarioName = scenario.name,
-          successSteps = scenario.steps.collect { case ExecutableStep(title, _, _, _, _) ⇒ title }
+          successSteps = scenario.steps.collect { case ExecutableStep(title, _, _, _) ⇒ title }
         )
       else
         steps.head match {
@@ -88,8 +79,8 @@ class Engine extends CornichonLogger {
 
   def buildFailedScenarioReport(scenario: Scenario, steps: Seq[Step], currentStep: ExecutableStep[_], e: CornichonError): FailedScenarioReport = {
     val failedStep = FailedStep(currentStep.title, e)
-    val successStep = scenario.steps.takeWhile(_ != steps.head).collect { case ExecutableStep(title, _, _, _, _) ⇒ title }
-    val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _, _, _) ⇒ title }
+    val successStep = scenario.steps.takeWhile(_ != steps.head).collect { case ExecutableStep(title, _, _, _) ⇒ title }
+    val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _, _) ⇒ title }
     FailedScenarioReport(scenario.name, failedStep, successStep, notExecutedStep)
   }
 

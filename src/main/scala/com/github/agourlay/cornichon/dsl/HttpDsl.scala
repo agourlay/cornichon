@@ -1,12 +1,11 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.data.Xor
-import cats.data.Xor.{ left, right }
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
 import com.github.agourlay.cornichon.http._
+import com.github.agourlay.cornichon.http.CornichonJson._
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -62,8 +61,8 @@ trait HttpDsl extends Dsl {
           val fullUrl = urlBuilder(url)
           val httpHeaders = http.parseHttpHeaders(headers)
           val x = this match {
-            case POST ⇒ http.Post(dslParse(payload), fullUrl, params, httpHeaders)(s)
-            case PUT  ⇒ http.Put(dslParse(payload), fullUrl, params, httpHeaders)(s)
+            case POST ⇒ http.Post(payload, fullUrl, params, httpHeaders)(s)
+            case PUT  ⇒ http.Put(payload, fullUrl, params, httpHeaders)(s)
           }
           x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
         }
@@ -108,74 +107,70 @@ trait HttpDsl extends Dsl {
   }
 
   def headers_contain(headers: (String, String)*) =
-    transform_assert_session(http.LastResponseHeadersKey, true, sessionHeaders ⇒ {
-      val sessionHeadersValue = sessionHeaders.split(",")
-      headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name${http.HeadersKeyValueDelim}$value") }
-    }, Some(s"HTTP headers contain ${headers.mkString(", ")}"))
+    transform_assert_session(
+      key = http.LastResponseHeadersKey,
+      expected = s ⇒ true,
+      (session, sessionHeaders) ⇒ {
+        val sessionHeadersValue = sessionHeaders.split(",")
+        headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name${http.HeadersKeyValueDelim}$value") }
+      }, Some(s"HTTP headers contain ${headers.mkString(", ")}")
+    )
 
   def body_is[A](mapFct: JValue ⇒ JValue, expected: A) = {
     val stepTitle = s"HTTP response body with transformation is '$expected'"
-    jsonInputStep(expected, stepTitle) { jsonExpected ⇒
-      transform_assert_session(
-        key = http.LastResponseBodyKey,
-        expected = jsonExpected,
-        sessionValue ⇒ mapFct(dslParse(sessionValue)),
-        title = Some(stepTitle)
-      )
-    }
+    transform_assert_session(
+      key = http.LastResponseBodyKey,
+      expected = s ⇒ resolveAndParse(expected, s),
+      (s, sessionValue) ⇒ mapFct(dslParse(sessionValue)),
+      title = Some(stepTitle)
+    )
   }
 
   def body_is[A](whiteList: Boolean = false, expected: A): ExecutableStep[JValue] = {
     val stepTitle = s"HTTP response body is '$expected' with whiteList=$whiteList"
-    jsonInputStep(expected, stepTitle) { jsonInput ⇒
-      transform_assert_session(
-        key = http.LastResponseBodyKey,
-        title = Some(stepTitle),
-        expected = jsonInput,
-        mapValue =
-          sessionValue ⇒ {
-            val sessionValueJson = dslParse(sessionValue)
-            if (whiteList) {
-              val Diff(changed, _, deleted) = jsonInput.diff(sessionValueJson)
-              if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
-              if (changed != JNothing) changed else jsonInput
-            } else sessionValueJson
-          }
-      )
-    }
+    transform_assert_session(
+      key = http.LastResponseBodyKey,
+      title = Some(stepTitle),
+      expected = s ⇒ resolveAndParse(expected, s),
+      mapValue =
+        (session, sessionValue) ⇒ {
+          val expectedJvalue = resolveAndParse(expected, session)
+          val sessionValueJson = dslParse(sessionValue)
+          if (whiteList) {
+            val Diff(changed, _, deleted) = expectedJvalue.diff(sessionValueJson)
+            if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
+            if (changed != JNothing) changed else expectedJvalue
+          } else sessionValueJson
+        }
+    )
   }
 
   // TODO Cannot be parametrized?
   def body_is(expected: String, ignoring: String*): ExecutableStep[JValue] = {
     val stepTitle = titleBuilder(s"HTTP response body is '$expected'", ignoring)
-    jsonInputStep(expected, stepTitle.get) { jsonExpected ⇒
-      transform_assert_session(
-        key = http.LastResponseBodyKey,
-        title = stepTitle,
-        expected = jsonExpected,
-        mapValue =
-        sessionValue ⇒ {
-          val jsonSessionValue = dslParse(sessionValue)
-          if (ignoring.isEmpty) jsonSessionValue
-          else filterJsonKeys(jsonSessionValue, ignoring)
-        }
-      )
-    }
+    transform_assert_session(
+      key = http.LastResponseBodyKey,
+      title = stepTitle,
+      expected = s ⇒ resolveAndParse(expected, s),
+      mapValue =
+      (session, sessionValue) ⇒ {
+        val jsonSessionValue = dslParse(sessionValue)
+        if (ignoring.isEmpty) jsonSessionValue
+        else filterJsonKeys(jsonSessionValue, ignoring)
+      }
+    )
   }
 
-  //FIXME make 'jsonInputStep' work in this case
+  //TODO resolve placeholders
   def body_is[A](ordered: Boolean, expected: A, ignoring: String*): ExecutableStep[Iterable[JValue]] =
-    Try { dslParse(expected) } match {
-      case Failure(e) ⇒ failWith(new MalformedJsonError(expected, e), s"response body is '$expected'", Seq.empty[JValue])
-      case Success(json) ⇒ json match {
-        case expectedArray: JArray ⇒
-          if (ordered)
-            body_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), expectedArray.arr, titleBuilder(s"response body is '$expected'", ignoring))
-          else
-            body_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, expectedArray.arr.toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring))
-        case _ ⇒
-          failWith(new NotAnArrayError(json), titleBuilder(s"response body array is '$expected'", ignoring).get, Seq.empty[JValue])
-      }
+    parseJsonOrFail(expected) match {
+      case expectedArray: JArray ⇒
+        if (ordered)
+          body_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), s ⇒ expectedArray.arr, titleBuilder(s"response body is '$expected'", ignoring))
+        else
+          body_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, s ⇒ expectedArray.arr.toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring))
+      case _ ⇒
+        throw new NotAnArrayError(expected)
     }
 
   private def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
@@ -211,13 +206,13 @@ trait HttpDsl extends Dsl {
     if (ignoring.isEmpty) Some(baseTitle)
     else Some(s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'$v'").mkString(", ")}")
 
-  def body_array_transform[A](mapFct: JArray ⇒ A, expected: A, title: Option[String]): ExecutableStep[A] =
+  def body_array_transform[A](mapFct: JArray ⇒ A, expected: Session ⇒ A, title: Option[String]): ExecutableStep[A] =
     transform_assert_session[A](
       title = title,
       key = http.LastResponseBodyKey,
-      expected = expected,
+      expected = s ⇒ expected(s),
       mapValue =
-      sessionValue ⇒ {
+      (session, sessionValue) ⇒ {
         dslParse(sessionValue) match {
           case arr: JArray ⇒
             logger.debug(s"response_body_array_is applied to ${pretty(render(arr))}")
@@ -227,17 +222,17 @@ trait HttpDsl extends Dsl {
       }
     )
 
-  def response_array_size_is(size: Int) = body_array_transform(_.arr.size, size, Some(s"response array size is $size"))
+  def response_array_size_is(size: Int) = body_array_transform(_.arr.size, s ⇒ size, Some(s"response array size is $size"))
 
-  def response_array_contains(element: String) = body_array_transform(_.arr.contains(parse(element)), true, Some(s"response array contains $element"))
+  def response_array_contains(element: String) = body_array_transform(_.arr.contains(parse(element)), s ⇒ true, Some(s"response array contains $element"))
 
   def body_against_schema(schemaUrl: String) =
     transform_assert_session(
       key = http.LastResponseBodyKey,
-      expected = Success(true),
+      expected = s ⇒ Success(true),
       title = Some(s"HTTP response body is valid against JSON schema $schemaUrl"),
       mapValue =
-        sessionValue ⇒ {
+        (session, sessionValue) ⇒ {
           val jsonNode = mapper.readTree(sessionValue)
           Try {
             loadJsonSchemaFile(schemaUrl).validate(jsonNode).isSuccess
@@ -248,14 +243,8 @@ trait HttpDsl extends Dsl {
   private def loadJsonSchemaFile(fileLocation: String): JsonSchema =
     JsonSchemaFactory.newBuilder().freeze().getJsonSchema(fileLocation)
 
-  def jsonInputStep[A](input: A, stepTitle: String)(f: JValue ⇒ ExecutableStep[JValue]): ExecutableStep[JValue] =
-    parseJsonOrFailStep(input, stepTitle).fold(identity, f(_))
-
-  private def parseJsonOrFailStep[A](input: A, stepTitle: String): Xor[ExecutableStep[JValue], JValue] =
-    Try { dslParse(input) } match {
-      case Success(json) ⇒ right(json)
-      case Failure(e)    ⇒ left(failWith(new MalformedJsonError(input, e), stepTitle, JNothing))
-    }
+  private def resolveAndParse[A](input: A, session: Session): JValue =
+    parseJsonOrFail(resolveInput(input)(session))
 
   def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
     b.addStep {
@@ -265,16 +254,5 @@ trait HttpDsl extends Dsl {
     b.addStep {
       remove(http.WithHeadersKey).copy(show = false)
     }
-  }
-
-  private def dslParse[A](input: A): JValue = input match {
-    case s: String if s.trim.head == '|' ⇒ parse(DataTableParser.parseDataTable(s).asJson.toString())
-    case s: String if s.trim.head == '{' ⇒ parse(s)
-    case s: String if s.trim.head == '[' ⇒ parse(s)
-    case s: String                       ⇒ JString(s)
-    case d: Double                       ⇒ JDouble(d)
-    case i: Int                          ⇒ JInt(i)
-    case l: Long                         ⇒ JLong(l)
-    case b: Boolean                      ⇒ JBool(b)
   }
 }
