@@ -45,7 +45,7 @@ class HttpService {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       json ← parseJson(payloadResolved)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(client.postJson(json, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.postJson(json, urlResolved, params, headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -56,7 +56,7 @@ class HttpService {
       payloadResolved ← Resolver.fillPlaceholder(payload)(s.content)
       json ← parseJson(payloadResolved)
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(client.putJson(json, encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.putJson(json, urlResolved, params, headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -65,7 +65,7 @@ class HttpService {
   def Get(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(client.getJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.getJson(urlResolved, params, headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
@@ -75,7 +75,7 @@ class HttpService {
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
     } yield {
-      val res = Await.result(client.getSSE(encodeParams(urlResolved, params), takeWithin, headers ++ extractWithHeadersSession(s)), takeWithin + 1.second)
+      val res = Await.result(client.getSSE(urlResolved, params, takeWithin, headers ++ extractWithHeadersSession(s)), takeWithin + 1.second)
       val jsonRes = res.map(s ⇒ InternalSSE.build(s)).toVector.toJson
       // TODO add Headers and Status Code
       (jsonRes, s.addValue(LastResponseBodyKey, jsonRes.prettyPrint))
@@ -84,21 +84,11 @@ class HttpService {
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
       urlResolved ← Resolver.fillPlaceholder(url)(s.content)
-      res ← Await.result(client.deleteJson(encodeParams(urlResolved, params), headers ++ extractWithHeadersSession(s)), timeout)
+      res ← Await.result(client.deleteJson(urlResolved, params, headers ++ extractWithHeadersSession(s)), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
       (res, newSession)
     }
-
-  // TODO rewrite fragile code
-  private def encodeParams(url: String, params: Seq[(String, String)]) = {
-    def formatEntry(entry: (String, String)) = s"${entry._1}=${entry._2}"
-    val encoded =
-      if (params.isEmpty) ""
-      else if (params.size == 1) s"?${formatEntry(params.head)}"
-      else s"?${formatEntry(params.head)}" + params.tail.map { e ⇒ s"&${formatEntry(e)}" }.mkString
-    url + encoded
-  }
 
   def fillInHttpSession(session: Session, response: CornichonHttpResponse): Session =
     session
@@ -112,6 +102,12 @@ class HttpService {
       case ParsingResult.Ok(h, e) ⇒ h
       case ParsingResult.Error(e) ⇒ throw new MalformedHeadersError(e.formatPretty)
     }
+
+  //private def paramsResolver(params: Seq[(String, String)], session: Session): Xor[ResolverError, Seq[(String, String)]] = {
+  //  params.map{
+  //    case (name, value) => (Resolver.fillPlaceholder(name)(session.content), Resolver.fillPlaceholder(value)(session.content))
+  //  }
+  //}
 
   def extractWithHeadersSession(session: Session): Seq[HttpHeader] =
     session.getOpt(WithHeadersKey).fold(Seq.empty[HttpHeader]) { headers ⇒

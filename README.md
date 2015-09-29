@@ -357,7 +357,12 @@ Fortunately a bunch of built-in steps and primitive building blocs are already a
 
 ## Placeholders
 
-Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the '''session'''.
+Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the '''session''':
+
+- urls
+- HTTP payloads
+- HTTP params
+- expected body
 
 ```scala
 Given I save("favorite-superhero" → "Batman")
@@ -452,7 +457,7 @@ val beforeEachScenario: Seq[ExecutableStep[_]]
 val afterEachScenario: Seq[ExecutableStep[_]]
 ```
 
-# Execution model
+## Execution model
 
 By default everything is executed sequentially:
 

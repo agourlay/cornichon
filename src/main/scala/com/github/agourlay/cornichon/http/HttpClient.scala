@@ -7,7 +7,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.{ HttpHeader, HttpRequest, HttpResponse }
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ FlattenStrategy, Source }
@@ -32,20 +32,20 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
       .flatMap(expectJson)
       .recover(exceptionMapper)
 
-  def postJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Post(url, payload), headers)
+  def postJson(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
+    requestRunner(Post(Uri(url).withQuery(params: _*), payload), headers)
 
-  def putJson(payload: JsValue, url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Put(url, payload), headers)
+  def putJson(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
+    requestRunner(Put(Uri(url).withQuery(params: _*), payload), headers)
 
-  def deleteJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Delete(url), headers)
+  def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
+    requestRunner(Delete(Uri(url).withQuery(params: _*)), headers)
 
-  def getJson(url: String, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Get(url), headers)
+  def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
+    requestRunner(Get(Uri(url).withQuery(params: _*)), headers)
 
-  def getSSE(url: String, takeWithin: FiniteDuration, headers: Seq[HttpHeader]) = {
-    val request = Get(url).withHeaders(collection.immutable.Seq(headers: _*))
+  def getSSE(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]) = {
+    val request = Get(Uri(url).withQuery(params: _*)).withHeaders(collection.immutable.Seq(headers: _*))
     val host = request.uri.authority.host.toString()
     val port = request.uri.effectivePort
 
