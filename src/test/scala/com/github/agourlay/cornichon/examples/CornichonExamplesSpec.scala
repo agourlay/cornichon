@@ -13,6 +13,8 @@ class CornichonExamplesSpec extends CornichonFeature {
 
   val port = 8080
   var server: ServerBinding = _
+
+  // Base url used for all HTTP steps
   override val baseUrl = s"http://localhost:$port"
 
   // Starts up test server

@@ -64,7 +64,7 @@ trait Dsl extends CornichonLogger {
   }
 
   def resolveInput[A](input: A): Session ⇒ A = s ⇒ input match {
-    case string: String ⇒ Resolver.fillPlaceholderUnsafe(string)(s.content).asInstanceOf[A]
+    case string: String ⇒ Resolver.fillPlaceholdersUnsafe(string)(s.content).asInstanceOf[A]
     case _              ⇒ input
   }
 
@@ -83,9 +83,9 @@ trait Dsl extends CornichonLogger {
     )
   }
 
-  def transform_assert_session[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: Option[String] = None) =
+  def transform_assert_session[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     ExecutableStep(
-      title.getOrElse(s"session key '$key' against predicate"),
+      title,
       s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(s, v)), s, expected(s))
     )
 

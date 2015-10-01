@@ -357,12 +357,12 @@ Fortunately a bunch of built-in steps and primitive building blocs are already a
 
 ## Placeholders
 
-Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the '''session''':
+Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the ```session```:
 
-- urls
-- HTTP payloads
-- HTTP params
-- expected body
+- Url
+- Expected body
+- HTTP params (name and value)
+- HTTP headers (name and value)
 
 ```scala
 Given I save("favorite-superhero" → "Batman")
@@ -399,7 +399,11 @@ Then assert body_is(
 
 ```
 
-It is also possible to inject random values inside placeholders, so far only UUID are supported
+It is also possible to inject random values inside placeholders using:
+
+- <random-uuid> for a random UUID
+- <random-positive-integer> for a random Integer between 0-100
+- <random-string> for a random String of length 5
 
 ```scala
 POST("http://url.io/somethingWithAnId", payload = """

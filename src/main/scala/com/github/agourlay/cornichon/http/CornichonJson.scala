@@ -10,7 +10,7 @@ import scala.util.{ Failure, Success, Try }
 
 object CornichonJson {
 
-  def dslParse[A](input: A): JValue = input match {
+  def parseJson[A](input: A): JValue = input match {
     case s: String if s.trim.head == '|' ⇒ parse(DataTableParser.parseDataTable(s).asJson.toString())
     case s: String if s.trim.head == '{' ⇒ parse(s)
     case s: String if s.trim.head == '[' ⇒ parse(s)
@@ -21,14 +21,14 @@ object CornichonJson {
     case b: Boolean                      ⇒ JBool(b)
   }
 
-  def parseJsonOrFail[A](input: A): JValue =
-    Try { dslParse(input) } match {
+  def parseJsonUnsafe[A](input: A): JValue =
+    Try { parseJson(input) } match {
       case Success(json) ⇒ json
       case Failure(e)    ⇒ throw new MalformedJsonError(input, e)
     }
 
-  def parseJson[A](input: A): Xor[CornichonError, JValue] =
-    Try { dslParse(input) } match {
+  def parseJsonXor[A](input: A): Xor[CornichonError, JValue] =
+    Try { parseJson(input) } match {
       case Success(json) ⇒ right(json)
       case Failure(e)    ⇒ left(new MalformedJsonError(input, e))
     }

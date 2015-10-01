@@ -57,7 +57,7 @@ class EngineSpec extends WordSpec with Matchers {
         ExecutableStep("random value step", s ⇒ {
           (scala.util.Random.nextInt(10), s, 5)
         }),
-        EventuallyStart(eventuallyConf)
+        EventuallyStop(eventuallyConf)
       )
       val s = Scenario("scenario with eventually", steps)
       engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
@@ -65,13 +65,13 @@ class EngineSpec extends WordSpec with Matchers {
 
     "replay eventually wrapped steps until limit" in {
       val session = Session.newSession
-      val eventuallyConf = EventuallyConf(maxTime = 2.seconds, interval = 100.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
       val steps = Seq(
         EventuallyStart(eventuallyConf),
         ExecutableStep("random value step", s ⇒ {
           (scala.util.Random.nextInt(10), s, 11)
         }),
-        EventuallyStart(eventuallyConf)
+        EventuallyStop(eventuallyConf)
       )
       val s = Scenario("scenario with eventually that fails", steps)
       engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)

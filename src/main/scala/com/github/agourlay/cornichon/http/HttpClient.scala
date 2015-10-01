@@ -29,23 +29,25 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
   private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader]) =
     Http()
       .singleRequest(req.withHeaders(collection.immutable.Seq(headers: _*)))
-      .flatMap(expectJson)
+      .flatMap(toCornichonResponse)
       .recover(exceptionMapper)
 
+  private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(params: _*)
+
   def postJson(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Post(Uri(url).withQuery(params: _*), payload), headers)
+    requestRunner(Post(uriBuilder(url, params), payload), headers)
 
   def putJson(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Put(Uri(url).withQuery(params: _*), payload), headers)
+    requestRunner(Put(uriBuilder(url, params), payload), headers)
 
   def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Delete(Uri(url).withQuery(params: _*)), headers)
+    requestRunner(Delete(uriBuilder(url, params)), headers)
 
   def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Get(Uri(url).withQuery(params: _*)), headers)
+    requestRunner(Get(uriBuilder(url, params)), headers)
 
   def getSSE(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]) = {
-    val request = Get(Uri(url).withQuery(params: _*)).withHeaders(collection.immutable.Seq(headers: _*))
+    val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))
     val host = request.uri.authority.host.toString()
     val port = request.uri.effectivePort
 
@@ -76,7 +78,7 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
       case e: Exception ⇒ left(SseError(e))
     }
 
-  private def expectJson(httpResponse: HttpResponse): Future[Xor[HttpError, CornichonHttpResponse]] =
+  private def toCornichonResponse(httpResponse: HttpResponse): Future[Xor[HttpError, CornichonHttpResponse]] =
     Unmarshal(Gzip.decode(httpResponse)).to[String].map { body: String ⇒
       right(CornichonHttpResponse.fromResponse(httpResponse, body))
     }.recover {
