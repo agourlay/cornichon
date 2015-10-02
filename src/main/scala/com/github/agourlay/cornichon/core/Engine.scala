@@ -54,6 +54,7 @@ class Engine extends CornichonLogger {
                   loop(snapshot.get.steps, snapshot.get.session, eventuallyConf.consume(executionTime + eventuallyConf.interval), snapshot)
                 } else {
                   logStepErrorResult(currentStep, e, RED)
+                  logNonExecutedStep(steps.tail)
                   buildFailedScenarioReport(scenario, steps, currentStep, e)
                 }
               case Xor.Right(currentSession) ⇒
@@ -74,6 +75,14 @@ class Engine extends CornichonLogger {
     logger.error(ansiColor + s"   ${step.title} *** FAILED ***" + RESET)
     error.msg.split('\n').foreach { m ⇒
       logger.error(ansiColor + s"   $m" + RESET)
+    }
+  }
+
+  private def logNonExecutedStep(steps: Seq[Step]): Unit = {
+    steps.collect {
+      case e: ExecutableStep[_] ⇒ e
+    }.filter(_.show).foreach { step ⇒
+      logger.info(CYAN + s"   ${step.title}" + RESET)
     }
   }
 
