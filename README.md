@@ -53,10 +53,10 @@ Check this [section](#implicit-builder) if you wonder what this ```implicit b =>
 
 Statements start with one of the prefixes below followed by a ```step``` definition :
 
-- Given I/a
-- When I/a
-- And I/a/assert/assert_not (expects the step to fail)
-- Then I/a/assert/assert_not (expects the step to fail)
+- Given I | a
+- When I | a
+- And I | a | assert | assert_not (expects the step to fail)
+- Then I | a | assert | assert_not (expects the step to fail)
 
 Those prefixes do not change the behaviour of the steps.
 
@@ -202,6 +202,8 @@ response_array_contains("""
   """)
   
 ```
+
+response_array_size_is and response_array_contains have also the possibility to accept an extra first argument (a root key or a JValue extractor) to work on a nested collection.
 
 - setting a value in ```session```
 
