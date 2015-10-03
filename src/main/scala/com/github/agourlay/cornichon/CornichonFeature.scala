@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.HttpDsl
-import org.scalatest.WordSpec
+import com.github.agourlay.cornichon.http.HttpService
 
 trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
 
@@ -44,7 +44,8 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   def feature: FeatureDef
 
   val parallelExecution: Boolean = false
-  val baseUrl = ""
+  lazy val baseUrl = ""
+  lazy val http = new HttpService(baseUrl)
 
   def beforeFeature(): Unit = ()
   def afterFeature(): Unit = ()

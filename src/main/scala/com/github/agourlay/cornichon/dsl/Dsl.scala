@@ -17,6 +17,13 @@ trait Dsl extends CornichonLogger {
       sb.addStep(s)
       s
     }
+
+    def a[A](step: ExecutableStep[A])(implicit sb: ScenarioBuilder): ExecutableStep[A] = {
+      val s: ExecutableStep[A] = step.copy(s"$name a ${step.title}")
+      sb.addStep(s)
+      s
+    }
+
     def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): ExecutableStep[A] =
       ExecutableStep[A](
         title = s"$name $title",
@@ -105,7 +112,7 @@ trait Dsl extends CornichonLogger {
     val extractors = args.map(_.trans)
     val targets = args.map(_.target)
     effectStep(
-      s"save from session '$keys' to '$targets'",
+      s"save parts from session '${displayTuples(keys.zip(targets))}'",
       s ⇒ {
         val extracted = s.getList(keys).zip(extractors).map { case (v, e) ⇒ e(v) }
         targets.zip(extracted).foldLeft(s)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
@@ -146,5 +153,9 @@ trait Dsl extends CornichonLogger {
     msg.split('\n').foreach { m ⇒
       logger.info(CYAN + s"   $m" + RESET)
     }
+  }
+
+  def displayTuples(params: Seq[(String, String)]): String = {
+    params.map { case (name, value) ⇒ s"$name -> $value" }.mkString(", ")
   }
 }

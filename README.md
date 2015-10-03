@@ -53,14 +53,10 @@ Check this [section](#implicit-builder) if you wonder what this ```implicit b =>
 
 Statements start with one of the prefixes below followed by a ```step``` definition :
 
-- Given I
-- When I
-- Then I
-- And I
-- Then assert
-- And assert
-- Then assert_not (expects the step to fail)
-- And assert_not (expects the step to fail)
+- Given I/a
+- When I/a
+- And I/a/assert/assert_not (expects the step to fail)
+- Then I/a/assert/assert_not (expects the step to fail)
 
 Those prefixes do not change the behaviour of the steps.
 
@@ -354,6 +350,17 @@ Then assert ExecutableStep(
 This is extremely low level and you should never write your test like that.
 
 Fortunately a bunch of built-in steps and primitive building blocs are already available.
+
+Most of the time you will create your own trait containing your custom steps :
+
+```scala
+trait MySteps {
+  this: CornichonFeature ⇒
+
+  // here access all the goodies from the DSLs and the HttpService.
+}
+
+```
 
 ## Placeholders
 

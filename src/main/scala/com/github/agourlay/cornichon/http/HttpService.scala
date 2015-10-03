@@ -17,7 +17,7 @@ import spray.json._
 import scala.concurrent.duration._
 import scala.concurrent.{ Future, Await, ExecutionContext }
 
-class HttpService {
+class HttpService(baseUrl: String = "") {
 
   implicit private val system = ActorSystem("cornichon-http-feature")
   implicit private val mat = ActorMaterializer()
@@ -42,7 +42,7 @@ class HttpService {
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
       json ← parseJsonXor(payloadResolved)
-      urlResolved ← Resolver.fillPlaceholders(url)(s.content)
+      urlResolved ← Resolver.fillPlaceholders(urlBuilder(url))(s.content)
       res ← Await.result(call(json, urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders), timeout)
       newSession = fillInHttpSession(s, res)
     } yield {
@@ -51,7 +51,7 @@ class HttpService {
 
   private def withoutPayload(call: WithoutPayloadCall, url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session)(implicit timeout: FiniteDuration): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
-      urlResolved ← Resolver.fillPlaceholders(url)(s.content)
+      urlResolved ← Resolver.fillPlaceholders(urlBuilder(url))(s.content)
       paramsResolved ← Resolver.tuplesResolver(params, s)
       headersResolved ← Resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
@@ -83,7 +83,7 @@ class HttpService {
 
   def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
     for {
-      urlResolved ← Resolver.fillPlaceholders(url)(s.content)
+      urlResolved ← Resolver.fillPlaceholders(urlBuilder(url))(s.content)
       paramsResolved ← Resolver.tuplesResolver(params, s)
       parsedHeaders ← parseHttpHeaders(headers)
       extractedHeaders ← extractWithHeadersSession(s)
@@ -123,6 +123,10 @@ class HttpService {
       }
       parseHttpHeaders(tuples)
     }
+
+  private def urlBuilder(input: String) =
+    if (baseUrl.isEmpty) input
+    else baseUrl + input
 
   implicit private def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
 }

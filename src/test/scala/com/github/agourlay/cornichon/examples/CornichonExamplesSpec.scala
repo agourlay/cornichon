@@ -11,11 +11,12 @@ import scala.concurrent.duration._
 
 class CornichonExamplesSpec extends CornichonFeature {
 
-  val port = 8080
-  var server: ServerBinding = _
+  lazy val port = 8080
 
   // Base url used for all HTTP steps
-  override val baseUrl = s"http://localhost:$port"
+  override lazy val baseUrl = s"http://localhost:$port"
+
+  var server: ServerBinding = _
 
   // Starts up test server
   override def beforeFeature() =

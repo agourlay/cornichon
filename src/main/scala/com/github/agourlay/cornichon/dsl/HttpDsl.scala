@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
-import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.CornichonJson._
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
@@ -18,12 +17,6 @@ trait HttpDsl extends Dsl {
 
   implicit val requestTimeout: FiniteDuration = 2000 millis
   private val mapper = new ObjectMapper()
-  private val http = new HttpService()
-
-  private def urlBuilder(input: String) = {
-    if (baseUrl.isEmpty) input
-    else baseUrl + input
-  }
 
   sealed trait Request {
     val name: String
@@ -35,14 +28,13 @@ trait HttpDsl extends Dsl {
         title = {
         val base = s"$name $url"
         if (params.isEmpty) base
-        else s"$base with params ${params.mkString(", ")}"
+        else s"$base with params ${displayTuples(params)}"
       },
         effect =
         s ⇒ {
-          val fullUrl = urlBuilder(url)
           val x = this match {
-            case GET    ⇒ http.Get(fullUrl, params, headers)(s)
-            case DELETE ⇒ http.Delete(fullUrl, params, headers)(s)
+            case GET    ⇒ http.Get(url, params, headers)(s)
+            case DELETE ⇒ http.Delete(url, params, headers)(s)
           }
           x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
         }
@@ -55,14 +47,13 @@ trait HttpDsl extends Dsl {
         title = {
         val base = s"$name to $url with payload $payload"
         if (params.isEmpty) base
-        else s"$base with params ${params.mkString(", ")}"
+        else s"$base with params ${displayTuples(params)}"
       },
         effect =
         s ⇒ {
-          val fullUrl = urlBuilder(url)
           val x = this match {
-            case POST ⇒ http.Post(payload, fullUrl, params, headers)(s)
-            case PUT  ⇒ http.Put(payload, fullUrl, params, headers)(s)
+            case POST ⇒ http.Post(payload, url, params, headers)(s)
+            case PUT  ⇒ http.Put(payload, url, params, headers)(s)
           }
           x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
         }
@@ -75,13 +66,12 @@ trait HttpDsl extends Dsl {
         title = {
         val base = s"$name $url"
         if (params.isEmpty) base
-        else s"$base with params ${params.mkString(", ")}"
+        else s"$base with params ${displayTuples(params)}"
       },
         effect =
         s ⇒ {
-          val fullUrl = urlBuilder(url)
           val x = this match {
-            case GET_SSE ⇒ http.GetSSE(fullUrl, takeWithin, params, headers)(s)
+            case GET_SSE ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
             case GET_WS  ⇒ ???
           }
           x.map { case (source, session) ⇒ session }.fold(e ⇒ throw e, identity)
