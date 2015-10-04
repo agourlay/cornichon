@@ -18,9 +18,6 @@ import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-import spray.json.JsValue
 
 import scala.concurrent.duration._
 import scala.concurrent.duration.FiniteDuration
@@ -29,6 +26,8 @@ import scala.concurrent.{ Await, ExecutionContext, Future }
 class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends CornichonLogger {
 
   implicit private val ec: ExecutionContext = actorSystem.dispatcher
+
+  implicit private val formats = DefaultFormats
 
   private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader]) =
     Http()
@@ -53,31 +52,21 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
   def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Get(uriBuilder(url, params)), headers)
 
-  case class CornichonSSE(data: String, eventType: Option[String] = None, id: Option[String] = None)
-
-  object CornichonSSE {
-    def build(sse: ServerSentEvent): CornichonSSE = CornichonSSE(sse.data, sse.eventType, sse.id)
-    implicit val formatServerSentEvent = jsonFormat3(CornichonSSE.apply)
-  }
-
   def getSSE(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] = {
-    import spray.json.DefaultJsonProtocol._
-    import spray.json._
-
     Http().singleRequest(Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*)))
       .flatMap(expectSSE)
       .map { sse ⇒
         sse.map { source ⇒
           val r = source.filter(_.data.nonEmpty)
             .takeWithin(takeWithin)
-            .runFold(List.empty[CornichonSSE])((acc, sse) ⇒ {
-              acc :+ CornichonSSE.build(sse)
+            .runFold(List.empty[ServerSentEvent])((acc, sse) ⇒ {
+              acc :+ sse
             })
             .map { events ⇒
               CornichonHttpResponse(
                 status = StatusCodes.OK, //TODO get real status code?
                 headers = collection.immutable.Seq.empty[HttpHeader], //TODO get real headers?
-                body = events.toJson.prettyPrint
+                body = compact(render(JArray(events.map(Extraction.decompose(_)))))
               )
             }
           Await.result(r, takeWithin + 1.second)
