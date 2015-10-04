@@ -72,7 +72,7 @@ trait HttpDsl extends Dsl {
         s ⇒ {
           val x = this match {
             case GET_SSE ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
-            case GET_WS  ⇒ ???
+            case GET_WS  ⇒ http.GetWS(url, takeWithin, params, headers)(s)
           }
           x.map { case (source, session) ⇒ session }.fold(e ⇒ throw e, identity)
         }

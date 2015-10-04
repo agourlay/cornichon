@@ -10,21 +10,27 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ FlattenStrategy, Source }
+import akka.stream.scaladsl.Source
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonLogger
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 import spray.json.JsValue
 
-import scala.Console._
+import scala.concurrent.duration._
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends CornichonLogger {
 
   implicit private val ec: ExecutionContext = actorSystem.dispatcher
+
+  private def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
 
   private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader]) =
     Http()
@@ -34,11 +40,11 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(params: _*)
 
-  def postJson(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Post(uriBuilder(url, params), payload), headers)
+  def postJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
+    requestRunner(Post(uriBuilder(url, params), toSprayJson(payload)), headers)
 
-  def putJson(payload: JsValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Put(uriBuilder(url, params), payload), headers)
+  def putJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
+    requestRunner(Put(uriBuilder(url, params), toSprayJson(payload)), headers)
 
   def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Delete(uriBuilder(url, params)), headers)
@@ -46,25 +52,36 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
   def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Get(uriBuilder(url, params)), headers)
 
-  def getSSE(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]) = {
-    val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))
-    val host = request.uri.authority.host.toString()
-    val port = request.uri.effectivePort
+  case class CornichonSSE(data: String, eventType: Option[String] = None, id: Option[String] = None)
 
-    Source.single(request)
-      .via(Http().outgoingConnection(host, port))
-      .mapAsync(1)(expectSSE)
+  object CornichonSSE {
+    def build(sse: ServerSentEvent): CornichonSSE = CornichonSSE(sse.data, sse.eventType, sse.id)
+    implicit val formatServerSentEvent = jsonFormat3(CornichonSSE.apply)
+  }
+
+  def getSSE(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] = {
+    import spray.json.DefaultJsonProtocol._
+    import spray.json._
+
+    Http().singleRequest(Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*)))
+      .flatMap(expectSSE)
       .map { sse ⇒
-        sse.fold(e ⇒ {
-          logger.error(RED + s"SSE connection error $e" + RESET)
-          Source.empty[ServerSentEvent]
-        }, s ⇒ s)
+        sse.map { source ⇒
+          val r = source.filter(_.data.nonEmpty)
+            .takeWithin(takeWithin)
+            .runFold(List.empty[CornichonSSE])((acc, sse) ⇒ {
+              acc :+ CornichonSSE.build(sse)
+            })
+            .map { events ⇒
+              CornichonHttpResponse(
+                status = StatusCodes.OK, //TODO get real status code?
+                headers = collection.immutable.Seq.empty[HttpHeader], //TODO get real headers?
+                body = events.toJson.prettyPrint
+              )
+            }
+          Await.result(r, takeWithin + 1.second)
+        }
       }
-      .flatten(FlattenStrategy.concat[ServerSentEvent])
-      .filter(_.data.nonEmpty)
-      .takeWithin(takeWithin).runFold(List.empty[ServerSentEvent])((acc, sse) ⇒ {
-        acc :+ sse
-      })
   }
 
   private def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, CornichonHttpResponse]] = {
