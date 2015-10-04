@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
@@ -30,21 +30,22 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
 
   implicit private val ec: ExecutionContext = actorSystem.dispatcher
 
-  private def toSprayJson(jValue: JValue): JsValue = compact(render(jValue)).parseJson
-
   private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader]) =
     Http()
       .singleRequest(req.withHeaders(collection.immutable.Seq(headers: _*)))
       .flatMap(toCornichonResponse)
       .recover(exceptionMapper)
 
+  implicit def JValueMarshaller: ToEntityMarshaller[JValue] =
+    Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(j ⇒ compact(render(j)))
+
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(params: _*)
 
   def postJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Post(uriBuilder(url, params), toSprayJson(payload)), headers)
+    requestRunner(Post(uriBuilder(url, params), payload), headers)
 
   def putJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Put(uriBuilder(url, params), toSprayJson(payload)), headers)
+    requestRunner(Put(uriBuilder(url, params), payload), headers)
 
   def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Delete(uriBuilder(url, params)), headers)

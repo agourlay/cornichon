@@ -41,7 +41,6 @@ libraryDependencies ++= {
   val schemaValidatorV = "2.2.6"
   Seq(
      "com.typesafe.akka" %% "akka-http-core-experimental"       % akkaHttpV
-    ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV
     ,"de.heikoseeberger" %% "akka-sse"                          % akkaSseV
     ,"org.json4s"        %% "json4s-native"                     % json4sV
     ,"io.spray"          %% "spray-json"                        % sprayJsonV
@@ -51,6 +50,7 @@ libraryDependencies ++= {
     ,"org.scalatest"     %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
     ,"org.parboiled"     %% "parboiled"                         % parboiledV
+    ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV  % "test"
     ,"com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV  % "test"
   )
 }
