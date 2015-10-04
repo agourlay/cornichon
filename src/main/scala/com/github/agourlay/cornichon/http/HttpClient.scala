@@ -74,6 +74,9 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
       }
   }
 
+  // TODO
+  def getWS(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] = ???
+
   private def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, CornichonHttpResponse]] = {
     case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))
   }

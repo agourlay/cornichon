@@ -1,10 +1,7 @@
 package com.github.agourlay.cornichon.core
 
-import org.parboiled2.{ ErrorFormatter, ParseError }
 import org.scalatest.{ Matchers, TryValues, WordSpec }
-import spray.json.{ JsString, _ }
-
-import scala.util._
+import spray.json._
 
 class DataTableSpec extends WordSpec with Matchers with TryValues {
 
@@ -22,10 +19,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run() match {
-        case Failure(e: ParseError) ⇒ fail(p.formatError(e, new ErrorFormatter(showTraces = true)))
-        case Success(x)             ⇒ x should be(expected)
-      }
+      p.dataTableRule.run().success.value should be(expected)
     }
 
     "process a single line with 1 value" in {
@@ -41,10 +35,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run() match {
-        case Failure(e: ParseError) ⇒ fail(p.formatError(e, new ErrorFormatter(showTraces = true)))
-        case Success(x)             ⇒ x should be(expected)
-      }
+      p.dataTableRule.run().success.value should be(expected)
     }
 
     "process a single line with 2 values" in {
@@ -60,10 +51,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run() match {
-        case Failure(e: ParseError) ⇒ fail(p.formatError(e, new ErrorFormatter(showTraces = true)))
-        case Success(x)             ⇒ x should be(expected)
-      }
+      p.dataTableRule.run().success.value should be(expected)
     }
 
     "process multiline string" in {
@@ -81,10 +69,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run() match {
-        case Failure(e: ParseError) ⇒ fail(p.formatError(e))
-        case Success(x)             ⇒ x should be(expected)
-      }
+      p.dataTableRule.run().success.value should be(expected)
     }
 
     "notify malformed table" in {

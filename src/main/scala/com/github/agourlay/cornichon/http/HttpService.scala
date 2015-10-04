@@ -88,9 +88,8 @@ class HttpService(baseUrl: String = "") {
   def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
     streamedPayload(client.getSSE, url, takeWithin, params, headers)(s)
 
-  // TODO
   def GetWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
-    streamedPayload(???, url, takeWithin, params, headers)(s)
+    streamedPayload(client.getWS, url, takeWithin, params, headers)(s)
 
   def fillInHttpSession(session: Session, response: CornichonHttpResponse): Session =
     session

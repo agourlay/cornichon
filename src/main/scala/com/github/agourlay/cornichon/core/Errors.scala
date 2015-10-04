@@ -59,4 +59,8 @@ case class MalformedJsonError[A](input: A, exception: Throwable) extends Cornich
   val msg = s"malformed JSON input $input with ${exception.getMessage}"
 }
 
-case class DataTableError(msg: String) extends CornichonError
+case class DataTableError(error: Throwable) extends CornichonError {
+  val msg = s"error thrown while parsing data table $error"
+}
+
+case class DataTableParseError(msg: String) extends CornichonError
