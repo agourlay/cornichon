@@ -15,7 +15,6 @@ import scala.util.{ Success, Try }
 trait HttpDsl extends Dsl {
   this: CornichonFeature ⇒
 
-  implicit val requestTimeout: FiniteDuration = 2000 millis
   private val mapper = new ObjectMapper()
 
   sealed trait Request {

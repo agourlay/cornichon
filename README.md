@@ -433,6 +433,7 @@ class CornichonReadmeExample extends CornichonFeature {
     Feature("Cornichon feature Example")(
 
       Scenario("Test read demo") { implicit b ⇒
+      
         When I GET("myUrl/superheroes/Batman")
 
         Then assert status_is(200)
@@ -491,6 +492,17 @@ and then only provide the missing part in the HTTP step definition
  When I POST("/superheroes", payload ="")
  
  When I DELETE("/superheroes/GreenLantern")
+
+```
+
+### Request timeout
+
+The default value for the HTTP request timeout is ```2 seconds```. As always it can be overriden per scenario.
+
+```scala
+import scala.concurrent.duration._
+
+override lazy val requestTimeout = 100 millis
 
 ```
 
