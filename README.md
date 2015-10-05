@@ -456,7 +456,11 @@ Cornichon is currently integrated with ScalaTest, so you just have to run ```sbt
 
 For more examples see the following [file](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
 
-## Before and after hooks
+## Feature options
+
+To implement a ```CornichonFeature``` it is only required to implement the ```feature``` function. However a number of useful options are available using override.
+
+### Before and after hooks
 
 Hooks are available to set up and tear down things as usual but this feature is not integrated into the DSL.
 
@@ -470,7 +474,27 @@ val beforeEachScenario: Seq[ExecutableStep[_]]
 val afterEachScenario: Seq[ExecutableStep[_]]
 ```
 
-## Execution model
+### Base URL
+
+Instead of repeating at each HTTP statement the full URL, it is possible to set a common URL for the entire ```feature``` by overriding:
+
+```scala
+override lazy val baseUrl = s"http://localhost:8080"
+
+```
+
+and then only provide the missing part in the HTTP step definition
+
+```scala
+ When I GET("/superheroes/Batman")
+ 
+ When I POST("/superheroes", payload ="")
+ 
+ When I DELETE("/superheroes/GreenLantern")
+
+```
+
+### Execution model
 
 By default everything is executed sequentially:
 

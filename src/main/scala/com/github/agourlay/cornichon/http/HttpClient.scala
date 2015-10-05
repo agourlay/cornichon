@@ -74,7 +74,7 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
       }
   }
 
-  // TODO
+  // TODO https://github.com/akka/akka/issues/17275
   def getWS(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] = ???
 
   private def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, CornichonHttpResponse]] = {
