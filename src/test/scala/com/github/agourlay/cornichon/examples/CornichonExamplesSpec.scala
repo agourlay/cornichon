@@ -33,7 +33,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   def feature =
     Feature("Cornichon feature Example")(
 
-      Scenario("CRUD Feature demo") { implicit b ⇒
+      Scenario("CRUD Feature demo", ignore = true) { implicit b ⇒
 
         When I GET("/superheroes/Batman")
 
@@ -208,6 +208,7 @@ class CornichonExamplesSpec extends CornichonFeature {
       },
 
       Scenario("Collection Feature demo") { implicit b ⇒
+
         When I GET("/superheroes")
 
         Then assert body_is(ordered = true, expected = """

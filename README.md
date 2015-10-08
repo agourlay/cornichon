@@ -534,6 +534,16 @@ Before using this feature make sure that the scenarios are completely independen
 
 It is important to notice that the logging of ```Steps``` execution still happens in real-time making it more difficult to follow the execution.
 
+A ```scenario``` can also be ignored using the ignore flag in the DSL.
+
+```scala
+ Scenario("CRUD Feature demo", ignore = true) { implicit b ⇒
+
+        When I GET("/superheroes/Batman")
+        ...
+ }       
+```
+
 ## Implicit builder
 
 In order to have a clean look Cornichon uses mutation to build a ```scenario```. The argument ```implicit b =>``` represents an implicit step builder required to construct a ```scenario```.

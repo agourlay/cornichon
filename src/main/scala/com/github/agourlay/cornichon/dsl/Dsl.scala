@@ -53,10 +53,14 @@ trait Dsl extends CornichonLogger {
   case object Then extends Starters with WithAssert { val name = "Then" }
   case object And extends Starters with WithAssert { val name = "And" }
 
-  def Scenario(name: String)(builder: ScenarioBuilder ⇒ Unit): Scenario = {
+  def Scenario(name: String, ignore: Boolean = false)(builder: ScenarioBuilder ⇒ Unit): Scenario = {
     val sb = new ScenarioBuilder()
-    builder(sb)
-    new Scenario(name, sb.steps)
+    if (ignore) {
+      new Scenario(s"** IGNORED ** $name", sb.steps)
+    } else {
+      builder(sb)
+      new Scenario(name, sb.steps)
+    }
   }
 
   def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder): Unit = {
