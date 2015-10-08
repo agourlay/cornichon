@@ -33,7 +33,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   def feature =
     Feature("Cornichon feature Example")(
 
-      Scenario("CRUD Feature demo", ignore = true) { implicit b ⇒
+      Scenario("CRUD Feature demo") { implicit b ⇒
 
         When I GET("/superheroes/Batman")
 
