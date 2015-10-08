@@ -1,20 +1,17 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
-import org.scalatest.WordSpecLike
+import org.scalatest.FreeSpecLike
 
-trait ScalaTestIntegration extends WordSpecLike {
+trait ScalaTestIntegration extends FreeSpecLike {
   this: CornichonFeature ⇒
 
-  feature.name must {
-    "pass all scenarios" in {
-      val featureExecution = runFeature()
-      featureExecution match {
-        case s: SuccessFeatureReport ⇒
-          assert(true)
-        case FailedFeatureReport(_, _, errors) ⇒
-          fail(errors.mkString(" "))
-      }
+  feature.name in {
+    runFeature() match {
+      case s: SuccessFeatureReport ⇒
+        assert(true)
+      case FailedFeatureReport(_, _, errors) ⇒
+        fail(errors.mkString(" "))
     }
   }
 }
