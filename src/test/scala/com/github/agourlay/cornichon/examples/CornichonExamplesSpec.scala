@@ -11,25 +11,6 @@ import scala.concurrent.duration._
 
 class CornichonExamplesSpec extends CornichonFeature {
 
-  lazy val port = 8080
-
-  // Base url used for all HTTP steps
-  override lazy val baseUrl = s"http://localhost:$port"
-
-  var server: ServerBinding = _
-
-  // Starts up test server
-  override def beforeFeature() =
-    server = Await.result(new RestAPI().start(port), 5 second)
-
-  // Stops test server
-  override def afterFeature() = Await.result(server.unbind(), 5 second)
-
-  // List of Steps to be executed after each scenario
-  override val afterEachScenario = Seq(
-    GET("/reset")
-  )
-
   def feature =
     Feature("Cornichon feature Example")(
 
@@ -443,4 +424,23 @@ class CornichonExamplesSpec extends CornichonFeature {
         }
       }
     )
+
+  lazy val port = 8080
+
+  // Base url used for all HTTP steps
+  override lazy val baseUrl = s"http://localhost:$port"
+
+  var server: ServerBinding = _
+
+  // Starts up test server
+  override def beforeFeature() =
+    server = Await.result(new RestAPI().start(port), 5 second)
+
+  // Stops test server
+  override def afterFeature() = Await.result(server.unbind(), 5 second)
+
+  // List of Steps to be executed after each scenario
+  override val afterEachScenario = Seq(
+    GET("/reset")
+  )
 }
