@@ -16,6 +16,7 @@ object CornichonJson {
     case s: String if s.trim.head == '[' ⇒ parse(s)
     case s: String                       ⇒ JString(s)
     case d: Double                       ⇒ JDouble(d)
+    case b: BigDecimal                   ⇒ JDecimal(b)
     case i: Int                          ⇒ JInt(i)
     case l: Long                         ⇒ JLong(l)
     case b: Boolean                      ⇒ JBool(b)
