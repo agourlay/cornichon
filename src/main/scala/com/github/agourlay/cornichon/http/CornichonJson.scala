@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.core.{ CornichonError, MalformedJsonError, DataTableParser }
+import com.github.agourlay.cornichon.core.{ CornichonError, MalformedJsonError }
+import com.github.agourlay.cornichon.dsl.DataTableParser
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import cats.data.Xor
