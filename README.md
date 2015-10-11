@@ -544,6 +544,25 @@ A ```scenario``` can also be ignored using the ignore flag in the DSL.
  }       
 ```
 
+In order to run the features in parallel it is necessary to enable a flag in your SBT build file
+
+```scala
+parallelExecution in Test := true
+```
+
+or through the command line ```sbt test parallelExecution in Test := true```
+
+## ScalaTest integration
+
+As Cornichon uses Scalatest it is possible to use all the nice CLI from SBT + ScalaTest to trigger tests:
+
+- ```testOnly *CornichonExamplesSpec``` to run only the feature CornichonExamplesSpec.
+- ```testOnly *CornichonExamplesSpec -- -t "Cornichon feature Example should CRUD Feature demo"``` to run only the scenario "CRUD Feature demo" from the feature "Cornichon feature Example". The general form is "feature-name should scenario-name".
+- ```~test``` tilde to rerun a command on change.
+
+See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest doc](http://www.scalatest.org/user_guide/using_the_runner) for more information.
+
+
 ## Implicit builder
 
 In order to have a clean look Cornichon uses mutation to build a ```scenario```. The argument ```implicit b =>``` represents an implicit step builder required to construct a ```scenario```.

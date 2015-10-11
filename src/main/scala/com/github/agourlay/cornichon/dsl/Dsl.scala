@@ -55,12 +55,8 @@ trait Dsl extends CornichonLogger {
 
   def Scenario(name: String, ignore: Boolean = false)(builder: ScenarioBuilder ⇒ Unit): Scenario = {
     val sb = new ScenarioBuilder()
-    if (ignore) {
-      new Scenario(s"** IGNORED ** $name", sb.steps)
-    } else {
-      builder(sb)
-      new Scenario(name, sb.steps)
-    }
+    builder(sb)
+    new Scenario(name, sb.steps, ignore)
   }
 
   def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder): Unit = {
