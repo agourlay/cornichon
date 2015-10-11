@@ -2,6 +2,10 @@ package com.github.agourlay.cornichon.core
 
 import scala.concurrent.duration.Duration
 
+case class FeatureDef(name: String, scenarios: Seq[Scenario])
+
+case class Scenario(name: String, steps: Seq[Step], ignored: Boolean = false)
+
 trait Step
 
 case class ExecutableStep[A](
@@ -34,3 +38,4 @@ trait EventuallyStep extends Step
 case class EventuallyStart(conf: EventuallyConf) extends EventuallyStep
 
 case class EventuallyStop(conf: EventuallyConf) extends EventuallyStep
+
