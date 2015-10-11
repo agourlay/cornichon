@@ -19,7 +19,6 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   // TODO switch to val
   def feature: FeatureDef
 
-  val parallelExecution: Boolean = false
   lazy val baseUrl = ""
   lazy val requestTimeout = 2000 millis
 

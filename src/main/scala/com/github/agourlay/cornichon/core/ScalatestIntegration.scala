@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
-import org.scalatest.{ WordSpecLike, BeforeAndAfterAll, FreeSpecLike }
+import org.scalatest.{ ParallelTestExecution, WordSpecLike, BeforeAndAfterAll }
 
-trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll {
+trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: CornichonFeature ⇒
 
   override def beforeAll() = beforeFeature()

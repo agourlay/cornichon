@@ -506,7 +506,7 @@ override lazy val requestTimeout = 100 millis
 
 ```
 
-### Execution model
+## Execution model
 
 By default everything is executed sequentially:
 
@@ -515,34 +515,6 @@ By default everything is executed sequentially:
 - execute each ```Step```
 
 This makes it really easy to follow what is going on.
-
-It is also possible to run the ```Scenario``` of specific ```Features``` in parallel by overriding the property ```parallelExecution``` in ```CornichonFeature```.
-
-```scala
-class ParallelFeatureExample extends CornichonFeature {
-
-  override val parallelExecution = true
-
-  def feature =
-    Feature("Cornichon parallel scenarios Example")(
-    ...
-    )
-}
-```
-
-Before using this feature make sure that the scenarios are completely independent as it would create race-condition otherwise.
-
-It is important to notice that the logging of ```Steps``` execution still happens in real-time making it more difficult to follow the execution.
-
-A ```scenario``` can also be ignored using the ignore flag in the DSL.
-
-```scala
- Scenario("CRUD Feature demo", ignore = true) { implicit b ⇒
-
-        When I GET("/superheroes/Batman")
-        ...
- }       
-```
 
 In order to run the features in parallel it is necessary to enable a flag in your SBT build file
 
@@ -556,9 +528,11 @@ or through the command line ```sbt test parallelExecution in Test := true```
 
 As Cornichon uses Scalatest it is possible to use all the nice CLI from SBT + ScalaTest to trigger tests:
 
+- ```~test``` tilde to re-run a command on change.
 - ```testOnly *CornichonExamplesSpec``` to run only the feature CornichonExamplesSpec.
-- ```testOnly *CornichonExamplesSpec -- -t "Cornichon feature Example should CRUD Feature demo"``` to run only the scenario "CRUD Feature demo" from the feature "Cornichon feature Example". The general form is "feature-name should scenario-name".
-- ```~test``` tilde to rerun a command on change.
+- ```testOnly *CornichonExamplesSpec -- -t "Cornichon feature Example should CRUD Feature demo"``` to run only the scenario ```CRUD Feature demo``` from the feature ```Cornichon feature Example```. 
+
+The full name of a scenario is ```feature-name should scenario-name```.
 
 See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest doc](http://www.scalatest.org/user_guide/using_the_runner) for more information.
 
