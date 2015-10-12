@@ -16,7 +16,7 @@ Offering an extensible DSL to specify behaviours of JSON HTTP APIs in Scala.
 ## Installation
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.1.1" % "test"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.2.0" % "test"
 ```
 
 ## Structure
