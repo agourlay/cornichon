@@ -52,8 +52,8 @@ trait HttpDsl extends Dsl {
         effect =
         s ⇒ {
           val x = this match {
-            case POST ⇒ http.Post(payload, url, params, headers)(s)
-            case PUT  ⇒ http.Put(payload, url, params, headers)(s)
+            case POST ⇒ http.Post(url, payload, params, headers)(s)
+            case PUT  ⇒ http.Put(url, payload, params, headers)(s)
           }
           x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
         }

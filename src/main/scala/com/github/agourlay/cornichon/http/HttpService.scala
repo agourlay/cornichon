@@ -74,10 +74,10 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
       (res, newSession)
     }
 
-  def Post(payload: String, url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+  def Post(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     withPayload(client.postJson, payload, url, params, headers)(s)
 
-  def Put(payload: String, url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+  def Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     withPayload(client.putJson, payload, url, params, headers)(s)
 
   def Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
