@@ -37,6 +37,10 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
   }
 }
 
+case class DetailedStepAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
+  val msg = detailedAssertion(result)
+}
+
 case class MalformedHeadersError(error: String) extends CornichonError {
   val msg = s"error thrown while parsing headers $error"
 }

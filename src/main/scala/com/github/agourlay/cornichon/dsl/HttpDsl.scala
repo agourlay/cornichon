@@ -5,7 +5,6 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
 import com.github.agourlay.cornichon.http.CornichonJson._
-import com.github.agourlay.cornichon.http.StatusError
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -104,13 +103,14 @@ trait HttpDsl extends Dsl {
   }
 
   def status_is(status: Int) =
-    effectStep(
+    ExecutableStep(
       title = s"status is '$status'",
-      effect = s ⇒ {
-      val sessionStatus = s.get(http.LastResponseStatusKey)
-      // perform early check outside of engine to return the body as hint.
-      if (sessionStatus != status.toString) throw new StatusError(status, sessionStatus.toInt, s.get(http.LastResponseBodyKey))
-      s
+      action = s ⇒ {
+      (s, DetailedStepAssertion(
+        expected = status.toString,
+        result = s.get(http.LastResponseStatusKey),
+        HttpDslError.statusError(status, s.get(http.LastResponseBodyKey))
+      ))
     }
     )
 
@@ -315,6 +315,13 @@ trait HttpDsl extends Dsl {
     steps
     b.addStep {
       remove(http.WithHeadersKey).copy(show = false)
+    }
+  }
+
+  private object HttpDslError {
+    def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {
+      s"""expected '$expected' but actual is '$actual' with response body:
+            |$body """.stripMargin
     }
   }
 }

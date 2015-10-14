@@ -10,7 +10,7 @@ class EngineSpec extends WordSpec with Matchers {
   "An engine" must {
     "execute all steps of a scenario" in {
       val session = Session.newSession
-      val steps = Seq(ExecutableStep[Int]("first step", s ⇒ (2 + 1, s, 3)))
+      val steps = Seq(ExecutableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))))
       val s = Scenario("test", steps)
       engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
     }
@@ -20,7 +20,7 @@ class EngineSpec extends WordSpec with Matchers {
       val steps = Seq(
         ExecutableStep[Int]("stupid step", s ⇒ {
           6 / 0
-          (2, s, 2)
+          (s, SimpleStepAssertion(2, 2))
         })
       )
       val s = Scenario("scenario with stupid test", steps)
@@ -29,9 +29,9 @@ class EngineSpec extends WordSpec with Matchers {
 
     "stop at first failed step" in {
       val session = Session.newSession
-      val step1 = ExecutableStep[Int]("first step", s ⇒ (2, s, 2))
-      val step2 = ExecutableStep[Int]("second step", s ⇒ (5, s, 4))
-      val step3 = ExecutableStep[Int]("third step", s ⇒ (1, s, 1))
+      val step1 = ExecutableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2, 2)))
+      val step2 = ExecutableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(4, 5)))
+      val step3 = ExecutableStep[Int]("third step", s ⇒ (s, SimpleStepAssertion(1, 1)))
       val steps = Seq(
         step1, step2, step3
       )
@@ -55,7 +55,7 @@ class EngineSpec extends WordSpec with Matchers {
       val steps = Seq(
         EventuallyStart(eventuallyConf),
         ExecutableStep("random value step", s ⇒ {
-          (scala.util.Random.nextInt(10), s, 5)
+          (s, SimpleStepAssertion(scala.util.Random.nextInt(10), 5))
         }),
         EventuallyStop(eventuallyConf)
       )
@@ -69,7 +69,7 @@ class EngineSpec extends WordSpec with Matchers {
       val steps = Seq(
         EventuallyStart(eventuallyConf),
         ExecutableStep("random value step", s ⇒ {
-          (scala.util.Random.nextInt(10), s, 11)
+          (s, SimpleStepAssertion(scala.util.Random.nextInt(10), 11))
         }),
         EventuallyStop(eventuallyConf)
       )
@@ -81,7 +81,7 @@ class EngineSpec extends WordSpec with Matchers {
       val session = Session.newSession
       val steps = Seq(
         ExecutableStep("non equals step", s ⇒ {
-          (1, s, 2)
+          (s, SimpleStepAssertion(1, 2))
         }, negate = true)
       )
       val s = Scenario("scenario with unresolved", steps)

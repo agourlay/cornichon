@@ -12,7 +12,7 @@ class Engine extends CornichonLogger {
 
   def runStep[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try { step.action(session) } match {
-      case Success((res, newSession, expected)) ⇒ runStepPredicate(step, res, expected, newSession)
+      case Success((newSession, stepAssertion)) ⇒ runStepPredicate(step, newSession, stepAssertion)
       case Failure(e) ⇒
         e match {
           case ce: CornichonError ⇒ left(ce)
@@ -20,15 +20,21 @@ class Engine extends CornichonLogger {
         }
     }
 
-  def runStepPredicate[A](step: ExecutableStep[A], actual: A, expected: A, newSession: Session): Xor[CornichonError, Session] = {
-    val succeedAsExpected = actual == expected && !step.negate
-    val failedAsExpected = actual != expected && step.negate
+  def runStepPredicate[A](step: ExecutableStep[A], newSession: Session, stepAssertion: StepAssertion[A]): Xor[CornichonError, Session] = {
+    val succeedAsExpected = stepAssertion.isSuccess && !step.negate
+    val failedAsExpected = !stepAssertion.isSuccess && step.negate
 
     if (succeedAsExpected || failedAsExpected) {
       if (step.show) logger.info(GREEN + s"   ${step.title}" + RESET)
       right(newSession)
     } else
-      left(StepAssertionError(expected, actual, step.negate))
+      stepAssertion match {
+        case SimpleStepAssertion(expected, actual) ⇒
+          left(StepAssertionError(expected, actual, step.negate))
+        case DetailedStepAssertion(expected, actual, details) ⇒
+          left(DetailedStepAssertionError(actual, details))
+      }
+
   }
 
   def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {

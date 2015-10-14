@@ -29,7 +29,7 @@ trait Dsl extends CornichonLogger {
         title = s"$name $title",
         action = s ⇒ {
         val (res, newSession) = action(s)
-        (res, newSession, expected)
+        (newSession, SimpleStepAssertion(expected, res))
       }
       )
   }
@@ -93,7 +93,11 @@ trait Dsl extends CornichonLogger {
   def transform_assert_session[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     ExecutableStep(
       title,
-      s ⇒ (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(s, v)), s, expected(s))
+      s ⇒
+        (s, SimpleStepAssertion(
+          expected = expected(s),
+          result = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(s, v))
+        ))
     )
 
   def save_from_session(key: String, extractor: String ⇒ String, target: String) =
@@ -126,7 +130,7 @@ trait Dsl extends CornichonLogger {
     ExecutableStep(
       title = title.getOrElse(s"session '$key' equals '$value'"),
       action = s ⇒ {
-        (s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(identity), s, value)
+        (s, SimpleStepAssertion(value, s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(identity)))
       }
     )
 
