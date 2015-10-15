@@ -508,21 +508,15 @@ override lazy val requestTimeout = 100 millis
 
 ## Execution model
 
-By default everything is executed sequentially:
+By default the scenarios are executed in parallel.
 
-- for each ```Feature```
-- for each ```Scenario```
-- execute each ```Step```
-
-This makes it really easy to follow what is going on.
-
-In order to run the features in parallel it is necessary to enable a flag in your SBT build file
+To disable this behaviour it is necessary to disable a flag in your SBT build file.
 
 ```scala
-parallelExecution in Test := true
+parallelExecution in Test := false
 ```
 
-or through the command line ```sbt test parallelExecution in Test := true```
+or through the command line ```sbt test parallelExecution in Test := false```
 
 ## ScalaTest integration
 
