@@ -24,14 +24,10 @@ trait Dsl extends CornichonLogger {
       s
     }
 
-    def apply[A](title: String)(action: Session ⇒ (A, Session))(expected: A): ExecutableStep[A] =
-      ExecutableStep[A](
-        title = s"$name $title",
-        action = s ⇒ {
-        val (res, newSession) = action(s)
-        (newSession, SimpleStepAssertion(expected, res))
-      }
-      )
+    def debug(s: DebugStep)(implicit sb: ScenarioBuilder): DebugStep = {
+      sb.addStep(s)
+      s
+    }
   }
   case object When extends Starters { val name = "When" }
   case object Given extends Starters { val name = "Given" }
@@ -134,24 +130,13 @@ trait Dsl extends CornichonLogger {
       }
     )
 
-  def show_session =
-    effectStep(
-      s"show session",
-      s ⇒ {
-        log(s"Session content : \n${s.prettyPrint}")
-        s
-      }
-    )
+  def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
 
   def show_session(key: String) =
-    effectStep(
-      s"show session key '$key'",
-      s ⇒ {
-        val value = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ v)
-        log(s"Session content for key '$key' is '$value'")
-        s
-      }
-    )
+    DebugStep { s ⇒
+      val value = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ v)
+      s"Session content for key '$key' is '$value'"
+    }
 
   def log(msg: String): Unit = {
     msg.split('\n').foreach { m ⇒

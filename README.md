@@ -229,13 +229,13 @@ session_contains("favorite-superhero" → "Batman")
 - showing sessing content for debugging purpose
 
 ```scala
- show_session
+ And debug show_session
 
- show_last_status
+ And debug show_last_status
 
- show_last_response_body
+ And debug show_last_response_body
 
- show_last_response_headers
+ And debug show_last_response_headers
 ```
 
 - repeating a series of ```steps``` (can be nested)
@@ -510,7 +510,7 @@ override lazy val requestTimeout = 100 millis
 
 By default the scenarios are executed in parallel.
 
-To disable this behaviour it is necessary to disable a flag in your SBT build file.
+To disable this behaviour it is necessary to manually set a flag in your SBT build file.
 
 ```scala
 parallelExecution in Test := false
@@ -529,6 +529,10 @@ As Cornichon uses Scalatest it is possible to use all the nice CLI from SBT + Sc
 The full name of a scenario is ```feature-name should scenario-name```.
 
 See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest doc](http://www.scalatest.org/user_guide/using_the_runner) for more information.
+
+The ```steps``` execution logs will only be shown if:
+- the scenario fails
+- the scenario succeed and contains debug step such as ```And debug show_last_status```
 
 
 ## Implicit builder

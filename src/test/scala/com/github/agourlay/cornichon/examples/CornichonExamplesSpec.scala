@@ -14,7 +14,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   def feature =
     Feature("Cornichon feature Example")(
 
-      Scenario("CRUD Feature demo") { implicit b ⇒
+      Scenario("demonstrate CRUD features") { implicit b ⇒
 
         When I GET("/superheroes/Batman")
 
@@ -188,7 +188,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert status_is(404)
       },
 
-      Scenario("Collection Feature demo") { implicit b ⇒
+      Scenario("demonstrate collection features") { implicit b ⇒
 
         When I GET("/superheroes")
 
@@ -303,7 +303,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
       },
 
-      Scenario("Session feature demo") { implicit b ⇒
+      Scenario("demonstrate session features") { implicit b ⇒
 
         When I GET("/superheroes/Batman")
 
@@ -359,13 +359,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert headers_contain("Server" → "akka-http/2.3.12")
 
         // To make debugging easier, here are some debug steps printing into console
-        And I show_session
-        And I show_last_status
-        And I show_last_response_body
-        And I show_last_response_headers
+        And debug show_session
+        And debug show_last_status
+        And debug show_last_response_body
+        And debug show_last_response_headers
       },
 
-      Scenario("Advanced feature demo") { implicit b ⇒
+      Scenario("demonstrate advanced features") { implicit b ⇒
 
         When I GET("/superheroes/Batman")
 

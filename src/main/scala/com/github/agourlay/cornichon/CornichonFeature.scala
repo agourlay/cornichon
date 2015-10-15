@@ -11,7 +11,6 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   private val engine = new Engine()
 
   def runScenario(s: Scenario): ScenarioReport = {
-    logger.info(s"Scenario : ${s.name}")
     val completeScenario = s.copy(steps = beforeEachScenario ++ s.steps ++ afterEachScenario)
     engine.runScenario(completeScenario)(Session.newSession)
   }

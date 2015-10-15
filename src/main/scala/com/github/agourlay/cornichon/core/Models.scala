@@ -23,7 +23,7 @@ object StepAssertion {
   def neverOK = SimpleStepAssertion(true, false)
 }
 
-trait Step
+sealed trait Step
 
 case class ExecutableStep[A](
   title: String,
@@ -43,14 +43,20 @@ object ExecutableStep {
 }
 
 case class EventuallyConf(maxTime: Duration, interval: Duration) {
-  def consume(duration: Duration) = copy(maxTime = maxTime - duration)
+  def consume(duration: Duration) = {
+    val rest = maxTime - duration
+    val newMax = if (rest.lt(Duration.Zero)) Duration.Zero else rest
+    copy(maxTime = maxTime - duration)
+  }
 }
 
 object EventuallyConf {
   def empty = EventuallyConf(Duration.Zero, Duration.Zero)
 }
 
-trait EventuallyStep extends Step
+case class DebugStep(message: Session ⇒ String) extends Step
+
+sealed trait EventuallyStep extends Step
 
 case class EventuallyStart(conf: EventuallyConf) extends EventuallyStep
 
