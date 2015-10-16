@@ -23,7 +23,7 @@ fork in Test := true
 
 scalariformSettings
 
-ScalariformKeys.preferences := ScalariformKeys.preferences.value
+SbtScalariform.autoImport.preferences := SbtScalariform.autoImport.preferences.value
   .setPreference(AlignSingleLineCaseStatements, true)
   .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
   .setPreference(DoubleIndentClassDeclaration, true)
