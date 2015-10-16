@@ -532,7 +532,7 @@ See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest do
 
 The ```steps``` execution logs will only be shown if:
 - the scenario fails
-- the scenario succeed and contains debug step such as ```And debug show_last_status```
+- the scenario succeeded and contains at least one debug step such as ```And debug show_last_status```
 
 
 ## Implicit builder
