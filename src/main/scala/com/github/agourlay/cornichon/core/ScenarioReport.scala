@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.core
 
+import scala.language.existentials
+
 sealed trait StepsReport
 
 case class SuccessRunSteps(logs: Seq[LogInstruction]) extends StepsReport

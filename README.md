@@ -465,14 +465,22 @@ To implement a ```CornichonFeature``` it is only required to implement the ```fe
 
 Hooks are available to set up and tear down things as usual but this feature is not integrated into the DSL.
 
-Four hooks are available to be overridden in ```CornichonFeature``` with self-explanatory names:
+Four functions are available in ```CornichonFeature``` with self-explanatory names:
+
+Taking ```Unit``` expression
 
 ```scala
-def beforeFeature(): Unit
-def afterFeature(): Unit
+beforeFeature { // do side effect here }
 
-val beforeEachScenario: Seq[ExecutableStep[_]]
-val afterEachScenario: Seq[ExecutableStep[_]]
+afterFeature{  // do side effect here }
+```
+
+Taking ```Seq[Step]``` expression.
+
+```scala
+beforeEachScenario{ // feed Seq[Step] }
+
+afterEachScenario{ // feed Seq[Step] }
 ```
 
 ### Base URL

@@ -433,14 +433,20 @@ class CornichonExamplesSpec extends CornichonFeature {
   var server: ServerBinding = _
 
   // Starts up test server
-  override def beforeFeature() =
+  beforeFeature {
     server = Await.result(new RestAPI().start(port), 5 second)
+  }
 
   // Stops test server
-  override def afterFeature() = Await.result(server.unbind(), 5 second)
+  afterFeature {
+    Await.result(server.unbind(), 5 second)
+  }
 
   // List of Steps to be executed after each scenario
-  override val afterEachScenario = Seq(
-    GET("/reset")
-  )
+  afterEachScenario {
+    Seq(
+      GET("/reset"),
+      show_last_response_body
+    )
+  }
 }
