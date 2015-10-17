@@ -31,13 +31,13 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
     beforeFeature = beforeFeature :+ (() ⇒ before)
 
   def afterFeature(after: ⇒ Unit): Unit =
-    afterFeature = afterFeature :+ (() ⇒ after)
+    afterFeature = (() ⇒ after) +: afterFeature
 
   def beforeEachScenario(steps: Seq[Step]): Unit =
     beforeEachScenario = beforeEachScenario ++ steps
 
   def afterEachScenario(steps: Seq[Step]): Unit =
-    afterEachScenario = afterEachScenario ++ steps
+    afterEachScenario =  steps ++ afterEachScenario
 
   lazy val http = new HttpService(baseUrl, requestTimeout)
 
