@@ -267,6 +267,18 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
+- execute a series of steps 'n' times concurrently
+
+```scala
+Concurrently(factor = 3) {
+
+  When I GET("http://superhero.io/batman")
+
+  Then assert status_is(200)
+}
+
+```
+
 - WithHeaders bloc automatically sets headers for several steps useful for authenticated scenario.
 
 ```scala

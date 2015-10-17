@@ -393,6 +393,15 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
         }
 
+        And debug show_last_status
+
+        // Execute steps in parallel 'factor times'
+        Concurrently(factor = 3) {
+          When I GET("/superheroes/Batman")
+
+          Then assert status_is(200)
+        }
+
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE("/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
 

@@ -68,3 +68,7 @@ case class DataTableError(error: Throwable) extends CornichonError {
 }
 
 case class DataTableParseError(msg: String) extends CornichonError
+
+case object MalformedConcurrentBloc extends CornichonError {
+  val msg = "malformed concurrent bloc without closing 'ConcurrentlyStop'"
+}

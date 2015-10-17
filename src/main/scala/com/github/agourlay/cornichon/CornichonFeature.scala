@@ -37,7 +37,7 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
     beforeEachScenario = beforeEachScenario ++ steps
 
   def afterEachScenario(steps: Seq[Step]): Unit =
-    afterEachScenario =  steps ++ afterEachScenario
+    afterEachScenario = steps ++ afterEachScenario
 
   lazy val http = new HttpService(baseUrl, requestTimeout)
 

@@ -23,7 +23,9 @@ object StepAssertion {
   def neverOK = SimpleStepAssertion(true, false)
 }
 
-sealed trait Step
+sealed trait Step {
+  val title: String
+}
 
 case class ExecutableStep[A](
   title: String,
@@ -42,6 +44,20 @@ object ExecutableStep {
     )
 }
 
+case class DebugStep(message: Session ⇒ String) extends Step {
+  val title = s"Debug step with message `$message`"
+}
+
+sealed trait EventuallyStep extends Step
+
+case class EventuallyStart(conf: EventuallyConf) extends EventuallyStep {
+  val title = s"Eventually bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
+}
+
+case class EventuallyStop(conf: EventuallyConf) extends EventuallyStep {
+  val title = s"Eventually closing bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
+}
+
 case class EventuallyConf(maxTime: Duration, interval: Duration) {
   def consume(duration: Duration) = {
     val rest = maxTime - duration
@@ -54,11 +70,12 @@ object EventuallyConf {
   def empty = EventuallyConf(Duration.Zero, Duration.Zero)
 }
 
-case class DebugStep(message: Session ⇒ String) extends Step
+sealed trait ConcurrentStep extends Step
 
-sealed trait EventuallyStep extends Step
+case class ConcurrentStart(factor: Int) extends ConcurrentStep {
+  val title = s"Concurrently bloc with factor `$factor`"
+}
 
-case class EventuallyStart(conf: EventuallyConf) extends EventuallyStep
-
-case class EventuallyStop(conf: EventuallyConf) extends EventuallyStep
-
+case class ConcurrentStop(factor: Int) extends ConcurrentStep {
+  val title = s"Concurrently closing bloc with factor `$factor`"
+}

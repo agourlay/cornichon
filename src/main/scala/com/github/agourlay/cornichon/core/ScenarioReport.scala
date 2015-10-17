@@ -4,7 +4,7 @@ import scala.language.existentials
 
 sealed trait StepsReport
 
-case class SuccessRunSteps(logs: Seq[LogInstruction]) extends StepsReport
+case class SuccessRunSteps(session: Session, logs: Seq[LogInstruction]) extends StepsReport
 case class FailedRunSteps(failedStep: FailedStep, notExecutedStep: Seq[String], logs: Seq[LogInstruction]) extends StepsReport
 
 sealed trait ScenarioReport {
@@ -40,7 +40,7 @@ object FailedScenarioReport {
   }
 }
 
-case class FailedStep(step: ExecutableStep[_], error: CornichonError)
+case class FailedStep(step: Step, error: CornichonError)
 
 sealed trait LogInstruction {
   val message: String

@@ -59,11 +59,17 @@ trait Dsl extends CornichonLogger {
     Seq.fill(times)(steps)
   }
 
-  def Eventually[A](maxDuration: Duration, interval: Duration)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
+  def Eventually(maxDuration: Duration, interval: Duration)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
     val conf = EventuallyConf(maxDuration, interval)
     b.addStep(EventuallyStart(conf))
     steps
     b.addStep(EventuallyStop(conf))
+  }
+
+  def Concurrently(factor: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
+    b.addStep(ConcurrentStart(factor))
+    steps
+    b.addStep(ConcurrentStop(factor))
   }
 
   def resolveInput[A](input: A): Session ⇒ A = s ⇒ input match {
