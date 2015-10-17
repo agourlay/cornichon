@@ -302,7 +302,7 @@ Then assert body_is("""
 
 Those descriptions might be already outdated, in case of doubt always refer to these [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
-## Steps
+## Custom steps
 
 A ```step``` is an abstraction describing an action which is a function turning a ```Session``` into a result, a new ```Session``` and an expected result value.
 
@@ -311,23 +311,34 @@ In terms of Scala data type it is
 ```scala
 case class ExecutableStep[A](
   title: String,
-  action: Session ⇒ (A, Session, A)
+  action: Session ⇒ (Session, StepAssertion[A])
 )
 ```
 
-A ```step``` can access and return a modified ```session``` object. A ```session``` is a Map-like object used to propagate state throughout a ```scenario```.
+A ```step``` action can access and return a modified ```session``` object and a ```StepAssertion```.
+ 
+A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
 
-
-So the simplest executable statement in the DSL is
+A ```StepAssertion``` is simply a container for 2 values, the expected value and the actual result. The test engine is responsible to test the equality of the ```StepAssertion``` values.
+ 
+The engine will try its best to provide a meaningful error message, if a specific error message is required tt is also possible to provide a custom error message using a ```DetailedStepAssertion```.
 
 ```scala
-When I ExecutableStep("do nothing", s => (true, s, true))
+ DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ String)
+```
+
+The engine will feed the actual reasult to the ```details``` function.
+
+In practice the simplest executable statement in the DSL is
+
+```scala
+When I ExecutableStep("do nothing", s => (s, StepAssertion(true, true)))
 ```
 
 Let's try to assert the result of a computation
 
 ```scala
-When I ExecutableStep("calculate", s => (2 + 2, s, 4))
+When I ExecutableStep("calculate", s => (s, StepAssertion(2 + 2, 4)))
 ```
 
 The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
@@ -338,18 +349,18 @@ When I ExecutableStep(
   title = "run crazy computation",
   action = s => {
     val res = crazy-computation()
-    (res.isSuccess, s.add("result", res.infos), true)
+    (s.add("result", res.infos),StepAssertion(res.isSuccess, true))
   })
 
 Then assert ExecutableStep(
   title = "check computation infos",
   action = s => {
     val resInfos = s.get("result)
-    (resInfos, s, "Everything is fine")
+    (s, StepAssertion(resInfos, "Everything is fine"))
   })
 ```
 
-This is extremely low level and you should never write your test like that.
+This is extremely low level and you not should write your steps like that directly inside the DSL.
 
 Fortunately a bunch of built-in steps and primitive building blocs are already available.
 
