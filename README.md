@@ -367,7 +367,7 @@ When I ExecutableStep(
 Then assert ExecutableStep(
   title = "check computation infos",
   action = s => {
-    val resInfos = s.get("result)
+    val resInfos = s.get("result")
     (s, StepAssertion(resInfos, "Everything is fine"))
   })
 ```

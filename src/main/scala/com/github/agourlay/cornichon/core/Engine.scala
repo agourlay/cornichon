@@ -33,21 +33,22 @@ class Engine {
         runSteps(steps.tail, session, EventuallyConf.empty, None, updatedLogs)
 
       case ConcurrentStop(factor) ⇒
-        val updatedLogs = logs :+ DefaultLogInstruction(s"   Concurrently bloc with factor `$factor` succeeded")
-        runSteps(steps.tail, session, EventuallyConf.empty, None, updatedLogs)
+        runSteps(steps.tail, session, EventuallyConf.empty, None, logs)
 
       case c @ ConcurrentStart(factor, maxTime) ⇒
         val updatedLogs = logs :+ DefaultLogInstruction(s"   ${c.title}")
-        val subSteps = steps.tail.takeWhile(s ⇒ !s.isInstanceOf[ConcurrentStop])
-        if (subSteps.isEmpty) {
+        val concurrentSteps = findEnclosedSteps(c, steps.tail)
+        if (concurrentSteps.isEmpty) {
           val updatedLogs = logs ++ logStepErrorResult(s"   ${c.title}", MalformedConcurrentBloc, RED) ++ logNonExecutedStep(steps.tail)
           buildFailedRunSteps(steps, c, MalformedConcurrentBloc, updatedLogs)
         } else {
+          val now = System.nanoTime
           val results = Await.result(
-            Future.traverse(List.fill(factor)(subSteps)) { steps ⇒
+            Future.traverse(List.fill(factor)(concurrentSteps)) { steps ⇒
               Future { runSteps(steps, session, eventuallyConf, None, updatedLogs) }
             }, maxTime
           )
+          val executionTime = Duration.fromNanos(System.nanoTime - now)
           val (successStepsRun, failedStepsRun) =
             (
               results.collect { case s @ SuccessRunSteps(_, _) ⇒ s },
@@ -55,9 +56,9 @@ class Engine {
             )
 
           if (failedStepsRun.isEmpty) {
-            val logs = successStepsRun.head.logs
             val updatedSession = successStepsRun.head.session
-            runSteps(steps.tail, updatedSession, eventuallyConf, None, logs)
+            val updatedLogs = successStepsRun.head.logs :+ DefaultLogInstruction(s"   Concurrently bloc with factor '$factor' succeeded in ${executionTime.toMillis} millis.")
+            runSteps(steps.tail.drop(concurrentSteps.size), updatedSession, eventuallyConf, None, updatedLogs)
           } else
             failedStepsRun.head.copy(logs = failedStepsRun.head.logs ++ logNonExecutedStep(steps.tail))
         }
@@ -108,6 +109,16 @@ class Engine {
         case DetailedStepAssertion(expected, actual, details) ⇒
           left(DetailedStepAssertionError(actual, details))
       }
+  }
+
+  // TODO take care of nested blocs and do not just pick the first closing element
+  private def findEnclosedSteps(openingStep: Step, steps: Seq[Step]): Seq[Step] = {
+    def predicate(openingStep: Step): Step ⇒ Boolean = s ⇒ openingStep match {
+      case ConcurrentStart(_, _) ⇒ !s.isInstanceOf[ConcurrentStop]
+      case EventuallyStart(_)    ⇒ !s.isInstanceOf[EventuallyStop] // Not used yet
+      case _                     ⇒ false
+    }
+    steps.takeWhile(s ⇒ predicate(openingStep)(s))
   }
 
   private def logStepErrorResult(stepTitle: String, error: CornichonError, ansiColor: String): Seq[LogInstruction] =

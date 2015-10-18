@@ -73,7 +73,7 @@ object EventuallyConf {
 sealed trait ConcurrentStep extends Step
 
 case class ConcurrentStart(factor: Int, maxTime: Duration) extends ConcurrentStep {
-  val title = s"Concurrently bloc with factor '$factor'"
+  val title = s"Concurrently bloc with factor '$factor' and maxTime '$maxTime'"
 }
 
 case class ConcurrentStop(factor: Int) extends ConcurrentStep {
