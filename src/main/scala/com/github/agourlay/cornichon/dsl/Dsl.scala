@@ -66,8 +66,8 @@ trait Dsl extends CornichonLogger {
     b.addStep(EventuallyStop(conf))
   }
 
-  def Concurrently(factor: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
-    b.addStep(ConcurrentStart(factor))
+  def Concurrently(factor: Int, maxTime: Duration)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
+    b.addStep(ConcurrentStart(factor, maxTime))
     steps
     b.addStep(ConcurrentStop(factor))
   }

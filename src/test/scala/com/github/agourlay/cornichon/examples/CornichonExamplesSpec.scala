@@ -396,14 +396,15 @@ class CornichonExamplesSpec extends CornichonFeature {
         And debug show_last_status
 
         // Execute steps in parallel 'factor times'
-        Concurrently(factor = 3) {
+        Concurrently(factor = 3, maxTime = 20 seconds) {
+
           When I GET("/superheroes/Batman")
 
           Then assert status_is(200)
         }
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I GET_SSE("/stream/superheroes", takeWithin = 1.seconds, params = "justName" → "true")
+        When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
 
         Then assert response_array_size_is(5)
 
@@ -417,7 +418,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         """)
 
         // Repeat series of Steps until it succeed
-        Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
+        Eventually(maxDuration = 15 seconds, interval = 200 milliseconds) {
 
           When I GET("/superheroes/random")
 

@@ -6,7 +6,6 @@ import cats.data.Xor.{ left, right }
 import scala.Console._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
 import scala.concurrent.duration.Duration
 import scala.util._
 
@@ -20,75 +19,72 @@ class Engine {
     }
   }
 
-  private def runSteps(steps: Seq[Step], session: Session, eventuallyConf: EventuallyConf, snapshot: Option[RollbackSnapshot], logs: Seq[LogInstruction]): StepsReport = {
-    if (steps.isEmpty) SuccessRunSteps(session, logs)
-    else
-      steps.head match {
-        case DebugStep(message) ⇒
-          runSteps(steps.tail, session, eventuallyConf, snapshot, logs :+ ColoredLogInstruction(message(session), CYAN))
+  private def runSteps(steps: Seq[Step], session: Session, eventuallyConf: EventuallyConf, snapshot: Option[RollbackSnapshot], logs: Seq[LogInstruction]): StepsReport =
+    steps.headOption.fold[StepsReport](SuccessRunSteps(session, logs)) {
+      case DebugStep(message) ⇒
+        runSteps(steps.tail, session, eventuallyConf, snapshot, logs :+ ColoredLogInstruction(message(session), CYAN))
 
-        case e @ EventuallyStart(conf) ⇒
-          val updatedLogs = logs :+ DefaultLogInstruction(s"   ${e.title}")
-          runSteps(steps.tail, session, conf, Some(RollbackSnapshot(steps.tail, session)), updatedLogs)
+      case e @ EventuallyStart(conf) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(s"   ${e.title}")
+        runSteps(steps.tail, session, conf, Some(RollbackSnapshot(steps.tail, session)), updatedLogs)
 
-        case EventuallyStop(conf) ⇒
-          val updatedLogs = logs :+ DefaultLogInstruction(s"   Eventually bloc succeeded in ${conf.maxTime.toSeconds - eventuallyConf.maxTime.toSeconds} sec.")
-          runSteps(steps.tail, session, EventuallyConf.empty, None, updatedLogs)
+      case EventuallyStop(conf) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(s"   Eventually bloc succeeded in ${conf.maxTime.toSeconds - eventuallyConf.maxTime.toSeconds} sec.")
+        runSteps(steps.tail, session, EventuallyConf.empty, None, updatedLogs)
 
-        case ConcurrentStop(factor) ⇒
-          val updatedLogs = logs :+ DefaultLogInstruction(s"   Concurrently bloc with factor `$factor` succeeded")
-          runSteps(steps.tail, session, EventuallyConf.empty, None, updatedLogs)
+      case ConcurrentStop(factor) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(s"   Concurrently bloc with factor `$factor` succeeded")
+        runSteps(steps.tail, session, EventuallyConf.empty, None, updatedLogs)
 
-        case c @ ConcurrentStart(factor) ⇒
-          val updatedLogs = logs :+ DefaultLogInstruction(s"   ${c.title}")
-          val subSteps = steps.tail.takeWhile(s ⇒ !s.isInstanceOf[ConcurrentStop])
-          if (subSteps.isEmpty) {
-            val updatedLogs = logs ++ logStepErrorResult(s"   ${c.title}", MalformedConcurrentBloc, RED) ++ logNonExecutedStep(steps.tail)
-            buildFailedRunSteps(steps, c, MalformedConcurrentBloc, updatedLogs)
-          } else {
-            val results = Await.result(
-              Future.traverse(List.fill(factor)(subSteps)) { steps ⇒
-                Future { runSteps(steps, session, eventuallyConf, None, updatedLogs) }
-              }, 60 seconds
+      case c @ ConcurrentStart(factor, maxTime) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(s"   ${c.title}")
+        val subSteps = steps.tail.takeWhile(s ⇒ !s.isInstanceOf[ConcurrentStop])
+        if (subSteps.isEmpty) {
+          val updatedLogs = logs ++ logStepErrorResult(s"   ${c.title}", MalformedConcurrentBloc, RED) ++ logNonExecutedStep(steps.tail)
+          buildFailedRunSteps(steps, c, MalformedConcurrentBloc, updatedLogs)
+        } else {
+          val results = Await.result(
+            Future.traverse(List.fill(factor)(subSteps)) { steps ⇒
+              Future { runSteps(steps, session, eventuallyConf, None, updatedLogs) }
+            }, maxTime
+          )
+          val (successStepsRun, failedStepsRun) =
+            (
+              results.collect { case s @ SuccessRunSteps(_, _) ⇒ s },
+              results.collect { case f @ FailedRunSteps(_, _, _) ⇒ f }
             )
-            val (successStepsRun, failedStepsRun) = {
-              (
-                results.collect { case s @ SuccessRunSteps(_, _) ⇒ s },
-                results.collect { case f @ FailedRunSteps(_, _, _) ⇒ f }
-              )
+
+          if (failedStepsRun.isEmpty) {
+            val logs = successStepsRun.head.logs
+            val updatedSession = successStepsRun.head.session
+            runSteps(steps.tail, updatedSession, eventuallyConf, None, logs)
+          } else
+            failedStepsRun.head.copy(logs = failedStepsRun.head.logs ++ logNonExecutedStep(steps.tail))
+        }
+
+      case currentStep: ExecutableStep[_] ⇒
+        val now = System.nanoTime
+        val stepResult = runStepAction(currentStep)(session)
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        stepResult match {
+          case Xor.Left(e) ⇒
+            val remainingTime = eventuallyConf.maxTime - executionTime
+            if (remainingTime.gt(Duration.Zero)) {
+              val updatedLogs = logs ++ logStepErrorResult(currentStep.title, e, CYAN)
+              Thread.sleep(eventuallyConf.interval.toMillis)
+              runSteps(snapshot.get.steps, snapshot.get.session, eventuallyConf.consume(executionTime + eventuallyConf.interval), snapshot, updatedLogs)
+            } else {
+              val updatedLogs = logs ++ logStepErrorResult(currentStep.title, e, RED) ++ logNonExecutedStep(steps.tail)
+              buildFailedRunSteps(steps, currentStep, e, updatedLogs)
             }
-            if (failedStepsRun.isEmpty) {
-              val logs = successStepsRun.head.logs
-              val updatedSession = successStepsRun.head.session
-              runSteps(steps.tail, updatedSession, eventuallyConf, None, logs)
-            } else
-              failedStepsRun.head.copy(logs = failedStepsRun.head.logs ++ logNonExecutedStep(steps.tail))
-          }
 
-        case currentStep: ExecutableStep[_] ⇒
-          val now = System.nanoTime
-          val stepResult = runStepAction(currentStep)(session)
-          val executionTime = Duration.fromNanos(System.nanoTime - now)
-          stepResult match {
-            case Xor.Left(e) ⇒
-              val remainingTime = eventuallyConf.maxTime - executionTime
-              if (remainingTime.gt(Duration.Zero)) {
-                val updatedLogs = logs ++ logStepErrorResult(currentStep.title, e, CYAN)
-                Thread.sleep(eventuallyConf.interval.toMillis)
-                runSteps(snapshot.get.steps, snapshot.get.session, eventuallyConf.consume(executionTime + eventuallyConf.interval), snapshot, updatedLogs)
-              } else {
-                val updatedLogs = logs ++ logStepErrorResult(currentStep.title, e, RED) ++ logNonExecutedStep(steps.tail)
-                buildFailedRunSteps(steps, currentStep, e, updatedLogs)
-              }
-
-            case Xor.Right(currentSession) ⇒
-              val updatedLogs = if (currentStep.show)
-                logs :+ ColoredLogInstruction(s"   ${currentStep.title}", GREEN)
-              else logs
-              runSteps(steps.tail, currentSession, eventuallyConf.consume(executionTime), snapshot, updatedLogs)
-          }
-      }
-  }
+          case Xor.Right(currentSession) ⇒
+            val updatedLogs = if (currentStep.show)
+              logs :+ ColoredLogInstruction(s"   ${currentStep.title}", GREEN)
+            else logs
+            runSteps(steps.tail, currentSession, eventuallyConf.consume(executionTime), snapshot, updatedLogs)
+        }
+    }
 
   private def runStepAction[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try { step.action(session) } match {

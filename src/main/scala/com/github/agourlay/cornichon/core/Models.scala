@@ -61,8 +61,8 @@ case class EventuallyStop(conf: EventuallyConf) extends EventuallyStep {
 case class EventuallyConf(maxTime: Duration, interval: Duration) {
   def consume(duration: Duration) = {
     val rest = maxTime - duration
-    val newMax = if (rest.lt(Duration.Zero)) Duration.Zero else rest
-    copy(maxTime = maxTime - duration)
+    val newMax = if (rest.lteq(Duration.Zero)) Duration.Zero else rest
+    copy(maxTime = newMax)
   }
 }
 
@@ -72,10 +72,10 @@ object EventuallyConf {
 
 sealed trait ConcurrentStep extends Step
 
-case class ConcurrentStart(factor: Int) extends ConcurrentStep {
-  val title = s"Concurrently bloc with factor `$factor`"
+case class ConcurrentStart(factor: Int, maxTime: Duration) extends ConcurrentStep {
+  val title = s"Concurrently bloc with factor '$factor'"
 }
 
 case class ConcurrentStop(factor: Int) extends ConcurrentStep {
-  val title = s"Concurrently closing bloc with factor `$factor`"
+  val title = s"Concurrently closing bloc with factor '$factor'"
 }

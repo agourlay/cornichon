@@ -41,11 +41,11 @@ object Resolver {
   // TODO should accumulate errors
   def fillPlaceholders(input: String)(source: Map[String, String]): Xor[ResolverError, String] = {
     def loop(placeholders: List[String], acc: String): Xor[ResolverError, String] = {
-      if (placeholders.isEmpty) right(acc)
-      else {
-        val ph = placeholders.head
-        resolvePlaceholder(ph)(source).fold(e ⇒ left(e), resolvedValue ⇒
-          loop(placeholders.tail, acc.replace(ph, resolvedValue)))
+      placeholders.headOption.fold[Xor[ResolverError, String]](right(acc)) { ph ⇒
+        for {
+          resolvedValue ← resolvePlaceholder(ph)(source)
+          res ← loop(placeholders.tail, acc.replace(ph, resolvedValue))
+        } yield res
       }
     }
     loop(findPlaceholders(input), input)
@@ -57,14 +57,13 @@ object Resolver {
   // TODO accumulate errors
   def tuplesResolver(params: Seq[(String, String)], session: Session): Xor[ResolverError, Seq[(String, String)]] = {
     def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Xor[ResolverError, Seq[(String, String)]] = {
-      if (params.isEmpty) right(acc)
-      else {
-        val (name, value) = params.head
-        fillPlaceholders(name)(session.content).fold(left, resolvedName ⇒ {
-          fillPlaceholders(value)(session.content).fold(left, resolvedValue ⇒ {
-            loop(params.tail, session, acc :+ (resolvedName, resolvedValue))
-          })
-        })
+      params.headOption.fold[Xor[ResolverError, Seq[(String, String)]]](right(acc)) {
+        case (name, value) ⇒
+          for {
+            resolvedName ← fillPlaceholders(name)(session.content)
+            resolvedValue ← fillPlaceholders(value)(session.content)
+            res ← loop(params.tail, session, acc :+ (resolvedName, resolvedValue))
+          } yield res
       }
     }
     loop(params, session, Seq.empty[(String, String)])
