@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.core.ExecutableStep._
 import com.github.agourlay.cornichon.http.CornichonJson._
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
-import org.json4s.native.JsonMethods._
+import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
 import scala.util.{ Success, Try }

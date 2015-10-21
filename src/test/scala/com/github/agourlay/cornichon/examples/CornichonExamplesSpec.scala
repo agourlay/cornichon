@@ -312,7 +312,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
-            "city": "Gotham city",
+            "city": "Gotham city"
           }
           """, ignoring = "hasSuperpowers", "publisher"
         )

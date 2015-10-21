@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import org.json4s._
-import org.json4s.native.JsonMethods._
+import org.json4s.jackson.JsonMethods._
 
 trait CornichonError extends Exception {
   val msg: String

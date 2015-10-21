@@ -17,7 +17,7 @@ import com.github.agourlay.cornichon.core.CornichonLogger
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
-import org.json4s.native.JsonMethods._
+import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
 import scala.concurrent.duration.FiniteDuration

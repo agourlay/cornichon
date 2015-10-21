@@ -42,7 +42,7 @@ libraryDependencies ++= {
   Seq(
      "com.typesafe.akka" %% "akka-http-core-experimental"       % akkaHttpV
     ,"de.heikoseeberger" %% "akka-sse"                          % akkaSseV
-    ,"org.json4s"        %% "json4s-native"                     % json4sV
+    ,"org.json4s"        %% "json4s-jackson"                    % json4sV
     ,"io.spray"          %% "spray-json"                        % sprayJsonV
     ,"org.spire-math"    %% "cats-macros"                       % catsV
     ,"org.spire-math"    %% "cats-core"                         % catsV
