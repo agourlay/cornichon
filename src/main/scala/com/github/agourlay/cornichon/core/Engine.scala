@@ -63,25 +63,25 @@ class Engine {
             failedStepsRun.head.copy(logs = failedStepsRun.head.logs ++ logNonExecutedStep(steps.tail))
         }
 
-      case currentStep: ExecutableStep[_] ⇒
+      case execStep: ExecutableStep[_] ⇒
         val now = System.nanoTime
-        val stepResult = runStepAction(currentStep)(session)
+        val stepResult = runStepAction(execStep)(session)
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         stepResult match {
           case Xor.Left(e) ⇒
             val remainingTime = eventuallyConf.maxTime - executionTime
             if (remainingTime.gt(Duration.Zero)) {
-              val updatedLogs = logs ++ logStepErrorResult(currentStep.title, e, CYAN)
+              val updatedLogs = logs ++ logStepErrorResult(execStep.title, e, CYAN)
               Thread.sleep(eventuallyConf.interval.toMillis)
               runSteps(snapshot.get.steps, snapshot.get.session, eventuallyConf.consume(executionTime + eventuallyConf.interval), snapshot, updatedLogs)
             } else {
-              val updatedLogs = logs ++ logStepErrorResult(currentStep.title, e, RED) ++ logNonExecutedStep(steps.tail)
-              buildFailedRunSteps(steps, currentStep, e, updatedLogs)
+              val updatedLogs = logs ++ logStepErrorResult(execStep.title, e, RED) ++ logNonExecutedStep(steps.tail)
+              buildFailedRunSteps(steps, execStep, e, updatedLogs)
             }
 
           case Xor.Right(currentSession) ⇒
-            val updatedLogs = if (currentStep.show)
-              logs :+ ColoredLogInstruction(s"   ${currentStep.title}", GREEN)
+            val updatedLogs = if (execStep.show)
+              logs :+ ColoredLogInstruction(s"   ${execStep.title}", GREEN)
             else logs
             runSteps(steps.tail, currentSession, eventuallyConf.consume(executionTime), snapshot, updatedLogs)
         }

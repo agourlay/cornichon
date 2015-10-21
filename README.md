@@ -29,6 +29,7 @@ In the example below, we have one ```feature``` with one ```scenario``` with two
 
 ```scala
 class CornichonExamplesSpec extends CornichonFeature {
+
   def feature = Feature("Checking google")(
   
       Scenario("Google is up and running") { implicit b ⇒
@@ -433,9 +434,9 @@ Then assert body_is(
 
 It is also possible to inject random values inside placeholders using:
 
-- <random-uuid> for a random UUID
-- <random-positive-integer> for a random Integer between 0-100
-- <random-string> for a random String of length 5
+- ```<random-uuid>``` for a random UUID
+- ```<random-positive-integer>``` for a random Integer between 0-100
+- ```<random-string>``` for a random String of length 5
 
 ```scala
 POST("http://url.io/somethingWithAnId", payload = """
