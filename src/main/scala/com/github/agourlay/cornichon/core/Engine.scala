@@ -19,7 +19,7 @@ class Engine {
     }
   }
 
-  private def runSteps(steps: Seq[Step], session: Session, eventuallyConf: EventuallyConf, snapshot: Option[RollbackSnapshot], logs: Seq[LogInstruction]): StepsReport =
+  private[cornichon] def runSteps(steps: Seq[Step], session: Session, eventuallyConf: EventuallyConf, snapshot: Option[RollbackSnapshot], logs: Seq[LogInstruction]): StepsReport =
     steps.headOption.fold[StepsReport](SuccessRunSteps(session, logs)) {
       case DebugStep(message) ⇒
         runSteps(steps.tail, session, eventuallyConf, snapshot, logs :+ ColoredLogInstruction(message(session), CYAN))
@@ -87,9 +87,9 @@ class Engine {
         }
     }
 
-  private def runStepAction[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
+  private[cornichon] def runStepAction[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try { step.action(session) } match {
-      case Success((newSession, stepAssertion)) ⇒ runStepPredicate(step, newSession, stepAssertion)
+      case Success((newSession, stepAssertion)) ⇒ runStepPredicate(step.negate, newSession, stepAssertion)
       case Failure(e) ⇒
         e match {
           case ce: CornichonError ⇒ left(ce)
@@ -97,22 +97,22 @@ class Engine {
         }
     }
 
-  private def runStepPredicate[A](step: ExecutableStep[A], newSession: Session, stepAssertion: StepAssertion[A]): Xor[CornichonError, Session] = {
-    val succeedAsExpected = stepAssertion.isSuccess && !step.negate
-    val failedAsExpected = !stepAssertion.isSuccess && step.negate
+  private[cornichon] def runStepPredicate[A](negateStep: Boolean, newSession: Session, stepAssertion: StepAssertion[A]): Xor[CornichonError, Session] = {
+    val succeedAsExpected = stepAssertion.isSuccess && !negateStep
+    val failedAsExpected = !stepAssertion.isSuccess && negateStep
 
     if (succeedAsExpected || failedAsExpected) right(newSession)
     else
       stepAssertion match {
         case SimpleStepAssertion(expected, actual) ⇒
-          left(StepAssertionError(expected, actual, step.negate))
+          left(StepAssertionError(expected, actual, negateStep))
         case DetailedStepAssertion(expected, actual, details) ⇒
           left(DetailedStepAssertionError(actual, details))
       }
   }
 
   // TODO take care of nested blocs and do not just pick the first closing element
-  private def findEnclosedSteps(openingStep: Step, steps: Seq[Step]): Seq[Step] = {
+  private[cornichon] def findEnclosedSteps(openingStep: Step, steps: Seq[Step]): Seq[Step] = {
     def predicate(openingStep: Step): Step ⇒ Boolean = s ⇒ openingStep match {
       case ConcurrentStart(_, _) ⇒ !s.isInstanceOf[ConcurrentStop]
       case EventuallyStart(_)    ⇒ !s.isInstanceOf[EventuallyStop] // Not used yet
@@ -121,22 +121,22 @@ class Engine {
     steps.takeWhile(s ⇒ predicate(openingStep)(s))
   }
 
-  private def logStepErrorResult(stepTitle: String, error: CornichonError, ansiColor: String): Seq[LogInstruction] =
+  private[cornichon] def logStepErrorResult(stepTitle: String, error: CornichonError, ansiColor: String): Seq[LogInstruction] =
     Seq(ColoredLogInstruction(s"   $stepTitle *** FAILED ***", ansiColor)) ++ error.msg.split('\n').map { m ⇒
       ColoredLogInstruction(s"   $m", ansiColor)
     }
 
-  private def logNonExecutedStep(steps: Seq[Step]): Seq[LogInstruction] =
+  private[cornichon] def logNonExecutedStep(steps: Seq[Step]): Seq[LogInstruction] =
     steps.collect { case e: ExecutableStep[_] ⇒ e }
       .filter(_.show).map { step ⇒
         ColoredLogInstruction(s"   ${step.title}", CYAN)
       }
 
-  private def buildFailedRunSteps(steps: Seq[Step], currentStep: Step, e: CornichonError, logs: Seq[LogInstruction]): FailedRunSteps = {
+  private[cornichon] def buildFailedRunSteps(steps: Seq[Step], currentStep: Step, e: CornichonError, logs: Seq[LogInstruction]): FailedRunSteps = {
     val failedStep = FailedStep(currentStep, e)
     val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _, _) ⇒ title }
     FailedRunSteps(failedStep, notExecutedStep, logs)
   }
 
-  private case class RollbackSnapshot(steps: Seq[Step], session: Session)
+  private[cornichon] case class RollbackSnapshot(steps: Seq[Step], session: Session)
 }
