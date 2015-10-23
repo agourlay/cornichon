@@ -119,14 +119,39 @@ class Engine {
       }
   }
 
-  // TODO take care of nested blocs and do not just pick the first closing element
   private[cornichon] def findEnclosedSteps(openingStep: Step, steps: Seq[Step]): Seq[Step] = {
-    def predicate(openingStep: Step): Step ⇒ Boolean = s ⇒ openingStep match {
-      case ConcurrentStart(_, _) ⇒ !s.isInstanceOf[ConcurrentStop]
-      case EventuallyStart(_)    ⇒ !s.isInstanceOf[EventuallyStop]
-      case _                     ⇒ false
+    def findLastEnclosedIndex(openingStep: Step, steps: Seq[Step], index: Int, depth: Int): Int = {
+      steps.headOption.fold(index) { head ⇒
+        openingStep match {
+          case ConcurrentStart(_, _) ⇒
+            head match {
+              case ConcurrentStop(_) if depth == 0 ⇒
+                index
+              case ConcurrentStop(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
+              case ConcurrentStart(_, _) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
+              case _ ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
+            }
+          case EventuallyStart(_) ⇒
+            head match {
+              case EventuallyStop(_) if depth == 0 ⇒
+                index
+              case EventuallyStop(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
+              case EventuallyStart(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
+              case _ ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
+            }
+          case _ ⇒ index
+        }
+      }
     }
-    steps.takeWhile(s ⇒ predicate(openingStep)(s))
+
+    val closingIndex = findLastEnclosedIndex(openingStep, steps, index = 0, depth = 0)
+    if (closingIndex == 0) Seq.empty else steps.take(closingIndex)
   }
 
   @tailrec

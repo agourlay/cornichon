@@ -120,6 +120,46 @@ class EngineSpec extends WordSpec with Matchers {
         engine.runStepPredicate(false, session, StepAssertion.alwaysOK).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
       }
     }
-  }
 
+    "findEnclosedStep" must {
+      "resolve non nested sub steps" in {
+        val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
+        val steps = Seq(
+          EventuallyStart(eventuallyConf),
+          ExecutableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          ExecutableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          EventuallyStop(eventuallyConf)
+        )
+        engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
+      }
+
+      "resolve non nested aligned sub steps" in {
+        val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
+        val steps = Seq(
+          EventuallyStart(eventuallyConf),
+          ExecutableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          ExecutableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          EventuallyStop(eventuallyConf),
+          EventuallyStart(eventuallyConf),
+          ExecutableStep[Int]("third step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          EventuallyStop(eventuallyConf)
+        )
+        engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
+      }
+
+      "resolve nested sub steps" in {
+        val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
+        val steps = Seq(
+          EventuallyStart(eventuallyConf),
+          ExecutableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          ExecutableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          EventuallyStart(eventuallyConf),
+          ExecutableStep[Int]("third step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          EventuallyStop(eventuallyConf),
+          EventuallyStop(eventuallyConf)
+        )
+        engine.findEnclosedSteps(steps.head, steps.tail).size should be(5)
+      }
+    }
+  }
 }

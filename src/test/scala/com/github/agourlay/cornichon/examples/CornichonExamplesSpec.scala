@@ -432,6 +432,25 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "hasSuperpowers", "publisher"
           )
         }
+
+        // Blocs can be nested
+        Concurrently(factor = 2, maxTime = 20 seconds) {
+
+          Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
+
+            When I GET("/superheroes/random")
+
+            Then assert body_is(
+              """
+            {
+              "name": "Batman",
+              "realName": "Bruce Wayne",
+              "city": "Gotham city"
+            }
+              """, ignoring = "hasSuperpowers", "publisher"
+            )
+          }
+        }
       }
     )
 
