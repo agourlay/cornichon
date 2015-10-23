@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 class CornichonExamplesSpec extends CornichonFeature {
 
   def feature =
-    Feature("Cornichon feature Example")(
+    Feature("Cornichon feature example")(
 
       Scenario("demonstrate CRUD features") { implicit b ⇒
 
@@ -418,7 +418,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         """)
 
         // Repeat series of Steps until it succeed
-        Eventually(maxDuration = 15 seconds, interval = 200 milliseconds) {
+        Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 
           When I GET("/superheroes/random")
 

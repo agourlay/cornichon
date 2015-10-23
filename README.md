@@ -556,7 +556,7 @@ As Cornichon uses Scalatest it is possible to use all the nice CLI from SBT + Sc
 
 - ```~test``` tilde to re-run a command on change.
 - ```testOnly *CornichonExamplesSpec``` to run only the feature CornichonExamplesSpec.
-- ```testOnly *CornichonExamplesSpec -- -t "Cornichon feature Example should CRUD Feature demo"``` to run only the scenario ```CRUD Feature demo``` from the feature ```Cornichon feature Example```. 
+- ```testOnly *CornichonExamplesSpec -- -t "Cornichon feature example should CRUD Feature demo"``` to run only the scenario ```CRUD Feature demo``` from the feature ```Cornichon feature example```. 
 
 The full name of a scenario is ```feature-name should scenario-name```.
 
