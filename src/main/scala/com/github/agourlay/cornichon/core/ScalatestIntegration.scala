@@ -23,11 +23,20 @@ trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
               assert(true)
             case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs) ⇒
               printLogs(logs)
-              fail(f.msg)
+              fail(
+                s"""
+                   |${f.msg}
+                   |replay only this scenario with:
+                   |${replayCmd(feature.name, s.name)}
+                   |""".stripMargin
+              )
           }
         }
     }
   }
+
+  private def replayCmd(featureName: String, scenarioName: String) =
+    s"""testOnly *${this.getClass.getSimpleName} -- -t "$featureName should $scenarioName" """
 
   private def printLogs(logs: Seq[LogInstruction]): Unit = {
     def messageWithMargin(message: String, margin: Int): Array[String] = {
