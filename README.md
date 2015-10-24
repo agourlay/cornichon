@@ -280,7 +280,7 @@ Concurrently(factor = 3, maxTime = 10 seconds) {
 
 ```
 
-- WithHeaders bloc automatically sets headers for several steps useful for authenticated scenario.
+- WithHeaders automatically sets headers for several steps useful for authenticated scenario.
 
 ```scala
 WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){

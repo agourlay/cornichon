@@ -35,12 +35,12 @@ class Engine {
         }
 
       case e @ EventuallyStart(conf) ⇒
-        val updatedLogs = logs :+ DefaultLogInstruction(s"${e.title}", depth)
+        val updatedLogs = logs :+ DefaultLogInstruction(e.title, depth)
         val eventuallySteps = findEnclosedSteps(e, steps.tail)
 
         if (eventuallySteps.isEmpty) {
-          val updatedLogs = logs ++ logStepErrorResult(s"${e.title}", MalformedEventuallyBloc, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
-          buildFailedRunSteps(steps, e, MalformedConcurrentBloc, updatedLogs)
+          val updatedLogs = logs ++ logStepErrorResult(e.title, MalformedEventuallyBlock, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
+          buildFailedRunSteps(steps, e, MalformedConcurrentBlock, updatedLogs)
         } else {
           val nextDepth = depth + 1
           val now = System.nanoTime
@@ -49,10 +49,10 @@ class Engine {
           val nextSteps = steps.tail.drop(eventuallySteps.size)
           res match {
             case s @ SuccessRunSteps(sSession, sLogs) ⇒
-              val fullLogs = updatedLogs ++ sLogs :+ ColoredLogInstruction(s"Eventually bloc succeeded in ${executionTime.toMillis} millis.", GREEN, nextDepth)
+              val fullLogs = updatedLogs ++ sLogs :+ ColoredLogInstruction(s"Eventually block succeeded in ${executionTime.toMillis} millis.", GREEN, nextDepth)
               runSteps(nextSteps, sSession, fullLogs, depth)
             case f @ FailedRunSteps(_, _, eLogs) ⇒
-              val fullLogs = (updatedLogs ++ eLogs :+ ColoredLogInstruction(s"Eventually bloc did not complete in time. (${executionTime.toMillis} millis) ", RED, nextDepth)) ++ logNonExecutedStep(nextSteps, depth)
+              val fullLogs = (updatedLogs ++ eLogs :+ ColoredLogInstruction(s"Eventually block did not complete in time. (${executionTime.toMillis} millis) ", RED, nextDepth)) ++ logNonExecutedStep(nextSteps, depth)
               f.copy(logs = fullLogs)
           }
         }
@@ -64,12 +64,12 @@ class Engine {
         runSteps(steps.tail, session, logs, depth)
 
       case c @ ConcurrentStart(factor, maxTime) ⇒
-        val updatedLogs = logs :+ DefaultLogInstruction(s"${c.title}", depth)
+        val updatedLogs = logs :+ DefaultLogInstruction(c.title, depth)
         val concurrentSteps = findEnclosedSteps(c, steps.tail)
 
         if (concurrentSteps.isEmpty) {
-          val innerLogs = logs ++ logStepErrorResult(s"${c.title}", MalformedConcurrentBloc, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
-          buildFailedRunSteps(steps, c, MalformedConcurrentBloc, innerLogs)
+          val innerLogs = logs ++ logStepErrorResult(c.title, MalformedConcurrentBlock, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
+          buildFailedRunSteps(steps, c, MalformedConcurrentBlock, innerLogs)
         } else {
           val nextDepth = depth + 1
           val now = System.nanoTime
@@ -88,10 +88,10 @@ class Engine {
           val nextSteps = steps.tail.drop(concurrentSteps.size)
           if (failedStepsRun.isEmpty) {
             val updatedSession = successStepsRun.head.session
-            val updatedLogs = successStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently bloc with factor '$factor' succeeded in ${executionTime.toMillis} millis.", GREEN, nextDepth)
+            val updatedLogs = successStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently block with factor '$factor' succeeded in ${executionTime.toMillis} millis.", GREEN, nextDepth)
             runSteps(nextSteps, updatedSession, updatedLogs, depth)
           } else
-            failedStepsRun.head.copy(logs = (failedStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently bloc failed", RED, nextDepth)) ++ logNonExecutedStep(nextSteps, depth))
+            failedStepsRun.head.copy(logs = (failedStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently block failed", RED, nextDepth)) ++ logNonExecutedStep(nextSteps, depth))
         }
 
       case execStep: ExecutableStep[_] ⇒
@@ -101,7 +101,7 @@ class Engine {
             buildFailedRunSteps(steps, execStep, e, updatedLogs)
 
           case Xor.Right(currentSession) ⇒
-            val updatedLogs = if (execStep.show) logs :+ ColoredLogInstruction(s"${execStep.title}", GREEN, depth) else logs
+            val updatedLogs = if (execStep.show) logs :+ ColoredLogInstruction(execStep.title, GREEN, depth) else logs
             runSteps(steps.tail, currentSession, updatedLogs, depth)
         }
     }
@@ -185,13 +185,13 @@ class Engine {
 
   private[cornichon] def logStepErrorResult(stepTitle: String, error: CornichonError, ansiColor: String, depth: Int): Seq[LogInstruction] =
     Seq(ColoredLogInstruction(s"$stepTitle *** FAILED ***", ansiColor, depth)) ++ error.msg.split('\n').map { m ⇒
-      ColoredLogInstruction(s"$m", ansiColor, depth)
+      ColoredLogInstruction(m, ansiColor, depth)
     }
 
   private[cornichon] def logNonExecutedStep(steps: Seq[Step], depth: Int): Seq[LogInstruction] =
     steps.collect { case e: ExecutableStep[_] ⇒ e }
       .filter(_.show).map { step ⇒
-        ColoredLogInstruction(s"${step.title}", CYAN, depth)
+        ColoredLogInstruction(step.title, CYAN, depth)
       }
 
   private[cornichon] def buildFailedRunSteps(steps: Seq[Step], currentStep: Step, e: CornichonError, logs: Seq[LogInstruction]): FailedRunSteps = {

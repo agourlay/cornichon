@@ -51,11 +51,11 @@ case class DebugStep(message: Session ⇒ String) extends Step {
 sealed trait EventuallyStep extends Step
 
 case class EventuallyStart(conf: EventuallyConf) extends EventuallyStep {
-  val title = s"Eventually bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
+  val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 }
 
 case class EventuallyStop(conf: EventuallyConf) extends EventuallyStep {
-  val title = s"Eventually closing bloc with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
+  val title = s"Eventually closing block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 }
 
 case class EventuallyConf(maxTime: Duration, interval: Duration) {
@@ -73,9 +73,9 @@ object EventuallyConf {
 sealed trait ConcurrentStep extends Step
 
 case class ConcurrentStart(factor: Int, maxTime: Duration) extends ConcurrentStep {
-  val title = s"Concurrently bloc with factor '$factor' and maxTime '$maxTime'"
+  val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 }
 
 case class ConcurrentStop(factor: Int) extends ConcurrentStep {
-  val title = s"Concurrently closing bloc with factor '$factor'"
+  val title = s"Concurrently closing block with factor '$factor'"
 }

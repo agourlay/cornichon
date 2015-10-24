@@ -433,7 +433,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           )
         }
 
-        // Blocs can be nested
+        // Blocks can be nested
         Concurrently(factor = 2, maxTime = 20 seconds) {
 
           Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
