@@ -45,7 +45,8 @@ case class FailedStep(step: Step, error: CornichonError)
 
 sealed trait LogInstruction {
   val message: String
+  val margin: Int
 }
 
-case class DefaultLogInstruction(message: String) extends LogInstruction
-case class ColoredLogInstruction(message: String, ansiColor: String) extends LogInstruction
+case class DefaultLogInstruction(message: String, margin: Int) extends LogInstruction
+case class ColoredLogInstruction(message: String, ansiColor: String, margin: Int) extends LogInstruction

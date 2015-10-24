@@ -19,8 +19,7 @@ trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
         s.name in {
           runScenario(s) match {
             case SuccessScenarioReport(scenarioName, successSteps: Seq[String], logs) ⇒
-              if (s.steps.collect { case d @ DebugStep(_) ⇒ d }.nonEmpty)
-                printLogs(logs)
+              if (s.steps.collect { case d @ DebugStep(_) ⇒ d }.nonEmpty) printLogs(logs)
               assert(true)
             case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs) ⇒
               printLogs(logs)
@@ -31,9 +30,17 @@ trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
   }
 
   private def printLogs(logs: Seq[LogInstruction]): Unit = {
+    def messageWithMargin(message: String, margin: Int): Array[String] = {
+      message.split('\n').map { line ⇒
+        "   " * margin + line
+      }
+    }
+
     logs.foreach {
-      case DefaultLogInstruction(message)        ⇒ logger.info(message)
-      case ColoredLogInstruction(message, color) ⇒ logger.info(color + message + RESET)
+      case DefaultLogInstruction(message, margin) ⇒
+        messageWithMargin(message, margin).foreach(logger.info)
+      case ColoredLogInstruction(message, color, margin) ⇒
+        messageWithMargin(message, margin).foreach(l ⇒ logger.info(color + l + RESET))
     }
   }
 }

@@ -474,8 +474,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   // List of Steps to be executed after each scenario
   afterEachScenario {
     Seq(
-      GET("/reset"),
-      show_last_response_body
+      GET("/reset")
     )
   }
 }
