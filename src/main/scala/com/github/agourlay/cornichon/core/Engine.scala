@@ -29,10 +29,7 @@ class Engine {
             val updatedLogs = logs :+ ColoredLogInstruction(message(session), CYAN, depth)
             runSteps(steps.tail, session, updatedLogs, depth)
           case Failure(e) ⇒
-            val cornichonError = e match {
-              case ce: CornichonError ⇒ ce
-              case _                  ⇒ StepExecutionError(e)
-            }
+            val cornichonError = toCornichonError(e)
             val updatedLogs = logs ++ logStepErrorResult(d.title, cornichonError, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
             buildFailedRunSteps(steps, d, cornichonError, updatedLogs)
         }
@@ -112,12 +109,13 @@ class Engine {
   private[cornichon] def runStepAction[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try { step.action(session) } match {
       case Success((newSession, stepAssertion)) ⇒ runStepPredicate(step.negate, newSession, stepAssertion)
-      case Failure(e) ⇒
-        e match {
-          case ce: CornichonError ⇒ left(ce)
-          case _                  ⇒ left(StepExecutionError(e))
-        }
+      case Failure(e)                           ⇒ left(toCornichonError(e))
     }
+
+  private def toCornichonError(exception: Throwable): CornichonError = exception match {
+    case ce: CornichonError ⇒ ce
+    case _                  ⇒ StepExecutionError(exception)
+  }
 
   private[cornichon] def runStepPredicate[A](negateStep: Boolean, newSession: Session, stepAssertion: StepAssertion[A]): Xor[CornichonError, Session] = {
     val succeedAsExpected = stepAssertion.isSuccess && !negateStep
