@@ -23,9 +23,19 @@ class Engine {
 
   private[cornichon] def runSteps(steps: Seq[Step], session: Session, logs: Seq[LogInstruction], depth: Int): StepsReport =
     steps.headOption.fold[StepsReport](SuccessRunSteps(session, logs)) {
-      case DebugStep(message) ⇒
-        val updatedLogs = logs :+ ColoredLogInstruction(message(session), CYAN, depth)
-        runSteps(steps.tail, session, updatedLogs, depth)
+      case d @ DebugStep(message) ⇒
+        Try { message(session) } match {
+          case Success(debugMessage) ⇒
+            val updatedLogs = logs :+ ColoredLogInstruction(message(session), CYAN, depth)
+            runSteps(steps.tail, session, updatedLogs, depth)
+          case Failure(e) ⇒
+            val cornichonError = e match {
+              case ce: CornichonError ⇒ ce
+              case _                  ⇒ StepExecutionError(e)
+            }
+            val updatedLogs = logs ++ logStepErrorResult(d.title, cornichonError, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
+            buildFailedRunSteps(steps, d, cornichonError, updatedLogs)
+        }
 
       case e @ EventuallyStart(conf) ⇒
         val updatedLogs = logs :+ DefaultLogInstruction(s"${e.title}", depth)

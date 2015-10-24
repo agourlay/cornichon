@@ -97,10 +97,20 @@ class EngineSpec extends WordSpec with Matchers {
         val s = Scenario("scenario with unresolved", steps)
         engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
       }
+
+      "return error if a Debug step throw an exception" in {
+        val session = Session.newSession
+        val step = DebugStep(s ⇒ {
+          6 / 0
+          "Never gonna read this"
+        })
+        val s = Scenario("scenario with faulty debug step", Seq(step))
+        engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
+      }
     }
 
     "runStepAction" must {
-      "return error if step throw an exception" in {
+      "return error if Executable step throw an exception" in {
         val session = Session.newSession
         val step = ExecutableStep[Int]("stupid step", s ⇒ {
           6 / 0
