@@ -14,14 +14,14 @@ class Engine {
 
   def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
     val initMargin = 1
-    val initLogs = Seq(DefaultLogInstruction(s"Scenario : ${scenario.name}", initMargin))
+    val initLogs = Vector(DefaultLogInstruction(s"Scenario : ${scenario.name}", initMargin))
     runSteps(scenario.steps, session, initLogs, initMargin + 1) match {
       case s @ SuccessRunSteps(_, _)   ⇒ SuccessScenarioReport(scenario, s)
       case f @ FailedRunSteps(_, _, _) ⇒ FailedScenarioReport(scenario, f)
     }
   }
 
-  private[cornichon] def runSteps(steps: Seq[Step], session: Session, logs: Seq[LogInstruction], depth: Int): StepsReport =
+  private[cornichon] def runSteps(steps: Vector[Step], session: Session, logs: Vector[LogInstruction], depth: Int): StepsReport =
     steps.headOption.fold[StepsReport](SuccessRunSteps(session, logs)) {
       case d @ DebugStep(message) ⇒
         Try { message(session) } match {
@@ -44,7 +44,7 @@ class Engine {
         } else {
           val nextDepth = depth + 1
           val now = System.nanoTime
-          val res = retryEventuallySteps(eventuallySteps, session, conf, Seq.empty, nextDepth)
+          val res = retryEventuallySteps(eventuallySteps, session, conf, Vector.empty, nextDepth)
           val executionTime = Duration.fromNanos(System.nanoTime - now)
           val nextSteps = steps.tail.drop(eventuallySteps.size)
           res match {
@@ -131,8 +131,8 @@ class Engine {
       }
   }
 
-  private[cornichon] def findEnclosedSteps(openingStep: Step, steps: Seq[Step]): Seq[Step] = {
-    def findLastEnclosedIndex(openingStep: Step, steps: Seq[Step], index: Int, depth: Int): Int = {
+  private[cornichon] def findEnclosedSteps(openingStep: Step, steps: Vector[Step]): Vector[Step] = {
+    def findLastEnclosedIndex(openingStep: Step, steps: Vector[Step], index: Int, depth: Int): Int = {
       steps.headOption.fold(index) { head ⇒
         openingStep match {
           case ConcurrentStart(_, _) ⇒
@@ -163,13 +163,13 @@ class Engine {
     }
 
     val closingIndex = findLastEnclosedIndex(openingStep, steps, index = 0, depth = 0)
-    if (closingIndex == 0) Seq.empty else steps.take(closingIndex)
+    if (closingIndex == 0) Vector.empty else steps.take(closingIndex)
   }
 
   @tailrec
-  private[cornichon] final def retryEventuallySteps(steps: Seq[Step], session: Session, conf: EventuallyConf, accLogs: Seq[LogInstruction], depth: Int): StepsReport = {
+  private[cornichon] final def retryEventuallySteps(steps: Vector[Step], session: Session, conf: EventuallyConf, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
     val now = System.nanoTime
-    val res = runSteps(steps, session, Seq.empty, depth)
+    val res = runSteps(steps, session, Vector.empty, depth)
     val executionTime = Duration.fromNanos(System.nanoTime - now)
     res match {
       case s @ SuccessRunSteps(_, sLogs) ⇒ s.copy(logs = accLogs ++ sLogs)
@@ -183,8 +183,8 @@ class Engine {
     }
   }
 
-  private[cornichon] def logStepErrorResult(stepTitle: String, error: CornichonError, ansiColor: String, depth: Int): Seq[LogInstruction] =
-    Seq(ColoredLogInstruction(s"$stepTitle *** FAILED ***", ansiColor, depth)) ++ error.msg.split('\n').map { m ⇒
+  private[cornichon] def logStepErrorResult(stepTitle: String, error: CornichonError, ansiColor: String, depth: Int): Vector[LogInstruction] =
+    Vector(ColoredLogInstruction(s"$stepTitle *** FAILED ***", ansiColor, depth)) ++ error.msg.split('\n').map { m ⇒
       ColoredLogInstruction(m, ansiColor, depth)
     }
 
@@ -194,7 +194,7 @@ class Engine {
         ColoredLogInstruction(step.title, CYAN, depth)
       }
 
-  private[cornichon] def buildFailedRunSteps(steps: Seq[Step], currentStep: Step, e: CornichonError, logs: Seq[LogInstruction]): FailedRunSteps = {
+  private[cornichon] def buildFailedRunSteps(steps: Vector[Step], currentStep: Step, e: CornichonError, logs: Vector[LogInstruction]): FailedRunSteps = {
     val failedStep = FailedStep(currentStep, e)
     val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _, _) ⇒ title }
     FailedRunSteps(failedStep, notExecutedStep, logs)

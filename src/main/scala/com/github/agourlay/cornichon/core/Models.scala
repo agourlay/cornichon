@@ -2,9 +2,9 @@ package com.github.agourlay.cornichon.core
 
 import scala.concurrent.duration.Duration
 
-case class FeatureDef(name: String, scenarios: Seq[Scenario])
+case class FeatureDef(name: String, scenarios: Vector[Scenario])
 
-case class Scenario(name: String, steps: Seq[Step], ignored: Boolean = false)
+case class Scenario(name: String, steps: Vector[Step], ignored: Boolean = false)
 
 sealed trait StepAssertion[A] {
   val isSuccess: Boolean

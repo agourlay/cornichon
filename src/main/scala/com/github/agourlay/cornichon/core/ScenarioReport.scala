@@ -4,8 +4,8 @@ import scala.language.existentials
 
 sealed trait StepsReport
 
-case class SuccessRunSteps(session: Session, logs: Seq[LogInstruction]) extends StepsReport
-case class FailedRunSteps(failedStep: FailedStep, notExecutedStep: Seq[String], logs: Seq[LogInstruction]) extends StepsReport
+case class SuccessRunSteps(session: Session, logs: Vector[LogInstruction]) extends StepsReport
+case class FailedRunSteps(failedStep: FailedStep, notExecutedStep: Vector[String], logs: Vector[LogInstruction]) extends StepsReport
 
 sealed trait ScenarioReport {
   val scenarioName: String
@@ -13,7 +13,7 @@ sealed trait ScenarioReport {
   val logs: Seq[LogInstruction]
 }
 
-case class SuccessScenarioReport(scenarioName: String, successSteps: Seq[String], logs: Seq[LogInstruction]) extends ScenarioReport {
+case class SuccessScenarioReport(scenarioName: String, successSteps: Vector[String], logs: Vector[LogInstruction]) extends ScenarioReport {
   val success = true
 }
 
@@ -24,7 +24,7 @@ object SuccessScenarioReport {
   }
 }
 
-case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, successSteps: Seq[String], notExecutedStep: Seq[String], logs: Seq[LogInstruction]) extends ScenarioReport {
+case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, successSteps: Vector[String], notExecutedStep: Vector[String], logs: Vector[LogInstruction]) extends ScenarioReport {
   val success = false
   val msg = s"""
     |

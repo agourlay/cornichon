@@ -8,7 +8,7 @@ import scala.concurrent.duration.Duration
 
 trait Dsl extends CornichonLogger {
 
-  def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios)
+  def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios.toVector)
 
   sealed trait Starters {
     val name: String
@@ -52,7 +52,7 @@ trait Dsl extends CornichonLogger {
   def Scenario(name: String, ignore: Boolean = false)(builder: ScenarioBuilder ⇒ Unit): Scenario = {
     val sb = new ScenarioBuilder()
     builder(sb)
-    new Scenario(name, sb.steps, ignore)
+    new Scenario(name, sb.steps.toVector, ignore)
   }
 
   def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder): Unit = {
