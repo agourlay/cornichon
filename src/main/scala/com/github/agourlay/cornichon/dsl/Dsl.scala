@@ -73,7 +73,7 @@ trait Dsl extends CornichonLogger {
   }
 
   def resolveInput[A](input: A): Session ⇒ A = s ⇒ input match {
-    case string: String ⇒ Resolver.fillPlaceholdersUnsafe(string)(s.content).asInstanceOf[A]
+    case string: String ⇒ Resolver.fillPlaceholdersUnsafe(string)(s).asInstanceOf[A]
     case _              ⇒ input
   }
 

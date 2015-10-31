@@ -446,6 +446,15 @@ POST("http://url.io/somethingWithAnId", payload = """
 """)
 ```
 
+If you save several times a value under the same key, the ```session``` will behave like a Multimap by appending the values. 
+
+It becomes then possible to retrieve past values :
+
+- ```<name>``` always uses the latest value of the taken by the key.
+- ```<name[0]>``` uses the first value taken by the key
+- ```<name[1]>``` uses the second element taken by the key
+
+
 ## Usage
 
 Create a test Scala class extending ```CornichonFeature``` and implement the ```feature``` function as presented below.

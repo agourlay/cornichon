@@ -35,13 +35,13 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
 
   private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
-      payloadResolved ← fillPlaceholders(payload)(s.content)
+      payloadResolved ← fillPlaceholders(payload)(s)
       paramsResolved ← tuplesResolver(params, s)
       headersResolved ← tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
       json ← parseJsonXor(payloadResolved)
-      urlResolved ← fillPlaceholders(urlBuilder(url))(s.content)
+      urlResolved ← fillPlaceholders(urlBuilder(url))(s)
       res ← Await.result(call(json, urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders), requestTimeout)
       newSession = fillInHttpSession(s, res)
     } yield {
@@ -50,7 +50,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
 
   private def withoutPayload(call: WithoutPayloadCall, url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
-      urlResolved ← fillPlaceholders(urlBuilder(url))(s.content)
+      urlResolved ← fillPlaceholders(urlBuilder(url))(s)
       paramsResolved ← tuplesResolver(params, s)
       headersResolved ← tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
@@ -63,7 +63,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
 
   private def streamedPayload(call: StreamedPayloadCall, url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
-      urlResolved ← fillPlaceholders(urlBuilder(url))(s.content)
+      urlResolved ← fillPlaceholders(urlBuilder(url))(s)
       paramsResolved ← tuplesResolver(params, s)
       headersResolved ← tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)

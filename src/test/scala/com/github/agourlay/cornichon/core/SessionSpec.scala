@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.core
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ OptionValues, Matchers, WordSpec }
 
-class SessionSpec extends WordSpec with Matchers {
+class SessionSpec extends WordSpec with Matchers with OptionValues {
 
   "Session" must {
     "get throws error if key does not exist" in {
@@ -36,10 +36,29 @@ class SessionSpec extends WordSpec with Matchers {
       s.removeKey("blah")
     }
 
-    "addValue replace existing value" in {
+    "simple key always takes the last value in session" in {
       val s = Session.newSession.addValue("one", "v1")
-      s.get("one") should be("v1")
       s.addValue("one", "v2").get("one") should be("v2")
+    }
+
+    "stacked key with indice zero always takes the first value in session" in {
+      val s = Session.newSession.addValue("one", "v1")
+      s.addValue("one", "v2").get("one[0]") should be("v1")
+    }
+
+    "stacked key with indice one always takes the second value in session" in {
+      val s = Session.newSession.addValue("one", "v1")
+      s.addValue("one", "v2").get("one[1]") should be("v2")
+    }
+
+    "parseIndice single digit" in {
+      val s = Session.newSession
+      s.parseIndice("[1]").value should be("1")
+    }
+
+    "parseIndice longer number" in {
+      val s = Session.newSession
+      s.parseIndice("[12345678]").value should be("12345678")
     }
   }
 }

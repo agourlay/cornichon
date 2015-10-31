@@ -30,20 +30,20 @@ object Resolver {
       !input.substring(0, input.indexOfSlice(">")).contains(' ')
     } else false
 
-  private def resolvePlaceholder(input: String)(source: Map[String, String]): Xor[ResolverError, String] =
+  private def resolvePlaceholder(input: String)(session: Session): Xor[ResolverError, String] =
     input.substring(1, input.length - 1) match {
       case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
       case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(100).toString)
       case "random-string"           ⇒ right(scala.util.Random.nextString(5))
-      case other: String             ⇒ source.get(other).map(right).getOrElse(left(ResolverError(other)))
+      case other: String             ⇒ session.getOpt(other).map(right).getOrElse(left(ResolverError(other)))
     }
 
   // TODO should accumulate errors
-  def fillPlaceholders(input: String)(source: Map[String, String]): Xor[ResolverError, String] = {
+  def fillPlaceholders(input: String)(session: Session): Xor[ResolverError, String] = {
     def loop(placeholders: List[String], acc: String): Xor[ResolverError, String] = {
       placeholders.headOption.fold[Xor[ResolverError, String]](right(acc)) { ph ⇒
         for {
-          resolvedValue ← resolvePlaceholder(ph)(source)
+          resolvedValue ← resolvePlaceholder(ph)(session)
           res ← loop(placeholders.tail, acc.replace(ph, resolvedValue))
         } yield res
       }
@@ -51,8 +51,8 @@ object Resolver {
     loop(findPlaceholders(input), input)
   }
 
-  def fillPlaceholdersUnsafe(input: String)(source: Map[String, String]): String =
-    fillPlaceholders(input)(source).fold(e ⇒ throw e, identity)
+  def fillPlaceholdersUnsafe(input: String)(session: Session): String =
+    fillPlaceholders(input)(session).fold(e ⇒ throw e, identity)
 
   // TODO accumulate errors
   def tuplesResolver(params: Seq[(String, String)], session: Session): Xor[ResolverError, Seq[(String, String)]] = {
@@ -60,8 +60,8 @@ object Resolver {
       params.headOption.fold[Xor[ResolverError, Seq[(String, String)]]](right(acc)) {
         case (name, value) ⇒
           for {
-            resolvedName ← fillPlaceholders(name)(session.content)
-            resolvedValue ← fillPlaceholders(value)(session.content)
+            resolvedName ← fillPlaceholders(name)(session)
+            resolvedValue ← fillPlaceholders(value)(session)
             res ← loop(params.tail, session, acc :+ (resolvedName, resolvedValue))
           } yield res
       }
