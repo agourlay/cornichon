@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.server
+package com.github.agourlay.cornichon.examples.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http

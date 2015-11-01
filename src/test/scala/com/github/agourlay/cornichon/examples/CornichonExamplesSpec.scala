@@ -5,7 +5,7 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.server.RestAPI
+import com.github.agourlay.cornichon.examples.server.RestAPI
 import scala.concurrent.Await
 import scala.concurrent.duration._
 

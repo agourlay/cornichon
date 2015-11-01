@@ -1,6 +1,5 @@
-package com.github.agourlay.cornichon.core
+package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.dsl.{ Row, Headers, DataTable, DataTableParser }
 import org.scalatest.{ Matchers, TryValues, WordSpec }
 import spray.json._
 
