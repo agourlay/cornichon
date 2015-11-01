@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.http
+package com.github.agourlay.cornichon.http.client
 
 import java.util.concurrent.TimeoutException
 
@@ -9,21 +9,21 @@ import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.Materializer
+import akka.stream.{ ActorMaterializer, Materializer }
 import akka.stream.scaladsl.Source
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonLogger
+import com.github.agourlay.cornichon.http._
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
-import scala.concurrent.duration._
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
-class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends CornichonLogger {
+class AkkaHttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends HttpClient with CornichonLogger {
 
   implicit private val ec: ExecutionContext = actorSystem.dispatcher
 
@@ -95,4 +95,12 @@ class HttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends C
       case e: Exception ⇒
         left(ResponseError(e, httpResponse))
     }
+}
+
+object AkkaHttpClient {
+  def default: AkkaHttpClient = {
+    implicit val system = ActorSystem("akka-http-client")
+    implicit val mat = ActorMaterializer()
+    new AkkaHttpClient()
+  }
 }

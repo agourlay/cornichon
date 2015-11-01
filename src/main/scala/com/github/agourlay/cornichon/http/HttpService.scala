@@ -1,26 +1,17 @@
 package com.github.agourlay.cornichon.http
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
-import akka.stream.ActorMaterializer
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.Resolver._
-import com.github.agourlay.cornichon.http.CornichonJson._
+import com.github.agourlay.cornichon.http.client.HttpClient
 import org.json4s._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Future, Await, ExecutionContext }
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
-
-  implicit private val system = ActorSystem("cornichon-http-feature")
-  implicit private val mat = ActorMaterializer()
-  implicit private val ec: ExecutionContext = system.dispatcher
-
-  private val client = new HttpClient
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver, parser: CornichonJson)(implicit ec: ExecutionContext) {
 
   val LastResponseBodyKey = "last-response-body"
   val LastResponseStatusKey = "last-response-status"
@@ -35,13 +26,13 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
 
   private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
-      payloadResolved ← fillPlaceholders(payload)(s)
-      paramsResolved ← tuplesResolver(params, s)
-      headersResolved ← tuplesResolver(headers, s)
+      payloadResolved ← resolver.fillPlaceholders(payload)(s)
+      paramsResolved ← resolver.tuplesResolver(params, s)
+      headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
-      json ← parseJsonXor(payloadResolved)
-      urlResolved ← fillPlaceholders(urlBuilder(url))(s)
+      json ← parser.parseJsonXor(payloadResolved)
+      urlResolved ← resolver.fillPlaceholders(urlBuilder(url))(s)
       res ← Await.result(call(json, urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders), requestTimeout)
       newSession = fillInHttpSession(s, res)
     } yield {
@@ -50,9 +41,9 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
 
   private def withoutPayload(call: WithoutPayloadCall, url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
-      urlResolved ← fillPlaceholders(urlBuilder(url))(s)
-      paramsResolved ← tuplesResolver(params, s)
-      headersResolved ← tuplesResolver(headers, s)
+      urlResolved ← resolver.fillPlaceholders(urlBuilder(url))(s)
+      paramsResolved ← resolver.tuplesResolver(params, s)
+      headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
       res ← Await.result(call(urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders), requestTimeout)
@@ -63,9 +54,9 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
 
   private def streamedPayload(call: StreamedPayloadCall, url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
-      urlResolved ← fillPlaceholders(urlBuilder(url))(s)
-      paramsResolved ← tuplesResolver(params, s)
-      headersResolved ← tuplesResolver(headers, s)
+      urlResolved ← resolver.fillPlaceholders(urlBuilder(url))(s)
+      paramsResolved ← resolver.tuplesResolver(params, s)
+      headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
       res ← Await.result(call(urlResolved, paramsResolved, takeWithin, parsedHeaders ++ extractedHeaders), takeWithin + 1.second)
@@ -74,23 +65,23 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration) {
       (res, newSession)
     }
 
-  def Post(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
-    withPayload(client.postJson, payload, url, params, headers)(s)
+  def Post(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Session =
+    withPayload(client.postJson, payload, url, params, headers)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
-  def Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
-    withPayload(client.putJson, payload, url, params, headers)(s)
+  def Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Session =
+    withPayload(client.putJson, payload, url, params, headers)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
-  def Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
-    withoutPayload(client.getJson, url, params, headers)(s)
+  def Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Session =
+    withoutPayload(client.getJson, url, params, headers)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
-  def Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
-    withoutPayload(client.deleteJson, url, params, headers)(s)
+  def Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session): Session =
+    withoutPayload(client.deleteJson, url, params, headers)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
   def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
-    streamedPayload(client.getSSE, url, takeWithin, params, headers)(s)
+    streamedPayload(client.getSSE, url, takeWithin, params, headers)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
   def GetWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
-    streamedPayload(client.getWS, url, takeWithin, params, headers)(s)
+    streamedPayload(client.getWS, url, takeWithin, params, headers)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
   def fillInHttpSession(session: Session, response: CornichonHttpResponse): Session =
     session

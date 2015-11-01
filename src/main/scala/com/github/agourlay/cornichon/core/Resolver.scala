@@ -7,7 +7,7 @@ import cats.data.Xor.{ left, right }
 
 import scala.annotation.tailrec
 
-object Resolver {
+class Resolver {
 
   // Migrate to PB2 if too many errors
   private def findPlaceholders(input: String): List[String] = {
@@ -68,5 +68,4 @@ object Resolver {
     }
     loop(params, session, Seq.empty[(String, String)])
   }
-
 }

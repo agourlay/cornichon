@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
-import com.github.agourlay.cornichon.http.CornichonJson._
+import com.github.agourlay.cornichon.http.CornichonJson
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -16,6 +16,9 @@ trait HttpDsl extends Dsl {
   this: CornichonFeature ⇒
 
   private val mapper = new ObjectMapper()
+  val cornichonJson = new CornichonJson
+
+  import cornichonJson._
 
   sealed trait Request {
     val name: String
@@ -30,12 +33,9 @@ trait HttpDsl extends Dsl {
         else s"$base with params ${displayTuples(params)}"
       },
         effect =
-        s ⇒ {
-          val x = this match {
-            case GET    ⇒ http.Get(url, params, headers)(s)
-            case DELETE ⇒ http.Delete(url, params, headers)(s)
-          }
-          x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+        s ⇒ this match {
+          case GET    ⇒ http.Get(url, params, headers)(s)
+          case DELETE ⇒ http.Delete(url, params, headers)(s)
         }
       )
   }
@@ -49,12 +49,9 @@ trait HttpDsl extends Dsl {
         else s"$base with params ${displayTuples(params)}"
       },
         effect =
-        s ⇒ {
-          val x = this match {
-            case POST ⇒ http.Post(url, payload, params, headers)(s)
-            case PUT  ⇒ http.Put(url, payload, params, headers)(s)
-          }
-          x.map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+        s ⇒ this match {
+          case POST ⇒ http.Post(url, payload, params, headers)(s)
+          case PUT  ⇒ http.Put(url, payload, params, headers)(s)
         }
       )
   }
@@ -68,12 +65,9 @@ trait HttpDsl extends Dsl {
         else s"$base with params ${displayTuples(params)}"
       },
         effect =
-        s ⇒ {
-          val x = this match {
-            case GET_SSE ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
-            case GET_WS  ⇒ http.GetWS(url, takeWithin, params, headers)(s)
-          }
-          x.map { case (source, session) ⇒ session }.fold(e ⇒ throw e, identity)
+        s ⇒ this match {
+          case GET_SSE ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
+          case GET_WS  ⇒ http.GetWS(url, takeWithin, params, headers)(s)
         }
       )
   }

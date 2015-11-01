@@ -9,7 +9,7 @@ import cats.data.Xor.{ left, right }
 
 import scala.util.{ Failure, Success, Try }
 
-object CornichonJson {
+class CornichonJson {
 
   def parseJson[A](input: A): JValue = input match {
     case s: String if s.trim.head == '|' ⇒ parse(DataTableParser.parseDataTable(s).asJson.toString())

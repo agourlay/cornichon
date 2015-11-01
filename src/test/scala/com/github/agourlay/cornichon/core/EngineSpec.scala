@@ -1,11 +1,14 @@
 package com.github.agourlay.cornichon.core
 
 import org.scalatest.{ Matchers, WordSpec }
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 class EngineSpec extends WordSpec with Matchers {
 
+  implicit val ec = ExecutionContext.global
   val engine = new Engine()
+
   "An engine" when {
     "runScenario" must {
       "execute all steps of a scenario" in {

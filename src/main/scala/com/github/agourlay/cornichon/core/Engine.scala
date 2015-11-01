@@ -5,12 +5,11 @@ import cats.data.Xor.{ left, right }
 
 import scala.Console._
 import scala.annotation.tailrec
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{ ExecutionContext, Await, Future }
 import scala.concurrent.duration.Duration
 import scala.util._
 
-class Engine {
+class Engine(implicit executionContext: ExecutionContext) {
 
   def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
     val initMargin = 1

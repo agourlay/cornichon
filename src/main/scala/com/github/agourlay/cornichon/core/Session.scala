@@ -13,13 +13,16 @@ case class Session(content: HashMap[String, Vector[String]]) {
     }
 
   def get(key: String): String = getOpt(key).getOrElse(throw new KeyNotFoundInSession(key, this))
+
   def getList(keys: Seq[String]) = keys.map(get)
+
   def addValue(key: String, value: String) =
     content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
       Session((content - key) + (key → values.:+(value)))
     }
 
   def addValues(tuples: Seq[(String, String)]) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
+
   def removeKey(key: String) = Session(content - key)
 
   val prettyPrint = content.map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")

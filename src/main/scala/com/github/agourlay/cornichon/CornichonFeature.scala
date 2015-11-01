@@ -2,11 +2,19 @@ package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.HttpDsl
-import com.github.agourlay.cornichon.http.HttpService
+import com.github.agourlay.cornichon.http.client.AkkaHttpClient
+import com.github.agourlay.cornichon.http.{ CornichonJson, HttpService }
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
+
+  implicit private val ec: ExecutionContext = ExecutionContext.global
+
+  lazy val baseUrl = ""
+  lazy val requestTimeout = 2000 millis
+  lazy val http = new HttpService(baseUrl, requestTimeout, AkkaHttpClient.default, new Resolver, new CornichonJson)
 
   private val engine = new Engine()
 
@@ -24,9 +32,6 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   // TODO switch to val
   def feature: FeatureDef
 
-  lazy val baseUrl = ""
-  lazy val requestTimeout = 2000 millis
-
   def beforeFeature(before: ⇒ Unit): Unit =
     beforeFeature = beforeFeature :+ (() ⇒ before)
 
@@ -38,7 +43,4 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
 
   def afterEachScenario(steps: Seq[Step]): Unit =
     afterEachScenario = steps ++ afterEachScenario
-
-  lazy val http = new HttpService(baseUrl, requestTimeout)
-
 }

@@ -5,34 +5,58 @@ import org.scalatest.{ Matchers, WordSpec }
 
 class CornichonJsonSpec extends WordSpec with Matchers {
 
+  val cornichonJson = new CornichonJson
+
   "CornichonJson" when {
     "parseJson" must {
       "parse Boolean true" in {
-        CornichonJson.parseJson(true) should be(JBool.True)
+        cornichonJson.parseJson(true) should be(JBool.True)
       }
 
       "parse Boolean false" in {
-        CornichonJson.parseJson(false) should be(JBool.False)
+        cornichonJson.parseJson(false) should be(JBool.False)
       }
 
       "parse Int" in {
-        CornichonJson.parseJson(3) should be(JInt(3))
+        cornichonJson.parseJson(3) should be(JInt(3))
       }
 
       "parse Long" in {
-        CornichonJson.parseJson(3l) should be(JLong(3L))
+        cornichonJson.parseJson(3l) should be(JLong(3L))
       }
 
       "parse Double" in {
-        CornichonJson.parseJson(3d) should be(JDouble(3d))
+        cornichonJson.parseJson(3d) should be(JDouble(3d))
+      }
+
+      "parse BigDecimal" in {
+        cornichonJson.parseJson(BigDecimal(3.6d)) should be(JDecimal(3.6d))
       }
 
       "parse flat string" in {
-        CornichonJson.parseJson("cornichon") should be(JString("cornichon"))
+        cornichonJson.parseJson("cornichon") should be(JString("cornichon"))
+      }
+
+      "parse JSON object string" in {
+        cornichonJson.parseJson("""{"name":"cornichon"}""") should be(JObject(JField("name", JString("cornichon"))))
+      }
+
+      "parse JSON Array string" in {
+        cornichonJson.parseJson(
+          """
+           [
+            {"name":"cornichon"},
+            {"name":"scala"}
+           ]
+           """
+        ) should be(JArray(List(
+            JObject(List(("name", JString("cornichon")))),
+            JObject(List(("name", JString("scala"))))
+          )))
       }
 
       "parse data table" in {
-        CornichonJson.parseJson("""
+        cornichonJson.parseJson("""
            |  Name  |   Age  | 2LettersName |
            | "John" |   50   |    false     |
            | "Bob"  |   11   |    true      |
