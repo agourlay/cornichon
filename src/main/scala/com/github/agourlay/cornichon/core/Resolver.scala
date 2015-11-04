@@ -20,9 +20,7 @@ class Resolver {
       } else if (input.contains('<')) loop(input.tail, acc)
       else acc
 
-    // could be in the wrong orders but good enough
-    if (input.count(_ == '<') != input.count(_ == '>')) List.empty
-    else loop(input, List.empty)
+    loop(input, List.empty)
   }
 
   private def placeholderStarts(input: String) =

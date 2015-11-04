@@ -23,10 +23,16 @@ class ResolverSpec extends WordSpec with Matchers {
         resolver.fillPlaceholders(content)(session) should be(right("This project is named >project-name<"))
       }
 
-      "not be confused if key contains emtpy string" in {
+      "not be confused if key contains empty string" in {
         val session = Session.newSession.addValue("project-name", "cornichon")
         val content = "This project is named <project name>"
         resolver.fillPlaceholders(content)(session) should be(right("This project is named <project name>"))
+      }
+
+      "not be confused by unclosed markup used in a math context" in {
+        val session = Session.newSession.addValue("pi", "3.14")
+        val content = "3.15 > <pi>"
+        resolver.fillPlaceholders(content)(session) should be(right("3.15 > 3.14"))
       }
 
       "return ResolverError if placeholder not found" in {
