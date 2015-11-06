@@ -28,11 +28,13 @@ sealed trait Step {
 }
 
 case class ExecutableStep[A](
-  title: String,
-  action: Session ⇒ (Session, StepAssertion[A]),
-  negate: Boolean = false,
-  show: Boolean = true
-) extends Step
+    title: String,
+    action: Session ⇒ (Session, StepAssertion[A]),
+    negate: Boolean = false,
+    show: Boolean = true
+) extends Step {
+  def resultSession(s: Session) = action(s)._1
+}
 
 object ExecutableStep {
   def effectStep(title: String, effect: Session ⇒ Session, negate: Boolean = false, show: Boolean = true) =

@@ -1,11 +1,11 @@
-package com.github.agourlay.cornichon.http
+package com.github.agourlay.cornichon.json
 
+import cats.data.Xor
+import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.{ CornichonError, MalformedJsonError }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
-import cats.data.Xor
-import cats.data.Xor.{ left, right }
 
 import scala.util.{ Failure, Success, Try }
 

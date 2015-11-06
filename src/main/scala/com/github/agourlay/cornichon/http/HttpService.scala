@@ -6,6 +6,7 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
+import com.github.agourlay.cornichon.json.CornichonJson
 import org.json4s._
 
 import scala.concurrent.duration._
@@ -17,7 +18,6 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   val LastResponseStatusKey = "last-response-status"
   val LastResponseHeadersKey = "last-response-headers"
   val WithHeadersKey = "with-headers"
-
   val HeadersKeyValueDelim = '|'
 
   private type WithPayloadCall = (JValue, String, Seq[(String, String)], Seq[HttpHeader]) ⇒ Future[Xor[HttpError, CornichonHttpResponse]]
@@ -113,7 +113,5 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       parseHttpHeaders(tuples)
     }
 
-  private def urlBuilder(input: String) =
-    if (baseUrl.isEmpty) input
-    else baseUrl + input
+  private def urlBuilder(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
 }

@@ -45,8 +45,16 @@ case class MalformedHeadersError(error: String) extends CornichonError {
   val msg = s"error thrown while parsing headers $error"
 }
 
-case class ResolverError(key: String) extends CornichonError {
+trait ResolverError extends CornichonError {
+  val key: String
+}
+
+case class SimpleResolverError(key: String) extends ResolverError {
   val msg = s"key '<$key>' can not be resolved"
+}
+
+case class ExtractorResolverError(key: String, e: Throwable) extends ResolverError {
+  val msg = s"key '<$key>' can not be resolved - exception thrown ${e.getMessage}"
 }
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {

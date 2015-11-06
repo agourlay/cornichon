@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.http
+package com.github.agourlay.cornichon.json
 
 import org.json4s.JsonAST._
 import org.scalatest.{ Matchers, WordSpec }

@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
-import com.github.agourlay.cornichon.http.CornichonJson
+import com.github.agourlay.cornichon.json.CornichonJson
+
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -19,6 +20,7 @@ trait HttpDsl extends Dsl {
   val cornichonJson = new CornichonJson
 
   import cornichonJson._
+  import http._
 
   sealed trait Request {
     val name: String
@@ -102,25 +104,25 @@ trait HttpDsl extends Dsl {
       action = s ⇒ {
       (s, DetailedStepAssertion(
         expected = status.toString,
-        result = s.get(http.LastResponseStatusKey),
-        HttpDslError.statusError(status, s.get(http.LastResponseBodyKey))
+        result = s.get(LastResponseStatusKey),
+        HttpDslError.statusError(status, s.get(LastResponseBodyKey))
       ))
     }
     )
 
   def headers_contain(headers: (String, String)*) =
     transform_assert_session(
-      key = http.LastResponseHeadersKey,
+      key = LastResponseHeadersKey,
       expected = s ⇒ true,
       (session, sessionHeaders) ⇒ {
         val sessionHeadersValue = sessionHeaders.split(",")
-        headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name${http.HeadersKeyValueDelim}$value") }
+        headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
       }, title = s"headers contain ${headers.mkString(", ")}"
     )
 
   def body_is[A](mapFct: JValue ⇒ JValue, expected: A) =
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       expected = s ⇒ resolveAndParse(expected, s),
       (s, sessionValue) ⇒ mapFct(parseJson(sessionValue)),
       title = s"response body with transformation is '$expected'"
@@ -128,7 +130,7 @@ trait HttpDsl extends Dsl {
 
   def body_is(whiteList: Boolean = false, expected: String): ExecutableStep[JValue] = {
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       title = s"response body is '$expected' with whiteList=$whiteList",
       expected = s ⇒ resolveAndParse(expected, s),
       mapValue =
@@ -146,7 +148,7 @@ trait HttpDsl extends Dsl {
 
   def body_is(expected: String, ignoring: String*): ExecutableStep[JValue] =
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       title = titleBuilder(s"response body is '$expected'", ignoring),
       expected = s ⇒ resolveAndParse(expected, s),
       mapValue =
@@ -177,30 +179,30 @@ trait HttpDsl extends Dsl {
     keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
   def save_from_body(extractor: JValue ⇒ JValue, target: String) =
-    save_from_session(http.LastResponseBodyKey, s ⇒ extractor(parseJson(s)).values.toString, target)
+    save_from_session(LastResponseBodyKey, s ⇒ extractor(parseJson(s)).values.toString, target)
 
   def save_from_body(args: (JValue ⇒ JValue, String)*) = {
     val inputs = args.map {
-      case (e, t) ⇒ FromSessionSetter(http.LastResponseBodyKey, s ⇒ e(parseJson(s)).values.toString, t)
+      case (e, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ e(parseJson(s)).values.toString, t)
     }
     save_from_session(inputs)
   }
 
   def save_body_key(rootKey: String, target: String) =
-    save_from_session(http.LastResponseBodyKey, s ⇒ (parseJson(s) \ rootKey).values.toString, target)
+    save_from_session(LastResponseBodyKey, s ⇒ (parseJson(s) \ rootKey).values.toString, target)
 
   def save_body_keys(args: (String, String)*) = {
     val inputs = args.map {
-      case (e, t) ⇒ FromSessionSetter(http.LastResponseBodyKey, s ⇒ (parseJson(s) \ e).values.toString, t)
+      case (e, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ (parseJson(s) \ e).values.toString, t)
     }
     save_from_session(inputs)
   }
 
-  def show_last_status = show_session(http.LastResponseStatusKey)
+  def show_last_status = show_session(LastResponseStatusKey)
 
-  def show_last_response_body = show_session(http.LastResponseBodyKey)
+  def show_last_response_body = show_session(LastResponseBodyKey)
 
-  def show_last_response_headers = show_session(http.LastResponseHeadersKey)
+  def show_last_response_headers = show_session(LastResponseHeadersKey)
 
   private def titleBuilder(baseTitle: String, ignoring: Seq[String]): String =
     if (ignoring.isEmpty) baseTitle
@@ -209,7 +211,7 @@ trait HttpDsl extends Dsl {
   def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): ExecutableStep[A] =
     transform_assert_session[A](
       title = title,
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       expected = s ⇒ expected(s),
       mapValue =
       (session, sessionValue) ⇒ {
@@ -226,7 +228,7 @@ trait HttpDsl extends Dsl {
 
   def response_array_size_is(rootKey: String, size: Int) =
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       expected = s ⇒ true,
       (s, sessionValue) ⇒ {
         val extracted = parseJson(sessionValue) \ rootKey
@@ -240,7 +242,7 @@ trait HttpDsl extends Dsl {
 
   def response_array_size_is(extractor: JValue ⇒ JValue, size: Int) =
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       expected = s ⇒ true,
       (s, sessionValue) ⇒ {
         val extracted = extractor(parseJson(sessionValue))
@@ -256,7 +258,7 @@ trait HttpDsl extends Dsl {
 
   def response_array_contains[A](rootKey: String, element: A) =
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       expected = s ⇒ true,
       (s, sessionValue) ⇒ {
         val extracted = parseJson(sessionValue) \ rootKey
@@ -270,7 +272,7 @@ trait HttpDsl extends Dsl {
 
   def response_array_contains[A](extractor: JValue ⇒ JValue, element: A) =
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       expected = s ⇒ true,
       (s, sessionValue) ⇒ {
         val extracted = extractor(parseJson(sessionValue))
@@ -284,7 +286,7 @@ trait HttpDsl extends Dsl {
 
   def body_against_schema(schemaUrl: String) =
     transform_assert_session(
-      key = http.LastResponseBodyKey,
+      key = LastResponseBodyKey,
       expected = s ⇒ Success(true),
       title = s"response body is valid against JSON schema $schemaUrl",
       mapValue =
@@ -300,15 +302,20 @@ trait HttpDsl extends Dsl {
     JsonSchemaFactory.newBuilder().freeze().getJsonSchema(fileLocation)
 
   private def resolveAndParse[A](input: A, session: Session): JValue =
-    parseJsonUnsafe(resolveInput(input)(session))
+    parseJsonUnsafe {
+      input match {
+        case string: String ⇒ resolver.fillPlaceholdersUnsafe(string)(session).asInstanceOf[A]
+        case _              ⇒ input
+      }
+    }
 
   def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
     b.addStep {
-      save(http.WithHeadersKey, headers.map { case (name, value) ⇒ s"$name${http.HeadersKeyValueDelim}$value" }.mkString(",")).copy(show = false)
+      save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
     }
     steps
     b.addStep {
-      remove(http.WithHeadersKey).copy(show = false)
+      remove(WithHeadersKey).copy(show = false)
     }
   }
 

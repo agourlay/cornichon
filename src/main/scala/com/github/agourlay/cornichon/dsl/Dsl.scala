@@ -8,8 +8,6 @@ import scala.concurrent.duration.Duration
 
 trait Dsl extends CornichonLogger {
 
-  private val resolver = new Resolver
-
   def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios.toVector)
 
   sealed trait Starters {
@@ -72,11 +70,6 @@ trait Dsl extends CornichonLogger {
     b.addStep(ConcurrentStart(factor, maxTime))
     steps
     b.addStep(ConcurrentStop(factor))
-  }
-
-  def resolveInput[A](input: A): Session ⇒ A = s ⇒ input match {
-    case string: String ⇒ resolver.fillPlaceholdersUnsafe(string)(s).asInstanceOf[A]
-    case _              ⇒ input
   }
 
   def save(input: (String, String)): ExecutableStep[Boolean] = {

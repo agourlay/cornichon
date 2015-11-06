@@ -1,9 +1,13 @@
 package com.github.agourlay.cornichon.core
 
+import com.github.agourlay.cornichon.json.CornichonJson
+
 import scala.collection.immutable.HashMap
 import scala.util._
 
 case class Session(content: HashMap[String, Vector[String]]) {
+
+  val json = new CornichonJson()
 
   def getOpt(key: String): Option[String] =
     parseStackedKey(key).fold[Option[String]] {
@@ -13,6 +17,8 @@ case class Session(content: HashMap[String, Vector[String]]) {
     }
 
   def get(key: String): String = getOpt(key).getOrElse(throw new KeyNotFoundInSession(key, this))
+
+  def getJson(key: String) = json.parseJson(get(key))
 
   def getList(keys: Seq[String]) = keys.map(get)
 

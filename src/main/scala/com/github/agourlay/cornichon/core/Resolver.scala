@@ -6,8 +6,9 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 
 import scala.annotation.tailrec
+import scala.util._
 
-class Resolver {
+class Resolver(extractors: Map[String, Session ⇒ String]) {
 
   // Migrate to PB2 if too many errors
   private def findPlaceholders(input: String): List[String] = {
@@ -20,6 +21,7 @@ class Resolver {
       } else if (input.contains('<')) loop(input.tail, acc)
       else acc
 
+    if (!input.contains('<') && !input.contains('>')) List.empty
     loop(input, List.empty)
   }
 
@@ -33,7 +35,16 @@ class Resolver {
       case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
       case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(100).toString)
       case "random-string"           ⇒ right(scala.util.Random.nextString(5))
-      case other: String             ⇒ session.getOpt(other).map(right).getOrElse(left(ResolverError(other)))
+      case other: String ⇒
+        extractors.get(other).fold[Xor[ResolverError, String]] {
+          session.getOpt(other).map(right).getOrElse(left(SimpleResolverError(other)))
+        } { extractor ⇒
+          Try { extractor(session) } match {
+            case Success(value) ⇒ right(value)
+            case Failure(e) ⇒
+              left(ExtractorResolverError(other, e))
+          }
+        }
     }
 
   // TODO should accumulate errors
@@ -66,4 +77,8 @@ class Resolver {
     }
     loop(params, session, Seq.empty[(String, String)])
   }
+}
+
+object Resolver {
+  def withoutExtractor(): Resolver = new Resolver(Map.empty[String, Session ⇒ String])
 }
