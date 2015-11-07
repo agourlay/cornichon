@@ -31,7 +31,7 @@ case class Session(content: HashMap[String, Vector[String]]) {
 
   def removeKey(key: String) = Session(content - key)
 
-  val prettyPrint = content.map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")
+  val prettyPrint = content.toSeq.sortBy(_._1).map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")
 
   def parseStackedKey(key: String): Option[StackedKey] =
     parseIndice(key).flatMap { indiceStr ⇒

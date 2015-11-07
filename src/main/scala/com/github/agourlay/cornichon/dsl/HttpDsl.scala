@@ -155,28 +155,25 @@ trait HttpDsl extends Dsl {
         (session, sessionValue) ⇒ {
           val jsonSessionValue = parseJson(sessionValue)
           if (ignoring.isEmpty) jsonSessionValue
-          else filterJsonKeys(jsonSessionValue, ignoring)
+          else filterJsonRootKeys(jsonSessionValue, ignoring)
         }
     )
 
   def body_is[A](ordered: Boolean, expected: A, ignoring: String*): ExecutableStep[Iterable[JValue]] =
     if (ordered)
-      body_array_transform(_.arr.map(filterJsonKeys(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
+      body_array_transform(_.arr.map(filterJsonRootKeys(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
           case expectedArray: JArray ⇒ expectedArray.arr
           case _                     ⇒ throw new NotAnArrayError(expected)
         }
       })
     else
-      body_array_transform(s ⇒ s.arr.map(filterJsonKeys(_, ignoring)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring), s ⇒ {
+      body_array_transform(s ⇒ s.arr.map(filterJsonRootKeys(_, ignoring)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
           case expectedArray: JArray ⇒ expectedArray.arr.toSet
           case _                     ⇒ throw new NotAnArrayError(expected)
         }
       })
-
-  private def filterJsonKeys(input: JValue, keys: Seq[String]): JValue =
-    keys.foldLeft(input)((j, k) ⇒ j.removeField(_._1 == k))
 
   def save_from_body(extractor: JValue ⇒ JValue, target: String) =
     save_from_session(LastResponseBodyKey, s ⇒ extractor(parseJson(s)).values.toString, target)

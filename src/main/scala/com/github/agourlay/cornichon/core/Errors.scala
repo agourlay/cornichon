@@ -49,12 +49,12 @@ trait ResolverError extends CornichonError {
   val key: String
 }
 
-case class SimpleResolverError(key: String) extends ResolverError {
-  val msg = s"key '<$key>' can not be resolved"
+case class SimpleResolverError(key: String, s: Session) extends ResolverError {
+  val msg = s"key '<$key>' can not be resolved in session : \n${s.prettyPrint}"
 }
 
-case class ExtractorResolverError(key: String, e: Throwable) extends ResolverError {
-  val msg = s"key '<$key>' can not be resolved - exception thrown ${e.getMessage}"
+case class ExtractorResolverError(key: String, s: Session, e: Throwable) extends ResolverError {
+  val msg = s"key '<$key>' can not be resolved in session : \n${s.prettyPrint} due to exception thrown ${e.getMessage}"
 }
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {

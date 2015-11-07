@@ -38,7 +38,7 @@ class ResolverSpec extends WordSpec with Matchers {
       "return ResolverError if placeholder not found" in {
         val session = Session.newSession.addValue("project-name", "cornichon")
         val content = "This project is named <project-new-name>"
-        resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("project-new-name")))
+        resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("project-new-name", session)))
       }
 
       "replace two strings" in {
@@ -50,7 +50,7 @@ class ResolverSpec extends WordSpec with Matchers {
       "return ResolverError for the first placeholder not found" in {
         val session = Session.newSession.addValues(Seq("project-name" → "cornichon", "taste" → "tasty"))
         val content = "This project is named <project-name> and is super <new-taste>"
-        resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("new-taste")))
+        resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("new-taste", session)))
       }
 
       "generate random-uuid" in {

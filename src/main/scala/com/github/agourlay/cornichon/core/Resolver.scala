@@ -35,14 +35,16 @@ class Resolver(extractors: Map[String, Session ⇒ String]) {
       case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
       case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(100).toString)
       case "random-string"           ⇒ right(scala.util.Random.nextString(5))
+      case "random-boolean"          ⇒ right(scala.util.Random.nextBoolean().toString)
+      case "timestamp"               ⇒ right((System.currentTimeMillis / 1000).toString)
       case other: String ⇒
         extractors.get(other).fold[Xor[ResolverError, String]] {
-          session.getOpt(other).map(right).getOrElse(left(SimpleResolverError(other)))
+          session.getOpt(other).map(right).getOrElse(left(SimpleResolverError(other, session)))
         } { extractor ⇒
           Try { extractor(session) } match {
             case Success(value) ⇒ right(value)
             case Failure(e) ⇒
-              left(ExtractorResolverError(other, e))
+              left(ExtractorResolverError(other, session, e))
           }
         }
     }

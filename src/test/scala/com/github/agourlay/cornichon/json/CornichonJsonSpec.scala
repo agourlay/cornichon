@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.json
 
-import org.json4s.JsonAST._
+import org.json4s._
+import org.json4s.JsonDSL._
+
 import org.scalatest.{ Matchers, WordSpec }
 
 class CornichonJsonSpec extends WordSpec with Matchers {
@@ -61,9 +63,30 @@ class CornichonJsonSpec extends WordSpec with Matchers {
            | "John" |   50   |    false     |
            | "Bob"  |   11   |    true      |
          """) should be(JArray(List(
-          JObject(List(("2LettersName", JBool(false)), ("Age", JInt(50)), ("Name", JString("John")))),
-          JObject(List(("2LettersName", JBool(true)), ("Age", JInt(11)), ("Name", JString("Bob"))))
+          JObject(List(("2LettersName", JBool.False), ("Age", JInt(50)), ("Name", JString("John")))),
+          JObject(List(("2LettersName", JBool.True), ("Age", JInt(11)), ("Name", JString("Bob"))))
         )))
+      }
+    }
+
+    "filterJsonRootKeys" must {
+      "remove root key" in {
+        val input = JObject(
+          List(
+            ("2LettersName", JBool(false)),
+            ("Age", JInt(50)),
+            ("Name", JString("John"))
+          )
+        )
+        cornichonJson.filterJsonRootKeys(input, Seq("2LettersName", "Name")) should be(JObject(List(("Age", JInt(50)))))
+      }
+
+      "remove only root keys" in {
+        val input = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("name" → "john") ~ ("age", 40))
+
+        val expected = ("age", 50) ~ ("brother" → ("name" → "john") ~ ("age", 40))
+
+        cornichonJson.filterJsonRootKeys(input, Seq("name")) should be(expected)
       }
     }
   }
