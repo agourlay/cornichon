@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.server.directives.UserCredentials
+import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server._
 import Directives._
@@ -143,7 +143,7 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
 
   def start(httpPort: Int) = Http(system).bindAndHandle(route, "localhost", port = httpPort)
 
-  def login: PartialFunction[UserCredentials, String] = {
-    case u @ UserCredentials.Provided(username) if username == "admin" && u.verifySecret("cornichon") ⇒ "admin"
+  def login: PartialFunction[Credentials, String] = {
+    case u @ Credentials.Provided(username) if username == "admin" && u.verify("cornichon") ⇒ "admin"
   }
 }

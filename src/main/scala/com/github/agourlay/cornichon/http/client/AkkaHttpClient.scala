@@ -7,6 +7,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.{ ActorMaterializer, Materializer }
@@ -38,7 +39,7 @@ class AkkaHttpClient(implicit actorSystem: ActorSystem, mat: Materializer) exten
   implicit def JValueMarshaller: ToEntityMarshaller[JValue] =
     Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(j ⇒ compact(render(j)))
 
-  private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(params: _*)
+  private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
   def postJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
     requestRunner(Post(uriBuilder(url, params), payload), headers)
