@@ -130,7 +130,7 @@ class EngineSpec extends WordSpec with Matchers {
           6 / 0
           (s, SimpleStepAssertion(2, 2))
         })
-        engine.runStepPredicate(false, session, StepAssertion.alwaysOK).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
+        engine.runStepPredicate(negateStep = false, session, StepAssertion.alwaysOK).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
       }
     }
 

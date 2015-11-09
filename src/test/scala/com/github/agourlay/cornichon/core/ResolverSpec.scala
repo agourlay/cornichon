@@ -56,7 +56,7 @@ class ResolverSpec extends WordSpec with Matchers {
       "generate random-uuid" in {
         val session = Session.newSession
         val content = "<random-uuid>"
-        resolver.fillPlaceholders(content)(session) should not be (right("<random-uuid>"))
+        resolver.fillPlaceholders(content)(session) should not be right("<random-uuid>")
       }
     }
   }
