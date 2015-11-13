@@ -258,12 +258,12 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
 
     Then assert body_is(
       """
-    {
-      "name": "Batman",
-      "realName": "Bruce Wayne",
-      "city": "Gotham city"
-    }
-    """, ignoring = "hasSuperpowers", "publisher"
+      {
+        "name": "Batman",
+        "realName": "Bruce Wayne",
+        "city": "Gotham city"
+      }
+      """, ignoring = "hasSuperpowers", "publisher"
     )
   }
 ```
@@ -507,15 +507,15 @@ Taking ```Unit``` expression
 ```scala
 beforeFeature { // do side effect here }
 
-afterFeature{  // do side effect here }
+afterFeature {  // do side effect here }
 ```
 
 Taking ```Seq[Step]``` expression.
 
 ```scala
-beforeEachScenario{ // feed Seq[Step] }
+beforeEachScenario { // feed Seq[Step] }
 
-afterEachScenario{ // feed Seq[Step] }
+afterEachScenario { // feed Seq[Step] }
 ```
 
 ### Base URL
