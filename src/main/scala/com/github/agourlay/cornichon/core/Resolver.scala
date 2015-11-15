@@ -10,14 +10,12 @@ import scala.util._
 
 class Resolver(extractors: Map[String, Mapper]) {
 
-  def findPlaceholders(input: String): List[Placeholder] = {
-    val p = new PlaceholderParser(input)
-    p.placeholdersRule.run() match {
+  def findPlaceholders(input: String): List[Placeholder] =
+    new PlaceholderParser(input).placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒ List.empty
       case Failure(e: Throwable)  ⇒ throw new ResolverParsingError(e)
       case Success(dt)            ⇒ dt.toList
     }
-  }
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[ResolverError, String] = ph.key match {
     case "random-uuid"             ⇒ right(UUID.randomUUID().toString)

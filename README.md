@@ -551,7 +551,7 @@ override lazy val requestTimeout = 100 millis
 
 ### Register custom extractors
 
-In some case it makes sense to declare ```extractors``` to avoid code duplication when dealing with ```session`` values.
+In some cases it makes sense to declare ```extractors``` to avoid code duplication when dealing with ```session``` values.
 
 An extractor is responsible to describe how to build a value from an existing value in ```session```.
 
