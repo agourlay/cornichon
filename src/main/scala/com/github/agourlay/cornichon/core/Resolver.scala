@@ -13,12 +13,9 @@ class Resolver(extractors: Map[String, Mapper]) {
   def findPlaceholders(input: String): List[Placeholder] = {
     val p = new PlaceholderParser(input)
     p.placeholdersRule.run() match {
-      case Failure(e: ParseError) ⇒
-        println(p.formatError(e, new ErrorFormatter(showTraces = true)))
-        throw new ResolverParseError(p.formatError(e, new ErrorFormatter(showTraces = true)))
-      case Failure(e: Throwable) ⇒
-        throw new ResolverParsingError(e)
-      case Success(dt) ⇒ dt.toList
+      case Failure(e: ParseError) ⇒ List.empty
+      case Failure(e: Throwable)  ⇒ throw new ResolverParsingError(e)
+      case Success(dt)            ⇒ dt.toList
     }
   }
 
@@ -100,9 +97,7 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 }
 
 case class Placeholder(key: String, index: Option[Int]) {
-  val fullKey = index.fold(s"<$key>") { index ⇒
-    s"<$key[$index]>"
-  }
+  val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
 }
 
 case class Mapper(key: String, transform: String ⇒ String)
