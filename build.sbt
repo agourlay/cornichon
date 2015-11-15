@@ -19,6 +19,8 @@ scalacOptions ++= Seq(
   "-Ywarn-unused-import"
 )
 
+javaOptions in Test ++= Seq("-XX:+CMSClassUnloadingEnabled")
+
 fork in Test := true
 
 scalariformSettings

@@ -12,6 +12,7 @@ import scala.concurrent.duration._
 trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
 
   implicit private val ec: ExecutionContext = ExecutionContext.global
+  private val engine = new Engine()
 
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
   protected var afterFeature: Seq[() ⇒ Unit] = Nil
@@ -19,22 +20,19 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
+  lazy val http = new HttpService(baseUrl, requestTimeout, AkkaHttpClient.default, resolver, new CornichonJson)
   lazy val baseUrl = ""
   lazy val requestTimeout = 2000 millis
   lazy val resolver = new Resolver(registerExtractors)
-  lazy val http = new HttpService(baseUrl, requestTimeout, AkkaHttpClient.default, resolver, new CornichonJson)
 
-  private val engine = new Engine()
+  def runScenario(s: Scenario) =
+    engine.runScenario(Session.newSession) {
+      s.copy(steps = beforeEachScenario.toVector ++ s.steps ++ afterEachScenario)
+    }
 
-  def runScenario(s: Scenario): ScenarioReport = {
-    val completeScenario = s.copy(steps = beforeEachScenario.toVector ++ s.steps ++ afterEachScenario)
-    engine.runScenario(completeScenario)(Session.newSession)
-  }
-
-  // TODO switch to val
   def feature: FeatureDef
 
-  def registerExtractors: Map[String, Session ⇒ String] = Map.empty
+  def registerExtractors: Map[String, Mapper] = Map.empty
 
   def beforeFeature(before: ⇒ Unit): Unit =
     beforeFeature = beforeFeature :+ (() ⇒ before)

@@ -10,9 +10,11 @@ trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
   override def beforeAll() = beforeFeature.foreach(f ⇒ f())
   override def afterAll() = afterFeature.foreach(f ⇒ f())
 
-  feature.name should {
+  val featureDef = feature
 
-    feature.scenarios.foreach { s ⇒
+  featureDef.name should {
+
+    featureDef.scenarios.foreach { s ⇒
       if (s.ignored)
         s.name ignore {}
       else
@@ -27,7 +29,7 @@ trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
                 s"""
                    |${f.msg}
                    |replay only this scenario with:
-                   |${replayCmd(feature.name, s.name)}
+                   |${replayCmd(featureDef.name, s.name)}
                    |""".stripMargin
               )
           }

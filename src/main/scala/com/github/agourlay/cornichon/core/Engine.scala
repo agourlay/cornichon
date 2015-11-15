@@ -11,7 +11,7 @@ import scala.util._
 
 class Engine(implicit executionContext: ExecutionContext) {
 
-  def runScenario(scenario: Scenario)(session: Session): ScenarioReport = {
+  def runScenario(session: Session)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
     val initLogs = Vector(DefaultLogInstruction(s"Scenario : ${scenario.name}", initMargin))
     runSteps(scenario.steps, session, initLogs, initMargin + 1) match {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
+import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson
 
 import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
@@ -20,7 +21,7 @@ trait HttpDsl extends Dsl {
   val cornichonJson = new CornichonJson
 
   import cornichonJson._
-  import http._
+  import HttpService._
 
   sealed trait Request {
     val name: String

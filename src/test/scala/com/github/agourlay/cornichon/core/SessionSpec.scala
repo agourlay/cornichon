@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.core
 
-import org.scalatest.{ OptionValues, Matchers, WordSpec }
+import org.scalatest.{ Matchers, WordSpec }
 
-class SessionSpec extends WordSpec with Matchers with OptionValues {
+class SessionSpec extends WordSpec with Matchers {
 
   "Session" when {
     "get" must {
@@ -25,7 +25,23 @@ class SessionSpec extends WordSpec with Matchers with OptionValues {
         val s = Session.newSession
         s.getOpt("blah") should be(None)
       }
+
+      "get without index param always takes the last value in session" in {
+        val s = Session.newSession.addValue("one", "v1")
+        s.addValue("one", "v2").get("one") should be("v2")
+      }
+
+      "get with indice zero always takes the first value in session" in {
+        val s = Session.newSession.addValue("one", "v1")
+        s.addValue("one", "v2").get("one", Some(0)) should be("v1")
+      }
+
+      "get with indice one always takes the second value in session" in {
+        val s = Session.newSession.addValue("one", "v1")
+        s.addValue("one", "v2").get("one", Some(1)) should be("v2")
+      }
     }
+
     "removeKey" must {
 
       "removeKey works" in {
@@ -37,36 +53,6 @@ class SessionSpec extends WordSpec with Matchers with OptionValues {
       "removeKey does not throw error if key does not exist" in {
         val s = Session.newSession
         s.removeKey("blah")
-      }
-    }
-
-    "stacked key" must {
-      "simple key always takes the last value in session" in {
-        val s = Session.newSession.addValue("one", "v1")
-        s.addValue("one", "v2").get("one") should be("v2")
-      }
-
-      "stacked key with indice zero always takes the first value in session" in {
-        val s = Session.newSession.addValue("one", "v1")
-        s.addValue("one", "v2").get("one[0]") should be("v1")
-      }
-
-      "stacked key with indice one always takes the second value in session" in {
-        val s = Session.newSession.addValue("one", "v1")
-        s.addValue("one", "v2").get("one[1]") should be("v2")
-      }
-
-    }
-
-    "parseIndice" must {
-      "parseIndice single digit" in {
-        val s = Session.newSession
-        s.parseIndice("[1]").value should be("1")
-      }
-
-      "parseIndice longer number" in {
-        val s = Session.newSession
-        s.parseIndice("[12345678]").value should be("12345678")
       }
     }
   }

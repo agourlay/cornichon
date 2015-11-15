@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.core
 
 import cats.data.Xor._
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ OptionValues, Matchers, WordSpec }
 
 import scala.collection.immutable.HashMap
 
-class ResolverSpec extends WordSpec with Matchers {
+class ResolverSpec extends WordSpec with Matchers with OptionValues {
 
   val resolver = Resolver.withoutExtractor()
 
@@ -57,6 +57,28 @@ class ResolverSpec extends WordSpec with Matchers {
         val session = Session.newSession
         val content = "<random-uuid>"
         resolver.fillPlaceholders(content)(session) should not be right("<random-uuid>")
+      }
+
+      "stacked key with indice zero always takes the first value in session" in {
+        val s = Session.newSession.addValue("one", "v1").addValue("one", "v2")
+        val content = "<one[0]>"
+        resolver.fillPlaceholders(content)(s) should be(right("v1"))
+      }
+
+      "stacked key with indice one always takes the second value in session" in {
+        val s = Session.newSession.addValue("one", "v1").addValue("one", "v2")
+        val content = "<one[1]>"
+        resolver.fillPlaceholders(content)(s) should be(right("v2"))
+      }
+    }
+
+    "parseIndice" must {
+      "parseIndice single digit" in {
+        resolver.parseIndice("[1]").value should be("1")
+      }
+
+      "parseIndice longer number" in {
+        resolver.parseIndice("[12345678]").value should be("12345678")
       }
     }
   }

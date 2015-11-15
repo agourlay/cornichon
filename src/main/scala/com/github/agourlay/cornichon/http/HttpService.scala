@@ -14,11 +14,7 @@ import scala.concurrent.{ Future, Await, ExecutionContext }
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver, parser: CornichonJson)(implicit ec: ExecutionContext) {
 
-  val LastResponseBodyKey = "last-response-body"
-  val LastResponseStatusKey = "last-response-status"
-  val LastResponseHeadersKey = "last-response-headers"
-  val WithHeadersKey = "with-headers"
-  val HeadersKeyValueDelim = '|'
+  import HttpService._
 
   private type WithPayloadCall = (JValue, String, Seq[(String, String)], Seq[HttpHeader]) ⇒ Future[Xor[HttpError, CornichonHttpResponse]]
   private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader]) ⇒ Future[Xor[HttpError, CornichonHttpResponse]]
@@ -114,4 +110,12 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }
 
   private def urlBuilder(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
+}
+
+object HttpService {
+  val LastResponseBodyKey = "last-response-body"
+  val LastResponseStatusKey = "last-response-status"
+  val LastResponseHeadersKey = "last-response-headers"
+  val WithHeadersKey = "with-headers"
+  val HeadersKeyValueDelim = '|'
 }

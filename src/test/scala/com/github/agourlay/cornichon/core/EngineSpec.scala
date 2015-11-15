@@ -15,7 +15,7 @@ class EngineSpec extends WordSpec with Matchers {
         val session = Session.newSession
         val steps = Vector(ExecutableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))))
         val s = Scenario("test", steps)
-        engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
+        engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
       }
 
       "fail if instruction throws exception" in {
@@ -27,7 +27,7 @@ class EngineSpec extends WordSpec with Matchers {
           })
         )
         val s = Scenario("scenario with stupid test", steps)
-        engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
+        engine.runScenario(session)(s).isInstanceOf[FailedScenarioReport] should be(true)
       }
 
       "stop at first failed step" in {
@@ -39,7 +39,7 @@ class EngineSpec extends WordSpec with Matchers {
           step1, step2, step3
         )
         val s = Scenario("test", steps)
-        engine.runScenario(s)(session) match {
+        engine.runScenario(session)(s) match {
           case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
           case f: FailedScenarioReport ⇒
             f.failedStep.error.msg should be("""
@@ -66,7 +66,7 @@ class EngineSpec extends WordSpec with Matchers {
         )
         val s = Scenario("scenario with eventually", steps)
         engine.
-          runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
+          runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
       }
 
       "replay eventually wrapped steps until limit" in {
@@ -85,7 +85,7 @@ class EngineSpec extends WordSpec with Matchers {
           EventuallyStop(eventuallyConf)
         )
         val s = Scenario("scenario with eventually that fails", steps)
-        engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
+        engine.runScenario(session)(s).isInstanceOf[FailedScenarioReport] should be(true)
       }
 
       "success if non equality was expected" in {
@@ -98,7 +98,7 @@ class EngineSpec extends WordSpec with Matchers {
           )
         )
         val s = Scenario("scenario with unresolved", steps)
-        engine.runScenario(s)(session).isInstanceOf[SuccessScenarioReport] should be(true)
+        engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
       }
 
       "return error if a Debug step throw an exception" in {
@@ -108,7 +108,7 @@ class EngineSpec extends WordSpec with Matchers {
           "Never gonna read this"
         })
         val s = Scenario("scenario with faulty debug step", Vector(step))
-        engine.runScenario(s)(session).isInstanceOf[FailedScenarioReport] should be(true)
+        engine.runScenario(session)(s).isInstanceOf[FailedScenarioReport] should be(true)
       }
     }
 
