@@ -10,6 +10,32 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues {
   val resolver = Resolver.withoutExtractor()
 
   "Resolver" when {
+    "findPlaceholders" must {
+      "find placeholder in content solely containing a placeholder without index" in {
+        resolver.findPlaceholders("<test>") should be(List(Placeholder("test", None)))
+      }
+
+      "find placeholder in content solely containing a placeholder with index" in {
+        resolver.findPlaceholders("<test[1]>") should be(List(Placeholder("test", Some(1))))
+      }
+
+      "find placeholder in content starting with whitespace and containing a placeholder" in {
+        resolver.findPlaceholders(" <test>") should be(List(Placeholder("test", None)))
+      }
+
+      "find placeholder in content starting with 2 whitespaces and containing a placeholder" in {
+        resolver.findPlaceholders("  <test>") should be(List(Placeholder("test", None)))
+      }
+
+      "find placeholder in content finishing with whitespace and containing a placeholder" in {
+        resolver.findPlaceholders("<test> ") should be(List(Placeholder("test", None)))
+      }
+
+      "find placeholder in content finishing with 2 whitespaces and containing a placeholder" in {
+        resolver.findPlaceholders("<test>  ") should be(List(Placeholder("test", None)))
+      }
+    }
+
     "fillPlaceholders" must {
       "replace a single string" in {
         val session = Session.newSession.addValue("project-name", "cornichon")
@@ -69,16 +95,6 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues {
         val s = Session.newSession.addValue("one", "v1").addValue("one", "v2")
         val content = "<one[1]>"
         resolver.fillPlaceholders(content)(s) should be(right("v2"))
-      }
-    }
-
-    "parseIndice" must {
-      "parseIndice single digit" in {
-        resolver.parseIndice("[1]").value should be("1")
-      }
-
-      "parseIndice longer number" in {
-        resolver.parseIndice("[12345678]").value should be("12345678")
       }
     }
   }

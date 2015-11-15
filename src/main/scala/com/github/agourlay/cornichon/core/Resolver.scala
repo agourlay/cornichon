@@ -4,83 +4,48 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import org.parboiled2._
 
-import scala.annotation.tailrec
 import scala.util._
 
 class Resolver(extractors: Map[String, Mapper]) {
 
-  // Migrate to PB2 if too many errors
-  private def findPlaceholders(input: String): List[String] = {
-    @tailrec
-    def loop(input: String, acc: List[String]): List[String] =
-      if (input.isEmpty) acc
-      else if (placeholderStarts(input)) {
-        val placeHolder = input.takeWhile(c ⇒ c != '>') + ">"
-        loop(input.drop(placeHolder.length), acc.::(placeHolder))
-      } else if (input.contains('<')) loop(input.tail, acc)
-      else acc
-
-    if (!input.contains('<') && !input.contains('>')) List.empty
-    loop(input, List.empty)
+  def findPlaceholders(input: String): List[Placeholder] = {
+    val p = new PlaceholderParser(input)
+    p.placeholdersRule.run() match {
+      case Failure(e: ParseError) ⇒ List.empty
+      case Failure(e: Throwable)  ⇒ throw new ResolverParsingError(e)
+      case Success(dt)            ⇒ dt.toList
+    }
   }
 
-  private def placeholderStarts(input: String) =
-    if (input.head == '<' && input.contains('>')) {
-      !input.substring(0, input.indexOfSlice(">")).contains(' ')
-    } else false
-
-  private def resolvePlaceholder(input: String)(session: Session): Xor[ResolverError, String] = {
-    val (key, index) = parseStackedKey(input.substring(1, input.length - 1))
-    key match {
-      case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
-      case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(100).toString)
-      case "random-string"           ⇒ right(scala.util.Random.nextString(5))
-      case "random-boolean"          ⇒ right(scala.util.Random.nextBoolean().toString)
-      case "timestamp"               ⇒ right((System.currentTimeMillis / 1000).toString)
-      case other: String ⇒
-        extractors.get(other).fold[Xor[ResolverError, String]] {
-          session.getOpt(other, index).map(right).getOrElse(left(SimpleResolverError(other, session)))
-        } { mapper ⇒
-          Try {
-            session.getOpt(mapper.key, index).map { valueToMap ⇒
-              mapper.transform(valueToMap)
-            }
-          } match {
-            case Success(value) ⇒ value.map(right).getOrElse(left(SimpleResolverError(other, session)))
-            case Failure(e) ⇒
-              left(ExtractorResolverError(other, session, e))
-          }
+  def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[ResolverError, String] = ph.key match {
+    case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
+    case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(100).toString)
+    case "random-string"           ⇒ right(scala.util.Random.nextString(5))
+    case "random-boolean"          ⇒ right(scala.util.Random.nextBoolean().toString)
+    case "timestamp"               ⇒ right((System.currentTimeMillis / 1000).toString)
+    case other: String ⇒
+      extractors.get(other).fold[Xor[ResolverError, String]] {
+        session.getOpt(other, ph.index).map(right).getOrElse(left(SimpleResolverError(other, session)))
+      } { mapper ⇒
+        Try {
+          session.getOpt(mapper.key, ph.index).map(mapper.transform)
+        } match {
+          case Success(value) ⇒ value.map(right).getOrElse(left(SimpleResolverError(other, session)))
+          case Failure(e) ⇒
+            left(ExtractorResolverError(other, session, e))
         }
-    }
-  }
-
-  def parseStackedKey(key: String): (String, Option[Int]) =
-    parseIndice(key).fold[(String, Option[Int])]((key, None)) { indexStr ⇒
-      Try { indexStr.toInt } match {
-        case Failure(_) ⇒ (key, None) // FIXME should bubble up?
-        case Success(index) ⇒
-          val keyName = key.dropRight(indexStr.length + 2)
-          (keyName, Some(index))
       }
-    }
-
-  def parseIndice(key: String): Option[String] = {
-    key.reverse.headOption.flatMap { head ⇒
-      if (head == ']')
-        Some(key.reverse.drop(1).takeWhile(_ != '[').reverse)
-      else
-        None
-    }
   }
 
   // TODO should accumulate errors
   def fillPlaceholders(input: String)(session: Session): Xor[ResolverError, String] = {
-    def loop(placeholders: List[String], acc: String): Xor[ResolverError, String] = {
+    def loop(placeholders: List[Placeholder], acc: String): Xor[ResolverError, String] = {
       placeholders.headOption.fold[Xor[ResolverError, String]](right(acc)) { ph ⇒
         for {
           resolvedValue ← resolvePlaceholder(ph)(session)
-          res ← loop(placeholders.tail, acc.replace(ph, resolvedValue))
+          res ← loop(placeholders.tail, acc.replace(ph.fullKey, resolvedValue))
         } yield res
       }
     }
@@ -108,6 +73,31 @@ class Resolver(extractors: Map[String, Mapper]) {
 
 object Resolver {
   def withoutExtractor(): Resolver = new Resolver(Map.empty[String, Mapper])
+}
+
+class PlaceholderParser(val input: ParserInput) extends Parser {
+
+  def placeholdersRule = rule {
+    Ignore ~ zeroOrMore(PlaceholderRule).separatedBy(Ignore) ~ Ignore ~ EOI
+  }
+
+  def PlaceholderRule = rule('<' ~ PlaceholderTXT ~ optIndex ~ '>' ~> Placeholder)
+
+  val notAllowedInKey = "\r\n<>[] "
+
+  def optIndex = rule(optional('[' ~ Number ~ ']'))
+
+  def PlaceholderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInKey)))
+
+  def Ignore = rule { zeroOrMore(!'<' ~ ANY) }
+
+  def Number = rule { capture(Digits) ~> (_.toInt) }
+
+  def Digits = rule { oneOrMore(CharPredicate.Digit) }
+}
+
+case class Placeholder(key: String, index: Option[Int]) {
+  val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
 }
 
 case class Mapper(key: String, transform: String ⇒ String)

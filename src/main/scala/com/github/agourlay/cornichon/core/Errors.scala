@@ -57,6 +57,10 @@ case class ExtractorResolverError(key: String, s: Session, e: Throwable) extends
   val msg = s"key '<$key>' can not be resolved in session : \n${s.prettyPrint} due to exception thrown ${e.getMessage}"
 }
 
+case class ResolverParsingError(error: Throwable) extends CornichonError {
+  val msg = s"error thrown during resolver parsing ${error.getMessage}"
+}
+
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
   val msg = s"key '$key' can not be found in session : \n${s.prettyPrint}"
 }
@@ -72,7 +76,7 @@ case class MalformedJsonError[A](input: A, exception: Throwable) extends Cornich
 }
 
 case class DataTableError(error: Throwable) extends CornichonError {
-  val msg = s"error thrown while parsing data table $error"
+  val msg = s"error thrown while parsing data table ${error.getMessage}"
 }
 
 case class DataTableParseError(msg: String) extends CornichonError
