@@ -549,6 +549,34 @@ override lazy val requestTimeout = 100 millis
 
 ```
 
+### Register custom extractors
+
+In some case it makes sense to declare ```extractors``` to avoid code duplication when dealing with ```session`` values.
+
+An extractor is responsible to describe how to build a value from an existing value in ```session```.
+
+For instance if most of your JSON responses contain a field ```id``` and you want to use it as a placeholder without always having to manually extract and save the value into the ```session``` you can write :
+ 
+```scala
+   override def registerExtractors = Map(
+     "response-id" → Mapper(HttpService.LastResponseBodyKey, v ⇒ (parse(v) \ "id").values.toString)
+   )
+```
+
+It is now possible to use ```<response-id>``` or ```<response-id[integer]>``` in the steps definitions.
+
+It works for all keys in ```Session```, let's say we also have objects registered under keys ```customer``` & ```product```: 
+
+ 
+```scala
+   override def registerExtractors = Map(
+     "response-id" → Mapper(HttpService.LastResponseBodyKey, v ⇒ (parse(v) \ "id").values.toString),
+     "customer-id" → Mapper("customer", v ⇒ (parse(v) \ "id").values.toString),
+     "product-id" → Mapper("product", v ⇒ (parse(v) \ "id").values.toString)
+   )
+```
+
+
 ## Execution model
 
 By default the scenarios are executed in parallel.

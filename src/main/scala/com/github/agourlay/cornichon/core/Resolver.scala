@@ -41,14 +41,14 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   // TODO should accumulate errors
   def fillPlaceholders(input: String)(session: Session): Xor[ResolverError, String] = {
-    def loop(placeholders: List[Placeholder], acc: String): Xor[ResolverError, String] = {
+    def loop(placeholders: List[Placeholder], acc: String): Xor[ResolverError, String] =
       placeholders.headOption.fold[Xor[ResolverError, String]](right(acc)) { ph ⇒
         for {
           resolvedValue ← resolvePlaceholder(ph)(session)
           res ← loop(placeholders.tail, acc.replace(ph.fullKey, resolvedValue))
         } yield res
       }
-    }
+
     loop(findPlaceholders(input), input)
   }
 
@@ -57,7 +57,7 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   // TODO accumulate errors
   def tuplesResolver(params: Seq[(String, String)], session: Session): Xor[ResolverError, Seq[(String, String)]] = {
-    def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Xor[ResolverError, Seq[(String, String)]] = {
+    def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Xor[ResolverError, Seq[(String, String)]] =
       params.headOption.fold[Xor[ResolverError, Seq[(String, String)]]](right(acc)) {
         case (name, value) ⇒
           for {
@@ -66,7 +66,7 @@ class Resolver(extractors: Map[String, Mapper]) {
             res ← loop(params.tail, session, acc :+ (resolvedName, resolvedValue))
           } yield res
       }
-    }
+
     loop(params, session, Seq.empty[(String, String)])
   }
 }
