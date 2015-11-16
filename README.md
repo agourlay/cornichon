@@ -289,13 +289,6 @@ WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
 }
 
 ```
-        
-- validating response against Json schema
-
-```scala
-body_against_schema("http://link.to.json.schema")
-
-```
 
 - experimental support for Server-Sent-Event.
  
