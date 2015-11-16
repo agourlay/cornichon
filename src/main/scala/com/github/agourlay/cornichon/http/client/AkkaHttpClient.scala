@@ -99,9 +99,10 @@ class AkkaHttpClient(implicit actorSystem: ActorSystem, mat: Materializer) exten
 }
 
 object AkkaHttpClient {
+  implicit lazy val system = ActorSystem("akka-http-client")
+  implicit lazy val mat = ActorMaterializer()
+
   def default: AkkaHttpClient = {
-    implicit val system = ActorSystem("akka-http-client")
-    implicit val mat = ActorMaterializer()
     new AkkaHttpClient()
   }
 }
