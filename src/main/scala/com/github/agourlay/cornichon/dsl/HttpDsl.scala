@@ -1,23 +1,19 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson
 
-import com.github.fge.jsonschema.main.{ JsonSchema, JsonSchemaFactory }
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
-import scala.util.{ Success, Try }
 
 trait HttpDsl extends Dsl {
   this: CornichonFeature ⇒
 
-  private val mapper = new ObjectMapper()
   val cornichonJson = new CornichonJson
 
   import cornichonJson._
@@ -281,23 +277,6 @@ trait HttpDsl extends Dsl {
       },
       title = s"response body extracted array contains '$element'"
     )
-
-  def body_against_schema(schemaUrl: String) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ Success(true),
-      title = s"response body is valid against JSON schema $schemaUrl",
-      mapValue =
-      (session, sessionValue) ⇒ {
-        val jsonNode = mapper.readTree(sessionValue)
-        Try {
-          loadJsonSchemaFile(schemaUrl).validate(jsonNode).isSuccess
-        }
-      }
-    )
-
-  private def loadJsonSchemaFile(fileLocation: String): JsonSchema =
-    JsonSchemaFactory.newBuilder().freeze().getJsonSchema(fileLocation)
 
   private def resolveAndParse[A](input: A, session: Session): JValue =
     parseJsonUnsafe {

@@ -375,8 +375,6 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Using registered extractor at the bottom
         Then assert body_is(_ \ "name", "<name>")
 
-        And assert body_against_schema(s"$baseUrl/superhero.schema.json")
-
         // Repeat series of Steps
         Repeat(3) {
           When I GET("/superheroes/Batman")

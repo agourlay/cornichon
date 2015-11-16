@@ -138,7 +138,7 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
             }
           }
         }
-      } ~ getFromResourceDirectory("web")
+      }
   }
 
   def start(httpPort: Int) = Http(system).bindAndHandle(route, "localhost", port = httpPort)
