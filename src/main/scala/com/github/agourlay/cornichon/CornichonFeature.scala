@@ -1,10 +1,13 @@
 package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.HttpDsl
+import com.github.agourlay.cornichon.dsl.{ DataTableParser, HttpDsl }
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson
+
+import org.json4s.JsonAST.JArray
+import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -25,10 +28,15 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   lazy val requestTimeout = 2000 millis
   lazy val resolver = new Resolver(registerExtractors)
 
-  def runScenario(s: Scenario) =
+  protected def runScenario(s: Scenario) =
     engine.runScenario(Session.newSession) {
       s.copy(steps = beforeEachScenario.toVector ++ s.steps ++ afterEachScenario)
     }
+
+  def parseDataTable(table: String): JArray = {
+    val sprayArray = DataTableParser.parseDataTable(table).asSprayJson
+    JArray(sprayArray.elements.map(v ⇒ parse(v.toString())).toList)
+  }
 
   def feature: FeatureDef
 

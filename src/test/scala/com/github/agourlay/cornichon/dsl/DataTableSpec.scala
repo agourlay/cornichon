@@ -91,7 +91,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         """
 
       val p = new DataTableParser(input)
-      p.dataTableRule.run().success.value.asJson should be("""
+      p.dataTableRule.run().success.value.asSprayJson should be("""
         [{
           "Name":"John",
           "Age":50,

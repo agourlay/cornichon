@@ -50,14 +50,14 @@ class DataTableParser(val input: ParserInput) extends Parser {
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
 
-  def asMap: Map[String, Seq[JsValue]] =
+  def asSprayMap: Map[String, Seq[JsValue]] =
     headers.fields.zipWithIndex.map {
       case (header, index) ⇒
         header → rows.map(r ⇒ r.fields(index))
     }.groupBy(_._1).map { case (k, v) ⇒ (k, v.flatMap(_._2)) }
 
-  def asJson: JsArray = {
-    val map = asMap
+  def asSprayJson: JsArray = {
+    val map = asSprayMap
     val tmp = for (i ← rows.indices) yield map.mapValues(v ⇒ v(i))
     JsArray(tmp.map(JsObject(_)).toVector)
   }

@@ -12,7 +12,7 @@ import scala.util.{ Failure, Success, Try }
 class CornichonJson {
 
   def parseJson[A](input: A): JValue = input match {
-    case s: String if s.trim.headOption.contains('|') ⇒ parse(DataTableParser.parseDataTable(s).asJson.toString())
+    case s: String if s.trim.headOption.contains('|') ⇒ parse(DataTableParser.parseDataTable(s).asSprayJson.toString())
     case s: String if s.trim.headOption.contains('{') ⇒ parse(s)
     case s: String if s.trim.headOption.contains('[') ⇒ parse(s)
     case s: String                                    ⇒ JString(s)
