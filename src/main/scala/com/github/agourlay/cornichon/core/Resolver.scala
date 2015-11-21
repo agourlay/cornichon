@@ -43,7 +43,7 @@ class Resolver(extractors: Map[String, Mapper]) {
       placeholders.headOption.fold[Xor[ResolverError, String]](right(acc)) { ph ⇒
         for {
           resolvedValue ← resolvePlaceholder(ph)(session)
-          res ← loop(placeholders.tail, acc.replace(ph.fullKey, resolvedValue))
+          res ← loop(placeholders.drop(1), acc.replace(ph.fullKey, resolvedValue))
         } yield res
       }
 
@@ -61,7 +61,7 @@ class Resolver(extractors: Map[String, Mapper]) {
           for {
             resolvedName ← fillPlaceholders(name)(session)
             resolvedValue ← fillPlaceholders(value)(session)
-            res ← loop(params.tail, session, acc :+ (resolvedName, resolvedValue))
+            res ← loop(params.drop(1), session, acc :+ (resolvedName, resolvedValue))
           } yield res
       }
 
