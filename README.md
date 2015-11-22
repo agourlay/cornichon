@@ -30,9 +30,9 @@ In the example below, we have one ```feature``` with one ```scenario``` with two
 ```scala
 class CornichonExamplesSpec extends CornichonFeature {
 
-  def feature = Feature("Checking google"){ implicit scenarioBuilder =>
+  def feature = Feature("Checking google"){ implicit scenarioBuilder ⇒
   
-      Scenario("Google is up and running") { implicit stepBuilder ⇒
+      Scenario("Google is up and running"){ implicit stepBuilder ⇒
   
         When I GET("http://google.com")
   
@@ -457,10 +457,10 @@ Create a test Scala class extending ```CornichonFeature``` and implement the ```
 ```scala
 class CornichonReadmeExample extends CornichonFeature {
 
-  def feature =
+  def feature = 
     Feature("Cornichon feature Example"){ implicit scenarioBuilder ⇒
 
-      Scenario("Test read demo") { implicit stepBuilder ⇒
+      Scenario("Test read demo"){ implicit stepBuilder ⇒
       
         When I GET("myUrl/superheroes/Batman")
 

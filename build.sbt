@@ -55,7 +55,7 @@ libraryDependencies ++= {
   )
 }
 
-// wartremover
+// Wartremover
 wartremoverErrors in (Compile, compile) ++= Seq(
   Wart.Any2StringAdd, Wart.Option2Iterable, Wart.OptionPartial,
   Wart.Product, Wart.Return, Wart.Serializable, Wart.TryPartial)
@@ -80,3 +80,7 @@ scmInfo := Some(ScmInfo(
   browseUrl = url("https://github.com/agourlay/cornichon.git"),
   connection = "scm:git:git@github.com:agourlay/cornichon.git"
 ))
+
+// Integration tests
+lazy val root = project.in(file(".")).configs(IntegrationTest)
+Defaults.itSettings
