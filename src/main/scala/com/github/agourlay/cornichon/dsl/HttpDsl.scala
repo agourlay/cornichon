@@ -286,12 +286,12 @@ trait HttpDsl extends Dsl {
       }
     }
 
-  def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
-    b.addStep {
+  def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]) = {
+    b.addElmt {
       save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
     }
     steps
-    b.addStep {
+    b.addElmt {
       remove(WithHeadersKey).copy(show = false)
     }
   }

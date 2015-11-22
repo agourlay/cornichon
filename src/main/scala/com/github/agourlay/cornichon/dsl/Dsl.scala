@@ -8,24 +8,22 @@ import scala.concurrent.duration.Duration
 
 trait Dsl extends CornichonLogger {
 
-  def Feature(name: String)(scenarios: Scenario*): FeatureDef = FeatureDef(name, scenarios.toVector)
-
   sealed trait Starters {
     val name: String
-    def I[A](step: ExecutableStep[A])(implicit sb: ScenarioBuilder): ExecutableStep[A] = {
+    def I[A](step: ExecutableStep[A])(implicit sb: DslListBuilder[Step]): ExecutableStep[A] = {
       val s: ExecutableStep[A] = step.copy(s"$name I ${step.title}")
-      sb.addStep(s)
+      sb.addElmt(s)
       s
     }
 
-    def a[A](step: ExecutableStep[A])(implicit sb: ScenarioBuilder): ExecutableStep[A] = {
+    def a[A](step: ExecutableStep[A])(implicit sb: DslListBuilder[Step]): ExecutableStep[A] = {
       val s: ExecutableStep[A] = step.copy(s"$name a ${step.title}")
-      sb.addStep(s)
+      sb.addElmt(s)
       s
     }
 
-    def debug(s: DebugStep)(implicit sb: ScenarioBuilder): DebugStep = {
-      sb.addStep(s)
+    def debug(s: DebugStep)(implicit sb: DslListBuilder[Step]): DebugStep = {
+      sb.addElmt(s)
       s
     }
   }
@@ -34,42 +32,50 @@ trait Dsl extends CornichonLogger {
 
   sealed trait WithAssert {
     self: Starters ⇒
-    def assert[A](step: ExecutableStep[A])(implicit sb: ScenarioBuilder): ExecutableStep[A] = {
+    def assert[A](step: ExecutableStep[A])(implicit sb: DslListBuilder[Step]): ExecutableStep[A] = {
       val s: ExecutableStep[A] = step.copy(s"$name assert ${step.title}")
-      sb.addStep(s)
+      sb.addElmt(s)
       s
     }
 
-    def assert_not[A](step: ExecutableStep[A])(implicit sb: ScenarioBuilder): ExecutableStep[A] = {
+    def assert_not[A](step: ExecutableStep[A])(implicit sb: DslListBuilder[Step]): ExecutableStep[A] = {
       val s: ExecutableStep[A] = step.copy(s"$name assert not ${step.title}").copy(negate = true)
-      sb.addStep(s)
+      sb.addElmt(s)
       s
     }
   }
   case object Then extends Starters with WithAssert { val name = "Then" }
   case object And extends Starters with WithAssert { val name = "And" }
 
-  def Scenario(name: String, ignore: Boolean = false)(builder: ScenarioBuilder ⇒ Unit): Scenario = {
-    val sb = new ScenarioBuilder()
+  def Feature(name: String)(builder: DslListBuilder[Scenario] ⇒ Unit): FeatureDef = {
+    val sb = new DslListBuilder[Scenario]()
     builder(sb)
-    new Scenario(name, sb.steps.toVector, ignore)
+    FeatureDef(name, sb.elements)
   }
 
-  def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: ScenarioBuilder): Unit = {
+  def Scenario(name: String, ignore: Boolean = false)(builder: DslListBuilder[Step] ⇒ Unit)(implicit b: DslListBuilder[Scenario]): Scenario = {
+    val sb = new DslListBuilder[Step]()
+    builder(sb)
+    val s = new Scenario(name, sb.elements, ignore)
+    b.addElmt(s)
+    s
+  }
+
+  def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]): Unit = {
     Seq.fill(times)(steps)
   }
 
-  def Eventually(maxDuration: Duration, interval: Duration)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
+  def Eventually(maxDuration: Duration, interval: Duration)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]) = {
     val conf = EventuallyConf(maxDuration, interval)
-    b.addStep(EventuallyStart(conf))
+    b.addElmt(EventuallyStart(conf))
     steps
-    b.addStep(EventuallyStop(conf))
+    b.addElmt(EventuallyStop(conf))
   }
 
-  def Concurrently(factor: Int, maxTime: Duration)(steps: ⇒ Unit)(implicit b: ScenarioBuilder) = {
-    b.addStep(ConcurrentStart(factor, maxTime))
+  def Concurrently(factor: Int, maxTime: Duration)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]) = {
+    b.addElmt(ConcurrentStart(factor, maxTime))
     steps
-    b.addStep(ConcurrentStop(factor))
+    b.addElmt(ConcurrentStop(factor))
   }
 
   def save(input: (String, String)): ExecutableStep[Boolean] = {

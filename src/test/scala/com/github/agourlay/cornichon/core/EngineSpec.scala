@@ -6,8 +6,7 @@ import scala.concurrent.duration._
 
 class EngineSpec extends WordSpec with Matchers {
 
-  implicit val ec = ExecutionContext.global
-  val engine = new Engine()
+  val engine = new Engine(ExecutionContext.global)
 
   "An engine" when {
     "runScenario" must {

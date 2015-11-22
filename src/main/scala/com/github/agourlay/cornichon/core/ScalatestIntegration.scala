@@ -1,14 +1,17 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
-import org.scalatest.{ ParallelTestExecution, WordSpecLike, BeforeAndAfterAll }
+import org.scalatest.{ Suite, ParallelTestExecution, WordSpecLike, BeforeAndAfterAll }
 import scala.Console._
 
 trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution with CornichonLogger {
   this: CornichonFeature ⇒
 
   override def beforeAll() = beforeFeature.foreach(f ⇒ f())
-  override def afterAll() = afterFeature.foreach(f ⇒ f())
+  override def afterAll() = {
+    afterFeature.foreach(f ⇒ f())
+    shutdownFeature()
+  }
 
   val featureDef = feature
 

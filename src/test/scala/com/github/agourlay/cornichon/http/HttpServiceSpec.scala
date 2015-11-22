@@ -4,14 +4,19 @@ import akka.http.scaladsl.model.StatusCodes
 import com.github.agourlay.cornichon.core.{ Session, Resolver }
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 import com.github.agourlay.cornichon.json.CornichonJson
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest.{ BeforeAndAfterAll, WordSpec, Matchers }
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-class HttpServiceSpec extends WordSpec with Matchers {
+class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
-  implicit private val ec: ExecutionContext = ExecutionContext.global
-  val service = new HttpService("", 2000 millis, AkkaHttpClient.default, Resolver.withoutExtractor(), new CornichonJson)
+  val ec = ExecutionContext.global
+  val client = new AkkaHttpClient()
+  val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor(), new CornichonJson, ec)
+
+  override def afterAll() = {
+    client.shutdown()
+  }
 
   "HttpService" must {
     "fill in session" in {

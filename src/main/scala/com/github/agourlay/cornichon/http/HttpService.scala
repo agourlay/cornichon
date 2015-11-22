@@ -12,7 +12,9 @@ import org.json4s._
 import scala.concurrent.duration._
 import scala.concurrent.{ Future, Await, ExecutionContext }
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver, parser: CornichonJson)(implicit ec: ExecutionContext) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver, parser: CornichonJson, executionContext: ExecutionContext) {
+
+  private implicit val ec = executionContext
 
   import HttpService._
 
@@ -110,6 +112,10 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }
 
   private def urlBuilder(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
+
+  def shutdown() = {
+    client.shutdown()
+  }
 }
 
 object HttpService {

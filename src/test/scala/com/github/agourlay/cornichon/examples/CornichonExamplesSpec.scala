@@ -15,9 +15,9 @@ import scala.concurrent.duration._
 class CornichonExamplesSpec extends CornichonFeature {
 
   def feature =
-    Feature("Cornichon feature example")(
+    Feature("Cornichon feature example") { implicit scenarioBuilder ⇒
 
-      Scenario("demonstrate CRUD features") { implicit b ⇒
+      Scenario("demonstrate CRUD features") { implicit stepBuilder ⇒
 
         When I GET("/superheroes/Batman")
 
@@ -50,7 +50,8 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Compare only against provided keys
-        And assert body_is(whiteList = true, expected = """
+        And assert body_is(whiteList = true, expected =
+          """
           {
             "name": "Batman",
             "realName": "Bruce Wayne"
@@ -62,7 +63,8 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert body_is(_ \ "hasSuperpowers", false)
 
-        Then assert body_is(_ \ "publisher", expected = """
+        Then assert body_is(_ \ "publisher", expected =
+          """
           {
             "name":"DC",
             "foundationYear":1934,
@@ -189,13 +191,14 @@ class CornichonExamplesSpec extends CornichonFeature {
         When I GET("/superheroes/GreenLantern")
 
         Then assert status_is(404)
-      },
+      }
 
-      Scenario("demonstrate collection features") { implicit b ⇒
+      Scenario("demonstrate collection features") { implicit stepBuilder ⇒
 
         When I GET("/superheroes")
 
-        Then assert body_is(ordered = true, expected = """
+        Then assert body_is(ordered = true, expected =
+          """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -227,16 +230,19 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "New York"
           }]""", ignoring = "publisher")
 
-        Then assert body_is(ordered = true, expected = """
+        Then assert body_is(ordered = true, expected =
+          """
           |      name      |    realName    |     city      |  hasSuperpowers |
           |    "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
           |   "Superman"   | "Clark Kent"   | "Metropolis"  |      true       |
           | "GreenLantern" | "Hal Jordan"   | "Coast City"  |      true       |
           |   "Spiderman"  | "Peter Parker" | "New York"    |      true       |
           |    "IronMan"   | "Tony Stark"   | "New York"    |      false      |
-        """, ignoring = "publisher")
+        """,
+          ignoring = "publisher")
 
-        Then assert body_is(ordered = false, expected = """
+        Then assert body_is(ordered = false, expected =
+          """
           [{
             "name": "Superman",
             "realName": "Clark Kent",
@@ -304,9 +310,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
           """
         )
-      },
+      }
 
-      Scenario("demonstrate session features") { implicit b ⇒
+      Scenario("demonstrate session features") { implicit stepBuilder ⇒
 
         When I GET("/superheroes/Batman")
 
@@ -366,9 +372,9 @@ class CornichonExamplesSpec extends CornichonFeature {
         And debug show_last_status
         And debug show_last_response_body
         And debug show_last_response_headers
-      },
+      }
 
-      Scenario("demonstrate advanced features") { implicit b ⇒
+      Scenario("demonstrate advanced features") { implicit stepBuilder ⇒
 
         When I GET("/superheroes/Batman")
 
@@ -412,14 +418,16 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert response_array_size_is(5)
 
-        Then assert body_is("""
+        Then assert body_is(
+          """
           |   eventType      |      data      |
           | "superhero name" |    "Batman"    |
           | "superhero name" |   "Superman"   |
           | "superhero name" | "GreenLantern" |
           | "superhero name" |   "Spiderman"  |
           | "superhero name" |    "IronMan"   |
-        """)
+          """
+        )
 
         // Repeat series of Steps until it succeed
         Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
@@ -428,12 +436,12 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           Then assert body_is(
             """
-          {
-            "name": "Batman",
-            "realName": "Bruce Wayne",
-            "city": "Gotham city"
-          }
-          """, ignoring = "hasSuperpowers", "publisher"
+            {
+              "name": "Batman",
+              "realName": "Bruce Wayne",
+              "city": "Gotham city"
+            }
+            """, ignoring = "hasSuperpowers", "publisher"
           )
         }
 
@@ -446,17 +454,17 @@ class CornichonExamplesSpec extends CornichonFeature {
 
             Then assert body_is(
               """
-            {
-              "name": "Batman",
-              "realName": "Bruce Wayne",
-              "city": "Gotham city"
-            }
+              {
+                "name": "Batman",
+                "realName": "Bruce Wayne",
+                "city": "Gotham city"
+              }
               """, ignoring = "hasSuperpowers", "publisher"
             )
           }
         }
       }
-    )
+    }
 
   lazy val port = 8080
 

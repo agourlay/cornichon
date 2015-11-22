@@ -14,8 +14,8 @@ import scala.concurrent.duration._
 
 trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
 
-  implicit private val ec: ExecutionContext = ExecutionContext.global
-  private val engine = new Engine()
+  private val ec: ExecutionContext = ExecutionContext.global
+  private val engine = new Engine(ec)
 
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
   protected var afterFeature: Seq[() ⇒ Unit] = Nil
@@ -23,10 +23,14 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  lazy val http = new HttpService(baseUrl, requestTimeout, AkkaHttpClient.default, resolver, new CornichonJson)
+  lazy val http = new HttpService(baseUrl, requestTimeout, new AkkaHttpClient(), resolver, new CornichonJson, ec)
   lazy val baseUrl = ""
   lazy val requestTimeout = 2000 millis
   lazy val resolver = new Resolver(registerExtractors)
+
+  protected def shutdownFeature() = {
+    http.shutdown()
+  }
 
   protected def runScenario(s: Scenario) =
     engine.runScenario(Session.newSession) {

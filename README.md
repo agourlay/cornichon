@@ -30,15 +30,15 @@ In the example below, we have one ```feature``` with one ```scenario``` with two
 ```scala
 class CornichonExamplesSpec extends CornichonFeature {
 
-  def feature = Feature("Checking google")(
+  def feature = Feature("Checking google"){ implicit scenarioBuilder
   
-      Scenario("Google is up and running") { implicit b ⇒
+      Scenario("Google is up and running") { implicit stepBuilder ⇒
   
         When I GET("http://google.com")
   
         Then assert status_is(302)
       }
-  )
+  }
 }
 ```
 
@@ -48,7 +48,7 @@ A ```scenario``` fails - if at least one ```step``` fails.
 
 A ```scenario``` will stop at the first failed step encountered and ignore the remaining ```steps```.
 
-Check this [section](#implicit-builder) if you wonder what this ```implicit b =>``` thingy is.
+Check this [section](#implicit-builder) if you wonder what those ```implicit _ =>``` are.
 
 ## DSL
 
@@ -458,9 +458,9 @@ Create a test Scala class extending ```CornichonFeature``` and implement the ```
 class CornichonReadmeExample extends CornichonFeature {
 
   def feature =
-    Feature("Cornichon feature Example")(
+    Feature("Cornichon feature Example")( implicit scenarioBuilder ⇒
 
-      Scenario("Test read demo") { implicit b ⇒
+      Scenario("Test read demo") { implicit stepBuilder ⇒
       
         When I GET("myUrl/superheroes/Batman")
 
@@ -601,8 +601,6 @@ The ```steps``` execution logs will only be shown if:
 
 ## Implicit builder
 
-In order to have a clean look Cornichon uses mutation to build a ```scenario```. The argument ```implicit b =>``` represents an implicit step builder required to construct a ```scenario```.
-
-The ```feature``` construction uses a varargs of ```scenario```, that is why it is not using curly braces and still requires ```,``` between ```scenarios```.
+In order to have a simple DSL Cornichon uses mutation to build a ```feature```. The arguments ```implicit _ =>``` represent implicit builders required to build the underlying data structure.
 
 Until a better solution is implemented, do not forget those :)

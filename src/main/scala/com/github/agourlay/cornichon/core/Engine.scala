@@ -9,7 +9,9 @@ import scala.concurrent.{ ExecutionContext, Await, Future }
 import scala.concurrent.duration.Duration
 import scala.util._
 
-class Engine(implicit executionContext: ExecutionContext) {
+class Engine(executionContext: ExecutionContext) {
+
+  private implicit val ec = executionContext
 
   def runScenario(session: Session)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
@@ -77,7 +79,8 @@ class Engine(implicit executionContext: ExecutionContext) {
               Future {
                 runSteps(steps, session, updatedLogs, nextDepth)
               }
-            }, maxTime)
+            }, maxTime
+          )
 
           val failedStepRun = results.collectFirst { case f @ FailedRunSteps(_, _, _) ⇒ f }
           val nextSteps = steps.tail.drop(concurrentSteps.size)

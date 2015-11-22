@@ -24,9 +24,11 @@ import org.json4s.jackson.JsonMethods._
 import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
-class AkkaHttpClient(implicit actorSystem: ActorSystem, mat: Materializer) extends HttpClient with CornichonLogger {
+class AkkaHttpClient() extends HttpClient with CornichonLogger {
 
-  implicit private val ec: ExecutionContext = actorSystem.dispatcher
+  private implicit lazy val system = ActorSystem("akka-http-client")
+  private implicit lazy val mat = ActorMaterializer()
+  implicit private val ec: ExecutionContext = system.dispatcher
 
   implicit private val formats = DefaultFormats
 
@@ -96,13 +98,14 @@ class AkkaHttpClient(implicit actorSystem: ActorSystem, mat: Materializer) exten
       case e: Exception ⇒
         left(ResponseError(e, httpResponse))
     }
-}
 
-object AkkaHttpClient {
-  implicit lazy val system = ActorSystem("akka-http-client")
-  implicit lazy val mat = ActorMaterializer()
-
-  def default: AkkaHttpClient = {
-    new AkkaHttpClient()
+  def shutdown() = {
+    Http()
+      .shutdownAllConnectionPools()
+      .andThen {
+        case _ ⇒
+          mat.shutdown()
+          system.shutdown()
+      }
   }
 }
