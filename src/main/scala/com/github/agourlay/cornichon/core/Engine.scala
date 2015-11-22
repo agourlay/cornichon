@@ -74,23 +74,22 @@ class Engine(implicit executionContext: ExecutionContext) {
           val now = System.nanoTime
           val results = Await.result(
             Future.traverse(List.fill(factor)(concurrentSteps)) { steps ⇒
-              Future { runSteps(steps, session, updatedLogs, nextDepth) }
-            }, maxTime
-          )
-          val executionTime = Duration.fromNanos(System.nanoTime - now)
-          val (successStepsRun, failedStepsRun) =
-            (
-              results.collect { case s @ SuccessRunSteps(_, _) ⇒ s },
-              results.collect { case f @ FailedRunSteps(_, _, _) ⇒ f }
-            )
+              Future {
+                runSteps(steps, session, updatedLogs, nextDepth)
+              }
+            }, maxTime)
 
+          val failedStepRun = results.collectFirst { case f @ FailedRunSteps(_, _, _) ⇒ f }
           val nextSteps = steps.tail.drop(concurrentSteps.size)
-          if (failedStepsRun.isEmpty) {
+          failedStepRun.fold {
+            val executionTime = Duration.fromNanos(System.nanoTime - now)
+            val successStepsRun = results.collect { case s @ SuccessRunSteps(_, _) ⇒ s }
             val updatedSession = successStepsRun.head.session
             val updatedLogs = successStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently block with factor '$factor' succeeded in ${executionTime.toMillis} millis.", GREEN, nextDepth)
             runSteps(nextSteps, updatedSession, updatedLogs, depth)
-          } else
-            failedStepsRun.head.copy(logs = (failedStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently block failed", RED, nextDepth)) ++ logNonExecutedStep(nextSteps, depth))
+          } { f ⇒
+            f.copy(logs = (f.logs :+ ColoredLogInstruction(s"Concurrently block failed", RED, nextDepth)) ++ logNonExecutedStep(nextSteps, depth))
+          }
         }
 
       case execStep: ExecutableStep[_] ⇒
@@ -130,6 +129,7 @@ class Engine(implicit executionContext: ExecutionContext) {
       }
   }
 
+  //TODO remove duplication
   private[cornichon] def findEnclosedSteps(openingStep: Step, steps: Vector[Step]): Vector[Step] = {
     def findLastEnclosedIndex(openingStep: Step, steps: Vector[Step], index: Int, depth: Int): Int = {
       steps.headOption.fold(index) { head ⇒

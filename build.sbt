@@ -57,9 +57,8 @@ libraryDependencies ++= {
 
 // wartremover
 wartremoverErrors in (Compile, compile) ++= Seq(
-  Wart.Any2StringAdd, Wart.JavaConversions, Wart.ListOps,
-  Wart.Option2Iterable, Wart.OptionPartial, Wart.Product,
-  Wart.Return, Wart.Serializable, Wart.TryPartial)
+  Wart.Any2StringAdd, Wart.Option2Iterable, Wart.OptionPartial,
+  Wart.Product, Wart.Return, Wart.Serializable, Wart.TryPartial)
 
 // Publishing
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
