@@ -218,9 +218,9 @@ trait HttpDsl extends Dsl {
       }
     )
 
-  def response_array_size_is(size: Int) = body_array_transform(_.arr.size, s"response array size is '$size'", s ⇒ size)
+  def body_array_size_is(size: Int) = body_array_transform(_.arr.size, s"response array size is '$size'", s ⇒ size)
 
-  def response_array_size_is(rootKey: String, size: Int) =
+  def body_array_size_is(rootKey: String, size: Int) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ true,
@@ -234,7 +234,7 @@ trait HttpDsl extends Dsl {
       title = s"response body '$rootKey' array size is '$size'"
     )
 
-  def response_array_size_is(extractor: JValue ⇒ JValue, size: Int) =
+  def body_array_size_is(extractor: JValue ⇒ JValue, size: Int) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ true,
@@ -248,9 +248,9 @@ trait HttpDsl extends Dsl {
       title = s"response body extracted array size is '$size'"
     )
 
-  def response_array_contains[A](element: A) = body_array_transform(_.arr.contains(parseJson(element)), s"response body array contains '$element'", s ⇒ true)
+  def body_array_contains[A](element: A) = body_array_transform(_.arr.contains(parseJson(element)), s"response body array contains '$element'", s ⇒ true)
 
-  def response_array_contains[A](rootKey: String, element: A) =
+  def body_array_contains[A](rootKey: String, element: A) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ true,
@@ -264,7 +264,7 @@ trait HttpDsl extends Dsl {
       title = s"response body '$rootKey' array contains '$element'"
     )
 
-  def response_array_contains[A](extractor: JValue ⇒ JValue, element: A) =
+  def body_array_contains[A](extractor: JValue ⇒ JValue, element: A) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ true,

@@ -269,9 +269,9 @@ class CornichonExamplesSpec extends CornichonFeature {
             "city": "Coast City"
           }]""", ignoring = "hasSuperpowers", "publisher")
 
-        Then assert response_array_size_is(5)
+        Then assert body_array_size_is(5)
 
-        And assert response_array_contains(
+        And assert body_array_contains(
           """
           {
             "name": "IronMan",
@@ -293,9 +293,9 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         And I GET("/superheroes")
 
-        Then assert response_array_size_is(4)
+        Then assert body_array_size_is(4)
 
-        And assert_not response_array_contains(
+        And assert_not body_array_contains(
           """
           {
             "name": "IronMan",
@@ -416,7 +416,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
 
-        Then assert response_array_size_is(5)
+        Then assert body_array_size_is(5)
 
         Then assert body_is(
           """

@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.omdb
+package com.github.agourlay.cornichon.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
 

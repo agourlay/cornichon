@@ -186,9 +186,9 @@ body_is(ordered = true, expected = """
   | "Superman"  | "Clark Kent"   | "Metropolis"  |      true       |
 """, ignoring = "publisher")  
   
-response_array_size_is(2)
+body_array_size_is(2)
   
-response_array_contains("""
+body_array_contains("""
   {
     "name": "Batman",
     "realName": "Bruce Wayne",
@@ -204,7 +204,7 @@ response_array_contains("""
   
 ```
 
-response_array_size_is and response_array_contains have also the possibility to accept an extra first argument (a root key or a JValue extractor) to work on a nested collection.
+body_array_size_is and response_array_contains have also the possibility to accept an extra first argument (a root key or a JValue extractor) to work on a nested collection.
 
 - setting a value in ```session```
 
