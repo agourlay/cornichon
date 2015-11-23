@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ DataTableParser, HttpDsl }
-import com.github.agourlay.cornichon.http.client.AkkaHttpClient
+import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson
 
@@ -23,14 +23,10 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  lazy val http = new HttpService(baseUrl, requestTimeout, new AkkaHttpClient(), resolver, new CornichonJson, ec)
+  lazy val http = new HttpService(baseUrl, requestTimeout, HttpClient.globalAkkaClient, resolver, new CornichonJson, ec)
   lazy val baseUrl = ""
   lazy val requestTimeout = 2000 millis
   lazy val resolver = new Resolver(registerExtractors)
-
-  protected def shutdownFeature() = {
-    http.shutdown()
-  }
 
   protected def runScenario(s: Scenario) =
     engine.runScenario(Session.newSession) {

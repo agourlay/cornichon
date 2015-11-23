@@ -8,10 +8,7 @@ trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
   this: CornichonFeature ⇒
 
   override def beforeAll() = beforeFeature.foreach(f ⇒ f())
-  override def afterAll() = {
-    afterFeature.foreach(f ⇒ f())
-    shutdownFeature()
-  }
+  override def afterAll() = afterFeature.foreach(f ⇒ f())
 
   val featureDef = feature
 

@@ -112,10 +112,6 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }
 
   private def urlBuilder(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
-
-  def shutdown() = {
-    client.shutdown()
-  }
 }
 
 object HttpService {
