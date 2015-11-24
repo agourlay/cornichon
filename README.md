@@ -34,9 +34,9 @@ class CornichonExamplesSpec extends CornichonFeature {
   
       Scenario("Google is up and running"){ implicit stepBuilder ⇒
   
-        When I GET("http://google.com")
+          When I GET("http://google.com")
   
-        Then assert status_is(302)
+          Then assert status_is(302)
       }
   }
 }
