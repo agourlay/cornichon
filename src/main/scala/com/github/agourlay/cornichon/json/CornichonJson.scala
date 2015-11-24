@@ -9,7 +9,7 @@ import org.json4s.jackson.JsonMethods._
 
 import scala.util.{ Failure, Success, Try }
 
-class CornichonJson {
+trait CornichonJson {
 
   def parseJson[A](input: A): JValue = input match {
     case s: String if s.trim.headOption.contains('|') ⇒ parse(DataTableParser.parseDataTable(s).asSprayJson.toString())

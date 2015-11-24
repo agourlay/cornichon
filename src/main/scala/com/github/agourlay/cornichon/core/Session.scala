@@ -4,9 +4,7 @@ import com.github.agourlay.cornichon.json.CornichonJson
 
 import scala.collection.immutable.HashMap
 
-case class Session(content: HashMap[String, Vector[String]]) {
-
-  val json = new CornichonJson()
+case class Session(content: HashMap[String, Vector[String]]) extends CornichonJson {
 
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] = {
 
@@ -24,7 +22,7 @@ case class Session(content: HashMap[String, Vector[String]]) {
 
   def get(key: String, stackingIndice: Option[Int] = None): String = getOpt(key, stackingIndice).getOrElse(throw new KeyNotFoundInSession(key, this))
 
-  def getJson(key: String, stackingIndice: Option[Int] = None) = json.parseJson(get(key, stackingIndice))
+  def getJson(key: String, stackingIndice: Option[Int] = None) = parseJson(get(key, stackingIndice))
 
   def getList(keys: Seq[String]) = keys.map(v ⇒ get(v))
 

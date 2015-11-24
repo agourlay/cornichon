@@ -11,12 +11,9 @@ import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends Dsl {
+trait HttpDsl extends Dsl with CornichonJson {
   this: CornichonFeature ⇒
 
-  val cornichonJson = new CornichonJson
-
-  import cornichonJson._
   import HttpService._
 
   sealed trait Request {

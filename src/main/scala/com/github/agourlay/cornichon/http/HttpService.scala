@@ -12,7 +12,7 @@ import org.json4s._
 import scala.concurrent.duration._
 import scala.concurrent.{ Future, Await, ExecutionContext }
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver, parser: CornichonJson, executionContext: ExecutionContext) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver, executionContext: ExecutionContext) extends CornichonJson {
 
   private implicit val ec = executionContext
 
@@ -29,7 +29,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
-      json ← parser.parseJsonXor(payloadResolved)
+      json ← parseJsonXor(payloadResolved)
       urlResolved ← resolver.fillPlaceholders(urlBuilder(url))(s)
       res ← Await.result(call(json, urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders), requestTimeout)
       newSession = fillInHttpSession(s, res)

@@ -5,46 +5,44 @@ import org.json4s.JsonDSL._
 
 import org.scalatest.{ Matchers, WordSpec }
 
-class CornichonJsonSpec extends WordSpec with Matchers {
-
-  val cornichonJson = new CornichonJson
+class CornichonJsonSpec extends WordSpec with Matchers with CornichonJson {
 
   "CornichonJson" when {
     "parseJson" must {
       "parse Boolean true" in {
-        cornichonJson.parseJson(true) should be(JBool.True)
+        parseJson(true) should be(JBool.True)
       }
 
       "parse Boolean false" in {
-        cornichonJson.parseJson(false) should be(JBool.False)
+        parseJson(false) should be(JBool.False)
       }
 
       "parse Int" in {
-        cornichonJson.parseJson(3) should be(JInt(3))
+        parseJson(3) should be(JInt(3))
       }
 
       "parse Long" in {
-        cornichonJson.parseJson(3l) should be(JLong(3L))
+        parseJson(3l) should be(JLong(3L))
       }
 
       "parse Double" in {
-        cornichonJson.parseJson(3d) should be(JDouble(3d))
+        parseJson(3d) should be(JDouble(3d))
       }
 
       "parse BigDecimal" in {
-        cornichonJson.parseJson(BigDecimal(3.6d)) should be(JDecimal(3.6d))
+        parseJson(BigDecimal(3.6d)) should be(JDecimal(3.6d))
       }
 
       "parse flat string" in {
-        cornichonJson.parseJson("cornichon") should be(JString("cornichon"))
+        parseJson("cornichon") should be(JString("cornichon"))
       }
 
       "parse JSON object string" in {
-        cornichonJson.parseJson("""{"name":"cornichon"}""") should be(JObject(JField("name", JString("cornichon"))))
+        parseJson("""{"name":"cornichon"}""") should be(JObject(JField("name", JString("cornichon"))))
       }
 
       "parse JSON Array string" in {
-        cornichonJson.parseJson(
+        parseJson(
           """
            [
             {"name":"cornichon"},
@@ -58,7 +56,7 @@ class CornichonJsonSpec extends WordSpec with Matchers {
       }
 
       "parse data table" in {
-        cornichonJson.parseJson("""
+        parseJson("""
            |  Name  |   Age  | 2LettersName |
            | "John" |   50   |    false     |
            | "Bob"  |   11   |    true      |
@@ -78,7 +76,7 @@ class CornichonJsonSpec extends WordSpec with Matchers {
             ("Name", JString("John"))
           )
         )
-        cornichonJson.filterJsonRootKeys(input, Seq("2LettersName", "Name")) should be(JObject(List(("Age", JInt(50)))))
+        filterJsonRootKeys(input, Seq("2LettersName", "Name")) should be(JObject(List(("Age", JInt(50)))))
       }
 
       "remove only root keys" in {
@@ -86,7 +84,7 @@ class CornichonJsonSpec extends WordSpec with Matchers {
 
         val expected = ("age", 50) ~ ("brother" → ("name" → "john") ~ ("age", 40))
 
-        cornichonJson.filterJsonRootKeys(input, Seq("name")) should be(expected)
+        filterJsonRootKeys(input, Seq("name")) should be(expected)
       }
     }
   }

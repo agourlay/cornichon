@@ -4,7 +4,6 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ DataTableParser, HttpDsl }
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.http.HttpService
-import com.github.agourlay.cornichon.json.CornichonJson
 
 import org.json4s.JsonAST.JArray
 import org.json4s.jackson.JsonMethods._
@@ -23,7 +22,7 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  lazy val http = new HttpService(baseUrl, requestTimeout, HttpClient.globalAkkaClient, resolver, new CornichonJson, ec)
+  lazy val http = new HttpService(baseUrl, requestTimeout, HttpClient.globalAkkaClient, resolver, ec)
   lazy val baseUrl = ""
   lazy val requestTimeout = 2000 millis
   lazy val resolver = new Resolver(registerExtractors)

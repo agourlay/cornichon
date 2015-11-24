@@ -5,7 +5,6 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.stream.ActorMaterializer
 import com.github.agourlay.cornichon.core.{ Session, Resolver }
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
-import com.github.agourlay.cornichon.json.CornichonJson
 import org.scalatest.{ BeforeAndAfterAll, WordSpec, Matchers }
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -16,7 +15,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   implicit val mat = ActorMaterializer()
 
   val client = new AkkaHttpClient()
-  val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor(), new CornichonJson, ExecutionContext.global)
+  val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor(), ExecutionContext.global)
 
   override def afterAll() = {
     client.shutdown()
