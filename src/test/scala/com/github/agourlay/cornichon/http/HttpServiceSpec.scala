@@ -26,8 +26,8 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
     "fill in session" in {
       val s = Session.newSession
       val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
-      service.fillInHttpSession(s, resp).get("last-response-status") should be("200")
-      service.fillInHttpSession(s, resp).get("last-response-body") should be("hello world")
+      service.fillInHttpSession(s, resp, None).get("last-response-status") should be("200")
+      service.fillInHttpSession(s, resp, None).get("last-response-body") should be("hello world")
     }
   }
 }
