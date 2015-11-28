@@ -22,7 +22,7 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  lazy val http = new HttpService(baseUrl, requestTimeout, HttpClient.globalAkkaClient, resolver, ec)
+  lazy val http = httpServiceByURL(baseUrl)
   lazy val baseUrl = ""
   lazy val requestTimeout = 2000 millis
   lazy val resolver = new Resolver(registerExtractors)
@@ -36,6 +36,8 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
     val sprayArray = DataTableParser.parseDataTable(table).asSprayJson
     JArray(sprayArray.elements.map(v ⇒ parse(v.toString())).toList)
   }
+
+  def httpServiceByURL(baseUrl: String) = new HttpService(baseUrl, requestTimeout, HttpClient.globalAkkaClient, resolver, ec)
 
   def feature: FeatureDef
 

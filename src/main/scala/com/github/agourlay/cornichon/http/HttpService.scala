@@ -84,10 +84,11 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def fillInHttpSession(session: Session, response: CornichonHttpResponse, extractor: Option[String]): Session =
     extractor.fold(session) { e ⇒
       session.addValue(e, response.body)
-    }
-      .addValue(LastResponseStatusKey, response.status.intValue().toString)
-      .addValue(LastResponseBodyKey, response.body)
-      .addValue(LastResponseHeadersKey, response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(","))
+    }.addValues(Seq(
+      LastResponseStatusKey → response.status.intValue().toString,
+      LastResponseBodyKey → response.body,
+      LastResponseHeadersKey → response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(",")
+    ))
 
   // TODO accumulate errors
   def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
