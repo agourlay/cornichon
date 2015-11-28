@@ -30,11 +30,11 @@ class OpenMovieDatabase extends CornichonFeature {
             "Plot": "Several noble families fight for control of the mythical land of Westeros.",
             "Language": "English",
             "Country": "USA",
-            "Awards": "Won 1 Golden Globe. Another 133 wins & 248 nominations.",
-            "Poster": "http://ia.media-imdb.com/images/M/MV5BNTgxOTI4NzY2M15BMl5BanBnXkFtZTgwMjY3MTM2NDE@._V1_SX300.jpg",
+            "Awards": "Won 1 Golden Globe. Another 133 wins & 250 nominations.",
+            "Poster": "http://ia.media-imdb.com/images/M/MV5BMTYwOTEzMDMzMl5BMl5BanBnXkFtZTgwNzExODIzNzE@._V1_SX300.jpg",
             "Metascore": "N/A",
             "imdbRating": "9.5",
-            "imdbVotes": "868,876",
+            "imdbVotes": "877,359",
             "imdbID": "tt0944947",
             "Type": "series",
             "Response": "True"
@@ -140,7 +140,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "You Win or You Die",
                 "Released": "2011-05-29",
                 "Episode": "7",
-                "imdbRating": "8.2",
+                "imdbRating": "8.1",
                 "imdbID": "tt1837863"
               },
               {
@@ -179,7 +179,7 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "7.7"   | "tt1829963" |
             | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "8.0"   | "tt1829964" |
             | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
-            | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.2"   | "tt1837863" |
+            | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
             | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
             | "Baelor"                                | "2011-06-12" |   "9"   |    "8.6"   | "tt1851398" |
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
