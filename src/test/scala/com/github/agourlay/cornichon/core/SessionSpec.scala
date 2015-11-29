@@ -57,6 +57,15 @@ class SessionSpec extends WordSpec with Matchers with PropertyChecks {
           s.addValue(key, secondValue).get(key, Some(1)) should be(secondValue)
         }
       }
+
+      "thrown an error if the indice is negative" in {
+        forAll(keyGen, valueGen) { (key, firstValue) ⇒
+          val s = Session.newSession.addValue(key, firstValue)
+          intercept[KeyNotFoundInSession] {
+            s.get(key, Some(-1))
+          }
+        }
+      }
     }
 
     "getList" must {
@@ -101,5 +110,10 @@ class SessionSpec extends WordSpec with Matchers with PropertyChecks {
 
 object SessionSpec {
   val keyGen = Gen.alphaStr.filter(_.nonEmpty)
+  def keysGen(n: Int) = Gen.listOfN(n, keyGen)
+
   val valueGen = Gen.alphaStr
+  def valuesGen(n: Int) = Gen.listOfN(n, valueGen)
+
+  val indiceGen = Gen.choose(0, Int.MaxValue)
 }

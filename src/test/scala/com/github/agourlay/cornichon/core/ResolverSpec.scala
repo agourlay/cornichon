@@ -1,8 +1,11 @@
 package com.github.agourlay.cornichon.core
 
+import java.util.UUID
+
 import cats.data.Xor._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ OptionValues, Matchers, WordSpec }
+import org.scalacheck.Gen
 import SessionSpec._
 
 class ResolverSpec extends WordSpec with Matchers with OptionValues with PropertyChecks {
@@ -12,27 +15,47 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
   "Resolver" when {
     "findPlaceholders" must {
       "find placeholder in content solely containing a placeholder without index" in {
-        resolver.findPlaceholders("<test>") should be(List(Placeholder("test", None)))
+        forAll(keyGen) { key ⇒
+          resolver.findPlaceholders(s"<$key>") should be(List(Placeholder(key, None)))
+        }
       }
 
       "find placeholder in content solely containing a placeholder with index" in {
-        resolver.findPlaceholders("<test[1]>") should be(List(Placeholder("test", Some(1))))
+        forAll(keyGen, indiceGen) { (key, indice) ⇒
+          resolver.findPlaceholders(s"<$key[$indice]>") should be(List(Placeholder(key, Some(indice))))
+        }
       }
 
       "find placeholder in content starting with whitespace and containing a placeholder" in {
-        resolver.findPlaceholders(" <test>") should be(List(Placeholder("test", None)))
+        forAll(keyGen) { key ⇒
+          resolver.findPlaceholders(s" <$key>") should be(List(Placeholder(key, None)))
+        }
       }
 
       "find placeholder in content starting with 2 whitespaces and containing a placeholder" in {
-        resolver.findPlaceholders("  <test>") should be(List(Placeholder("test", None)))
+        forAll(keyGen) { key ⇒
+          resolver.findPlaceholders(s"  <$key>") should be(List(Placeholder(key, None)))
+        }
       }
 
       "find placeholder in content finishing with whitespace and containing a placeholder" in {
-        resolver.findPlaceholders("<test> ") should be(List(Placeholder("test", None)))
+        forAll(keyGen) { key ⇒
+          resolver.findPlaceholders(s"<$key> ") should be(List(Placeholder(key, None)))
+        }
       }
 
       "find placeholder in content finishing with 2 whitespaces and containing a placeholder" in {
-        resolver.findPlaceholders("<test>  ") should be(List(Placeholder("test", None)))
+        forAll(keyGen) { key ⇒
+          resolver.findPlaceholders(s"<$key>  ") should be(List(Placeholder(key, None)))
+        }
+      }
+
+      "find placeholder in random content containing a placeholder with index" in {
+        forAll(keyGen, indiceGen) { (key, indice) ⇒
+          val content1 = Gen.alphaStr
+          val content2 = Gen.alphaStr
+          resolver.findPlaceholders(s"$content1<$key[$indice]>$content1") should be(List(Placeholder(key, Some(indice))))
+        }
       }
     }
 
@@ -71,7 +94,7 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
         resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("project-new-name", session)))
       }
 
-      "replace two strings" in {
+      "resolve two placeholders" in {
         val session = Session.newSession.addValues(Seq("project-name" → "cornichon", "taste" → "tasty"))
         val content = "This project is named <project-name> and is super <taste>"
         resolver.fillPlaceholders(content)(session) should be(right("This project is named cornichon and is super tasty"))
@@ -83,22 +106,27 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
         resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("new-taste", session)))
       }
 
-      "generate random-uuid" in {
+      "generate random uuid if <random-uuid>" in {
         val session = Session.newSession
         val content = "<random-uuid>"
-        resolver.fillPlaceholders(content)(session) should not be right("<random-uuid>")
+        // throws if invalid UUID
+        UUID.fromString(resolver.fillPlaceholders(content)(session).getOrElse(""))
       }
 
-      "stacked key with indice zero always takes the first value in session" in {
-        val s = Session.newSession.addValue("one", "v1").addValue("one", "v2")
-        val content = "<one[0]>"
-        resolver.fillPlaceholders(content)(s) should be(right("v1"))
+      "take the first value in session if indice = 0" in {
+        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+          val s = Session.newSession.addValue(key, firstValue).addValue(key, secondValue)
+          val content = s"<$key[0]>"
+          resolver.fillPlaceholders(content)(s) should be(right(firstValue))
+        }
       }
 
-      "stacked key with indice one always takes the second value in session" in {
-        val s = Session.newSession.addValue("one", "v1").addValue("one", "v2")
-        val content = "<one[1]>"
-        resolver.fillPlaceholders(content)(s) should be(right("v2"))
+      "take the second value in session if indice = 1" in {
+        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+          val s = Session.newSession.addValue(key, firstValue).addValue(key, secondValue)
+          val content = s"<$key[1]>"
+          resolver.fillPlaceholders(content)(s) should be(right(secondValue))
+        }
       }
     }
   }

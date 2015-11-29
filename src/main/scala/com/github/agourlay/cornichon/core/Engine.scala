@@ -113,7 +113,7 @@ class Engine(executionContext: ExecutionContext) {
       case Failure(e)                           ⇒ left(toCornichonError(e))
     }
 
-  private def toCornichonError(exception: Throwable): CornichonError = exception match {
+  private[cornichon] def toCornichonError(exception: Throwable): CornichonError = exception match {
     case ce: CornichonError ⇒ ce
     case _                  ⇒ StepExecutionError(exception)
   }
