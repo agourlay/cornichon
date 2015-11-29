@@ -2,35 +2,42 @@ package com.github.agourlay.cornichon.json
 
 import org.json4s._
 import org.json4s.JsonDSL._
+import org.scalatest.prop.PropertyChecks
 
 import org.scalatest.{ Matchers, WordSpec }
 
-class CornichonJsonSpec extends WordSpec with Matchers with CornichonJson {
+class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with CornichonJson {
 
   "CornichonJson" when {
     "parseJson" must {
-      "parse Boolean true" in {
-        parseJson(true) should be(JBool.True)
-      }
-
-      "parse Boolean false" in {
-        parseJson(false) should be(JBool.False)
+      "parse Boolean" in {
+        forAll { bool: Boolean ⇒
+          parseJson(bool) should be(JBool(bool))
+        }
       }
 
       "parse Int" in {
-        parseJson(3) should be(JInt(3))
+        forAll { int: Int ⇒
+          parseJson(int) should be(JInt(int))
+        }
       }
 
       "parse Long" in {
-        parseJson(3l) should be(JLong(3L))
+        forAll { long: Long ⇒
+          parseJson(long) should be(JLong(long))
+        }
       }
 
       "parse Double" in {
-        parseJson(3d) should be(JDouble(3d))
+        forAll { double: Double ⇒
+          parseJson(double) should be(JDouble(double))
+        }
       }
 
       "parse BigDecimal" in {
-        parseJson(BigDecimal(3.6d)) should be(JDecimal(3.6d))
+        forAll { bigDec: BigDecimal ⇒
+          parseJson(bigDec) should be(JDecimal(bigDec))
+        }
       }
 
       "parse flat string" in {

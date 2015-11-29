@@ -1,59 +1,105 @@
 package com.github.agourlay.cornichon.core
 
+import org.scalatest.prop.PropertyChecks
+import org.scalacheck.Gen
 import org.scalatest.{ Matchers, WordSpec }
+import SessionSpec._
 
-class SessionSpec extends WordSpec with Matchers {
+class SessionSpec extends WordSpec with Matchers with PropertyChecks {
 
   "Session" when {
+    "addValue" must {
+      "throw if key is empty" in {
+        val s = Session.newSession
+        forAll(valueGen) { value ⇒
+          intercept[EmptyKeyException] {
+            s.addValue("", value)
+          }
+        }
+      }
+    }
+
     "get" must {
-      "get throws error if key does not exist" in {
-        val s = Session.newSession
-        intercept[KeyNotFoundInSession] {
-          s.get("blah")
+      "return a written value" in {
+        forAll(keyGen, valueGen) { (key, value) ⇒
+          val s1 = Session.newSession
+          val s2 = s1.addValue(key, value)
+          s2.get(key) should be(value)
         }
       }
 
-      "getList throws error if one of the key does not exist" in {
-        val s = Session.newSession
-        s.addValue("one", "v1").addValue("two", "v2")
-        intercept[KeyNotFoundInSession] {
-          s.getList(Seq("one", "three"))
+      "throw an error if the key does not exist" in {
+        forAll(keyGen) { key ⇒
+          val s = Session.newSession
+          intercept[KeyNotFoundInSession] {
+            s.get(key)
+          }
         }
       }
 
-      "getOpt return None if key does not exist" in {
-        val s = Session.newSession
-        s.getOpt("blah") should be(None)
+      "take the last value in session without index param" in {
+        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+          val s = Session.newSession.addValue(key, firstValue)
+          s.addValue(key, secondValue).get(key) should be(secondValue)
+        }
       }
 
-      "get without index param always takes the last value in session" in {
-        val s = Session.newSession.addValue("one", "v1")
-        s.addValue("one", "v2").get("one") should be("v2")
+      "take the first value in session with indice = zero" in {
+        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+          val s = Session.newSession.addValue(key, firstValue)
+          s.addValue(key, secondValue).get(key, Some(0)) should be(firstValue)
+        }
       }
 
-      "get with indice zero always takes the first value in session" in {
-        val s = Session.newSession.addValue("one", "v1")
-        s.addValue("one", "v2").get("one", Some(0)) should be("v1")
+      "take the second value in session with indice = 1" in {
+        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+          val s = Session.newSession.addValue(key, firstValue)
+          s.addValue(key, secondValue).get(key, Some(1)) should be(secondValue)
+        }
       }
+    }
 
-      "get with indice one always takes the second value in session" in {
-        val s = Session.newSession.addValue("one", "v1")
-        s.addValue("one", "v2").get("one", Some(1)) should be("v2")
+    "getList" must {
+      "throw an error if one of the key does not exist" in {
+        forAll(keyGen, keyGen, keyGen, valueGen, valueGen) { (firstKey, secondKey, thirdKey, firstValue, secondValue) ⇒
+          val s = Session.newSession
+          s.addValue(firstKey, firstValue).addValue(secondKey, secondValue)
+          intercept[KeyNotFoundInSession] {
+            s.getList(Seq(firstKey, thirdKey))
+          }
+        }
+      }
+    }
+
+    "getOps" must {
+      "return None if key does not exist" in {
+        forAll(keyGen) { key ⇒
+          val s = Session.newSession
+          s.getOpt(key) should be(None)
+        }
       }
     }
 
     "removeKey" must {
-
-      "removeKey works" in {
-        val s = Session.newSession.addValue("one", "v1")
-        s.get("one") should be("v1")
-        s.removeKey("one").getOpt("one") should be(None)
+      "remove entry" in {
+        forAll(keyGen, valueGen) { (key, value) ⇒
+          val s = Session.newSession.addValue(key, value)
+          s.get(key) should be(value)
+          s.removeKey(key).getOpt(key) should be(None)
+        }
       }
 
-      "removeKey does not throw error if key does not exist" in {
-        val s = Session.newSession
-        s.removeKey("blah")
+      "not throw error if key does not exist" in {
+        forAll(keyGen) { key ⇒
+          val s = Session.newSession
+          s.removeKey(key)
+        }
       }
     }
   }
+}
+
+object SessionSpec {
+  val keyGen = Gen.alphaStr.filter(_.nonEmpty)
+  val valueGen = Gen.alphaStr
 }

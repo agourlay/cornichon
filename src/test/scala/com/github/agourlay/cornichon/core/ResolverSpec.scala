@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.core
 
 import cats.data.Xor._
+import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ OptionValues, Matchers, WordSpec }
+import SessionSpec._
 
-import scala.collection.immutable.HashMap
-
-class ResolverSpec extends WordSpec with Matchers with OptionValues {
+class ResolverSpec extends WordSpec with Matchers with OptionValues with PropertyChecks {
 
   val resolver = Resolver.withoutExtractor()
 
@@ -38,15 +38,19 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues {
 
     "fillPlaceholders" must {
       "replace a single string" in {
-        val session = Session.newSession.addValue("project-name", "cornichon")
-        val content = "This project is named <project-name>"
-        resolver.fillPlaceholders(content)(session) should be(right("This project is named cornichon"))
+        forAll(keyGen, valueGen) { (ph, value) ⇒
+          val session = Session.newSession.addValue(ph, value)
+          val content = s"This project is <$ph>"
+          resolver.fillPlaceholders(content)(session) should be(right(s"This project is $value"))
+        }
       }
 
       "not be confused by markup order" in {
-        val session = Session.newSession.addValue("project-name", "cornichon")
-        val content = "This project is named >project-name<"
-        resolver.fillPlaceholders(content)(session) should be(right("This project is named >project-name<"))
+        forAll(keyGen, valueGen) { (ph, value) ⇒
+          val session = Session.newSession.addValue(ph, value)
+          val content = s"This project is >$ph<"
+          resolver.fillPlaceholders(content)(session) should be(right(s"This project is >$ph<"))
+        }
       }
 
       "not be confused if key contains empty string" in {

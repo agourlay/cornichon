@@ -38,6 +38,7 @@ libraryDependencies ++= {
   val logbackV = "1.1.3"
   val parboiledV = "2.1.0"
   val akkaSseV = "1.2.1"
+  val scalacheckV = "1.12.5"
   Seq(
      "com.typesafe.akka" %% "akka-http-core-experimental"       % akkaHttpV
     ,"de.heikoseeberger" %% "akka-sse"                          % akkaSseV
@@ -48,8 +49,9 @@ libraryDependencies ++= {
     ,"org.scalatest"     %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
     ,"org.parboiled"     %% "parboiled"                         % parboiledV
-    ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV  % "test"
-    ,"com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV  % "test"
+    ,"org.scalacheck"    %% "scalacheck"                        % scalacheckV % "test"
+    ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
+    ,"com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV   % "test"
   )
 }
 

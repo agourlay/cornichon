@@ -27,9 +27,11 @@ case class Session(content: HashMap[String, Vector[String]]) extends CornichonJs
   def getList(keys: Seq[String]) = keys.map(v ⇒ get(v))
 
   def addValue(key: String, value: String) =
-    content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
-      Session((content - key) + (key → values.:+(value)))
-    }
+    if (key.trim.isEmpty) throw new EmptyKeyException(this)
+    else
+      content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
+        Session((content - key) + (key → values.:+(value)))
+      }
 
   def addValues(tuples: Seq[(String, String)]) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
 

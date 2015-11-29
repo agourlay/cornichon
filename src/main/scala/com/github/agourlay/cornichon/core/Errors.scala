@@ -61,6 +61,10 @@ case class ResolverParsingError(error: Throwable) extends CornichonError {
   val msg = s"error thrown during resolver parsing ${error.getMessage}"
 }
 
+case class EmptyKeyException(s: Session) extends CornichonError {
+  val msg = s"key value can not be empty - session is \n${s.prettyPrint}"
+}
+
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
   val msg = s"key '$key' can not be found in session : \n${s.prettyPrint}"
 }
