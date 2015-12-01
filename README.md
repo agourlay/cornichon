@@ -3,21 +3,91 @@ cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=m
 
 [![Join the chat at https://gitter.im/agourlay/cornichon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-A Scala DSL for testing JSON HTTP API 
-
-Quick example? It looks like [this](#usage)
-
-Inside a Scala project, place your Cornichon tests in ```src/test/scala``` and run them using ```sbt test```.
-
-## Motivation
-
-Offering an extensible DSL to specify behaviours of JSON HTTP APIs in Scala.
+An extensible Scala DSL for testing JSON HTTP APIs.
 
 ## Installation
 
 ``` scala
 libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.2.4" % "test"
 ```
+
+## Quick overview
+
+Create a class extending ```CornichonFeature``` and implement the ```feature``` function as presented below.
+
+```scala
+
+class ReadmeExample extends CornichonFeature {
+
+  def feature = Feature("OpenMovieDatabase API"){ implicit a ⇒
+
+      Scenario("list GOT season 1 episodes"){ implicit b =>
+      
+          When I GET("http://www.omdbapi.com", params = "t" -> "Game of Thrones", "Season" -> "1")
+    
+          Then assert status_is(200)
+    
+          And assert body_is("""
+            {
+              "Title": "Game of Thrones",
+              "Season": "1"
+            }
+            """, ignoring = "Episodes", "Response")
+    
+    
+          And assert body_is(_ \ "Episodes",
+            """
+              |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
+              | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
+              | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "7.8"   | "tt1668746" |
+              | "Lord Snow"                             | "2011-05-01" |   "3"   |    "7.6"   | "tt1829962" |
+              | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "7.7"   | "tt1829963" |
+              | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "8.0"   | "tt1829964" |
+              | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
+              | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
+              | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
+              | "Baelor"                                | "2011-06-12" |   "9"   |    "8.6"   | "tt1851398" |
+              | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
+            """)
+    
+          And assert body_array_size_is(_ \ "Episodes", 10)
+    
+          And assert body_is(b => (b \ "Episodes")(0),
+            """
+            {
+              "Title": "Winter Is Coming",
+              "Released": "2011-04-17",
+              "Episode": "1",
+              "imdbRating": "8.1",
+              "imdbID": "tt1480055"
+            }
+            """)
+    
+          And assert body_is(b => (b \ "Episodes")(0) \ "Released", "2011-04-17")
+    
+          And assert body_array_contains(_ \ "Episodes", 
+            """
+            {
+              "Title": "Winter Is Coming",
+              "Released": "2011-04-17",
+              "Episode": "1",
+              "imdbRating": "8.1",
+              "imdbID": "tt1480055"
+            }
+            """)
+      }
+  }
+}
+```
+
+Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), so place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
+
+For more examples see the following files which are part of the test pipeline:
+
+- [OpenMovieDatabase API](https://github.com/agourlay/cornichon/blob/master/src/it/scala/com/github/agourlay/cornichon/examples/OpenMovieDatabase.scala).
+
+- [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
+
 
 ## Structure
 
@@ -448,42 +518,6 @@ It becomes then possible to retrieve past values :
 - ```<name>``` always uses the latest value taken by the key.
 - ```<name[0]>``` uses the first value taken by the key
 - ```<name[1]>``` uses the second element taken by the key
-
-
-## Usage
-
-Create a test Scala class extending ```CornichonFeature``` and implement the ```feature``` function as presented below.
-
-```scala
-class CornichonReadmeExample extends CornichonFeature {
-
-  def feature = 
-    Feature("Cornichon feature Example"){ implicit scenarioBuilder ⇒
-
-      Scenario("Test read demo"){ implicit stepBuilder ⇒
-      
-        When I GET("myUrl/superheroes/Batman")
-
-        Then assert status_is(200)
-
-        And assert body_is(
-          """
-          {
-            "name": "Batman",
-            "realName": "Bruce Wayne",
-            "city": "Gotham city",
-            "publisher": "DC"
-          }
-          """
-        )
-      }
-    }
-}
-```
-
-Cornichon is currently integrated with ScalaTest, so you just have to run ```sbt run``` to trigger its execution.
-
-For more examples see the following [file](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
 
 ## Feature options
 
