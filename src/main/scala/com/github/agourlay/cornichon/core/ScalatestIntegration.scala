@@ -7,8 +7,15 @@ import scala.Console._
 trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution with CornichonLogger {
   this: CornichonFeature ⇒
 
-  override def beforeAll() = beforeFeature.foreach(f ⇒ f())
-  override def afterAll() = afterFeature.foreach(f ⇒ f())
+  override def beforeAll() = {
+    registerFeature()
+    beforeFeature.foreach(f ⇒ f())
+  }
+
+  override def afterAll() = {
+    afterFeature.foreach(f ⇒ f())
+    unregisterFeature()
+  }
 
   val featureDef = feature
 

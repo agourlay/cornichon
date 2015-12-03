@@ -14,9 +14,17 @@ Add the library dependency
 libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.2.4" % "test"
 ```
 
-Then create a class extending ```CornichonFeature``` and implement the ```feature``` function as presented below.
+Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), so place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
+
+A ```Feature``` is a class extending ```CornichonFeature``` and implementing the required ```feature``` function.
+ 
+How does it look like? 
+
+Find below an example of testing the Open Movie Database API.
 
 ```scala
+
+import com.github.agourlay.cornichon.CornichonFeature
 
 class ReadmeExample extends CornichonFeature {
 
@@ -79,8 +87,6 @@ class ReadmeExample extends CornichonFeature {
   }
 }
 ```
-
-Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), so place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
 
 For more examples see the following files which are part of the test pipeline:
 

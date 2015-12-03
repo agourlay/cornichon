@@ -24,14 +24,3 @@ trait HttpClient {
 
   def shutdown(): Future[Unit]
 }
-
-object HttpClient {
-  import akka.stream.ActorMaterializer
-  import akka.actor.ActorSystem
-
-  val globalAkkaClient = {
-    implicit val system = ActorSystem("akka-http-client")
-    implicit val mat = ActorMaterializer()
-    new AkkaHttpClient()
-  }
-}
