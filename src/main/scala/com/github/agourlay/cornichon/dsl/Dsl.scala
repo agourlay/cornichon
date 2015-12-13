@@ -145,6 +145,8 @@ trait Dsl extends CornichonLogger {
       s"Session content for key '$key' is '$value'"
     }
 
+  def print_step(message: String) = DebugStep(s ⇒ message)
+
   def log(msg: String): Unit = {
     msg.split('\n').foreach { m ⇒
       logger.info(CYAN + s"   $m" + RESET)
