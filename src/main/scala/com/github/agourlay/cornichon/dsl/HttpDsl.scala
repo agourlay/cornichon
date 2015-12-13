@@ -122,6 +122,19 @@ trait HttpDsl extends Dsl with CornichonJson {
       title = s"response body with transformation is '$expected'"
     )
 
+  // FIXME can't use varargs here, it does not compile when 'expected' is a String
+  def body_is[A](mapFct: JValue ⇒ JValue, expected: A, ignoring: Seq[String]) =
+    transform_assert_session(
+      key = LastResponseBodyKey,
+      expected = s ⇒ resolveAndParse(expected, s),
+      (s, sessionValue) ⇒ {
+        val mapped = mapFct(parseJson(sessionValue))
+        if (ignoring.isEmpty) mapped
+        else filterJsonRootKeys(mapped, ignoring)
+      },
+      title = s"response body with transformation is '$expected'"
+    )
+
   def body_is(whiteList: Boolean = false, expected: String): ExecutableStep[JValue] = {
     transform_assert_session(
       key = LastResponseBodyKey,

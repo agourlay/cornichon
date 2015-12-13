@@ -71,6 +71,14 @@ class CornichonExamplesSpec extends CornichonFeature {
             "location":"Burbank, California"
           } """)
 
+        // No varargs
+        Then assert body_is(_ \ "publisher", expected =
+          """
+          {
+            "name":"DC",
+            "foundationYear":1934
+          } """, ignoring = Seq("location"))
+
         Then assert body_is(_ \ "publisher" \ "name", "DC")
 
         Then assert body_is(_ \ "publisher" \ "foundationYear", 1934)
