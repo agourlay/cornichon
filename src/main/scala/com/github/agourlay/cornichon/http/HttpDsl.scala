@@ -1,11 +1,10 @@
-package com.github.agourlay.cornichon.dsl
+package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ExecutableStep._
-import com.github.agourlay.cornichon.http.HttpService
+import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.dsl.{ Dsl, DslListBuilder }
 import com.github.agourlay.cornichon.json.CornichonJson
-
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 

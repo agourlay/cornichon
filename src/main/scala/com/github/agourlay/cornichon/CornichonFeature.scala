@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.{ DataTableParser, HttpDsl }
-import com.github.agourlay.cornichon.http.HttpService
+import com.github.agourlay.cornichon.dsl.DataTableParser
+import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 
 import org.json4s.JsonAST.JArray
 import org.json4s.jackson.JsonMethods._
