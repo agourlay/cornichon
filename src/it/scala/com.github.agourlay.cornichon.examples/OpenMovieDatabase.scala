@@ -181,7 +181,7 @@ class OpenMovieDatabase extends CornichonFeature {
             | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
             | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
             | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
-            | "Baelor"                                | "2011-06-12" |   "9"   |    "8.6"   | "tt1851398" |
+            | "Baelor"                                | "2011-06-12" |   "9"   |    "8.5"   | "tt1851398" |
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
 
