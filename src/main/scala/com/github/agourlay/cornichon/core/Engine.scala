@@ -44,9 +44,9 @@ class Engine(executionContext: ExecutionContext) {
           buildFailedRunSteps(steps, e, MalformedConcurrentBlock, updatedLogs)
         } else {
           val nextDepth = depth + 1
-          val now = System.nanoTime
+          val start = System.nanoTime
           val res = retryEventuallySteps(eventuallySteps, session, conf, Vector.empty, nextDepth)
-          val executionTime = Duration.fromNanos(System.nanoTime - now)
+          val executionTime = Duration.fromNanos(System.nanoTime - start)
           val nextSteps = steps.tail.drop(eventuallySteps.size)
           res match {
             case s @ SuccessRunSteps(sSession, sLogs) ⇒
@@ -73,7 +73,7 @@ class Engine(executionContext: ExecutionContext) {
           buildFailedRunSteps(steps, c, MalformedConcurrentBlock, innerLogs)
         } else {
           val nextDepth = depth + 1
-          val now = System.nanoTime
+          val start = System.nanoTime
           val results = Await.result(
             Future.traverse(List.fill(factor)(concurrentSteps)) { steps ⇒
               Future {
@@ -85,7 +85,7 @@ class Engine(executionContext: ExecutionContext) {
           val failedStepRun = results.collectFirst { case f @ FailedRunSteps(_, _, _) ⇒ f }
           val nextSteps = steps.tail.drop(concurrentSteps.size)
           failedStepRun.fold {
-            val executionTime = Duration.fromNanos(System.nanoTime - now)
+            val executionTime = Duration.fromNanos(System.nanoTime - start)
             val successStepsRun = results.collect { case s @ SuccessRunSteps(_, _) ⇒ s }
             val updatedSession = successStepsRun.head.session
             val updatedLogs = successStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently block with factor '$factor' succeeded in ${executionTime.toMillis} millis.", GREEN, nextDepth)
@@ -173,11 +173,14 @@ class Engine(executionContext: ExecutionContext) {
     val now = System.nanoTime
     val res = runSteps(steps, session, Vector.empty, depth)
     val executionTime = Duration.fromNanos(System.nanoTime - now)
+    val remainingTime = conf.maxTime - executionTime
     res match {
-      case s @ SuccessRunSteps(_, sLogs) ⇒ s.copy(logs = accLogs ++ sLogs)
+      case s @ SuccessRunSteps(_, sLogs) ⇒
+        val runLogs = accLogs ++ sLogs
+        if (remainingTime.gt(Duration.Zero)) s.copy(logs = runLogs)
+        else buildFailedRunSteps(steps, steps.last, EventuallyBlockSucceedAfterMaxDuration, runLogs)
       case f @ FailedRunSteps(failed, _, fLogs) ⇒
-        val remainingTime = conf.maxTime - executionTime
-        if (remainingTime.gt(Duration.Zero)) {
+        if ((remainingTime - conf.interval).gt(Duration.Zero)) {
           val updatedLogs = accLogs ++ fLogs
           Thread.sleep(conf.interval.toMillis)
           retryEventuallySteps(steps, session, conf.consume(executionTime + conf.interval), updatedLogs, depth)

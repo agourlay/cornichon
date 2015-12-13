@@ -94,3 +94,7 @@ case object MalformedConcurrentBlock extends CornichonError {
 case object MalformedEventuallyBlock extends CornichonError {
   val msg = "malformed eventually block without closing 'EventuallyStop'"
 }
+
+case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
+  val msg = "eventually block succeeded after 'maxDuration'"
+}

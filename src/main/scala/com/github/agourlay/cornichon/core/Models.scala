@@ -61,8 +61,8 @@ case class EventuallyStop(conf: EventuallyConf) extends EventuallyStep {
 }
 
 case class EventuallyConf(maxTime: Duration, interval: Duration) {
-  def consume(duration: Duration) = {
-    val rest = maxTime - duration
+  def consume(burnt: Duration) = {
+    val rest = maxTime - burnt
     val newMax = if (rest.lteq(Duration.Zero)) Duration.Zero else rest
     copy(maxTime = newMax)
   }
