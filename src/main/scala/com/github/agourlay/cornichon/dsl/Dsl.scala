@@ -133,7 +133,7 @@ trait Dsl extends CornichonLogger {
     ExecutableStep(
       title = title.getOrElse(s"session '$key' equals '$value'"),
       action = s ⇒ {
-        (s, SimpleStepAssertion(value, s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(identity)))
+        (s, SimpleStepAssertion(value, s.get(key)))
       }
     )
 
@@ -141,7 +141,7 @@ trait Dsl extends CornichonLogger {
 
   def show_session(key: String) =
     DebugStep { s ⇒
-      val value = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ v)
+      val value = s.get(key)
       s"Session content for key '$key' is '$value'"
     }
 
