@@ -4,6 +4,8 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import org.json4s.JsonAST.JValue
+import org.json4s.jackson.JsonMethods._
 import org.parboiled2._
 
 import scala.util._
@@ -28,7 +30,7 @@ class Resolver(extractors: Map[String, Mapper]) {
         session.getOpt(other, ph.index).map(right).getOrElse(left(SimpleResolverError(other, session)))
       } { mapper ⇒
         Try {
-          session.getOpt(mapper.key, ph.index).map(mapper.transform)
+          session.getOpt(mapper.key, ph.index).map(runCustomMapper(_, mapper))
         } match {
           case Success(value) ⇒ value.map(right).getOrElse(left(SimpleResolverError(other, session)))
           case Failure(e) ⇒
@@ -67,6 +69,11 @@ class Resolver(extractors: Map[String, Mapper]) {
 
     loop(params, session, Seq.empty[(String, String)])
   }
+
+  def runCustomMapper(input: String, mapper: Mapper) = mapper match {
+    case TextMapper(_, extract) ⇒ extract(input)
+    case JsonMapper(_, extract) ⇒ extract(parse(input))
+  }
 }
 
 object Resolver {
@@ -98,4 +105,10 @@ case class Placeholder(key: String, index: Option[Int]) {
   val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
 }
 
-case class Mapper(key: String, transform: String ⇒ String)
+sealed trait Mapper {
+  val key: String
+}
+
+case class TextMapper(key: String, extract: String ⇒ String) extends Mapper
+
+case class JsonMapper(key: String, extract: JValue ⇒ String) extends Mapper

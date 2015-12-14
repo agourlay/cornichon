@@ -5,10 +5,9 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.Mapper
+import com.github.agourlay.cornichon.core.JsonMapper
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
-import org.json4s.jackson.JsonMethods._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -499,6 +498,6 @@ class CornichonExamplesSpec extends CornichonFeature {
   }
 
   override def registerExtractors = Map(
-    "name" → Mapper(HttpService.LastResponseBodyKey, v ⇒ (parse(v) \ "name").values.toString)
+    "name" → JsonMapper(HttpService.LastResponseBodyKey, v ⇒ (v \ "name").values.toString)
   )
 }
