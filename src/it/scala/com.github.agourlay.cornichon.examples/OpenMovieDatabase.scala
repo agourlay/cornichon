@@ -154,7 +154,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "Baelor",
                 "Released": "2011-06-12",
                 "Episode": "9",
-                "imdbRating": "8.6",
+                "imdbRating": "8.5",
                 "imdbID": "tt1851398"
               },
               {
