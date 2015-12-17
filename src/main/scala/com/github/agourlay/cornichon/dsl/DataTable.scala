@@ -58,7 +58,7 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
 
   def asSprayJson: JsArray = {
     val map = asSprayMap
-    val tmp = for (i ← rows.indices) yield map.mapValues(v ⇒ v(i))
+    val tmp = for (i ← rows.indices) yield map.map { case (k, v) ⇒ k → v(i) }
     JsArray(tmp.map(JsObject(_)).toVector)
   }
 }
