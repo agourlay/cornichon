@@ -306,13 +306,13 @@ session_contains("favorite-superhero" → "Batman")
 - showing sessing content for debugging purpose
 
 ```scala
- And debug show_session
+ And I show_session
 
- And debug show_last_status
+ And I show_last_status
 
- And debug show_last_response_body
+ And I show_last_response_body
 
- And debug show_last_response_headers
+ And I show_last_response_headers
 ```
 
 - repeating a series of ```steps``` (can be nested)
@@ -391,7 +391,7 @@ A ```step``` is an abstraction describing an action which is a function turning 
 In terms of Scala data type it is
 
 ```scala
-case class ExecutableStep[A](
+case class RunnableStep[A](
   title: String,
   action: Session ⇒ (Session, StepAssertion[A])
 )
@@ -411,30 +411,30 @@ The engine will try its best to provide a meaningful error message, if a specifi
 
 The engine will feed the actual reasult to the ```details``` function.
 
-In practice the simplest executable statement in the DSL is
+In practice the simplest runnable statement in the DSL is
 
 ```scala
-When I ExecutableStep("do nothing", s => (s, StepAssertion(true, true)))
+When I RunnableStep("do nothing", s => (s, StepAssertion(true, true)))
 ```
 
 Let's try to assert the result of a computation
 
 ```scala
-When I ExecutableStep("calculate", s => (s, StepAssertion(2 + 2, 4)))
+When I RunnableStep("calculate", s => (s, StepAssertion(2 + 2, 4)))
 ```
 
 The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
 
 
 ```scala
-When I ExecutableStep(
+When I RunnableStep(
   title = "run crazy computation",
   action = s => {
     val res = crazy-computation()
     (s.add("result", res.infos),StepAssertion(res.isSuccess, true))
   })
 
-Then assert ExecutableStep(
+Then assert RunnableStep(
   title = "check computation infos",
   action = s => {
     val resInfos = s.get("result")
@@ -636,7 +636,7 @@ See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest do
 
 The ```steps``` execution logs will only be shown if:
 - the scenario fails
-- the scenario succeeded and contains at least one debug step such as ```And debug show_last_status```
+- the scenario succeeded and contains at least one ```DebugStep``` such as ```And I show_last_status```
 
 
 ## Implicit builder

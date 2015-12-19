@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.ExecutableStep._
+import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ Dsl, DslListBuilder }
 import com.github.agourlay.cornichon.json.CornichonJson
@@ -21,7 +21,7 @@ trait HttpDsl extends Dsl with CornichonJson {
 
   sealed trait WithoutPayload extends Request {
     def apply(url: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      effectStep(
+      effectful(
         title = {
         val base = s"$name $url"
         if (params.isEmpty) base
@@ -37,7 +37,7 @@ trait HttpDsl extends Dsl with CornichonJson {
 
   sealed trait WithPayload extends Request {
     def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      effectStep(
+      effectful(
         title = {
         val base = s"$name to $url with payload $payload"
         if (params.isEmpty) base
@@ -53,7 +53,7 @@ trait HttpDsl extends Dsl with CornichonJson {
 
   sealed trait Streamed extends Request {
     def apply(url: String, takeWithin: FiniteDuration, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      effectStep(
+      effectful(
         title = {
         val base = s"$name $url"
         if (params.isEmpty) base
@@ -92,7 +92,7 @@ trait HttpDsl extends Dsl with CornichonJson {
   }
 
   def status_is(status: Int) =
-    ExecutableStep(
+    RunnableStep(
       title = s"status is '$status'",
       action = s ⇒ {
       (s, DetailedStepAssertion(
@@ -134,7 +134,7 @@ trait HttpDsl extends Dsl with CornichonJson {
       title = s"response body with transformation is '$expected'"
     )
 
-  def body_is(whiteList: Boolean = false, expected: String): ExecutableStep[JValue] = {
+  def body_is(whiteList: Boolean = false, expected: String): RunnableStep[JValue] = {
     transform_assert_session(
       key = LastResponseBodyKey,
       title = s"response body is '$expected' with whiteList=$whiteList",
@@ -152,7 +152,7 @@ trait HttpDsl extends Dsl with CornichonJson {
     )
   }
 
-  def body_is(expected: String, ignoring: String*): ExecutableStep[JValue] =
+  def body_is(expected: String, ignoring: String*): RunnableStep[JValue] =
     transform_assert_session(
       key = LastResponseBodyKey,
       title = titleBuilder(s"response body is '$expected'", ignoring),
@@ -165,7 +165,7 @@ trait HttpDsl extends Dsl with CornichonJson {
         }
     )
 
-  def body_is[A](ordered: Boolean, expected: A, ignoring: String*): ExecutableStep[Iterable[JValue]] =
+  def body_is[A](ordered: Boolean, expected: A, ignoring: String*): RunnableStep[Iterable[JValue]] =
     if (ordered)
       body_array_transform(_.arr.map(filterJsonRootKeys(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
@@ -211,7 +211,7 @@ trait HttpDsl extends Dsl with CornichonJson {
     if (ignoring.isEmpty) baseTitle
     else s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'$v'").mkString(", ")}"
 
-  def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): ExecutableStep[A] =
+  def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): RunnableStep[A] =
     transform_assert_session[A](
       title = title,
       key = LastResponseBodyKey,

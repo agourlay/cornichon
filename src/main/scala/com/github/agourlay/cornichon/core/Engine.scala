@@ -95,7 +95,7 @@ class Engine(executionContext: ExecutionContext) {
           }
         }
 
-      case execStep: ExecutableStep[_] ⇒
+      case execStep: RunnableStep[_] ⇒
         runStepAction(execStep)(session) match {
           case Xor.Left(e) ⇒
             val updatedLogs = logs ++ logStepErrorResult(execStep.title, e, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
@@ -107,7 +107,7 @@ class Engine(executionContext: ExecutionContext) {
         }
     }
 
-  private[cornichon] def runStepAction[A](step: ExecutableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
+  private[cornichon] def runStepAction[A](step: RunnableStep[A])(implicit session: Session): Xor[CornichonError, Session] =
     Try { step.action(session) } match {
       case Success((newSession, stepAssertion)) ⇒ runStepPredicate(step.negate, newSession, stepAssertion)
       case Failure(e)                           ⇒ left(toCornichonError(e))
@@ -194,14 +194,14 @@ class Engine(executionContext: ExecutionContext) {
     }
 
   private[cornichon] def logNonExecutedStep(steps: Seq[Step], depth: Int): Seq[LogInstruction] =
-    steps.collect { case e: ExecutableStep[_] ⇒ e }
+    steps.collect { case e: RunnableStep[_] ⇒ e }
       .filter(_.show).map { step ⇒
         ColoredLogInstruction(step.title, CYAN, depth)
       }
 
   private[cornichon] def buildFailedRunSteps(steps: Vector[Step], currentStep: Step, e: CornichonError, logs: Vector[LogInstruction]): FailedRunSteps = {
     val failedStep = FailedStep(currentStep, e)
-    val notExecutedStep = steps.tail.collect { case ExecutableStep(title, _, _, _) ⇒ title }
+    val notExecutedStep = steps.tail.collect { case RunnableStep(title, _, _, _) ⇒ title }
     FailedRunSteps(failedStep, notExecutedStep, logs)
   }
 }

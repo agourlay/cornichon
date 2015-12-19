@@ -27,7 +27,7 @@ sealed trait Step {
   val title: String
 }
 
-case class ExecutableStep[A](
+case class RunnableStep[A](
     title: String,
     action: Session ⇒ (Session, StepAssertion[A]),
     negate: Boolean = false,
@@ -36,9 +36,9 @@ case class ExecutableStep[A](
   def resultSession(s: Session) = action(s)._1
 }
 
-object ExecutableStep {
-  def effectStep(title: String, effect: Session ⇒ Session, negate: Boolean = false, show: Boolean = true) =
-    ExecutableStep[Boolean](
+object RunnableStep {
+  def effectful(title: String, effect: Session ⇒ Session, negate: Boolean = false, show: Boolean = true) =
+    RunnableStep[Boolean](
       title = title,
       action = s ⇒ (effect(s), StepAssertion.alwaysOK),
       negate = negate,
