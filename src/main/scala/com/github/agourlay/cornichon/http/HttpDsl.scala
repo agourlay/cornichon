@@ -308,7 +308,7 @@ trait HttpDsl extends Dsl with CornichonJson {
   private object HttpDslError {
     def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {
       s"""expected '$expected' but actual is '$actual' with response body:
-            |$body """.stripMargin
+            |${pretty(render(parseJson(body)))}""".stripMargin
     }
   }
 }
