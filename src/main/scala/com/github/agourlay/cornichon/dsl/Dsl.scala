@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.dsl
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.RunnableStep._
 
-import scala.Console._
 import scala.concurrent.duration.Duration
 
 trait Dsl extends CornichonLogger {
@@ -146,12 +145,6 @@ trait Dsl extends CornichonLogger {
     }
 
   def print_step(message: String) = DebugStep(s ⇒ message)
-
-  def log(msg: String): Unit = {
-    msg.split('\n').foreach { m ⇒
-      logger.info(CYAN + s"   $m" + RESET)
-    }
-  }
 
   def displayTuples(params: Seq[(String, String)]): String = {
     params.map { case (name, value) ⇒ s"$name -> $value" }.mkString(", ")
