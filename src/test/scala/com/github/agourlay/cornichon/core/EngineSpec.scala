@@ -41,7 +41,7 @@ class EngineSpec extends WordSpec with Matchers {
         engine.runScenario(session)(s) match {
           case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
           case f: FailedScenarioReport ⇒
-            f.failedStep.error.msg should be("""
+            f.failedStep.error.msg.replaceAll("\r", "") should be("""
             |expected result was:
             |'4'
             |but actual result is:

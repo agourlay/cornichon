@@ -7,9 +7,9 @@ class OpenMovieDatabase extends CornichonFeature {
   override lazy val baseUrl = "http://www.omdbapi.com"
 
   def feature =
-    Feature("OpenMovieDatabase API") { implicit a ⇒
+    Feature("OpenMovieDatabase API") {
 
-      Scenario("search for GOT") { implicit b ⇒
+      Scenario("search for GOT") {
 
         When I GET("/", params = "t" -> "Game of Thrones")
 
@@ -75,7 +75,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
       }
 
-      Scenario("list GOT season 1 episodes"){ implicit b =>
+      Scenario("list GOT season 1 episodes") {
 
         When I GET("/", params = "t" -> "Game of Thrones", "Season" -> "1")
 
