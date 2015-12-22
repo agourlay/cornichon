@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 
 class CornichonExamplesSpec extends CornichonFeature {
 
-  val feature =
+  lazy val feature =
     Feature("Cornichon feature example") {
 
       Scenario("demonstrate CRUD features") {
