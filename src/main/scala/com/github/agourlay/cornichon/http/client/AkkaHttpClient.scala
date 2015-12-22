@@ -10,7 +10,7 @@ import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.{ ActorMaterializer, Materializer }
+import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
@@ -36,7 +36,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
       .recover(exceptionMapper)
 
   implicit def JValueMarshaller: ToEntityMarshaller[JValue] =
-    Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(j ⇒ compact(render(j)))
+    Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(j ⇒ compact(render(j)))
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
@@ -53,20 +53,20 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     requestRunner(Get(uriBuilder(url, params)), headers)
 
   def getSSE(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] = {
-    Http().singleRequest(Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*)))
+    Http()
+      .singleRequest(Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*)))
       .flatMap(expectSSE)
       .map { sse ⇒
         sse.map { source ⇒
-          val r = source.filter(_.data.nonEmpty)
+          val r = source
             .takeWithin(takeWithin)
-            .runFold(List.empty[ServerSentEvent])((acc, sse) ⇒ {
-              acc :+ sse
-            })
+            .filter(_.data.nonEmpty)
+            .runFold(Vector.empty[ServerSentEvent])(_ :+ _)
             .map { events ⇒
               CornichonHttpResponse(
                 status = StatusCodes.OK, //TODO get real status code?
                 headers = collection.immutable.Seq.empty[HttpHeader], //TODO get real headers?
-                body = compact(render(JArray(events.map(Extraction.decompose(_)))))
+                body = compact(render(JArray(events.map(Extraction.decompose(_)).toList)))
               )
             }
           Await.result(r, takeWithin + 1.second)

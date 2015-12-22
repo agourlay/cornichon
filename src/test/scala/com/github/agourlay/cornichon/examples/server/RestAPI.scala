@@ -9,8 +9,7 @@ import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server._
 import Directives._
 import akka.stream.scaladsl.Source
-import scala.concurrent.duration._
-import de.heikoseeberger.akkasse.{ ServerSentEvent, WithHeartbeats, EventStreamMarshalling }
+import de.heikoseeberger.akkasse.{ ServerSentEvent, EventStreamMarshalling }
 
 import scala.concurrent.ExecutionContext
 
@@ -125,14 +124,8 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
             parameters('justName ? false) { justName: Boolean ⇒
               onSuccess(testData.allSuperheroes) { superheroes: Seq[SuperHero] ⇒
                 complete {
-                  if (justName)
-                    Source(superheroes.toVector)
-                      .map(sh ⇒ ServerSentEvent(eventType = "superhero name", data = sh.name))
-                      .via(WithHeartbeats(1.second))
-                  else
-                    Source(superheroes.toVector)
-                      .map(toServerSentEvent)
-                      .via(WithHeartbeats(1.second))
+                  if (justName) Source(superheroes.toVector.map(sh ⇒ ServerSentEvent(eventType = "superhero name", data = sh.name)))
+                  else Source(superheroes.toVector.map(toServerSentEvent))
                 }
               }
             }
