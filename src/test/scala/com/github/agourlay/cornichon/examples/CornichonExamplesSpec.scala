@@ -5,7 +5,7 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.{ DebugStep, JsonMapper }
+import com.github.agourlay.cornichon.core.{ JsonMapper }
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import scala.concurrent.Await
@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 
 class CornichonExamplesSpec extends CornichonFeature {
 
-  lazy val feature =
+  val feature =
     Feature("Cornichon feature example") {
 
       Scenario("demonstrate CRUD features") {
