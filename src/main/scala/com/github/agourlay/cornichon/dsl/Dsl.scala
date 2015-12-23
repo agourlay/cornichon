@@ -1,81 +1,61 @@
 package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.core.RunnableStep._
+
+import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 
 import scala.concurrent.duration.Duration
 
 trait Dsl extends CornichonLogger {
+  def Feature(name: String) =
+    BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios))
+
+  def Scenario(name: String, ignored: Boolean = false) =
+    BodyElementCollector[Step, Scenario](steps ⇒ ScenarioDef(name, steps, ignored))
 
   sealed trait Starters {
     val name: String
-    def I[A](step: RunnableStep[A])(implicit sb: DslListBuilder[Step]): RunnableStep[A] = {
-      val s: RunnableStep[A] = step.copy(s"$name I ${step.title}")
-      sb.addElmt(s)
-      s
-    }
 
-    def a[A](step: RunnableStep[A])(implicit sb: DslListBuilder[Step]): RunnableStep[A] = {
-      val s: RunnableStep[A] = step.copy(s"$name a ${step.title}")
-      sb.addElmt(s)
-      s
-    }
+    def I[A](step: RunnableStep[A]) =
+      step.copy(s"$name I ${step.title}")
 
-    def I(s: DebugStep)(implicit sb: DslListBuilder[Step]): DebugStep = {
-      sb.addElmt(s)
-      s
-    }
+    def a[A](step: RunnableStep[A]) =
+      step.copy(s"$name a ${step.title}")
+
+    def I(ds: DebugStep) = ds
   }
+
   case object When extends Starters { val name = "When" }
   case object Given extends Starters { val name = "Given" }
 
   sealed trait WithAssert {
     self: Starters ⇒
-    def assert[A](step: RunnableStep[A])(implicit sb: DslListBuilder[Step]): RunnableStep[A] = {
-      val s: RunnableStep[A] = step.copy(s"$name assert ${step.title}")
-      sb.addElmt(s)
-      s
-    }
 
-    def assert_not[A](step: RunnableStep[A])(implicit sb: DslListBuilder[Step]): RunnableStep[A] = {
-      val s: RunnableStep[A] = step.copy(s"$name assert not ${step.title}").copy(negate = true)
-      sb.addElmt(s)
-      s
-    }
+    def assert[A](step: RunnableStep[A]) =
+      step.copy(s"$name assert ${step.title}")
+
+    def assert_not[A](step: RunnableStep[A]) =
+      step.copy(s"$name assert not ${step.title}").copy(negate = true)
   }
+
   case object Then extends Starters with WithAssert { val name = "Then" }
   case object And extends Starters with WithAssert { val name = "And" }
 
-  def Feature(name: String)(builder: DslListBuilder[Scenario] ⇒ Unit): FeatureDef = {
-    val sb = new DslListBuilder[Scenario]()
-    builder(sb)
-    FeatureDef(name, sb.elements)
-  }
+  def Repeat(times: Int) =
+    BodyElementCollector[Step, Seq[Step]](steps ⇒ Seq.fill(times)(steps).flatten)
 
-  def Scenario(name: String, ignore: Boolean = false)(builder: DslListBuilder[Step] ⇒ Unit)(implicit b: DslListBuilder[Scenario]): Scenario = {
-    val sb = new DslListBuilder[Step]()
-    builder(sb)
-    val s = new Scenario(name, sb.elements, ignore)
-    b.addElmt(s)
-    s
-  }
+  def Eventually(maxDuration: Duration, interval: Duration) =
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      val conf = EventuallyConf(maxDuration, interval)
 
-  def Repeat(times: Int)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]): Unit = {
-    Seq.fill(times)(steps)
-  }
+      EventuallyStart(conf) +: steps :+ EventuallyStop(conf)
+    }
 
-  def Eventually(maxDuration: Duration, interval: Duration)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]) = {
-    val conf = EventuallyConf(maxDuration, interval)
-    b.addElmt(EventuallyStart(conf))
-    steps
-    b.addElmt(EventuallyStop(conf))
-  }
-
-  def Concurrently(factor: Int, maxTime: Duration)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]) = {
-    b.addElmt(ConcurrentStart(factor, maxTime))
-    steps
-    b.addElmt(ConcurrentStop(factor))
-  }
+  def Concurrently(factor: Int, maxTime: Duration) =
+    BodyElementCollector[Step, Seq[Step]](steps ⇒
+      ConcurrentStart(factor, maxTime) +: steps :+ ConcurrentStop(factor))
 
   def save(input: (String, String)): RunnableStep[Boolean] = {
     val (key, value) = input

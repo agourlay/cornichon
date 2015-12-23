@@ -5,7 +5,7 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.JsonMapper
+import com.github.agourlay.cornichon.core.{ JsonMapper }
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import scala.concurrent.Await
@@ -13,10 +13,10 @@ import scala.concurrent.duration._
 
 class CornichonExamplesSpec extends CornichonFeature {
 
-  def feature =
-    Feature("Cornichon feature example") { implicit scenarioBuilder ⇒
+  lazy val feature =
+    Feature("Cornichon feature example") {
 
-      Scenario("demonstrate CRUD features") { implicit stepBuilder ⇒
+      Scenario("demonstrate CRUD features") {
 
         When I GET("/superheroes/Batman")
 
@@ -200,7 +200,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert status_is(404)
       }
 
-      Scenario("demonstrate collection features") { implicit stepBuilder ⇒
+      Scenario("demonstrate collection features") {
 
         When I GET("/superheroes")
 
@@ -319,7 +319,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
       }
 
-      Scenario("demonstrate session features") { implicit stepBuilder ⇒
+      Scenario("demonstrate session features") {
 
         When I GET("/superheroes/Batman")
 
@@ -381,7 +381,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         And I show_last_response_headers
       }
 
-      Scenario("demonstrate advanced features") { implicit stepBuilder ⇒
+      Scenario("demonstrate advanced features") {
 
         When I GET("/superheroes/Batman")
 

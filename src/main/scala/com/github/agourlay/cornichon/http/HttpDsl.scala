@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.http
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.{ Dsl, DslListBuilder }
+import com.github.agourlay.cornichon.dsl.{ BodyElementCollector, Dsl }
 import com.github.agourlay.cornichon.json.CornichonJson
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -295,15 +295,13 @@ trait HttpDsl extends Dsl with CornichonJson {
       }
     }
 
-  def WithHeaders(headers: (String, String)*)(steps: ⇒ Unit)(implicit b: DslListBuilder[Step]) = {
-    b.addElmt {
-      save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
+  def WithHeaders(headers: (String, String)*) =
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      val saveStep = save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
+      val removeStep = remove(WithHeadersKey).copy(show = false)
+
+      saveStep +: steps :+ removeStep
     }
-    steps
-    b.addElmt {
-      remove(WithHeadersKey).copy(show = false)
-    }
-  }
 
   private object HttpDslError {
     def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {
