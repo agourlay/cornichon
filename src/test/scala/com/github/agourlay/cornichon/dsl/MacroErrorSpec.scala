@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.dsl
 
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.{ WordSpec, Matchers }
 
 class MacroErrorSpec extends WordSpec with Matchers {
 

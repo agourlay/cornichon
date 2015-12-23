@@ -64,8 +64,7 @@ class EngineSpec extends WordSpec with Matchers {
           EventuallyStop(eventuallyConf)
         )
         val s = Scenario("scenario with eventually", steps)
-        engine.
-          runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
+        engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
       }
 
       "replay eventually wrapped steps until limit" in {

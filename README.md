@@ -28,9 +28,9 @@ import com.github.agourlay.cornichon.CornichonFeature
 
 class ReadmeExample extends CornichonFeature {
 
-  def feature = Feature("OpenMovieDatabase API"){ implicit a ⇒
+  def feature = Feature("OpenMovieDatabase API"){
 
-     Scenario("list GOT season 1 episodes"){ implicit b =>
+     Scenario("list GOT season 1 episodes"){
      
         When I GET("http://www.omdbapi.com", params = "t" -> "Game of Thrones", "Season" -> "1")
    
@@ -106,9 +106,9 @@ In the example below, we have one ```feature``` with one ```scenario``` with two
 ```scala
 class CornichonExamplesSpec extends CornichonFeature {
 
-  def feature = Feature("Checking google"){ implicit scenarioBuilder ⇒
+  def feature = Feature("Checking google"){
   
-      Scenario("Google is up and running"){ implicit stepBuilder ⇒
+      Scenario("Google is up and running"){
   
           When I GET("http://google.com")
   
@@ -124,7 +124,6 @@ A ```scenario``` fails - if at least one ```step``` fails.
 
 A ```scenario``` will stop at the first failed step encountered and ignore the remaining ```steps```.
 
-Check this [section](#implicit-builder) if you wonder what those ```implicit _ =>``` are.
 
 ## DSL
 
@@ -637,10 +636,3 @@ See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest do
 The ```steps``` execution logs will only be shown if:
 - the scenario fails
 - the scenario succeeded and contains at least one ```DebugStep``` such as ```And I show_last_status```
-
-
-## Implicit builder
-
-In order to have a simple DSL Cornichon uses mutation to build a ```feature```. The arguments ```implicit _ =>``` represent implicit builders required to build the underlying data structure.
-
-Until a better solution is implemented, do not forget those :)
