@@ -113,25 +113,29 @@ trait HttpDsl extends Dsl with CornichonJson {
       }, title = s"headers contain ${headers.mkString(", ")}"
     )
 
-  def body_is[A](mapFct: JValue ⇒ JValue, expected: A) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ resolveAndParse(expected, s),
-      (s, sessionValue) ⇒ mapFct(parseJson(sessionValue)),
-      title = s"response body with transformation is '$expected'"
-    )
-
-  // FIXME can't use varargs here, it does not compile when 'expected' is a String
-  def body_is[A](mapFct: JValue ⇒ JValue, expected: A, ignoring: Seq[String]) =
+  def body_field_is[A](jsonPath: String, expected: A, ignoring: String*) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ resolveAndParse(expected, s),
       (s, sessionValue) ⇒ {
-        val mapped = mapFct(parseJson(sessionValue))
+        val mapped = selectJsonPath(jsonPath, parseJson(sessionValue))
         if (ignoring.isEmpty) mapped
         else filterJsonRootKeys(mapped, ignoring)
       },
-      title = s"response body with transformation is '$expected'"
+      title = s"response body's field '$jsonPath' is '$expected'"
+    )
+
+  def body_is[A](expected: A, ignoring: String*) =
+    transform_assert_session(
+      key = LastResponseBodyKey,
+      title = titleBuilder(s"response body is '$expected'", ignoring),
+      expected = s ⇒ resolveAndParse(expected, s),
+      mapValue =
+        (session, sessionValue) ⇒ {
+          val jsonSessionValue = parseJson(sessionValue)
+          if (ignoring.isEmpty) jsonSessionValue
+          else filterJsonRootKeys(jsonSessionValue, ignoring)
+        }
     )
 
   def body_is(whiteList: Boolean = false, expected: String): RunnableStep[JValue] = {
@@ -152,19 +156,6 @@ trait HttpDsl extends Dsl with CornichonJson {
     )
   }
 
-  def body_is(expected: String, ignoring: String*): RunnableStep[JValue] =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      title = titleBuilder(s"response body is '$expected'", ignoring),
-      expected = s ⇒ resolveAndParse(expected, s),
-      mapValue =
-        (session, sessionValue) ⇒ {
-          val jsonSessionValue = parseJson(sessionValue)
-          if (ignoring.isEmpty) jsonSessionValue
-          else filterJsonRootKeys(jsonSessionValue, ignoring)
-        }
-    )
-
   def body_is[A](ordered: Boolean, expected: A, ignoring: String*): RunnableStep[Iterable[JValue]] =
     if (ordered)
       body_array_transform(_.arr.map(filterJsonRootKeys(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
@@ -181,18 +172,18 @@ trait HttpDsl extends Dsl with CornichonJson {
         }
       })
 
-  def save_from_body(extractor: JValue ⇒ JValue, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ extractor(parseJson(s)).values.toString, target)
+  def save_from_body(jsonPath: String, target: String) =
+    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, parseJson(s)).values.toString, target)
 
-  def save_from_body(args: (JValue ⇒ JValue, String)*) = {
+  def save_from_body(args: (String, String)*) = {
     val inputs = args.map {
-      case (e, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ e(parseJson(s)).values.toString, t)
+      case (path, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(path, parseJson(s)).values.toString, t)
     }
     save_from_session(inputs)
   }
 
-  def save_body_key(rootKey: String, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ (parseJson(s) \ rootKey).values.toString, target)
+  def save_body_key(jsonPath: String, target: String) =
+    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, parseJson(s)).values.toString, target)
 
   def save_body_keys(args: (String, String)*) = {
     val inputs = args.map {
@@ -227,64 +218,36 @@ trait HttpDsl extends Dsl with CornichonJson {
       }
     )
 
-  def body_array_size_is(size: Int) = body_array_transform(_.arr.size, s"response array size is '$size'", s ⇒ size)
+  def body_array_size_is(size: Int) = body_array_transform(_.arr.size, s"response body array size is '$size'", s ⇒ size)
 
-  def body_array_size_is(rootKey: String, size: Int) =
+  def body_array_size_is(jsonPath: String, size: Int) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ true,
       (s, sessionValue) ⇒ {
-        val extracted = parseJson(sessionValue) \ rootKey
+        val extracted = selectJsonPath(jsonPath, parseJson(sessionValue))
         extracted match {
           case JArray(arr) ⇒ arr.size == size
           case _           ⇒ throw new NotAnArrayError(extracted)
         }
       },
-      title = s"response body '$rootKey' array size is '$size'"
-    )
-
-  def body_array_size_is(extractor: JValue ⇒ JValue, size: Int) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ true,
-      (s, sessionValue) ⇒ {
-        val extracted = extractor(parseJson(sessionValue))
-        extracted match {
-          case JArray(arr) ⇒ arr.size == size
-          case _           ⇒ throw new NotAnArrayError(extracted)
-        }
-      },
-      title = s"response body extracted array size is '$size'"
+      title = s"response body's array '$jsonPath' size is '$size'"
     )
 
   def body_array_contains[A](element: A) = body_array_transform(_.arr.contains(parseJson(element)), s"response body array contains '$element'", s ⇒ true)
 
-  def body_array_contains[A](rootKey: String, element: A) =
+  def body_array_contains[A](jsonPath: String, element: A) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ true,
       (s, sessionValue) ⇒ {
-        val extracted = parseJson(sessionValue) \ rootKey
+        val extracted = selectJsonPath(jsonPath, parseJson(sessionValue))
         extracted match {
           case JArray(arr) ⇒ arr.contains(parseJson(element))
           case _           ⇒ throw new NotAnArrayError(extracted)
         }
       },
-      title = s"response body '$rootKey' array contains '$element'"
-    )
-
-  def body_array_contains[A](extractor: JValue ⇒ JValue, element: A) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ true,
-      (s, sessionValue) ⇒ {
-        val extracted = extractor(parseJson(sessionValue))
-        extracted match {
-          case JArray(arr) ⇒ arr.contains(parseJson(element))
-          case _           ⇒ throw new NotAnArrayError(extracted)
-        }
-      },
-      title = s"response body extracted array contains '$element'"
+      title = s"response body's array '$jsonPath' contains '$element'"
     )
 
   private def resolveAndParse[A](input: A, session: Session): JValue =

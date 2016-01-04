@@ -42,7 +42,7 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body_is(_ \ "imdbRating", "9.5")
+        And assert body_field_is("imdbRating", "9.5")
 
         And assert body_is(
           """
@@ -170,7 +170,7 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body_is(_ \ "Episodes",
+        And assert body_field_is("Episodes",
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
@@ -185,9 +185,9 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
 
-        And assert body_array_size_is(_ \ "Episodes", 10)
+        And assert body_array_size_is("Episodes", 10)
 
-        And assert body_is(b => (b \ "Episodes")(0),
+        And assert body_field_is("Episodes[0]",
           """
           {
             "Title": "Winter Is Coming",
@@ -198,9 +198,9 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body_is(b => (b \ "Episodes")(0) \ "Released", "2011-04-17")
+        And assert body_field_is("Episodes[0].Released", "2011-04-17")
 
-        And assert body_array_contains(_ \ "Episodes", """
+        And assert body_array_contains("Episodes", """
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",

@@ -1,11 +1,7 @@
 package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
-
-import org.json4s.JsonAST.JArray
-import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
 
@@ -34,11 +30,6 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
     engine.runScenario(Session.newSession) {
       s.copy(steps = beforeEachScenario.toVector ++ s.steps ++ afterEachScenario)
     }
-
-  def parseDataTable(table: String): JArray = {
-    val sprayArray = DataTableParser.parseDataTable(table).asSprayJson
-    JArray(sprayArray.elements.map(v ⇒ parse(v.toString())).toList)
-  }
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) = new HttpService(baseUrl, timeout, globalClient, resolver, ec)
 
