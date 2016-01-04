@@ -357,7 +357,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Or with extractor
-        And I save_from_body(_ \ "city", "batman-city")
+        And I save_from_body("city", "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
 
