@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.core
 
+import java.io.{ PrintWriter, StringWriter }
+
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
@@ -9,8 +11,17 @@ trait CornichonError extends Exception with NoStackTrace {
   val msg: String
 }
 
-case class StepExecutionError[A](exception: Throwable) extends CornichonError {
-  val msg = s"exception thrown '${exception.getMessage}'"
+object CornichonError {
+  def genStacktrace(exception: Throwable) = {
+    val sw = new StringWriter()
+    val pw = new PrintWriter(sw)
+    exception.printStackTrace(pw)
+    sw.toString
+  }
+}
+
+case class StepExecutionError[A](e: Throwable) extends CornichonError {
+  val msg = s"exception thrown '${CornichonError.genStacktrace(e)}'"
 }
 
 case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extends CornichonError {
