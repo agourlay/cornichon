@@ -43,7 +43,7 @@ class ReadmeExample extends CornichonFeature {
           }
           """, ignoring = "Episodes", "Response")
    
-        And assert body_is(_ \ "Episodes",
+        And assert body_json_path_is("Episodes",
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
@@ -58,9 +58,9 @@ class ReadmeExample extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
    
-        And assert body_array_size_is(_ \ "Episodes", 10)
+        And assert body_array_size_is("Episodes", 10)
    
-        And assert body_is(b => (b \ "Episodes")(0),
+        And assert body_json_path_is("Episodes[0]",
           """
           {
             "Title": "Winter Is Coming",
@@ -71,9 +71,9 @@ class ReadmeExample extends CornichonFeature {
           }
           """)
    
-        And assert body_is(b => (b \ "Episodes")(0) \ "Released", "2011-04-17")
+        And assert body_json_path_is("Episodes[0].Released", "2011-04-17")
    
-        And assert body_array_contains(_ \ "Episodes", 
+        And assert body_array_contains("Episodes", 
           """
           {
             "Title": "Winter Is Coming",
@@ -215,16 +215,16 @@ body_is(whiteList = true, expected = """
   """)
 ```
 
-It also possible to use [Json4s XPath](http://json4s.org/#xpath--hofs) extractors
+It also possible to use JsonPath like extractors
   
 ```scala
-body_is(_ \ "city", "Gotham city")
+body_json_path_is("city", "Gotham city")
 
-body_is(_ \ "hasSuperpowers", false)
+body_json_path_is("hasSuperpowers", false)
 
-body_is(_ \ "publisher" \ "name", "DC")
+body_json_path_is("publisher.name", "DC")
 
-body_is(_ \ "publisher" \ "foundationYear", 1934)
+body_json_path_is("publisher.foundationYear", 1934)
 
 ```
 
@@ -291,8 +291,6 @@ save("favorite-superhero" → "Batman")
 
 ```scala
 save_body_key("city", "batman-city")
-
-save_from_body(_ \ "city", "batman-city")
 
 ```
 
@@ -585,13 +583,13 @@ override lazy val requestTimeout = 100 millis
 
 In some cases it makes sense to declare ```extractors``` to avoid code duplication when dealing with ```session``` values.
 
-An extractor is responsible to describe how to build a value from an existing value in ```session```.
+An extractor is responsible to describe using a JsonPath how to build a value from an existing value in ```session```.
 
 For instance if most of your JSON responses contain a field ```id``` and you want to use it as a placeholder without always having to manually extract and save the value into the ```session``` you can write :
  
 ```scala
    override def registerExtractors = Map(
-     "response-id" → JsonMapper(HttpService.LastResponseBodyKey, v ⇒ (v \ "id").values.toString)
+     "response-id" → JsonMapper(HttpService.LastResponseBodyKey, "id")
    )
 ```
 
@@ -602,9 +600,9 @@ It works for all keys in ```Session```, let's say we also have objects registere
  
 ```scala
    override def registerExtractors = Map(
-     "response-id" → JsonMapper(HttpService.LastResponseBodyKey, v ⇒ (v \ "id").values.toString),
-     "customer-id" → JsonMapper("customer", v ⇒ (v \ "id").values.toString),
-     "product-id" → JsonMapper("product", v ⇒ (v \ "id").values.toString)
+     "response-version" → JsonMapper(HttpService.LastResponseBodyKey, "version"),
+     "customer-street" → JsonMapper("customer", "address.street"),
+     "product-first-rating" → JsonMapper("product", "rating[0].score")
    )
 ```
 

@@ -30,35 +30,16 @@ class OpenMovieDatabase extends CornichonFeature {
             "Plot": "Several noble families fight for control of the mythical land of Westeros.",
             "Language": "English",
             "Country": "USA",
-            "Awards": "Won 1 Golden Globe. Another 133 wins & 250 nominations.",
             "Poster": "http://ia.media-imdb.com/images/M/MV5BMTYwOTEzMDMzMl5BMl5BanBnXkFtZTgwNzExODIzNzE@._V1_SX300.jpg",
             "Metascore": "N/A",
-            "imdbRating": "9.5",
-            "imdbVotes": "877,359",
             "imdbID": "tt0944947",
             "Type": "series",
             "Response": "True"
           }
-          """
+          """, ignoring = "imdbRating", "imdbVotes", "Awards"
         )
 
-        And assert body_is(_ \ "imdbRating", "9.5")
-
-        And assert body_is(
-          """
-          {
-            "Title": "Game of Thrones",
-            "Year": "2011–",
-            "Rated": "TV-MA",
-            "Released": "17 Apr 2011",
-            "Runtime": "56 min",
-            "Genre": "Adventure, Drama, Fantasy",
-            "Director": "N/A",
-            "Writer": "David Benioff, D.B. Weiss",
-            "Actors": "Peter Dinklage, Lena Headey, Emilia Clarke, Kit Harington"
-          }
-          """, ignoring = "Plot", "Language", "Country", "Awards", "Poster", "Metascore", "imdbRating", "imdbVotes", "imdbID", "Type", "Response"
-        )
+        And assert body_json_path_is("imdbRating", "9.5")
 
         And assert body_is(whiteList = true,
           """
@@ -170,7 +151,7 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body_is(_ \ "Episodes",
+        And assert body_json_path_is("Episodes",
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
@@ -185,9 +166,9 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
 
-        And assert body_array_size_is(_ \ "Episodes", 10)
+        And assert body_array_size_is("Episodes", 10)
 
-        And assert body_is(b => (b \ "Episodes")(0),
+        And assert body_json_path_is("Episodes[0]",
           """
           {
             "Title": "Winter Is Coming",
@@ -198,9 +179,9 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body_is(b => (b \ "Episodes")(0) \ "Released", "2011-04-17")
+        And assert body_json_path_is("Episodes[0].Released", "2011-04-17")
 
-        And assert body_array_contains(_ \ "Episodes", """
+        And assert body_array_contains("Episodes", """
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",
