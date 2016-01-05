@@ -113,7 +113,7 @@ trait HttpDsl extends Dsl with CornichonJson {
       }, title = s"headers contain ${headers.mkString(", ")}"
     )
 
-  def body_field_is[A](jsonPath: String, expected: A, ignoring: String*) =
+  def body_json_path_is[A](jsonPath: String, expected: A, ignoring: String*) =
     transform_assert_session(
       key = LastResponseBodyKey,
       expected = s ⇒ resolveAndParse(expected, s),

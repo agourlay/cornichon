@@ -58,11 +58,11 @@ class CornichonExamplesSpec extends CornichonFeature {
           """)
 
         // Test part of response body by providing an extractor
-        Then assert body_field_is("city", "Gotham city")
+        Then assert body_json_path_is("city", "Gotham city")
 
-        Then assert body_field_is("hasSuperpowers", false)
+        Then assert body_json_path_is("hasSuperpowers", false)
 
-        Then assert body_field_is("publisher", expected =
+        Then assert body_json_path_is("publisher", expected =
           """
           {
             "name":"DC",
@@ -70,16 +70,16 @@ class CornichonExamplesSpec extends CornichonFeature {
             "location":"Burbank, California"
           } """)
 
-        Then assert body_field_is("publisher", expected =
+        Then assert body_json_path_is("publisher", expected =
           """
           {
             "name":"DC",
             "foundationYear":1934
           } """, ignoring = "location")
 
-        Then assert body_field_is("publisher.name", "DC")
+        Then assert body_json_path_is("publisher.name", "DC")
 
-        Then assert body_field_is("publisher.foundationYear", 1934)
+        Then assert body_json_path_is("publisher.foundationYear", 1934)
 
         When I GET("/superheroes/Scalaman")
 
@@ -172,7 +172,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           Then assert headers_contain("Content-Encoding" → "gzip")
 
-          Then assert body_field_is("city", "Pankow")
+          Then assert body_json_path_is("city", "Pankow")
         }
 
         Then assert status_is(200)
@@ -385,7 +385,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         When I GET("/superheroes/Batman")
 
         // Using registered extractor at the bottom
-        Then assert body_field_is("name", "<name>")
+        Then assert body_json_path_is("name", "<name>")
 
         // Repeat series of Steps
         Repeat(3) {

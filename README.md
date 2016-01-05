@@ -43,7 +43,7 @@ class ReadmeExample extends CornichonFeature {
           }
           """, ignoring = "Episodes", "Response")
    
-        And assert body_is(_ \ "Episodes",
+        And assert body_json_path_is("Episodes",
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
@@ -58,9 +58,9 @@ class ReadmeExample extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
    
-        And assert body_array_size_is(_ \ "Episodes", 10)
+        And assert body_array_size_is("Episodes", 10)
    
-        And assert body_is(b => (b \ "Episodes")(0),
+        And assert body_json_path_is("Episodes[0]",
           """
           {
             "Title": "Winter Is Coming",
@@ -71,9 +71,9 @@ class ReadmeExample extends CornichonFeature {
           }
           """)
    
-        And assert body_is(b => (b \ "Episodes")(0) \ "Released", "2011-04-17")
+        And assert body_json_path_is("Episodes[0].Released", "2011-04-17")
    
-        And assert body_array_contains(_ \ "Episodes", 
+        And assert body_array_contains("Episodes", 
           """
           {
             "Title": "Winter Is Coming",
@@ -215,16 +215,16 @@ body_is(whiteList = true, expected = """
   """)
 ```
 
-It also possible to use [Json4s XPath](http://json4s.org/#xpath--hofs) extractors
+It also possible to use JsonPath like extractors
   
 ```scala
-body_is(_ \ "city", "Gotham city")
+body_json_path_is("city", "Gotham city")
 
-body_is(_ \ "hasSuperpowers", false)
+body_json_path_is("hasSuperpowers", false)
 
-body_is(_ \ "publisher" \ "name", "DC")
+body_json_path_is("publisher.name", "DC")
 
-body_is(_ \ "publisher" \ "foundationYear", 1934)
+body_json_path_is("publisher.foundationYear", 1934)
 
 ```
 
@@ -291,8 +291,6 @@ save("favorite-superhero" → "Batman")
 
 ```scala
 save_body_key("city", "batman-city")
-
-save_from_body(_ \ "city", "batman-city")
 
 ```
 
