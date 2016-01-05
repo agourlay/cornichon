@@ -583,13 +583,13 @@ override lazy val requestTimeout = 100 millis
 
 In some cases it makes sense to declare ```extractors``` to avoid code duplication when dealing with ```session``` values.
 
-An extractor is responsible to describe how to build a value from an existing value in ```session```.
+An extractor is responsible to describe using a JsonPath how to build a value from an existing value in ```session```.
 
 For instance if most of your JSON responses contain a field ```id``` and you want to use it as a placeholder without always having to manually extract and save the value into the ```session``` you can write :
  
 ```scala
    override def registerExtractors = Map(
-     "response-id" → JsonMapper(HttpService.LastResponseBodyKey, v ⇒ (v \ "id").values.toString)
+     "response-id" → JsonMapper(HttpService.LastResponseBodyKey, "id")
    )
 ```
 
@@ -600,9 +600,9 @@ It works for all keys in ```Session```, let's say we also have objects registere
  
 ```scala
    override def registerExtractors = Map(
-     "response-id" → JsonMapper(HttpService.LastResponseBodyKey, v ⇒ (v \ "id").values.toString),
-     "customer-id" → JsonMapper("customer", v ⇒ (v \ "id").values.toString),
-     "product-id" → JsonMapper("product", v ⇒ (v \ "id").values.toString)
+     "response-version" → JsonMapper(HttpService.LastResponseBodyKey, "version"),
+     "customer-street" → JsonMapper("customer", "address.street"),
+     "product-first-rating" → JsonMapper("product", "rating[0].score")
    )
 ```
 

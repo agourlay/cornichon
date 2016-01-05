@@ -497,6 +497,6 @@ class CornichonExamplesSpec extends CornichonFeature {
   }
 
   override def registerExtractors = Map(
-    "name" → JsonMapper(HttpService.LastResponseBodyKey, v ⇒ (v \ "name").values.toString)
+    "name" → JsonMapper(HttpService.LastResponseBodyKey, "name")
   )
 }
