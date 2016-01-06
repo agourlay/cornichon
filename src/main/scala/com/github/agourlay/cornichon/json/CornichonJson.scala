@@ -41,18 +41,33 @@ trait CornichonJson {
       case Failure(e)    ⇒ left(new MalformedJsonError(input, e))
     }
 
-  def filterJsonRootKeys(input: JValue, keys: Seq[String]): JValue =
-    keys.foldLeft(input) { (j, k) ⇒
-      j.removeField { r ⇒ r._1 == k && (input \ r._1) == r._2 }
-    }
-
   def selectJsonPath(path: String, json: JValue) = {
     val parsedJsonPath = JsonPathParser.parseJsonPath(path)
     val jsonPath = JsonPath.fromSegments(parsedJsonPath)
     jsonPath.operations.foldLeft(json) { (j, op) ⇒ op.run(j) }
   }
 
-  // traverse each node with operation and replace object by key using 'filterJsonRootKeys'
-  def removeJsonPath(path: String, json: JValue) = ???
+  // FIXME can break if JSON contains duplicate field => make bulletproof using lenses
+  def removeFieldsByPath(input: JValue, paths: Seq[String]) = {
+    paths.foldLeft(input) { (json, path) ⇒
+      val parsedJsonPath = JsonPathParser.parseJsonPath(path)
+      val jsonToRemove = selectJsonPath(path, json)
+      json.removeField { f ⇒ f._1 == parsedJsonPath.last.field && f._2 == jsonToRemove }
+    }
+  }
+
+  def prettyPrint(json: JValue) = pretty(render(json))
+
+  def prettyDiff(first: JValue, second: JValue) = {
+    val Diff(changed, added, deleted) = first diff second
+    s"""
+    |${if (changed == JNothing) "" else "changed = " + prettyPrint(changed)}
+    |${if (added == JNothing) "" else "added = " + prettyPrint(added)}
+    |${if (deleted == JNothing) "" else "deleted = " + prettyPrint(deleted)}
+      """.stripMargin
+  }
+}
+
+object CornichonJson extends CornichonJson {
 
 }

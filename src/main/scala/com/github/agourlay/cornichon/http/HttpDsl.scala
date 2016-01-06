@@ -4,13 +4,12 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ BodyElementCollector, Dsl }
-import com.github.agourlay.cornichon.json.CornichonJson
+import com.github.agourlay.cornichon.json.CornichonJson._
 import org.json4s._
-import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends Dsl with CornichonJson {
+trait HttpDsl extends Dsl {
   this: CornichonFeature ⇒
 
   import HttpService._
@@ -120,7 +119,7 @@ trait HttpDsl extends Dsl with CornichonJson {
       (s, sessionValue) ⇒ {
         val mapped = selectJsonPath(jsonPath, parseJson(sessionValue))
         if (ignoring.isEmpty) mapped
-        else filterJsonRootKeys(mapped, ignoring)
+        else removeFieldsByPath(mapped, ignoring)
       },
       title = s"response body's field '$jsonPath' is '$expected'"
     )
@@ -134,7 +133,7 @@ trait HttpDsl extends Dsl with CornichonJson {
         (session, sessionValue) ⇒ {
           val jsonSessionValue = parseJson(sessionValue)
           if (ignoring.isEmpty) jsonSessionValue
-          else filterJsonRootKeys(jsonSessionValue, ignoring)
+          else removeFieldsByPath(jsonSessionValue, ignoring)
         }
     )
 
@@ -158,14 +157,14 @@ trait HttpDsl extends Dsl with CornichonJson {
 
   def body_is[A](ordered: Boolean, expected: A, ignoring: String*): RunnableStep[Iterable[JValue]] =
     if (ordered)
-      body_array_transform(_.arr.map(filterJsonRootKeys(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
+      body_array_transform(_.arr.map(removeFieldsByPath(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
           case expectedArray: JArray ⇒ expectedArray.arr
           case _                     ⇒ throw new NotAnArrayError(expected)
         }
       })
     else
-      body_array_transform(s ⇒ s.arr.map(filterJsonRootKeys(_, ignoring)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring), s ⇒ {
+      body_array_transform(s ⇒ s.arr.map(removeFieldsByPath(_, ignoring)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
           case expectedArray: JArray ⇒ expectedArray.arr.toSet
           case _                     ⇒ throw new NotAnArrayError(expected)
@@ -211,7 +210,7 @@ trait HttpDsl extends Dsl with CornichonJson {
       (session, sessionValue) ⇒ {
         parseJson(sessionValue) match {
           case arr: JArray ⇒
-            logger.debug(s"response_body_array_is applied to ${pretty(render(arr))}")
+            logger.debug(s"response_body_array_is applied to ${prettyPrint(arr)}")
             mapFct(arr)
           case _ ⇒ throw new NotAnArrayError(sessionValue)
         }
@@ -269,7 +268,7 @@ trait HttpDsl extends Dsl with CornichonJson {
   private object HttpDslError {
     def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {
       s"""expected '$expected' but actual is '$actual' with response body:
-            |${pretty(render(parseJson(body)))}""".stripMargin
+            |${prettyPrint(parseJson(body))}""".stripMargin
     }
   }
 }
