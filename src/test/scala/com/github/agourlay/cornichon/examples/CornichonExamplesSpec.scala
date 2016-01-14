@@ -48,6 +48,20 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "city", "publisher"
         )
 
+        And assert body_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "hasSuperpowers": false,
+            "publisher":{
+              "foundationYear":1934
+            }
+          }
+          """, ignoring = "publisher.name", "publisher.location"
+        )
+
         // Compare only against provided keys
         And assert body_is(whiteList = true, expected =
           """

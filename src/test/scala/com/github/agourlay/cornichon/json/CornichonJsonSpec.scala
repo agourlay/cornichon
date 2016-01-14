@@ -4,7 +4,7 @@ import org.json4s._
 import org.json4s.JsonDSL._
 import org.scalatest.prop.PropertyChecks
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Ignore, Matchers, WordSpec }
 
 class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with CornichonJson {
 
@@ -74,7 +74,7 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
       }
     }
 
-    "filterJsonRootKeys" must {
+    "removeFieldsByPath" must {
       "remove root key" in {
         val input = JObject(
           List(
@@ -83,15 +83,43 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
             ("Name", JString("John"))
           )
         )
-        filterJsonRootKeys(input, Seq("2LettersName", "Name")) should be(JObject(List(("Age", JInt(50)))))
+        removeFieldsByPath(input, Seq("2LettersName", "Name")) should be(JObject(List(("Age", JInt(50)))))
       }
 
       "remove only root keys" in {
-        val input = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("name" → "john") ~ ("age", 40))
+        val input = ("name" → "bob") ~ ("age", 50) ~ ("brother" → (("name" → "john") ~ ("age", 40)))
 
-        val expected = ("age", 50) ~ ("brother" → ("name" → "john") ~ ("age", 40))
+        val expected = ("age", 50) ~ ("brother" → (("name" → "john") ~ ("age", 40)))
 
-        filterJsonRootKeys(input, Seq("name")) should be(expected)
+        removeFieldsByPath(input, Seq("name")) should be(expected)
+      }
+
+      "remove nested keys" in {
+        val input: JValue =
+          ("name" → "bob") ~
+            ("age", 50) ~
+            ("brother" →
+              (("name" → "john") ~ ("age", 40)))
+
+        val expected = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("age", 40))
+
+        removeFieldsByPath(input, Seq("brother.name")) should be(expected)
+      }
+
+      //FIXME
+      "do not trip on duplicate" ignore {
+        val input: JValue =
+          ("name" → "bob") ~
+            ("age", 50) ~
+            ("brother" →
+              (("name" → "john") ~ ("age", 40))) ~
+              ("friend" →
+                (("name" → "john") ~ ("age", 30)))
+
+        val expected = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("age", 40)) ~ ("friend" → (("name" → "john") ~ ("age", 30)))
+
+        println(prettyPrint(removeFieldsByPath(input, Seq("brother.name"))))
+        removeFieldsByPath(input, Seq("brother.name")) should be(expected)
       }
     }
   }
