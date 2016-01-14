@@ -78,17 +78,14 @@ trait Dsl extends CornichonLogger {
       s ⇒
         (s, SimpleStepAssertion(
           expected = expected(s),
-          result = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(s, v))
+          result = mapValue(s, s.get(key))
         ))
     )
 
   def save_from_session(key: String, extractor: String ⇒ String, target: String) =
     effectful(
       s"save from session '$key' to '$target'",
-      s ⇒ {
-        val extracted = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ extractor(v))
-        s.addValue(target, extracted)
-      }
+      s ⇒ s.addValue(target, extractor(s.get(key)))
     )
 
   case class FromSessionSetter(fromKey: String, trans: String ⇒ String, target: String)
