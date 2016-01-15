@@ -18,3 +18,9 @@ case class SseError(e: Throwable) extends HttpError {
 }
 
 case class TimeoutError(msg: String) extends HttpError
+
+case class StatusNonExpected(expected: StatusCode, response: CornichonHttpResponse) extends HttpError {
+  val msg =
+    s"""status code expected was '${expected.intValue()}' but '${response.status.intValue()}' was received with body:
+       | ${response.body}""".stripMargin
+}
