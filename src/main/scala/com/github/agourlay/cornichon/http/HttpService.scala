@@ -10,17 +10,14 @@ import com.github.agourlay.cornichon.json.CornichonJson
 import org.json4s._
 
 import scala.concurrent.duration._
-import scala.concurrent.{ Future, Await, ExecutionContext }
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver, executionContext: ExecutionContext) extends CornichonJson {
-
-  private implicit val ec = executionContext
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) extends CornichonJson {
 
   import HttpService._
 
-  private type WithPayloadCall = (JValue, String, Seq[(String, String)], Seq[HttpHeader]) ⇒ Future[Xor[HttpError, CornichonHttpResponse]]
-  private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader]) ⇒ Future[Xor[HttpError, CornichonHttpResponse]]
-  private type StreamedPayloadCall = (String, Seq[(String, String)], FiniteDuration, Seq[HttpHeader]) ⇒ Future[Xor[HttpError, CornichonHttpResponse]]
+  private type WithPayloadCall = (JValue, String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
+  private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
+  private type StreamedPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
 
   private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
     for {
@@ -31,7 +28,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       extractedHeaders ← extractWithHeadersSession(s)
       json ← parseJsonXor(payloadResolved)
       urlResolved ← resolver.fillPlaceholders(urlBuilder(url))(s)
-      res ← Await.result(call(json, urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders), requestTimeout)
+      res ← call(json, urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders, requestTimeout)
       newSession = fillInHttpSession(s, res, extractor)
     } yield {
       (res, newSession)
@@ -44,7 +41,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
-      res ← Await.result(call(urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders), requestTimeout)
+      res ← call(urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders, requestTimeout)
       newSession = fillInHttpSession(s, res, extractor)
     } yield {
       (res, newSession)
@@ -57,7 +54,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
-      res ← Await.result(call(urlResolved, paramsResolved, takeWithin, parsedHeaders ++ extractedHeaders), takeWithin + 1.second)
+      res ← call(urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders, takeWithin)
       newSession = fillInHttpSession(s, res, extractor)
     } yield {
       (res, newSession)

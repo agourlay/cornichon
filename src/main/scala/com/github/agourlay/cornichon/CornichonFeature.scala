@@ -31,7 +31,7 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
       s.copy(steps = beforeEachScenario.toVector ++ s.steps ++ afterEachScenario)
     }
 
-  def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) = new HttpService(baseUrl, timeout, globalClient, resolver, ec)
+  def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) = new HttpService(baseUrl, timeout, globalClient, resolver)
 
   def feature: FeatureDef
 
