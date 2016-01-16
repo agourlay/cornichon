@@ -21,7 +21,7 @@ import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
-import scala.concurrent.duration.{ FiniteDuration, _ }
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
 
@@ -79,10 +79,10 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
                 body = compact(render(JArray(events.map(Extraction.decompose(_)).toList)))
               )
             }
-          Await.result(r, takeWithin + 1.second)
+          Await.result(r, takeWithin)
         }
       }
-    waitForRequestFuture(request, f, takeWithin + 1.second)
+    waitForRequestFuture(request, f, takeWithin)
   }
 
   // TODO https://github.com/akka/akka/issues/17275

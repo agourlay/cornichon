@@ -53,7 +53,7 @@ class EngineSpec extends WordSpec with Matchers {
 
       "replay eventually wrapped steps" in {
         val session = Session.newSession
-        val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 100.milliseconds)
+        val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
         val steps = Vector(
           EventuallyStart(eventuallyConf),
           RunnableStep(
