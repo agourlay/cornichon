@@ -4,14 +4,12 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import com.github.agourlay.cornichon.json.CornichonJson
-import org.json4s.JsonAST.JValue
-import org.json4s.jackson.JsonMethods._
+import com.github.agourlay.cornichon.json.CornichonJson._
 import org.parboiled2._
 
 import scala.util._
 
-class Resolver(extractors: Map[String, Mapper]) extends CornichonJson {
+class Resolver(extractors: Map[String, Mapper]) {
 
   def findPlaceholders(input: String): List[Placeholder] =
     new PlaceholderParser(input).placeholdersRule.run() match {
@@ -73,7 +71,7 @@ class Resolver(extractors: Map[String, Mapper]) extends CornichonJson {
 
   def runCustomMapper(input: String, mapper: Mapper) = mapper match {
     case TextMapper(_, extract)             ⇒ extract(input)
-    case JsonMapper(_, jsonPath, transform) ⇒ transform(selectJsonPath(jsonPath, parse(input)).values.toString)
+    case JsonMapper(_, jsonPath, transform) ⇒ transform(selectJsonPath(jsonPath, parseJson(input)).values.toString)
   }
 }
 
