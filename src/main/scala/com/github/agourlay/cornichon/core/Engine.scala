@@ -181,11 +181,11 @@ class Engine(executionContext: ExecutionContext) {
         if (remainingTime.gt(Duration.Zero)) s.copy(logs = runLogs)
         else buildFailedRunSteps(steps, steps.last, EventuallyBlockSucceedAfterMaxDuration, runLogs)
       case f @ FailedRunSteps(failed, _, fLogs) ⇒
+        val updatedLogs = accLogs ++ fLogs
         if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-          val updatedLogs = accLogs ++ fLogs
           Thread.sleep(conf.interval.toMillis)
           retryEventuallySteps(steps, session, conf.consume(executionTime + conf.interval), updatedLogs, depth)
-        } else f
+        } else f.copy(logs = updatedLogs)
     }
   }
 
