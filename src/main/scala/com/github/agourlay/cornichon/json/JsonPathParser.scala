@@ -1,8 +1,6 @@
 package com.github.agourlay.cornichon.json
 
-import com.github.agourlay.cornichon.core.{ JsonPathError, JsonPathParsingError }
 import org.parboiled2._
-
 import scala.util.{ Success, Failure }
 
 class JsonPathParser(val input: ParserInput) extends Parser {

@@ -26,3 +26,7 @@ case class StatusNonExpected(expected: StatusCode, response: CornichonHttpRespon
     s"""status code expected was '${expected.intValue()}' but '${response.status.intValue()}' was received with body:
        | ${response.body}""".stripMargin
 }
+
+case class MalformedHeadersError(error: String) extends CornichonError {
+  val msg = s"parsing headers generated error '$error'"
+}

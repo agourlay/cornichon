@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.core.{ DataTableError, DataTableParseError }
 import org.parboiled2._
 import spray.json.{ JsArray, JsObject, JsValue }
 

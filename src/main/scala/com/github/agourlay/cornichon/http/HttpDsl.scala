@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ BodyElementCollector, Dsl }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonPath
+import com.github.agourlay.cornichon.json.{ NotAnArrayError, WhiteListError, JsonPath }
 import org.json4s._
 
 import scala.concurrent.duration._
@@ -149,7 +149,7 @@ trait HttpDsl extends Dsl {
         val sessionValueJson = parseJson(sessionValue)
         if (whiteList) {
           val Diff(changed, _, deleted) = expectedJson.diff(sessionValueJson)
-          if (deleted != JNothing) throw new WhileListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
+          if (deleted != JNothing) throw new WhiteListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
           if (changed != JNothing) changed else expectedJson
         } else sessionValueJson
       }

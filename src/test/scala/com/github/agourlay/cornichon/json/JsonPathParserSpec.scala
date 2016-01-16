@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.json
 
-import com.github.agourlay.cornichon.core.JsonPathParsingError
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }

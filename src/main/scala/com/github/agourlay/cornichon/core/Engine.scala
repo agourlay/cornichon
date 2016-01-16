@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import com.github.agourlay.cornichon.dsl._
 
 import scala.Console._
 import scala.annotation.tailrec
@@ -41,7 +42,7 @@ class Engine(executionContext: ExecutionContext) {
 
         if (eventuallySteps.isEmpty) {
           val updatedLogs = logs ++ logStepErrorResult(e.title, MalformedEventuallyBlock, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
-          buildFailedRunSteps(steps, e, MalformedConcurrentBlock, updatedLogs)
+          buildFailedRunSteps(steps, e, MalformedEventuallyBlock, updatedLogs)
         } else {
           val nextDepth = depth + 1
           val start = System.nanoTime

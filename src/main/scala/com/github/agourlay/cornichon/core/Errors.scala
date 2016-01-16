@@ -51,10 +51,6 @@ case class DetailedStepAssertionError[A](result: A, detailedAssertion: A ⇒ Str
   val msg = detailedAssertion(result)
 }
 
-case class MalformedHeadersError(error: String) extends CornichonError {
-  val msg = s"error thrown while parsing headers $error"
-}
-
 trait ResolverError extends CornichonError {
   val key: String
 }
@@ -71,50 +67,10 @@ case class ResolverParsingError(error: Throwable) extends CornichonError {
   val msg = s"error thrown during resolver parsing ${error.getMessage}"
 }
 
-case class JsonPathParsingError(error: String) extends CornichonError {
-  val msg = s"error thrown during JsonPath parsing : $error"
-}
-
-case class JsonPathError(error: Throwable) extends CornichonError {
-  val msg = s"error thrown during JsonPath parsing ${error.getMessage}"
-}
-
 case class EmptyKeyException(s: Session) extends CornichonError {
   val msg = s"key value can not be empty - session is \n${s.prettyPrint}"
 }
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
   val msg = s"key '$key' can not be found in session : \n${s.prettyPrint}"
-}
-
-case class WhileListError(msg: String) extends CornichonError
-
-case class NotAnArrayError[A](badPayload: A) extends CornichonError {
-  val msg = s"expected JSON Array but got $badPayload"
-}
-
-case class MalformedJsonError[A](input: A, exception: Throwable) extends CornichonError {
-  val msg = s"malformed JSON input $input with ${exception.getMessage}"
-}
-
-case class DataTableError(error: Throwable) extends CornichonError {
-  val msg = s"error thrown while parsing data table ${error.getMessage}"
-}
-
-case class DataTableParseError(msg: String) extends CornichonError
-
-case object MalformedConcurrentBlock extends CornichonError {
-  val msg = "malformed concurrent block without closing 'ConcurrentlyStop'"
-}
-
-case object MalformedEventuallyBlock extends CornichonError {
-  val msg = "malformed eventually block without closing 'EventuallyStop'"
-}
-
-case object ConcurrentlyTimeout extends CornichonError {
-  val msg = "concurrent block did not reach completion in 'maxTime'"
-}
-
-case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
-  val msg = "eventually block succeeded after 'maxDuration'"
 }

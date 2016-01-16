@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import com.github.agourlay.cornichon.core.{ NotAnArrayError, CornichonError, MalformedJsonError }
+import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 
 import org.json4s._
