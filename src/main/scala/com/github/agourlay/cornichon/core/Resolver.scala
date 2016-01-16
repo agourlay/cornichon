@@ -72,8 +72,8 @@ class Resolver(extractors: Map[String, Mapper]) extends CornichonJson {
   }
 
   def runCustomMapper(input: String, mapper: Mapper) = mapper match {
-    case TextMapper(_, extract)  ⇒ extract(input)
-    case JsonMapper(_, jsonPath) ⇒ selectJsonPath(jsonPath, parse(input)).values.toString
+    case TextMapper(_, extract)             ⇒ extract(input)
+    case JsonMapper(_, jsonPath, transform) ⇒ transform(selectJsonPath(jsonPath, parse(input)).values.toString)
   }
 }
 
@@ -112,4 +112,4 @@ sealed trait Mapper {
 
 case class TextMapper(key: String, extract: String ⇒ String) extends Mapper
 
-case class JsonMapper(key: String, jsonPath: String) extends Mapper
+case class JsonMapper(key: String, jsonPath: String, transform: String ⇒ String = identity) extends Mapper
