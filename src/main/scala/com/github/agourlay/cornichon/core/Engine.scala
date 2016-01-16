@@ -74,13 +74,14 @@ class Engine(executionContext: ExecutionContext) {
         } else {
           val nextDepth = depth + 1
           val start = System.nanoTime
-          val results = Await.result(
-            Future.traverse(List.fill(factor)(concurrentSteps)) { steps ⇒
-              Future {
-                runSteps(steps, session, updatedLogs, nextDepth)
-              }
-            }, maxTime
-          )
+          val f = Future.traverse(List.fill(factor)(concurrentSteps)) { steps ⇒
+            Future { runSteps(steps, session, updatedLogs, nextDepth) }
+          }
+
+          val results = Try { Await.result(f, maxTime) } match {
+            case Success(s) ⇒ s
+            case Failure(e) ⇒ List(buildFailedRunSteps(steps, c, ConcurrentlyTimeout, updatedLogs))
+          }
 
           val failedStepRun = results.collectFirst { case f @ FailedRunSteps(_, _, _) ⇒ f }
           val nextSteps = steps.tail.drop(concurrentSteps.size)

@@ -30,35 +30,16 @@ class OpenMovieDatabase extends CornichonFeature {
             "Plot": "Several noble families fight for control of the mythical land of Westeros.",
             "Language": "English",
             "Country": "USA",
-            "Awards": "Won 1 Golden Globe. Another 133 wins & 250 nominations.",
             "Poster": "http://ia.media-imdb.com/images/M/MV5BMTYwOTEzMDMzMl5BMl5BanBnXkFtZTgwNzExODIzNzE@._V1_SX300.jpg",
             "Metascore": "N/A",
-            "imdbRating": "9.5",
-            "imdbVotes": "877,359",
             "imdbID": "tt0944947",
             "Type": "series",
             "Response": "True"
           }
-          """
+          """, ignoring = "imdbRating", "imdbVotes", "Awards"
         )
 
-        And assert body_is(_ \ "imdbRating", "9.5")
-
-        And assert body_is(
-          """
-          {
-            "Title": "Game of Thrones",
-            "Year": "2011–",
-            "Rated": "TV-MA",
-            "Released": "17 Apr 2011",
-            "Runtime": "56 min",
-            "Genre": "Adventure, Drama, Fantasy",
-            "Director": "N/A",
-            "Writer": "David Benioff, D.B. Weiss",
-            "Actors": "Peter Dinklage, Lena Headey, Emilia Clarke, Kit Harington"
-          }
-          """, ignoring = "Plot", "Language", "Country", "Awards", "Poster", "Metascore", "imdbRating", "imdbVotes", "imdbID", "Type", "Response"
-        )
+        And assert body_json_path_is("imdbRating", "9.5")
 
         And assert body_is(whiteList = true,
           """
@@ -112,21 +93,21 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "Lord Snow",
                 "Released": "2011-05-01",
                 "Episode": "3",
-                "imdbRating": "7.6",
+                "imdbRating": "8.6",
                 "imdbID": "tt1829962"
               },
               {
                 "Title": "Cripples, Bastards, and Broken Things",
                 "Released": "2011-05-08",
                 "Episode": "4",
-                "imdbRating": "7.7",
+                "imdbRating": "8.7",
                 "imdbID": "tt1829963"
               },
               {
                 "Title": "The Wolf and the Lion",
                 "Released": "2011-05-15",
                 "Episode": "5",
-                "imdbRating": "8.0",
+                "imdbRating": "9.0",
                 "imdbID": "tt1829964"
               },
               {
@@ -140,7 +121,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "You Win or You Die",
                 "Released": "2011-05-29",
                 "Episode": "7",
-                "imdbRating": "8.1",
+                "imdbRating": "9.2",
                 "imdbID": "tt1837863"
               },
               {
@@ -170,24 +151,24 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body_is(_ \ "Episodes",
+        And assert body_json_path_is("Episodes",
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
             | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "7.8"   | "tt1668746" |
-            | "Lord Snow"                             | "2011-05-01" |   "3"   |    "7.6"   | "tt1829962" |
-            | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "7.7"   | "tt1829963" |
-            | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "8.0"   | "tt1829964" |
+            | "Lord Snow"                             | "2011-05-01" |   "3"   |    "8.6"   | "tt1829962" |
+            | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "8.7"   | "tt1829963" |
+            | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "9.0"   | "tt1829964" |
             | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
-            | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
+            | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "9.2"   | "tt1837863" |
             | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
             | "Baelor"                                | "2011-06-12" |   "9"   |    "8.5"   | "tt1851398" |
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
 
-        And assert body_array_size_is(_ \ "Episodes", 10)
+        And assert body_array_size_is("Episodes", 10)
 
-        And assert body_is(b => (b \ "Episodes")(0),
+        And assert body_json_path_is("Episodes[0]",
           """
           {
             "Title": "Winter Is Coming",
@@ -198,9 +179,9 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body_is(b => (b \ "Episodes")(0) \ "Released", "2011-04-17")
+        And assert body_json_path_is("Episodes[0].Released", "2011-04-17")
 
-        And assert body_array_contains(_ \ "Episodes", """
+        And assert body_array_contains("Episodes", """
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",

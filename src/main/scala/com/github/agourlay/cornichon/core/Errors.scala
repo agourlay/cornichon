@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import java.io.{ PrintWriter, StringWriter }
 
 import org.json4s._
-import org.json4s.jackson.JsonMethods._
+import com.github.agourlay.cornichon.json.CornichonJson._
 
 import scala.util.control.NoStackTrace
 
@@ -35,15 +35,12 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
   val msg = actual match {
     case s: String ⇒ baseMsg
     case j: JValue ⇒
-      val Diff(changed, added, deleted) = j diff expected.asInstanceOf[JValue]
       s"""|expected result was${if (negate) " different than:" else ":"}
-          |'${pretty(render(expected.asInstanceOf[JValue]))}'
+          |'${prettyPrint(expected.asInstanceOf[JValue])}'
           |but actual result is:
-          |'${pretty(render(actual.asInstanceOf[JValue]))}'
+          |'${prettyPrint(actual.asInstanceOf[JValue])}'
           |diff:
-          |${if (changed == JNothing) "" else "changed = " + pretty(render(changed))}
-          |${if (added == JNothing) "" else "added = " + pretty(render(added))}
-          |${if (deleted == JNothing) "" else "deleted = " + pretty(render(deleted))}
+          |${prettyDiff(j, expected.asInstanceOf[JValue])}
       """.stripMargin.trim
     case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]])}'"
     case _         ⇒ baseMsg
@@ -72,6 +69,14 @@ case class ExtractorResolverError(key: String, s: Session, e: Throwable) extends
 
 case class ResolverParsingError(error: Throwable) extends CornichonError {
   val msg = s"error thrown during resolver parsing ${error.getMessage}"
+}
+
+case class JsonPathParsingError(error: String) extends CornichonError {
+  val msg = s"error thrown during JsonPath parsing : $error"
+}
+
+case class JsonPathError(error: Throwable) extends CornichonError {
+  val msg = s"error thrown during JsonPath parsing ${error.getMessage}"
 }
 
 case class EmptyKeyException(s: Session) extends CornichonError {
@@ -104,6 +109,10 @@ case object MalformedConcurrentBlock extends CornichonError {
 
 case object MalformedEventuallyBlock extends CornichonError {
   val msg = "malformed eventually block without closing 'EventuallyStop'"
+}
+
+case object ConcurrentlyTimeout extends CornichonError {
+  val msg = "concurrent block did not reach completion in 'maxTime'"
 }
 
 case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {

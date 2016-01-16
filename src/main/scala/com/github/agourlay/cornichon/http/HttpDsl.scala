@@ -4,13 +4,13 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ BodyElementCollector, Dsl }
-import com.github.agourlay.cornichon.json.CornichonJson
+import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.json.JsonPath
 import org.json4s._
-import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends Dsl with CornichonJson {
+trait HttpDsl extends Dsl {
   this: CornichonFeature ⇒
 
   import HttpService._
@@ -104,7 +104,7 @@ trait HttpDsl extends Dsl with CornichonJson {
     )
 
   def headers_contain(headers: (String, String)*) =
-    transform_assert_session(
+    from_session_step(
       key = LastResponseHeadersKey,
       expected = s ⇒ true,
       (session, sessionHeaders) ⇒ {
@@ -113,29 +113,33 @@ trait HttpDsl extends Dsl with CornichonJson {
       }, title = s"headers contain ${headers.mkString(", ")}"
     )
 
-  def body_is[A](mapFct: JValue ⇒ JValue, expected: A) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ resolveAndParse(expected, s),
-      (s, sessionValue) ⇒ mapFct(parseJson(sessionValue)),
-      title = s"response body with transformation is '$expected'"
-    )
-
-  // FIXME can't use varargs here, it does not compile when 'expected' is a String
-  def body_is[A](mapFct: JValue ⇒ JValue, expected: A, ignoring: Seq[String]) =
-    transform_assert_session(
+  def body_json_path_is[A](jsonPath: String, expected: A, ignoring: String*) =
+    from_session_step(
       key = LastResponseBodyKey,
       expected = s ⇒ resolveAndParse(expected, s),
       (s, sessionValue) ⇒ {
-        val mapped = mapFct(parseJson(sessionValue))
+        val mapped = selectJsonPath(jsonPath, parseJson(sessionValue))
         if (ignoring.isEmpty) mapped
-        else filterJsonRootKeys(mapped, ignoring)
+        else removeFieldsByPath(mapped, ignoring)
       },
-      title = s"response body with transformation is '$expected'"
+      title = s"response body's field '$jsonPath' is '$expected'"
+    )
+
+  def body_is[A](expected: A, ignoring: String*) =
+    from_session_step(
+      key = LastResponseBodyKey,
+      title = titleBuilder(s"response body is '$expected'", ignoring),
+      expected = s ⇒ resolveAndParse(expected, s),
+      mapValue =
+        (session, sessionValue) ⇒ {
+          val jsonSessionValue = parseJson(sessionValue)
+          if (ignoring.isEmpty) jsonSessionValue
+          else removeFieldsByPath(jsonSessionValue, ignoring)
+        }
     )
 
   def body_is(whiteList: Boolean = false, expected: String): RunnableStep[JValue] = {
-    transform_assert_session(
+    from_session_step(
       key = LastResponseBodyKey,
       title = s"response body is '$expected' with whiteList=$whiteList",
       expected = s ⇒ resolveAndParse(expected, s),
@@ -152,47 +156,34 @@ trait HttpDsl extends Dsl with CornichonJson {
     )
   }
 
-  def body_is(expected: String, ignoring: String*): RunnableStep[JValue] =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      title = titleBuilder(s"response body is '$expected'", ignoring),
-      expected = s ⇒ resolveAndParse(expected, s),
-      mapValue =
-        (session, sessionValue) ⇒ {
-          val jsonSessionValue = parseJson(sessionValue)
-          if (ignoring.isEmpty) jsonSessionValue
-          else filterJsonRootKeys(jsonSessionValue, ignoring)
-        }
-    )
-
   def body_is[A](ordered: Boolean, expected: A, ignoring: String*): RunnableStep[Iterable[JValue]] =
     if (ordered)
-      body_array_transform(_.arr.map(filterJsonRootKeys(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
+      body_array_transform(_.arr.map(removeFieldsByPath(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
           case expectedArray: JArray ⇒ expectedArray.arr
           case _                     ⇒ throw new NotAnArrayError(expected)
         }
       })
     else
-      body_array_transform(s ⇒ s.arr.map(filterJsonRootKeys(_, ignoring)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring), s ⇒ {
+      body_array_transform(s ⇒ s.arr.map(removeFieldsByPath(_, ignoring)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
           case expectedArray: JArray ⇒ expectedArray.arr.toSet
           case _                     ⇒ throw new NotAnArrayError(expected)
         }
       })
 
-  def save_from_body(extractor: JValue ⇒ JValue, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ extractor(parseJson(s)).values.toString, target)
+  def save_from_body(jsonPath: String, target: String) =
+    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, parseJson(s)).values.toString, target)
 
-  def save_from_body(args: (JValue ⇒ JValue, String)*) = {
+  def save_from_body(args: (String, String)*) = {
     val inputs = args.map {
-      case (e, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ e(parseJson(s)).values.toString, t)
+      case (path, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(path, parseJson(s)).values.toString, t)
     }
     save_from_session(inputs)
   }
 
-  def save_body_key(rootKey: String, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ (parseJson(s) \ rootKey).values.toString, target)
+  def save_body_key(jsonPath: String, target: String) =
+    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, parseJson(s)).values.toString, target)
 
   def save_body_keys(args: (String, String)*) = {
     val inputs = args.map {
@@ -212,80 +203,56 @@ trait HttpDsl extends Dsl with CornichonJson {
     else s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'$v'").mkString(", ")}"
 
   def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): RunnableStep[A] =
-    transform_assert_session[A](
+    from_session_step[A](
       title = title,
       key = LastResponseBodyKey,
       expected = s ⇒ expected(s),
       mapValue =
       (session, sessionValue) ⇒ {
-        parseJson(sessionValue) match {
-          case arr: JArray ⇒
-            logger.debug(s"response_body_array_is applied to ${pretty(render(arr))}")
-            mapFct(arr)
-          case _ ⇒ throw new NotAnArrayError(sessionValue)
-        }
+        val jarr = parseArray(sessionValue)
+        mapFct(jarr)
       }
     )
 
-  def body_array_size_is(size: Int) = body_array_transform(_.arr.size, s"response array size is '$size'", s ⇒ size)
+  def body_array_size_is(size: Int): RunnableStep[Int] = body_array_size_is(JsonPath.root, size)
 
-  def body_array_size_is(rootKey: String, size: Int) =
-    transform_assert_session(
+  def body_array_size_is(jsonPath: String, size: Int) = {
+    val title = if (jsonPath == JsonPath.root) s"response body array size is '$size'" else s"response body's array '$jsonPath' size is '$size'"
+    from_session_detail_step(
+      title = title,
+      key = LastResponseBodyKey,
+      expected = s ⇒ size,
+      mapValue = (s, sessionValue) ⇒ {
+      val jarr = if (jsonPath == JsonPath.root) parseArray(sessionValue)
+      else selectArrayWithJsonPath(jsonPath, sessionValue)
+      (jarr.arr.size, HttpDslError.arraySizeError(size, prettyPrint(jarr)))
+    }
+    )
+  }
+
+  def body_array_contains[A](element: A): RunnableStep[Boolean] = body_array_contains(JsonPath.root, element)
+
+  def body_array_contains[A](jsonPath: String, element: A) = {
+    val title = if (jsonPath == JsonPath.root) s"response body array contains '$element'" else s"response body's array '$jsonPath' contains '$element'"
+    from_session_detail_step(
+      title = title,
       key = LastResponseBodyKey,
       expected = s ⇒ true,
-      (s, sessionValue) ⇒ {
-        val extracted = parseJson(sessionValue) \ rootKey
-        extracted match {
-          case JArray(arr) ⇒ arr.size == size
-          case _           ⇒ throw new NotAnArrayError(extracted)
-        }
-      },
-      title = s"response body '$rootKey' array size is '$size'"
+      mapValue = (s, sessionValue) ⇒ {
+      val jarr = if (jsonPath == JsonPath.root) parseArray(sessionValue)
+      else selectArrayWithJsonPath(jsonPath, sessionValue)
+      (jarr.arr.contains(parseJson(element)), HttpDslError.arrayDoesNotContainError(element.toString, prettyPrint(jarr)))
+    }
     )
+  }
 
-  def body_array_size_is(extractor: JValue ⇒ JValue, size: Int) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ true,
-      (s, sessionValue) ⇒ {
-        val extracted = extractor(parseJson(sessionValue))
-        extracted match {
-          case JArray(arr) ⇒ arr.size == size
-          case _           ⇒ throw new NotAnArrayError(extracted)
-        }
-      },
-      title = s"response body extracted array size is '$size'"
-    )
-
-  def body_array_contains[A](element: A) = body_array_transform(_.arr.contains(parseJson(element)), s"response body array contains '$element'", s ⇒ true)
-
-  def body_array_contains[A](rootKey: String, element: A) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ true,
-      (s, sessionValue) ⇒ {
-        val extracted = parseJson(sessionValue) \ rootKey
-        extracted match {
-          case JArray(arr) ⇒ arr.contains(parseJson(element))
-          case _           ⇒ throw new NotAnArrayError(extracted)
-        }
-      },
-      title = s"response body '$rootKey' array contains '$element'"
-    )
-
-  def body_array_contains[A](extractor: JValue ⇒ JValue, element: A) =
-    transform_assert_session(
-      key = LastResponseBodyKey,
-      expected = s ⇒ true,
-      (s, sessionValue) ⇒ {
-        val extracted = extractor(parseJson(sessionValue))
-        extracted match {
-          case JArray(arr) ⇒ arr.contains(parseJson(element))
-          case _           ⇒ throw new NotAnArrayError(extracted)
-        }
-      },
-      title = s"response body extracted array contains '$element'"
-    )
+  private def selectArrayWithJsonPath(path: String, sessionValue: String): JArray = {
+    val extracted = selectJsonPath(path, parseJson(sessionValue))
+    extracted match {
+      case jarr: JArray ⇒ jarr
+      case _            ⇒ throw new NotAnArrayError(extracted)
+    }
+  }
 
   private def resolveAndParse[A](input: A, session: Session): JValue =
     parseJsonUnsafe {
@@ -306,7 +273,17 @@ trait HttpDsl extends Dsl with CornichonJson {
   private object HttpDslError {
     def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {
       s"""expected '$expected' but actual is '$actual' with response body:
-            |${pretty(render(parseJson(body)))}""".stripMargin
+            |${prettyPrint(parseJson(body))}""".stripMargin
+    }
+
+    def arraySizeError(expected: Int, sourceArray: String): Int ⇒ String = actual ⇒ {
+      s"""expected array size '$expected' but actual is '$actual' with array:
+          |$sourceArray""".stripMargin
+    }
+
+    def arrayDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
+      s"""expected array to contain '$expected' but it is not the case with array:
+          |$sourceArray""".stripMargin
     }
   }
 }

@@ -72,23 +72,33 @@ trait Dsl extends CornichonLogger {
     )
   }
 
-  def transform_assert_session[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     RunnableStep(
       title,
       s ⇒
         (s, SimpleStepAssertion(
           expected = expected(s),
-          result = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ mapValue(s, v))
+          result = mapValue(s, s.get(key))
         ))
+    )
+
+  def from_session_detail_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+    RunnableStep(
+      title,
+      s ⇒ {
+        val (res, details) = mapValue(s, s.get(key))
+        (s, DetailedStepAssertion(
+          expected = expected(s),
+          result = res,
+          details = details
+        ))
+      }
     )
 
   def save_from_session(key: String, extractor: String ⇒ String, target: String) =
     effectful(
       s"save from session '$key' to '$target'",
-      s ⇒ {
-        val extracted = s.getOpt(key).fold(throw new KeyNotFoundInSession(key, s))(v ⇒ extractor(v))
-        s.addValue(target, extracted)
-      }
+      s ⇒ s.addValue(target, extractor(s.get(key)))
     )
 
   case class FromSessionSetter(fromKey: String, trans: String ⇒ String, target: String)
@@ -111,18 +121,12 @@ trait Dsl extends CornichonLogger {
   def session_contains(key: String, value: String, title: Option[String] = None) =
     RunnableStep(
       title = title.getOrElse(s"session '$key' equals '$value'"),
-      action = s ⇒ {
-        (s, SimpleStepAssertion(value, s.get(key)))
-      }
+      action = s ⇒ (s, SimpleStepAssertion(value, s.get(key)))
     )
 
   def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
 
-  def show_session(key: String) =
-    DebugStep { s ⇒
-      val value = s.get(key)
-      s"Session content for key '$key' is '$value'"
-    }
+  def show_session(key: String) = DebugStep(s ⇒ s"Session content for key '$key' is '${s.get(key)}'")
 
   def print_step(message: String) = DebugStep(s ⇒ message)
 

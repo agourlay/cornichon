@@ -23,38 +23,48 @@ import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 
 class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends HttpClient with CornichonLogger {
   implicit private val ec: ExecutionContext = system.dispatcher
 
   implicit private val formats = DefaultFormats
 
-  private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader]) =
-    Http()
-      .singleRequest(req.withHeaders(collection.immutable.Seq(headers: _*)))
-      .flatMap(toCornichonResponse)
-      .recover(exceptionMapper)
+  private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
+    val request = req.withHeaders(collection.immutable.Seq(headers: _*))
+    val f = Http().singleRequest(request).flatMap(toCornichonResponse)
+    waitForRequestFuture(request, f, timeout)
+  }
+
+  private def waitForRequestFuture(initialRequest: HttpRequest, f: Future[Xor[HttpError, CornichonHttpResponse]], t: FiniteDuration): Xor[HttpError, CornichonHttpResponse] =
+    Try { Await.result(f, t) } match {
+      case Success(s) ⇒ s
+      case Failure(failure) ⇒ failure match {
+        case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))
+        case t: Throwable        ⇒ left(RequestError(t, initialRequest.getUri().toString))
+      }
+    }
 
   implicit def JValueMarshaller: ToEntityMarshaller[JValue] =
     Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(j ⇒ compact(render(j)))
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
-  def postJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Post(uriBuilder(url, params), payload), headers)
+  def postJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+    requestRunner(Post(uriBuilder(url, params), payload), headers, timeout)
 
-  def putJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Put(uriBuilder(url, params), payload), headers)
+  def putJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+    requestRunner(Put(uriBuilder(url, params), payload), headers, timeout)
 
-  def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Delete(uriBuilder(url, params)), headers)
+  def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+    requestRunner(Delete(uriBuilder(url, params)), headers, timeout)
 
-  def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] =
-    requestRunner(Get(uriBuilder(url, params)), headers)
+  def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+    requestRunner(Get(uriBuilder(url, params)), headers, timeout)
 
-  def getSSE(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] = {
-    Http()
-      .singleRequest(Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*)))
+  def getSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
+    val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))
+    val f = Http().singleRequest(request)
       .flatMap(expectSSE)
       .map { sse ⇒
         sse.map { source ⇒
@@ -72,14 +82,11 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
           Await.result(r, takeWithin + 1.second)
         }
       }
+    waitForRequestFuture(request, f, takeWithin + 1.second)
   }
 
   // TODO https://github.com/akka/akka/issues/17275
-  def getWS(url: String, params: Seq[(String, String)], takeWithin: FiniteDuration, headers: Seq[HttpHeader]): Future[Xor[HttpError, CornichonHttpResponse]] = ???
-
-  private def exceptionMapper: PartialFunction[Throwable, Xor[HttpError, CornichonHttpResponse]] = {
-    case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))
-  }
+  def getWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = ???
 
   private def expectSSE(httpResponse: HttpResponse): Future[Xor[HttpError, Source[ServerSentEvent, Any]]] =
     Unmarshal(Gzip.decode(httpResponse)).to[Source[ServerSentEvent, Any]].map { sse ⇒

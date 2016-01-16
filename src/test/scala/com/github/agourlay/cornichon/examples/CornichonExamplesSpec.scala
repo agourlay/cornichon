@@ -5,7 +5,7 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.{ JsonMapper }
+import com.github.agourlay.cornichon.core.JsonMapper
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import scala.concurrent.Await
@@ -48,6 +48,20 @@ class CornichonExamplesSpec extends CornichonFeature {
           """, ignoring = "city", "publisher"
         )
 
+        And assert body_is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "hasSuperpowers": false,
+            "publisher":{
+              "foundationYear":1934
+            }
+          }
+          """, ignoring = "publisher.name", "publisher.location"
+        )
+
         // Compare only against provided keys
         And assert body_is(whiteList = true, expected =
           """
@@ -58,11 +72,11 @@ class CornichonExamplesSpec extends CornichonFeature {
           """)
 
         // Test part of response body by providing an extractor
-        Then assert body_is(_ \ "city", "Gotham city")
+        Then assert body_json_path_is("city", "Gotham city")
 
-        Then assert body_is(_ \ "hasSuperpowers", false)
+        Then assert body_json_path_is("hasSuperpowers", false)
 
-        Then assert body_is(_ \ "publisher", expected =
+        Then assert body_json_path_is("publisher", expected =
           """
           {
             "name":"DC",
@@ -70,17 +84,16 @@ class CornichonExamplesSpec extends CornichonFeature {
             "location":"Burbank, California"
           } """)
 
-        // No varargs
-        Then assert body_is(_ \ "publisher", expected =
+        Then assert body_json_path_is("publisher", expected =
           """
           {
             "name":"DC",
             "foundationYear":1934
-          } """, ignoring = Seq("location"))
+          } """, ignoring = "location")
 
-        Then assert body_is(_ \ "publisher" \ "name", "DC")
+        Then assert body_json_path_is("publisher.name", "DC")
 
-        Then assert body_is(_ \ "publisher" \ "foundationYear", 1934)
+        Then assert body_json_path_is("publisher.foundationYear", 1934)
 
         When I GET("/superheroes/Scalaman")
 
@@ -173,7 +186,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           Then assert headers_contain("Content-Encoding" → "gzip")
 
-          Then assert body_is(_ \ "city", "Pankow")
+          Then assert body_json_path_is("city", "Pankow")
         }
 
         Then assert status_is(200)
@@ -358,7 +371,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Or with extractor
-        And I save_from_body(_ \ "city", "batman-city")
+        And I save_from_body("city", "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
 
@@ -386,7 +399,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         When I GET("/superheroes/Batman")
 
         // Using registered extractor at the bottom
-        Then assert body_is(_ \ "name", "<name>")
+        Then assert body_json_path_is("name", "<name>")
 
         // Repeat series of Steps
         Repeat(3) {
@@ -498,6 +511,6 @@ class CornichonExamplesSpec extends CornichonFeature {
   }
 
   override def registerExtractors = Map(
-    "name" → JsonMapper(HttpService.LastResponseBodyKey, v ⇒ (v \ "name").values.toString)
+    "name" → JsonMapper(HttpService.LastResponseBodyKey, "name")
   )
 }
