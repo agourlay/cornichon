@@ -72,7 +72,7 @@ trait Dsl extends CornichonLogger {
     )
   }
 
-  def transform_assert_session[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     RunnableStep(
       title,
       s ⇒
@@ -80,6 +80,19 @@ trait Dsl extends CornichonLogger {
           expected = expected(s),
           result = mapValue(s, s.get(key))
         ))
+    )
+
+  def from_session_detail_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+    RunnableStep(
+      title,
+      s ⇒ {
+        val (res, details) = mapValue(s, s.get(key))
+        (s, DetailedStepAssertion(
+          expected = expected(s),
+          result = res,
+          details = details
+        ))
+      }
     )
 
   def save_from_session(key: String, extractor: String ⇒ String, target: String) =

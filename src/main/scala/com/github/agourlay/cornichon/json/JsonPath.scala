@@ -13,6 +13,7 @@ object JsonPath {
     }
     JsonPath(path, operations)
   }
+  val root = "$"
 }
 
 sealed trait JsonPathOperation {

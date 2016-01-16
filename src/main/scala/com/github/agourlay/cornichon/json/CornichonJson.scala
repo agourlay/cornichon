@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import com.github.agourlay.cornichon.core.{ CornichonError, MalformedJsonError }
+import com.github.agourlay.cornichon.core.{ NotAnArrayError, CornichonError, MalformedJsonError }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 
 import org.json4s._
@@ -45,6 +45,11 @@ trait CornichonJson {
     val parsedJsonPath = JsonPathParser.parseJsonPath(path)
     val jsonPath = JsonPath.fromSegments(parsedJsonPath)
     jsonPath.operations.foldLeft(json) { (j, op) ⇒ op.run(j) }
+  }
+
+  def parseArray(input: String): JArray = parseJson(input) match {
+    case arr: JArray ⇒ arr
+    case _           ⇒ throw new NotAnArrayError(input)
   }
 
   // FIXME can break if JSON contains duplicate field => make bulletproof using lenses
