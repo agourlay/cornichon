@@ -50,7 +50,7 @@ libraryDependencies ++= {
     ,"org.scalatest"     %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
     ,"org.parboiled"     %% "parboiled"                         % parboiledV
-    ,"org.scalacheck"    %% "scalacheck"                        % scalacheckV % "test"
+    ,"org.scalacheck"    %% "scalacheck"                        % scalacheckV
     ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
     ,"com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV   % "test"
   )

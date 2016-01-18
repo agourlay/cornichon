@@ -47,6 +47,8 @@ trait CornichonJson {
     jsonPath.operations.foldLeft(json) { (j, op) ⇒ op.run(j) }
   }
 
+  def selectJsonPath(path: String, json: String): JValue = selectJsonPath(path, parseJson(json))
+
   def parseArray(input: String): JArray = parseJson(input) match {
     case arr: JArray ⇒ arr
     case _           ⇒ throw new NotAnArrayError(input)

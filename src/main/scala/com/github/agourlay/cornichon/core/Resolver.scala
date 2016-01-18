@@ -3,9 +3,11 @@ package com.github.agourlay.cornichon.core
 import java.util.UUID
 
 import cats.data.Xor
-import cats.data.Xor.{ left, right }
+import cats.data.Xor.right
 import com.github.agourlay.cornichon.json.CornichonJson._
 import org.parboiled2._
+import org.scalacheck.Gen
+import org.scalacheck.Gen.Parameters
 
 import scala.util._
 
@@ -18,30 +20,32 @@ class Resolver(extractors: Map[String, Mapper]) {
       case Success(dt)            ⇒ dt.toList
     }
 
-  def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[ResolverError, String] = ph.key match {
+  def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] = ph.key match {
     case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
     case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(100).toString)
     case "random-string"           ⇒ right(scala.util.Random.nextString(5))
     case "random-boolean"          ⇒ right(scala.util.Random.nextBoolean().toString)
     case "timestamp"               ⇒ right((System.currentTimeMillis / 1000).toString)
     case other: String ⇒
-      extractors.get(other).fold[Xor[ResolverError, String]] {
-        session.getOpt(other, ph.index).map(right).getOrElse(left(SimpleResolverError(other, session)))
-      } { mapper ⇒
-        Try {
-          session.getOpt(mapper.key, ph.index).map(runCustomMapper(_, mapper))
-        } match {
-          case Success(value) ⇒ value.map(right).getOrElse(left(SimpleResolverError(other, session)))
-          case Failure(e) ⇒
-            left(ExtractorResolverError(other, session, e))
-        }
+      // Lookup in Session if no custom mapper found
+      extractors.get(other).fold[Xor[CornichonError, String]] { session.getXor(other, ph.index) } {
+        case SimpleMapper(gen) ⇒
+          Xor.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
+        case GenMapper(gen) ⇒
+          Xor.fromOption(gen.apply(Parameters.default), GeneratorError(ph.fullKey))
+        case TextMapper(key, transform) ⇒
+          session.getXor(key, ph.index).map(transform)
+        case JsonMapper(key, jsonPath, transform) ⇒
+          session.getXor(key, ph.index).map { sessionValue ⇒
+            transform(selectJsonPath(jsonPath, sessionValue).values.toString)
+          }
       }
   }
 
   // TODO should accumulate errors
-  def fillPlaceholders(input: String)(session: Session): Xor[ResolverError, String] = {
-    def loop(placeholders: List[Placeholder], acc: String): Xor[ResolverError, String] =
-      placeholders.headOption.fold[Xor[ResolverError, String]](right(acc)) { ph ⇒
+  def fillPlaceholders(input: String)(session: Session) = {
+    def loop(placeholders: List[Placeholder], acc: String): Xor[CornichonError, String] =
+      placeholders.headOption.fold[Xor[CornichonError, String]](right(acc)) { ph ⇒
         for {
           resolvedValue ← resolvePlaceholder(ph)(session)
           res ← loop(placeholders.tail, acc.replace(ph.fullKey, resolvedValue))
@@ -55,9 +59,9 @@ class Resolver(extractors: Map[String, Mapper]) {
     fillPlaceholders(input)(session).fold(e ⇒ throw e, identity)
 
   // TODO accumulate errors
-  def tuplesResolver(params: Seq[(String, String)], session: Session): Xor[ResolverError, Seq[(String, String)]] = {
-    def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Xor[ResolverError, Seq[(String, String)]] =
-      params.headOption.fold[Xor[ResolverError, Seq[(String, String)]]](right(acc)) {
+  def tuplesResolver(params: Seq[(String, String)], session: Session) = {
+    def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Xor[CornichonError, Seq[(String, String)]] =
+      params.headOption.fold[Xor[CornichonError, Seq[(String, String)]]](right(acc)) {
         case (name, value) ⇒
           for {
             resolvedName ← fillPlaceholders(name)(session)
@@ -67,11 +71,6 @@ class Resolver(extractors: Map[String, Mapper]) {
       }
 
     loop(params, session, Seq.empty[(String, String)])
-  }
-
-  def runCustomMapper(input: String, mapper: Mapper) = mapper match {
-    case TextMapper(_, extract)             ⇒ extract(input)
-    case JsonMapper(_, jsonPath, transform) ⇒ transform(selectJsonPath(jsonPath, parseJson(input)).values.toString)
   }
 }
 
@@ -104,10 +103,12 @@ case class Placeholder(key: String, index: Option[Int]) {
   val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
 }
 
-sealed trait Mapper {
-  val key: String
-}
+sealed trait Mapper
 
-case class TextMapper(key: String, extract: String ⇒ String) extends Mapper
+case class SimpleMapper(generator: () ⇒ String) extends Mapper
+
+case class GenMapper(gen: Gen[String]) extends Mapper
+
+case class TextMapper(key: String, transform: String ⇒ String = identity) extends Mapper
 
 case class JsonMapper(key: String, jsonPath: String, transform: String ⇒ String = identity) extends Mapper

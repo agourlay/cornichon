@@ -118,7 +118,7 @@ trait HttpDsl extends Dsl {
       key = LastResponseBodyKey,
       expected = s ⇒ resolveAndParse(expected, s),
       (s, sessionValue) ⇒ {
-        val mapped = selectJsonPath(jsonPath, parseJson(sessionValue))
+        val mapped = selectJsonPath(jsonPath, sessionValue)
         if (ignoring.isEmpty) mapped
         else removeFieldsByPath(mapped, ignoring)
       },
@@ -173,17 +173,17 @@ trait HttpDsl extends Dsl {
       })
 
   def save_from_body(jsonPath: String, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, parseJson(s)).values.toString, target)
+    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, s).values.toString, target)
 
   def save_from_body(args: (String, String)*) = {
     val inputs = args.map {
-      case (path, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(path, parseJson(s)).values.toString, t)
+      case (path, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(path, s).values.toString, t)
     }
     save_from_session(inputs)
   }
 
   def save_body_key(jsonPath: String, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, parseJson(s)).values.toString, target)
+    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, s).values.toString, target)
 
   def save_body_keys(args: (String, String)*) = {
     val inputs = args.map {
@@ -247,7 +247,7 @@ trait HttpDsl extends Dsl {
   }
 
   private def selectArrayWithJsonPath(path: String, sessionValue: String): JArray = {
-    val extracted = selectJsonPath(path, parseJson(sessionValue))
+    val extracted = selectJsonPath(path, sessionValue)
     extracted match {
       case jarr: JArray ⇒ jarr
       case _            ⇒ throw new NotAnArrayError(extracted)

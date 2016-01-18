@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.core
 
+import cats.data.Xor
 import com.github.agourlay.cornichon.json.CornichonJson
 
 import scala.collection.immutable.HashMap
@@ -21,6 +22,8 @@ case class Session(content: HashMap[String, Vector[String]]) extends CornichonJs
   }
 
   def get(key: String, stackingIndice: Option[Int] = None): String = getOpt(key, stackingIndice).getOrElse(throw new KeyNotFoundInSession(key, this))
+
+  def getXor(key: String, stackingIndice: Option[Int] = None) = Xor.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, this))
 
   def getJson(key: String, stackingIndice: Option[Int] = None) = parseJson(get(key, stackingIndice))
 

@@ -51,18 +51,6 @@ case class DetailedStepAssertionError[A](result: A, detailedAssertion: A ⇒ Str
   val msg = detailedAssertion(result)
 }
 
-trait ResolverError extends CornichonError {
-  val key: String
-}
-
-case class SimpleResolverError(key: String, s: Session) extends ResolverError {
-  val msg = s"key '<$key>' can not be resolved in session : \n${s.prettyPrint}"
-}
-
-case class ExtractorResolverError(key: String, s: Session, e: Throwable) extends ResolverError {
-  val msg = s"key '<$key>' can not be resolved in session : \n${s.prettyPrint} due to exception thrown ${e.getMessage}"
-}
-
 case class ResolverParsingError(error: Throwable) extends CornichonError {
   val msg = s"error thrown during resolver parsing ${error.getMessage}"
 }
@@ -73,4 +61,12 @@ case class EmptyKeyException(s: Session) extends CornichonError {
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
   val msg = s"key '$key' can not be found in session : \n${s.prettyPrint}"
+}
+
+case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
+  val msg = s"exception thrown in SimpleMapper '$key' : '${CornichonError.genStacktrace(e)}'"
+}
+
+case class GeneratorError(placeholder: String) extends CornichonError {
+  val msg = s"generator mapped to placeholder '$placeholder' did not generate a value"
 }

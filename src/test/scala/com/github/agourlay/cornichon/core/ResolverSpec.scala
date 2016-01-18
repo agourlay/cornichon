@@ -53,7 +53,6 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
       "find placeholder in random content containing a placeholder with index" in {
         forAll(keyGen, indiceGen) { (key, indice) ⇒
           val content1 = Gen.alphaStr
-          val content2 = Gen.alphaStr
           resolver.findPlaceholders(s"$content1<$key[$indice]>$content1") should be(List(Placeholder(key, Some(indice))))
         }
       }
@@ -91,7 +90,7 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
       "return ResolverError if placeholder not found" in {
         val session = Session.newSession.addValue("project-name", "cornichon")
         val content = "This project is named <project-new-name>"
-        resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("project-new-name", session)))
+        resolver.fillPlaceholders(content)(session) should be(left(KeyNotFoundInSession("project-new-name", session)))
       }
 
       "resolve two placeholders" in {
@@ -103,7 +102,7 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
       "return ResolverError for the first placeholder not found" in {
         val session = Session.newSession.addValues(Seq("project-name" → "cornichon", "taste" → "tasty"))
         val content = "This project is named <project-name> and is super <new-taste>"
-        resolver.fillPlaceholders(content)(session) should be(left(SimpleResolverError("new-taste", session)))
+        resolver.fillPlaceholders(content)(session) should be(left(KeyNotFoundInSession("new-taste", session)))
       }
 
       "generate random uuid if <random-uuid>" in {
@@ -127,6 +126,20 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
           val content = s"<$key[1]>"
           resolver.fillPlaceholders(content)(s) should be(right(secondValue))
         }
+      }
+
+      "get value from GenMapper" in {
+        val mapper = Map("letter-from-gen" → GenMapper(Gen.oneOf(List("a"))))
+        val res = new Resolver(mapper)
+        val content = s"<letter-from-gen>"
+        res.fillPlaceholders(content)(Session.newSession) should be(right("a"))
+      }
+
+      "fail if GenMapper does not return a value" in {
+        val mapper = Map("letter-from-gen" → GenMapper(Gen.oneOf(List())))
+        val res = new Resolver(mapper)
+        val content = s"<letter-from-gen>"
+        res.fillPlaceholders(content)(Session.newSession) should be(left(GeneratorError("<letter-from-gen>")))
       }
     }
   }
