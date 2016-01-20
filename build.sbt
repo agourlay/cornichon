@@ -38,7 +38,7 @@ libraryDependencies ++= {
   val json4sV = "3.3.0"
   val logbackV = "1.1.3"
   val parboiledV = "2.1.0"
-  val akkaSseV = "1.4.2"
+  val akkaSseV = "1.5.0"
   val scalacheckV = "1.12.5"
   Seq(
      "com.typesafe.akka" %% "akka-http-core-experimental"       % akkaHttpV
