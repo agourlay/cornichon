@@ -27,10 +27,10 @@ trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
       else
         s.name in {
           runScenario(s) match {
-            case SuccessScenarioReport(scenarioName, successSteps: Seq[String], logs) ⇒
+            case SuccessScenarioReport(scenarioName, successSteps, logs, _) ⇒
               if (s.steps.collect { case d @ DebugStep(_) ⇒ d }.nonEmpty) printLogs(logs)
               assert(true)
-            case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs) ⇒
+            case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs, _) ⇒
               printLogs(logs)
               fail(
                 s"""
