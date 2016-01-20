@@ -31,7 +31,7 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(RewriteArrowSymbols, true)
 
 libraryDependencies ++= {
-  val scalaTestV = "2.2.5"
+  val scalaTestV = "2.2.6"
   val akkaHttpV = "2.0.2"
   val catsV = "0.3.0"
   val sprayJsonV = "1.3.2"

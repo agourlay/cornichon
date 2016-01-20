@@ -433,13 +433,15 @@ class CornichonExamplesSpec extends CornichonFeature {
           Then assert status_is(200)
         }
 
-        // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
+        Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 
-        Then assert body_array_size_is(5)
+          // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
+          When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
 
-        Then assert body_is(
-          """
+          Then assert body_array_size_is(5)
+
+          Then assert body_is(
+            """
           |   eventType      |      data      |
           | "superhero name" |    "Batman"    |
           | "superhero name" |   "Superman"   |
@@ -447,8 +449,8 @@ class CornichonExamplesSpec extends CornichonFeature {
           | "superhero name" |   "Spiderman"  |
           | "superhero name" |    "IronMan"   |
           """
-        )
-
+          )
+        }
         // Repeat series of Steps until it succeed
         Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 
