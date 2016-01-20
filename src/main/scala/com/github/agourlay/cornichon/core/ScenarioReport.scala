@@ -46,8 +46,8 @@ case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, su
     | """.trim.stripMargin
 
   def merge(scenarioReport: ScenarioReport) = scenarioReport match {
-    case s @ SuccessScenarioReport(_, _, _, _) ⇒
-      this.merge(s)
+    case s @ SuccessScenarioReport(_, otherSuccessSteps, otherLogs, _) ⇒
+      this.copy(successSteps = successSteps ++ otherSuccessSteps, logs = logs ++ otherLogs)
     case f @ FailedScenarioReport(_, _, otherSuccessSteps, _, otherLogs, _) ⇒
       // The first failure will be used to trigger the error, the second error will be present in the logs after
       this.copy(successSteps = successSteps ++ otherSuccessSteps, logs = logs ++ otherLogs)
