@@ -6,7 +6,7 @@ import com.github.agourlay.cornichon.core.RunnableStep._
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{ FiniteDuration, Duration }
 
 trait Dsl extends CornichonLogger {
   def Feature(name: String) =
@@ -56,6 +56,14 @@ trait Dsl extends CornichonLogger {
   def Concurrently(factor: Int, maxTime: Duration) =
     BodyElementCollector[Step, Seq[Step]](steps ⇒
       ConcurrentStart(factor, maxTime) +: steps :+ ConcurrentStop(factor))
+
+  def wait(duration: FiniteDuration) = effectful(
+    title = s"wait for ${duration.toMillis} millis",
+    effect = s ⇒ {
+    Thread.sleep(duration.toMillis)
+    s
+  }
+  )
 
   def save(input: (String, String)): RunnableStep[Boolean] = {
     val (key, value) = input
