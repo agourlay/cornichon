@@ -270,6 +270,11 @@ trait HttpDsl extends Dsl {
       saveStep +: steps :+ removeStep
     }
 
+  def json_equality_for(k1: String, k2: String) = RunnableStep(
+    title = s"JSON content of key '$k1' is equal to JSON content of key '$k2'",
+    action = s ⇒ (s, SimpleStepAssertion(s.getJson(k1), s.getJson(k2)))
+  )
+
   private object HttpDslError {
     def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {
       s"""expected '$expected' but actual is '$actual' with response body:

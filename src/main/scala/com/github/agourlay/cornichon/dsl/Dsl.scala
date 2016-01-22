@@ -138,6 +138,11 @@ trait Dsl extends CornichonLogger {
 
   def print_step(message: String) = DebugStep(s ⇒ message)
 
+  def content_equality_for(k1: String, k2: String) = RunnableStep(
+    title = s"content of key '$k1' is equal to content of key '$k2'",
+    action = s ⇒ (s, SimpleStepAssertion(s.get(k1), s.get(k2)))
+  )
+
   def displayTuples(params: Seq[(String, String)]): String = {
     params.map { case (name, value) ⇒ s"$name -> $value" }.mkString(", ")
   }
