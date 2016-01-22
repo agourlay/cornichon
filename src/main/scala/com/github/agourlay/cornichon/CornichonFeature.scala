@@ -26,15 +26,10 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
 
   protected def unregisterFeature() = releaseGlobalRuntime()
 
-  protected def runScenario(s: Scenario) = {
-    val beforeEachAndBodyReport = engine.runScenario(Session.newSession) {
+  protected def runScenario(s: Scenario) =
+    engine.runScenario(Session.newSession, afterEachScenario) {
       s.copy(steps = beforeEachScenario.toVector ++ s.steps)
     }
-    val afterEachReport = engine.runScenario(beforeEachAndBodyReport.session, withTitle = false) {
-      s.copy(steps = afterEachScenario.toVector)
-    }
-    beforeEachAndBodyReport.merge(afterEachReport)
-  }
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) = new HttpService(baseUrl, timeout, globalClient, resolver)
 

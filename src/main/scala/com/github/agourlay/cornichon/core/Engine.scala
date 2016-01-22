@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.core
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.dsl._
+import com.github.agourlay.cornichon.core.ScenarioReport._
 
 import scala.Console._
 import scala.annotation.tailrec
@@ -14,12 +15,15 @@ class Engine(executionContext: ExecutionContext) {
 
   private implicit val ec = executionContext
 
-  def runScenario(session: Session, withTitle: Boolean = true)(scenario: Scenario): ScenarioReport = {
+  def runScenario(session: Session, finallySteps: Seq[Step] = Seq.empty)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
-    val titleLog = if (withTitle) Vector(DefaultLogInstruction(s"Scenario : ${scenario.name}", initMargin)) else Vector.empty
-    runSteps(scenario.steps, session, titleLog, initMargin + 1) match {
-      case s @ SuccessRunSteps(_, _)      ⇒ SuccessScenarioReport(scenario, s)
-      case f @ FailedRunSteps(_, _, _, _) ⇒ FailedScenarioReport(scenario, f)
+    val titleLog = Vector(DefaultLogInstruction(s"Scenario : ${scenario.name}", initMargin))
+    val mainExecution = fromStepsReport(scenario, runSteps(scenario.steps, session, titleLog, initMargin + 1))
+    if (finallySteps.isEmpty)
+      mainExecution
+    else {
+      val finallyExecution = fromStepsReport(scenario, runSteps(finallySteps.toVector, mainExecution.session, Vector.empty, initMargin + 1))
+      mainExecution.merge(finallyExecution)
     }
   }
 

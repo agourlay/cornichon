@@ -18,6 +18,13 @@ sealed trait ScenarioReport {
   def merge(scenarioReport: ScenarioReport): ScenarioReport
 }
 
+object ScenarioReport {
+  def fromStepsReport(scenario: Scenario, stepsReport: StepsReport) = stepsReport match {
+    case s @ SuccessRunSteps(_, _)      ⇒ SuccessScenarioReport(scenario, s)
+    case f @ FailedRunSteps(_, _, _, _) ⇒ FailedScenarioReport(scenario, f)
+  }
+}
+
 case class SuccessScenarioReport(scenarioName: String, successSteps: Vector[String], logs: Vector[LogInstruction], session: Session) extends ScenarioReport {
   val success = true
   def merge(scenarioReport: ScenarioReport) = scenarioReport match {
