@@ -172,22 +172,16 @@ trait HttpDsl extends Dsl {
         }
       })
 
-  def save_from_body(jsonPath: String, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, s).values.toString, target)
-
-  def save_from_body(args: (String, String)*) = {
+  def save_body_key(args: (String, String)*) = {
     val inputs = args.map {
-      case (path, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(path, s).values.toString, t)
+      case (key, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ (parseJson(s) \ key).values.toString, t)
     }
     save_from_session(inputs)
   }
 
-  def save_body_key(jsonPath: String, target: String) =
-    save_from_session(LastResponseBodyKey, s ⇒ selectJsonPath(jsonPath, s).values.toString, target)
-
-  def save_body_keys(args: (String, String)*) = {
+  def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
-      case (e, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ (parseJson(s) \ e).values.toString, t)
+      case (k, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(k, s).values.toString, t)
     }
     save_from_session(inputs)
   }
