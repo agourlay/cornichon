@@ -394,7 +394,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         And I show_last_response_headers
       }
 
-      Scenario("demonstrate advanced features") {
+      Scenario("demonstrate wrapping DSL blocks") {
 
         When I GET("/superheroes/Batman")
 
@@ -433,24 +433,6 @@ class CornichonExamplesSpec extends CornichonFeature {
           Then assert status_is(200)
         }
 
-        Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
-
-          // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-          When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
-
-          Then assert body_array_size_is(5)
-
-          Then assert body_is(
-            """
-          |   eventType      |      data      |
-          | "superhero name" |    "Batman"    |
-          | "superhero name" |   "Superman"   |
-          | "superhero name" | "GreenLantern" |
-          | "superhero name" |   "Spiderman"  |
-          | "superhero name" |    "IronMan"   |
-          """
-          )
-        }
         // Repeat series of Steps until it succeed
         Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 
@@ -485,6 +467,29 @@ class CornichonExamplesSpec extends CornichonFeature {
             )
           }
         }
+      }
+
+      Scenario("demonstrate streaming support") {
+
+        // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
+        When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
+
+        Then assert body_array_size_is(5)
+
+        Then assert body_is(
+          """
+              |   eventType      |      data      |
+              | "superhero name" |    "Batman"    |
+              | "superhero name" |   "Superman"   |
+              | "superhero name" | "GreenLantern" |
+              | "superhero name" |   "Spiderman"  |
+              | "superhero name" |    "IronMan"   |
+            """
+        )
+
+        // TODO
+        //When I GET_WS("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
+
       }
     }
 
