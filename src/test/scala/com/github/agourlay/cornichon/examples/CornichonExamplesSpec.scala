@@ -471,6 +471,8 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("demonstrate streaming support") {
 
+        Given I wait(1 second)
+
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
 
