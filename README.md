@@ -205,7 +205,7 @@ body(
     "name": "Batman",
     "realName": "Bruce Wayne"
   }
-  """, ignoring = "city", "hasSuperpowers", "publisher")
+  """, ignoring = "city", root.hasSuperpowers, "publisher")
 
 body(whiteList = true, expected = """
   {
@@ -215,7 +215,12 @@ body(whiteList = true, expected = """
   """)
 ```
 
-It also possible to use JsonPath like extractors.
+Ignored keys are JsonPaths, two formats are currently supported:
+
+- String based "a.b.c[int].d"
+- Typed based root.a.b.c(int).d
+
+JsonPath can also be used to only assert part of the response
   
 ```scala
 body(root.city, "Gotham city")
