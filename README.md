@@ -43,7 +43,7 @@ class ReadmeExample extends CornichonFeature {
           }
           """, ignoring = "Episodes", "Response")
    
-        And assert body_json_path_is("Episodes",
+        And assert body_is(root.Episodes,
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
@@ -60,7 +60,7 @@ class ReadmeExample extends CornichonFeature {
    
         And assert body_array_size_is("Episodes", 10)
    
-        And assert body_json_path_is("Episodes[0]",
+        And assert body_is(root.Episodes(0),
           """
           {
             "Title": "Winter Is Coming",
@@ -71,9 +71,9 @@ class ReadmeExample extends CornichonFeature {
           }
           """)
    
-        And assert body_json_path_is("Episodes[0].Released", "2011-04-17")
+        And assert body_is(root.Episodes(0).Released, "2011-04-17")
    
-        And assert body_array_contains("Episodes", 
+        And assert body_array_contains(root.Episodes, 
           """
           {
             "Title": "Winter Is Coming",
@@ -218,13 +218,13 @@ body_is(whiteList = true, expected = """
 It also possible to use JsonPath like extractors
   
 ```scala
-body_json_path_is("city", "Gotham city")
+body_is(root.city, "Gotham city")
 
-body_json_path_is("hasSuperpowers", false)
+body_is(root.hasSuperpowers, false)
 
-body_json_path_is("publisher.name", "DC")
+body_is(root.publisher.name, "DC")
 
-body_json_path_is("publisher.foundationYear", 1934)
+body_is(root.publisher.foundationYear, 1934)
 
 ```
 

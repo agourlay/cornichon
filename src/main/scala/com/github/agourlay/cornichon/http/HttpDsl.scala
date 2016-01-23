@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ BodyElementCollector, Dsl }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.{ NotAnArrayError, WhiteListError, JsonPath }
+import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }
 import org.json4s._
 
 import scala.concurrent.duration._
@@ -91,6 +91,8 @@ trait HttpDsl extends Dsl {
     val name = "GET WS"
   }
 
+  val root = JsonPath.root
+
   def status_is(status: Int) =
     RunnableStep(
       title = s"status is '$status'",
@@ -113,7 +115,7 @@ trait HttpDsl extends Dsl {
       }, title = s"headers contain ${headers.mkString(", ")}"
     )
 
-  def body_json_path_is[A](jsonPath: String, expected: A, ignoring: String*) =
+  def body_is[A](jsonPath: JsonPath, expected: A, ignoring: JsonPath*): RunnableStep[JValue] =
     from_session_step(
       key = LastResponseBodyKey,
       expected = s ⇒ resolveAndParse(expected, s),
@@ -122,10 +124,11 @@ trait HttpDsl extends Dsl {
         if (ignoring.isEmpty) mapped
         else removeFieldsByPath(mapped, ignoring)
       },
-      title = s"response body's field '$jsonPath' is '$expected'"
+      title = if (jsonPath.isRoot) s"response body is '$expected'" else s"response body's field '${jsonPath.pretty}' is '$expected'"
     )
 
-  def body_is[A](expected: A, ignoring: String*) =
+  //Duplication has overloading with the one above fails
+  def body_is[A](expected: A, ignoring: JsonPath*) =
     from_session_step(
       key = LastResponseBodyKey,
       title = titleBuilder(s"response body is '$expected'", ignoring),
@@ -156,7 +159,7 @@ trait HttpDsl extends Dsl {
     )
   }
 
-  def body_is[A](ordered: Boolean, expected: A, ignoring: String*): RunnableStep[Iterable[JValue]] =
+  def body_is[A](ordered: Boolean, expected: A, ignoring: JsonPath*): RunnableStep[Iterable[JValue]] =
     if (ordered)
       body_array_transform(_.arr.map(removeFieldsByPath(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
         resolveAndParse(expected, s) match {
@@ -179,7 +182,7 @@ trait HttpDsl extends Dsl {
     save_from_session(inputs)
   }
 
-  def save_body_path(args: (String, String)*) = {
+  def save_body_path(args: (JsonPath, String)*) = {
     val inputs = args.map {
       case (k, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(k, s).values.toString, t)
     }
@@ -192,9 +195,9 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  private def titleBuilder(baseTitle: String, ignoring: Seq[String]): String =
+  private def titleBuilder(baseTitle: String, ignoring: Seq[JsonPath]): String =
     if (ignoring.isEmpty) baseTitle
-    else s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'$v'").mkString(", ")}"
+    else s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'${v.pretty}'").mkString(", ")}"
 
   def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): RunnableStep[A] =
     from_session_step[A](
@@ -208,39 +211,39 @@ trait HttpDsl extends Dsl {
       }
     )
 
-  def body_array_size_is(size: Int): RunnableStep[Int] = body_array_size_is(JsonPath.root, size)
+  def body_array_size_is(size: Int): RunnableStep[Int] = body_array_size_is(root, size)
 
-  def body_array_size_is(jsonPath: String, size: Int) = {
-    val title = if (jsonPath == JsonPath.root) s"response body array size is '$size'" else s"response body's array '$jsonPath' size is '$size'"
+  def body_array_size_is(jsonPath: JsonPath, size: Int) = {
+    val title = if (jsonPath.isRoot) s"response body array size is '$size'" else s"response body's array '${jsonPath.pretty}' size is '$size'"
     from_session_detail_step(
       title = title,
       key = LastResponseBodyKey,
       expected = s ⇒ size,
       mapValue = (s, sessionValue) ⇒ {
-      val jarr = if (jsonPath == JsonPath.root) parseArray(sessionValue)
+      val jarr = if (jsonPath.isRoot) parseArray(sessionValue)
       else selectArrayWithJsonPath(jsonPath, sessionValue)
       (jarr.arr.size, HttpDslError.arraySizeError(size, prettyPrint(jarr)))
     }
     )
   }
 
-  def body_array_contains[A](element: A): RunnableStep[Boolean] = body_array_contains(JsonPath.root, element)
+  def body_array_contains[A](element: A): RunnableStep[Boolean] = body_array_contains(root, element)
 
-  def body_array_contains[A](jsonPath: String, element: A) = {
-    val title = if (jsonPath == JsonPath.root) s"response body array contains '$element'" else s"response body's array '$jsonPath' contains '$element'"
+  def body_array_contains[A](jsonPath: JsonPath, element: A) = {
+    val title = if (jsonPath.isRoot) s"response body array contains '$element'" else s"response body's array '${jsonPath.pretty}' contains '$element'"
     from_session_detail_step(
       title = title,
       key = LastResponseBodyKey,
       expected = s ⇒ true,
       mapValue = (s, sessionValue) ⇒ {
-      val jarr = if (jsonPath == JsonPath.root) parseArray(sessionValue)
+      val jarr = if (jsonPath.isRoot) parseArray(sessionValue)
       else selectArrayWithJsonPath(jsonPath, sessionValue)
       (jarr.arr.contains(parseJson(element)), HttpDslError.arrayDoesNotContainError(element.toString, prettyPrint(jarr)))
     }
     )
   }
 
-  private def selectArrayWithJsonPath(path: String, sessionValue: String): JArray = {
+  private def selectArrayWithJsonPath(path: JsonPath, sessionValue: String): JArray = {
     val extracted = selectJsonPath(path, sessionValue)
     extracted match {
       case jarr: JArray ⇒ jarr

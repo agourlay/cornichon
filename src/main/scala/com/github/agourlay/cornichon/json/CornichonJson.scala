@@ -41,13 +41,7 @@ trait CornichonJson {
       case Failure(e)    ⇒ left(new MalformedJsonError(input, e))
     }
 
-  def selectJsonPath(path: String, json: JValue) = {
-    val parsedJsonPath = JsonPathParser.parseJsonPath(path)
-    val jsonPath = JsonPath.fromSegments(parsedJsonPath)
-    jsonPath.operations.foldLeft(json) { (j, op) ⇒ op.run(j) }
-  }
-
-  def selectJsonPath(path: String, json: String): JValue = selectJsonPath(path, parseJson(json))
+  def selectJsonPath(path: JsonPath, json: String): JValue = path.run(parseJson(json))
 
   def parseArray(input: String): JArray = parseJson(input) match {
     case arr: JArray ⇒ arr
@@ -55,11 +49,10 @@ trait CornichonJson {
   }
 
   // FIXME can break if JSON contains duplicate field => make bulletproof using lenses
-  def removeFieldsByPath(input: JValue, paths: Seq[String]) = {
+  def removeFieldsByPath(input: JValue, paths: Seq[JsonPath]) = {
     paths.foldLeft(input) { (json, path) ⇒
-      val parsedJsonPath = JsonPathParser.parseJsonPath(path)
-      val jsonToRemove = selectJsonPath(path, json)
-      json.removeField { f ⇒ f._1 == parsedJsonPath.last.field && f._2 == jsonToRemove }
+      val jsonToRemove = path.run(json)
+      json.removeField { f ⇒ f._1 == path.operations.last.field && f._2 == jsonToRemove }
     }
   }
 

@@ -5,6 +5,7 @@ import java.util.UUID
 import cats.data.Xor
 import cats.data.Xor.right
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.json.JsonPath
 import org.parboiled2._
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
@@ -107,8 +108,16 @@ sealed trait Mapper
 
 case class SimpleMapper(generator: () ⇒ String) extends Mapper
 
+object SimpleMapper {
+  implicit def fromFct(generator: () ⇒ String): SimpleMapper = SimpleMapper(generator)
+}
+
 case class GenMapper(gen: Gen[String]) extends Mapper
+
+object GenMapper {
+  implicit def fromGen(generator: Gen[String]): GenMapper = GenMapper(generator)
+}
 
 case class TextMapper(key: String, transform: String ⇒ String = identity) extends Mapper
 
-case class JsonMapper(key: String, jsonPath: String, transform: String ⇒ String = identity) extends Mapper
+case class JsonMapper(key: String, jsonPath: JsonPath, transform: String ⇒ String = identity) extends Mapper
