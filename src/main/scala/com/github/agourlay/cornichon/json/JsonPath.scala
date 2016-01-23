@@ -38,7 +38,7 @@ object JsonPath {
 
 sealed trait JsonPathOperation {
   val field: String
-  def pretty: String
+  val pretty: String
   def run(json: JValue): JValue
 }
 

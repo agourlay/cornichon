@@ -4,6 +4,7 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
+import com.github.agourlay.cornichon.json.CornichonJson._
 
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -46,6 +47,14 @@ trait CornichonJson {
   def parseArray(input: String): JArray = parseJson(input) match {
     case arr: JArray ⇒ arr
     case _           ⇒ throw new NotAnArrayError(input)
+  }
+
+  def selectArrayJsonPath(path: JsonPath, sessionValue: String): JArray = {
+    val extracted = selectJsonPath(path, sessionValue)
+    extracted match {
+      case jarr: JArray ⇒ jarr
+      case _            ⇒ throw new NotAnArrayError(extracted)
+    }
   }
 
   // FIXME can break if JSON contains duplicate field => make bulletproof using lenses

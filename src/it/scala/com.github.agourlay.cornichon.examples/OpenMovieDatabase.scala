@@ -13,9 +13,9 @@ class OpenMovieDatabase extends CornichonFeature {
 
         When I GET("/", params = "t" -> "Game of Thrones")
 
-        Then assert status_is(200)
+        Then assert status(200)
 
-        And assert body_is(
+        And assert body(
           """
           {
             "Title": "Game of Thrones",
@@ -39,9 +39,9 @@ class OpenMovieDatabase extends CornichonFeature {
           """, ignoring = "imdbRating", "imdbVotes", "Awards"
         )
 
-        And assert body_is(root.imdbRating, "9.5")
+        And assert body(root.imdbRating, "9.5")
 
-        And assert body_is(whiteList = true,
+        And assert body(whiteList = true,
           """
           {
             "Title": "Game of Thrones",
@@ -60,16 +60,16 @@ class OpenMovieDatabase extends CornichonFeature {
 
         When I GET("/", params = "t" -> "Game of Thrones", "Season" -> "1")
 
-        Then assert status_is(200)
+        Then assert status(200)
 
-        And assert body_is("""
+        And assert body("""
           {
             "Title": "Game of Thrones",
             "Season": "1"
           }
           """, ignoring = "Episodes", "Response")
 
-        And assert body_is(
+        And assert body(
           """
           {
             "Title": "Game of Thrones",
@@ -151,7 +151,7 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body_is(root.Episodes,
+        And assert body(root.Episodes,
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.9"   | "tt1480055" |
@@ -166,9 +166,9 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
-        And assert body_array_size_is("Episodes", 10)
+        And assert body_array_size("Episodes", 10)
 
-        And assert body_is(root.Episodes(0),
+        And assert body(root.Episodes(0),
           """
           {
             "Title": "Winter Is Coming",
@@ -179,7 +179,7 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body_is(root.Episodes(0).Released, "2011-04-17")
+        And assert body(root.Episodes(0).Released, "2011-04-17")
 
         And assert body_array_contains("Episodes", """
           {
