@@ -23,7 +23,7 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] = ph.key match {
     case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
-    case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(100).toString)
+    case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(1000).toString)
     case "random-string"           ⇒ right(scala.util.Random.nextString(5))
     case "random-boolean"          ⇒ right(scala.util.Random.nextBoolean().toString)
     case "timestamp"               ⇒ right((System.currentTimeMillis / 1000).toString)
