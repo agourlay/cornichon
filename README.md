@@ -279,8 +279,6 @@ body_array_contains("""
   
 ```
 
-body_array_size_is and response_array_contains have also the possibility to accept an extra first argument (a root key or a JValue extractor) to work on a nested collection.
-
 - setting a value in ```session```
 
 ```scala
