@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.json.CornichonJson._
 
-
 object HttpDslErrors {
 
   def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {

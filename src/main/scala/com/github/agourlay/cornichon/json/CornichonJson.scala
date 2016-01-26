@@ -4,7 +4,6 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
-import com.github.agourlay.cornichon.json.CornichonJson._
 
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
