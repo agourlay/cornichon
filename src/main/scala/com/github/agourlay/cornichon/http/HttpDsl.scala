@@ -194,7 +194,11 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_body = show_session(LastResponseBodyKey)
 
+  def show_last_response_body_as_json = show_key_as_json(LastResponseBodyKey)
+
   def show_last_response_headers = show_session(LastResponseHeadersKey)
+
+  def show_key_as_json(key: String) = show_session(key, v ⇒ prettyPrint(parseJson(v)))
 
   private def titleBuilder(baseTitle: String, ignoring: Seq[JsonPath]): String =
     if (ignoring.isEmpty) baseTitle
@@ -252,9 +256,13 @@ trait HttpDsl extends Dsl {
       saveStep +: steps :+ removeStep
     }
 
-  def json_equality_for(k1: String, k2: String) = RunnableStep(
-    title = s"JSON content of key '$k1' is equal to JSON content of key '$k2'",
-    action = s ⇒ (s, SimpleStepAssertion(s.getJson(k1), s.getJson(k2)))
+  def json_equality_for(k1: String, k2: String, ignoring: JsonPath*) = RunnableStep(
+    title = titleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoring),
+    action = s ⇒ {
+      val v1 = removeFieldsByPath(s.getJson(k1), ignoring)
+      val v2 = removeFieldsByPath(s.getJson(k2), ignoring)
+      (s, SimpleStepAssertion(v1, v2))
+    }
   )
 
   private def resolveAndParse[A](input: A, session: Session): JValue =

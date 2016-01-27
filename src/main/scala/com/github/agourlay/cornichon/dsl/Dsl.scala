@@ -134,7 +134,7 @@ trait Dsl extends CornichonLogger {
 
   def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
 
-  def show_session(key: String) = DebugStep(s ⇒ s"Session content for key '$key' is '${s.get(key)}'")
+  def show_session(key: String, transform: String ⇒ String = identity) = DebugStep(s ⇒ s"Session content for key '$key' is '${transform(s.get(key))}'")
 
   def print_step(message: String) = DebugStep(s ⇒ message)
 
