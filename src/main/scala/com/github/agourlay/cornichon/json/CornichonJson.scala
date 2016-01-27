@@ -4,9 +4,14 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
+import com.github.agourlay.cornichon.json.CornichonJson.GqlString
 
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import sangria.marshalling.MarshallingUtil._
+import sangria.parser.QueryParser
+import sangria.marshalling.queryAst._
+import sangria.marshalling.json4s.jackson._
 
 import scala.util.{ Failure, Success, Try }
 
@@ -22,6 +27,7 @@ trait CornichonJson {
     case i: Int                                       ⇒ JInt(i)
     case l: Long                                      ⇒ JLong(l)
     case b: Boolean                                   ⇒ JBool(b)
+    case GqlString(g)                                 ⇒ parseGraphQLJson(g)
   }
 
   def parseDataTable(table: String): JArray = {
@@ -40,6 +46,11 @@ trait CornichonJson {
       case Success(json) ⇒ right(json)
       case Failure(e)    ⇒ left(new MalformedJsonError(input, e))
     }
+
+  def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
+    case Success(value) ⇒ value.convertMarshaled[JValue]
+    case Failure(e)     ⇒ throw new MalformedGraphQLJsonError(input, e)
+  }
 
   def selectJsonPath(path: JsonPath, json: String): JValue = path.run(parseJson(json))
 
@@ -78,4 +89,12 @@ trait CornichonJson {
 
 object CornichonJson extends CornichonJson {
 
+  case class GqlString(input: String) extends AnyVal
+
+  implicit class GqlHelper(val sc: StringContext) extends AnyVal {
+    def gql(args: Any*): GqlString = {
+      val input = sc.s(args: _*)
+      GqlString(input)
+    }
+  }
 }
