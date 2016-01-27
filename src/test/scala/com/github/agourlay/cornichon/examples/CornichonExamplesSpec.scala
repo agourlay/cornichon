@@ -487,7 +487,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         Given I wait(1 second)
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I GET_SSE("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
+        When I GET_SSE("/stream/superheroes", takeWithin = 2 second, params = "justName" → "true")
 
         Then assert body_array_size(5)
 
