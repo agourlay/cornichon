@@ -11,7 +11,7 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 Add the library dependency
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.4.1" % "test"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.5.0" % "test"
 ```
 
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), so place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
