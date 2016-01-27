@@ -12,6 +12,10 @@ case class MalformedJsonError[A](input: A, exception: Throwable) extends JsonErr
   val msg = s"malformed JSON input $input with ${exception.getMessage}"
 }
 
+case class MalformedGraphQLJsonError[A](input: A, exception: Throwable) extends JsonError {
+  val msg = s"malformed GraphQLJSON input $input with ${exception.getMessage}"
+}
+
 case class JsonPathParsingError(error: String) extends JsonError {
   val msg = s"error thrown during JsonPath parsing : $error"
 }

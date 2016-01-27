@@ -134,5 +134,44 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
         removeFieldsByPath(input, Seq(JsonPath.root.brother.name)) should be(expected)
       }
     }
+
+    "parseGraphQLJson" must {
+      "nominal case" in {
+        val in = """
+        {
+          id: 1
+          name: "door"
+          items: [
+            # pretty broken door
+            {state: Open, durability: 0.1465645654675762354763254763343243242}
+            null
+            {state: Open, durability: 0.5, foo: null}
+          ]
+        }
+        """
+
+        val out = parseGraphQLJson(in)
+
+        out should be(
+          JObject(List(
+            "id" → JInt(1),
+            "name" → JString("door"),
+            "items" → JArray(List(
+              JObject(List(
+                "state" → JString("Open"),
+                "durability" → JDecimal(BigDecimal("0.1465645654675762354763254763343243242"))
+              )),
+              JNull,
+              JObject(List(
+                "state" → JString("Open"),
+                "durability" → JDecimal(BigDecimal("0.5")),
+                "foo" → JNull
+              ))
+            ))
+          ))
+        )
+
+      }
+    }
   }
 }

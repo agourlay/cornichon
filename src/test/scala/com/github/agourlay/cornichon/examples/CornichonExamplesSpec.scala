@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.JsonMapper
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
-import com.github.agourlay.cornichon.json.JsonPath
+import com.github.agourlay.cornichon.json.CornichonJson._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -45,6 +45,18 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "Batman",
             "realName": "Bruce Wayne",
             "hasSuperpowers": false
+          }
+          """, ignoring = root.city, root.publisher
+        )
+
+        // Support for GraphQL JSON input for lightweight definition
+        // Requires the import of com.github.agourlay.cornichon.json.CornichonJson._
+        And assert body(
+          gql"""
+          {
+            name: "Batman",
+            realName: "Bruce Wayne",
+            hasSuperpowers: false
           }
           """, ignoring = root.city, root.publisher
         )
