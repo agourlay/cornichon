@@ -181,7 +181,7 @@ headers_contain("cache-control" → "no-cache")
 
 ```
 
-- assert response body comes with different flavours (ignoringKeys, whiteList))
+- assert response body comes with different flavours (ignoringKeys, whiteList)
 
 ```scala
 body(
@@ -381,6 +381,23 @@ Then assert body("""
   | "superhero name" | "Superman"  |
 """)
 ```
+
+- GraphQL JSON
+
+all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
+
+```scala
+And assert body(
+  gql"""
+  {
+    name: "Batman",
+    realName: "Bruce Wayne",
+    hasSuperpowers: false
+  }
+  """, ignoring = root.city, root.publisher)
+```
+
+This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
 
 Those descriptions might be already outdated, in case of doubt always refer to these [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
