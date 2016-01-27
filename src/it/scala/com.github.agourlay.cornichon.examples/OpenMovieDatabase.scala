@@ -13,9 +13,9 @@ class OpenMovieDatabase extends CornichonFeature {
 
         When I GET("/", params = "t" -> "Game of Thrones")
 
-        Then assert status_is(200)
+        Then assert status(200)
 
-        And assert body_is(
+        And assert body(
           """
           {
             "Title": "Game of Thrones",
@@ -39,9 +39,9 @@ class OpenMovieDatabase extends CornichonFeature {
           """, ignoring = "imdbRating", "imdbVotes", "Awards"
         )
 
-        And assert body_json_path_is("imdbRating", "9.5")
+        And assert body(root.imdbRating, "9.5")
 
-        And assert body_is(whiteList = true,
+        And assert body(whiteList = true,
           """
           {
             "Title": "Game of Thrones",
@@ -60,16 +60,16 @@ class OpenMovieDatabase extends CornichonFeature {
 
         When I GET("/", params = "t" -> "Game of Thrones", "Season" -> "1")
 
-        Then assert status_is(200)
+        Then assert status(200)
 
-        And assert body_is("""
+        And assert body("""
           {
             "Title": "Game of Thrones",
             "Season": "1"
           }
           """, ignoring = "Episodes", "Response")
 
-        And assert body_is(
+        And assert body(
           """
           {
             "Title": "Game of Thrones",
@@ -79,14 +79,14 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "Winter Is Coming",
                 "Released": "2011-04-17",
                 "Episode": "1",
-                "imdbRating": "8.1",
+                "imdbRating": "8.9",
                 "imdbID": "tt1480055"
               },
               {
                 "Title": "The Kingsroad",
                 "Released": "2011-04-24",
                 "Episode": "2",
-                "imdbRating": "7.8",
+                "imdbRating": "8.7",
                 "imdbID": "tt1668746"
               },
               {
@@ -114,7 +114,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "A Golden Crown",
                 "Released": "2011-05-22",
                 "Episode": "6",
-                "imdbRating": "8.1",
+                "imdbRating": "9.1",
                 "imdbID": "tt1837862"
               },
               {
@@ -128,21 +128,21 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "The Pointy End",
                 "Released": "2011-06-05",
                 "Episode": "8",
-                "imdbRating": "7.9",
+                "imdbRating": "8.9",
                 "imdbID": "tt1837864"
               },
               {
                 "Title": "Baelor",
                 "Released": "2011-06-12",
                 "Episode": "9",
-                "imdbRating": "8.5",
+                "imdbRating": "9.5",
                 "imdbID": "tt1851398"
               },
               {
                 "Title": "Fire and Blood",
                 "Released": "2011-06-19",
                 "Episode": "10",
-                "imdbRating": "8.4",
+                "imdbRating": "9.4",
                 "imdbID": "tt1851397"
               }
             ],
@@ -151,42 +151,42 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body_json_path_is("Episodes",
+        And assert body(root.Episodes,
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
-            | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
-            | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "7.8"   | "tt1668746" |
+            | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.9"   | "tt1480055" |
+            | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "8.7"   | "tt1668746" |
             | "Lord Snow"                             | "2011-05-01" |   "3"   |    "8.6"   | "tt1829962" |
             | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "8.7"   | "tt1829963" |
             | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "9.0"   | "tt1829964" |
-            | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
+            | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "9.1"   | "tt1837862" |
             | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "9.2"   | "tt1837863" |
-            | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
-            | "Baelor"                                | "2011-06-12" |   "9"   |    "8.5"   | "tt1851398" |
-            | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
+            | "The Pointy End"                        | "2011-06-05" |   "8"   |    "8.9"   | "tt1837864" |
+            | "Baelor"                                | "2011-06-12" |   "9"   |    "9.5"   | "tt1851398" |
+            | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
-        And assert body_array_size_is("Episodes", 10)
+        And assert body_array_size("Episodes", 10)
 
-        And assert body_json_path_is("Episodes[0]",
+        And assert body(root.Episodes(0),
           """
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",
             "Episode": "1",
-            "imdbRating": "8.1",
+            "imdbRating": "8.9",
             "imdbID": "tt1480055"
           }
           """)
 
-        And assert body_json_path_is("Episodes[0].Released", "2011-04-17")
+        And assert body(root.Episodes(0).Released, "2011-04-17")
 
         And assert body_array_contains("Episodes", """
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",
             "Episode": "1",
-            "imdbRating": "8.1",
+            "imdbRating": "8.9",
             "imdbID": "tt1480055"
           }
           """)

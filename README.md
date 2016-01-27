@@ -34,16 +34,16 @@ class ReadmeExample extends CornichonFeature {
      
         When I GET("http://www.omdbapi.com", params = "t" -> "Game of Thrones", "Season" -> "1")
    
-        Then assert status_is(200)
+        Then assert status(200)
    
-        And assert body_is("""
+        And assert body("""
           {
             "Title": "Game of Thrones",
             "Season": "1"
           }
           """, ignoring = "Episodes", "Response")
    
-        And assert body_json_path_is("Episodes",
+        And assert body(root.Episodes,
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
@@ -58,9 +58,9 @@ class ReadmeExample extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
    
-        And assert body_array_size_is("Episodes", 10)
+        And assert body_array_size("Episodes", 10)
    
-        And assert body_json_path_is("Episodes[0]",
+        And assert body(root.Episodes(0),
           """
           {
             "Title": "Winter Is Coming",
@@ -71,9 +71,9 @@ class ReadmeExample extends CornichonFeature {
           }
           """)
    
-        And assert body_json_path_is("Episodes[0].Released", "2011-04-17")
+        And assert body(root.Episodes(0).Released, "2011-04-17")
    
-        And assert body_array_contains("Episodes", 
+        And assert body_array_contains(root.Episodes, 
           """
           {
             "Title": "Winter Is Coming",
@@ -112,7 +112,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   
           When I GET("http://google.com")
   
-          Then assert status_is(302)
+          Then assert status(302)
       }
   }
 }
@@ -170,7 +170,7 @@ POST("http://superhero.io/batman", payload = "JSON description of Batman goes he
 - assert response status
 
 ```scala
-status_is(200)
+status(200)
 
 ```
 
@@ -181,10 +181,10 @@ headers_contain("cache-control" → "no-cache")
 
 ```
 
-- assert response body comes with different flavours (ignoringKeys, whiteList))
+- assert response body comes with different flavours (ignoringKeys, whiteList)
 
 ```scala
-body_is(
+body(
   """
   {
     "name": "Batman",
@@ -199,15 +199,15 @@ body_is(
   }
   """)
 
-body_is(
+body(
   """
   {
     "name": "Batman",
     "realName": "Bruce Wayne"
   }
-  """, ignoring = "city", "hasSuperpowers", "publisher")
+  """, ignoring = "city", root.hasSuperpowers, "publisher")
 
-body_is(whiteList = true, expected = """
+body(whiteList = true, expected = """
   {
     "name": "Batman",
     "realName": "Bruce Wayne"
@@ -215,23 +215,28 @@ body_is(whiteList = true, expected = """
   """)
 ```
 
-It also possible to use JsonPath like extractors
+Ignored keys are JsonPaths, two formats are currently supported:
+
+- String based "a.b.c[int].d"
+- Typed based root.a.b.c(int).d
+
+JsonPath can also be used to only assert part of the response
   
 ```scala
-body_json_path_is("city", "Gotham city")
+body(root.city, "Gotham city")
 
-body_json_path_is("hasSuperpowers", false)
+body(root.hasSuperpowers, false)
 
-body_json_path_is("publisher.name", "DC")
+body(root.publisher.name, "DC")
 
-body_json_path_is("publisher.foundationYear", 1934)
+body_(root.publisher.foundationYear, 1934)
 
 ```
 
 If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
-body_is(ordered = true,
+body(ordered = true,
   """
   [{
     "name": "Batman",
@@ -243,7 +248,7 @@ body_is(ordered = true,
   }]
   """, ignoring = "city", "hasSuperpowers", "publisher")
 
-body_is(ordered = false,
+body(ordered = false,
   """
   [{
     "name": "Superman",
@@ -255,13 +260,13 @@ body_is(ordered = false,
   }]
   """, ignoring = "city", "hasSuperpowers", "publisher")
   
-body_is(ordered = true, expected = """
+body(ordered = true, expected = """
   |    name     |    realName    |     city      |  hasSuperpowers |
   | "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
   | "Superman"  | "Clark Kent"   | "Metropolis"  |      true       |
 """, ignoring = "publisher")  
   
-body_array_size_is(2)
+body_array_size(2)
   
 body_array_contains("""
   {
@@ -316,7 +321,7 @@ session_contains("favorite-superhero" → "Batman")
 Repeat(3) {
   When I GET("http://superhero.io/batman")
 
-  Then assert status_is(200)
+  Then assert status(200)
 }
 ```
 
@@ -327,7 +332,7 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
 
     When I GET("http://superhero.io/random")
 
-    Then assert body_is(
+    Then assert body(
       """
       {
         "name": "Batman",
@@ -346,7 +351,7 @@ Concurrently(factor = 3, maxTime = 10 seconds) {
 
   When I GET("http://superhero.io/batman")
 
-  Then assert status_is(200)
+  Then assert status(200)
 }
 
 ```
@@ -368,14 +373,31 @@ WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
 ```scala
 When I GET_SSE(s"http://superhero.io/stream", takeWithin = 1.seconds, params = "justName" → "true")
 
-Then assert response_array_size_is(2)
+Then assert response_array_size(2)
 
-Then assert body_is("""
+Then assert body("""
   |   eventType      |    data     |
   | "superhero name" |  "Batman"   |
   | "superhero name" | "Superman"  |
 """)
 ```
+
+- GraphQL JSON
+
+all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
+
+```scala
+And assert body(
+  gql"""
+  {
+    name: "Batman",
+    realName: "Bruce Wayne",
+    hasSuperpowers: false
+  }
+  """, ignoring = root.city, root.publisher)
+```
+
+This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
 
 Those descriptions might be already outdated, in case of doubt always refer to these [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
@@ -468,7 +490,7 @@ Then assert session_contains("favorite-superhero" → "Batman")
 
 When I GET("http://localhost:8080/superheroes/<favorite-superhero>")
 
-Then assert body_is(
+Then assert body(
   """
   {
     "name": "<favorite-superhero>",
@@ -483,7 +505,7 @@ And I save_body_key("city" -> "batman-city")
 
 Then assert session_contains("batman-city" → "Gotham city")
 
-Then assert body_is(
+Then assert body(
   """
   {
     "name": "<favorite-superhero>",
@@ -499,7 +521,7 @@ Then assert body_is(
 It is also possible to inject random values inside placeholders using:
 
 - ```<random-uuid>``` for a random UUID
-- ```<random-positive-integer>``` for a random Integer between 0-100
+- ```<random-positive-integer>``` for a random Integer between 0-1000
 - ```<random-string>``` for a random String of length 5
 - ```<random-boolean>``` for a random Boolean string
 - ```<timestamp>``` for the current timestamp

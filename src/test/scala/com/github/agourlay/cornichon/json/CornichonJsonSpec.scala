@@ -78,12 +78,12 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
       "remove root key" in {
         val input = JObject(
           List(
-            ("2LettersName", JBool(false)),
+            ("TwoLettersName", JBool(false)),
             ("Age", JInt(50)),
             ("Name", JString("John"))
           )
         )
-        removeFieldsByPath(input, Seq("2LettersName", "Name")) should be(JObject(List(("Age", JInt(50)))))
+        removeFieldsByPath(input, Seq(JsonPath.root.TwoLettersName, JsonPath.root.Name)) should be(JObject(List(("Age", JInt(50)))))
       }
 
       "remove only root keys" in {
@@ -91,7 +91,7 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
 
         val expected = ("age", 50) ~ ("brother" → (("name" → "john") ~ ("age", 40)))
 
-        removeFieldsByPath(input, Seq("name")) should be(expected)
+        removeFieldsByPath(input, Seq(JsonPath.root.name)) should be(expected)
       }
 
       "remove nested keys" in {
@@ -103,7 +103,19 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
 
         val expected = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("age", 40))
 
-        removeFieldsByPath(input, Seq("brother.name")) should be(expected)
+        removeFieldsByPath(input, Seq(JsonPath.root.brother.name)) should be(expected)
+      }
+
+      //FIXME
+      "remove field in each element of an array" ignore {
+        val p1 = ("name" → "bob") ~ ("age", 50)
+        val p2 = ("name" → "jim") ~ ("age", 40)
+        val p3 = ("name" → "john") ~ ("age", 30)
+
+        val input = JArray(List(p1, p2, p3))
+        val expected = JArray(List(JObject(JField("name", "bob"), JField("name", "jim"), JField("name", "john"))))
+
+        removeFieldsByPath(input, Seq(JsonPath.root.age)) should be(expected)
       }
 
       //FIXME
@@ -118,8 +130,47 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
 
         val expected = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("age", 40)) ~ ("friend" → (("name" → "john") ~ ("age", 30)))
 
-        println(prettyPrint(removeFieldsByPath(input, Seq("brother.name"))))
-        removeFieldsByPath(input, Seq("brother.name")) should be(expected)
+        println(prettyPrint(removeFieldsByPath(input, Seq(JsonPath.root.brother.name))))
+        removeFieldsByPath(input, Seq(JsonPath.root.brother.name)) should be(expected)
+      }
+    }
+
+    "parseGraphQLJson" must {
+      "nominal case" in {
+        val in = """
+        {
+          id: 1
+          name: "door"
+          items: [
+            # pretty broken door
+            {state: Open, durability: 0.1465645654675762354763254763343243242}
+            null
+            {state: Open, durability: 0.5, foo: null}
+          ]
+        }
+        """
+
+        val out = parseGraphQLJson(in)
+
+        out should be(
+          JObject(List(
+            "id" → JInt(1),
+            "name" → JString("door"),
+            "items" → JArray(List(
+              JObject(List(
+                "state" → JString("Open"),
+                "durability" → JDecimal(BigDecimal("0.1465645654675762354763254763343243242"))
+              )),
+              JNull,
+              JObject(List(
+                "state" → JString("Open"),
+                "durability" → JDecimal(BigDecimal("0.5")),
+                "foo" → JNull
+              ))
+            ))
+          ))
+        )
+
       }
     }
   }

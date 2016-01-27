@@ -85,7 +85,8 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     waitForRequestFuture(request, f, takeWithin)
   }
 
-  // TODO https://github.com/akka/akka/issues/17275
+  //https://github.com/akka/akka/pull/19543
+  // wait for Http().webSocketClientFlow
   def getWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = ???
 
   private def expectSSE(httpResponse: HttpResponse): Future[Xor[HttpError, Source[ServerSentEvent, Any]]] =

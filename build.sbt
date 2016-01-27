@@ -32,7 +32,7 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "2.2.6"
-  val akkaHttpV = "2.0.2"
+  val akkaHttpV = "2.0.3"
   val catsV = "0.3.0"
   val sprayJsonV = "1.3.2"
   val json4sV = "3.3.0"
@@ -40,19 +40,23 @@ libraryDependencies ++= {
   val parboiledV = "2.1.0"
   val akkaSseV = "1.5.0"
   val scalacheckV = "1.12.5"
+  val sangriaV = "0.5.1"
+  val sangriaJsonV = "0.1.0"
   Seq(
-     "com.typesafe.akka" %% "akka-http-core-experimental"       % akkaHttpV
-    ,"de.heikoseeberger" %% "akka-sse"                          % akkaSseV
-    ,"org.json4s"        %% "json4s-jackson"                    % json4sV
-    ,"io.spray"          %% "spray-json"                        % sprayJsonV
-    ,"org.spire-math"    %% "cats-macros"                       % catsV
-    ,"org.spire-math"    %% "cats-core"                         % catsV
-    ,"org.scalatest"     %% "scalatest"                         % scalaTestV
-    ,"ch.qos.logback"    %  "logback-classic"                   % logbackV
-    ,"org.parboiled"     %% "parboiled"                         % parboiledV
-    ,"org.scalacheck"    %% "scalacheck"                        % scalacheckV
-    ,"com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
-    ,"com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV   % "test"
+     "com.typesafe.akka"   %% "akka-http-core-experimental"       % akkaHttpV
+    ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
+    ,"org.json4s"          %% "json4s-jackson"                    % json4sV
+    ,"io.spray"            %% "spray-json"                        % sprayJsonV
+    ,"org.spire-math"      %% "cats-macros"                       % catsV
+    ,"org.spire-math"      %% "cats-core"                         % catsV
+    ,"org.scalatest"       %% "scalatest"                         % scalaTestV
+    ,"ch.qos.logback"      %  "logback-classic"                   % logbackV
+    ,"org.parboiled"       %% "parboiled"                         % parboiledV
+    ,"org.scalacheck"      %% "scalacheck"                        % scalacheckV
+    ,"org.sangria-graphql" %% "sangria"                           % sangriaV
+    ,"org.sangria-graphql" %% "sangria-json4s-jackson"            % sangriaJsonV
+    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
+    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV   % "test"
   )
 }
 
