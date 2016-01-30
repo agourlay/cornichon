@@ -38,7 +38,7 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body(root.imdbRating).is("9.5")
+        And assert body.path(root.imdbRating).is("9.5")
 
         And assert body.withWhiteList.is(
           """
@@ -50,7 +50,7 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert headers_contain("Server" -> "cloudflare-nginx")
+        And assert headers.contains("Server" -> "cloudflare-nginx")
 
       }
 
@@ -149,7 +149,7 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body(root.Episodes).is(
+        And assert body.path(root.Episodes).is(
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.9"   | "tt1480055" |
@@ -164,9 +164,9 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
-        And assert bodyArray.sizeIs("Episodes", 10)
+        And assert bodyArray.path("Episodes").sizeIs(10)
 
-        And assert body(root.Episodes(0)).is(
+        And assert body.path(root.Episodes(0)).is(
           """
           {
             "Title": "Winter Is Coming",
@@ -177,9 +177,9 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body(root.Episodes(0).Released).is("2011-04-17")
+        And assert body.path(root.Episodes(0).Released).is("2011-04-17")
 
-        And assert bodyArray.contains("Episodes", """
+        And assert bodyArray.path(root.Episodes).contains("""
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",

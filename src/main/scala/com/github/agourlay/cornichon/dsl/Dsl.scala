@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.dsl
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.core.RunnableStep._
-import com.github.agourlay.cornichon.dsl.CoreAssertion.SessionAssertion
+import com.github.agourlay.cornichon.dsl.CoreAssertion.{ SessionValuesAssertion, SessionAssertion }
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 
@@ -82,7 +82,9 @@ trait Dsl extends CornichonLogger {
 
   def session_contains(input: (String, String)): RunnableStep[String] = session_contains(input._1, input._2)
 
-  def session_key(key: String) = SessionAssertion(key)
+  def session_value(key: String) = SessionAssertion(key)
+
+  def session_values(k1: String, k2: String) = SessionValuesAssertion
 
   def session_contains(key: String, value: String) =
     RunnableStep(
@@ -95,11 +97,6 @@ trait Dsl extends CornichonLogger {
   def show_session(key: String, transform: String ⇒ String = identity) = DebugStep(s ⇒ s"Session content for key '$key' is '${transform(s.get(key))}'")
 
   def print_step(message: String) = DebugStep(s ⇒ message)
-
-  def content_equality_for(k1: String, k2: String) = RunnableStep(
-    title = s"content of key '$k1' is equal to content of key '$k2'",
-    action = s ⇒ (s, SimpleStepAssertion(s.get(k1), s.get(k2)))
-  )
 }
 
 object Dsl {
@@ -120,7 +117,7 @@ object Dsl {
   }
 
   def displayTuples(params: Seq[(String, String)]): String = {
-    params.map { case (name, value) ⇒ s"$name -> $value" }.mkString(", ")
+    params.map { case (name, value) ⇒ s"'$name' -> '$value'" }.mkString(", ")
   }
 
   def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =

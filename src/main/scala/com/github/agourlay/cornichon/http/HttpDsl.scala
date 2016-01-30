@@ -3,11 +3,12 @@ package com.github.agourlay.cornichon.http
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.{ BodyElementCollector, Dsl }
+import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
-import com.github.agourlay.cornichon.http.HttpAssertions.{ BodyArrayAssertion, BodyAssertion, StatusAssertion }
+import com.github.agourlay.cornichon.http.HttpAssertions._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonPath
+
 import org.json4s._
 
 import scala.concurrent.duration._
@@ -104,21 +105,13 @@ trait HttpDsl extends Dsl {
 
   def status = StatusAssertion
 
-  def headers_contain(headers: (String, String)*) =
-    from_session_step(
-      key = LastResponseHeadersKey,
-      expected = s ⇒ true,
-      (session, sessionHeaders) ⇒ {
-        val sessionHeadersValue = sessionHeaders.split(",")
-        headers.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
-      }, title = s"headers contain ${headers.mkString(", ")}"
-    )
+  def headers = HeadersAssertion(ordered = false)
+
+  def session_json_values(k1: String, k2: String) = SessionJsonValuesAssertion(k1, k2, Seq.empty)
 
   def body[A] = BodyAssertion[A](root, Seq.empty, whiteList = false, resolver)
 
-  def body[A](jsonPath: JsonPath) = BodyAssertion[A](jsonPath, Seq.empty, whiteList = false, resolver)
-
-  def bodyArray[A] = BodyArrayAssertion[A](ordered = false, Seq.empty, resolver)
+  def bodyArray[A] = BodyArrayAssertion[A](root, ordered = false, Seq.empty, resolver)
 
   def save_body_key(args: (String, String)*) = {
     val inputs = args.map {
@@ -143,17 +136,4 @@ trait HttpDsl extends Dsl {
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
   def show_key_as_json(key: String) = show_session(key, v ⇒ prettyPrint(parseJson(v)))
-
-  private def titleBuilder(baseTitle: String, ignoring: Seq[JsonPath]): String =
-    if (ignoring.isEmpty) baseTitle
-    else s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'${v.pretty}'").mkString(", ")}"
-
-  def json_equality_for(k1: String, k2: String, ignoring: JsonPath*) = RunnableStep(
-    title = titleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoring),
-    action = s ⇒ {
-      val v1 = removeFieldsByPath(s.getJson(k1), ignoring)
-      val v2 = removeFieldsByPath(s.getJson(k2), ignoring)
-      (s, SimpleStepAssertion(v1, v2))
-    }
-  )
 }

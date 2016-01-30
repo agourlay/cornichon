@@ -86,11 +86,11 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Test part of response body by providing a JsonPath
-        Then assert body(root.city).is("Gotham city")
+        Then assert body.path(root.city).is("Gotham city")
 
-        Then assert body(root.hasSuperpowers).is(false)
+        Then assert body.path(root.hasSuperpowers).is(false)
 
-        Then assert body(root.publisher).is(
+        Then assert body.path(root.publisher).is(
           """
           {
             "name":"DC",
@@ -99,7 +99,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           } """
         )
 
-        Then assert body(root.publisher).ignoring(root.location).is(
+        Then assert body.path(root.publisher).ignoring(root.location).is(
           """
           {
             "name":"DC",
@@ -107,9 +107,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           } """
         )
 
-        Then assert body(root.publisher.name).is("DC")
+        Then assert body.path(root.publisher.name).is("DC")
 
-        Then assert body(root.publisher.foundationYear).is(1934)
+        Then assert body.path(root.publisher.foundationYear).is(1934)
 
         When I GET("/superheroes/Scalaman")
 
@@ -200,9 +200,9 @@ class CornichonExamplesSpec extends CornichonFeature {
             }
             """)(headers = Seq(("Accept-Encoding", "gzip")))
 
-          Then assert headers_contain("Content-Encoding" → "gzip")
+          Then assert headers.contains("Content-Encoding" → "gzip")
 
-          Then assert body(root.city).is("Pankow")
+          Then assert body.path(root.city).is("Pankow")
         }
 
         Then assert status.is(200)
@@ -393,7 +393,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert session_contains("batman-city" → "Gotham city")
 
-        Then assert session_key("batman-city").is("Gotham city")
+        Then assert session_value("batman-city").is("Gotham city")
 
         And I show_last_response_body_as_json
 
@@ -407,7 +407,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        Then assert headers_contain("Server" → "akka-http/2.3.12")
+        Then assert headers.contains("Server" → "akka-http/2.3.12")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
@@ -421,7 +421,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         When I GET("/superheroes/Batman")
 
         // Using registered extractor at the bottom
-        Then assert body(root.name).is("<name>")
+        Then assert body.path(root.name).is("<name>")
 
         // Repeat series of Steps
         Repeat(3) {

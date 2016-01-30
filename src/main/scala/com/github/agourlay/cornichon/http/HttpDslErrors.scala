@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 
 object HttpDslErrors {
 
-  def statusError(expected: Int, body: String): String ⇒ String = actual ⇒ {
+  def statusError(expected: Int, body: String): Int ⇒ String = actual ⇒ {
     s"""expected '$expected' but actual is '$actual' with response body:
         |${prettyPrint(parseJson(body))}""".stripMargin
   }

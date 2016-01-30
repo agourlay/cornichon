@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.core.{ Resolver, Session, DetailedStepAssertion, RunnableStep }
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ CollectionAssertionStep, AssertionStep }
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpDslErrors._
@@ -11,20 +11,61 @@ import org.json4s._
 
 object HttpAssertions {
 
-  case object StatusAssertion extends AssertionStep[Int, String] {
+  case object StatusAssertion extends AssertionStep[Int, Int] {
     def is(expected: Int) = RunnableStep(
       title = s"status is '$expected'",
       action = s ⇒ {
       (s, DetailedStepAssertion(
-        expected = expected.toString,
-        result = s.get(LastResponseStatusKey),
+        expected = expected,
+        result = s.get(LastResponseStatusKey).toInt,
         details = statusError(expected, s.get(LastResponseBodyKey))
       ))
     }
     )
   }
 
+  case class SessionJsonValuesAssertion(k1: String, k2: String, private val ignoredKeys: Seq[JsonPath]) {
+
+    def ignoring(ignoring: JsonPath*): SessionJsonValuesAssertion = copy(ignoredKeys = ignoring)
+
+    def areEquals = RunnableStep(
+      title = titleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoredKeys),
+      action = s ⇒ {
+        val v1 = removeFieldsByPath(s.getJson(k1), ignoredKeys)
+        val v2 = removeFieldsByPath(s.getJson(k2), ignoredKeys)
+        (s, SimpleStepAssertion(v1, v2))
+      }
+    )
+  }
+
+  case class HeadersAssertion(ordered: Boolean) extends CollectionAssertionStep[(String, String), String] {
+    def is(expected: (String, String)) = ???
+
+    def sizeIs(expected: Int) = from_session_step(
+      title = s"headers size is '$expected'",
+      key = LastResponseHeadersKey,
+      expected = s ⇒ expected,
+      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").size
+    )
+
+    def contains(elements: (String, String)*) = {
+      from_session_step(
+        title = s"headers contain ${displayTuples(elements)}",
+        key = LastResponseHeadersKey,
+        expected = s ⇒ true,
+        mapValue = (session, sessionHeaders) ⇒ {
+        val sessionHeadersValue = sessionHeaders.split(",")
+        elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
+      }
+      )
+    }
+
+    override def inOrder: HeadersAssertion = copy(ordered = true)
+  }
+
   case class BodyAssertion[A](jsonPath: JsonPath, private val ignoredKeys: Seq[JsonPath], whiteList: Boolean = false, resolver: Resolver) extends AssertionStep[A, JValue] {
+
+    def path(path: JsonPath): BodyAssertion[A] = copy(jsonPath = path)
 
     def ignoring(ignoring: JsonPath*): BodyAssertion[A] = copy(ignoredKeys = ignoring)
 
@@ -58,15 +99,15 @@ object HttpAssertions {
     }
   }
 
-  case class BodyArrayAssertion[A](ordered: Boolean, private val ignoredKeys: Seq[JsonPath], resolver: Resolver) extends CollectionAssertionStep[A, JValue] {
+  case class BodyArrayAssertion[A](jsonPath: JsonPath, ordered: Boolean, private val ignoredKeys: Seq[JsonPath], resolver: Resolver) extends CollectionAssertionStep[A, JValue] {
+
+    def path(path: JsonPath): BodyArrayAssertion[A] = copy(jsonPath = path)
 
     override def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
 
     def ignoring(ignoring: JsonPath*): BodyArrayAssertion[A] = copy(ignoredKeys = ignoring)
 
-    override def sizeIs(size: Int): RunnableStep[Int] = sizeIs(JsonPath.root, size)
-
-    def sizeIs(jsonPath: JsonPath, size: Int) = {
+    override def sizeIs(size: Int): RunnableStep[Int] = {
       val title = if (jsonPath.isRoot) s"response body array size is '$size'" else s"response body's array '${jsonPath.pretty}' size is '$size'"
       from_session_detail_step(
         title = title,
@@ -97,18 +138,17 @@ object HttpAssertions {
         })
     }
 
-    override def contains(element: A): RunnableStep[Boolean] = contains(JsonPath.root, element)
-
-    def contains(jsonPath: JsonPath, element: A) = {
-      val title = if (jsonPath.isRoot) s"response body array contains '$element'" else s"response body's array '${jsonPath.pretty}' contains '$element'"
+    override def contains(elements: A*) = {
+      val title = if (jsonPath.isRoot) s"response body array contains '$elements'" else s"response body's array '${jsonPath.pretty}' contains '$elements'"
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,
         expected = s ⇒ true,
         mapValue = (s, sessionValue) ⇒ {
-        val jarr = if (jsonPath.isRoot) parseArray(sessionValue)
+        val jArr = if (jsonPath.isRoot) parseArray(sessionValue)
         else selectArrayJsonPath(jsonPath, sessionValue)
-        (jarr.arr.contains(parseJson(element)), arrayDoesNotContainError(element.toString, prettyPrint(jarr)))
+        val containsAll = elements.map(parseJson).forall(jArr.arr.contains)
+        (containsAll, arrayDoesNotContainError(elements.toString, prettyPrint(jArr)))
       }
       )
     }
