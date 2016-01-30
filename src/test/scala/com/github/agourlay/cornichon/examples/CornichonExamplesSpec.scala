@@ -21,9 +21,9 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I GET("/superheroes/Batman")
 
-        Then assert status(200)
+        Then assert status.is(200)
 
-        And assert body(
+        And assert body.is(
           """
           {
             "name": "Batman",
@@ -39,29 +39,29 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        And assert body(
+        And assert body.ignoring(root.city, root.publisher).is(
           """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
             "hasSuperpowers": false
           }
-          """, ignoring = root.city, root.publisher
+          """
         )
 
         // Support for GraphQL JSON input for lightweight definition
         // Requires the import of com.github.agourlay.cornichon.json.CornichonJson._
-        And assert body(
+        And assert body.ignoring(root.city, root.publisher).is(
           gql"""
           {
             name: "Batman",
             realName: "Bruce Wayne",
             hasSuperpowers: false
           }
-          """, ignoring = root.city, root.publisher
+          """
         )
 
-        And assert body(
+        And assert body.ignoring(root.publisher.name, root.publisher.location).is(
           """
           {
             "name": "Batman",
@@ -72,47 +72,50 @@ class CornichonExamplesSpec extends CornichonFeature {
               "foundationYear":1934
             }
           }
-          """, ignoring = root.publisher.name, root.publisher.location
+          """
         )
 
         // Compare only against provided keys
-        And assert body(whiteList = true, expected =
+        And assert body.withWhiteList.is(
           """
           {
             "name": "Batman",
             "realName": "Bruce Wayne"
           }
-          """)
+          """
+        )
 
         // Test part of response body by providing a JsonPath
-        Then assert body(root.city, "Gotham city")
+        Then assert body(root.city).is("Gotham city")
 
-        Then assert body(root.hasSuperpowers, false)
+        Then assert body(root.hasSuperpowers).is(false)
 
-        Then assert body(root.publisher, expected =
+        Then assert body(root.publisher).is(
           """
           {
             "name":"DC",
             "foundationYear":1934,
             "location":"Burbank, California"
-          } """)
+          } """
+        )
 
-        Then assert body(root.publisher, expected =
+        Then assert body(root.publisher).ignoring(root.location).is(
           """
           {
             "name":"DC",
             "foundationYear":1934
-          } """, ignoring = root.location)
+          } """
+        )
 
-        Then assert body(root.publisher.name, "DC")
+        Then assert body(root.publisher.name).is("DC")
 
-        Then assert body(root.publisher.foundationYear, 1934)
+        Then assert body(root.publisher.foundationYear).is(1934)
 
         When I GET("/superheroes/Scalaman")
 
-        Then assert status(404)
+        Then assert status.is(404)
 
-        And assert body(
+        And assert body.is(
           """
           {
             "error": "Superhero Scalaman not found"
@@ -135,9 +138,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
           """)
 
-        Then assert status(401)
+        Then assert status.is(401)
 
-        Then assert body("The resource requires authentication, which was not supplied with the request")
+        Then assert body.is("The resource requires authentication, which was not supplied with the request")
 
         // Try again with authentication
         When I POST("/superheroes", payload =
@@ -155,22 +158,22 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
           """)(headers = Seq(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))))
 
-        Then assert status(201)
+        Then assert status.is(201)
 
         When I GET("/superheroes/Scalaman")
 
-        Then assert body(
+        Then assert body.ignoring(root.publisher, root.hasSuperpowers, root.city).is(
           """
           {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko"
           }
-          """, ignoring = root.publisher, root.hasSuperpowers, root.city
+          """
         )
 
         When I GET("/superheroes/Scalaman", params = "protectIdentity" → "true")
 
-        Then assert body(
+        Then assert body.ignoring(root.publisher).is(
           """
           {
             "name": "Scalaman",
@@ -178,7 +181,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             "hasSuperpowers": false,
             "city": "Berlin"
           }
-          """, ignoring = root.publisher
+          """
         )
 
         WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))) {
@@ -199,12 +202,12 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           Then assert headers_contain("Content-Encoding" → "gzip")
 
-          Then assert body(root.city, "Pankow")
+          Then assert body(root.city).is("Pankow")
         }
 
-        Then assert status(200)
+        Then assert status.is(200)
 
-        Then assert body(
+        Then assert body.ignoring(root.publisher).is(
           """
           {
             "name": "Scalaman",
@@ -212,25 +215,25 @@ class CornichonExamplesSpec extends CornichonFeature {
             "hasSuperpowers": true,
             "city": "Pankow"
           }
-          """, ignoring = root.publisher
+          """
         )
 
         When I GET("/superheroes/GreenLantern")
 
-        Then assert status(200)
+        Then assert status.is(200)
 
         When I DELETE("/superheroes/GreenLantern")
 
         When I GET("/superheroes/GreenLantern")
 
-        Then assert status(404)
+        Then assert status.is(404)
       }
 
       Scenario("demonstrate collection features") {
 
         When I GET("/superheroes")
 
-        Then assert body(ordered = true, expected =
+        Then assert bodyArray.inOrder.ignoring(root.publisher).is(
           """
           [{
             "name": "Batman",
@@ -261,9 +264,10 @@ class CornichonExamplesSpec extends CornichonFeature {
             "realName": "Tony Stark",
             "hasSuperpowers": false,
             "city": "New York"
-          }]""", ignoring = root.publisher)
+          }]"""
+        )
 
-        Then assert body(ordered = true, expected =
+        Then assert bodyArray.inOrder.ignoring(root.publisher).is(
           """
           |      name      |    realName    |     city      |  hasSuperpowers |
           |    "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
@@ -271,10 +275,10 @@ class CornichonExamplesSpec extends CornichonFeature {
           | "GreenLantern" | "Hal Jordan"   | "Coast City"  |      true       |
           |   "Spiderman"  | "Peter Parker" | "New York"    |      true       |
           |    "IronMan"   | "Tony Stark"   | "New York"    |      false      |
-        """,
-          ignoring = root.publisher)
+        """
+        )
 
-        Then assert body(ordered = false, expected =
+        Then assert bodyArray.ignoring(root.hasSuperpowers, root.publisher).is(
           """
           [{
             "name": "Superman",
@@ -300,11 +304,12 @@ class CornichonExamplesSpec extends CornichonFeature {
             "name": "GreenLantern",
             "realName": "Hal Jordan",
             "city": "Coast City"
-          }]""", ignoring = root.hasSuperpowers, root.publisher)
+          }]"""
+        )
 
-        Then assert body_array_size(5)
+        Then assert bodyArray.sizeIs(5)
 
-        And assert body_array_contains(
+        And assert bodyArray.contains(
           """
           {
             "name": "IronMan",
@@ -322,13 +327,13 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I DELETE("/superheroes/IronMan")
 
-        Then assert status(200)
+        Then assert status.is(200)
 
         And I GET("/superheroes")
 
-        Then assert body_array_size(4)
+        Then assert bodyArray.sizeIs(4)
 
-        And assert_not body_array_contains(
+        And assert_not bodyArray.contains(
           """
           {
             "name": "IronMan",
@@ -349,14 +354,14 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I GET("/superheroes/Batman")
 
-        Then assert body(
+        Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
           """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
             "city": "Gotham city"
           }
-          """, ignoring = root.hasSuperpowers, root.publisher
+          """
         )
 
         // Set a key/value in the Scenario's session
@@ -367,14 +372,14 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Retrieve dynamically from session with <key> for URL construction
         When I GET("/superheroes/<favorite-superhero>")
 
-        Then assert body(
+        Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
           {
             "name": "<favorite-superhero>",
             "realName": "Bruce Wayne",
             "city": "Gotham city"
           }
-          """, ignoring = "hasSuperpowers", "publisher"
+          """
         )
 
         // Extract value from response into session for reuse
@@ -388,14 +393,18 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert session_contains("batman-city" → "Gotham city")
 
-        Then assert body(
+        Then assert session_key("batman-city").is("Gotham city")
+
+        And I show_last_response_body_as_json
+
+        Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
           """
           {
             "name": "<favorite-superhero>",
             "realName": "Bruce Wayne",
             "city": "<batman-city>"
           }
-          """, ignoring = root.hasSuperpowers, root.publisher
+          """
         )
 
         Then assert headers_contain("Server" → "akka-http/2.3.12")
@@ -412,13 +421,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         When I GET("/superheroes/Batman")
 
         // Using registered extractor at the bottom
-        Then assert body(root.name, "<name>")
+        Then assert body(root.name).is("<name>")
 
         // Repeat series of Steps
         Repeat(3) {
           When I GET("/superheroes/Batman")
 
-          Then assert status(200)
+          Then assert status.is(200)
         }
 
         // Nested Repeats
@@ -426,13 +435,13 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           When I GET("/superheroes/Superman")
 
-          Then assert status(200)
+          Then assert status.is(200)
 
           Repeat(2) {
 
             When I GET("/superheroes/Batman")
 
-            Then assert status(200)
+            Then assert status.is(200)
           }
         }
 
@@ -443,7 +452,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           When I GET("/superheroes/Batman")
 
-          Then assert status(200)
+          Then assert status.is(200)
         }
 
         // Repeat series of Steps until it succeed
@@ -451,14 +460,14 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           When I GET("/superheroes/random")
 
-          Then assert body(
+          Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
             """
             {
               "name": "Batman",
               "realName": "Bruce Wayne",
               "city": "Gotham city"
             }
-            """, ignoring = root.hasSuperpowers, root.publisher
+            """
           )
         }
 
@@ -469,14 +478,14 @@ class CornichonExamplesSpec extends CornichonFeature {
 
             When I GET("/superheroes/random")
 
-            Then assert body(
+            Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
               """
               {
                 "name": "Batman",
                 "realName": "Bruce Wayne",
                 "city": "Gotham city"
               }
-              """, ignoring = root.hasSuperpowers, root.publisher
+              """
             )
           }
         }
@@ -489,9 +498,9 @@ class CornichonExamplesSpec extends CornichonFeature {
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I GET_SSE("/stream/superheroes", takeWithin = 2 second, params = "justName" → "true")
 
-        Then assert body_array_size(5)
+        Then assert bodyArray.sizeIs(5)
 
-        Then assert body(
+        Then assert body.is(
           """
               |   eventType      |      data      |
               | "superhero name" |    "Batman"    |

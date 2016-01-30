@@ -13,9 +13,9 @@ class OpenMovieDatabase extends CornichonFeature {
 
         When I GET("/", params = "t" -> "Game of Thrones")
 
-        Then assert status(200)
+        Then assert status.is(200)
 
-        And assert body(
+        And assert body.ignoring("imdbRating", "imdbVotes", "Awards").is(
           """
           {
             "Title": "Game of Thrones",
@@ -27,7 +27,7 @@ class OpenMovieDatabase extends CornichonFeature {
             "Director": "N/A",
             "Writer": "David Benioff, D.B. Weiss",
             "Actors": "Peter Dinklage, Lena Headey, Emilia Clarke, Kit Harington",
-            "Plot": "Several noble families fight for control of the mythical land of Westeros.",
+            "Plot": "While a civil war brews between several noble families in Westeros, the children of the former rulers of the land attempt to rise up to power. Meanwhile a forgotten race, bent on destruction, return after thousands of years in the North.",
             "Language": "English",
             "Country": "USA",
             "Poster": "http://ia.media-imdb.com/images/M/MV5BMTYwOTEzMDMzMl5BMl5BanBnXkFtZTgwNzExODIzNzE@._V1_SX300.jpg",
@@ -36,12 +36,11 @@ class OpenMovieDatabase extends CornichonFeature {
             "Type": "series",
             "Response": "True"
           }
-          """, ignoring = "imdbRating", "imdbVotes", "Awards"
-        )
+          """)
 
-        And assert body(root.imdbRating, "9.5")
+        And assert body(root.imdbRating).is("9.5")
 
-        And assert body(whiteList = true,
+        And assert body.withWhiteList.is(
           """
           {
             "Title": "Game of Thrones",
@@ -49,8 +48,7 @@ class OpenMovieDatabase extends CornichonFeature {
             "Rated": "TV-MA",
             "Released": "17 Apr 2011"
           }
-          """
-        )
+          """)
 
         And assert headers_contain("Server" -> "cloudflare-nginx")
 
@@ -60,16 +58,16 @@ class OpenMovieDatabase extends CornichonFeature {
 
         When I GET("/", params = "t" -> "Game of Thrones", "Season" -> "1")
 
-        Then assert status(200)
+        Then assert status.is(200)
 
-        And assert body("""
+        And assert body.ignoring("Episodes", "Response").is("""
           {
             "Title": "Game of Thrones",
             "Season": "1"
           }
-          """, ignoring = "Episodes", "Response")
+          """)
 
-        And assert body(
+        And assert body.is(
           """
           {
             "Title": "Game of Thrones",
@@ -151,7 +149,7 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body(root.Episodes,
+        And assert body(root.Episodes).is(
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.9"   | "tt1480055" |
@@ -166,9 +164,9 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
-        And assert body_array_size("Episodes", 10)
+        And assert bodyArray.sizeIs("Episodes", 10)
 
-        And assert body(root.Episodes(0),
+        And assert body(root.Episodes(0)).is(
           """
           {
             "Title": "Winter Is Coming",
@@ -179,9 +177,9 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body(root.Episodes(0).Released, "2011-04-17")
+        And assert body(root.Episodes(0).Released).is("2011-04-17")
 
-        And assert body_array_contains("Episodes", """
+        And assert bodyArray.contains("Episodes", """
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",

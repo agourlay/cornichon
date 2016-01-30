@@ -4,9 +4,10 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ BodyElementCollector, Dsl }
-import com.github.agourlay.cornichon.http.HttpDslErrors._
+import com.github.agourlay.cornichon.dsl.Dsl._
+import com.github.agourlay.cornichon.http.HttpAssertions.{ BodyArrayAssertion, BodyAssertion, StatusAssertion }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }
+import com.github.agourlay.cornichon.json.JsonPath
 import org.json4s._
 
 import scala.concurrent.duration._
@@ -92,19 +93,16 @@ trait HttpDsl extends Dsl {
     val name = "GET WS"
   }
 
+  def WithHeaders(headers: (String, String)*) =
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      val saveStep = save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
+      val removeStep = remove(WithHeadersKey).copy(show = false)
+      saveStep +: steps :+ removeStep
+    }
+
   val root = JsonPath.root
 
-  def status(status: Int) =
-    RunnableStep(
-      title = s"status is '$status'",
-      action = s ⇒ {
-      (s, DetailedStepAssertion(
-        expected = status.toString,
-        result = s.get(LastResponseStatusKey),
-        details = statusError(status, s.get(LastResponseBodyKey))
-      ))
-    }
-    )
+  def status = StatusAssertion
 
   def headers_contain(headers: (String, String)*) =
     from_session_step(
@@ -116,65 +114,11 @@ trait HttpDsl extends Dsl {
       }, title = s"headers contain ${headers.mkString(", ")}"
     )
 
-  def body[A](jsonPath: JsonPath, expected: A, ignoring: JsonPath*): RunnableStep[JValue] =
-    from_session_step(
-      key = LastResponseBodyKey,
-      expected = s ⇒ resolveAndParse(expected, s),
-      (s, sessionValue) ⇒ {
-        val mapped = selectJsonPath(jsonPath, sessionValue)
-        if (ignoring.isEmpty) mapped
-        else removeFieldsByPath(mapped, ignoring)
-      },
-      title = if (jsonPath.isRoot) s"response body is '$expected'" else s"response body's field '${jsonPath.pretty}' is '$expected'"
-    )
+  def body[A] = BodyAssertion[A](root, Seq.empty, whiteList = false, resolver)
 
-  //Duplication has overloading with the one above fails
-  def body[A](expected: A, ignoring: JsonPath*) =
-    from_session_step(
-      key = LastResponseBodyKey,
-      title = titleBuilder(s"response body is '$expected'", ignoring),
-      expected = s ⇒ resolveAndParse(expected, s),
-      mapValue =
-        (session, sessionValue) ⇒ {
-          val jsonSessionValue = parseJson(sessionValue)
-          if (ignoring.isEmpty) jsonSessionValue
-          else removeFieldsByPath(jsonSessionValue, ignoring)
-        }
-    )
+  def body[A](jsonPath: JsonPath) = BodyAssertion[A](jsonPath, Seq.empty, whiteList = false, resolver)
 
-  def body(whiteList: Boolean = false, expected: String): RunnableStep[JValue] = {
-    from_session_step(
-      key = LastResponseBodyKey,
-      title = s"response body is '$expected' with whiteList=$whiteList",
-      expected = s ⇒ resolveAndParse(expected, s),
-      mapValue =
-      (session, sessionValue) ⇒ {
-        val expectedJson = resolveAndParse(expected, session)
-        val sessionValueJson = parseJson(sessionValue)
-        if (whiteList) {
-          val Diff(changed, _, deleted) = expectedJson.diff(sessionValueJson)
-          if (deleted != JNothing) throw new WhiteListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
-          if (changed != JNothing) changed else expectedJson
-        } else sessionValueJson
-      }
-    )
-  }
-
-  def body[A](ordered: Boolean, expected: A, ignoring: JsonPath*): RunnableStep[Iterable[JValue]] =
-    if (ordered)
-      body_array_transform(_.arr.map(removeFieldsByPath(_, ignoring)), titleBuilder(s"response body is '$expected'", ignoring), s ⇒ {
-        resolveAndParse(expected, s) match {
-          case expectedArray: JArray ⇒ expectedArray.arr
-          case _                     ⇒ throw new NotAnArrayError(expected)
-        }
-      })
-    else
-      body_array_transform(s ⇒ s.arr.map(removeFieldsByPath(_, ignoring)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoring), s ⇒ {
-        resolveAndParse(expected, s) match {
-          case expectedArray: JArray ⇒ expectedArray.arr.toSet
-          case _                     ⇒ throw new NotAnArrayError(expected)
-        }
-      })
+  def bodyArray[A] = BodyArrayAssertion[A](ordered = false, Seq.empty, resolver)
 
   def save_body_key(args: (String, String)*) = {
     val inputs = args.map {
@@ -204,58 +148,6 @@ trait HttpDsl extends Dsl {
     if (ignoring.isEmpty) baseTitle
     else s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'${v.pretty}'").mkString(", ")}"
 
-  def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): RunnableStep[A] =
-    from_session_step[A](
-      title = title,
-      key = LastResponseBodyKey,
-      expected = s ⇒ expected(s),
-      mapValue =
-      (session, sessionValue) ⇒ {
-        val jarr = parseArray(sessionValue)
-        mapFct(jarr)
-      }
-    )
-
-  def body_array_size(size: Int): RunnableStep[Int] = body_array_size(root, size)
-
-  def body_array_size(jsonPath: JsonPath, size: Int) = {
-    val title = if (jsonPath.isRoot) s"response body array size is '$size'" else s"response body's array '${jsonPath.pretty}' size is '$size'"
-    from_session_detail_step(
-      title = title,
-      key = LastResponseBodyKey,
-      expected = s ⇒ size,
-      mapValue = (s, sessionValue) ⇒ {
-      val jarr = if (jsonPath.isRoot) parseArray(sessionValue)
-      else selectArrayJsonPath(jsonPath, sessionValue)
-      (jarr.arr.size, arraySizeError(size, prettyPrint(jarr)))
-    }
-    )
-  }
-
-  def body_array_contains[A](element: A): RunnableStep[Boolean] = body_array_contains(root, element)
-
-  def body_array_contains[A](jsonPath: JsonPath, element: A) = {
-    val title = if (jsonPath.isRoot) s"response body array contains '$element'" else s"response body's array '${jsonPath.pretty}' contains '$element'"
-    from_session_detail_step(
-      title = title,
-      key = LastResponseBodyKey,
-      expected = s ⇒ true,
-      mapValue = (s, sessionValue) ⇒ {
-      val jarr = if (jsonPath.isRoot) parseArray(sessionValue)
-      else selectArrayJsonPath(jsonPath, sessionValue)
-      (jarr.arr.contains(parseJson(element)), arrayDoesNotContainError(element.toString, prettyPrint(jarr)))
-    }
-    )
-  }
-
-  def WithHeaders(headers: (String, String)*) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      val saveStep = save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
-      val removeStep = remove(WithHeadersKey).copy(show = false)
-
-      saveStep +: steps :+ removeStep
-    }
-
   def json_equality_for(k1: String, k2: String, ignoring: JsonPath*) = RunnableStep(
     title = titleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoring),
     action = s ⇒ {
@@ -264,12 +156,4 @@ trait HttpDsl extends Dsl {
       (s, SimpleStepAssertion(v1, v2))
     }
   )
-
-  private def resolveAndParse[A](input: A, session: Session): JValue =
-    parseJsonUnsafe {
-      input match {
-        case string: String ⇒ resolver.fillPlaceholdersUnsafe(string)(session).asInstanceOf[A]
-        case _              ⇒ input
-      }
-    }
 }

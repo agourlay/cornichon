@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 
 import scala.concurrent.duration._
 
-trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
+trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   import CornichonFeature._
 
   private val (globalClient, ec) = globalRuntime
