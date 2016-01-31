@@ -19,7 +19,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("demonstrate CRUD features") {
 
-        When I GET("/superheroes/Batman")
+        When I get("/superheroes/Batman")
 
         Then assert status.is(200)
 
@@ -76,7 +76,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Compare only against provided keys
-        And assert body.withWhiteList.is(
+        And assert body.whiteListing.is(
           """
           {
             "name": "Batman",
@@ -111,7 +111,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert body.path(root.publisher.foundationYear).is(1934)
 
-        When I GET("/superheroes/Scalaman")
+        When I get("/superheroes/Scalaman")
 
         Then assert status.is(404)
 
@@ -123,7 +123,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        When I POST("/superheroes", payload =
+        When I post("/superheroes", payload =
           """
           {
             "name": "Scalaman",
@@ -143,7 +143,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert body.is("The resource requires authentication, which was not supplied with the request")
 
         // Try again with authentication
-        When I POST("/superheroes", payload =
+        When I post("/superheroes", payload =
           """
           {
             "name": "Scalaman",
@@ -156,11 +156,11 @@ class CornichonExamplesSpec extends CornichonFeature {
               "location":"Burbank, California"
             }
           }
-          """)(headers = Seq(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))))
+          """).withHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8))))
 
         Then assert status.is(201)
 
-        When I GET("/superheroes/Scalaman")
+        When I get("/superheroes/Scalaman")
 
         Then assert body.ignoring(root.publisher, root.hasSuperpowers, root.city).is(
           """
@@ -171,7 +171,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        When I GET("/superheroes/Scalaman", params = "protectIdentity" → "true")
+        When I get("/superheroes/Scalaman").withParams("protectIdentity" → "true")
 
         Then assert body.ignoring(root.publisher).is(
           """
@@ -185,7 +185,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))) {
-          When I PUT("/superheroes", payload =
+          When I put("/superheroes", payload =
             """
             {
               "name": "Scalaman",
@@ -198,7 +198,7 @@ class CornichonExamplesSpec extends CornichonFeature {
                 "location":"Burbank, California"
               }
             }
-            """)(headers = Seq(("Accept-Encoding", "gzip")))
+            """).withHeaders(("Accept-Encoding", "gzip"))
 
           Then assert headers.contains("Content-Encoding" → "gzip")
 
@@ -218,20 +218,20 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        When I GET("/superheroes/GreenLantern")
+        When I get("/superheroes/GreenLantern")
 
         Then assert status.is(200)
 
-        When I DELETE("/superheroes/GreenLantern")
+        When I delete("/superheroes/GreenLantern")
 
-        When I GET("/superheroes/GreenLantern")
+        When I get("/superheroes/GreenLantern")
 
         Then assert status.is(404)
       }
 
       Scenario("demonstrate collection features") {
 
-        When I GET("/superheroes")
+        When I get("/superheroes")
 
         Then assert bodyArray.inOrder.ignoring(root.publisher).is(
           """
@@ -325,11 +325,11 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        When I DELETE("/superheroes/IronMan")
+        When I delete("/superheroes/IronMan")
 
         Then assert status.is(200)
 
-        And I GET("/superheroes")
+        And I get("/superheroes")
 
         Then assert bodyArray.sizeIs(4)
 
@@ -352,7 +352,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("demonstrate session features") {
 
-        When I GET("/superheroes/Batman")
+        When I get("/superheroes/Batman")
 
         Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
           """
@@ -370,7 +370,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         Then assert session_contains("favorite-superhero" → "Batman")
 
         // Retrieve dynamically from session with <key> for URL construction
-        When I GET("/superheroes/<favorite-superhero>")
+        When I get("/superheroes/<favorite-superhero>")
 
         Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
@@ -418,14 +418,14 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("demonstrate wrapping DSL blocks") {
 
-        When I GET("/superheroes/Batman")
+        When I get("/superheroes/Batman")
 
         // Using registered extractor at the bottom
         Then assert body.path(root.name).is("<name>")
 
         // Repeat series of Steps
         Repeat(3) {
-          When I GET("/superheroes/Batman")
+          When I get("/superheroes/Batman")
 
           Then assert status.is(200)
         }
@@ -433,13 +433,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Nested Repeats
         Repeat(3) {
 
-          When I GET("/superheroes/Superman")
+          When I get("/superheroes/Superman")
 
           Then assert status.is(200)
 
           Repeat(2) {
 
-            When I GET("/superheroes/Batman")
+            When I get("/superheroes/Batman")
 
             Then assert status.is(200)
           }
@@ -450,7 +450,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Execute steps in parallel 'factor times'
         Concurrently(factor = 3, maxTime = 20 seconds) {
 
-          When I GET("/superheroes/Batman")
+          When I get("/superheroes/Batman")
 
           Then assert status.is(200)
         }
@@ -458,7 +458,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // Repeat series of Steps until it succeed
         Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 
-          When I GET("/superheroes/random")
+          When I get("/superheroes/random")
 
           Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
             """
@@ -476,7 +476,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 
-            When I GET("/superheroes/random")
+            When I get("/superheroes/random")
 
             Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
               """
@@ -496,7 +496,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         Given I wait(1 second)
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I GET_SSE("/stream/superheroes", takeWithin = 2 second, params = "justName" → "true")
+        When I sse("/stream/superheroes", takeWithin = 2 second).withParams("justName" → "true")
 
         Then assert bodyArray.sizeIs(5)
 
@@ -536,9 +536,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
   // List of Steps to be executed after each scenario
   afterEachScenario {
-    Seq(
-      GET("/reset")
-    )
+    get("/reset")
   }
 
   override def registerExtractors = Map(

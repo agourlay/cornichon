@@ -43,10 +43,10 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   def afterFeature(after: ⇒ Unit): Unit =
     afterFeature = (() ⇒ after) +: afterFeature
 
-  def beforeEachScenario(steps: Seq[Step]): Unit =
+  def beforeEachScenario(steps: Step*): Unit =
     beforeEachScenario = beforeEachScenario ++ steps
 
-  def afterEachScenario(steps: Seq[Step]): Unit =
+  def afterEachScenario(steps: Step*): Unit =
     afterEachScenario = steps ++ afterEachScenario
 }
 

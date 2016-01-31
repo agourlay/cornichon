@@ -69,7 +69,7 @@ object HttpAssertions {
 
     def ignoring(ignoring: JsonPath*): BodyAssertion[A] = copy(ignoredKeys = ignoring)
 
-    def withWhiteList: BodyAssertion[A] = copy(whiteList = true)
+    def whiteListing: BodyAssertion[A] = copy(whiteList = true)
 
     override def is(expected: A): RunnableStep[JValue] = {
       if (whiteList && ignoredKeys.nonEmpty)

@@ -11,7 +11,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
       Scenario("search for GOT") {
 
-        When I GET("/", params = "t" -> "Game of Thrones")
+        When I get("/").withParams("t" -> "Game of Thrones")
 
         Then assert status.is(200)
 
@@ -40,7 +40,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
         And assert body.path(root.imdbRating).is("9.5")
 
-        And assert body.withWhiteList.is(
+        And assert body.whiteListing.is(
           """
           {
             "Title": "Game of Thrones",
@@ -56,7 +56,10 @@ class OpenMovieDatabase extends CornichonFeature {
 
       Scenario("list GOT season 1 episodes") {
 
-        When I GET("/", params = "t" -> "Game of Thrones", "Season" -> "1")
+        When I get("/").withParams(
+          "t" -> "Game of Thrones",
+          "Season" -> "1"
+        )
 
         Then assert status.is(200)
 

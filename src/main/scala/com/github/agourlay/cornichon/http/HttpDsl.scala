@@ -6,6 +6,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertions._
+import com.github.agourlay.cornichon.http.HttpEffects._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonPath
 
@@ -18,88 +19,26 @@ trait HttpDsl extends Dsl {
 
   import HttpService._
 
-  sealed trait Request {
-    val name: String
+  implicit def toStep(request: HttpRequest): RunnableStep[Boolean] = effectful(
+    title = request.description,
+    effect = s ⇒ request match {
+    case Get(url, params, headers)                ⇒ http.Get(url, params, headers)(s)
+    case Delete(url, params, headers)             ⇒ http.Delete(url, params, headers)(s)
+    case Post(url, payload, params, headers)      ⇒ http.Post(url, payload, params, headers)(s)
+    case Put(url, payload, params, headers)       ⇒ http.Put(url, payload, params, headers)(s)
+    case GetSSE(url, takeWithin, params, headers) ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
+    case GetWS(url, takeWithin, params, headers)  ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
   }
+  )
 
-  sealed trait WithoutPayload extends Request {
-    def apply(url: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      effectful(
-        title = {
-        val base = s"$name $url"
-        if (params.isEmpty) base
-        else s"$base with params ${displayTuples(params)}"
-      },
-        effect =
-        s ⇒ this match {
-          case GET    ⇒ http.Get(url, params, headers)(s)
-          case DELETE ⇒ http.Delete(url, params, headers)(s)
-        }
-      )
-  }
+  def get(url: String) = Get(url, Seq.empty, Seq.empty)
+  def delete(url: String) = Delete(url, Seq.empty, Seq.empty)
 
-  sealed trait WithPayload extends Request {
-    def apply(url: String, payload: String, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      effectful(
-        title = {
-        val base = s"$name to $url with payload $payload"
-        if (params.isEmpty) base
-        else s"$base with params ${displayTuples(params)}"
-      },
-        effect =
-        s ⇒ this match {
-          case POST ⇒ http.Post(url, payload, params, headers)(s)
-          case PUT  ⇒ http.Put(url, payload, params, headers)(s)
-        }
-      )
-  }
+  def post(url: String, payload: String) = Post(url, payload, Seq.empty, Seq.empty)
+  def put(url: String, payload: String) = Put(url, payload, Seq.empty, Seq.empty)
 
-  sealed trait Streamed extends Request {
-    def apply(url: String, takeWithin: FiniteDuration, params: (String, String)*)(implicit headers: Seq[(String, String)] = Seq.empty) =
-      effectful(
-        title = {
-        val base = s"$name $url"
-        if (params.isEmpty) base
-        else s"$base with params ${displayTuples(params)}"
-      },
-        effect =
-        s ⇒ this match {
-          case GET_SSE ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
-          case GET_WS  ⇒ http.GetWS(url, takeWithin, params, headers)(s)
-        }
-      )
-  }
-
-  case object GET extends WithoutPayload {
-    val name = "GET"
-  }
-
-  case object DELETE extends WithoutPayload {
-    val name = "DELETE"
-  }
-
-  case object POST extends WithPayload {
-    val name = "POST"
-  }
-
-  case object PUT extends WithPayload {
-    val name = "PUT"
-  }
-
-  case object GET_SSE extends Streamed {
-    val name = "GET SSE"
-  }
-
-  case object GET_WS extends Streamed {
-    val name = "GET WS"
-  }
-
-  def WithHeaders(headers: (String, String)*) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      val saveStep = save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
-      val removeStep = remove(WithHeadersKey).copy(show = false)
-      saveStep +: steps :+ removeStep
-    }
+  def sse(url: String, takeWithin: FiniteDuration) = GetSSE(url, takeWithin, Seq.empty, Seq.empty)
+  def ws(url: String, takeWithin: FiniteDuration) = GetWS(url, takeWithin, Seq.empty, Seq.empty)
 
   val root = JsonPath.root
 
@@ -136,4 +75,11 @@ trait HttpDsl extends Dsl {
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
   def show_key_as_json(key: String) = show_session(key, v ⇒ prettyPrint(parseJson(v)))
+
+  def WithHeaders(headers: (String, String)*) =
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      val saveStep = save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
+      val removeStep = remove(WithHeadersKey).copy(show = false)
+      saveStep +: steps :+ removeStep
+    }
 }
