@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 import org.scalatest.{ ParallelTestExecution, WordSpecLike, BeforeAndAfterAll }
 import scala.Console._
 
-trait ScalaTestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution with CornichonLogger {
+trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution with CornichonLogger {
   this: CornichonFeature ⇒
 
   override def beforeAll() = {

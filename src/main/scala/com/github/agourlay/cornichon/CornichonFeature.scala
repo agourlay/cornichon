@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 
 import scala.concurrent.duration._
 
-trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
+trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   import CornichonFeature._
 
   private val (globalClient, ec) = globalRuntime
@@ -43,10 +43,10 @@ trait CornichonFeature extends HttpDsl with ScalaTestIntegration {
   def afterFeature(after: ⇒ Unit): Unit =
     afterFeature = (() ⇒ after) +: afterFeature
 
-  def beforeEachScenario(steps: Seq[Step]): Unit =
+  def beforeEachScenario(steps: Step*): Unit =
     beforeEachScenario = beforeEachScenario ++ steps
 
-  def afterEachScenario(steps: Seq[Step]): Unit =
+  def afterEachScenario(steps: Step*): Unit =
     afterEachScenario = steps ++ afterEachScenario
 }
 
