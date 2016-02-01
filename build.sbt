@@ -33,7 +33,7 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 libraryDependencies ++= {
   val scalaTestV = "2.2.6"
   val akkaHttpV = "2.0.3"
-  val catsV = "0.3.0"
+  val catsV = "0.4.0"
   val sprayJsonV = "1.3.2"
   val json4sV = "3.3.0"
   val logbackV = "1.1.3"
@@ -47,8 +47,8 @@ libraryDependencies ++= {
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
     ,"org.json4s"          %% "json4s-jackson"                    % json4sV
     ,"io.spray"            %% "spray-json"                        % sprayJsonV
-    ,"org.spire-math"      %% "cats-macros"                       % catsV
-    ,"org.spire-math"      %% "cats-core"                         % catsV
+    ,"org.typelevel"       %% "cats-macros"                       % catsV
+    ,"org.typelevel"       %% "cats-core"                         % catsV
     ,"org.scalatest"       %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"      %  "logback-classic"                   % logbackV
     ,"org.parboiled"       %% "parboiled"                         % parboiledV
