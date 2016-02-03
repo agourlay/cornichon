@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.RunnableStep._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
@@ -19,16 +18,17 @@ trait HttpDsl extends Dsl {
 
   import HttpService._
 
-  implicit def toStep(request: HttpRequest): RunnableStep[Boolean] = effectful(
+  implicit def toStep(request: HttpRequest): EffectStep = EffectStep(
     title = request.description,
-    effect = s ⇒ request match {
-    case Get(url, params, headers)                ⇒ http.Get(url, params, headers)(s)
-    case Delete(url, params, headers)             ⇒ http.Delete(url, params, headers)(s)
-    case Post(url, payload, params, headers)      ⇒ http.Post(url, payload, params, headers)(s)
-    case Put(url, payload, params, headers)       ⇒ http.Put(url, payload, params, headers)(s)
-    case GetSSE(url, takeWithin, params, headers) ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
-    case GetWS(url, takeWithin, params, headers)  ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
-  }
+    effect = s ⇒
+    request match {
+      case Get(url, params, headers)                ⇒ http.Get(url, params, headers)(s)
+      case Delete(url, params, headers)             ⇒ http.Delete(url, params, headers)(s)
+      case Post(url, payload, params, headers)      ⇒ http.Post(url, payload, params, headers)(s)
+      case Put(url, payload, params, headers)       ⇒ http.Put(url, payload, params, headers)(s)
+      case GetSSE(url, takeWithin, params, headers) ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
+      case GetWS(url, takeWithin, params, headers)  ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
+    }
   )
 
   def get(url: String) = Get(url, Seq.empty, Seq.empty)

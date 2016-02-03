@@ -12,15 +12,13 @@ import org.json4s._
 object HttpAssertions {
 
   case object StatusAssertion extends AssertionStep[Int, Int] {
-    def is(expected: Int) = RunnableStep(
+    def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = s ⇒ {
-      (s, DetailedStepAssertion(
-        expected = expected,
-        result = s.get(LastResponseStatusKey).toInt,
-        details = statusError(expected, s.get(LastResponseBodyKey))
-      ))
-    }
+      action = s ⇒ DetailedStepAssertion(
+      expected = expected,
+      result = s.get(LastResponseStatusKey).toInt,
+      details = statusError(expected, s.get(LastResponseBodyKey))
+    )
     )
   }
 
@@ -28,12 +26,12 @@ object HttpAssertions {
 
     def ignoring(ignoring: JsonPath*): SessionJsonValuesAssertion = copy(ignoredKeys = ignoring)
 
-    def areEquals = RunnableStep(
+    def areEquals = AssertStep(
       title = titleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoredKeys),
       action = s ⇒ {
         val v1 = removeFieldsByPath(s.getJson(k1), ignoredKeys)
         val v2 = removeFieldsByPath(s.getJson(k2), ignoredKeys)
-        (s, SimpleStepAssertion(v1, v2))
+        SimpleStepAssertion(v1, v2)
       }
     )
   }
@@ -71,8 +69,9 @@ object HttpAssertions {
 
     def whiteListing: BodyAssertion[A] = copy(whiteList = true)
 
-    override def is(expected: A): RunnableStep[JValue] = {
+    override def is(expected: A): AssertStep[JValue] = {
       if (whiteList && ignoredKeys.nonEmpty)
+        //TODO
         throw new RuntimeException("cant have both yadayada")
       else {
         val baseTitle = if (jsonPath.isRoot) s"response body is '$expected'" else s"response body's field '${jsonPath.pretty}' is '$expected'"
@@ -107,7 +106,7 @@ object HttpAssertions {
 
     def ignoring(ignoring: JsonPath*): BodyArrayAssertion[A] = copy(ignoredKeys = ignoring)
 
-    override def sizeIs(size: Int): RunnableStep[Int] = {
+    override def sizeIs(size: Int): AssertStep[Int] = {
       val title = if (jsonPath.isRoot) s"response body array size is '$size'" else s"response body's array '${jsonPath.pretty}' size is '$size'"
       from_session_detail_step(
         title = title,
@@ -121,7 +120,7 @@ object HttpAssertions {
       )
     }
 
-    override def is(expected: A): RunnableStep[Iterable[JValue]] = {
+    override def is(expected: A): AssertStep[Iterable[JValue]] = {
       if (ordered)
         body_array_transform(_.arr.map(removeFieldsByPath(_, ignoredKeys)), titleBuilder(s"response body is '$expected'", ignoredKeys), s ⇒ {
           resolveAndParse(expected, s, resolver) match {
@@ -154,7 +153,7 @@ object HttpAssertions {
     }
   }
 
-  private def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): RunnableStep[A] =
+  private def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): AssertStep[A] =
     from_session_step[A](
       title = title,
       key = LastResponseBodyKey,

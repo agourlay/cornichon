@@ -227,6 +227,8 @@ class CornichonExamplesSpec extends CornichonFeature {
         When I get("/superheroes/GreenLantern")
 
         Then assert status.is(404)
+
+        And I show_last_status
       }
 
       Scenario("demonstrate collection features") {
@@ -348,6 +350,8 @@ class CornichonExamplesSpec extends CornichonFeature {
           }
           """
         )
+
+        And I show_last_status
       }
 
       Scenario("demonstrate session features") {
@@ -489,6 +493,8 @@ class CornichonExamplesSpec extends CornichonFeature {
             )
           }
         }
+
+        And I show_last_status
       }
 
       Scenario("demonstrate streaming support") {
@@ -514,6 +520,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         // TODO
         //When I GET_WS("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
 
+        And I show_last_status
       }
     }
 

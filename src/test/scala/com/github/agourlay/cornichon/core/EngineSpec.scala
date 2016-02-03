@@ -12,7 +12,7 @@ class EngineSpec extends WordSpec with Matchers {
     "runScenario" must {
       "execute all steps of a scenario" in {
         val session = Session.newSession
-        val steps = Vector(RunnableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))))
+        val steps = Vector(AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)))
         val s = Scenario("test", steps)
         engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
       }
@@ -20,9 +20,9 @@ class EngineSpec extends WordSpec with Matchers {
       "fail if instruction throws exception" in {
         val session = Session.newSession
         val steps = Vector(
-          RunnableStep[Int]("stupid step", s ⇒ {
+          AssertStep[Int]("stupid step", s ⇒ {
             6 / 0
-            (s, SimpleStepAssertion(2, 2))
+            SimpleStepAssertion(2, 2)
           })
         )
         val s = Scenario("scenario with stupid test", steps)
@@ -31,9 +31,9 @@ class EngineSpec extends WordSpec with Matchers {
 
       "stop at first failed step" in {
         val session = Session.newSession
-        val step1 = RunnableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2, 2)))
-        val step2 = RunnableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(4, 5)))
-        val step3 = RunnableStep[Int]("third step", s ⇒ (s, SimpleStepAssertion(1, 1)))
+        val step1 = AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2, 2))
+        val step2 = AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(4, 5))
+        val step3 = AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(1, 1))
         val steps = Vector(
           step1, step2, step3
         )
@@ -56,10 +56,9 @@ class EngineSpec extends WordSpec with Matchers {
         val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
         val steps = Vector(
           EventuallyStart(eventuallyConf),
-          RunnableStep(
-            "possible random value step", s ⇒ {
-              (s, SimpleStepAssertion(scala.util.Random.nextInt(10), 5))
-            }
+          AssertStep(
+            "possible random value step",
+            s ⇒ SimpleStepAssertion(scala.util.Random.nextInt(10), 5)
           ),
           EventuallyStop(eventuallyConf)
         )
@@ -72,13 +71,8 @@ class EngineSpec extends WordSpec with Matchers {
         val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
         val steps = Vector(
           EventuallyStart(eventuallyConf),
-          RunnableStep(
-            "impossible random value step", s ⇒ {
-              (
-                s,
-                SimpleStepAssertion(11, scala.util.Random.nextInt(10))
-              )
-            }
+          AssertStep(
+            "impossible random value step", s ⇒ SimpleStepAssertion(11, scala.util.Random.nextInt(10))
           ),
           EventuallyStop(eventuallyConf)
         )
@@ -89,10 +83,8 @@ class EngineSpec extends WordSpec with Matchers {
       "success if non equality was expected" in {
         val session = Session.newSession
         val steps = Vector(
-          RunnableStep(
-            "non equals step", s ⇒ {
-              (s, SimpleStepAssertion(1, 2))
-            }, negate = true
+          AssertStep(
+            "non equals step", s ⇒ SimpleStepAssertion(1, 2), negate = true
           )
         )
         val s = Scenario("scenario with unresolved", steps)
@@ -110,25 +102,14 @@ class EngineSpec extends WordSpec with Matchers {
       }
     }
 
-    "runStepAction" must {
-      "return error if Executable step throw an exception" in {
-        val session = Session.newSession
-        val step = RunnableStep[Int]("stupid step", s ⇒ {
-          6 / 0
-          (s, SimpleStepAssertion(2, 2))
-        })
-        engine.runStepAction(step)(session).isLeft should be(true)
-      }
-    }
-
     "runStepPredicate" must {
       "return session if success" in {
         val session = Session.newSession
-        val step = RunnableStep[Int]("stupid step", s ⇒ {
+        val step = AssertStep[Int]("stupid step", s ⇒ {
           6 / 0
-          (s, SimpleStepAssertion(2, 2))
+          SimpleStepAssertion(2, 2)
         })
-        engine.runStepPredicate(negateStep = false, session, StepAssertion.alwaysOK).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
+        engine.runStepPredicate(negateStep = false, session, SimpleStepAssertion(true, true)).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
       }
     }
 
@@ -137,8 +118,8 @@ class EngineSpec extends WordSpec with Matchers {
         val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
         val steps = Vector(
           EventuallyStart(eventuallyConf),
-          RunnableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
-          RunnableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
+          AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           EventuallyStop(eventuallyConf)
         )
         engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
@@ -148,11 +129,11 @@ class EngineSpec extends WordSpec with Matchers {
         val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
         val steps = Vector(
           EventuallyStart(eventuallyConf),
-          RunnableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
-          RunnableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
+          AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           EventuallyStop(eventuallyConf),
           EventuallyStart(eventuallyConf),
-          RunnableStep[Int]("third step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           EventuallyStop(eventuallyConf)
         )
         engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
@@ -162,10 +143,10 @@ class EngineSpec extends WordSpec with Matchers {
         val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
         val steps = Vector(
           EventuallyStart(eventuallyConf),
-          RunnableStep[Int]("first step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
-          RunnableStep[Int]("second step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
+          AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           EventuallyStart(eventuallyConf),
-          RunnableStep[Int]("third step", s ⇒ (s, SimpleStepAssertion(2 + 1, 3))),
+          AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           EventuallyStop(eventuallyConf),
           EventuallyStop(eventuallyConf)
         )

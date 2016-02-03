@@ -38,8 +38,8 @@ case class SuccessScenarioReport(scenarioName: String, successSteps: Vector[Stri
 
 object SuccessScenarioReport {
   def apply(scenario: Scenario, stepsRun: SuccessRunSteps): SuccessScenarioReport = {
-    val successSteps = scenario.steps.collect { case RunnableStep(title, _, _, _) ⇒ title }
-    SuccessScenarioReport(scenario.name, successSteps, stepsRun.logs, stepsRun.session)
+    val successStepsTitle = scenario.steps.filterNot(_.isInstanceOf[WrapperStep]).map(_.title)
+    SuccessScenarioReport(scenario.name, successStepsTitle, stepsRun.logs, stepsRun.session)
   }
 }
 
@@ -63,7 +63,7 @@ case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, su
 
 object FailedScenarioReport {
   def apply(scenario: Scenario, stepsRun: FailedRunSteps): FailedScenarioReport = {
-    val successSteps = scenario.steps.takeWhile(_ != stepsRun.failedStep.step).collect { case RunnableStep(title, _, _, _) ⇒ title }
+    val successSteps = scenario.steps.takeWhile(_ != stepsRun.failedStep.step).filterNot(_.isInstanceOf[WrapperStep]).map(_.title)
     FailedScenarioReport(scenario.name, stepsRun.failedStep, successSteps, stepsRun.notExecutedStep, stepsRun.logs, stepsRun.session)
   }
 }
