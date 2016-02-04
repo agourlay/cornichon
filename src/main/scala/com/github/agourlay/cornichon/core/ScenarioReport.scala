@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.core
 
+import scala.concurrent.duration.Duration
 import scala.language.existentials
+import scala.Console._
 
 sealed trait StepsReport {
   val logs: Vector[LogInstruction]
@@ -73,7 +75,22 @@ case class FailedStep(step: Step, error: CornichonError)
 sealed trait LogInstruction {
   val message: String
   val margin: Int
+  val color: String
+  val duration: Option[Duration]
 }
 
-case class DefaultLogInstruction(message: String, margin: Int) extends LogInstruction
-case class ColoredLogInstruction(message: String, ansiColor: String, margin: Int) extends LogInstruction
+case class DefaultLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = WHITE
+}
+
+case class SuccessLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = GREEN
+}
+
+case class FailureLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = RED
+}
+
+case class InfoLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = CYAN
+}

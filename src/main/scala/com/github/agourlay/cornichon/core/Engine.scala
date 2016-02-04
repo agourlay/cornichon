@@ -5,7 +5,6 @@ import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.core.ScenarioReport._
 
-import scala.Console._
 import scala.annotation.tailrec
 import scala.concurrent.{ ExecutionContext, Await, Future }
 import scala.concurrent.duration.Duration
@@ -32,11 +31,11 @@ class Engine(executionContext: ExecutionContext) {
       case d @ DebugStep(message) ⇒
         Try { message(session) } match {
           case Success(debugMessage) ⇒
-            val updatedLogs = logs :+ ColoredLogInstruction(message(session), CYAN, depth)
+            val updatedLogs = logs :+ InfoLogInstruction(message(session), depth)
             runSteps(steps.tail, session, updatedLogs, depth)
           case Failure(e) ⇒
             val cornichonError = toCornichonError(e)
-            val updatedLogs = logs ++ logStepErrorResult(d.title, cornichonError, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
+            val updatedLogs = logs ++ errorLogs(d.title, cornichonError, depth, steps.tail)
             buildFailedRunSteps(steps, d, cornichonError, updatedLogs, session)
         }
 
@@ -45,7 +44,7 @@ class Engine(executionContext: ExecutionContext) {
         val eventuallySteps = findEnclosedSteps(e, steps.tail)
 
         if (eventuallySteps.isEmpty) {
-          val updatedLogs = logs ++ logStepErrorResult(e.title, MalformedEventuallyBlock, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
+          val updatedLogs = logs ++ errorLogs(e.title, MalformedEventuallyBlock, depth, steps.tail)
           buildFailedRunSteps(steps, e, MalformedEventuallyBlock, updatedLogs, session)
         } else {
           val start = System.nanoTime
@@ -54,10 +53,10 @@ class Engine(executionContext: ExecutionContext) {
           val nextSteps = steps.tail.drop(eventuallySteps.size)
           res match {
             case s @ SuccessRunSteps(sSession, sLogs) ⇒
-              val fullLogs = updatedLogs ++ sLogs :+ ColoredLogInstruction(s"Eventually block succeeded in ${executionTime.toMillis} millis.", GREEN, depth)
+              val fullLogs = updatedLogs ++ sLogs :+ SuccessLogInstruction(s"Eventually block succeeded", depth, Some(executionTime))
               runSteps(nextSteps, sSession, fullLogs, depth)
             case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
-              val fullLogs = (updatedLogs ++ eLogs :+ ColoredLogInstruction(s"Eventually block did not complete in time. (${executionTime.toMillis} millis) ", RED, depth)) ++ logNonExecutedStep(nextSteps, depth)
+              val fullLogs = (updatedLogs ++ eLogs :+ FailureLogInstruction(s"Eventually block did not complete in time", depth, Some(executionTime))) ++ logNonExecutedStep(nextSteps, depth)
               f.copy(logs = fullLogs, session = fSession)
           }
         }
@@ -73,7 +72,7 @@ class Engine(executionContext: ExecutionContext) {
         val concurrentSteps = findEnclosedSteps(c, steps.tail)
 
         if (concurrentSteps.isEmpty) {
-          val innerLogs = logs ++ logStepErrorResult(c.title, MalformedConcurrentBlock, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
+          val innerLogs = logs ++ errorLogs(c.title, MalformedConcurrentBlock, depth, steps.tail)
           buildFailedRunSteps(steps, c, MalformedConcurrentBlock, innerLogs, session)
         } else {
           val start = System.nanoTime
@@ -92,10 +91,10 @@ class Engine(executionContext: ExecutionContext) {
             val executionTime = Duration.fromNanos(System.nanoTime - start)
             val successStepsRun = results.collect { case s @ SuccessRunSteps(_, _) ⇒ s }
             val updatedSession = successStepsRun.head.session
-            val updatedLogs = successStepsRun.head.logs :+ ColoredLogInstruction(s"Concurrently block with factor '$factor' succeeded in ${executionTime.toMillis} millis.", GREEN, depth)
+            val updatedLogs = successStepsRun.head.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", depth, Some(executionTime))
             runSteps(nextSteps, updatedSession, updatedLogs, depth)
           } { f ⇒
-            f.copy(logs = (f.logs :+ ColoredLogInstruction(s"Concurrently block failed", RED, depth)) ++ logNonExecutedStep(nextSteps, depth))
+            f.copy(logs = (f.logs :+ FailureLogInstruction(s"Concurrently block failed", depth)) ++ logNonExecutedStep(nextSteps, depth))
           }
         }
 
@@ -108,19 +107,21 @@ class Engine(executionContext: ExecutionContext) {
         buildStepReport(steps, session, logs, res, title, depth, show)
 
       case e @ EffectStep(title, effect, show) ⇒
+        val start = System.nanoTime
         val res = Xor.catchNonFatal(effect(session)).leftMap(e ⇒ toCornichonError(e))
-        buildStepReport(steps, session, logs, res, title, depth, show)
+        val executionTime = Duration.fromNanos(System.nanoTime - start)
+        buildStepReport(steps, session, logs, res, title, depth, show, Some(executionTime))
 
     }
 
-  private def buildStepReport(steps: Vector[Step], session: Session, logs: Vector[LogInstruction], res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean) =
+  private def buildStepReport(steps: Vector[Step], session: Session, logs: Vector[LogInstruction], res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean, duration: Option[Duration] = None) =
     res match {
       case Xor.Left(e) ⇒
-        val updatedLogs = logs ++ logStepErrorResult(title, e, RED, depth) ++ logNonExecutedStep(steps.tail, depth)
+        val updatedLogs = logs ++ errorLogs(title, e, depth, steps.tail)
         buildFailedRunSteps(steps, steps.head, e, updatedLogs, session)
 
       case Xor.Right(currentSession) ⇒
-        val updatedLogs = if (show) logs :+ ColoredLogInstruction(title, GREEN, depth) else logs
+        val updatedLogs = if (show) logs :+ SuccessLogInstruction(title, depth, duration) else logs
         runSteps(steps.tail, currentSession, updatedLogs, depth)
     }
 
@@ -199,18 +200,20 @@ class Engine(executionContext: ExecutionContext) {
     }
   }
 
-  private[cornichon] def logStepErrorResult(stepTitle: String, error: CornichonError, ansiColor: String, depth: Int): Vector[LogInstruction] =
-    Vector(ColoredLogInstruction(s"$stepTitle *** FAILED ***", ansiColor, depth)) ++ error.msg.split('\n').map { m ⇒
-      ColoredLogInstruction(m, ansiColor, depth)
-    }
-
   private[cornichon] def logNonExecutedStep(steps: Seq[Step], depth: Int): Seq[LogInstruction] =
     steps.collect {
       case a @ AssertStep(_, _, _, true) ⇒ a
       case e @ EffectStep(_, _, true)    ⇒ e
     }.map { step ⇒
-      ColoredLogInstruction(step.title, CYAN, depth)
+      InfoLogInstruction(step.title, depth)
     }
+
+  private[cornichon] def errorLogs(title: String, error: CornichonError, depth: Int, remainingSteps: Vector[Step]) = {
+    val logStepErrorResult = Vector(FailureLogInstruction(s"$title *** FAILED ***", depth)) ++ error.msg.split('\n').map { m ⇒
+      FailureLogInstruction(m, depth)
+    }
+    logStepErrorResult ++ logNonExecutedStep(remainingSteps, depth)
+  }
 
   private[cornichon] def buildFailedRunSteps(steps: Vector[Step], currentStep: Step, e: CornichonError, logs: Vector[LogInstruction], session: Session): FailedRunSteps = {
     val failedStep = FailedStep(currentStep, e)

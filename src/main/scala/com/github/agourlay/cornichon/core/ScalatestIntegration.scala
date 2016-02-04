@@ -48,17 +48,11 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
     s"""testOnly *${this.getClass.getSimpleName} -- -t "$featureName should $scenarioName" """
 
   private def printLogs(logs: Seq[LogInstruction]): Unit = {
-    def messageWithMargin(message: String, margin: Int): Array[String] = {
-      message.split('\n').map { line ⇒
-        "   " * margin + line
-      }
-    }
-
-    logs.foreach {
-      case DefaultLogInstruction(message, margin) ⇒
-        messageWithMargin(message, margin).foreach(logger.info)
-      case ColoredLogInstruction(message, color, margin) ⇒
-        messageWithMargin(message, margin).foreach(l ⇒ logger.info(color + l + RESET))
+    logs.foreach { log ⇒
+      val printableMsg = log.message.split('\n').map { line ⇒ "   " * log.margin + line }
+      val durationSuffix = log.duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
+      logger.info(log.color + printableMsg.head + durationSuffix + RESET)
+      printableMsg.tail.foreach(line ⇒ logger.info(log.color + line + RESET))
     }
   }
 }
