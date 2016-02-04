@@ -100,7 +100,7 @@ class Engine(executionContext: ExecutionContext) {
 
       case a @ AssertStep(title, toAssertion, negate, show) ⇒
         val res = Xor.catchNonFatal(toAssertion(session))
-          .leftMap(e ⇒ toCornichonError(e))
+          .leftMap(toCornichonError)
           .flatMap { assertion ⇒
             runStepPredicate(negate, session, assertion)
           }
@@ -108,7 +108,7 @@ class Engine(executionContext: ExecutionContext) {
 
       case e @ EffectStep(title, effect, show) ⇒
         val start = System.nanoTime
-        val res = Xor.catchNonFatal(effect(session)).leftMap(e ⇒ toCornichonError(e))
+        val res = Xor.catchNonFatal(effect(session)).leftMap(toCornichonError)
         val executionTime = Duration.fromNanos(System.nanoTime - start)
         buildStepReport(steps, session, logs, res, title, depth, show, Some(executionTime))
 
