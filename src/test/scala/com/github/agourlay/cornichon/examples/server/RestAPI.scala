@@ -43,52 +43,68 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
         complete(ToResponseMarshallable(Conflict → HttpError(s"Superhero ${e.id} already exist")))
       }
 
+    case e: SessionNotFound ⇒
+      extractUri { uri ⇒
+        complete(ToResponseMarshallable(NotFound → HttpError(s"Session ${e.id} not found")))
+      }
+
     case e: Exception ⇒
       extractUri { uri ⇒
+        println(e.printStackTrace())
         complete(ToResponseMarshallable(InternalServerError → HttpError("An unexpected error occured")))
       }
   }
 
   val route: Route = encodeResponse {
-    path("reset") {
-      get {
-        onSuccess(testData.reset()) { _ ⇒
-          complete(ToResponseMarshallable(OK → "reset complete"))
+    path("session") {
+      post {
+        onSuccess(testData.createSession()) { session: String ⇒
+          complete(ToResponseMarshallable(Created → session))
         }
       }
     } ~
       path("publishers") {
         get {
-          onSuccess(testData.allPublishers) { publishers: Seq[Publisher] ⇒
-            complete(ToResponseMarshallable(OK → publishers))
+          parameters('sessionId) { sessionId: String ⇒
+            onSuccess(testData.allPublishers(sessionId)) { publishers: Seq[Publisher] ⇒
+              complete(ToResponseMarshallable(OK → publishers))
+            }
           }
         } ~
           post {
-            entity(as[Publisher]) { p: Publisher ⇒
-              onSuccess(testData.addPublisher(p)) { created: Publisher ⇒
-                complete(ToResponseMarshallable(Created → created))
+            parameters('sessionId) { sessionId: String ⇒
+              entity(as[Publisher]) { p: Publisher ⇒
+                onSuccess(testData.addPublisher(sessionId, p)) { created: Publisher ⇒
+                  complete(ToResponseMarshallable(Created → created))
+                }
               }
             }
           }
       } ~
       path("publishers" / Rest) { name: String ⇒
         get {
-          onSuccess(testData.publisherByName(name)) { pub: Publisher ⇒
-            complete(ToResponseMarshallable(OK → pub))
+          parameters('sessionId) { sessionId: String ⇒
+            onSuccess(testData.publisherByName(name, sessionId)) { pub: Publisher ⇒
+              complete(ToResponseMarshallable(OK → pub))
+            }
           }
         }
       } ~
       path("superheroes") {
         get {
-          onSuccess(testData.allSuperheroes) { superheroes: Seq[SuperHero] ⇒
-            complete(ToResponseMarshallable(OK → superheroes))
+          parameters('sessionId) { sessionId: String ⇒
+            onSuccess(testData.allSuperheroes(sessionId)) { superheroes: Seq[SuperHero] ⇒
+              complete(ToResponseMarshallable(OK → superheroes))
+            }
           }
         } ~
           post {
             authenticateBasicPF(realm = "secure site", login) { userName ⇒
-              entity(as[SuperHero]) { s: SuperHero ⇒
-                onSuccess(testData.addSuperhero(s)) { created: SuperHero ⇒
-                  complete(ToResponseMarshallable(Created → created))
+              parameters('sessionId) { sessionId: String ⇒
+                entity(as[SuperHero]) { s: SuperHero ⇒
+                  onSuccess(testData.addSuperhero(sessionId, s)) { created: SuperHero ⇒
+                    complete(ToResponseMarshallable(Created → created))
+                  }
                 }
               }
             }
@@ -96,8 +112,10 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
           put {
             authenticateBasicPF(realm = "secure site", login) { userName ⇒
               entity(as[SuperHero]) { s: SuperHero ⇒
-                onSuccess(testData.updateSuperhero(s)) { updated: SuperHero ⇒
-                  complete(ToResponseMarshallable(OK → updated))
+                parameters('sessionId) { sessionId: String ⇒
+                  onSuccess(testData.updateSuperhero(sessionId, s)) { updated: SuperHero ⇒
+                    complete(ToResponseMarshallable(OK → updated))
+                  }
                 }
               }
             }
@@ -106,15 +124,19 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
       path("superheroes" / Rest) { name: String ⇒
         get {
           parameters('protectIdentity ? false) { protectIdentity: Boolean ⇒
-            onSuccess(testData.superheroByName(name, protectIdentity)) { s: SuperHero ⇒
-              complete(ToResponseMarshallable(OK → s))
+            parameters('sessionId) { sessionId: String ⇒
+              onSuccess(testData.superheroByName(sessionId, name, protectIdentity)) { s: SuperHero ⇒
+                complete(ToResponseMarshallable(OK → s))
+              }
             }
           }
 
         } ~
           delete {
-            onSuccess(testData.deleteSuperhero(name)) { s: SuperHero ⇒
-              complete(ToResponseMarshallable(OK → s))
+            parameters('sessionId) { sessionId: String ⇒
+              onSuccess(testData.deleteSuperhero(sessionId, name)) { s: SuperHero ⇒
+                complete(ToResponseMarshallable(OK → s))
+              }
             }
           }
       } ~
@@ -122,10 +144,12 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
         path("superheroes") {
           get {
             parameters('justName ? false) { justName: Boolean ⇒
-              onSuccess(testData.allSuperheroes) { superheroes: Seq[SuperHero] ⇒
-                complete {
-                  if (justName) Source(superheroes.toVector.map(sh ⇒ ServerSentEvent(eventType = "superhero name", data = sh.name)))
-                  else Source(superheroes.toVector.map(toServerSentEvent))
+              parameters('sessionId) { sessionId: String ⇒
+                onSuccess(testData.allSuperheroes(sessionId)) { superheroes: Seq[SuperHero] ⇒
+                  complete {
+                    if (justName) Source(superheroes.toVector.map(sh ⇒ ServerSentEvent(eventType = "superhero name", data = sh.name)))
+                    else Source(superheroes.toVector.map(toServerSentEvent))
+                  }
                 }
               }
             }

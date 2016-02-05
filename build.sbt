@@ -32,18 +32,18 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "2.2.6"
-  val akkaHttpV = "2.0.3"
+  val akkaHttpV = "2.4.2-RC2"
   val catsV = "0.4.1"
   val sprayJsonV = "1.3.2"
   val json4sV = "3.3.0"
   val logbackV = "1.1.3"
   val parboiledV = "2.1.1"
-  val akkaSseV = "1.5.0"
+  val akkaSseV = "1.6.1"
   val scalacheckV = "1.12.5"
   val sangriaV = "0.5.1"
   val sangriaJsonV = "0.1.0"
   Seq(
-     "com.typesafe.akka"   %% "akka-http-core-experimental"       % akkaHttpV
+     "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
     ,"org.json4s"          %% "json4s-jackson"                    % json4sV
     ,"io.spray"            %% "spray-json"                        % sprayJsonV

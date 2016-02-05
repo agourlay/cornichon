@@ -37,7 +37,7 @@ object HttpAssertions {
   }
 
   case class HeadersAssertion(ordered: Boolean) extends CollectionAssertionStep[(String, String), String] {
-    def is(expected: (String, String)) = ???
+    def is(expected: (String, String)*) = ???
 
     def sizeIs(expected: Int) = from_session_step(
       title = s"headers size is '$expected'",
@@ -47,13 +47,14 @@ object HttpAssertions {
     )
 
     def contains(elements: (String, String)*) = {
-      from_session_step(
+      from_session_detail_step(
         title = s"headers contain ${displayTuples(elements)}",
         key = LastResponseHeadersKey,
         expected = s ⇒ true,
         mapValue = (session, sessionHeaders) ⇒ {
         val sessionHeadersValue = sessionHeaders.split(",")
-        elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
+        val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
+        (predicate, headersDoesNotContainError(displayTuples(elements), sessionHeaders))
       }
       )
     }
@@ -98,15 +99,15 @@ object HttpAssertions {
     }
   }
 
-  case class BodyArrayAssertion[A](jsonPath: JsonPath, ordered: Boolean, private val ignoredKeys: Seq[JsonPath], resolver: Resolver) extends CollectionAssertionStep[A, JValue] {
+  case class BodyArrayAssertion[A](jsonPath: JsonPath, ordered: Boolean, private val ignoredKeys: Seq[JsonPath], resolver: Resolver) extends AssertionStep[A, Iterable[JValue]] {
 
     def path(path: JsonPath): BodyArrayAssertion[A] = copy(jsonPath = path)
 
-    override def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
+    def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
 
     def ignoring(ignoring: JsonPath*): BodyArrayAssertion[A] = copy(ignoredKeys = ignoring)
 
-    override def sizeIs(size: Int): AssertStep[Int] = {
+    def sizeIs(size: Int): AssertStep[Int] = {
       val title = if (jsonPath.isRoot) s"response body array size is '$size'" else s"response body's array '${jsonPath.pretty}' size is '$size'"
       from_session_detail_step(
         title = title,
@@ -137,7 +138,7 @@ object HttpAssertions {
         })
     }
 
-    override def contains(elements: A*) = {
+    def contains(elements: A*) = {
       val title = if (jsonPath.isRoot) s"response body array contains '$elements'" else s"response body's array '${jsonPath.pretty}' contains '$elements'"
       from_session_detail_step(
         title = title,

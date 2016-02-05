@@ -19,4 +19,9 @@ object HttpDslErrors {
         |$sourceArray""".stripMargin
   }
 
+  def headersDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
+    s"""expected headers to contain '$expected' but it is not the case with array:
+        |$sourceArray""".stripMargin
+  }
+
 }
