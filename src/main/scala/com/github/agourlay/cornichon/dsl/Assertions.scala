@@ -10,7 +10,7 @@ trait CollectionAssertionStep[A, B] {
   def is(expected: A*): AssertStep[Iterable[B]]
   def sizeIs(expected: Int): AssertStep[Int]
   def inOrder: CollectionAssertionStep[A, B]
-  def contains(elements: A*): AssertStep[Boolean]
+  def contain(elements: A*): AssertStep[Boolean]
 }
 
 object CoreAssertion {

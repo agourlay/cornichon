@@ -75,7 +75,7 @@ private object CornichonFeature {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 3) {
         client.shutdown().map { _ ⇒
-          system.shutdown()
+          system.terminate()
           mat.shutdown()
         }
       }

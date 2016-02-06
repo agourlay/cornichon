@@ -18,9 +18,11 @@ object HttpEffects {
 
     def description: String = {
       val base = s"$name $url"
-      if (params.isEmpty) base
-      else s"$base with params ${displayTuples(params)}"
+      base + paramsTitle + headersTitle
     }
+
+    def paramsTitle = if (params.isEmpty) "" else s" with params ${displayTuples(params)}"
+    def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayTuples(headers)}"
   }
 
   case class Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
@@ -42,9 +44,9 @@ object HttpEffects {
     val payload: String
 
     override def description: String = {
-      val base = s"$name to $url with payload $payload"
-      if (params.isEmpty) base
-      else s"$base with params ${displayTuples(params)}"
+      val base = s"$name to $url"
+      val payloadTitle = if (payload.isEmpty) " without payload" else s" with payload $payload"
+      base + payloadTitle + paramsTitle + headersTitle
     }
   }
 

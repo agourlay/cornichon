@@ -37,7 +37,12 @@ object HttpAssertions {
   }
 
   case class HeadersAssertion(ordered: Boolean) extends CollectionAssertionStep[(String, String), String] {
-    def is(expected: (String, String)*) = ???
+    def is(expected: (String, String)*) = from_session_step(
+      title = s"headers is ${displayTuples(expected)}",
+      key = LastResponseHeadersKey,
+      expected = s ⇒ expected.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" },
+      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",")
+    )
 
     def sizeIs(expected: Int) = from_session_step(
       title = s"headers size is '$expected'",
@@ -46,7 +51,7 @@ object HttpAssertions {
       mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").size
     )
 
-    def contains(elements: (String, String)*) = {
+    def contain(elements: (String, String)*) = {
       from_session_detail_step(
         title = s"headers contain ${displayTuples(elements)}",
         key = LastResponseHeadersKey,
@@ -72,8 +77,7 @@ object HttpAssertions {
 
     override def is(expected: A): AssertStep[JValue] = {
       if (whiteList && ignoredKeys.nonEmpty)
-        //TODO
-        throw new RuntimeException("cant have both yadayada")
+        throw InvalidIgnoringConfigError
       else {
         val baseTitle = if (jsonPath.isRoot) s"response body is '$expected'" else s"response body's field '${jsonPath.pretty}' is '$expected'"
         from_session_step(
@@ -97,6 +101,8 @@ object HttpAssertions {
         )
       }
     }
+
+    def asArray = BodyArrayAssertion[A](jsonPath, ordered = false, ignoredKeys, resolver)
   }
 
   case class BodyArrayAssertion[A](jsonPath: JsonPath, ordered: Boolean, private val ignoredKeys: Seq[JsonPath], resolver: Resolver) extends AssertionStep[A, Iterable[JValue]] {

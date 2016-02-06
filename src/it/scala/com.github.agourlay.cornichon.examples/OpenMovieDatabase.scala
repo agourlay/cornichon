@@ -50,7 +50,7 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert headers.contains("Server" -> "cloudflare-nginx")
+        And assert headers.contain("Server" -> "cloudflare-nginx")
 
       }
 
@@ -167,7 +167,7 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
-        And assert bodyArray.path("Episodes").sizeIs(10)
+        And assert body.path("Episodes").asArray.sizeIs(10)
 
         And assert body.path(root.Episodes(0)).is(
           """
@@ -182,7 +182,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
         And assert body.path(root.Episodes(0).Released).is("2011-04-17")
 
-        And assert bodyArray.path(root.Episodes).contains("""
+        And assert body.path(root.Episodes).asArray.contains("""
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",

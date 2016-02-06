@@ -206,7 +206,7 @@ class CornichonExamplesSpec extends CornichonFeature {
             }
             """).withParams("sessionId" → "<session-id>").withHeaders("Accept-Encoding" → "gzip")
 
-          Then assert headers.contains("Content-Encoding" → "gzip")
+          Then assert headers.contain("Content-Encoding" → "gzip")
 
           Then assert body.path(root.city).is("Pankow")
         }
@@ -241,7 +241,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I get("/superheroes").withParams("sessionId" → "<session-id>")
 
-        Then assert bodyArray.ignoring(root.publisher).is(
+        Then assert body.asArray.ignoring(root.publisher).is(
           """
           [{
             "name": "Batman",
@@ -275,7 +275,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           }]"""
         )
 
-        Then assert bodyArray.ignoring(root.publisher).is(
+        Then assert body.asArray.ignoring(root.publisher).is(
           """
           |      name      |    realName    |     city      |  hasSuperpowers |
           |    "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
@@ -286,7 +286,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         """
         )
 
-        Then assert bodyArray.ignoring(root.hasSuperpowers, root.publisher).is(
+        Then assert body.asArray.ignoring(root.hasSuperpowers, root.publisher).is(
           """
           [{
             "name": "Superman",
@@ -315,9 +315,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           }]"""
         )
 
-        Then assert bodyArray.sizeIs(5)
+        Then assert body.asArray.sizeIs(5)
 
-        And assert bodyArray.contains(
+        And assert body.asArray.contains(
           """
           {
             "name": "IronMan",
@@ -339,9 +339,9 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         And I get("/superheroes").withParams("sessionId" → "<session-id>")
 
-        Then assert bodyArray.sizeIs(4)
+        Then assert body.asArray.sizeIs(4)
 
-        And assert_not bodyArray.contains(
+        And assert_not body.asArray.contains(
           """
           {
             "name": "IronMan",
@@ -417,7 +417,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        Then assert headers.contains("Server" → "akka-http/2.4.2-RC2")
+        Then assert headers.contain("Server" → "akka-http/2.4.2-RC2")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
@@ -511,9 +511,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           "justName" → "true"
         )
 
-        Then assert bodyArray.sizeIs(5)
+        Then assert body.asArray.sizeIs(5)
 
-        Then assert bodyArray.is(
+        Then assert body.asArray.is(
           """
               |   eventType      |      data      |
               | "superhero name" |    "Batman"    |
@@ -550,7 +550,8 @@ class CornichonExamplesSpec extends CornichonFeature {
 
   // List of Steps to be executed after each scenario
   beforeEachScenario(
-    post("/session", ""), save_body_path(root → "session-id")
+    post("/session", ""),
+    save_body_path(root → "session-id")
   )
 
   override def registerExtractors = Map(

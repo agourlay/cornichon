@@ -7,6 +7,7 @@ import com.github.agourlay.cornichon.core.{ Session, Resolver }
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 import org.scalatest.{ BeforeAndAfterAll, WordSpec, Matchers }
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
@@ -17,8 +18,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
   val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor())
 
   override def afterAll() = {
-    client.shutdown()
-    system.shutdown()
+    client.shutdown().map { _ ⇒ system.terminate() }
   }
 
   "HttpService" must {

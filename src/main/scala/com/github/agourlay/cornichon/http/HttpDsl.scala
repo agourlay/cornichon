@@ -50,8 +50,6 @@ trait HttpDsl extends Dsl {
 
   def body[A] = BodyAssertion[A](root, Seq.empty, whiteList = false, resolver)
 
-  def bodyArray[A] = BodyArrayAssertion[A](root, ordered = false, Seq.empty, resolver)
-
   def save_body_key(args: (String, String)*) = {
     val inputs = args.map {
       case (key, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ (parseJson(s) \ key).values.toString, t)

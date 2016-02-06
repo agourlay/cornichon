@@ -104,7 +104,5 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
         left(ResponseError(e, httpResponse))
     }
 
-  def shutdown() = {
-    Http().shutdownAllConnectionPools()
-  }
+  def shutdown() = Http().shutdownAllConnectionPools()
 }
