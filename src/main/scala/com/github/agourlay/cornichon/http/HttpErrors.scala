@@ -19,6 +19,10 @@ case class SseError(e: Throwable) extends HttpError {
   val msg = s"expected SSE connection but got ${CornichonError.genStacktrace(e)}"
 }
 
+case class WsUpgradeError(status: Int) extends HttpError {
+  val msg = s"Websocket upgrade error - status received '$status'"
+}
+
 case class TimeoutError(msg: String) extends HttpError
 
 case class StatusNonExpected(expected: StatusCode, response: CornichonHttpResponse) extends HttpError {

@@ -506,7 +506,7 @@ class CornichonExamplesSpec extends CornichonFeature {
       Scenario("demonstrate streaming support") {
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I sse("/stream/superheroes", takeWithin = 3 second).withParams(
+        When I sse("/sseStream/superheroes", takeWithin = 3 second).withParams(
           "sessionId" → "<session-id>",
           "justName" → "true"
         )

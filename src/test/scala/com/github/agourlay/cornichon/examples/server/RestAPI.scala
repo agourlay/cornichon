@@ -140,7 +140,7 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
             }
           }
       } ~
-      pathPrefix("stream") {
+      pathPrefix("sseStream") {
         path("superheroes") {
           get {
             parameters('justName ? false) { justName: Boolean ⇒
