@@ -85,7 +85,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       LastResponseHeadersKey → response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(",")
     ))
 
-  // TODO accumulate errors
+
   def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
     def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
       if (headers.isEmpty) right(acc)

@@ -524,9 +524,6 @@ class CornichonExamplesSpec extends CornichonFeature {
             """
         )
 
-        // TODO
-        //When I GET_WS("/stream/superheroes", takeWithin = 1 second, params = "justName" → "true")
-
         And I show_last_status
       }
     }

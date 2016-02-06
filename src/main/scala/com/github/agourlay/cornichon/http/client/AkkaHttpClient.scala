@@ -77,8 +77,8 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
             .runFold(Vector.empty[ServerSentEvent])(_ :+ _)
             .map { events ⇒
               CornichonHttpResponse(
-                status = StatusCodes.OK, //TODO get real status code?
-                headers = collection.immutable.Seq.empty[HttpHeader], //TODO get real headers?
+                status = StatusCodes.OK,
+                headers = collection.immutable.Seq.empty[HttpHeader],
                 body = compact(render(JArray(events.map(Extraction.decompose(_)).toList)))
               )
             }
