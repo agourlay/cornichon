@@ -167,7 +167,7 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
-        And assert body.path("Episodes").asArray.sizeIs(10)
+        And assert body.path("Episodes").asArray.hasSize(10)
 
         And assert body.path(root.Episodes(0)).is(
           """

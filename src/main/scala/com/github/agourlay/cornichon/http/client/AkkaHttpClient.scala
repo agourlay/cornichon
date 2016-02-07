@@ -114,7 +114,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     Thread.sleep(takeWithin.toMillis)
     responses.value.fold(throw TimeoutError("Websocket connection did not complete in time")) {
       case Failure(e) ⇒ throw e
-      case Success(s) ⇒ s.map{_ =>
+      case Success(s) ⇒ s.map { _ ⇒
         CornichonHttpResponse(
           status = StatusCodes.OK,
           headers = collection.immutable.Seq.empty[HttpHeader],

@@ -315,7 +315,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           }]"""
         )
 
-        Then assert body.asArray.sizeIs(5)
+        Then assert body.asArray.hasSize(5)
 
         And assert body.asArray.contains(
           """
@@ -339,7 +339,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         And I get("/superheroes").withParams("sessionId" → "<session-id>")
 
-        Then assert body.asArray.sizeIs(4)
+        Then assert body.asArray.hasSize(4)
 
         And assert_not body.asArray.contains(
           """
@@ -511,7 +511,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           "justName" → "true"
         )
 
-        Then assert body.asArray.sizeIs(5)
+        Then assert body.asArray.hasSize(5)
 
         Then assert body.asArray.is(
           """

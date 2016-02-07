@@ -44,7 +44,7 @@ object HttpAssertions {
       mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",")
     )
 
-    def sizeIs(expected: Int) = from_session_step(
+    def hasSize(expected: Int) = from_session_step(
       title = s"headers size is '$expected'",
       key = LastResponseHeadersKey,
       expected = s ⇒ expected,
@@ -113,7 +113,7 @@ object HttpAssertions {
 
     def ignoring(ignoring: JsonPath*): BodyArrayAssertion[A] = copy(ignoredKeys = ignoring)
 
-    def sizeIs(size: Int): AssertStep[Int] = {
+    def hasSize(size: Int): AssertStep[Int] = {
       val title = if (jsonPath.isRoot) s"response body array size is '$size'" else s"response body's array '${jsonPath.pretty}' size is '$size'"
       from_session_detail_step(
         title = title,
