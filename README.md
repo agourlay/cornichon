@@ -59,7 +59,7 @@ class ReadmeExample extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
    
-        And assert body.path("Episodes").asArray.hasize(10)
+        And assert body.path("Episodes").asArray.hasSize(10)
    
         And assert body.path("Episodes[0]").is(
           """
@@ -213,7 +213,7 @@ body.whiteListing.is(
   """)
 ```
 
-Ignored keys are JsonPaths, two formats are currently supported:
+Ignored keys and extractors are JsonPaths, two formats are currently supported:
 
 - Typed based root.a.b.c(int).d
 - String based "a.b.c[int].d" (implicit conversion to the Typed style)
@@ -318,7 +318,7 @@ Repeat(3) {
 ```scala
 Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
 
-    When I GET("http://superhero.io/random")
+    When I get("http://superhero.io/random")
 
     Then assert body.ignoring("hasSuperpowers", "publisher").is(
       """
@@ -406,7 +406,7 @@ The engine will try its best to provide a meaningful error message, if a specifi
  DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ String)
 ```
 
-The engine will feed the actual reasult to the ```details``` function.
+The engine will feed the actual result to the ```details``` function.
 
 In practice the simplest runnable statement in the DSL is
 
@@ -427,15 +427,15 @@ The ```session``` is used to store the result of a computation in order to reuse
 When I EffectStep(
   title = "run crazy computation",
   action = s => {
-    val res = crazy-computation()
-    s.add("result", res.infos)
+    val pi = piComputation()
+    s.add("result", res)
   })
 
 Then assert AssertStep(
   title = "check computation infos",
   action = s => {
-    val resInfos = s.get("result")
-    StepAssertion(resInfos, "Everything is fine")
+    val pi = s.get("result")
+    StepAssertion(pi, 3.14)
   })
 ```
 
@@ -507,7 +507,7 @@ It is also possible to inject random values inside placeholders using:
 - ```<timestamp>``` for the current timestamp
 
 ```scala
-POST("http://url.io/somethingWithAnId", payload = """
+post("http://url.io/somethingWithAnId", payload = """
   {
     "id" : "<random-uuid>"
   }
@@ -561,8 +561,6 @@ and then only provide the missing part in the HTTP step definition
 
 ```scala
  When I get("/superheroes/Batman")
- 
- When I post("/superheroes", payload ="")
  
  When I delete("/superheroes/GreenLantern")
 
