@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.core
 
+import scala.concurrent.duration.Duration
 import scala.language.existentials
+import scala.Console._
 
 sealed trait StepsReport {
   val logs: Vector[LogInstruction]
@@ -38,8 +40,8 @@ case class SuccessScenarioReport(scenarioName: String, successSteps: Vector[Stri
 
 object SuccessScenarioReport {
   def apply(scenario: Scenario, stepsRun: SuccessRunSteps): SuccessScenarioReport = {
-    val successSteps = scenario.steps.collect { case RunnableStep(title, _, _, _) ⇒ title }
-    SuccessScenarioReport(scenario.name, successSteps, stepsRun.logs, stepsRun.session)
+    val successStepsTitle = scenario.steps.filterNot(_.isInstanceOf[WrapperStep]).map(_.title)
+    SuccessScenarioReport(scenario.name, successStepsTitle, stepsRun.logs, stepsRun.session)
   }
 }
 
@@ -63,7 +65,7 @@ case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, su
 
 object FailedScenarioReport {
   def apply(scenario: Scenario, stepsRun: FailedRunSteps): FailedScenarioReport = {
-    val successSteps = scenario.steps.takeWhile(_ != stepsRun.failedStep.step).collect { case RunnableStep(title, _, _, _) ⇒ title }
+    val successSteps = scenario.steps.takeWhile(_ != stepsRun.failedStep.step).filterNot(_.isInstanceOf[WrapperStep]).map(_.title)
     FailedScenarioReport(scenario.name, stepsRun.failedStep, successSteps, stepsRun.notExecutedStep, stepsRun.logs, stepsRun.session)
   }
 }
@@ -73,7 +75,22 @@ case class FailedStep(step: Step, error: CornichonError)
 sealed trait LogInstruction {
   val message: String
   val margin: Int
+  val color: String
+  val duration: Option[Duration]
 }
 
-case class DefaultLogInstruction(message: String, margin: Int) extends LogInstruction
-case class ColoredLogInstruction(message: String, ansiColor: String, margin: Int) extends LogInstruction
+case class DefaultLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = WHITE
+}
+
+case class SuccessLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = GREEN
+}
+
+case class FailureLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = RED
+}
+
+case class InfoLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val color = CYAN
+}

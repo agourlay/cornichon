@@ -18,39 +18,30 @@ case class DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ Strin
   val isSuccess = expected == result
 }
 
-object StepAssertion {
-  def alwaysOK = SimpleStepAssertion(true, true)
-  def neverOK = SimpleStepAssertion(true, false)
-}
-
 sealed trait Step {
   val title: String
 }
 
-case class RunnableStep[A](
-    title: String,
-    action: Session ⇒ (Session, StepAssertion[A]),
-    negate: Boolean = false,
-    show: Boolean = true
-) extends Step {
-  def resultSession(s: Session) = action(s)._1
-}
+case class EffectStep(
+  title: String,
+  effect: Session ⇒ Session,
+  show: Boolean = true
+) extends Step
 
-object RunnableStep {
-  def effectful(title: String, effect: Session ⇒ Session, negate: Boolean = false, show: Boolean = true) =
-    RunnableStep[Boolean](
-      title = title,
-      action = s ⇒ (effect(s), StepAssertion.alwaysOK),
-      negate = negate,
-      show = show
-    )
-}
+case class AssertStep[A](
+  title: String,
+  action: Session ⇒ StepAssertion[A],
+  negate: Boolean = false,
+  show: Boolean = true
+) extends Step
 
 case class DebugStep(message: Session ⇒ String) extends Step {
   val title = s"Debug step with message `$message`"
 }
 
-sealed trait EventuallyStep extends Step
+trait WrapperStep
+
+sealed trait EventuallyStep extends Step with WrapperStep
 
 case class EventuallyStart(conf: EventuallyConf) extends EventuallyStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
@@ -72,7 +63,7 @@ object EventuallyConf {
   def empty = EventuallyConf(Duration.Zero, Duration.Zero)
 }
 
-sealed trait ConcurrentStep extends Step
+sealed trait ConcurrentStep extends Step with WrapperStep
 
 case class ConcurrentStart(factor: Int, maxTime: Duration) extends ConcurrentStep {
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"

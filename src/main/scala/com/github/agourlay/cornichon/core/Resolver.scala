@@ -43,7 +43,6 @@ class Resolver(extractors: Map[String, Mapper]) {
       }
   }
 
-  // TODO should accumulate errors
   def fillPlaceholders(input: String)(session: Session) = {
     def loop(placeholders: List[Placeholder], acc: String): Xor[CornichonError, String] =
       placeholders.headOption.fold[Xor[CornichonError, String]](right(acc)) { ph ⇒
@@ -59,7 +58,6 @@ class Resolver(extractors: Map[String, Mapper]) {
   def fillPlaceholdersUnsafe(input: String)(session: Session): String =
     fillPlaceholders(input)(session).fold(e ⇒ throw e, identity)
 
-  // TODO accumulate errors
   def tuplesResolver(params: Seq[(String, String)], session: Session) = {
     def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Xor[CornichonError, Seq[(String, String)]] =
       params.headOption.fold[Xor[CornichonError, Seq[(String, String)]]](right(acc)) {

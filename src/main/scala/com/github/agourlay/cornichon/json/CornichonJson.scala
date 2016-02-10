@@ -89,7 +89,9 @@ trait CornichonJson {
 
 object CornichonJson extends CornichonJson {
 
-  case class GqlString(input: String) extends AnyVal
+  case class GqlString(input: String) {
+    override val toString = s"GraphQl JSON $input"
+  }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {
     def gql(args: Any*): GqlString = {

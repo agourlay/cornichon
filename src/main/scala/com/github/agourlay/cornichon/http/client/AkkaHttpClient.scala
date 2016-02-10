@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.http.client
 
 import java.util.concurrent.TimeoutException
 
+import akka.Done
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
@@ -9,9 +10,10 @@ import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.ws.{ TextMessage, Message, WebSocketRequest }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{ Flow, Sink, Keep, Source }
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonLogger
@@ -21,6 +23,7 @@ import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
@@ -74,8 +77,8 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
             .runFold(Vector.empty[ServerSentEvent])(_ :+ _)
             .map { events ⇒
               CornichonHttpResponse(
-                status = StatusCodes.OK, //TODO get real status code?
-                headers = collection.immutable.Seq.empty[HttpHeader], //TODO get real headers?
+                status = StatusCodes.OK,
+                headers = collection.immutable.Seq.empty[HttpHeader],
                 body = compact(render(JArray(events.map(Extraction.decompose(_)).toList)))
               )
             }
@@ -85,9 +88,41 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     waitForRequestFuture(request, f, takeWithin)
   }
 
-  //https://github.com/akka/akka/pull/19543
-  // wait for Http().webSocketClientFlow
-  def getWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = ???
+  // FIXME barbaric implementation
+  def getWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
+    val uri = uriBuilder(url, params)
+    val req = WebSocketRequest(uri).copy(extraHeaders = collection.immutable.Seq(headers: _*))
+
+    val received = ListBuffer.empty[String]
+
+    val incoming: Sink[Message, Future[Done]] =
+      Sink.foreach {
+        case message: TextMessage.Strict ⇒
+          received += message.text
+        case _ ⇒ ()
+      }
+
+    val flow = Flow.fromSinkAndSourceMat(incoming, Source.empty[Message])(Keep.left)
+
+    val (upgradeResponse, closed) = Http().singleWebSocketRequest(req, flow)
+
+    val responses = upgradeResponse.map { upgrade ⇒
+      if (upgrade.response.status == StatusCodes.OK) right(StatusCodes.OK)
+      else left(WsUpgradeError(upgrade.response.status.intValue()))
+    }
+
+    Thread.sleep(takeWithin.toMillis)
+    responses.value.fold(throw TimeoutError("Websocket connection did not complete in time")) {
+      case Failure(e) ⇒ throw e
+      case Success(s) ⇒ s.map { _ ⇒
+        CornichonHttpResponse(
+          status = StatusCodes.OK,
+          headers = collection.immutable.Seq.empty[HttpHeader],
+          body = compact(render(JArray(received.map(Extraction.decompose(_)).toList)))
+        )
+      }
+    }
+  }
 
   private def expectSSE(httpResponse: HttpResponse): Future[Xor[HttpError, Source[ServerSentEvent, Any]]] =
     Unmarshal(Gzip.decode(httpResponse)).to[Source[ServerSentEvent, Any]].map { sse ⇒
@@ -104,7 +139,5 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
         left(ResponseError(e, httpResponse))
     }
 
-  def shutdown() = {
-    Http().shutdownAllConnectionPools()
-  }
+  def shutdown() = Http().shutdownAllConnectionPools()
 }

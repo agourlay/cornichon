@@ -32,18 +32,19 @@ class ReadmeExample extends CornichonFeature {
 
      Scenario("list GOT season 1 episodes"){
      
-        When I GET("http://www.omdbapi.com", params = "t" -> "Game of Thrones", "Season" -> "1")
+        When I get("http://www.omdbapi.com").witParams("t" -> "Game of Thrones", "Season" -> "1")
    
-        Then assert status(200)
+        Then assert status.is(200)
    
-        And assert body("""
+        And assert body.ignoring("Episodes", "Response").is(
+          """
           {
             "Title": "Game of Thrones",
             "Season": "1"
           }
-          """, ignoring = "Episodes", "Response")
+          """)
    
-        And assert body(root.Episodes,
+        And assert body.path("Episodes").is(
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
@@ -58,9 +59,9 @@ class ReadmeExample extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
    
-        And assert body_array_size("Episodes", 10)
+        And assert body.path("Episodes").asArray.hasize(10)
    
-        And assert body(root.Episodes(0),
+        And assert body.path("Episodes[0]").is(
           """
           {
             "Title": "Winter Is Coming",
@@ -71,9 +72,9 @@ class ReadmeExample extends CornichonFeature {
           }
           """)
    
-        And assert body(root.Episodes(0).Released, "2011-04-17")
+        And assert body.path("Episodes[0].Released").is("2011-04-17")
    
-        And assert body_array_contains(root.Episodes, 
+        And assert body.path("Episodes").asArray.contains(
           """
           {
             "Title": "Winter Is Coming",
@@ -110,9 +111,9 @@ class CornichonExamplesSpec extends CornichonFeature {
   
       Scenario("Google is up and running"){
   
-          When I GET("http://google.com")
+          When I get("http://google.com")
   
-          Then assert status(302)
+          Then assert status.is(302)
       }
   }
 }
@@ -145,46 +146,42 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 
 - GET and DELETE share the same signature
 
- (url, optional params String tuples*)(optional tuple headers Seq)
-
 ```scala
-GET("http://superhero.io/daredevil")
+get("http://superhero.io/daredevil")
 
-GET("http://superhero.io/daredevil", params = "firstParam" → "value1", "secondParam" → "value2")
+get("http://superhero.io/daredevil").withParams("firstParam" → "value1", "secondParam" → "value2")
 
-DELETE("http://superhero.io/daredevil")(headers = Seq(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")))
+delete("http://superhero.io/daredevil").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
 ```
 
-- POST and UPDATE share the same signature
-
- (url, payload as String, optional params String tuples*)(optional tuple headers Seq)
+- POST and PUT share the same signature
 
 ```scala
-POST("http://superhero.io/batman", payload = "JSON description of Batman goes here")
+post("http://superhero.io/batman", "JSON description of Batman goes here")
 
-PUT("http://superhero.io/batman", payload = "JSON description of Batman goes here", params = "firstParam" → "value1", "secondParam" → "value2")
+put("http://superhero.io/batman", "JSON description of Batman goes here").witParams("firstParam" → "value1", "secondParam" → "value2")
 
-POST("http://superhero.io/batman", payload = "JSON description of Batman goes here")(headers = Seq(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")))
+post("http://superhero.io/batman", "JSON description of Batman goes here").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
 ```
 
 - assert response status
 
 ```scala
-status(200)
+status.is(200)
 
 ```
 
 - assert response headers
 
 ```scala
-headers_contain("cache-control" → "no-cache")
+headers.contain("cache-control" → "no-cache")
 
 ```
 
 - assert response body comes with different flavours (ignoringKeys, whiteList)
 
 ```scala
-body(
+body.is(
   """
   {
     "name": "Batman",
@@ -199,15 +196,16 @@ body(
   }
   """)
 
-body(
+body.ignoring("city", root.hasSuperpowers, "publisher").is(
   """
   {
     "name": "Batman",
     "realName": "Bruce Wayne"
   }
-  """, ignoring = "city", root.hasSuperpowers, "publisher")
+  """)
 
-body(whiteList = true, expected = """
+body.whiteListing.is(
+  """
   {
     "name": "Batman",
     "realName": "Bruce Wayne"
@@ -217,26 +215,26 @@ body(whiteList = true, expected = """
 
 Ignored keys are JsonPaths, two formats are currently supported:
 
-- String based "a.b.c[int].d"
 - Typed based root.a.b.c(int).d
+- String based "a.b.c[int].d" (implicit conversion to the Typed style)
 
 JsonPath can also be used to only assert part of the response
   
 ```scala
-body(root.city, "Gotham city")
+body.path(root.city).is("Gotham city")
 
-body(root.hasSuperpowers, false)
+body.path(root.hasSuperpowers).is(false)
 
-body(root.publisher.name, "DC")
+body.path(root.publisher.name).is("DC")
 
-body_(root.publisher.foundationYear, 1934)
+body.path(root.publisher.foundationYear).is(1934)
 
 ```
 
 If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
-body(ordered = true,
+body.asArray.inOrder.ignoring("city", "hasSuperpowers", "publisher").is(
   """
   [{
     "name": "Batman",
@@ -246,29 +244,19 @@ body(ordered = true,
     "name": "Superman",
     "realName": "Clark Kent"
   }]
-  """, ignoring = "city", "hasSuperpowers", "publisher")
-
-body(ordered = false,
-  """
-  [{
-    "name": "Superman",
-    "realName": "Clark Kent"
-  },
-  {
-    "name": "Batman",
-    "realName": "Bruce Wayne"
-  }]
-  """, ignoring = "city", "hasSuperpowers", "publisher")
+  """)
   
-body(ordered = true, expected = """
+body.asArray.inOrder.ignoring("publisher").is(
+ """
   |    name     |    realName    |     city      |  hasSuperpowers |
   | "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
   | "Superman"  | "Clark Kent"   | "Metropolis"  |      true       |
-""", ignoring = "publisher")  
+ """)  
   
-body_array_size(2)
+body.asArray.hasSize(2)
   
-body_array_contains("""
+body.asArray.contains(
+  """
   {
     "name": "Batman",
     "realName": "Bruce Wayne",
@@ -319,9 +307,9 @@ session_contains("favorite-superhero" → "Batman")
 
 ```scala
 Repeat(3) {
-  When I GET("http://superhero.io/batman")
+  When I get("http://superhero.io/batman")
 
-  Then assert status(200)
+  Then assert status.is(200)
 }
 ```
 
@@ -332,14 +320,14 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
 
     When I GET("http://superhero.io/random")
 
-    Then assert body(
+    Then assert body.ignoring("hasSuperpowers", "publisher").is(
       """
       {
         "name": "Batman",
         "realName": "Bruce Wayne",
         "city": "Gotham city"
       }
-      """, ignoring = "hasSuperpowers", "publisher"
+      """
     )
   }
 ```
@@ -349,9 +337,9 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
 ```scala
 Concurrently(factor = 3, maxTime = 10 seconds) {
 
-  When I GET("http://superhero.io/batman")
+  When I get("http://superhero.io/batman")
 
-  Then assert status(200)
+  Then assert status.is(200)
 }
 
 ```
@@ -360,8 +348,8 @@ Concurrently(factor = 3, maxTime = 10 seconds) {
 
 ```scala
 WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
-  When I GET("http://superhero.io/secured")
-  When I GET("http://superhero.io/secured")
+  When I get("http://superhero.io/secured")
+  When I get("http://superhero.io/secured")
 }
 
 ```
@@ -371,11 +359,11 @@ WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
  SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
 
 ```scala
-When I GET_SSE(s"http://superhero.io/stream", takeWithin = 1.seconds, params = "justName" → "true")
+When I sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
 
-Then assert response_array_size(2)
+Then assert body.asArray.hasSize(2)
 
-Then assert body("""
+Then assert body.is("""
   |   eventType      |    data     |
   | "superhero name" |  "Batman"   |
   | "superhero name" | "Superman"  |
@@ -387,34 +375,26 @@ Then assert body("""
 all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
 
 ```scala
-And assert body(
+And assert body.ignoring(root.city, root.publisher).is(
   gql"""
   {
     name: "Batman",
     realName: "Bruce Wayne",
     hasSuperpowers: false
   }
-  """, ignoring = root.city, root.publisher)
+  """)
 ```
 
 This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
 
-Those descriptions might be already outdated, in case of doubt always refer to these [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
+Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
 ## Custom steps
 
-A ```step``` is an abstraction describing an action which is a function turning a ```Session``` into a result, a new ```Session``` and an expected result value.
+There are two kind of ```step``` :
+- EffectStep ```Session => Session``` : It runs a side effect and populates the ```Session``` with values.
+- AssertStep ```Sesssion => StepAssertion[A]``` : Describes the expectation of the test.
 
-In terms of Scala data type it is
-
-```scala
-case class RunnableStep[A](
-  title: String,
-  action: Session ⇒ (Session, StepAssertion[A])
-)
-```
-
-A ```step``` action can access and return a modified ```session``` object and a ```StepAssertion```.
  
 A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
 
@@ -431,35 +411,35 @@ The engine will feed the actual reasult to the ```details``` function.
 In practice the simplest runnable statement in the DSL is
 
 ```scala
-When I RunnableStep("do nothing", s => (s, StepAssertion(true, true)))
+When I AssertStep("do nothing", s => StepAssertion(true, true))
 ```
 
 Let's try to assert the result of a computation
 
 ```scala
-When I RunnableStep("calculate", s => (s, StepAssertion(2 + 2, 4)))
+When I AssertStep("calculate", s => StepAssertion(2 + 2, 4))
 ```
 
 The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
 
 
 ```scala
-When I RunnableStep(
+When I EffectStep(
   title = "run crazy computation",
   action = s => {
     val res = crazy-computation()
-    (s.add("result", res.infos),StepAssertion(res.isSuccess, true))
+    s.add("result", res.infos)
   })
 
-Then assert RunnableStep(
+Then assert AssertStep(
   title = "check computation infos",
   action = s => {
     val resInfos = s.get("result")
-    (s, StepAssertion(resInfos, "Everything is fine"))
+    StepAssertion(resInfos, "Everything is fine")
   })
 ```
 
-This is extremely low level and you not should write your steps like that directly inside the DSL.
+This is rather low level and you not should write your steps like that directly inside the DSL.
 
 Fortunately a bunch of built-in steps and primitive building blocs are already available.
 
@@ -488,9 +468,9 @@ Given I save("favorite-superhero" → "Batman")
 
 Then assert session_contains("favorite-superhero" → "Batman")
 
-When I GET("http://localhost:8080/superheroes/<favorite-superhero>")
+When I get("http://localhost:8080/superheroes/<favorite-superhero>")
 
-Then assert body(
+Then assert body.is(
   """
   {
     "name": "<favorite-superhero>",
@@ -505,7 +485,7 @@ And I save_body_key("city" -> "batman-city")
 
 Then assert session_contains("batman-city" → "Gotham city")
 
-Then assert body(
+Then assert body.is(
   """
   {
     "name": "<favorite-superhero>",
@@ -560,12 +540,12 @@ beforeFeature { // do side effect here }
 afterFeature {  // do side effect here }
 ```
 
-Taking ```Seq[Step]``` expression.
+Taking ```Step*``` expression.
 
 ```scala
-beforeEachScenario { // feed Seq[Step] }
+beforeEachScenario ( // feed Step* )
 
-afterEachScenario { // feed Seq[Step] }
+afterEachScenario ( // feed Step* )
 ```
 
 ### Base URL
@@ -580,11 +560,11 @@ override lazy val baseUrl = s"http://localhost:8080"
 and then only provide the missing part in the HTTP step definition
 
 ```scala
- When I GET("/superheroes/Batman")
+ When I get("/superheroes/Batman")
  
- When I POST("/superheroes", payload ="")
+ When I post("/superheroes", payload ="")
  
- When I DELETE("/superheroes/GreenLantern")
+ When I delete("/superheroes/GreenLantern")
 
 ```
 

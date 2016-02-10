@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import de.heikoseeberger.akkasse.ServerSentEvent
 import spray.json.DefaultJsonProtocol
 
-import scala.collection.mutable
+import collection.mutable.{ HashMap, MultiMap, Set }
 import scala.concurrent._
 import scala.util.Random
 
@@ -14,52 +14,59 @@ case class SuperHero(name: String, realName: String, city: String, hasSuperpower
 
 class TestData(implicit executionContext: ExecutionContext) {
 
-  def reset() = Future {
-    publishers.clear()
-    publishers.++=(initialPublishers)
-    superHeroes.clear()
-    superHeroes.++=(initialSuperheroes)
+  val publishersBySession = new HashMap[String, Set[Publisher]] with MultiMap[String, Publisher]
+  val superheroesBySession = new HashMap[String, Set[SuperHero]] with MultiMap[String, SuperHero]
+
+  def createSession(): Future[String] = Future {
+    val newSessionId = Random.nextString(6)
+    initialPublishers.foreach(publishersBySession.addBinding(newSessionId, _))
+    initialSuperheroes.foreach(superheroesBySession.addBinding(newSessionId, _))
+    newSessionId
   }
 
-  def publisherByName(name: String) = Future {
-    publishers.find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
+  def publishersBySessionUnsafe(sessionId: String) = publishersBySession.getOrElse(sessionId, throw new SessionNotFound(sessionId))
+
+  def superheroesBySessionUnsafe(sessionId: String) = superheroesBySession.getOrElse(sessionId, throw new SessionNotFound(sessionId))
+
+  def publisherByName(sessionId: String, name: String) = Future {
+    publishersBySessionUnsafe(sessionId).find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
   }
 
-  def addPublisher(p: Publisher) = Future {
-    if (publishers.exists(_.name == p.name)) throw new PublisherAlreadyExists(p.name)
+  def addPublisher(sessionId: String, p: Publisher) = Future {
+    if (publishersBySessionUnsafe(sessionId).exists(_.name == p.name)) throw new PublisherAlreadyExists(p.name)
     else {
-      publishers.+=(p)
+      publishersBySession.addBinding(sessionId, p)
       p
     }
   }
 
-  def updateSuperhero(s: SuperHero) =
+  def updateSuperhero(sessionId: String, s: SuperHero) =
     for {
-      _ ← superheroByName(s.name)
-      _ ← publisherByName(s.publisher.name)
-      _ ← deleteSuperhero(s.name)
-      updated ← addSuperhero(s)
+      _ ← superheroByName(sessionId, s.name)
+      _ ← publisherByName(sessionId, s.publisher.name)
+      _ ← deleteSuperhero(sessionId, s.name)
+      updated ← addSuperhero(sessionId, s)
     } yield updated
 
-  def addSuperhero(s: SuperHero) =
-    publisherByName(s.publisher.name).map { _ ⇒
-      if (superHeroes.exists(_.name == s.name)) throw new SuperHeroAlreadyExists(s.name)
+  def addSuperhero(sessionId: String, s: SuperHero) =
+    publisherByName(sessionId, s.publisher.name).map { _ ⇒
+      if (superheroesBySessionUnsafe(sessionId).exists(_.name == s.name)) throw new SuperHeroAlreadyExists(s.name)
       else {
-        superHeroes.+=(s)
+        superheroesBySession.addBinding(sessionId, s)
         s
       }
     }
 
-  def deleteSuperhero(name: String) =
-    superheroByName(name).map { sh ⇒
-      superHeroes.-=(sh)
+  def deleteSuperhero(sessionId: String, name: String) =
+    superheroByName(sessionId, name).map { sh ⇒
+      superheroesBySession.removeBinding(sessionId, sh)
       sh
     }
 
-  def superheroByName(name: String, protectIdentity: Boolean = false) = Future {
+  def superheroByName(sessionId: String, name: String, protectIdentity: Boolean = false) = Future {
     val sh = {
-      if (name == "random") Some(randomSuperhero)
-      else superHeroes.find(_.name == name)
+      if (name == "random") Some(randomSuperhero(sessionId))
+      else superheroesBySessionUnsafe(sessionId).find(_.name == name)
     }
     sh.fold(throw new SuperHeroNotFound(name)) { c ⇒
       if (protectIdentity) c.copy(realName = "XXXXX")
@@ -67,35 +74,32 @@ class TestData(implicit executionContext: ExecutionContext) {
     }
   }
 
-  def allPublishers = Future { publishers.toSeq }
+  def allPublishers(session: String) = Future { publishersBySession(session).toSeq }
 
-  def allSuperheroes = Future { superHeroes.toSeq }
+  def allSuperheroes(session: String) = Future { superheroesBySession(session).toSeq }
 
-  def randomSuperhero: SuperHero =
-    Random.shuffle(superHeroes).head
+  def randomSuperhero(session: String): SuperHero =
+    Random.shuffle(superheroesBySession(session).toSeq).head
 
   private val initialPublishers = Seq(
     Publisher("DC", 1934, "Burbank, California"),
     Publisher("Marvel", 1939, "135 W. 50th Street, New York City")
   )
 
-  val publishers = mutable.ListBuffer.empty[Publisher].++=(initialPublishers)
-
   private val initialSuperheroes = Seq(
-    SuperHero("Batman", "Bruce Wayne", "Gotham city", hasSuperpowers = false, publishers.head),
-    SuperHero("Superman", "Clark Kent", "Metropolis", hasSuperpowers = true, publishers.head),
-    SuperHero("GreenLantern", "Hal Jordan", "Coast City", hasSuperpowers = true, publishers.head),
-    SuperHero("Spiderman", "Peter Parker", "New York", hasSuperpowers = true, publishers.tail.head),
-    SuperHero("IronMan", "Tony Stark", "New York", hasSuperpowers = false, publishers.tail.head)
+    SuperHero("Batman", "Bruce Wayne", "Gotham city", hasSuperpowers = false, initialPublishers.head),
+    SuperHero("Superman", "Clark Kent", "Metropolis", hasSuperpowers = true, initialPublishers.head),
+    SuperHero("GreenLantern", "Hal Jordan", "Coast City", hasSuperpowers = true, initialPublishers.head),
+    SuperHero("Spiderman", "Peter Parker", "New York", hasSuperpowers = true, initialPublishers.tail.head),
+    SuperHero("IronMan", "Tony Stark", "New York", hasSuperpowers = false, initialPublishers.tail.head)
   )
-
-  val superHeroes = mutable.ListBuffer.empty[SuperHero].++=(initialSuperheroes)
-
 }
 
 trait ResourceNotFound extends Exception {
   val id: String
 }
+
+case class SessionNotFound(id: String) extends ResourceNotFound
 case class PublisherNotFound(id: String) extends ResourceNotFound
 case class SuperHeroNotFound(id: String) extends ResourceNotFound
 
