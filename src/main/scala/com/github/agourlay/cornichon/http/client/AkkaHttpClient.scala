@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.http.client
 
-import java.util.concurrent.TimeoutException
-
 import akka.Done
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -12,6 +10,7 @@ import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.ws.{ TextMessage, Message, WebSocketRequest }
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.ConnectionContext
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Sink, Keep, Source }
 import cats.data.Xor
@@ -23,6 +22,11 @@ import de.heikoseeberger.akkasse.ServerSentEvent
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import java.util.concurrent.TimeoutException
+import javax.net.ssl._
+
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
@@ -31,11 +35,26 @@ import scala.util.{ Failure, Success, Try }
 class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends HttpClient with CornichonLogger {
   implicit private val ec: ExecutionContext = system.dispatcher
 
+  // Disable JDK built-in checks
+  // https://groups.google.com/forum/#!topic/akka-user/ziI1fPBtxV8
+  // hostName verification still enabled by default
+  // use "ssl-config.loose.disableHostnameVerification = true" to disable it
+  private val sslContext = {
+    val ssl = SSLContext.getInstance("SSL")
+    val byPassTrustManagers = Array[TrustManager](new X509TrustManager() {
+      override def getAcceptedIssuers: Array[X509Certificate] = Array.empty
+      override def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = ()
+      override def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = ()
+    })
+    ssl.init(null, byPassTrustManagers, new SecureRandom)
+    ConnectionContext.https(ssl)
+  }
+
   implicit private val formats = DefaultFormats
 
   private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
     val request = req.withHeaders(collection.immutable.Seq(headers: _*))
-    val f = Http().singleRequest(request).flatMap(toCornichonResponse)
+    val f = Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
     waitForRequestFuture(request, f, timeout)
   }
 
@@ -67,7 +86,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
 
   def getSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
     val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))
-    val f = Http().singleRequest(request)
+    val f = Http().singleRequest(request, sslContext)
       .flatMap(expectSSE)
       .map { sse ⇒
         sse.map { source ⇒
@@ -104,7 +123,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
 
     val flow = Flow.fromSinkAndSourceMat(incoming, Source.empty[Message])(Keep.left)
 
-    val (upgradeResponse, closed) = Http().singleWebSocketRequest(req, flow)
+    val (upgradeResponse, closed) = Http().singleWebSocketRequest(req, flow, sslContext)
 
     val responses = upgradeResponse.map { upgrade ⇒
       if (upgrade.response.status == StatusCodes.OK) right(StatusCodes.OK)
