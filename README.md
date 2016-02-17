@@ -632,3 +632,18 @@ See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest do
 The ```steps``` execution logs will only be shown if:
 - the scenario fails
 - the scenario succeeded and contains at least one ```DebugStep``` such as ```And I show_last_status```
+
+
+## SSL configuration
+
+Testing environment often have broken certificates, it is possible to disable hostname verification by adding the following configuration to your reference.conf or application.conf in src/test/resources
+
+```
+akka {
+  ssl-config{
+    loose {
+      disableHostnameVerification = true
+    }
+  }
+}
+```
