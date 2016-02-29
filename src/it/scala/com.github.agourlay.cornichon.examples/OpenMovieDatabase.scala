@@ -15,7 +15,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
         Then assert status.is(200)
 
-        And assert body.ignoring("imdbRating", "imdbVotes", "Awards").is(
+        And assert body.ignoring("imdbRating", "imdbVotes", "Awards", "Poster").is(
           """
           {
             "Title": "Game of Thrones",
@@ -30,7 +30,6 @@ class OpenMovieDatabase extends CornichonFeature {
             "Plot": "While a civil war brews between several noble families in Westeros, the children of the former rulers of the land attempt to rise up to power. Meanwhile a forgotten race, bent on destruction, return after thousands of years in the North.",
             "Language": "English",
             "Country": "USA",
-            "Poster": "http://ia.media-imdb.com/images/M/MV5BMTYwOTEzMDMzMl5BMl5BanBnXkFtZTgwNzExODIzNzE@._V1_SX300.jpg",
             "Metascore": "N/A",
             "imdbID": "tt0944947",
             "Type": "series",
