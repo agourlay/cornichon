@@ -82,15 +82,15 @@ object HttpAssertions {
         val baseTitle = if (jsonPath.isRoot) s"response body is '$expected'" else s"response body's field '${jsonPath.pretty}' is '$expected'"
         from_session_step(
           key = LastResponseBodyKey,
-          title = titleBuilder(baseTitle, ignoredKeys),
+          title = titleBuilder(baseTitle, ignoredKeys, whiteList),
           expected = s ⇒ resolveAndParse(expected, s, resolver),
           mapValue =
             (session, sessionValue) ⇒ {
               if (whiteList) {
                 val expectedJson = resolveAndParse(expected, session, resolver)
-                val sessionValueJson = parseJson(sessionValue)
+                val sessionValueJson = selectJsonPath(jsonPath, sessionValue)
                 val Diff(changed, _, deleted) = expectedJson.diff(sessionValueJson)
-                if (deleted != JNothing) throw new WhiteListError(s"White list error - '$deleted' is not defined in object '$sessionValueJson")
+                if (deleted != JNothing) throw new WhiteListError(s"White list error - '${prettyPrint(deleted)}' is not defined in object '${prettyPrint(sessionValueJson)}")
                 if (changed != JNothing) changed else expectedJson
               } else {
                 val subJson = selectJsonPath(jsonPath, sessionValue)
@@ -168,9 +168,12 @@ object HttpAssertions {
       mapValue = (session, sessionValue) ⇒ mapFct(parseArray(sessionValue))
     )
 
-  private def titleBuilder(baseTitle: String, ignoring: Seq[JsonPath]): String =
-    if (ignoring.isEmpty) baseTitle
-    else s"$baseTitle ignoring keys ${ignoring.map(v ⇒ s"'${v.pretty}'").mkString(", ")}"
+  private def titleBuilder(baseTitle: String, ignoring: Seq[JsonPath], withWhiteListing: Boolean = false): String = {
+    val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
+
+    if (ignoring.isEmpty) baseWithWhite
+    else s"$baseWithWhite ignoring keys ${ignoring.map(v ⇒ s"'${v.pretty}'").mkString(", ")}"
+  }
 
   private def resolveAndParse[A](input: A, session: Session, resolver: Resolver): JValue =
     parseJsonUnsafe {
