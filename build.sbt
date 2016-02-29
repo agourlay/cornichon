@@ -40,8 +40,8 @@ libraryDependencies ++= {
   val parboiledV = "2.1.2"
   val akkaSseV = "1.6.3"
   val scalacheckV = "1.12.5"
-  val sangriaV = "0.5.1"
-  val sangriaJsonV = "0.1.0"
+  val sangriaV = "0.5.2"
+  val sangriaJsonV = "0.2.0"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
