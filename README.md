@@ -32,7 +32,7 @@ class ReadmeExample extends CornichonFeature {
 
      Scenario("list GOT season 1 episodes"){
      
-        When I get("http://www.omdbapi.com").witParams("t" -> "Game of Thrones", "Season" -> "1")
+        When I get("http://www.omdbapi.com").withParams("t" -> "Game of Thrones", "Season" -> "1")
    
         Then assert status.is(200)
    
@@ -159,7 +159,7 @@ delete("http://superhero.io/daredevil").withHeaders(("Authorization", "Basic QWx
 ```scala
 post("http://superhero.io/batman", "JSON description of Batman goes here")
 
-put("http://superhero.io/batman", "JSON description of Batman goes here").witParams("firstParam" → "value1", "secondParam" → "value2")
+put("http://superhero.io/batman", "JSON description of Batman goes here").withParams("firstParam" → "value1", "secondParam" → "value2")
 
 post("http://superhero.io/batman", "JSON description of Batman goes here").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
 ```
