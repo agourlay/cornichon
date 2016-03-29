@@ -9,7 +9,6 @@ import com.github.agourlay.cornichon.core.JsonMapper
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonPath
 import scala.concurrent.Await
 import scala.concurrent.duration._
 

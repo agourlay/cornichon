@@ -4,7 +4,7 @@ import org.json4s._
 import org.json4s.JsonDSL._
 import org.scalatest.prop.PropertyChecks
 
-import org.scalatest.{ Ignore, Matchers, WordSpec }
+import org.scalatest.{ Matchers, WordSpec }
 
 class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with CornichonJson {
 
