@@ -1,8 +1,10 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
-import org.scalatest.{ ParallelTestExecution, WordSpecLike, BeforeAndAfterAll }
+import org.scalatest.{ BeforeAndAfterAll, ParallelTestExecution, WordSpecLike }
+
 import scala.Console._
+import scala.util.{ Failure, Success, Try }
 
 trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution with CornichonLogger {
   this: CornichonFeature ⇒
@@ -17,31 +19,42 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
     unregisterFeature()
   }
 
-  val featureDef = feature
-
-  featureDef.name should {
-
-    featureDef.scenarios.foreach { s ⇒
-      if (s.ignored)
-        s.name ignore {}
-      else
-        s.name in {
-          runScenario(s) match {
-            case SuccessScenarioReport(scenarioName, successSteps, logs, _) ⇒
-              if (s.steps.collect { case d @ DebugStep(_) ⇒ d }.nonEmpty) printLogs(logs)
-              assert(true)
-            case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs, _) ⇒
-              printLogs(logs)
-              fail(
-                s"""
-                   |${f.msg}
-                   |replay only this scenario with:
-                   |${replayCmd(featureDef.name, s.name)}
-                   |""".stripMargin
-              )
+  Try { feature } match {
+    case Failure(e) ⇒
+      "Cornichon" should {
+        "bootstrap" in {
+          val msg = e match {
+            case c: CornichonError ⇒ c.msg
+            case e: Throwable      ⇒ e.getMessage
           }
+          fail(s"exception thrown during Feature initilization: \n $msg")
         }
-    }
+      }
+    case Success(feat) ⇒
+      feat.name should {
+        feat.scenarios.foreach { s ⇒
+          if (s.ignored)
+            s.name ignore {}
+          else
+            s.name in {
+              runScenario(s) match {
+                case SuccessScenarioReport(scenarioName, successSteps, logs, _) ⇒
+                  if (s.steps.collect { case d @ DebugStep(_) ⇒ d }.nonEmpty) printLogs(logs)
+                  assert(true)
+                case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs, _) ⇒
+                  printLogs(logs)
+                  fail(
+                    s"""
+                       |${f.msg}
+                       |replay only this scenario with:
+                       |${replayCmd(feat.name, s.name)}
+                       |""".stripMargin
+                  )
+              }
+            }
+        }
+      }
+
   }
 
   private def replayCmd(featureName: String, scenarioName: String) =

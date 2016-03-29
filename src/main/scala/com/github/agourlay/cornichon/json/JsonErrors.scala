@@ -16,12 +16,12 @@ case class MalformedGraphQLJsonError[A](input: A, exception: Throwable) extends 
   val msg = s"malformed GraphQLJSON input $input with ${exception.getMessage}"
 }
 
-case class JsonPathParsingError(error: String) extends JsonError {
-  val msg = s"error thrown during JsonPath parsing : $error"
+case class JsonPathParsingError(input: String, error: String) extends JsonError {
+  val msg = s"error thrown during JsonPath parsing for input '$input' : $error"
 }
 
-case class JsonPathError(error: Throwable) extends JsonError {
-  val msg = s"error thrown during JsonPath parsing ${error.getMessage}"
+case class JsonPathError(input: String, error: Throwable) extends JsonError {
+  val msg = s"error thrown during JsonPath parsing for input '$input' : ${error.getMessage}"
 }
 
 case class WhiteListError(msg: String) extends CornichonError
