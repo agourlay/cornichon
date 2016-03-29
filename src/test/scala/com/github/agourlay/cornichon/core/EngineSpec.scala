@@ -100,6 +100,42 @@ class EngineSpec extends WordSpec with Matchers {
         val s = Scenario("scenario with faulty debug step", Vector(step))
         engine.runScenario(session)(s).isInstanceOf[FailedScenarioReport] should be(true)
       }
+
+      "control duration of 'within' wrapped steps" in {
+        val session = Session.newSession
+        val d = 200.millis
+        val steps = Vector(
+          WithinStart(d),
+          AssertStep(
+            "possible random value step",
+            s ⇒ {
+              Thread.sleep(100)
+              SimpleStepAssertion(true, true)
+            }
+          ),
+          WithinStop(d)
+        )
+        val s = Scenario("scenario with Within", steps)
+        engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
+      }
+
+      "fail if duration of 'within' is exceeded" in {
+        val session = Session.newSession
+        val d = 200.millis
+        val steps = Vector(
+          WithinStart(d),
+          AssertStep(
+            "possible random value step",
+            s ⇒ {
+              Thread.sleep(250)
+              SimpleStepAssertion(true, true)
+            }
+          ),
+          WithinStop(d)
+        )
+        val s = Scenario("scenario with Within", steps)
+        engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(false)
+      }
     }
 
     "runStepPredicate" must {

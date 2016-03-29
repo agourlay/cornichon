@@ -25,3 +25,7 @@ case object ConcurrentlyTimeout extends DslError {
 case object EventuallyBlockSucceedAfterMaxDuration extends DslError {
   val msg = "eventually block succeeded after 'maxDuration'"
 }
+
+case object WithinBlockSucceedAfterMaxDuration extends DslError {
+  val msg = "within block succeeded after 'maxDuration'"
+}

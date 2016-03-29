@@ -27,7 +27,7 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
             case c: CornichonError ⇒ c.msg
             case e: Throwable      ⇒ e.getMessage
           }
-          fail(s"exception thrown during Feature initilization: \n $msg")
+          fail(s"exception thrown during Feature initialization: \n $msg")
         }
       }
     case Success(feat) ⇒

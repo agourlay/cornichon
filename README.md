@@ -303,7 +303,7 @@ session_contains("favorite-superhero" → "Batman")
  And I show_last_response_headers
 ```
 
-- repeating a series of ```steps``` (can be nested)
+- repeating a serie of ```steps```
 
 ```scala
 Repeat(3) {
@@ -313,7 +313,7 @@ Repeat(3) {
 }
 ```
 
-- repeating a series of ```steps``` until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)
+- repeating a serie of ```steps``` until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)
 
 ```scala
 Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
@@ -332,10 +332,22 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-- execute a series of steps 'n' times concurrently and wait 'maxTime' for completion.
+- execute a serie of steps 'n' times concurrently and wait 'maxTime' for completion.
 
 ```scala
 Concurrently(factor = 3, maxTime = 10 seconds) {
+
+  When I get("http://superhero.io/batman")
+
+  Then assert status.is(200)
+}
+
+```
+
+- execute a serie of steps and fails if the execution does not complete within 'maxDuration'.
+
+```scala
+Within(maxDuration = 10 seconds) {
 
   When I get("http://superhero.io/batman")
 

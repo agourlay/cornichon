@@ -77,3 +77,13 @@ case class ConcurrentStart(factor: Int, maxTime: Duration) extends ConcurrentSte
 case class ConcurrentStop(factor: Int) extends ConcurrentStep {
   val title = s"Concurrently closing block with factor '$factor'"
 }
+
+sealed trait WithinStep extends Step with WrapperStep
+
+case class WithinStart(maxDuration: Duration) extends ConcurrentStep {
+  val title = s"Within block with max duration '$maxDuration'"
+}
+
+case class WithinStop(maxDuration: Duration) extends ConcurrentStep {
+  val title = s"Within closing block with max duration '$maxDuration'"
+}

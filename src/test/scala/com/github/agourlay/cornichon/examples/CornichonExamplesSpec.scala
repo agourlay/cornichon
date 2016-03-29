@@ -465,7 +465,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           Then assert status.is(200)
         }
 
-        // Repeat series of Steps until it succeed
+        // Repeat serie of Steps until it succeed
         Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
@@ -479,6 +479,13 @@ class CornichonExamplesSpec extends CornichonFeature {
             }
             """
           )
+        }
+
+        // Assert that a serie of Steps succeeds within a given duration
+        Within(maxDuration = 200 millis) {
+
+          When I wait(150 millis)
+
         }
 
         // Blocks can be nested

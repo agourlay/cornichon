@@ -98,6 +98,32 @@ class Engine(executionContext: ExecutionContext) {
           }
         }
 
+      case WithinStop(maxDuration) ⇒
+        runSteps(steps.tail, session, logs, depth)
+
+      case w @ WithinStart(maxDuration) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(w.title, depth)
+        val start = System.nanoTime
+        val withinSteps = findEnclosedSteps(w, steps.tail)
+        val res = runSteps(withinSteps, session, Vector.empty, depth + 1)
+        val executionTime = Duration.fromNanos(System.nanoTime - start)
+        val nextSteps = steps.tail.drop(withinSteps.size)
+        res match {
+          case s @ SuccessRunSteps(sSession, sLogs) ⇒
+            val successLogs = updatedLogs ++ sLogs
+            if (executionTime.gt(maxDuration)) {
+              val fullLogs = (successLogs :+ FailureLogInstruction(s"Within block did not complete in time", depth, Some(executionTime))) ++ logNonExecutedStep(nextSteps, depth)
+              buildFailedRunSteps(steps, steps.last, WithinBlockSucceedAfterMaxDuration, fullLogs, sSession)
+            } else {
+              val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", depth, Some(executionTime))
+              runSteps(nextSteps, sSession, fullLogs, depth)
+            }
+          case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
+            // Failure of the nested steps have a higher priority
+            val fullLogs = updatedLogs ++ eLogs ++ logNonExecutedStep(nextSteps, depth)
+            f.copy(logs = fullLogs, session = fSession)
+        }
+
       case a @ AssertStep(title, toAssertion, negate, show) ⇒
         val res = Xor.catchNonFatal(toAssertion(session))
           .leftMap(toCornichonError)
@@ -167,6 +193,17 @@ class Engine(executionContext: ExecutionContext) {
               case EventuallyStop(_) ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
               case EventuallyStart(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
+              case _ ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
+            }
+          case WithinStart(_) ⇒
+            head match {
+              case WithinStop(_) if depth == 0 ⇒
+                index
+              case WithinStop(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
+              case WithinStart(_) ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
               case _ ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
