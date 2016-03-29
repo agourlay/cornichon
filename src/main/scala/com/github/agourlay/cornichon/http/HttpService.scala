@@ -86,6 +86,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     ))
 
   def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
+    @scala.annotation.tailrec
     def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
       if (headers.isEmpty) right(acc)
       else {

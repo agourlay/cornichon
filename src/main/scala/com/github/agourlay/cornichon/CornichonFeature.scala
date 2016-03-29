@@ -17,7 +17,7 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  lazy val requestTimeout = 2000 millis
+  lazy val requestTimeout = 2000.millis
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
   lazy val baseUrl = ""
   lazy val resolver = new Resolver(registerExtractors)

@@ -76,7 +76,7 @@ trait HttpDsl extends Dsl {
 
   def WithHeaders(headers: (String, String)*) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      val saveStep = save(WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(",")).copy(show = false)
+      val saveStep = save((WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(","))).copy(show = false)
       val removeStep = remove(WithHeadersKey).copy(show = false)
       saveStep +: steps :+ removeStep
     }

@@ -48,7 +48,7 @@ object HttpAssertions {
       title = s"headers size is '$expected'",
       key = LastResponseHeadersKey,
       expected = s ⇒ expected,
-      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").size
+      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").length
     )
 
     def contain(elements: (String, String)*) = {
