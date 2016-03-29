@@ -8,7 +8,7 @@ description := "Scala DSL for testing HTTP JSON API"
 licenses := Seq("Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 homepage := Some(url("https://github.com/agourlay/cornichon"))
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
