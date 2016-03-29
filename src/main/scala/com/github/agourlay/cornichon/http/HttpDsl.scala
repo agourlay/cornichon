@@ -9,8 +9,6 @@ import com.github.agourlay.cornichon.http.HttpEffects._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonPath
 
-import org.json4s._
-
 import scala.concurrent.duration._
 
 trait HttpDsl extends Dsl {
@@ -49,13 +47,6 @@ trait HttpDsl extends Dsl {
   def session_json_values(k1: String, k2: String) = SessionJsonValuesAssertion(k1, k2, Seq.empty)
 
   def body[A] = BodyAssertion[A](root, Seq.empty, whiteList = false, resolver)
-
-  def save_body_key(args: (String, String)*) = {
-    val inputs = args.map {
-      case (key, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ (parseJson(s) \ key).values.toString, t)
-    }
-    save_from_session(inputs)
-  }
 
   def save_body_path(args: (JsonPath, String)*) = {
     val inputs = args.map {

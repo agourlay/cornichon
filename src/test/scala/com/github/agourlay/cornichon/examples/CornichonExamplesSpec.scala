@@ -9,6 +9,7 @@ import com.github.agourlay.cornichon.core.JsonMapper
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.json.JsonPath._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -392,13 +393,13 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Extract value from response into session for reuse
-        And I save_body_key(
+        And I save_body_path(
           "city" → "batman-city",
           "realName" → "batman-real-name"
         )
 
         // Or with extractor
-        And I save_body_key("city" → "batman-city")
+        And I save_body_path("city" → "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
 

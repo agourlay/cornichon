@@ -34,6 +34,12 @@ object JsonPath {
     val segments = JsonPathParser.parseJsonPath(field)
     fromSegments(segments)
   }
+
+  implicit def fromTupleString(tuple: (String, String)): (JsonPath, String) = {
+    (fromSegments(JsonPathParser.parseJsonPath(tuple._1)), tuple._2)
+  }
+
+  implicit def fromStrings(fields: Seq[(String, String)]): Seq[(JsonPath, String)] = fields.map(fromTupleString)
 }
 
 sealed trait JsonPathOperation {

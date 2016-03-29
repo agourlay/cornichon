@@ -281,7 +281,7 @@ save("favorite-superhero" → "Batman")
 - saving value to ```session``
 
 ```scala
-save_body_key("city" -> "batman-city")
+save_body_path("city" -> "batman-city")
 
 ```
 
@@ -481,7 +481,7 @@ Then assert body.is(
   """
 )
 
-And I save_body_key("city" -> "batman-city")
+And I save_body_path("city" -> "batman-city")
 
 Then assert session_contains("batman-city" → "Gotham city")
 
