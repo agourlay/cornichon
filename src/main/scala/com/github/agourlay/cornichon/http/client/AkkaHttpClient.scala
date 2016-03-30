@@ -78,11 +78,20 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
   def putJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
     requestRunner(Put(uriBuilder(url, params), payload), headers, timeout)
 
+  def patchJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+    requestRunner(Patch(uriBuilder(url, params), payload), headers, timeout)
+
   def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
     requestRunner(Delete(uriBuilder(url, params)), headers, timeout)
 
   def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
     requestRunner(Get(uriBuilder(url, params)), headers, timeout)
+
+  def headJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+    requestRunner(Head(uriBuilder(url, params)), headers, timeout)
+
+  def optionsJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+    requestRunner(Options(uriBuilder(url, params)), headers, timeout)
 
   def openSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
     val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))

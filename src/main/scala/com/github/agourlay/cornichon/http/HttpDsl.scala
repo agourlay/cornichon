@@ -20,10 +20,13 @@ trait HttpDsl extends Dsl {
     title = request.description,
     effect = s ⇒
     request match {
-      case Get(url, params, headers)                ⇒ http.Get(url, params, headers)(s)
-      case Delete(url, params, headers)             ⇒ http.Delete(url, params, headers)(s)
-      case Post(url, payload, params, headers)      ⇒ http.Post(url, payload, params, headers)(s)
-      case Put(url, payload, params, headers)       ⇒ http.Put(url, payload, params, headers)(s)
+      case Get(url, params, headers)                 ⇒ http.Get(url, params, headers)(s)
+      case Head(url, params, headers)                ⇒ http.Head(url, params, headers)(s)
+      case Options(url, params, headers)             ⇒ http.Options(url, params, headers)(s)
+      case Delete(url, params, headers)              ⇒ http.Delete(url, params, headers)(s)
+      case Post(url, payload, params, headers)       ⇒ http.Post(url, payload, params, headers)(s)
+      case Put(url, payload, params, headers)        ⇒ http.Put(url, payload, params, headers)(s)
+      case Patch(url, payload, params, headers)      ⇒ http.Patch(url, payload, params, headers)(s)
       case OpenSSE(url, takeWithin, params, headers) ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
       case OpenWS(url, takeWithin, params, headers)  ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
     }

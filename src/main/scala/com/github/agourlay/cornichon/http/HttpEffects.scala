@@ -32,6 +32,20 @@ object HttpEffects {
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
   }
 
+  case class Head(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
+    val name = "HEAD"
+
+    def withParams(params: (String, String)*) = copy(params = params)
+    def withHeaders(headers: (String, String)*) = copy(headers = headers)
+  }
+
+  case class Options(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
+    val name = "OPTIONS"
+
+    def withParams(params: (String, String)*) = copy(params = params)
+    def withHeaders(headers: (String, String)*) = copy(headers = headers)
+  }
+
   case class Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
     val name = "DELETE"
 
@@ -58,6 +72,12 @@ object HttpEffects {
 
   case class Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestWithPayload {
     val name = "PUT"
+    def withParams(params: (String, String)*) = copy(params = params)
+    def withHeaders(headers: (String, String)*) = copy(headers = headers)
+  }
+
+  case class Patch(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestWithPayload {
+    val name = "PATCH"
     def withParams(params: (String, String)*) = copy(params = params)
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
   }

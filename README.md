@@ -144,7 +144,7 @@ First run a ```step``` with a side effect or a result then assert its value in a
 Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.
 
 
-- GET and DELETE share the same signature
+- GET, DELETE, HEAD and OPTIONS share the same signature
 
 ```scala
 get("http://superhero.io/daredevil")
@@ -154,7 +154,7 @@ get("http://superhero.io/daredevil").withParams("firstParam" → "value1", "seco
 delete("http://superhero.io/daredevil").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
 ```
 
-- POST and PUT share the same signature
+- POST, PUT and PATCH share the same signature
 
 ```scala
 post("http://superhero.io/batman", "JSON description of Batman goes here")

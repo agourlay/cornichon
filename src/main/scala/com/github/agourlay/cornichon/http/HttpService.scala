@@ -64,8 +64,17 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
     withPayload(client.putJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
+  def Patch(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
+    withPayload(client.patchJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+
   def Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
     withoutPayload(client.getJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+
+  def Head(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
+    withoutPayload(client.headJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+
+  def Options(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
+    withoutPayload(client.optionsJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
     withoutPayload(client.deleteJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
