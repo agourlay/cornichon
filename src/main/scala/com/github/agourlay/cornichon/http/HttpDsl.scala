@@ -24,8 +24,8 @@ trait HttpDsl extends Dsl {
       case Delete(url, params, headers)             ⇒ http.Delete(url, params, headers)(s)
       case Post(url, payload, params, headers)      ⇒ http.Post(url, payload, params, headers)(s)
       case Put(url, payload, params, headers)       ⇒ http.Put(url, payload, params, headers)(s)
-      case GetSSE(url, takeWithin, params, headers) ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
-      case GetWS(url, takeWithin, params, headers)  ⇒ http.GetSSE(url, takeWithin, params, headers)(s)
+      case OpenSSE(url, takeWithin, params, headers) ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
+      case OpenWS(url, takeWithin, params, headers)  ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
     }
   )
 
@@ -35,8 +35,8 @@ trait HttpDsl extends Dsl {
   def post(url: String, payload: String) = Post(url, payload, Seq.empty, Seq.empty)
   def put(url: String, payload: String) = Put(url, payload, Seq.empty, Seq.empty)
 
-  def sse(url: String, takeWithin: FiniteDuration) = GetSSE(url, takeWithin, Seq.empty, Seq.empty)
-  def ws(url: String, takeWithin: FiniteDuration) = GetWS(url, takeWithin, Seq.empty, Seq.empty)
+  def open_sse(url: String, takeWithin: FiniteDuration) = OpenSSE(url, takeWithin, Seq.empty, Seq.empty)
+  def open_ws(url: String, takeWithin: FiniteDuration) = OpenWS(url, takeWithin, Seq.empty, Seq.empty)
 
   val root = JsonPath.root
 

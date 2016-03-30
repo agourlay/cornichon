@@ -371,7 +371,7 @@ WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
  SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
 
 ```scala
-When I sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
+When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
 
 Then assert body.asArray.hasSize(2)
 

@@ -84,7 +84,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
   def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
     requestRunner(Get(uriBuilder(url, params)), headers, timeout)
 
-  def getSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
+  def openSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
     val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))
     val f = Http().singleRequest(request, sslContext)
       .flatMap(expectSSE)
@@ -108,7 +108,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
   }
 
   // FIXME barbaric implementation
-  def getWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
+  def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
     val uri = uriBuilder(url, params)
     val req = WebSocketRequest(uri).copy(extraHeaders = collection.immutable.Seq(headers: _*))
 

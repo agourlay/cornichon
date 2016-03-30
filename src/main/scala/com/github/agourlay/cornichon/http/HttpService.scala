@@ -70,11 +70,11 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
     withoutPayload(client.deleteJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
-  def GetSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None)(s: Session) =
-    withoutPayload(client.getSSE, url, params, headers, extractor, takeWithin, None)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+  def OpenSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None)(s: Session) =
+    withoutPayload(client.openSSE, url, params, headers, extractor, takeWithin, None)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
-  def GetWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None)(s: Session) =
-    withoutPayload(client.getWS, url, params, headers, extractor, takeWithin, None)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+  def OpenWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None)(s: Session) =
+    withoutPayload(client.openWS, url, params, headers, extractor, takeWithin, None)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
 
   def fillInHttpSession(session: Session, response: CornichonHttpResponse, extractor: Option[String]): Session =
     extractor.fold(session) { e ⇒
