@@ -145,7 +145,8 @@ object HttpAssertions {
     }
 
     def contains(elements: A*) = {
-      val title = if (jsonPath.isRoot) s"response body array contains '$elements'" else s"response body's array '${jsonPath.pretty}' contains '$elements'"
+      val prettyElements = elements.mkString(" and ")
+      val title = if (jsonPath.isRoot) s"response body array contains '$prettyElements'" else s"response body's array '${jsonPath.pretty}' contains '$prettyElements'"
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,
@@ -153,8 +154,9 @@ object HttpAssertions {
         mapValue = (s, sessionValue) ⇒ {
         val jArr = if (jsonPath.isRoot) parseArray(sessionValue)
         else selectArrayJsonPath(jsonPath, sessionValue)
-        val containsAll = elements.map(parseJson).forall(jArr.arr.contains)
-        (containsAll, arrayDoesNotContainError(elements.toString, prettyPrint(jArr)))
+        val resolvedJson = elements.map(resolveAndParse(_, s, resolver))
+        val containsAll = resolvedJson.forall(jArr.arr.contains)
+        (containsAll, arrayDoesNotContainError(resolvedJson.map(prettyPrint), prettyPrint(jArr)))
       }
       )
     }

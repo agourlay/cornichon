@@ -317,10 +317,12 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         Then assert body.asArray.hasSize(5)
 
+        Then I save("5th-name" → "IronMan")
+
         And assert body.asArray.contains(
           """
           {
-            "name": "IronMan",
+            "name": "<5th-name>",
             "realName": "Tony Stark",
             "city": "New York",
             "hasSuperpowers": false,

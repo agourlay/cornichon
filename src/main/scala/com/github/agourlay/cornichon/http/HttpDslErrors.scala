@@ -15,8 +15,10 @@ object HttpDslErrors {
         |$sourceArray""".stripMargin
   }
 
-  def arrayDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
-    s"""expected array to contain '$expected' but it is not the case with array:
+  def arrayDoesNotContainError(expected: Seq[String], sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
+    s"""expected array to contain
+        |'${expected.mkString(" and ")}'
+        |but it is not the case with array:
         |$sourceArray""".stripMargin
   }
 
