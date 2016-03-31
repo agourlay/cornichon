@@ -313,6 +313,16 @@ Repeat(3) {
 }
 ```
 
+- repeating a series of ```steps``` during a period of time
+
+```scala
+RepeatDuring(300.millis) {
+  When I get("http://superhero.io/batman")
+
+  Then assert status.is(200)
+}
+```
+
 - repeating a series of ```steps``` until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)
 
 ```scala

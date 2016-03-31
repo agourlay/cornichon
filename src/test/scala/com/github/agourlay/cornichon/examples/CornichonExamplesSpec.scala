@@ -437,6 +437,15 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         // Repeat series of Steps
         Repeat(3) {
+
+          When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+
+          Then assert status.is(200)
+        }
+
+        // Repeat series of Steps during a period of time
+        RepeatDuring(300.millis) {
+
           When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
 
           Then assert status.is(200)

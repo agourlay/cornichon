@@ -168,6 +168,63 @@ class EngineSpec extends WordSpec with Matchers {
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
         uglyCounter should be(loop)
       }
+
+      "fail if 'repeatDuring' block contains a failed step" in {
+        val steps = Vector(
+          RepeatDuringStart(5.millis),
+          AssertStep(
+            "always fails",
+            s ⇒ SimpleStepAssertion(true, false)
+          ),
+          RepeatDuringStop
+        )
+        val s = Scenario("scenario with Within", steps)
+        engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
+      }
+
+      "repeat steps inside 'repeatDuring' for at least the duration param" in {
+        val steps = Vector(
+          RepeatDuringStart(50.millis),
+          AssertStep(
+            "always valid",
+            s ⇒ {
+              Thread.sleep(1)
+              SimpleStepAssertion(true, true)
+            }
+          ),
+          RepeatDuringStop
+        )
+        val s = Scenario("scenario with Within", steps)
+        val now = System.nanoTime
+        engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        executionTime.gt(50.millis) should be(true)
+        // empiric values for the upper bound here
+        executionTime.lt(55.millis) should be(true)
+      }
+
+      "repeat steps inside 'repeatDuring' at least once if they take more time than the duration param" in {
+        val steps = Vector(
+          RepeatDuringStart(50.millis),
+          AssertStep(
+            "always valid",
+            s ⇒ {
+              Thread.sleep(500)
+              SimpleStepAssertion(true, true)
+            }
+          ),
+          RepeatDuringStop
+        )
+        val s = Scenario("scenario with Within", steps)
+        val now = System.nanoTime
+        engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        //println(executionTime)
+        executionTime.gt(50.millis) should be(true)
+        // empiric values for the upper bound here
+        executionTime.lt(550.millis) should be(true)
+      }
+
     }
 
     "runStepPredicate" must {

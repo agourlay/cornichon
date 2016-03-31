@@ -47,9 +47,9 @@ class Engine(executionContext: ExecutionContext) {
           val updatedLogs = logs ++ errorLogs(e.title, MalformedEventuallyBlock, depth, steps.tail)
           buildFailedRunSteps(steps, e, MalformedEventuallyBlock, updatedLogs, session)
         } else {
-          val start = System.nanoTime
-          val res = retryEventuallySteps(eventuallySteps, session, conf, Vector.empty, depth + 1)
-          val executionTime = Duration.fromNanos(System.nanoTime - start)
+          val (res, executionTime) = withDuration {
+            retryEventuallySteps(eventuallySteps, session, conf, Vector.empty, depth + 1)
+          }
           val nextSteps = steps.tail.drop(eventuallySteps.size)
           res match {
             case s @ SuccessRunSteps(sSession, sLogs) ⇒
@@ -94,10 +94,10 @@ class Engine(executionContext: ExecutionContext) {
 
       case w @ WithinStart(maxDuration) ⇒
         val updatedLogs = logs :+ DefaultLogInstruction(w.title, depth)
-        val start = System.nanoTime
         val withinSteps = findEnclosedSteps(w, steps.tail)
-        val res = runSteps(withinSteps, session, Vector.empty, depth + 1)
-        val executionTime = Duration.fromNanos(System.nanoTime - start)
+        val (res, executionTime) = withDuration {
+          runSteps(withinSteps, session, Vector.empty, depth + 1)
+        }
         val nextSteps = steps.tail.drop(withinSteps.size)
         res match {
           case s @ SuccessRunSteps(sSession, sLogs) ⇒
@@ -118,10 +118,10 @@ class Engine(executionContext: ExecutionContext) {
       case r @ RepeatStart(occurence) ⇒
         val updatedLogs = logs :+ DefaultLogInstruction(r.title, depth)
         val repeatSteps = findEnclosedSteps(r, steps.tail)
-        val start = System.nanoTime
-        // Session not propagated through repeat calls
-        val repeatRes = Vector.range(0, occurence).map(i ⇒ runSteps(repeatSteps, session, Vector.empty, depth + 1))
-        val executionTime = Duration.fromNanos(System.nanoTime - start)
+        val (repeatRes, executionTime) = withDuration {
+          // Session not propagated through repeat calls
+          Vector.range(0, occurence).map(i ⇒ runSteps(repeatSteps, session, Vector.empty, depth + 1))
+        }
         val nextSteps = steps.tail.drop(repeatSteps.size)
         if (repeatRes.forall(_.isSuccess == true)) {
           val fullLogs = updatedLogs ++ repeatRes.flatMap(_.logs) :+ SuccessLogInstruction(s"Repeat block with occurence $occurence succeeded", depth, Some(executionTime))
@@ -131,8 +131,25 @@ class Engine(executionContext: ExecutionContext) {
           buildFailedRunSteps(steps, steps.last, RepeatBlockContainFailedSteps, fullLogs, repeatRes.last.session)
         }
 
+      case r @ RepeatDuringStart(duration) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(r.title, depth)
+        val repeatSteps = findEnclosedSteps(r, steps.tail)
+
+        val (repeatRes, executionTime) = withDuration {
+          repeatStepsDuring(repeatSteps, session, duration, Vector.empty, depth + 1)
+        }
+
+        val nextSteps = steps.tail.drop(repeatSteps.size)
+        if (repeatRes.isSuccess) {
+          val fullLogs = (updatedLogs ++ repeatRes.logs) :+ SuccessLogInstruction(s"Repeat block during $duration succeeded", depth, Some(executionTime))
+          runSteps(nextSteps, repeatRes.session, fullLogs, depth)
+        } else {
+          val fullLogs = (updatedLogs ++ repeatRes.logs) :+ FailureLogInstruction(s"Repeat block during $duration failed", depth, Some(executionTime))
+          buildFailedRunSteps(steps, steps.last, RepeatDuringBlockContainFailedSteps, fullLogs, repeatRes.session)
+        }
+
       // The end blocks are only used for nesting detection
-      case RepeatStop | WithinStop | EventuallyStop | ConcurrentStop ⇒
+      case RepeatStop | WithinStop | EventuallyStop | ConcurrentStop | RepeatDuringStop ⇒
         runSteps(steps.tail, session, logs, depth)
 
       case a @ AssertStep(title, toAssertion, negate, show) ⇒
@@ -144,9 +161,9 @@ class Engine(executionContext: ExecutionContext) {
         buildStepReport(steps, session, logs, res, title, depth, show)
 
       case e @ EffectStep(title, effect, show) ⇒
-        val start = System.nanoTime
-        val res = Xor.catchNonFatal(effect(session)).leftMap(toCornichonError)
-        val executionTime = Duration.fromNanos(System.nanoTime - start)
+        val (res, executionTime) = withDuration {
+          Xor.catchNonFatal(effect(session)).leftMap(toCornichonError)
+        }
         buildStepReport(steps, session, logs, res, title, depth, show, Some(executionTime))
 
     }
@@ -230,6 +247,17 @@ class Engine(executionContext: ExecutionContext) {
               case _ ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
             }
+          case RepeatDuringStart(_) ⇒
+            head match {
+              case RepeatDuringStop if depth == 0 ⇒
+                index
+              case RepeatDuringStop ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
+              case RepeatDuringStart(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
+              case _ ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
+            }
           case _ ⇒ index
         }
       }
@@ -241,9 +269,9 @@ class Engine(executionContext: ExecutionContext) {
 
   @tailrec
   private[cornichon] final def retryEventuallySteps(steps: Vector[Step], session: Session, conf: EventuallyConf, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
-    val now = System.nanoTime
-    val res = runSteps(steps, session, Vector.empty, depth)
-    val executionTime = Duration.fromNanos(System.nanoTime - now)
+    val (res, executionTime) = withDuration {
+      runSteps(steps, session, Vector.empty, depth)
+    }
     val remainingTime = conf.maxTime - executionTime
     res match {
       case s @ SuccessRunSteps(successSession, sLogs) ⇒
@@ -257,6 +285,21 @@ class Engine(executionContext: ExecutionContext) {
           retryEventuallySteps(steps, session, conf.consume(executionTime + conf.interval), updatedLogs, depth)
         } else f.copy(logs = updatedLogs, session = fSession)
     }
+  }
+
+  @tailrec
+  private[cornichon] final def repeatStepsDuring(steps: Vector[Step], session: Session, duration: Duration, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
+    val (res, executionTime) = withDuration {
+      runSteps(steps, session, Vector.empty, depth)
+    }
+    val remainingTime = duration - executionTime
+    if (remainingTime.gt(Duration.Zero))
+      repeatStepsDuring(steps, session, remainingTime, accLogs ++ res.logs, depth)
+    else
+      res match {
+        case s @ SuccessRunSteps(sSession, sLogs)      ⇒ s.copy(logs = accLogs ++ sLogs)
+        case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒ f.copy(logs = accLogs ++ eLogs)
+      }
   }
 
   private[cornichon] def logNonExecutedStep(steps: Seq[Step], depth: Int): Seq[LogInstruction] =
@@ -281,5 +324,12 @@ class Engine(executionContext: ExecutionContext) {
       case EffectStep(t, _, true)    ⇒ t
     }
     FailedRunSteps(failedStep, notExecutedStep, logs, session)
+  }
+
+  private[cornichon] def withDuration[A](fct: ⇒ A): (A, Duration) = {
+    val now = System.nanoTime
+    val res = fct
+    val executionTime = Duration.fromNanos(System.nanoTime - now)
+    (res, executionTime)
   }
 }

@@ -86,3 +86,7 @@ case object WithinBlockSucceedAfterMaxDuration extends CornichonError {
 case object RepeatBlockContainFailedSteps extends CornichonError {
   val msg = "repeat block contains failed step(s)"
 }
+
+case object RepeatDuringBlockContainFailedSteps extends CornichonError {
+  val msg = "repeatDuring block contains failed step(s)"
+}

@@ -99,3 +99,13 @@ case class RepeatStart(occurence: Int) extends RepeatStep {
 case object RepeatStop extends RepeatStep {
   val title = s"Repeat block end"
 }
+
+sealed trait RepeatDuringStep extends WrapperStep
+
+case class RepeatDuringStart(duration: Duration) extends RepeatDuringStep {
+  val title = s"Repeat block during '$duration'"
+}
+
+case object RepeatDuringStop extends RepeatDuringStep {
+  val title = s"Repeat block during end"
+}

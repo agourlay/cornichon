@@ -49,6 +49,11 @@ trait Dsl extends CornichonLogger {
       RepeatStart(times) +: steps :+ RepeatStop
     }
 
+  def RepeatDuring(duration: Duration) =
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      RepeatDuringStart(duration) +: steps :+ RepeatDuringStop
+    }
+
   def Eventually(maxDuration: Duration, interval: Duration) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
       val conf = EventuallyConf(maxDuration, interval)
