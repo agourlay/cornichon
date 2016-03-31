@@ -8,7 +8,7 @@ class MacroErrorSpec extends WordSpec with Matchers {
     "compile valid feature definitions" in {
       """
         import com.github.agourlay.cornichon.CornichonFeature
-        import com.github.agourlay.cornichon.core.{Scenario, EffectStep}
+        import com.github.agourlay.cornichon.core.EffectStep
 
         class Foo extends CornichonFeature {
           val feature =
@@ -28,7 +28,7 @@ class MacroErrorSpec extends WordSpec with Matchers {
     "not compile if feature definition contains invalid expressions" in {
       """
         import com.github.agourlay.cornichon.CornichonFeature
-        import com.github.agourlay.cornichon.core.{Scenario, EffectStep}
+        import com.github.agourlay.cornichon.core.EffectStep
 
         class Foo extends CornichonFeature {
           val feature =

@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.core
 
 import scala.concurrent.duration.Duration
-import scala.language.existentials
 import scala.Console._
 
 sealed trait StepsReport {
