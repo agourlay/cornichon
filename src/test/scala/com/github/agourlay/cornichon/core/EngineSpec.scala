@@ -60,7 +60,7 @@ class EngineSpec extends WordSpec with Matchers {
             "possible random value step",
             s ⇒ SimpleStepAssertion(scala.util.Random.nextInt(10), 5)
           ),
-          EventuallyStop(eventuallyConf)
+          EventuallyStop
         )
         val s = Scenario("scenario with eventually", steps)
         engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
@@ -74,7 +74,7 @@ class EngineSpec extends WordSpec with Matchers {
           AssertStep(
             "impossible random value step", s ⇒ SimpleStepAssertion(11, scala.util.Random.nextInt(10))
           ),
-          EventuallyStop(eventuallyConf)
+          EventuallyStop
         )
         val s = Scenario("scenario with eventually that fails", steps)
         engine.runScenario(session)(s).isInstanceOf[FailedScenarioReport] should be(true)
@@ -113,7 +113,7 @@ class EngineSpec extends WordSpec with Matchers {
               SimpleStepAssertion(true, true)
             }
           ),
-          WithinStop(d)
+          WithinStop
         )
         val s = Scenario("scenario with Within", steps)
         engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
@@ -131,10 +131,42 @@ class EngineSpec extends WordSpec with Matchers {
               SimpleStepAssertion(true, true)
             }
           ),
-          WithinStop(d)
+          WithinStop
         )
         val s = Scenario("scenario with Within", steps)
         engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(false)
+      }
+
+      "fail if 'repeat' block contains a failed step" in {
+        val steps = Vector(
+          RepeatStart(5),
+          AssertStep(
+            "always fails",
+            s ⇒ SimpleStepAssertion(true, false)
+          ),
+          RepeatStop
+        )
+        val s = Scenario("scenario with Within", steps)
+        engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
+      }
+
+      "repeat steps inside a 'repeat' block" in {
+        var uglyCounter = 0
+        val loop = 5
+        val steps = Vector(
+          RepeatStart(loop),
+          AssertStep(
+            "increment captured counter",
+            s ⇒ {
+              uglyCounter = uglyCounter + 1
+              SimpleStepAssertion(true, true)
+            }
+          ),
+          RepeatStop
+        )
+        val s = Scenario("scenario with Within", steps)
+        engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
+        uglyCounter should be(loop)
       }
     }
 
@@ -156,7 +188,7 @@ class EngineSpec extends WordSpec with Matchers {
           EventuallyStart(eventuallyConf),
           AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop(eventuallyConf)
+          EventuallyStop
         )
         engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
       }
@@ -167,10 +199,10 @@ class EngineSpec extends WordSpec with Matchers {
           EventuallyStart(eventuallyConf),
           AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop(eventuallyConf),
+          EventuallyStop,
           EventuallyStart(eventuallyConf),
           AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop(eventuallyConf)
+          EventuallyStop
         )
         engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
       }
@@ -183,8 +215,8 @@ class EngineSpec extends WordSpec with Matchers {
           AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
           EventuallyStart(eventuallyConf),
           AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop(eventuallyConf),
-          EventuallyStop(eventuallyConf)
+          EventuallyStop,
+          EventuallyStop
         )
         engine.findEnclosedSteps(steps.head, steps.tail).size should be(5)
       }

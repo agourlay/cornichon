@@ -45,22 +45,26 @@ trait Dsl extends CornichonLogger {
   case object And extends Starters with WithAssert { val name = "And" }
 
   def Repeat(times: Int) =
-    BodyElementCollector[Step, Seq[Step]](steps ⇒ Seq.fill(times)(steps).flatten)
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      RepeatStart(times) +: steps :+ RepeatStop
+    }
 
   def Eventually(maxDuration: Duration, interval: Duration) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
       val conf = EventuallyConf(maxDuration, interval)
 
-      EventuallyStart(conf) +: steps :+ EventuallyStop(conf)
+      EventuallyStart(conf) +: steps :+ EventuallyStop
     }
 
   def Concurrently(factor: Int, maxTime: Duration) =
-    BodyElementCollector[Step, Seq[Step]](steps ⇒
-      ConcurrentStart(factor, maxTime) +: steps :+ ConcurrentStop(factor))
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      ConcurrentStart(factor, maxTime) +: steps :+ ConcurrentStop
+    }
 
   def Within(maxDuration: Duration) =
-    BodyElementCollector[Step, Seq[Step]](steps ⇒
-      WithinStart(maxDuration) +: steps :+ WithinStop(maxDuration))
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      WithinStart(maxDuration) +: steps :+ WithinStop
+    }
 
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",

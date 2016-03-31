@@ -17,15 +17,3 @@ case object MalformedConcurrentBlock extends DslError {
 case object MalformedEventuallyBlock extends DslError {
   val msg = "malformed eventually block without closing 'EventuallyStop'"
 }
-
-case object ConcurrentlyTimeout extends DslError {
-  val msg = "concurrent block did not reach completion in 'maxTime'"
-}
-
-case object EventuallyBlockSucceedAfterMaxDuration extends DslError {
-  val msg = "eventually block succeeded after 'maxDuration'"
-}
-
-case object WithinBlockSucceedAfterMaxDuration extends DslError {
-  val msg = "within block succeeded after 'maxDuration'"
-}

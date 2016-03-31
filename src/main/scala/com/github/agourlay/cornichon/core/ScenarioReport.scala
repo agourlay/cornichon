@@ -7,10 +7,15 @@ import scala.Console._
 sealed trait StepsReport {
   val logs: Vector[LogInstruction]
   val session: Session
+  val isSuccess: Boolean
 }
 
-case class SuccessRunSteps(session: Session, logs: Vector[LogInstruction]) extends StepsReport
-case class FailedRunSteps(failedStep: FailedStep, notExecutedStep: Vector[String], logs: Vector[LogInstruction], session: Session) extends StepsReport
+case class SuccessRunSteps(session: Session, logs: Vector[LogInstruction]) extends StepsReport {
+  val isSuccess = true
+}
+case class FailedRunSteps(failedStep: FailedStep, notExecutedStep: Vector[String], logs: Vector[LogInstruction], session: Session) extends StepsReport {
+  val isSuccess = false
+}
 
 sealed trait ScenarioReport {
   val scenarioName: String

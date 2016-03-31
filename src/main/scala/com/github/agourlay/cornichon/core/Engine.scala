@@ -61,12 +61,6 @@ class Engine(executionContext: ExecutionContext) {
           }
         }
 
-      case EventuallyStop(conf) ⇒
-        runSteps(steps.tail, session, logs, depth)
-
-      case ConcurrentStop(factor) ⇒
-        runSteps(steps.tail, session, logs, depth)
-
       case c @ ConcurrentStart(factor, maxTime) ⇒
         val updatedLogs = logs :+ DefaultLogInstruction(c.title, depth)
         val concurrentSteps = findEnclosedSteps(c, steps.tail)
@@ -98,9 +92,6 @@ class Engine(executionContext: ExecutionContext) {
           }
         }
 
-      case WithinStop(maxDuration) ⇒
-        runSteps(steps.tail, session, logs, depth)
-
       case w @ WithinStart(maxDuration) ⇒
         val updatedLogs = logs :+ DefaultLogInstruction(w.title, depth)
         val start = System.nanoTime
@@ -123,6 +114,26 @@ class Engine(executionContext: ExecutionContext) {
             val fullLogs = updatedLogs ++ eLogs ++ logNonExecutedStep(nextSteps, depth)
             f.copy(logs = fullLogs, session = fSession)
         }
+
+      case r @ RepeatStart(occurence) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(r.title, depth)
+        val repeatSteps = findEnclosedSteps(r, steps.tail)
+        val start = System.nanoTime
+        // Session not propagated through repeat calls
+        val repeatRes = Vector.range(0, occurence).map(i ⇒ runSteps(repeatSteps, session, Vector.empty, depth + 1))
+        val executionTime = Duration.fromNanos(System.nanoTime - start)
+        val nextSteps = steps.tail.drop(repeatSteps.size)
+        if (repeatRes.forall(_.isSuccess == true)) {
+          val fullLogs = updatedLogs ++ repeatRes.flatMap(_.logs) :+ SuccessLogInstruction(s"Repeat block with occurence $occurence succeeded", depth, Some(executionTime))
+          runSteps(nextSteps, repeatRes.last.session, fullLogs, depth)
+        } else {
+          val fullLogs = updatedLogs ++ repeatRes.flatMap(_.logs) :+ FailureLogInstruction(s"Repeat block with occurence $occurence failed", depth, Some(executionTime))
+          buildFailedRunSteps(steps, steps.last, RepeatBlockContainFailedSteps, fullLogs, repeatRes.last.session)
+        }
+
+      // The end blocks are only used for nesting detection
+      case RepeatStop | WithinStop | EventuallyStop | ConcurrentStop ⇒
+        runSteps(steps.tail, session, logs, depth)
 
       case a @ AssertStep(title, toAssertion, negate, show) ⇒
         val res = Xor.catchNonFatal(toAssertion(session))
@@ -177,9 +188,9 @@ class Engine(executionContext: ExecutionContext) {
         openingStep match {
           case ConcurrentStart(_, _) ⇒
             head match {
-              case ConcurrentStop(_) if depth == 0 ⇒
+              case ConcurrentStop if depth == 0 ⇒
                 index
-              case ConcurrentStop(_) ⇒
+              case ConcurrentStop ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
               case ConcurrentStart(_, _) ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
@@ -188,9 +199,9 @@ class Engine(executionContext: ExecutionContext) {
             }
           case EventuallyStart(_) ⇒
             head match {
-              case EventuallyStop(_) if depth == 0 ⇒
+              case EventuallyStop if depth == 0 ⇒
                 index
-              case EventuallyStop(_) ⇒
+              case EventuallyStop ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
               case EventuallyStart(_) ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
@@ -199,11 +210,22 @@ class Engine(executionContext: ExecutionContext) {
             }
           case WithinStart(_) ⇒
             head match {
-              case WithinStop(_) if depth == 0 ⇒
+              case WithinStop if depth == 0 ⇒
                 index
-              case WithinStop(_) ⇒
+              case WithinStop ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
               case WithinStart(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
+              case _ ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
+            }
+          case RepeatStart(_) ⇒
+            head match {
+              case RepeatStop if depth == 0 ⇒
+                index
+              case RepeatStop ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
+              case RepeatStart(_) ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
               case _ ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)

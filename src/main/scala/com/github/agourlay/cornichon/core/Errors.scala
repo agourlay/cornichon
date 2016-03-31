@@ -70,3 +70,19 @@ case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonErro
 case class GeneratorError(placeholder: String) extends CornichonError {
   val msg = s"generator mapped to placeholder '$placeholder' did not generate a value"
 }
+
+case object ConcurrentlyTimeout extends CornichonError {
+  val msg = "concurrent block did not reach completion in 'maxTime'"
+}
+
+case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
+  val msg = "eventually block succeeded after 'maxDuration'"
+}
+
+case object WithinBlockSucceedAfterMaxDuration extends CornichonError {
+  val msg = "within block succeeded after 'maxDuration'"
+}
+
+case object RepeatBlockContainFailedSteps extends CornichonError {
+  val msg = "repeat block contains failed step(s)"
+}
