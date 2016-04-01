@@ -14,6 +14,8 @@ import scala.util._
 
 class Resolver(extractors: Map[String, Mapper]) {
 
+  val r = new scala.util.Random()
+
   def findPlaceholders(input: String): List[Placeholder] =
     new PlaceholderParser(input).placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒ List.empty
@@ -23,9 +25,9 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] = ph.key match {
     case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
-    case "random-positive-integer" ⇒ right(scala.util.Random.nextInt(1000).toString)
-    case "random-string"           ⇒ right(scala.util.Random.nextString(5))
-    case "random-boolean"          ⇒ right(scala.util.Random.nextBoolean().toString)
+    case "random-positive-integer" ⇒ right(r.nextInt(1000).toString)
+    case "random-string"           ⇒ right(r.nextString(5))
+    case "random-boolean"          ⇒ right(r.nextBoolean().toString)
     case "timestamp"               ⇒ right((System.currentTimeMillis / 1000).toString)
     case other: String ⇒
       // Lookup in Session if no custom mapper found
