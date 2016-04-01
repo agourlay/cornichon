@@ -28,7 +28,7 @@ trait HttpDsl extends Dsl {
       case Put(url, payload, params, headers)        ⇒ http.Put(url, payload, params, headers)(s)
       case Patch(url, payload, params, headers)      ⇒ http.Patch(url, payload, params, headers)(s)
       case OpenSSE(url, takeWithin, params, headers) ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
-      case OpenWS(url, takeWithin, params, headers)  ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
+      case OpenWS(url, takeWithin, params, headers)  ⇒ http.OpenWS(url, takeWithin, params, headers)(s)
     }
   )
 
