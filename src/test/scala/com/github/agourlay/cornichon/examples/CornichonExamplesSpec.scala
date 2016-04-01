@@ -444,7 +444,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         }
 
         // Repeat series of Steps during a period of time
-        RepeatDuring(300.millis) {
+        RepeatDuring(10.millis) {
 
           When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
 
@@ -477,7 +477,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         }
 
         // Repeat serie of Steps until it succeed
-        Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
+        Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
