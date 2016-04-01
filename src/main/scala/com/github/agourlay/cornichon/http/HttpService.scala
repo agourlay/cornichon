@@ -1,7 +1,8 @@
 package com.github.agourlay.cornichon.http
 
-import akka.http.scaladsl.model.{ StatusCode, HttpHeader }
+import akka.http.scaladsl.model.{ HttpHeader, StatusCode }
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
+import akka.http.scaladsl.model.Uri.Query
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
@@ -19,35 +20,44 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
 
   private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)],
-    headers: Seq[(String, String)], extractor: Option[String], requestTimeout: FiniteDuration, expect: Option[Int])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+    headers: Seq[(String, String)], extractor: Option[String], requestTimeout: FiniteDuration, expect: Option[Int])(s: Session) =
     for {
       payloadResolved ← resolver.fillPlaceholders(payload)(s)
       json ← parseJsonXor(payloadResolved)
-      paramsResolved ← resolver.tuplesResolver(params, s)
-      headersResolved ← resolver.tuplesResolver(headers, s)
-      parsedHeaders ← parseHttpHeaders(headersResolved)
-      extractedHeaders ← extractWithHeadersSession(s)
-      urlResolved ← resolver.fillPlaceholders(urlBuilder(url))(s)
-      res ← call(json, urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders, requestTimeout)
-      resExpected ← expectStatusCode(res, expect)
-      newSession = fillInHttpSession(s, resExpected, extractor)
+      r ← resolveCommonRequestParts(url, params, headers)(s)
+      resp ← call(json, r._1, r._2, r._3, requestTimeout)
+      newSession ← handleResponse(resp, expect, extractor)(s)
     } yield {
-      (res, newSession)
+      (resp, newSession)
     }
 
   private def withoutPayload(call: WithoutPayloadCall, url: String, params: Seq[(String, String)],
-    headers: Seq[(String, String)], extractor: Option[String], requestTimeout: FiniteDuration, expect: Option[Int])(s: Session): Xor[CornichonError, (CornichonHttpResponse, Session)] =
+    headers: Seq[(String, String)], extractor: Option[String], requestTimeout: FiniteDuration, expect: Option[Int])(s: Session) =
     for {
-      urlResolved ← resolver.fillPlaceholders(urlBuilder(url))(s)
-      paramsResolved ← resolver.tuplesResolver(params, s)
+      r ← resolveCommonRequestParts(url, params, headers)(s)
+      resp ← call(r._1, r._2, r._3, requestTimeout)
+      newSession ← handleResponse(resp, expect, extractor)(s)
+    } yield {
+      (resp, newSession)
+    }
+
+  private def handleResponse(resp: CornichonHttpResponse, expect: Option[Int], extractor: Option[String])(session: Session) =
+    for {
+      resExpected ← expectStatusCode(resp, expect)
+      newSession = fillInSessionWithResponse(session, resp, extractor)
+    } yield {
+      newSession
+    }
+
+  def resolveCommonRequestParts(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
+    for {
+      urlResolved ← resolver.fillPlaceholders(withBaseUrl(url))(s)
+      paramsResolved ← resolveParams(url, params)(s)
       headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
-      res ← call(urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders, requestTimeout)
-      resExpected ← expectStatusCode(res, expect)
-      newSession = fillInHttpSession(s, res, extractor)
     } yield {
-      (res, newSession)
+      (urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders)
     }
 
   private def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =
@@ -58,34 +68,40 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
         left(StatusNonExpected(e, httpResponse))
     }
 
+  def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Xor[CornichonError, Seq[(String, String)]] = {
+    val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
+    val urlParams = if (urlsParamsPart.trim.isEmpty) Map.empty else Query.apply(urlsParamsPart).toMap
+    resolver.tuplesResolver(urlParams.toSeq ++ params, session)
+  }
+
   def Post(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session) =
-    withPayload(client.postJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withPayload(client.postJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
 
   def Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
-    withPayload(client.putJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withPayload(client.putJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
 
   def Patch(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
-    withPayload(client.patchJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withPayload(client.patchJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
 
   def Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.getJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withoutPayload(client.getJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
 
   def Head(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.headJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withoutPayload(client.headJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
 
   def Options(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.optionsJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withoutPayload(client.optionsJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
 
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.deleteJson, url, params, headers, extractor, requestTimeout, expected)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withoutPayload(client.deleteJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
 
   def OpenSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None)(s: Session) =
-    withoutPayload(client.openSSE, url, params, headers, extractor, takeWithin, None)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withoutPayload(client.openSSE, url, params, headers, extractor, takeWithin, None)(s).fold(e ⇒ throw e, _._2)
 
   def OpenWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], extractor: Option[String] = None)(s: Session) =
-    withoutPayload(client.openWS, url, params, headers, extractor, takeWithin, None)(s).map { case (_, session) ⇒ session }.fold(e ⇒ throw e, identity)
+    withoutPayload(client.openWS, url, params, headers, extractor, takeWithin, None)(s).fold(e ⇒ throw e, _._2)
 
-  def fillInHttpSession(session: Session, response: CornichonHttpResponse, extractor: Option[String]): Session =
+  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: Option[String]): Session =
     extractor.fold(session) { e ⇒
       session.addValue(e, response.body)
     }.addValues(Seq(
@@ -118,7 +134,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       parseHttpHeaders(tuples)
     }
 
-  private def urlBuilder(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
+  private def withBaseUrl(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
 }
 
 object HttpService {

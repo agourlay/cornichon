@@ -174,8 +174,8 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        When I get("/superheroes/Scalaman").withParams(
-          "sessionId" → "<session-id>",
+        // Params can also be passed in the URL
+        When I get("/superheroes/Scalaman?sessionId=<session-id>").withParams(
           "protectIdentity" → "true"
         )
 
