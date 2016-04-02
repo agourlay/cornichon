@@ -44,6 +44,11 @@ trait Dsl extends CornichonLogger {
   case object Then extends Starters with WithAssert { val name = "Then" }
   case object And extends Starters with WithAssert { val name = "And" }
 
+  def Attach =
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      steps
+    }
+
   def Repeat(times: Int) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
       RepeatStart(times) +: steps :+ RepeatStop
