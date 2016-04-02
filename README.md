@@ -386,7 +386,7 @@ Within(maxDuration = 10 seconds) {
 ```scala
 WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
   When I get("http://superhero.io/secured")
-  When I get("http://superhero.io/secured")
+  Then assert status.is(200)
 }
 
 ```
@@ -396,7 +396,7 @@ WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
 ```scala
 WithBasicAuth("admin", "root"){
   When I get("http://superhero.io/secured")
-  When I get("http://superhero.io/secured")
+  Then assert status.is(200)
 }
 
 ```
@@ -436,7 +436,7 @@ This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
 
 Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
-# DSL composition
+## DSL composition
 
 Series of steps defined with Cornichon's DSL can be reused within different ```Scenarios```.
  
