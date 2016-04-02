@@ -549,6 +549,23 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         And I show_last_status
       }
+
+      Scenario("demonstrate DSL composition") {
+
+        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+
+        Then assert status.is(200)
+
+        Then assert random_superheroes_until("Batman")
+
+      }
+    }
+
+  def random_superheroes_until(name: String) =
+    Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
+      When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+      Then assert body.path(root.name).is(name)
+      Then I print_step("bingo!")
     }
 
   lazy val port = 8080

@@ -19,6 +19,8 @@ trait Dsl extends CornichonLogger {
   sealed trait Starters {
     def name: String
 
+    def I(steps: Seq[Step]) = steps
+
     def I[A](step: EffectStep) =
       step.copy(s"$name I ${step.title}")
 
@@ -33,6 +35,8 @@ trait Dsl extends CornichonLogger {
 
   sealed trait WithAssert {
     self: Starters ⇒
+
+    def assert(steps: Seq[Step]) = steps
 
     def assert[A](step: AssertStep[A]) =
       step.copy(s"$name assert ${step.title}")
