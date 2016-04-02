@@ -12,7 +12,7 @@ case class FeatureDef(name: String, scenarios: Vector[Scenario]) {
 case class Scenario(name: String, steps: Vector[Step], ignored: Boolean = false)
 
 sealed trait StepAssertion[A] {
-  val isSuccess: Boolean
+  def isSuccess: Boolean
 }
 
 case class SimpleStepAssertion[A](expected: A, result: A) extends StepAssertion[A] {
@@ -24,7 +24,7 @@ case class DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ Strin
 }
 
 sealed trait Step {
-  val title: String
+  def title: String
 }
 
 case class EffectStep(

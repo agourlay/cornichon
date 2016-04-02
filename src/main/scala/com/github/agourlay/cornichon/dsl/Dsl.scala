@@ -17,7 +17,7 @@ trait Dsl extends CornichonLogger {
     BodyElementCollector[Step, Scenario](steps ⇒ ScenarioDef(name, steps, ignored))
 
   sealed trait Starters {
-    val name: String
+    def name: String
 
     def I[A](step: EffectStep) =
       step.copy(s"$name I ${step.title}")

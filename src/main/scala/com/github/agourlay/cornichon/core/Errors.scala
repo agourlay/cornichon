@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import scala.util.control.NoStackTrace
 
 trait CornichonError extends Exception with NoStackTrace {
-  val msg: String
+  def msg: String
 }
 
 object CornichonError {

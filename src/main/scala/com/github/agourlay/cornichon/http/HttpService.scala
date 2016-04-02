@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) extends CornichonJson {
 
-  import HttpService._
+  import com.github.agourlay.cornichon.http.HttpService._
 
   private type WithPayloadCall = (JValue, String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
   private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]

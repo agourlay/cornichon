@@ -7,13 +7,13 @@ import scala.concurrent.duration.FiniteDuration
 object HttpEffects {
 
   sealed trait HttpRequest {
-    val name: String
-    val url: String
+    def name: String
+    def url: String
 
-    val params: Seq[(String, String)]
+    def params: Seq[(String, String)]
     def withParams(params: (String, String)*): HttpRequest
 
-    val headers: Seq[(String, String)]
+    def headers: Seq[(String, String)]
     def withHeaders(params: (String, String)*): HttpRequest
 
     def description: String = {
@@ -55,7 +55,7 @@ object HttpEffects {
   }
 
   sealed trait HttpRequestWithPayload extends HttpRequest {
-    val payload: String
+    def payload: String
 
     override def description: String = {
       val base = s"$name to $url"
@@ -83,7 +83,7 @@ object HttpEffects {
   }
 
   sealed trait HttpRequestStreamed extends HttpRequest {
-    val takeWithin: FiniteDuration
+    def takeWithin: FiniteDuration
   }
 
   case class OpenSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestStreamed {

@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import de.heikoseeberger.akkasse.ServerSentEvent
 import spray.json.DefaultJsonProtocol
 
-import collection.mutable.{ HashMap, MultiMap, Set }
+import scala.collection.mutable
 import scala.concurrent._
 import scala.util.Random
 
@@ -14,8 +14,8 @@ case class SuperHero(name: String, realName: String, city: String, hasSuperpower
 
 class TestData(implicit executionContext: ExecutionContext) {
 
-  val publishersBySession = new HashMap[String, Set[Publisher]] with MultiMap[String, Publisher]
-  val superheroesBySession = new HashMap[String, Set[SuperHero]] with MultiMap[String, SuperHero]
+  val publishersBySession = new mutable.HashMap[String, mutable.Set[Publisher]] with mutable.MultiMap[String, Publisher]
+  val superheroesBySession = new mutable.HashMap[String, mutable.Set[SuperHero]] with mutable.MultiMap[String, SuperHero]
 
   def createSession(): Future[String] = Future {
     val newSessionId = Random.alphanumeric.take(6).mkString
@@ -96,7 +96,7 @@ class TestData(implicit executionContext: ExecutionContext) {
 }
 
 trait ResourceNotFound extends Exception {
-  val id: String
+  def id: String
 }
 
 case class SessionNotFound(id: String) extends ResourceNotFound
@@ -104,7 +104,7 @@ case class PublisherNotFound(id: String) extends ResourceNotFound
 case class SuperHeroNotFound(id: String) extends ResourceNotFound
 
 trait ResourceAlreadyExists extends Exception {
-  val id: String
+  def id: String
 }
 case class PublisherAlreadyExists(id: String) extends ResourceNotFound
 case class SuperHeroAlreadyExists(id: String) extends ResourceNotFound

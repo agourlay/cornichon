@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 trait HttpDsl extends Dsl {
   this: CornichonFeature ⇒
 
-  import HttpService._
+  import com.github.agourlay.cornichon.http.HttpService._
 
   implicit def toStep(request: HttpRequest): EffectStep = EffectStep(
     title = request.description,

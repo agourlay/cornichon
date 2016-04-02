@@ -4,7 +4,7 @@ import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 
-import JsonPathParserSpec._
+import com.github.agourlay.cornichon.json.JsonPathParserSpec._
 
 class JsonPathParserSpec extends WordSpec with Matchers with PropertyChecks {
 

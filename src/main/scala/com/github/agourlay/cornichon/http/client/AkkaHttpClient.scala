@@ -43,8 +43,8 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     val ssl = SSLContext.getInstance("SSL")
     val byPassTrustManagers = Array[TrustManager](new X509TrustManager() {
       override def getAcceptedIssuers: Array[X509Certificate] = Array.empty
-      override def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = ()
-      override def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = ()
+      override def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
+      override def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
     })
     ssl.init(null, byPassTrustManagers, new SecureRandom)
     ConnectionContext.https(ssl)

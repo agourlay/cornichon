@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.http
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.ActorMaterializer
-import cats.data.Xor.{ left, right }
+import cats.data.Xor.right
 import com.github.agourlay.cornichon.core.{ Resolver, Session }
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }

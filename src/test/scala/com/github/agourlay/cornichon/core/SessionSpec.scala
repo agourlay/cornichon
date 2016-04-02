@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Gen
 import org.scalatest.{ Matchers, WordSpec }
-import SessionSpec._
+import com.github.agourlay.cornichon.core.SessionSpec._
 
 class SessionSpec extends WordSpec with Matchers with PropertyChecks {
 

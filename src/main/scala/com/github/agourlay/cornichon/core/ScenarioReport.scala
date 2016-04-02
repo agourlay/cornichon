@@ -4,9 +4,9 @@ import scala.concurrent.duration.Duration
 import scala.Console._
 
 sealed trait StepsReport {
-  val logs: Vector[LogInstruction]
-  val session: Session
-  val isSuccess: Boolean
+  def logs: Vector[LogInstruction]
+  def session: Session
+  def isSuccess: Boolean
 }
 
 case class SuccessRunSteps(session: Session, logs: Vector[LogInstruction]) extends StepsReport {
@@ -17,10 +17,10 @@ case class FailedRunSteps(failedStep: FailedStep, notExecutedStep: Vector[String
 }
 
 sealed trait ScenarioReport {
-  val scenarioName: String
-  val success: Boolean
-  val logs: Seq[LogInstruction]
-  val session: Session
+  def scenarioName: String
+  def success: Boolean
+  def logs: Seq[LogInstruction]
+  def session: Session
   def merge(scenarioReport: ScenarioReport): ScenarioReport
 }
 
@@ -77,10 +77,10 @@ object FailedScenarioReport {
 case class FailedStep(step: Step, error: CornichonError)
 
 sealed trait LogInstruction {
-  val message: String
-  val margin: Int
-  val color: String
-  val duration: Option[Duration]
+  def message: String
+  def margin: Int
+  def color: String
+  def duration: Option[Duration]
 }
 
 case class DefaultLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {

@@ -7,7 +7,7 @@ import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server._
-import Directives._
+import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.Source
 import de.heikoseeberger.akkasse.{ ServerSentEvent, EventStreamMarshalling }
 

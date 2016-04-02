@@ -6,7 +6,7 @@ import cats.data.Xor._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ OptionValues, Matchers, WordSpec }
 import org.scalacheck.Gen
-import SessionSpec._
+import com.github.agourlay.cornichon.core.SessionSpec._
 
 class ResolverSpec extends WordSpec with Matchers with OptionValues with PropertyChecks {
 
