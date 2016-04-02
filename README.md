@@ -380,6 +380,16 @@ WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
 
 ```
 
+- WithBasicAuth automatically sets basic auth headers for several steps.
+
+```scala
+WithBasicAuth("admin", "root"){
+  When I get("http://superhero.io/secured")
+  When I get("http://superhero.io/secured")
+}
+
+```
+
 - experimental support for Server-Sent-Event.
  
  SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
