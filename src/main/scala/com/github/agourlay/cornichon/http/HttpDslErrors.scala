@@ -27,6 +27,16 @@ object HttpDslErrors {
         |$sourceArray""".stripMargin
   }
 
+  def keyIsPresentError(keyName: String, source: String): Boolean ⇒ String = resFalse ⇒ {
+    s"""expected key '$keyName' to be absent but it was found with value :
+        |$source""".stripMargin
+  }
+
+  def keyIsAbsentError(keyName: String, source: String): Boolean ⇒ String = resFalse ⇒ {
+    s"""expected key '$keyName' to be present but it was not in the source :
+        |$source""".stripMargin
+  }
+
   case object InvalidIgnoringConfigError extends CornichonError {
     val msg = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
   }

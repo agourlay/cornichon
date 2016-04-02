@@ -102,6 +102,42 @@ object HttpAssertions {
       }
     }
 
+    def isAbsent: AssertStep[Boolean] = {
+      val baseTitle = if (jsonPath.isRoot) s"response body is absent" else s"response body's field '${jsonPath.pretty}' is absent"
+      from_session_detail_step(
+        key = LastResponseBodyKey,
+        title = titleBuilder(baseTitle, ignoredKeys, whiteList),
+        expected = s ⇒ true,
+        mapValue =
+          (session, sessionValue) ⇒ {
+            val subJson = selectJsonPath(jsonPath, sessionValue)
+            val predicate = subJson match {
+              case JNothing | JNull ⇒ true
+              case _                ⇒ false
+            }
+            (predicate, keyIsPresentError(jsonPath.pretty, prettyPrint(subJson)))
+          }
+      )
+    }
+
+    def isPresent: AssertStep[Boolean] = {
+      val baseTitle = if (jsonPath.isRoot) s"response body is present" else s"response body's field '${jsonPath.pretty}' is present"
+      from_session_detail_step(
+        key = LastResponseBodyKey,
+        title = titleBuilder(baseTitle, ignoredKeys, whiteList),
+        expected = s ⇒ true,
+        mapValue =
+          (session, sessionValue) ⇒ {
+            val subJson = selectJsonPath(jsonPath, sessionValue)
+            val predicate = subJson match {
+              case JNothing | JNull ⇒ false
+              case _                ⇒ true
+            }
+            (predicate, keyIsAbsentError(jsonPath.pretty, prettyPrint(parseJson(sessionValue))))
+          }
+      )
+    }
+
     def asArray = BodyArrayAssertion[A](jsonPath, ordered = false, ignoredKeys, resolver)
   }
 

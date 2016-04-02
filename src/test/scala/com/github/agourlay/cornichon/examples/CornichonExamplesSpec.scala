@@ -86,8 +86,12 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
+        Then assert body.path(root.city).isPresent
+
         // Test part of response body by providing a JsonPath
         Then assert body.path(root.city).is("Gotham city")
+
+        Then assert body.path(root.country).isAbsent
 
         Then assert body.path(root.hasSuperpowers).is(false)
 

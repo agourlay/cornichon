@@ -229,6 +229,10 @@ body.path(root.publisher.name).is("DC")
 
 body.path(root.publisher.foundationYear).is(1934)
 
+body.path(root.publisher.foundationYear).isPresent
+
+body.path(root.publisher.foundationMonth).isAbsent
+
 ```
 
 If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
