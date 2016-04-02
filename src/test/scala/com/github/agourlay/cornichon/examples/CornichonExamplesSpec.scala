@@ -552,13 +552,17 @@ class CornichonExamplesSpec extends CornichonFeature {
 
       Scenario("demonstrate DSL composition") {
 
-        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
-
-        Then assert status.is(200)
+        Then assert superhero_exists("batman")
 
         Then assert random_superheroes_until("Batman")
 
       }
+    }
+
+  def superhero_exists(name: String) =
+    Attach {
+      When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+      Then assert status.is(200)
     }
 
   def random_superheroes_until(name: String) =
