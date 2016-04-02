@@ -1,5 +1,8 @@
 package com.github.agourlay.cornichon.http
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
@@ -67,6 +70,9 @@ trait HttpDsl extends Dsl {
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
   def show_key_as_json(key: String) = show_session(key, v ⇒ prettyPrint(parseJson(v)))
+
+  def WithBasicAuth(userName: String, password: String) =
+    WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
 
   def WithHeaders(headers: (String, String)*) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒

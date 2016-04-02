@@ -194,7 +194,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))) {
+        WithBasicAuth("admin", "cornichon") {
           When I put("/superheroes", payload =
             """
             {
