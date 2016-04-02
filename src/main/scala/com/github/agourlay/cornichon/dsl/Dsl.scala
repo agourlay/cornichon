@@ -58,6 +58,11 @@ trait Dsl extends CornichonLogger {
       RepeatStart(times) +: steps :+ RepeatStop
     }
 
+  def RetryMax(limit: Int) =
+    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+      RetryMaxStart(limit) +: steps :+ RetryMaxStop
+    }
+
   def RepeatDuring(duration: Duration) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
       RepeatDuringStart(duration) +: steps :+ RepeatDuringStop

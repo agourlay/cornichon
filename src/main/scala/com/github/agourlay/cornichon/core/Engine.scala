@@ -148,8 +148,25 @@ class Engine(executionContext: ExecutionContext) {
           buildFailedRunSteps(steps, steps.last, RepeatDuringBlockContainFailedSteps, fullLogs, repeatRes.session)
         }
 
+      case r @ RetryMaxStart(limit) ⇒
+        val updatedLogs = logs :+ DefaultLogInstruction(r.title, depth)
+        val retrySteps = findEnclosedSteps(r, steps.tail)
+
+        val (repeatRes, executionTime) = withDuration {
+          retryMaxSteps(retrySteps, session, limit, Vector.empty, depth + 1)
+        }
+
+        val nextSteps = steps.tail.drop(retrySteps.size)
+        if (repeatRes.isSuccess) {
+          val fullLogs = (updatedLogs ++ repeatRes.logs) :+ SuccessLogInstruction(s"RetryMax block with limit $limit succeeded", depth, Some(executionTime))
+          runSteps(nextSteps, repeatRes.session, fullLogs, depth)
+        } else {
+          val fullLogs = (updatedLogs ++ repeatRes.logs) :+ FailureLogInstruction(s"RetryMax block with limit $limit failed", depth, Some(executionTime))
+          buildFailedRunSteps(steps, steps.last, RetryMaxBlockReachedLimit, fullLogs, repeatRes.session)
+        }
+
       // The end blocks are only used for nesting detection
-      case RepeatStop | WithinStop | EventuallyStop | ConcurrentStop | RepeatDuringStop ⇒
+      case RepeatStop | WithinStop | EventuallyStop | ConcurrentStop | RepeatDuringStop | RetryMaxStop ⇒
         runSteps(steps.tail, session, logs, depth)
 
       case a @ AssertStep(title, toAssertion, negate, show) ⇒
@@ -258,6 +275,17 @@ class Engine(executionContext: ExecutionContext) {
               case _ ⇒
                 findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
             }
+          case RetryMaxStart(_) ⇒
+            head match {
+              case RetryMaxStop if depth == 0 ⇒
+                index
+              case RetryMaxStop ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth - 1)
+              case RetryMaxStart(_) ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth + 1)
+              case _ ⇒
+                findLastEnclosedIndex(openingStep, steps.tail, index + 1, depth)
+            }
           case _ ⇒ index
         }
       }
@@ -300,6 +328,18 @@ class Engine(executionContext: ExecutionContext) {
         case s @ SuccessRunSteps(sSession, sLogs)      ⇒ s.copy(logs = accLogs ++ sLogs)
         case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒ f.copy(logs = accLogs ++ eLogs)
       }
+  }
+
+  @tailrec
+  private[cornichon] final def retryMaxSteps(steps: Vector[Step], session: Session, limit: Int, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
+    runSteps(steps, session, Vector.empty, depth) match {
+      case s @ SuccessRunSteps(sSession, sLogs) ⇒ s.copy(logs = accLogs ++ sLogs)
+      case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
+        if (limit > 0)
+          retryMaxSteps(steps, session, limit - 1, accLogs ++ eLogs, depth)
+        else
+          f.copy(logs = accLogs ++ eLogs)
+    }
   }
 
   private[cornichon] def logNonExecutedStep(steps: Seq[Step], depth: Int): Seq[LogInstruction] =

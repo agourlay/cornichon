@@ -90,3 +90,7 @@ case object RepeatBlockContainFailedSteps extends CornichonError {
 case object RepeatDuringBlockContainFailedSteps extends CornichonError {
   val msg = "repeatDuring block contains failed step(s)"
 }
+
+case object RetryMaxBlockReachedLimit extends CornichonError {
+  val msg = "retry max block reached the limit"
+}

@@ -109,3 +109,14 @@ case class RepeatDuringStart(duration: Duration) extends RepeatDuringStep {
 case object RepeatDuringStop extends RepeatDuringStep {
   val title = s"Repeat block during end"
 }
+
+sealed trait RetryMaxStep extends WrapperStep
+
+case class RetryMaxStart(limit: Int) extends RetryMaxStep {
+  require(limit > 0, "rety max limit must be a positive number")
+  val title = s"RetryMax block with limit '$limit'"
+}
+
+case object RetryMaxStop extends RetryMaxStep {
+  val title = s"RetryMax block end"
+}

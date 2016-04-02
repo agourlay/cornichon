@@ -146,7 +146,7 @@ class EngineSpec extends WordSpec with Matchers {
           ),
           RepeatStop
         )
-        val s = Scenario("scenario with Within", steps)
+        val s = Scenario("scenario with Repeat", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
       }
 
@@ -164,7 +164,7 @@ class EngineSpec extends WordSpec with Matchers {
           ),
           RepeatStop
         )
-        val s = Scenario("scenario with Within", steps)
+        val s = Scenario("scenario with Repeat", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
         uglyCounter should be(loop)
       }
@@ -178,7 +178,7 @@ class EngineSpec extends WordSpec with Matchers {
           ),
           RepeatDuringStop
         )
-        val s = Scenario("scenario with Within", steps)
+        val s = Scenario("scenario with RepeatDuring", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
       }
 
@@ -194,7 +194,7 @@ class EngineSpec extends WordSpec with Matchers {
           ),
           RepeatDuringStop
         )
-        val s = Scenario("scenario with Within", steps)
+        val s = Scenario("scenario with RepeatDuring", steps)
         val now = System.nanoTime
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
         val executionTime = Duration.fromNanos(System.nanoTime - now)
@@ -215,7 +215,7 @@ class EngineSpec extends WordSpec with Matchers {
           ),
           RepeatDuringStop
         )
-        val s = Scenario("scenario with Within", steps)
+        val s = Scenario("scenario with RepeatDuring", steps)
         val now = System.nanoTime
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
         val executionTime = Duration.fromNanos(System.nanoTime - now)
@@ -223,6 +223,45 @@ class EngineSpec extends WordSpec with Matchers {
         executionTime.gt(50.millis) should be(true)
         // empiric values for the upper bound here
         executionTime.lt(550.millis) should be(true)
+      }
+
+      "fail if 'retryMax' block never succeeds" in {
+        var uglyCounter = 0
+        val loop = 10
+        val steps = Vector(
+          RetryMaxStart(loop),
+          AssertStep(
+            "always fails",
+            s ⇒ {
+              uglyCounter = uglyCounter + 1
+              SimpleStepAssertion(true, false)
+            }
+          ),
+          RetryMaxStop
+        )
+        val s = Scenario("scenario with RetryMax", steps)
+        engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
+        // Initial run + 'loop' retries
+        uglyCounter should be(loop + 1)
+      }
+
+      "repeat 'retryMax' and might succeed later" in {
+        var uglyCounter = 0
+        val max = 10
+        val steps = Vector(
+          RetryMaxStart(max),
+          AssertStep(
+            "always fails",
+            s ⇒ {
+              uglyCounter = uglyCounter + 1
+              SimpleStepAssertion(true, uglyCounter == max - 2)
+            }
+          ),
+          RetryMaxStop
+        )
+        val s = Scenario("scenario with RetryMax", steps)
+        engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
+        uglyCounter should be(max - 2)
       }
 
     }

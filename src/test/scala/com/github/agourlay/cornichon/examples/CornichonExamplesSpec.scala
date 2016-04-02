@@ -496,6 +496,22 @@ class CornichonExamplesSpec extends CornichonFeature {
           )
         }
 
+        // Retry series of Steps with a limit
+        RetryMax(300) {
+
+          When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+
+          Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
+            """
+            {
+              "name": "Batman",
+              "realName": "Bruce Wayne",
+              "city": "Gotham city"
+            }
+            """
+          )
+        }
+
         // Assert that a serie of Steps succeeds within a given duration
         Within(maxDuration = 200 millis) {
 

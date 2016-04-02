@@ -327,6 +327,17 @@ RepeatDuring(300.millis) {
 }
 ```
 
+- retry a series of ```steps``` until it succeeds or reaches the limit
+
+```scala
+RetryMax(3) {
+  When I get("http://superhero.io/batman")
+
+  Then assert status.is(200)
+}
+```
+
+
 - repeating a series of ```steps``` until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)
 
 ```scala
@@ -431,7 +442,7 @@ Series of steps defined with Cornichon's DSL can be reused within different ```S
  
 Using the keyword ```Attach``` if the series starts with a ```Step``` and without if it starts with a wrapping bloc.
  
-```
+```scala
 class CornichonExamplesSpec extends CornichonFeature {
 
   lazy val feature =
