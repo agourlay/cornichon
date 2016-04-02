@@ -425,6 +425,42 @@ This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
 
 Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
+# DSL composition
+
+Series of steps defined with Cornichon's DSL can be reused within different ```Scenarios```.
+ 
+Using the keyword ```Attach``` if the series starts with a ```Step``` and without if it starts with a wrapping bloc.
+ 
+```
+class CornichonExamplesSpec extends CornichonFeature {
+
+  lazy val feature =
+    Feature("Cornichon feature example") {
+
+      Scenario("demonstrate DSL composition") {
+    
+        Then assert superhero_exists("batman")
+    
+        Then assert random_superheroes_until("Batman")
+    
+      }
+    }
+    
+  def superhero_exists(name: String) =
+    Attach {
+      When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+      Then assert status.is(200)
+    }
+  
+  def random_superheroes_until(name: String) =
+    Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
+      When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+      Then assert body.path(root.name).is(name)
+      Then I print_step("bingo!")
+    }  
+      
+```
+
 ## Custom steps
 
 There are two kind of ```step``` :
