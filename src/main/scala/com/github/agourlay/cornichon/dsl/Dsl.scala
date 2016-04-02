@@ -10,8 +10,8 @@ import scala.concurrent.duration.{ FiniteDuration, Duration }
 
 trait Dsl extends CornichonLogger {
 
-  def Feature(name: String) =
-    BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios))
+  def Feature(name: String, ignored: Boolean = false) =
+    BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
 
   def Scenario(name: String, ignored: Boolean = false) =
     BodyElementCollector[Step, Scenario](steps ⇒ ScenarioDef(name, steps, ignored))

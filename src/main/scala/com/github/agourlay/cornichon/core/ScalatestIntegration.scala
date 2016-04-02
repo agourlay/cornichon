@@ -33,7 +33,7 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
     case Success(feat) ⇒
       feat.name should {
         feat.scenarios.foreach { s ⇒
-          if (s.ignored)
+          if (feat.ignored || s.ignored)
             s.name ignore {}
           else
             s.name in {

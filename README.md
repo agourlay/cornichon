@@ -643,6 +643,26 @@ parallelExecution in Test := false
 
 or through the command line ```sbt test parallelExecution in Test := false```
 
+```Feature``` or individual ```scenario``` can also be marked to be ignored.
+
+```scala
+class CornichonExamplesSpec extends CornichonFeature {
+
+  // Ignore a complete feature
+  def feature = Feature("Checking google", ignored = true){
+  
+      // Ignore a single scenario 
+      Scenario("Google is up and running", ignored = true){
+  
+          When I get("http://google.com")
+  
+          Then assert status.is(302)
+      }
+  }
+}
+```
+
+
 ## ScalaTest integration
 
 As Cornichon uses Scalatest it is possible to use all the nice CLI from SBT + ScalaTest to trigger tests:
