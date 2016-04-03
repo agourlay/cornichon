@@ -83,7 +83,8 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
             ("Name", JString("John"))
           )
         )
-        removeFieldsByPath(input, Seq(JsonPath.root.TwoLettersName, JsonPath.root.Name)) should be(JObject(List(("Age", JInt(50)))))
+        val paths = Seq("TwoLettersName", "Name").map(JsonPath.parse)
+        removeFieldsByPath(input, paths) should be(JObject(List(("Age", JInt(50)))))
       }
 
       "remove only root keys" in {
@@ -91,7 +92,8 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
 
         val expected = ("age", 50) ~ ("brother" → (("name" → "john") ~ ("age", 40)))
 
-        removeFieldsByPath(input, Seq(JsonPath.root.name)) should be(expected)
+        val paths = Seq("name").map(JsonPath.parse)
+        removeFieldsByPath(input, paths) should be(expected)
       }
 
       "remove nested keys" in {
@@ -103,7 +105,8 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
 
         val expected = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("age", 40))
 
-        removeFieldsByPath(input, Seq(JsonPath.root.brother.name)) should be(expected)
+        val paths = Seq("brother.name").map(JsonPath.parse)
+        removeFieldsByPath(input, paths) should be(expected)
       }
 
       //FIXME
@@ -115,7 +118,8 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
         val input = JArray(List(p1, p2, p3))
         val expected = JArray(List(JObject(JField("name", "bob"), JField("name", "jim"), JField("name", "john"))))
 
-        removeFieldsByPath(input, Seq(JsonPath.root.age)) should be(expected)
+        val paths = Seq("age").map(JsonPath.parse)
+        removeFieldsByPath(input, paths) should be(expected)
       }
 
       //FIXME
@@ -130,8 +134,11 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
 
         val expected = ("name" → "bob") ~ ("age", 50) ~ ("brother" → ("age", 40)) ~ ("friend" → (("name" → "john") ~ ("age", 30)))
 
-        println(prettyPrint(removeFieldsByPath(input, Seq(JsonPath.root.brother.name))))
-        removeFieldsByPath(input, Seq(JsonPath.root.brother.name)) should be(expected)
+        val paths = Seq("brother.name").map(JsonPath.parse)
+
+        // debug
+        println(prettyPrint(removeFieldsByPath(input, paths)))
+        removeFieldsByPath(input, paths) should be(expected)
       }
     }
 

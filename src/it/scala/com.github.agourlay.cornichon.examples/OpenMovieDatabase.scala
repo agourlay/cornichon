@@ -37,7 +37,7 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body.path(root.imdbRating).is("9.5")
+        And assert body.path("imdbRating").is("9.5")
 
         And assert body.whiteListing.is(
           """
@@ -151,7 +151,7 @@ class OpenMovieDatabase extends CornichonFeature {
           """
         )
 
-        And assert body.path(root.Episodes).is(
+        And assert body.path("Episodes").is(
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.9"   | "tt1480055" |
@@ -168,7 +168,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
         And assert body.path("Episodes").asArray.hasSize(10)
 
-        And assert body.path(root.Episodes(0)).is(
+        And assert body.path("Episodes[0]").is(
           """
           {
             "Title": "Winter Is Coming",
@@ -179,9 +179,9 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body.path(root.Episodes(0).Released).is("2011-04-17")
+        And assert body.path("Episodes[0].Released").is("2011-04-17")
 
-        And assert body.path(root.Episodes).asArray.contains("""
+        And assert body.path("Episodes").asArray.contains("""
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",

@@ -52,15 +52,13 @@ trait CornichonJson {
     case Failure(e)     ⇒ throw new MalformedGraphQLJsonError(input, e)
   }
 
-  def selectJsonPath(path: JsonPath, json: String): JValue = path.run(parseJson(json))
-
   def parseArray(input: String): JArray = parseJson(input) match {
     case arr: JArray ⇒ arr
     case _           ⇒ throw new NotAnArrayError(input)
   }
 
   def selectArrayJsonPath(path: JsonPath, sessionValue: String): JArray = {
-    val extracted = selectJsonPath(path, sessionValue)
+    val extracted = path.run(sessionValue)
     extracted match {
       case jarr: JArray ⇒ jarr
       case _            ⇒ throw new NotAnArrayError(extracted)

@@ -127,7 +127,7 @@ trait Dsl extends CornichonLogger {
 
 object Dsl {
 
-  case class FromSessionSetter(fromKey: String, trans: String ⇒ String, target: String)
+  case class FromSessionSetter(fromKey: String, trans: (Session, String) ⇒ String, target: String)
 
   def save_from_session(args: Seq[FromSessionSetter]) = {
     val keys = args.map(_.fromKey)
@@ -135,9 +135,9 @@ object Dsl {
     val targets = args.map(_.target)
     EffectStep(
       s"save parts from session '${displayTuples(keys.zip(targets))}'",
-      s ⇒ {
-        val extracted = s.getList(keys).zip(extractors).map { case (v, e) ⇒ e(v) }
-        targets.zip(extracted).foldLeft(s)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
+      session ⇒ {
+        val extracted = session.getList(keys).zip(extractors).map { case (value, extractor) ⇒ extractor(session, value) }
+        targets.zip(extracted).foldLeft(session)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
       }
     )
   }

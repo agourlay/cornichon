@@ -4,7 +4,6 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.right
-import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonPath
 import org.parboiled2._
 import org.scalacheck.Gen
@@ -40,7 +39,9 @@ class Resolver(extractors: Map[String, Mapper]) {
           session.getXor(key, ph.index).map(transform)
         case JsonMapper(key, jsonPath, transform) ⇒
           session.getXor(key, ph.index).map { sessionValue ⇒
-            transform(selectJsonPath(jsonPath, sessionValue).values.toString)
+            // No placeholders in JsonMapper for now to avoid people running into infinite recursion
+            // Could be enabled if there is a use case for it.
+            transform(JsonPath.run(jsonPath, sessionValue).values.toString)
           }
       }
   }
@@ -120,4 +121,4 @@ object GenMapper {
 
 case class TextMapper(key: String, transform: String ⇒ String = identity) extends Mapper
 
-case class JsonMapper(key: String, jsonPath: JsonPath, transform: String ⇒ String = identity) extends Mapper
+case class JsonMapper(key: String, jsonPath: String, transform: String ⇒ String = identity) extends Mapper

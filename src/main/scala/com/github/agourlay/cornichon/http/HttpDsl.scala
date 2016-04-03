@@ -50,13 +50,16 @@ trait HttpDsl extends Dsl {
 
   def headers = HeadersAssertion(ordered = false)
 
-  def session_json_values(k1: String, k2: String) = SessionJsonValuesAssertion(k1, k2, Seq.empty)
+  def session_json_values(k1: String, k2: String) = SessionJsonValuesAssertion(k1, k2, Seq.empty, resolver)
 
   def body[A] = BodyAssertion[A](root, Seq.empty, whiteList = false, resolver)
 
-  def save_body_path(args: (JsonPath, String)*) = {
+  def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
-      case (k, t) ⇒ FromSessionSetter(LastResponseBodyKey, s ⇒ selectJsonPath(k, s).values.toString, t)
+      case (path, target) ⇒ FromSessionSetter(LastResponseBodyKey, (session, s) ⇒ {
+        val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(session)
+        JsonPath.parse(resolvedPath).run(s).values.toString
+      }, target)
     }
     save_from_session(inputs)
   }

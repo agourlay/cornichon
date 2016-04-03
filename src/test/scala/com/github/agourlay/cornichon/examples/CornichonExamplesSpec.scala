@@ -9,7 +9,6 @@ import com.github.agourlay.cornichon.core.JsonMapper
 import com.github.agourlay.cornichon.examples.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonPath._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -40,7 +39,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        And assert body.ignoring(root.city, root.publisher).is(
+        And assert body.ignoring("city", "publisher").is(
           """
           {
             "name": "Batman",
@@ -52,7 +51,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         // Support for GraphQL JSON input for lightweight definition
         // Requires the import of com.github.agourlay.cornichon.json.CornichonJson._
-        And assert body.ignoring(root.city, root.publisher).is(
+        And assert body.ignoring("city", "publisher").is(
           gql"""
           {
             name: "Batman",
@@ -62,7 +61,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           """
         )
 
-        And assert body.ignoring(root.publisher.name, root.publisher.location).is(
+        And assert body.ignoring("publisher.name", "publisher.location").is(
           """
           {
             "name": "Batman",
@@ -87,15 +86,15 @@ class CornichonExamplesSpec extends CornichonFeature {
         )
 
         // Test part of response body by providing a JsonPath
-        Then assert body.path(root.city).isPresent
+        Then assert body.path("city").isPresent
 
-        Then assert body.path(root.city).is("Gotham city")
+        Then assert body.path("city").is("Gotham city")
 
-        Then assert body.path(root.country).isAbsent
+        Then assert body.path("country").isAbsent
 
-        Then assert body.path(root.hasSuperpowers).is(false)
+        Then assert body.path("hasSuperpowers").is(false)
 
-        Then assert body.path(root.publisher).is(
+        Then assert body.path("publisher").is(
           """
           {
             "name":"DC",
@@ -104,7 +103,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           } """
         )
 
-        Then assert body.path(root.publisher).ignoring(root.location).is(
+        Then assert body.path("publisher").ignoring("location").is(
           """
           {
             "name":"DC",
@@ -112,9 +111,9 @@ class CornichonExamplesSpec extends CornichonFeature {
           } """
         )
 
-        Then assert body.path(root.publisher.name).is("DC")
+        Then assert body.path("publisher.name").is("DC")
 
-        Then assert body.path(root.publisher.foundationYear).is(1934)
+        Then assert body.path("publisher.foundationYear").is(1934)
 
         When I get("/superheroes/Scalaman").withParams("sessionId" → "<session-id>")
 
@@ -169,7 +168,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I get("/superheroes/Scalaman").withParams("sessionId" → "<session-id>")
 
-        Then assert body.ignoring(root.publisher, root.hasSuperpowers, root.city).is(
+        Then assert body.ignoring("publisher", "hasSuperpowers", "city").is(
           """
           {
             "name": "Scalaman",
@@ -183,7 +182,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           "protectIdentity" → "true"
         )
 
-        Then assert body.ignoring(root.publisher).is(
+        Then assert body.ignoring("publisher").is(
           """
           {
             "name": "Scalaman",
@@ -212,12 +211,12 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           Then assert headers.contain("Content-Encoding" → "gzip")
 
-          Then assert body.path(root.city).is("Pankow")
+          Then assert body.path("city").is("Pankow")
         }
 
         Then assert status.is(200)
 
-        Then assert body.ignoring(root.publisher).is(
+        Then assert body.ignoring("publisher").is(
           """
           {
             "name": "Scalaman",
@@ -245,7 +244,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I get("/superheroes").withParams("sessionId" → "<session-id>")
 
-        Then assert body.asArray.ignoring(root.publisher).is(
+        Then assert body.asArray.ignoring("publisher").is(
           """
           [{
             "name": "Batman",
@@ -279,7 +278,7 @@ class CornichonExamplesSpec extends CornichonFeature {
           }]"""
         )
 
-        Then assert body.asArray.ignoring(root.publisher).is(
+        Then assert body.asArray.ignoring("publisher").is(
           """
           |      name      |    realName    |     city      |  hasSuperpowers |
           |    "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
@@ -290,7 +289,7 @@ class CornichonExamplesSpec extends CornichonFeature {
         """
         )
 
-        Then assert body.asArray.ignoring(root.hasSuperpowers, root.publisher).is(
+        Then assert body.asArray.ignoring("hasSuperpowers", "publisher").is(
           """
           [{
             "name": "Superman",
@@ -370,7 +369,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
 
-        Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
+        Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
           {
             "name": "Batman",
@@ -413,7 +412,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         And I show_last_response_body_as_json
 
-        Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
+        Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
           {
             "name": "<favorite-superhero>",
@@ -436,8 +435,8 @@ class CornichonExamplesSpec extends CornichonFeature {
 
         When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
 
-        // Using registered extractor at the bottom
-        Then assert body.path(root.name).is("<name>")
+        // Using registered extractor at the bottom of this file
+        Then assert body.path("name").is("<name>")
 
         // Repeat series of Steps
         Repeat(3) {
@@ -485,7 +484,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
-          Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
+          Then assert body.ignoring("hasSuperpowers", "publisher").is(
             """
             {
               "name": "Batman",
@@ -501,7 +500,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
-          Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
+          Then assert body.ignoring("hasSuperpowers", "publisher").is(
             """
             {
               "name": "Batman",
@@ -526,7 +525,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
             When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
-            Then assert body.ignoring(root.hasSuperpowers, root.publisher).is(
+            Then assert body.ignoring("hasSuperpowers", "publisher").is(
               """
               {
                 "name": "Batman",
@@ -584,7 +583,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   def random_superheroes_until(name: String) =
     Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
       When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
-      Then assert body.path(root.name).is(name)
+      Then assert body.path("name").is(name)
       Then I print_step("bingo!")
     }
 
@@ -612,6 +611,6 @@ class CornichonExamplesSpec extends CornichonFeature {
   )
 
   override def registerExtractors = Map(
-    "name" → JsonMapper(HttpService.LastResponseBodyKey, root.name)
+    "name" → JsonMapper(HttpService.LastResponseBodyKey, "name")
   )
 }

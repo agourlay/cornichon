@@ -196,7 +196,7 @@ body.is(
   }
   """)
 
-body.ignoring("city", root.hasSuperpowers, "publisher").is(
+body.ignoring("city", "hasSuperpowers", "publisher").is(
   """
   {
     "name": "Batman",
@@ -213,25 +213,22 @@ body.whiteListing.is(
   """)
 ```
 
-Ignored keys and extractors are JsonPaths, two formats are currently supported:
-
-- Typed based root.a.b.c(int).d
-- String based "a.b.c[int].d" (implicit conversion to the Typed style)
+Ignored keys and extractors are JsonPaths following the format "a.b.c[int].d"
 
 JsonPath can also be used to only assert part of the response
   
 ```scala
-body.path(root.city).is("Gotham city")
+body.path("city").is("Gotham city")
 
-body.path(root.hasSuperpowers).is(false)
+body.path("hasSuperpowers").is(false)
 
-body.path(root.publisher.name).is("DC")
+body.path("publisher.name").is("DC")
 
-body.path(root.publisher.foundationYear).is(1934)
+body.path("publisher.foundationYear").is(1934)
 
-body.path(root.publisher.foundationYear).isPresent
+body.path("publisher.foundationYear").isPresent
 
-body.path(root.publisher.foundationMonth).isAbsent
+body.path("publisher.foundationMonth").isAbsent
 
 ```
 
@@ -422,7 +419,7 @@ Then assert body.is("""
 all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
 
 ```scala
-And assert body.ignoring(root.city, root.publisher).is(
+And assert body.ignoring("city", "publisher").is(
   gql"""
   {
     name: "Batman",
@@ -466,7 +463,7 @@ class CornichonExamplesSpec extends CornichonFeature {
   def random_superheroes_until(name: String) =
     Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
       When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
-      Then assert body.path(root.name).is(name)
+      Then assert body.path("name").is(name)
       Then I print_step("bingo!")
     }  
       
@@ -541,10 +538,11 @@ trait MySteps {
 
 Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the ```session```:
 
-- Url
+- URL
 - Expected body
 - HTTP params (name and value)
 - HTTP headers (name and value)
+- JSON Path
 
 ```scala
 Given I save("favorite-superhero" → "Batman")

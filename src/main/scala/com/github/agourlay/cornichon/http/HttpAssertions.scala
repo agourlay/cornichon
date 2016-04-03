@@ -22,15 +22,16 @@ object HttpAssertions {
     )
   }
 
-  case class SessionJsonValuesAssertion(k1: String, k2: String, private val ignoredKeys: Seq[JsonPath]) {
+  case class SessionJsonValuesAssertion(k1: String, k2: String, private val ignoredKeys: Seq[String], private val resolver: Resolver) {
 
-    def ignoring(ignoring: JsonPath*): SessionJsonValuesAssertion = copy(ignoredKeys = ignoring)
+    def ignoring(ignoring: String*): SessionJsonValuesAssertion = copy(ignoredKeys = ignoring)
 
     def areEquals = AssertStep(
       title = titleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoredKeys),
       action = s ⇒ {
-        val v1 = removeFieldsByPath(s.getJson(k1), ignoredKeys)
-        val v2 = removeFieldsByPath(s.getJson(k2), ignoredKeys)
+        val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
+        val v1 = removeFieldsByPath(s.getJson(k1), ignoredPaths)
+        val v2 = removeFieldsByPath(s.getJson(k2), ignoredPaths)
         SimpleStepAssertion(v1, v2)
       }
     )
@@ -67,11 +68,11 @@ object HttpAssertions {
     override def inOrder: HeadersAssertion = copy(ordered = true)
   }
 
-  case class BodyAssertion[A](jsonPath: JsonPath, private val ignoredKeys: Seq[JsonPath], whiteList: Boolean = false, resolver: Resolver) extends AssertionStep[A, JValue] {
+  case class BodyAssertion[A](private val jsonPath: String, private val ignoredKeys: Seq[String], whiteList: Boolean = false, resolver: Resolver) extends AssertionStep[A, JValue] {
 
-    def path(path: JsonPath): BodyAssertion[A] = copy(jsonPath = path)
+    def path(path: String): BodyAssertion[A] = copy(jsonPath = path)
 
-    def ignoring(ignoring: JsonPath*): BodyAssertion[A] = copy(ignoredKeys = ignoring)
+    def ignoring(ignoring: String*): BodyAssertion[A] = copy(ignoredKeys = ignoring)
 
     def whiteListing: BodyAssertion[A] = copy(whiteList = true)
 
@@ -79,23 +80,26 @@ object HttpAssertions {
       if (whiteList && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
-        val baseTitle = if (jsonPath.isRoot) s"response body is '$expected'" else s"response body's field '${jsonPath.pretty}' is '$expected'"
+        val baseTitle = if (jsonPath == JsonPath.root) s"response body is '$expected'" else s"response body's field '$jsonPath' is '$expected'"
         from_session_step(
           key = LastResponseBodyKey,
           title = titleBuilder(baseTitle, ignoredKeys, whiteList),
-          expected = s ⇒ resolveAndParse(expected, s, resolver),
+          expected = s ⇒ resolveParseJson(expected, s, resolver),
           mapValue =
             (session, sessionValue) ⇒ {
               if (whiteList) {
-                val expectedJson = resolveAndParse(expected, session, resolver)
-                val sessionValueJson = selectJsonPath(jsonPath, sessionValue)
+                val expectedJson = resolveParseJson(expected, session, resolver)
+                val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
                 val Diff(changed, _, deleted) = expectedJson.diff(sessionValueJson)
                 if (deleted != JNothing) throw new WhiteListError(s"White list error - '${prettyPrint(deleted)}' is not defined in object '${prettyPrint(sessionValueJson)}")
                 if (changed != JNothing) changed else expectedJson
               } else {
-                val subJson = selectJsonPath(jsonPath, sessionValue)
+                val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
                 if (ignoredKeys.isEmpty) subJson
-                else removeFieldsByPath(subJson, ignoredKeys)
+                else {
+                  val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
+                  removeFieldsByPath(subJson, ignoredPaths)
+                }
               }
             }
         )
@@ -103,37 +107,37 @@ object HttpAssertions {
     }
 
     def isAbsent: AssertStep[Boolean] = {
-      val baseTitle = if (jsonPath.isRoot) s"response body is absent" else s"response body's field '${jsonPath.pretty}' is absent"
+      val baseTitle = if (jsonPath == JsonPath.root) s"response body is absent" else s"response body's field '$jsonPath' is absent"
       from_session_detail_step(
         key = LastResponseBodyKey,
         title = titleBuilder(baseTitle, ignoredKeys, whiteList),
         expected = s ⇒ true,
         mapValue =
           (session, sessionValue) ⇒ {
-            val subJson = selectJsonPath(jsonPath, sessionValue)
+            val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
             val predicate = subJson match {
               case JNothing | JNull ⇒ true
               case _                ⇒ false
             }
-            (predicate, keyIsPresentError(jsonPath.pretty, prettyPrint(subJson)))
+            (predicate, keyIsPresentError(jsonPath, prettyPrint(subJson)))
           }
       )
     }
 
     def isPresent: AssertStep[Boolean] = {
-      val baseTitle = if (jsonPath.isRoot) s"response body is present" else s"response body's field '${jsonPath.pretty}' is present"
+      val baseTitle = if (jsonPath == JsonPath.root) s"response body is present" else s"response body's field '$jsonPath' is present"
       from_session_detail_step(
         key = LastResponseBodyKey,
         title = titleBuilder(baseTitle, ignoredKeys, whiteList),
         expected = s ⇒ true,
         mapValue =
           (session, sessionValue) ⇒ {
-            val subJson = selectJsonPath(jsonPath, sessionValue)
+            val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
             val predicate = subJson match {
               case JNothing | JNull ⇒ false
               case _                ⇒ true
             }
-            (predicate, keyIsAbsentError(jsonPath.pretty, prettyPrint(parseJson(sessionValue))))
+            (predicate, keyIsAbsentError(jsonPath, prettyPrint(parseJson(sessionValue))))
           }
       )
     }
@@ -141,39 +145,49 @@ object HttpAssertions {
     def asArray = BodyArrayAssertion[A](jsonPath, ordered = false, ignoredKeys, resolver)
   }
 
-  case class BodyArrayAssertion[A](jsonPath: JsonPath, ordered: Boolean, private val ignoredKeys: Seq[JsonPath], resolver: Resolver) extends AssertionStep[A, Iterable[JValue]] {
+  case class BodyArrayAssertion[A](private val jsonPath: String, ordered: Boolean, private val ignoredKeys: Seq[String], resolver: Resolver) extends AssertionStep[A, Iterable[JValue]] {
 
-    def path(path: JsonPath): BodyArrayAssertion[A] = copy(jsonPath = path)
+    def path(path: String): BodyArrayAssertion[A] = copy(jsonPath = path)
 
     def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
 
-    def ignoring(ignoring: JsonPath*): BodyArrayAssertion[A] = copy(ignoredKeys = ignoring)
+    def ignoring(ignoring: String*): BodyArrayAssertion[A] = copy(ignoredKeys = ignoring)
 
     def hasSize(size: Int): AssertStep[Int] = {
-      val title = if (jsonPath.isRoot) s"response body array size is '$size'" else s"response body's array '${jsonPath.pretty}' size is '$size'"
+      val title = if (jsonPath == JsonPath.root) s"response body array size is '$size'" else s"response body's array '$jsonPath' size is '$size'"
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,
         expected = s ⇒ size,
         mapValue = (s, sessionValue) ⇒ {
-        val jArray = if (jsonPath.isRoot) parseArray(sessionValue)
-        else selectArrayJsonPath(jsonPath, sessionValue)
+        val jArray = if (jsonPath == JsonPath.root) parseArray(sessionValue)
+        else {
+          val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
+          selectArrayJsonPath(parsedPath, sessionValue)
+        }
         (jArray.arr.size, arraySizeError(size, prettyPrint(jArray)))
       }
       )
     }
 
     override def is(expected: A): AssertStep[Iterable[JValue]] = {
+      def applyPathToArray(s: Session, jArray: JArray) = {
+        val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
+        jArray.arr.map(removeFieldsByPath(_, ignoredPaths))
+      }
+
+      def applyPathToSet(s: Session, jArray: JArray) = applyPathToArray(s, jArray).toSet
+
       if (ordered)
-        body_array_transform(_.arr.map(removeFieldsByPath(_, ignoredKeys)), titleBuilder(s"response body is '$expected'", ignoredKeys), s ⇒ {
-          resolveAndParse(expected, s, resolver) match {
+        body_array_transform(applyPathToArray, titleBuilder(s"response body is '$expected'", ignoredKeys), s ⇒ {
+          resolveParseJson(expected, s, resolver) match {
             case expectedArray: JArray ⇒ expectedArray.arr
             case _                     ⇒ throw new NotAnArrayError(expected)
           }
         })
       else
-        body_array_transform(s ⇒ s.arr.map(removeFieldsByPath(_, ignoredKeys)).toSet, titleBuilder(s"response body array not ordered is '$expected'", ignoredKeys), s ⇒ {
-          resolveAndParse(expected, s, resolver) match {
+        body_array_transform(applyPathToSet, titleBuilder(s"response body array not ordered is '$expected'", ignoredKeys), s ⇒ {
+          resolveParseJson(expected, s, resolver) match {
             case expectedArray: JArray ⇒ expectedArray.arr.toSet
             case _                     ⇒ throw new NotAnArrayError(expected)
           }
@@ -182,15 +196,18 @@ object HttpAssertions {
 
     def contains(elements: A*) = {
       val prettyElements = elements.mkString(" and ")
-      val title = if (jsonPath.isRoot) s"response body array contains '$prettyElements'" else s"response body's array '${jsonPath.pretty}' contains '$prettyElements'"
+      val title = if (jsonPath == JsonPath.root) s"response body array contains '$prettyElements'" else s"response body's array '$jsonPath.pretty' contains '$prettyElements'"
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,
         expected = s ⇒ true,
         mapValue = (s, sessionValue) ⇒ {
-        val jArr = if (jsonPath.isRoot) parseArray(sessionValue)
-        else selectArrayJsonPath(jsonPath, sessionValue)
-        val resolvedJson = elements.map(resolveAndParse(_, s, resolver))
+        val jArr = if (jsonPath == JsonPath.root) parseArray(sessionValue)
+        else {
+          val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
+          selectArrayJsonPath(parsedPath, sessionValue)
+        }
+        val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
         val containsAll = resolvedJson.forall(jArr.arr.contains)
         (containsAll, arrayDoesNotContainError(resolvedJson.map(prettyPrint), prettyPrint(jArr)))
       }
@@ -198,26 +215,36 @@ object HttpAssertions {
     }
   }
 
-  private def body_array_transform[A](mapFct: JArray ⇒ A, title: String, expected: Session ⇒ A): AssertStep[A] =
+  private def body_array_transform[A](mapFct: (Session, JArray) ⇒ A, title: String, expected: Session ⇒ A): AssertStep[A] =
     from_session_step[A](
       title = title,
       key = LastResponseBodyKey,
       expected = s ⇒ expected(s),
-      mapValue = (session, sessionValue) ⇒ mapFct(parseArray(sessionValue))
+      mapValue = (session, sessionValue) ⇒ mapFct(session, parseArray(sessionValue))
     )
 
-  private def titleBuilder(baseTitle: String, ignoring: Seq[JsonPath], withWhiteListing: Boolean = false): String = {
+  private def titleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
 
     if (ignoring.isEmpty) baseWithWhite
-    else s"$baseWithWhite ignoring keys ${ignoring.map(v ⇒ s"'${v.pretty}'").mkString(", ")}"
+    else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }
 
-  private def resolveAndParse[A](input: A, session: Session, resolver: Resolver): JValue =
+  private def resolveParseJson[A](input: A, session: Session, resolver: Resolver): JValue =
     parseJsonUnsafe {
       input match {
         case string: String ⇒ resolver.fillPlaceholdersUnsafe(string)(session).asInstanceOf[A]
         case _              ⇒ input
       }
     }
+
+  private def resolveParseJsonPath(path: String, resolver: Resolver)(s: Session): JsonPath = {
+    val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(s)
+    JsonPath.parse(resolvedPath)
+  }
+
+  private def resolveRunJsonPath(path: String, source: String, resolver: Resolver)(s: Session): JValue = {
+    val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(s)
+    JsonPath.run(resolvedPath, source)
+  }
 }
