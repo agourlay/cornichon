@@ -3,3 +3,4 @@ scala:
 - 2.11.8
 jdk:
 - oraclejdk8
+script: sbt test it:test
