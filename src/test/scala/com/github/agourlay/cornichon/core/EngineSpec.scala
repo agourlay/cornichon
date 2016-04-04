@@ -1,6 +1,9 @@
 package com.github.agourlay.cornichon.core
 
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, DebugStep }
+import com.github.agourlay.cornichon.steps.wrapped._
 import org.scalatest.{ Matchers, WordSpec }
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
@@ -54,14 +57,14 @@ class EngineSpec extends WordSpec with Matchers {
       "replay eventually wrapped steps" in {
         val session = Session.newSession
         val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
-        val steps = Vector(
-          EventuallyStart(eventuallyConf),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "possible random value step",
             s ⇒ SimpleStepAssertion(scala.util.Random.nextInt(10), 5)
-          ),
-          EventuallyStop
+          )
         )
+
+        val steps = Vector(EventuallyStep(nested, eventuallyConf))
         val s = Scenario("scenario with eventually", steps)
         engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
       }
@@ -69,12 +72,13 @@ class EngineSpec extends WordSpec with Matchers {
       "replay eventually wrapped steps until limit" in {
         val session = Session.newSession
         val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
-        val steps = Vector(
-          EventuallyStart(eventuallyConf),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "impossible random value step", s ⇒ SimpleStepAssertion(11, scala.util.Random.nextInt(10))
-          ),
-          EventuallyStop
+          )
+        )
+        val steps = Vector(
+          EventuallyStep(nested, eventuallyConf)
         )
         val s = Scenario("scenario with eventually that fails", steps)
         engine.runScenario(session)(s).isInstanceOf[FailedScenarioReport] should be(true)
@@ -104,16 +108,17 @@ class EngineSpec extends WordSpec with Matchers {
       "control duration of 'within' wrapped steps" in {
         val session = Session.newSession
         val d = 200.millis
-        val steps = Vector(
-          WithinStart(d),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "possible random value step",
             s ⇒ {
               Thread.sleep(100)
               SimpleStepAssertion(true, true)
             }
-          ),
-          WithinStop
+          )
+        )
+        val steps = Vector(
+          WithinStep(nested, d)
         )
         val s = Scenario("scenario with Within", steps)
         engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(true)
@@ -122,29 +127,31 @@ class EngineSpec extends WordSpec with Matchers {
       "fail if duration of 'within' is exceeded" in {
         val session = Session.newSession
         val d = 200.millis
-        val steps = Vector(
-          WithinStart(d),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "possible random value step",
             s ⇒ {
               Thread.sleep(250)
               SimpleStepAssertion(true, true)
             }
-          ),
-          WithinStop
+          )
+        )
+        val steps = Vector(
+          WithinStep(nested, d)
         )
         val s = Scenario("scenario with Within", steps)
         engine.runScenario(session)(s).isInstanceOf[SuccessScenarioReport] should be(false)
       }
 
       "fail if 'repeat' block contains a failed step" in {
-        val steps = Vector(
-          RepeatStart(5),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "always fails",
             s ⇒ SimpleStepAssertion(true, false)
-          ),
-          RepeatStop
+          )
+        )
+        val steps = Vector(
+          RepeatStep(nested, 5)
         )
         val s = Scenario("scenario with Repeat", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
@@ -153,16 +160,17 @@ class EngineSpec extends WordSpec with Matchers {
       "repeat steps inside a 'repeat' block" in {
         var uglyCounter = 0
         val loop = 5
-        val steps = Vector(
-          RepeatStart(loop),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "increment captured counter",
             s ⇒ {
               uglyCounter = uglyCounter + 1
               SimpleStepAssertion(true, true)
             }
-          ),
-          RepeatStop
+          )
+        )
+        val steps = Vector(
+          RepeatStep(nested, loop)
         )
         val s = Scenario("scenario with Repeat", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
@@ -170,29 +178,31 @@ class EngineSpec extends WordSpec with Matchers {
       }
 
       "fail if 'repeatDuring' block contains a failed step" in {
-        val steps = Vector(
-          RepeatDuringStart(5.millis),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "always fails",
             s ⇒ SimpleStepAssertion(true, false)
-          ),
-          RepeatDuringStop
+          )
+        )
+        val steps = Vector(
+          RepeatDuringStep(nested, 5.millis)
         )
         val s = Scenario("scenario with RepeatDuring", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
       }
 
       "repeat steps inside 'repeatDuring' for at least the duration param" in {
-        val steps = Vector(
-          RepeatDuringStart(50.millis),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "always valid",
             s ⇒ {
               Thread.sleep(1)
               SimpleStepAssertion(true, true)
             }
-          ),
-          RepeatDuringStop
+          )
+        )
+        val steps = Vector(
+          RepeatDuringStep(nested, 50.millis)
         )
         val s = Scenario("scenario with RepeatDuring", steps)
         val now = System.nanoTime
@@ -204,16 +214,17 @@ class EngineSpec extends WordSpec with Matchers {
       }
 
       "repeat steps inside 'repeatDuring' at least once if they take more time than the duration param" in {
-        val steps = Vector(
-          RepeatDuringStart(50.millis),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "always valid",
             s ⇒ {
               Thread.sleep(500)
               SimpleStepAssertion(true, true)
             }
-          ),
-          RepeatDuringStop
+          )
+        )
+        val steps = Vector(
+          RepeatDuringStep(nested, 50.millis)
         )
         val s = Scenario("scenario with RepeatDuring", steps)
         val now = System.nanoTime
@@ -228,16 +239,17 @@ class EngineSpec extends WordSpec with Matchers {
       "fail if 'retryMax' block never succeeds" in {
         var uglyCounter = 0
         val loop = 10
-        val steps = Vector(
-          RetryMaxStart(loop),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "always fails",
             s ⇒ {
               uglyCounter = uglyCounter + 1
               SimpleStepAssertion(true, false)
             }
-          ),
-          RetryMaxStop
+          )
+        )
+        val steps = Vector(
+          RetryMaxStep(nested, loop)
         )
         val s = Scenario("scenario with RetryMax", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(false)
@@ -248,16 +260,17 @@ class EngineSpec extends WordSpec with Matchers {
       "repeat 'retryMax' and might succeed later" in {
         var uglyCounter = 0
         val max = 10
-        val steps = Vector(
-          RetryMaxStart(max),
+        val nested: Vector[Step] = Vector(
           AssertStep(
             "always fails",
             s ⇒ {
               uglyCounter = uglyCounter + 1
               SimpleStepAssertion(true, uglyCounter == max - 2)
             }
-          ),
-          RetryMaxStop
+          )
+        )
+        val steps = Vector(
+          RetryMaxStep(nested, max)
         )
         val s = Scenario("scenario with RetryMax", steps)
         engine.runScenario(Session.newSession)(s).isInstanceOf[SuccessScenarioReport] should be(true)
@@ -274,47 +287,6 @@ class EngineSpec extends WordSpec with Matchers {
           SimpleStepAssertion(2, 2)
         })
         engine.runStepPredicate(negateStep = false, session, SimpleStepAssertion(true, true)).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
-      }
-    }
-
-    "findEnclosedStep" must {
-      "resolve non nested sub steps" in {
-        val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
-        val steps = Vector(
-          EventuallyStart(eventuallyConf),
-          AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop
-        )
-        engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
-      }
-
-      "resolve non nested aligned sub steps" in {
-        val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
-        val steps = Vector(
-          EventuallyStart(eventuallyConf),
-          AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop,
-          EventuallyStart(eventuallyConf),
-          AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop
-        )
-        engine.findEnclosedSteps(steps.head, steps.tail).size should be(2)
-      }
-
-      "resolve nested sub steps" in {
-        val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
-        val steps = Vector(
-          EventuallyStart(eventuallyConf),
-          AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStart(eventuallyConf),
-          AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(2 + 1, 3)),
-          EventuallyStop,
-          EventuallyStop
-        )
-        engine.findEnclosedSteps(steps.head, steps.tail).size should be(5)
       }
     }
   }

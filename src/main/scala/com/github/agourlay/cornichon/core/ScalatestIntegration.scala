@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.steps.regular.DebugStep
 import org.scalatest.{ BeforeAndAfterAll, ParallelTestExecution, WordSpecLike }
 
 import scala.Console._
@@ -39,7 +40,7 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
             s.name in {
               runScenario(s) match {
                 case SuccessScenarioReport(scenarioName, successSteps, logs, _) ⇒
-                  if (s.steps.collect { case d @ DebugStep(_) ⇒ d }.nonEmpty) printLogs(logs)
+                  if (s.steps.collect { case d: DebugStep ⇒ d }.nonEmpty) printLogs(logs)
                   assert(true)
                 case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs, _) ⇒
                   printLogs(logs)
