@@ -495,6 +495,29 @@ class CornichonExamplesSpec extends CornichonFeature {
           )
         }
 
+        // Nesting different kind of blocs
+        Repeat(1) {
+
+          When I get("/superheroes/Superman").withParams("sessionId" → "<session-id>")
+
+          Then assert status.is(200)
+
+          Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
+
+            When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+
+            Then assert body.ignoring("hasSuperpowers", "publisher").is(
+              """
+            {
+              "name": "Batman",
+              "realName": "Bruce Wayne",
+              "city": "Gotham city"
+            }
+              """
+            )
+          }
+        }
+
         // Retry series of Steps with a limit
         RetryMax(300) {
 
