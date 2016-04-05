@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.dsl.Dsl._
+import sangria.ast.Document
+import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -52,6 +54,18 @@ object HttpEffects {
     def withParams(params: (String, String)*) = copy(params = params)
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
 
+  }
+
+  case class QueryGQL(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
+    val name = "Query GQL"
+
+    def withParams(params: (String, String)*) = copy(params = params)
+    def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def withQuery(query: Document) = {
+      val queryDoc = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
+      val allParams = params :+ ("query" → queryDoc)
+      copy(params = allParams)
+    }
   }
 
   sealed trait HttpRequestWithPayload extends HttpRequest {

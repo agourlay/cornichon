@@ -32,6 +32,7 @@ trait HttpDsl extends Dsl {
       case Patch(url, payload, params, headers)      ⇒ http.Patch(url, payload, params, headers)(s)
       case OpenSSE(url, takeWithin, params, headers) ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
       case OpenWS(url, takeWithin, params, headers)  ⇒ http.OpenWS(url, takeWithin, params, headers)(s)
+      case QueryGQL(url, params, headers)            ⇒ http.Get(url, params, headers)(s)
     }
   )
 
@@ -43,6 +44,8 @@ trait HttpDsl extends Dsl {
 
   def open_sse(url: String, takeWithin: FiniteDuration) = OpenSSE(url, takeWithin, Seq.empty, Seq.empty)
   def open_ws(url: String, takeWithin: FiniteDuration) = OpenWS(url, takeWithin, Seq.empty, Seq.empty)
+
+  def query_gql(url: String) = QueryGQL(url, Seq.empty, Seq.empty)
 
   val root = JsonPath.root
 
