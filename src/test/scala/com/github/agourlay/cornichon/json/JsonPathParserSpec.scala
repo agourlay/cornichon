@@ -28,6 +28,16 @@ class JsonPathParserSpec extends WordSpec with Matchers with PropertyChecks {
         }
       }
 
+      "parse JsonPath with key containing a dot" in {
+        forAll(fieldGen, fieldGen, fieldGen) { (field1, field2, field3) ⇒
+          val composedPath = s"$field1.$field2"
+          val fullPath = s"`$composedPath`.$field3"
+          withClue(s"fullPath was $fullPath") {
+            JsonPathParser.parseJsonPath(fullPath) should be(List(JsonSegment(composedPath, None), JsonSegment(field3, None)))
+          }
+        }
+      }
+
       "return error if it starts with '.'" in {
         forAll(fieldGen, indiceGen) { (field, indice) ⇒
           intercept[JsonPathParsingError] {

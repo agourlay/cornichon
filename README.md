@@ -232,6 +232,16 @@ body.path("publisher.foundationMonth").isAbsent
 
 ```
 
+If one key of the path contains a "." it has to be wrapped with "`" to notify the parser.
+
+```scala
+
+body.path("`message.en`").isPresent
+
+body.path("`message.fr`").isAbsent
+
+```
+
 If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
