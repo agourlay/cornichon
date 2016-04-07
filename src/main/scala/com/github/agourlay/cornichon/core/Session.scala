@@ -27,6 +27,8 @@ case class Session(content: HashMap[String, Vector[String]]) extends CornichonJs
 
   def getJson(key: String, stackingIndice: Option[Int] = None) = parseJson(get(key, stackingIndice))
 
+  def getJsonOpt(key: String, stackingIndice: Option[Int] = None) = getOpt(key, stackingIndice).map(parseJson)
+
   def getList(keys: Seq[String]) = keys.map(v ⇒ get(v))
 
   def addValue(key: String, value: String) =
