@@ -11,6 +11,7 @@ import com.github.agourlay.cornichon.http.HttpAssertions._
 import com.github.agourlay.cornichon.http.HttpEffects._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonPath
+import sangria.ast.Document
 
 import scala.concurrent.duration._
 
@@ -32,6 +33,7 @@ trait HttpDsl extends Dsl {
       case Patch(url, payload, params, headers)      ⇒ http.Patch(url, payload, params, headers)(s)
       case OpenSSE(url, takeWithin, params, headers) ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
       case OpenWS(url, takeWithin, params, headers)  ⇒ http.OpenWS(url, takeWithin, params, headers)(s)
+      case q: QueryGQL                               ⇒ http.Post(q.url, q.gqlBody(), q.params, q.headers)(s)
     }
   )
 
@@ -43,6 +45,8 @@ trait HttpDsl extends Dsl {
 
   def open_sse(url: String, takeWithin: FiniteDuration) = OpenSSE(url, takeWithin, Seq.empty, Seq.empty)
   def open_ws(url: String, takeWithin: FiniteDuration) = OpenWS(url, takeWithin, Seq.empty, Seq.empty)
+
+  def query_gql(url: String) = QueryGQL(url, "", Seq.empty, Seq.empty, Document(List.empty))
 
   val root = JsonPath.root
 

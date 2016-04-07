@@ -1,6 +1,9 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.dsl.Dsl._
+import com.github.agourlay.cornichon.json.CornichonJson._
+import sangria.ast.Document
+import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -81,6 +84,31 @@ object HttpEffects {
     def withParams(params: (String, String)*) = copy(params = params)
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
   }
+
+  case class QueryGQL(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
+      query: Document, operationName: Option[String] = None, variables: Option[Map[String, String]] = None) extends HttpRequestWithPayload {
+    val name = "Query GQL"
+
+    def withParams(params: (String, String)*) = copy(params = params)
+    def withHeaders(headers: (String, String)*) = copy(headers = headers)
+
+    //GQL builder
+    def withQuery(query: Document) = copy(query = query)
+    def withOperationName(operationName: String) = copy(operationName = Some(operationName))
+    def withVariables(newVariables: (String, String)*) = copy(variables = variables.map(_ ++ newVariables))
+    def gqlBody() = {
+
+      import org.json4s.Extraction
+
+      implicit val formats = org.json4s.DefaultFormats
+
+      val queryDoc = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
+      val newPayload = GqlPayload(queryDoc, operationName, variables)
+      prettyPrint(Extraction.decompose(newPayload))
+    }
+  }
+
+  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, String]])
 
   sealed trait HttpRequestStreamed extends HttpRequest {
     def takeWithin: FiniteDuration
