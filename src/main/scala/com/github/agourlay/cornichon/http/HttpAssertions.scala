@@ -171,27 +171,38 @@ object HttpAssertions {
     }
 
     override def is(expected: A): AssertStep[Iterable[JValue]] = {
-      def applyPathToArray(s: Session, jArray: JArray) = {
+
+      def removeIgnoredPathFromElements(s: Session, jArray: JArray) = {
         val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
         jArray.arr.map(removeFieldsByPath(_, ignoredPaths))
       }
 
-      def applyPathToSet(s: Session, jArray: JArray) = applyPathToArray(s, jArray).toSet
+      def removeIgnoredPathFromElementsSet(s: Session, jArray: JArray) = removeIgnoredPathFromElements(s, jArray).toSet
 
       if (ordered)
-        body_array_transform(applyPathToArray, titleBuilder(s"response body is '$expected'", ignoredKeys), s ⇒ {
-          resolveParseJson(expected, s, resolver) match {
-            case expectedArray: JArray ⇒ expectedArray.arr
-            case _                     ⇒ throw new NotAnArrayError(expected)
+        body_array_transform(
+          arrayExtractor = applyPathAndFindArray(jsonPath, resolver),
+          mapFct = removeIgnoredPathFromElements,
+          title = titleBuilder(s"response body is '$expected'", ignoredKeys),
+          expected = s ⇒ {
+            resolveParseJson(expected, s, resolver) match {
+              case expectedArray: JArray ⇒ expectedArray.arr
+              case _                     ⇒ throw new NotAnArrayError(expected)
+            }
           }
-        })
+        )
       else
-        body_array_transform(applyPathToSet, titleBuilder(s"response body array not ordered is '$expected'", ignoredKeys), s ⇒ {
-          resolveParseJson(expected, s, resolver) match {
-            case expectedArray: JArray ⇒ expectedArray.arr.toSet
-            case _                     ⇒ throw new NotAnArrayError(expected)
+        body_array_transform(
+          arrayExtractor = applyPathAndFindArray(jsonPath, resolver),
+          mapFct = removeIgnoredPathFromElementsSet,
+          title = titleBuilder(s"response body array not ordered is '$expected'", ignoredKeys),
+          expected = s ⇒ {
+            resolveParseJson(expected, s, resolver) match {
+              case expectedArray: JArray ⇒ expectedArray.arr.toSet
+              case _                     ⇒ throw new NotAnArrayError(expected)
+            }
           }
-        })
+        )
     }
 
     def contains(elements: A*) = {
@@ -202,11 +213,7 @@ object HttpAssertions {
         key = LastResponseBodyKey,
         expected = s ⇒ true,
         mapValue = (s, sessionValue) ⇒ {
-        val jArr = if (jsonPath == JsonPath.root) parseArray(sessionValue)
-        else {
-          val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
-          selectArrayJsonPath(parsedPath, sessionValue)
-        }
+        val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
         val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
         val containsAll = resolvedJson.forall(jArr.arr.contains)
         (containsAll, arrayDoesNotContainError(resolvedJson.map(prettyPrint), prettyPrint(jArr)))
@@ -215,12 +222,24 @@ object HttpAssertions {
     }
   }
 
-  private def body_array_transform[A](mapFct: (Session, JArray) ⇒ A, title: String, expected: Session ⇒ A): AssertStep[A] =
+  private def applyPathAndFindArray(path: String, resolver: Resolver)(s: Session, sessionValue: String): JArray = {
+    val jArr = if (path == JsonPath.root) parseArray(sessionValue)
+    else {
+      val parsedPath = resolveParseJsonPath(path, resolver)(s)
+      selectArrayJsonPath(parsedPath, sessionValue)
+    }
+    jArr
+  }
+
+  private def body_array_transform[A](arrayExtractor: (Session, String) ⇒ JArray, mapFct: (Session, JArray) ⇒ A, title: String, expected: Session ⇒ A): AssertStep[A] =
     from_session_step[A](
       title = title,
       key = LastResponseBodyKey,
       expected = s ⇒ expected(s),
-      mapValue = (session, sessionValue) ⇒ mapFct(session, parseArray(sessionValue))
+      mapValue = (session, sessionValue) ⇒ {
+      val array = arrayExtractor(session, sessionValue)
+      mapFct(session, array)
+    }
     )
 
   private def titleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
