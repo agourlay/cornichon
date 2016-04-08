@@ -54,7 +54,7 @@ case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, su
   val msg = s"""
     |
     |Scenario "$scenarioName" failed at step
-    |${failedStep.step.title} with error:
+    |"${failedStep.step.title}" with error:
     |${failedStep.error.msg}
     | """.trim.stripMargin
 
