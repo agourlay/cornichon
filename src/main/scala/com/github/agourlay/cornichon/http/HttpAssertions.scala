@@ -171,6 +171,14 @@ object HttpAssertions {
     }
 
     override def is(expected: A): AssertStep[Iterable[JValue]] = {
+      val assertionTitle = {
+        val expectedSentence = if (ordered) s"in order is '$expected'" else s"is '$expected'"
+        val titleString = if (jsonPath == JsonPath.root)
+          s"response body array $expectedSentence"
+        else
+          s"response body's array '$jsonPath' $expectedSentence"
+        titleBuilder(titleString, ignoredKeys)
+      }
 
       def removeIgnoredPathFromElements(s: Session, jArray: JArray) = {
         val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
@@ -179,11 +187,12 @@ object HttpAssertions {
 
       def removeIgnoredPathFromElementsSet(s: Session, jArray: JArray) = removeIgnoredPathFromElements(s, jArray).toSet
 
+      //TODO remove duplication between Array and Set base comparation
       if (ordered)
         body_array_transform(
           arrayExtractor = applyPathAndFindArray(jsonPath, resolver),
           mapFct = removeIgnoredPathFromElements,
-          title = titleBuilder(s"response body is '$expected'", ignoredKeys),
+          title = assertionTitle,
           expected = s ⇒ {
             resolveParseJson(expected, s, resolver) match {
               case expectedArray: JArray ⇒ expectedArray.arr
@@ -195,7 +204,7 @@ object HttpAssertions {
         body_array_transform(
           arrayExtractor = applyPathAndFindArray(jsonPath, resolver),
           mapFct = removeIgnoredPathFromElementsSet,
-          title = titleBuilder(s"response body array not ordered is '$expected'", ignoredKeys),
+          title = assertionTitle,
           expected = s ⇒ {
             resolveParseJson(expected, s, resolver) match {
               case expectedArray: JArray ⇒ expectedArray.arr.toSet
