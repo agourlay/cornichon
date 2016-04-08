@@ -62,7 +62,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     Try { Await.result(f, t) } match {
       case Success(s) ⇒ s
       case Failure(failure) ⇒ failure match {
-        case e: TimeoutException ⇒ left(TimeoutError(e.getMessage))
+        case e: TimeoutException ⇒ left(TimeoutError(e.getMessage, initialRequest.getUri().toString))
         case t: Throwable        ⇒ left(RequestError(t, initialRequest.getUri().toString))
       }
     }
@@ -140,7 +140,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     }
 
     Thread.sleep(takeWithin.toMillis)
-    responses.value.fold(throw TimeoutError("Websocket connection did not complete in time")) {
+    responses.value.fold(throw TimeoutError("Websocket connection did not complete in time", url)) {
       case Failure(e) ⇒ throw e
       case Success(s) ⇒ s.map { _ ⇒
         CornichonHttpResponse(
