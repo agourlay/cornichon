@@ -8,14 +8,14 @@ import scala.util.{ Failure, Success, Try }
 case class DebugStep(message: Session ⇒ String) extends Step {
   val title = s"Debug step with message `$message`"
 
-  def run(engine: Engine, session: Session, logs: Vector[LogInstruction], depth: Int)(implicit ec: ExecutionContext) = {
+  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
     Try { message(session) } match {
       case Success(debugMessage) ⇒
-        val updatedLogs = logs :+ InfoLogInstruction(message(session), depth)
-        SuccessRunSteps(session, updatedLogs)
+        val runLogs = Vector(InfoLogInstruction(message(session), depth))
+        SuccessRunSteps(session, runLogs)
       case Failure(e) ⇒
-        val updatedLogs = logs ++ engine.errorLogs(title, e, depth, nextSteps)
-        FailedRunSteps(this, Vector.empty, updatedLogs, session)
+        val runLogs = engine.errorLogs(title, e, depth)
+        FailedRunSteps(this, e, runLogs, session)
     }
   }
 }

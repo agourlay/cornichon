@@ -6,10 +6,12 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 
 case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
+
   require(limit > 0, "rety max limit must be a positive number")
+
   val title = s"RetryMax block with limit '$limit'"
 
-  def run(engine: Engine, nextSteps: Vector[Step], session: Session, logs: Vector[LogInstruction], depth: Int)(implicit ec: ExecutionContext) = {
+  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
     @tailrec
     def retryMaxSteps(steps: Vector[Step], session: Session, limit: Int, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
@@ -23,16 +25,16 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
       }
     }
 
-    val updatedLogs = logs :+ DefaultLogInstruction(title, depth)
+    val titleLog = DefaultLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
       retryMaxSteps(nested, session, limit, Vector.empty, depth + 1)
     }
     if (repeatRes.isSuccess) {
-      val fullLogs = (updatedLogs ++ repeatRes.logs) :+ SuccessLogInstruction(s"RetryMax block with limit $limit succeeded", depth, Some(executionTime))
-      engine.runSteps(nextSteps, repeatRes.session, fullLogs, depth)
+      val fullLogs = (titleLog +: repeatRes.logs) :+ SuccessLogInstruction(s"RetryMax block with limit $limit succeeded", depth, Some(executionTime))
+      SuccessRunSteps(repeatRes.session, fullLogs)
     } else {
-      val fullLogs = (updatedLogs ++ repeatRes.logs) :+ FailureLogInstruction(s"RetryMax block with limit $limit failed", depth, Some(executionTime))
-      engine.buildFailedRunSteps(nextSteps.last, nextSteps, RetryMaxBlockReachedLimit, fullLogs, repeatRes.session)
+      val fullLogs = (titleLog +: repeatRes.logs) :+ FailureLogInstruction(s"RetryMax block with limit $limit failed", depth, Some(executionTime))
+      FailedRunSteps(nested.last, RetryMaxBlockReachedLimit, fullLogs, repeatRes.session)
     }
   }
 }

@@ -21,7 +21,7 @@ object EventuallyConf {
 case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  def run(engine: Engine, nextSteps: Vector[Step], session: Session, logs: Vector[LogInstruction], depth: Int)(implicit ec: ExecutionContext) = {
+  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
     @tailrec
     def retryEventuallySteps(stepsToRetry: Vector[Step], session: Session, conf: EventuallyConf, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
@@ -33,8 +33,8 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
         case s @ SuccessRunSteps(successSession, sLogs) ⇒
           val runLogs = accLogs ++ sLogs
           if (remainingTime.gt(Duration.Zero)) s.copy(logs = runLogs)
-          else engine.buildFailedRunSteps(stepsToRetry.last, stepsToRetry, EventuallyBlockSucceedAfterMaxDuration, runLogs, successSession)
-        case f @ FailedRunSteps(failed, _, fLogs, fSession) ⇒
+          else FailedRunSteps(stepsToRetry.last, EventuallyBlockSucceedAfterMaxDuration, runLogs, successSession)
+        case f @ FailedRunSteps(_, _, fLogs, fSession) ⇒
           val updatedLogs = accLogs ++ fLogs
           if ((remainingTime - conf.interval).gt(Duration.Zero)) {
             Thread.sleep(conf.interval.toMillis)
@@ -43,18 +43,17 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
       }
     }
 
-    val updatedLogs = logs :+ DefaultLogInstruction(title, depth)
-    val (res, executionTime) = Engine.withDuration {
+    val titleLogs = DefaultLogInstruction(title, depth)
+    val (res, executionTime) = engine.withDuration {
       retryEventuallySteps(nested, session, conf, Vector.empty, depth + 1)
     }
     res match {
       case s @ SuccessRunSteps(sSession, sLogs) ⇒
-        val fullLogs = updatedLogs ++ sLogs :+ SuccessLogInstruction(s"Eventually block succeeded", depth, Some(executionTime))
-        engine.runSteps(nextSteps, sSession, fullLogs, depth)
+        val fullLogs = titleLogs +: sLogs :+ SuccessLogInstruction(s"Eventually block succeeded", depth, Some(executionTime))
+        s.copy(logs = fullLogs)
       case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
-        val fullLogs = (updatedLogs ++ eLogs :+ FailureLogInstruction(s"Eventually block did not complete in time", depth, Some(executionTime))) ++ engine.logNonExecutedStep(nextSteps, depth)
+        val fullLogs = titleLogs +: eLogs :+ FailureLogInstruction(s"Eventually block did not complete in time", depth, Some(executionTime))
         f.copy(logs = fullLogs, session = fSession)
     }
-
   }
 }

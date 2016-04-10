@@ -38,15 +38,17 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
             s.name ignore {}
           else
             s.name in {
-              runScenario(s) match {
-                case SuccessScenarioReport(scenarioName, successSteps, logs, _) ⇒
+              val scenarioReport = runScenario(s)
+              scenarioReport.stepsRunReport match {
+                case SuccessRunSteps(newSession, logs) ⇒
+                  // In case of success, logs are only shown if the scenario contains Debug step(s)
                   if (s.steps.collect { case d: DebugStep ⇒ d }.nonEmpty) printLogs(logs)
                   assert(true)
-                case f @ FailedScenarioReport(scenarioName, failedStep, successSteps, notExecutedStep, logs, _) ⇒
+                case FailedRunSteps(_, _, logs, _) ⇒
                   printLogs(logs)
                   fail(
                     s"""
-                       |${f.msg}
+                       |${scenarioReport.msg}
                        |replay only this scenario with:
                        |${replayCmd(feat.name, s.name)}
                        |""".stripMargin

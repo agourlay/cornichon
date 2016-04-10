@@ -9,7 +9,7 @@ import scala.concurrent.duration.Duration
 case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends WrapperStep {
   val title = s"Repeat block during '$duration'"
 
-  def run(engine: Engine, nextSteps: Vector[Step], session: Session, logs: Vector[LogInstruction], depth: Int)(implicit ec: ExecutionContext) = {
+  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
     @tailrec
     def repeatStepsDuring(steps: Vector[Step], session: Session, duration: Duration, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
@@ -26,17 +26,17 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
         }
     }
 
-    val updatedLogs = logs :+ DefaultLogInstruction(title, depth)
+    val titleLogs = DefaultLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
       repeatStepsDuring(nested, session, duration, Vector.empty, depth + 1)
     }
 
     if (repeatRes.isSuccess) {
-      val fullLogs = (updatedLogs ++ repeatRes.logs) :+ SuccessLogInstruction(s"Repeat block during $duration succeeded", depth, Some(executionTime))
-      engine.runSteps(nextSteps, repeatRes.session, fullLogs, depth)
+      val fullLogs = (titleLogs +: repeatRes.logs) :+ SuccessLogInstruction(s"Repeat block during $duration succeeded", depth, Some(executionTime))
+      SuccessRunSteps(repeatRes.session, fullLogs)
     } else {
-      val fullLogs = (updatedLogs ++ repeatRes.logs) :+ FailureLogInstruction(s"Repeat block during $duration failed", depth, Some(executionTime))
-      engine.buildFailedRunSteps(nested.last, nextSteps, RepeatDuringBlockContainFailedSteps, fullLogs, repeatRes.session)
+      val fullLogs = (titleLogs +: repeatRes.logs) :+ FailureLogInstruction(s"Repeat block during $duration failed", depth, Some(executionTime))
+      FailedRunSteps(nested.last, RepeatDuringBlockContainFailedSteps, fullLogs, repeatRes.session)
     }
   }
 }

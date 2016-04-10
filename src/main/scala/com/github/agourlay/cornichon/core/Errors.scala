@@ -18,6 +18,11 @@ object CornichonError {
     exception.printStackTrace(pw)
     sw.toString
   }
+
+  def fromThrowable(exception: Throwable): CornichonError = exception match {
+    case ce: CornichonError ⇒ ce
+    case _                  ⇒ StepExecutionError(exception)
+  }
 }
 
 case class StepExecutionError[A](e: Throwable) extends CornichonError {
