@@ -9,11 +9,3 @@ case class DataTableError(error: Throwable, input: String) extends DslError {
 }
 
 case class DataTableParseError(msg: String) extends DslError
-
-case object MalformedConcurrentBlock extends DslError {
-  val msg = "malformed concurrent block without closing 'ConcurrentlyStop'"
-}
-
-case object MalformedEventuallyBlock extends DslError {
-  val msg = "malformed eventually block without closing 'EventuallyStop'"
-}

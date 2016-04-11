@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.core.{ AssertStep, SimpleStepAssertion }
+import com.github.agourlay.cornichon.core.SimpleStepAssertion
+import com.github.agourlay.cornichon.steps.regular.AssertStep
 
 trait AssertionStep[A, B] {
   def is(expected: A): AssertStep[B]

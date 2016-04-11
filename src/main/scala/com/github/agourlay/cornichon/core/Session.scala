@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.json.CornichonJson
 
 import scala.collection.immutable.HashMap
 
-case class Session(content: HashMap[String, Vector[String]]) extends CornichonJson {
+case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
 
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] = {
 
@@ -41,6 +41,9 @@ case class Session(content: HashMap[String, Vector[String]]) extends CornichonJs
   def addValues(tuples: Seq[(String, String)]) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
 
   def removeKey(key: String) = Session(content - key)
+
+  def merge(otherSession: Session) =
+    copy(content = content ++ otherSession.content)
 
   val prettyPrint = content.toSeq.sortBy(_._1).map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")
 

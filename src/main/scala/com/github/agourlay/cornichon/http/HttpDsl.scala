@@ -11,6 +11,7 @@ import com.github.agourlay.cornichon.http.HttpAssertions._
 import com.github.agourlay.cornichon.http.HttpEffects._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonPath
+import com.github.agourlay.cornichon.steps.regular.EffectStep
 import sangria.ast.Document
 
 import scala.concurrent.duration._

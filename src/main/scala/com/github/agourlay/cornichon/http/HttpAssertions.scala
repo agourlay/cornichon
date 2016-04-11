@@ -1,12 +1,13 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.{ CollectionAssertionStep, AssertionStep }
+import com.github.agourlay.cornichon.dsl.{ AssertionStep, CollectionAssertionStep }
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpDslErrors._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.{ NotAnArrayError, WhiteListError, JsonPath }
+import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }
+import com.github.agourlay.cornichon.steps.regular.AssertStep
 import org.json4s._
 
 object HttpAssertions {

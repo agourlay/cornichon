@@ -2,11 +2,12 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
-import com.github.agourlay.cornichon.dsl.CoreAssertion.{ SessionValuesAssertion, SessionAssertion }
+import com.github.agourlay.cornichon.dsl.CoreAssertion.{ SessionAssertion, SessionValuesAssertion }
+import com.github.agourlay.cornichon.steps.regular._
+import com.github.agourlay.cornichon.steps.wrapped._
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
-
-import scala.concurrent.duration.{ FiniteDuration, Duration }
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 trait Dsl extends CornichonLogger {
 
@@ -20,6 +21,8 @@ trait Dsl extends CornichonLogger {
     def name: String
 
     def I(steps: Seq[Step]) = steps
+
+    def I(step: Step) = step
 
     def I[A](step: EffectStep) =
       step.copy(s"$name I ${step.title}")
@@ -38,6 +41,8 @@ trait Dsl extends CornichonLogger {
 
     def assert(steps: Seq[Step]) = steps
 
+    def assert(step: Step) = step
+
     def assert[A](step: AssertStep[A]) =
       step.copy(s"$name assert ${step.title}")
 
@@ -54,35 +59,34 @@ trait Dsl extends CornichonLogger {
     }
 
   def Repeat(times: Int) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      RepeatStart(times) +: steps :+ RepeatStop
+    BodyElementCollector[Step, Step] { steps ⇒
+      RepeatStep(steps, times)
     }
 
   def RetryMax(limit: Int) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      RetryMaxStart(limit) +: steps :+ RetryMaxStop
+    BodyElementCollector[Step, Step] { steps ⇒
+      RetryMaxStep(steps, limit)
     }
 
   def RepeatDuring(duration: Duration) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      RepeatDuringStart(duration) +: steps :+ RepeatDuringStop
+    BodyElementCollector[Step, Step] { steps ⇒
+      RepeatDuringStep(steps, duration)
     }
 
   def Eventually(maxDuration: Duration, interval: Duration) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+    BodyElementCollector[Step, Step] { steps ⇒
       val conf = EventuallyConf(maxDuration, interval)
-
-      EventuallyStart(conf) +: steps :+ EventuallyStop
+      EventuallyStep(steps, conf)
     }
 
   def Concurrently(factor: Int, maxTime: Duration) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      ConcurrentStart(factor, maxTime) +: steps :+ ConcurrentStop
+    BodyElementCollector[Step, Step] { steps ⇒
+      ConcurrentlyStep(steps, factor, maxTime)
     }
 
   def Within(maxDuration: Duration) =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      WithinStart(maxDuration) +: steps :+ WithinStop
+    BodyElementCollector[Step, Step] { steps ⇒
+      WithinStep(steps, maxDuration)
     }
 
   def wait(duration: FiniteDuration) = EffectStep(

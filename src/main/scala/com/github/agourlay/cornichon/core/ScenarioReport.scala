@@ -7,74 +7,55 @@ sealed trait StepsReport {
   def logs: Vector[LogInstruction]
   def session: Session
   def isSuccess: Boolean
+  def merge(otherStepsReport: StepsReport): StepsReport
 }
 
 case class SuccessRunSteps(session: Session, logs: Vector[LogInstruction]) extends StepsReport {
   val isSuccess = true
+
+  def merge(otherStepRunReport: StepsReport) = otherStepRunReport match {
+    case SuccessRunSteps(newSession, updatedLogs) ⇒
+      SuccessRunSteps(session.merge(otherStepRunReport.session), logs ++ otherStepRunReport.logs)
+    case f @ FailedRunSteps(_, _, failedRunLogs, _) ⇒
+      // Success + Error = Error
+      f.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
+  }
+
 }
-case class FailedRunSteps(failedStep: FailedStep, notExecutedStep: Vector[String], logs: Vector[LogInstruction], session: Session) extends StepsReport {
+case class FailedRunSteps(step: Step, error: CornichonError, logs: Vector[LogInstruction], session: Session) extends StepsReport {
   val isSuccess = false
-}
 
-sealed trait ScenarioReport {
-  def scenarioName: String
-  def success: Boolean
-  def logs: Seq[LogInstruction]
-  def session: Session
-  def merge(scenarioReport: ScenarioReport): ScenarioReport
-}
-
-object ScenarioReport {
-  def fromStepsReport(scenario: Scenario, stepsReport: StepsReport) = stepsReport match {
-    case s @ SuccessRunSteps(_, _)      ⇒ SuccessScenarioReport(scenario, s)
-    case f @ FailedRunSteps(_, _, _, _) ⇒ FailedScenarioReport(scenario, f)
+  def merge(otherStepRunReport: StepsReport) = otherStepRunReport match {
+    case SuccessRunSteps(newSession, updatedLogs) ⇒
+      SuccessRunSteps(session.merge(otherStepRunReport.session), logs ++ otherStepRunReport.logs)
+    case f @ FailedRunSteps(_, _, failedRunLogs, _) ⇒
+      // Error + Error = Error
+      f.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
   }
 }
 
-case class SuccessScenarioReport(scenarioName: String, successSteps: Vector[String], logs: Vector[LogInstruction], session: Session) extends ScenarioReport {
-  val success = true
-  def merge(scenarioReport: ScenarioReport) = scenarioReport match {
-    case SuccessScenarioReport(_, otherSuccessSteps, otherLogs, _) ⇒
-      this.copy(successSteps = successSteps ++ otherSuccessSteps, logs = logs ++ otherLogs)
-    case f @ FailedScenarioReport(_, _, otherSuccessSteps, notExecutedStep, otherLogs, _) ⇒
-      // The FailedReport is returned with the success metadata prepended
-      f.copy(successSteps = successSteps ++ otherSuccessSteps, logs = logs ++ otherLogs)
+object FailedRunSteps {
+  def apply(step: Step, error: Throwable, logs: Vector[LogInstruction], session: Session): FailedRunSteps = {
+    val e = CornichonError.fromThrowable(error)
+    FailedRunSteps(step, e, logs, session)
   }
 }
 
-object SuccessScenarioReport {
-  def apply(scenario: Scenario, stepsRun: SuccessRunSteps): SuccessScenarioReport = {
-    val successStepsTitle = scenario.steps.filterNot(_.isInstanceOf[WrapperStep]).map(_.title)
-    SuccessScenarioReport(scenario.name, successStepsTitle, stepsRun.logs, stepsRun.session)
+case class ScenarioReport(scenarioName: String, stepsRunReport: StepsReport) {
+
+  val msg = stepsRunReport match {
+    case s: SuccessRunSteps ⇒
+      s"""Scenario "$scenarioName" succeeded"""
+
+    case FailedRunSteps(failedStep, error, _, _) ⇒
+      s"""
+      |
+      |Scenario "$scenarioName" failed at step
+      |"${failedStep.title}" with error:
+      |${error.msg}
+      | """.trim.stripMargin
   }
 }
-
-case class FailedScenarioReport(scenarioName: String, failedStep: FailedStep, successSteps: Vector[String], notExecutedStep: Vector[String], logs: Vector[LogInstruction], session: Session) extends ScenarioReport {
-  val success = false
-  val msg = s"""
-    |
-    |Scenario "$scenarioName" failed at step
-    |"${failedStep.step.title}" with error:
-    |${failedStep.error.msg}
-    | """.trim.stripMargin
-
-  def merge(scenarioReport: ScenarioReport) = scenarioReport match {
-    case s @ SuccessScenarioReport(_, otherSuccessSteps, otherLogs, _) ⇒
-      this.copy(successSteps = successSteps ++ otherSuccessSteps, logs = logs ++ otherLogs)
-    case f @ FailedScenarioReport(_, _, otherSuccessSteps, _, otherLogs, _) ⇒
-      // The first failure will be used to trigger the error, the second error will be present in the logs after
-      this.copy(successSteps = successSteps ++ otherSuccessSteps, logs = logs ++ otherLogs)
-  }
-}
-
-object FailedScenarioReport {
-  def apply(scenario: Scenario, stepsRun: FailedRunSteps): FailedScenarioReport = {
-    val successSteps = scenario.steps.takeWhile(_ != stepsRun.failedStep.step).filterNot(_.isInstanceOf[WrapperStep]).map(_.title)
-    FailedScenarioReport(scenario.name, stepsRun.failedStep, successSteps, stepsRun.notExecutedStep, stepsRun.logs, stepsRun.session)
-  }
-}
-
-case class FailedStep(step: Step, error: CornichonError)
 
 sealed trait LogInstruction {
   def message: String
