@@ -47,11 +47,11 @@ class Engine(executionContext: ExecutionContext) {
         SuccessRunSteps(newSession, runLogs)
     }
 
-  //TODO dig recursively within wrapper steps nested steps
-  def logNonExecutedStep(steps: Seq[Step], depth: Int): Seq[LogInstruction] =
-    steps.map { step ⇒
-      InfoLogInstruction(step.title, depth)
-    }
+  def logNonExecutedStep(steps: Seq[Step], depth: Int) = {
+    //TODO dig recursively within wrapper steps nested steps
+    //steps.map { step ⇒ InfoLogInstruction(step.title, depth)}
+    Vector.empty[LogInstruction]
+  }
 
   def errorLogs(title: String, e: Throwable, depth: Int) = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)
