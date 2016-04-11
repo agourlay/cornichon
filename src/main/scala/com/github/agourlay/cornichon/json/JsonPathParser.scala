@@ -9,13 +9,15 @@ class JsonPathParser(val input: ParserInput) extends Parser {
     oneOrMore(SegmentRule).separatedBy('.') ~ EOI
   }
 
-  def SegmentRule = rule(Field ~ optIndex ~> JsonSegment)
+  def SegmentRule = rule(('`' ~ FieldWithDot ~ optIndex ~ '`' | Field ~ optIndex) ~> JsonSegment)
 
-  val notAllowedInField = "\r\n[]. "
+  val notAllowedInField = "\r\n[]` "
 
   def optIndex = rule(optional('[' ~ Number ~ ']'))
 
-  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField)))
+  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField -- '.')))
+
+  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField)))
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 

@@ -12,7 +12,7 @@ object DataTableParser {
       case Failure(e: ParseError) ⇒
         throw new DataTableParseError(p.formatError(e, new ErrorFormatter(showTraces = true)))
       case Failure(e: Throwable) ⇒
-        throw new DataTableError(e)
+        throw new DataTableError(e, input)
       case Success(dt) ⇒ dt
     }
   }

@@ -7,8 +7,12 @@ import scala.util.control.NoStackTrace
 
 sealed trait HttpError extends CornichonError with NoStackTrace
 
-case class RequestError(e: Throwable, request: String) extends HttpError {
-  val msg = s"HTTP request '$request' failed with ${CornichonError.genStacktrace(e)}"
+case class TimeoutError(details: String, url: String) extends HttpError {
+  val msg = s"HTTP request to '$url' failed with timeout error : '$details'}"
+}
+
+case class RequestError(e: Throwable, url: String) extends HttpError {
+  val msg = s"HTTP request to '$url' failed with ${CornichonError.genStacktrace(e)}"
 }
 
 case class ResponseError(e: Throwable, response: HttpResponse) extends HttpError {
@@ -22,8 +26,6 @@ case class SseError(e: Throwable) extends HttpError {
 case class WsUpgradeError(status: Int) extends HttpError {
   val msg = s"Websocket upgrade error - status received '$status'"
 }
-
-case class TimeoutError(msg: String) extends HttpError
 
 case class StatusNonExpected(expected: StatusCode, response: CornichonHttpResponse) extends HttpError {
   val msg =

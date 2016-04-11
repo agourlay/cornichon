@@ -37,6 +37,7 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
         |'$actual'
         |""".stripMargin.trim
 
+  // TODO Introduce Show typeclass to display objects nicely
   val msg = actual match {
     case s: String ⇒ baseMsg
     case j: JValue ⇒
@@ -47,7 +48,8 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
           |diff:
           |${prettyDiff(j, expected.asInstanceOf[JValue])}
       """.stripMargin.trim
-    case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]])}'"
+    case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]]).mkString(", ")}'"
+    case j: Set[A] ⇒ s"$baseMsg \n Set diff is '${j.diff(expected.asInstanceOf[Set[A]]).mkString(", ")}'"
     case _         ⇒ baseMsg
   }
 }
