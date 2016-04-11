@@ -25,14 +25,10 @@ class Engine(executionContext: ExecutionContext) {
 
   def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsReport =
     steps.headOption.fold[StepsReport](SuccessRunSteps(session, accLogs)) { step ⇒
+      val nextSteps = steps.drop(1)
       step.run(this, session, depth) match {
-        case SuccessRunSteps(newSession, updatedLogs) ⇒
-          val nextSteps = steps.drop(1)
-          runSteps(nextSteps, newSession, accLogs ++ updatedLogs, depth)
-
-        case f @ FailedRunSteps(_, _, failedRunLogs, _) ⇒
-          val notExecutedSteps = steps.drop(1)
-          f.copy(logs = accLogs ++ failedRunLogs ++ logNonExecutedStep(notExecutedSteps, depth))
+        case SuccessRunSteps(newSession, updatedLogs) ⇒ runSteps(nextSteps, newSession, accLogs ++ updatedLogs, depth)
+        case f: FailedRunSteps                        ⇒ f.copy(logs = accLogs ++ f.logs ++ logNonExecutedStep(nextSteps, depth))
       }
     }
 
