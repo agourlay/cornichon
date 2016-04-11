@@ -93,18 +93,20 @@ object HttpEffects {
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
 
     //GQL builder
-    def withQuery(query: Document) = copy(query = query)
-    def withOperationName(operationName: String) = copy(operationName = Some(operationName))
-    def withVariables(newVariables: (String, String)*) = copy(variables = variables.map(_ ++ newVariables))
-    def gqlBody() = {
+    def withQuery(query: Document) = copy(query = query).buildBody()
+    def withOperationName(operationName: String) = copy(operationName = Some(operationName)).buildBody()
+    def withVariables(newVariables: (String, String)*) = copy(variables = variables.fold(Some(newVariables.toMap))(v ⇒ Some(v ++ newVariables))).buildBody()
+
+    def buildBody() = {
 
       import org.json4s.Extraction
+      import org.json4s.FieldSerializer
 
-      implicit val formats = org.json4s.DefaultFormats
+      implicit val formats = org.json4s.DefaultFormats + FieldSerializer[GqlPayload]()
 
       val queryDoc = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
       val newPayload = GqlPayload(queryDoc, operationName, variables)
-      prettyPrint(Extraction.decompose(newPayload))
+      copy(payload = prettyPrint(Extraction.decompose(newPayload)))
     }
   }
 
