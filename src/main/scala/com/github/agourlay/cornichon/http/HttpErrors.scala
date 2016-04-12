@@ -8,7 +8,7 @@ import scala.util.control.NoStackTrace
 sealed trait HttpError extends CornichonError with NoStackTrace
 
 case class TimeoutError(details: String, url: String) extends HttpError {
-  val msg = s"HTTP request to '$url' failed with timeout error : '$details'}"
+  val msg = s"HTTP request to '$url' failed with timeout error : '$details'"
 }
 
 case class RequestError(e: Throwable, url: String) extends HttpError {
