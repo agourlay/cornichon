@@ -89,6 +89,11 @@ trait Dsl extends CornichonLogger {
       WithinStep(steps, maxDuration)
     }
 
+  def LogDuration(label: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      LogDurationStep(steps, label)
+    }
+
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
     effect = s ⇒ {

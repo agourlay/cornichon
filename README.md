@@ -441,6 +441,23 @@ And assert body.ignoring("city", "publisher").is(
 
 This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
 
+- Log duration
+
+By default all ```EffectStep``` execution time can be found in the logs, but sometimes one needs to time a series of steps. 
+
+This is where ```LogDuration``` comes in handy, it requires a label that will be printed as well to identify results.
+
+```scala
+LogDuration(label = "my experiment") {
+
+  When I get("http://superhero.io/batman")
+
+  Then assert status.is(200)
+}
+
+```
+
+
 Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
 
 ## DSL composition

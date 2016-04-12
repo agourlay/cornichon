@@ -45,13 +45,14 @@ case class ScenarioReport(scenarioName: String, stepsRunReport: StepsReport) {
 
   val msg = stepsRunReport match {
     case s: SuccessRunSteps ⇒
-      s"""Scenario "$scenarioName" succeeded"""
+      s"Scenario '$scenarioName' succeeded"
 
     case FailedRunSteps(failedStep, error, _, _) ⇒
       s"""
       |
-      |Scenario "$scenarioName" failed at step
-      |"${failedStep.title}" with error:
+      |Scenario '$scenarioName' failed at step
+      |'${failedStep.title}'
+      |with error:
       |${error.msg}
       | """.trim.stripMargin
   }
