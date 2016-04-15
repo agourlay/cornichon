@@ -15,7 +15,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Sink, Keep, Source }
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import com.github.agourlay.cornichon.core.CornichonLogger
 import com.github.agourlay.cornichon.http._
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
@@ -32,7 +31,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
 
-class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends HttpClient with CornichonLogger {
+class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends HttpClient {
   implicit private val ec: ExecutionContext = system.dispatcher
 
   // Disable JDK built-in checks

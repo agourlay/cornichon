@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-trait Dsl extends CornichonLogger {
+trait Dsl {
 
   def Feature(name: String, ignored: Boolean = false) =
     BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))

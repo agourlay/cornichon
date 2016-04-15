@@ -7,7 +7,7 @@ import org.scalatest.{ BeforeAndAfterAll, ParallelTestExecution, WordSpecLike }
 import scala.Console._
 import scala.util.{ Failure, Success, Try }
 
-trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution with CornichonLogger {
+trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: CornichonFeature ⇒
 
   override def beforeAll() = {
@@ -72,8 +72,8 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
     logs.foreach { log ⇒
       val printableMsg = log.message.split('\n').map { line ⇒ "   " * log.margin + line }
       val durationSuffix = log.duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
-      logger.info(log.color + printableMsg.head + durationSuffix + RESET)
-      printableMsg.tail.foreach(line ⇒ logger.info(log.color + line + RESET))
+      println(log.color + printableMsg.head + durationSuffix + RESET)
+      printableMsg.tail.foreach(line ⇒ println(log.color + line + RESET))
     }
   }
 }
