@@ -24,6 +24,7 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
       case Failure(e) ⇒ List(FailedRunSteps(this, ConcurrentlyTimeout, titleLogs, session))
     }
 
+    // Only the first error report found is used in the logs.
     val failedStepRun = results.collectFirst { case f @ FailedRunSteps(_, _, _, _) ⇒ f }
     failedStepRun.fold[StepsReport] {
       val executionTime = Duration.fromNanos(System.nanoTime - start)

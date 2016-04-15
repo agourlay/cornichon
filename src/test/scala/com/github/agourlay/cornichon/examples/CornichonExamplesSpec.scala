@@ -583,8 +583,6 @@ class CornichonExamplesSpec extends CornichonFeature {
               | "superhero name" |    "IronMan"   |
             """
         )
-
-        And I show_last_status
       }
 
       Scenario("demonstrate DSL composition") {

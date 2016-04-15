@@ -12,31 +12,37 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
     @tailrec
-    def repeatStepsDuring(steps: Vector[Step], session: Session, duration: Duration, accLogs: Vector[LogInstruction], depth: Int): StepsReport = {
+    def repeatStepsDuring(steps: Vector[Step], session: Session, duration: Duration, accLogs: Vector[LogInstruction], retriesNumber: Long, depth: Int): (Long, StepsReport) = {
       val (res, executionTime) = engine.withDuration {
         engine.runSteps(steps, session, Vector.empty, depth)
       }
       val remainingTime = duration - executionTime
-      if (remainingTime.gt(Duration.Zero))
-        repeatStepsDuring(steps, session, remainingTime, accLogs ++ res.logs, depth)
-      else
-        res match {
-          case s @ SuccessRunSteps(sSession, sLogs)      ⇒ s.copy(logs = accLogs ++ sLogs)
-          case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒ f.copy(logs = accLogs ++ eLogs)
-        }
+      res match {
+        case s @ SuccessRunSteps(sSession, sLogs) ⇒
+          if (remainingTime.gt(Duration.Zero))
+            repeatStepsDuring(steps, session, remainingTime, accLogs ++ res.logs, retriesNumber + 1, depth)
+          else
+            // In case of success all logs are returned but they are not printed by default.
+            (retriesNumber, s.copy(logs = accLogs ++ sLogs))
+        case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
+          // In case of failure only the logs of the last run are shown to avoid giant traces.
+          (retriesNumber, f.copy(logs = eLogs))
+      }
     }
 
     val titleLogs = DefaultLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
-      repeatStepsDuring(nested, session, duration, Vector.empty, depth + 1)
+      repeatStepsDuring(nested, session, duration, Vector.empty, 0, depth + 1)
     }
 
-    if (repeatRes.isSuccess) {
-      val fullLogs = (titleLogs +: repeatRes.logs) :+ SuccessLogInstruction(s"Repeat block during $duration succeeded", depth, Some(executionTime))
-      SuccessRunSteps(repeatRes.session, fullLogs)
+    val (retries, report) = repeatRes
+
+    if (report.isSuccess) {
+      val fullLogs = (titleLogs +: report.logs) :+ SuccessLogInstruction(s"Repeat block during $duration succeeded after '$retries' retries", depth, Some(executionTime))
+      SuccessRunSteps(report.session, fullLogs)
     } else {
-      val fullLogs = (titleLogs +: repeatRes.logs) :+ FailureLogInstruction(s"Repeat block during $duration failed", depth, Some(executionTime))
-      FailedRunSteps(nested.last, RepeatDuringBlockContainFailedSteps, fullLogs, repeatRes.session)
+      val fullLogs = (titleLogs +: report.logs) :+ FailureLogInstruction(s"Repeat block during $duration failed after being retried '$retries' times", depth, Some(executionTime))
+      FailedRunSteps(nested.last, RepeatDuringBlockContainFailedSteps, fullLogs, report.session)
     }
   }
 }
