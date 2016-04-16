@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon.examples.superHeroes
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -6,13 +6,14 @@ import java.util.Base64
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.JsonMapper
-import com.github.agourlay.cornichon.examples.server.RestAPI
+import com.github.agourlay.cornichon.examples.superHeroes.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class CornichonExamplesSpec extends CornichonFeature {
+class SuperHeroesScenario extends CornichonFeature {
 
   lazy val feature =
     Feature("Cornichon feature example") {

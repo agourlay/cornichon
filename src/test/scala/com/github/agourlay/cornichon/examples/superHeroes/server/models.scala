@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.examples.server
+package com.github.agourlay.cornichon.examples.superHeroes.server
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import de.heikoseeberger.akkasse.ServerSentEvent

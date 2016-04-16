@@ -1,15 +1,15 @@
-package com.github.agourlay.cornichon.examples.server
+package com.github.agourlay.cornichon.examples.superHeroes.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
-import akka.http.scaladsl.server._
-import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.Source
-import de.heikoseeberger.akkasse.{ ServerSentEvent, EventStreamMarshalling }
+import de.heikoseeberger.akkasse.{ EventStreamMarshalling, ServerSentEvent }
 
 import scala.concurrent.ExecutionContext
 

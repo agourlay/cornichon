@@ -119,7 +119,7 @@ trait Dsl {
 
   def session_value(key: String) = SessionAssertion(key)
 
-  def session_values(k1: String, k2: String) = SessionValuesAssertion
+  def session_values(k1: String, k2: String) = SessionValuesAssertion(k1, k2)
 
   def session_contains(key: String, value: String) =
     AssertStep(

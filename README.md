@@ -93,7 +93,7 @@ For more examples see the following files which are part of the test pipeline:
 
 - [OpenMovieDatabase API](https://github.com/agourlay/cornichon/blob/master/src/it/scala/com.github.agourlay.cornichon.examples/OpenMovieDatabase.scala).
 
-- [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala).
+- [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala).
 
 
 ## Structure
