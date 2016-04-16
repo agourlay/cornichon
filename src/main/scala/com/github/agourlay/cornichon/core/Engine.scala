@@ -11,7 +11,7 @@ class Engine(executionContext: ExecutionContext) {
 
   def runScenario(session: Session, finallySteps: Seq[Step] = Seq.empty)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
-    val titleLog = DefaultLogInstruction(s"Scenario : ${scenario.name}", initMargin)
+    val titleLog = InfoLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val mainRunReport = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
     if (finallySteps.isEmpty)
       ScenarioReport(scenario.name, mainRunReport)
@@ -25,10 +25,13 @@ class Engine(executionContext: ExecutionContext) {
 
   def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsReport =
     steps.headOption.fold[StepsReport](SuccessRunSteps(session, accLogs)) { step ⇒
-      val nextSteps = steps.drop(1)
       step.run(this, session, depth) match {
-        case SuccessRunSteps(newSession, updatedLogs) ⇒ runSteps(nextSteps, newSession, accLogs ++ updatedLogs, depth)
-        case f: FailedRunSteps                        ⇒ f.copy(logs = accLogs ++ f.logs ++ logNonExecutedStep(nextSteps, depth))
+        case SuccessRunSteps(newSession, updatedLogs) ⇒
+          val nextSteps = steps.drop(1)
+          runSteps(nextSteps, newSession, accLogs ++ updatedLogs, depth)
+
+        case f: FailedRunSteps ⇒
+          f.copy(logs = accLogs ++ f.logs)
       }
     }
 
@@ -42,12 +45,6 @@ class Engine(executionContext: ExecutionContext) {
         val runLogs = if (show) Vector(SuccessLogInstruction(title, depth, duration)) else Vector.empty
         SuccessRunSteps(newSession, runLogs)
     }
-
-  def logNonExecutedStep(steps: Seq[Step], depth: Int) = {
-    //TODO dig recursively within wrapper steps nested steps
-    //steps.map { step ⇒ InfoLogInstruction(step.title, depth)}
-    Vector.empty[LogInstruction]
-  }
 
   def errorLogs(title: String, e: Throwable, depth: Int) = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)

@@ -14,9 +14,10 @@ case class SuccessRunSteps(session: Session, logs: Vector[LogInstruction]) exten
   val isSuccess = true
 
   def merge(otherStepRunReport: StepsReport) = otherStepRunReport match {
-    case SuccessRunSteps(newSession, updatedLogs) ⇒
+    case s: SuccessRunSteps ⇒
+      // Success + Sucess = Success
       SuccessRunSteps(session.merge(otherStepRunReport.session), logs ++ otherStepRunReport.logs)
-    case f @ FailedRunSteps(_, _, failedRunLogs, _) ⇒
+    case f: FailedRunSteps ⇒
       // Success + Error = Error
       f.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
   }
@@ -26,9 +27,10 @@ case class FailedRunSteps(step: Step, error: CornichonError, logs: Vector[LogIns
   val isSuccess = false
 
   def merge(otherStepRunReport: StepsReport) = otherStepRunReport match {
-    case SuccessRunSteps(newSession, updatedLogs) ⇒
-      SuccessRunSteps(session.merge(otherStepRunReport.session), logs ++ otherStepRunReport.logs)
-    case f @ FailedRunSteps(_, _, failedRunLogs, _) ⇒
+    case s: SuccessRunSteps ⇒
+      // Error + Success = Error
+      this.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
+    case f: FailedRunSteps ⇒
       // Error + Error = Error
       f.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
   }
@@ -65,7 +67,7 @@ sealed trait LogInstruction {
   def duration: Option[Duration]
 }
 
-case class DefaultLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+case class InfoLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
   val color = WHITE
 }
 
@@ -77,6 +79,6 @@ case class FailureLogInstruction(message: String, margin: Int, duration: Option[
   val color = RED
 }
 
-case class InfoLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
+case class DebugLogInstruction(message: String, margin: Int, duration: Option[Duration] = None) extends LogInstruction {
   val color = CYAN
 }

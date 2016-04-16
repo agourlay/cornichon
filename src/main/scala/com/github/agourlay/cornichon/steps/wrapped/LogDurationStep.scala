@@ -9,11 +9,11 @@ case class LogDurationStep(nested: Vector[Step], label: String) extends WrapperS
   val title = s"Log duration block with label '$label' started"
 
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
-    val titleLog = InfoLogInstruction(title, depth)
+    val titleLog = DebugLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
       engine.runSteps(nested, session, Vector.empty, depth + 1)
     }
-    val fullLogs = titleLog +: repeatRes.logs :+ InfoLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime))
+    val fullLogs = titleLog +: repeatRes.logs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime))
     repeatRes match {
       case s: SuccessRunSteps ⇒ s.copy(logs = fullLogs)
       case f: FailedRunSteps  ⇒ f.copy(logs = fullLogs)

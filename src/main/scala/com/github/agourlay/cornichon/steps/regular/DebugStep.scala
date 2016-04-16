@@ -11,7 +11,7 @@ case class DebugStep(message: Session ⇒ String) extends Step {
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
     Try { message(session) } match {
       case Success(debugMessage) ⇒
-        val runLogs = Vector(InfoLogInstruction(message(session), depth))
+        val runLogs = Vector(DebugLogInstruction(message(session), depth))
         SuccessRunSteps(session, runLogs)
       case Failure(e) ⇒
         val runLogs = engine.errorLogs(title, e, depth)

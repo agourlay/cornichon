@@ -51,7 +51,7 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
       }
     }
 
-    val titleLogs = DefaultLogInstruction(title, depth)
+    val titleLogs = InfoLogInstruction(title, depth)
     val (res, executionTime) = engine.withDuration {
       retryEventuallySteps(nested, session, conf, Vector.empty, 0, depth + 1)
     }

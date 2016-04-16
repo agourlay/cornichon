@@ -13,7 +13,7 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
-    val titleLogs = Vector(DefaultLogInstruction(title, depth))
+    val titleLogs = Vector(InfoLogInstruction(title, depth))
     val start = System.nanoTime
     val f = Future.traverse(List.fill(factor)(nested)) { steps ⇒
       Future { engine.runSteps(steps, session, titleLogs, depth + 1) }

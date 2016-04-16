@@ -23,7 +23,7 @@ case class AssertStep[A](
   }
 
   //TODO think about making StepAssertion concrete implem. custom as well
-  def runStepPredicate[A](newSession: Session, stepAssertion: StepAssertion[A]): Xor[CornichonError, Session] = {
+  def runStepPredicate(newSession: Session, stepAssertion: StepAssertion[A]): Xor[CornichonError, Session] = {
     val succeedAsExpected = stepAssertion.isSuccess && !negate
     val failedAsExpected = !stepAssertion.isSuccess && negate
 
