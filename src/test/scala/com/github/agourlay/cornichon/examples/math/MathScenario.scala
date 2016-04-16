@@ -20,15 +20,33 @@ class MathScenario extends CornichonFeature with MathSteps {
 
     Scenario("Random draw should eventually converge") {
 
-      When I generate_random_value("random-1")
+      When I generate_random_int("random-1")
 
       Eventually(maxDuration = 3 seconds, interval = 1 millis) {
 
-        When I generate_random_value("random-2")
+        When I generate_random_int("random-2")
 
         Then assert session_values("random-1", "random-2").areEquals
 
       }
+    }
+
+    Scenario("MonteCarlo approximation of PI") {
+
+      Repeat(1000) {
+
+        Given I generate_random_double("x")
+
+        And I generate_random_double("y")
+
+        Then I calculate_point_in_circle("inside")
+
+      }
+
+      And I estimate_pi_from_ratio("inside", "pi")
+
+      Then assert double_value_between("pi", 3.10, 3.16)
+
     }
   }
 }

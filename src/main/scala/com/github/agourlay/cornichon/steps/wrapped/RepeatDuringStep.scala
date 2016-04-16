@@ -20,11 +20,11 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
       res match {
         case s @ SuccessRunSteps(sSession, sLogs) ⇒
           if (remainingTime.gt(Duration.Zero))
-            repeatStepsDuring(steps, session, remainingTime, accLogs ++ res.logs, retriesNumber + 1, depth)
+            repeatStepsDuring(steps, sSession, remainingTime, accLogs ++ res.logs, retriesNumber + 1, depth)
           else
             // In case of success all logs are returned but they are not printed by default.
             (retriesNumber, s.copy(logs = accLogs ++ sLogs))
-        case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
+        case f @ FailedRunSteps(_, _, eLogs, _) ⇒
           // In case of failure only the logs of the last run are shown to avoid giant traces.
           (retriesNumber, f.copy(logs = eLogs))
       }

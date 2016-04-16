@@ -458,7 +458,7 @@ LogDuration(label = "my experiment") {
 ```
 
 
-Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/CornichonExamplesSpec.scala) as they are executed as part of Cornichon's test suite.
+Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala) as they are executed as part of Cornichon's test suite.
 
 ## DSL composition
 

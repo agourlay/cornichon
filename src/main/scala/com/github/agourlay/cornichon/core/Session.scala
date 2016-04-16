@@ -31,6 +31,8 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
 
   def getList(keys: Seq[String]) = keys.map(v ⇒ get(v))
 
+  def getHistory(key: String) = content.getOrElse(key, Vector.empty)
+
   def addValue(key: String, value: String) =
     if (key.trim.isEmpty) throw new EmptyKeyException(this)
     else

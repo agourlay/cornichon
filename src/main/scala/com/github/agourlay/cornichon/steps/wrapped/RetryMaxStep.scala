@@ -16,7 +16,7 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
     @tailrec
     def retryMaxSteps(steps: Vector[Step], session: Session, limit: Int, accLogs: Vector[LogInstruction], retriesNumber: Long, depth: Int): (Long, StepsReport) = {
       engine.runSteps(steps, session, Vector.empty, depth) match {
-        case s @ SuccessRunSteps(sSession, sLogs) ⇒
+        case s @ SuccessRunSteps(_, sLogs) ⇒
           (retriesNumber, s.copy(logs = accLogs ++ sLogs))
         case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
           if (limit > 0)

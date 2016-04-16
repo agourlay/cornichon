@@ -14,11 +14,11 @@ case class RepeatStep(nested: Vector[Step], occurence: Int) extends WrapperStep 
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
     @tailrec
-    def repeatSuccessSteps(retriesNumber: Long = 0): (Long, StepsReport) = {
+    def repeatSuccessSteps(session: Session, retriesNumber: Long = 0): (Long, StepsReport) = {
       engine.runSteps(nested, session, Vector.empty, depth + 1) match {
         case s: SuccessRunSteps ⇒
           if (retriesNumber == occurence - 1) (retriesNumber, s)
-          else repeatSuccessSteps(retriesNumber + 1)
+          else repeatSuccessSteps(s.session, retriesNumber + 1)
         case f: FailedRunSteps ⇒
           // In case of failure only the logs of the last run are shown to avoid giant traces.
           (retriesNumber, f)
@@ -27,8 +27,7 @@ case class RepeatStep(nested: Vector[Step], occurence: Int) extends WrapperStep 
 
     val titleLog = InfoLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
-      // Session not propagated through repeat calls
-      repeatSuccessSteps()
+      repeatSuccessSteps(session)
     }
 
     val (retries, report) = repeatRes
