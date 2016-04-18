@@ -33,7 +33,7 @@ class MathScenario extends CornichonFeature with MathSteps {
 
     Scenario("MonteCarlo approximation of PI") {
 
-      Repeat(5000) {
+      Repeat(2000) {
 
         Given I generate_random_double("x")
 
