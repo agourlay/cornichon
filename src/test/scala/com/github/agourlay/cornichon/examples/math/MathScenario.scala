@@ -18,7 +18,7 @@ class MathScenario extends CornichonFeature with MathSteps {
 
     }
 
-    Scenario("Random draw should eventually converge") {
+    Scenario("Random draw should eventually be identical") {
 
       When I generate_random_int("random-1")
 
@@ -33,7 +33,7 @@ class MathScenario extends CornichonFeature with MathSteps {
 
     Scenario("MonteCarlo approximation of PI") {
 
-      Repeat(1000) {
+      Repeat(5000) {
 
         Given I generate_random_double("x")
 
@@ -45,7 +45,9 @@ class MathScenario extends CornichonFeature with MathSteps {
 
       And I estimate_pi_from_ratio("inside", "pi")
 
-      Then assert double_value_between("pi", 3.10, 3.16)
+      Then assert double_value("pi").isBetween(3.1, 3.2)
+
+      And I show_session("pi")
 
     }
   }
