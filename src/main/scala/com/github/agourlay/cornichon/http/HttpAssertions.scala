@@ -91,7 +91,7 @@ object HttpAssertions {
               if (whiteList) {
                 val expectedJson = resolveParseJson(expected, session, resolver)
                 val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-                val Diff(changed, _, deleted) = expectedJson.diff(sessionValueJson)
+                val Diff(changed, _, deleted) = jsonDiff(expectedJson, sessionValueJson)
                 if (deleted != JNothing) throw new WhiteListError(s"White list error - '${prettyPrint(deleted)}' is not defined in object '${prettyPrint(sessionValueJson)}")
                 if (changed != JNothing) changed else expectedJson
               } else {

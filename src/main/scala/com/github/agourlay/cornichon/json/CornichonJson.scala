@@ -75,8 +75,10 @@ trait CornichonJson {
 
   def prettyPrint(json: JValue) = pretty(render(json))
 
+  def jsonDiff(first: JValue, second: JValue) = first diff second
+
   def prettyDiff(first: JValue, second: JValue) = {
-    val Diff(changed, added, deleted) = first diff second
+    val Diff(changed, added, deleted) = jsonDiff(first, second)
     s"""
     |${if (changed == JNothing) "" else "changed = " + prettyPrint(changed)}
     |${if (added == JNothing) "" else "added = " + prettyPrint(added)}
