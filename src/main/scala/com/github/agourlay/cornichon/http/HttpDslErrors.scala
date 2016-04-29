@@ -41,4 +41,7 @@ object HttpDslErrors {
     val msg = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
   }
 
+  case object UseIgnoringEach extends CornichonError {
+    val msg = "use 'ignoringEach' when asserting on a body as an array"
+  }
 }

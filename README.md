@@ -245,7 +245,7 @@ body.path("`message.fr`").isAbsent
 If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
-body.asArray.inOrder.ignoring("city", "hasSuperpowers", "publisher").is(
+body.asArray.inOrder.ignoringEach("city", "hasSuperpowers", "publisher").is(
   """
   [{
     "name": "Batman",

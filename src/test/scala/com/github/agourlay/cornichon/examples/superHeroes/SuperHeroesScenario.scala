@@ -245,7 +245,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         When I get("/superheroes").withParams("sessionId" → "<session-id>")
 
-        Then assert body.asArray.ignoring("publisher").is(
+        Then assert body.asArray.ignoringEach("publisher").is(
           """
           [{
             "name": "Batman",
@@ -279,7 +279,7 @@ class SuperHeroesScenario extends CornichonFeature {
           }]"""
         )
 
-        Then assert body.asArray.ignoring("publisher").is(
+        Then assert body.asArray.ignoringEach("publisher").is(
           """
           |      name      |    realName    |     city      |  hasSuperpowers |
           |    "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
@@ -290,7 +290,7 @@ class SuperHeroesScenario extends CornichonFeature {
         """
         )
 
-        Then assert body.asArray.ignoring("hasSuperpowers", "publisher").is(
+        Then assert body.asArray.ignoringEach("hasSuperpowers", "publisher").is(
           """
           [{
             "name": "Superman",
