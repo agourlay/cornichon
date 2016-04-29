@@ -98,15 +98,12 @@ object HttpEffects {
     def withVariables(newVariables: (String, String)*) = copy(variables = variables.fold(Some(newVariables.toMap))(v ⇒ Some(v ++ newVariables))).buildBody()
 
     def buildBody() = {
-
-      import org.json4s.Extraction
-      import org.json4s.FieldSerializer
-
-      implicit val formats = org.json4s.DefaultFormats + FieldSerializer[GqlPayload]()
+      import io.circe.generic.auto._
+      import io.circe.syntax._
 
       val queryDoc = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
       val newPayload = GqlPayload(queryDoc, operationName, variables)
-      copy(payload = prettyPrint(Extraction.decompose(newPayload)))
+      copy(payload = prettyPrint(newPayload.asJson))
     }
   }
 

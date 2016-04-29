@@ -3,18 +3,18 @@ package com.github.agourlay.cornichon.http.client
 import akka.http.scaladsl.model.HttpHeader
 import cats.data.Xor
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpError }
-import org.json4s._
+import io.circe.Json
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 trait HttpClient {
 
-  def postJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
+  def postJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
 
-  def putJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
+  def putJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
 
-  def patchJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
+  def patchJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
 
   def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
 

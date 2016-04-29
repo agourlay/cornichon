@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
+import io.circe.{ Json, JsonObject }
 import org.parboiled2._
-import spray.json.{ JsArray, JsObject, JsValue }
 
 import scala.util.{ Failure, Success }
 
@@ -26,11 +26,10 @@ class DataTableParser(val input: ParserInput) extends Parser {
     optional(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ optional(NL) ~ EOI ~> DataTable
   }
 
-  import spray.json._
-
   def HeaderRule = rule { Separator ~ oneOrMore(HeaderTXT).separatedBy(Separator) ~ Separator ~> Headers }
 
-  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(_.parseJson))) }
+  //fix me - should not swallow error
+  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(io.circe.parser.parse(_).getOrElse(Json.Null)))) }
 
   val delims = s"$delimeter\r\n"
 
@@ -49,18 +48,17 @@ class DataTableParser(val input: ParserInput) extends Parser {
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
 
-  def asSprayMap: Map[String, Seq[JsValue]] =
+  def asMap: Map[String, Seq[Json]] =
     headers.fields.zipWithIndex.map {
       case (header, index) ⇒
         header → rows.map(r ⇒ r.fields(index))
     }.groupBy(_._1).map { case (k, v) ⇒ (k, v.flatMap(_._2)) }
 
-  def asSprayJson: JsArray = {
-    val map = asSprayMap
-    val tmp = for (i ← rows.indices) yield map.map { case (k, v) ⇒ k → v(i) }
-    JsArray(tmp.map(JsObject(_)).toVector)
+  def objectList: List[JsonObject] = {
+    val tmp = for (i ← rows.indices) yield asMap.map { case (k, v) ⇒ k → v(i) }
+    tmp.map(JsonObject.fromMap).toList
   }
 }
 
 case class Headers(fields: Seq[String])
-case class Row(fields: Seq[JsValue])
+case class Row(fields: Seq[Json])

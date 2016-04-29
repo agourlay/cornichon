@@ -5,84 +5,95 @@ import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.json.CornichonJson.GqlString
-
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
+import io.circe.{ Json, JsonObject }
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
-import sangria.marshalling.json4s.jackson._
+import sangria.marshalling.circe._
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Success }
 
 trait CornichonJson {
 
-  def parseJson[A](input: A): JValue = input match {
-    case s: String if s.trim.headOption.contains('|') ⇒ parseDataTable(s)
-    case s: String if s.trim.headOption.contains('{') ⇒ parse(s)
-    case s: String if s.trim.headOption.contains('[') ⇒ parse(s)
-    case s: String                                    ⇒ JString(s)
-    case d: Double                                    ⇒ JDouble(d)
-    case b: BigDecimal                                ⇒ JDecimal(b)
-    case i: Int                                       ⇒ JInt(i)
-    case l: Long                                      ⇒ JLong(l)
-    case b: Boolean                                   ⇒ JBool(b)
+  def parseJson[A](input: A): Xor[CornichonError, Json] = input match {
+    case s: String if s.trim.headOption.contains('|') ⇒ right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject)))
+    case s: String if s.trim.headOption.contains('{') ⇒ parseString(s)
+    case s: String if s.trim.headOption.contains('[') ⇒ parseString(s)
+    case s: String                                    ⇒ right(Json.fromString(s))
+    case d: Double                                    ⇒ right(Json.fromDoubleOrNull(d))
+    case b: BigDecimal                                ⇒ right(Json.fromBigDecimal(b))
+    case i: Int                                       ⇒ right(Json.fromInt(i))
+    case l: Long                                      ⇒ right(Json.fromLong(l))
+    case b: Boolean                                   ⇒ right(Json.fromBoolean(b))
     case GqlString(g)                                 ⇒ parseGraphQLJson(g)
   }
 
-  def parseDataTable(table: String): JArray = {
-    val sprayArray = DataTableParser.parseDataTable(table).asSprayJson
-    JArray(sprayArray.elements.map(v ⇒ parse(v.toString())).toList)
-  }
+  def parseJsonUnsafe[A](input: A): Json =
+    parseJson(input).fold(e ⇒ throw e, identity)
 
-  def parseJsonUnsafe[A](input: A): JValue =
-    Try { parseJson(input) } match {
-      case Success(json) ⇒ json
-      case Failure(e)    ⇒ throw new MalformedJsonError(input, e)
-    }
+  def parseString(s: String) =
+    io.circe.parser.parse(s).leftMap(f ⇒ new MalformedJsonError(s, f.message))
 
-  def parseJsonXor[A](input: A): Xor[CornichonError, JValue] =
-    Try { parseJson(input) } match {
-      case Success(json) ⇒ right(json)
-      case Failure(e)    ⇒ left(new MalformedJsonError(input, e))
-    }
+  def parseDataTable(table: String): List[JsonObject] =
+    DataTableParser.parseDataTable(table).objectList
 
   def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
-    case Success(value) ⇒ value.convertMarshaled[JValue]
-    case Failure(e)     ⇒ throw new MalformedGraphQLJsonError(input, e)
+    case Success(value) ⇒ right(value.convertMarshaled[Json])
+    case Failure(e)     ⇒ left(new MalformedGraphQLJsonError(input, e))
   }
 
-  def parseArray(input: String): JArray = parseJson(input) match {
-    case arr: JArray ⇒ arr
-    case _           ⇒ throw new NotAnArrayError(input)
-  }
+  def parseArray(input: String): Xor[CornichonError, List[Json]] =
+    parseJson(input).flatMap { json ⇒
+      json.arrayOrObject(
+        left(new NotAnArrayError(input)),
+        values ⇒ right(values),
+        obj ⇒ left(new NotAnArrayError(input))
+      )
+    }
 
-  def selectArrayJsonPath(path: JsonPath, sessionValue: String): JArray = {
-    val extracted = path.run(sessionValue)
-    extracted match {
-      case jarr: JArray ⇒ jarr
-      case _            ⇒ throw new NotAnArrayError(extracted)
+  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Xor[CornichonError, List[Json]] = {
+    path.run(sessionValue).flatMap { json ⇒
+      json.arrayOrObject(
+        left(new NotAnArrayError(json)),
+        values ⇒ right(values),
+        obj ⇒ left(new NotAnArrayError(json))
+      )
     }
   }
 
-  // FIXME can break if JSON contains duplicate field => make bulletproof using lenses
-  def removeFieldsByPath(input: JValue, paths: Seq[JsonPath]) = {
+  def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) = {
     paths.foldLeft(input) { (json, path) ⇒
-      val jsonToRemove = path.run(json)
-      json.removeField { f ⇒ f._1 == path.operations.last.field && f._2 == jsonToRemove }
+      path.removeFromJson(json)
     }
   }
 
-  def prettyPrint(json: JValue) = pretty(render(json))
+  def prettyPrint(json: Json) = json.spaces2
 
-  def prettyDiff(first: JValue, second: JValue) = {
-    val Diff(changed, added, deleted) = first diff second
+  def prettyDiff(first: Json, second: Json) = {
+    val Diff(changed, added, deleted) = diff(first, second)
     s"""
-    |${if (changed == JNothing) "" else "changed = " + prettyPrint(changed)}
-    |${if (added == JNothing) "" else "added = " + prettyPrint(added)}
-    |${if (deleted == JNothing) "" else "deleted = " + prettyPrint(deleted)}
+    |${if (changed == Json.Null) "" else "changed = " + prettyPrint(changed)}
+    |${if (added == Json.Null) "" else "added = " + prettyPrint(added)}
+    |${if (deleted == Json.Null) "" else "deleted = " + prettyPrint(deleted)}
       """.stripMargin
   }
+
+  def diff(v1: Json, v2: Json): Diff = {
+    import org.json4s.JValue
+    import org.json4s.jackson.JsonMethods._
+
+    def circeToJson4s(c: Json): JValue =
+      parse(c.noSpaces)
+
+    def json4sToCirce(j: JValue): Json =
+      parseJsonUnsafe(compact(render(j)))
+
+    val diff = circeToJson4s(v1).diff(circeToJson4s(v2))
+
+    Diff(changed = json4sToCirce(diff.changed), added = json4sToCirce(diff.added), deleted = json4sToCirce(diff.deleted))
+  }
+
+  case class Diff(changed: Json, added: Json, deleted: Json)
 }
 
 object CornichonJson extends CornichonJson {

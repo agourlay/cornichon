@@ -20,7 +20,7 @@ scalacOptions ++= Seq(
   "-Ywarn-unused-import"
 )
 
-fork in Test := true
+fork in Test := false
 
 SbtScalariform.scalariformSettings
 
@@ -34,19 +34,18 @@ libraryDependencies ++= {
   val scalaTestV = "2.2.6"
   val akkaHttpV = "2.4.4"
   val catsV = "0.4.1"
-  val sprayJsonV = "1.3.2"
   val json4sV = "3.3.0"
   val logbackV = "1.1.7"
   val parboiledV = "2.1.2"
   val akkaSseV = "1.7.3"
   val scalacheckV = "1.12.5"
   val sangriaV = "0.6.2"
-  val sangriaJsonV = "0.3.0"
+  val sangriaCirceV = "0.4.3"
+  val circeVersion = "0.4.1"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
     ,"org.json4s"          %% "json4s-jackson"                    % json4sV
-    ,"io.spray"            %% "spray-json"                        % sprayJsonV
     ,"org.typelevel"       %% "cats-macros"                       % catsV
     ,"org.typelevel"       %% "cats-core"                         % catsV
     ,"org.scalatest"       %% "scalatest"                         % scalaTestV
@@ -54,7 +53,11 @@ libraryDependencies ++= {
     ,"org.parboiled"       %% "parboiled"                         % parboiledV
     ,"org.scalacheck"      %% "scalacheck"                        % scalacheckV
     ,"org.sangria-graphql" %% "sangria"                           % sangriaV
-    ,"org.sangria-graphql" %% "sangria-json4s-jackson"            % sangriaJsonV
+    ,"org.sangria-graphql" %% "sangria-circe"                     % sangriaCirceV
+    ,"io.circe"            %% "circe-core"                        % circeVersion
+    ,"io.circe"            %% "circe-generic"                     % circeVersion
+    ,"io.circe"            %% "circe-parser"                      % circeVersion
+    ,"io.circe"            %% "circe-optics"                      % circeVersion
     ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
     ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV   % "test"
   )

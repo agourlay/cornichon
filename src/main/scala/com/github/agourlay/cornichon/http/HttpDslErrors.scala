@@ -7,7 +7,7 @@ object HttpDslErrors {
 
   def statusError(expected: Int, body: String): Int ⇒ String = actual ⇒ {
     s"""expected '$expected' but actual is '$actual' with response body:
-        |${prettyPrint(parseJson(body))}""".stripMargin
+        |${prettyPrint(parseJsonUnsafe(body))}""".stripMargin
   }
 
   def arraySizeError(expected: Int, sourceArray: String): Int ⇒ String = actual ⇒ {
@@ -39,6 +39,10 @@ object HttpDslErrors {
 
   case object InvalidIgnoringConfigError extends CornichonError {
     val msg = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
+  }
+
+  case object UseIgnoringEach extends CornichonError {
+    val msg = "use 'ignoringEach' when asserting on a body as an array"
   }
 
 }

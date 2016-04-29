@@ -2,8 +2,8 @@ package com.github.agourlay.cornichon.core
 
 import java.io.{ PrintWriter, StringWriter }
 
-import org.json4s._
 import com.github.agourlay.cornichon.json.CornichonJson._
+import io.circe.Json
 
 import scala.util.control.NoStackTrace
 
@@ -40,13 +40,13 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
   // TODO Introduce Show typeclass to display objects nicely
   val msg = actual match {
     case s: String ⇒ baseMsg
-    case j: JValue ⇒
+    case j: Json ⇒
       s"""|expected result was${if (negate) " different than:" else ":"}
-          |'${prettyPrint(expected.asInstanceOf[JValue])}'
+          |'${prettyPrint(expected.asInstanceOf[Json])}'
           |but actual result is:
-          |'${prettyPrint(actual.asInstanceOf[JValue])}'
+          |'${prettyPrint(actual.asInstanceOf[Json])}'
           |diff:
-          |${prettyDiff(j, expected.asInstanceOf[JValue])}
+          |${prettyDiff(j, expected.asInstanceOf[Json])}
       """.stripMargin.trim
     case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]]).mkString(", ")}'"
     case j: Set[A] ⇒ s"$baseMsg \n Set diff is '${j.diff(expected.asInstanceOf[Set[A]]).mkString(", ")}'"

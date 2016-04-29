@@ -8,8 +8,8 @@ case class NotAnArrayError[A](badPayload: A) extends JsonError {
   val msg = s"expected JSON Array but got $badPayload"
 }
 
-case class MalformedJsonError[A](input: A, exception: Throwable) extends JsonError {
-  val msg = s"malformed JSON input $input with ${exception.getMessage}"
+case class MalformedJsonError[A](input: A, message: String) extends JsonError {
+  val msg = s"malformed JSON input $input: $message"
 }
 
 case class MalformedGraphQLJsonError[A](input: A, exception: Throwable) extends JsonError {

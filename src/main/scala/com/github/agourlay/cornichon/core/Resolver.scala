@@ -38,10 +38,12 @@ class Resolver(extractors: Map[String, Mapper]) {
         case TextMapper(key, transform) ⇒
           session.getXor(key, ph.index).map(transform)
         case JsonMapper(key, jsonPath, transform) ⇒
-          session.getXor(key, ph.index).map { sessionValue ⇒
+          session.getXor(key, ph.index).flatMap { sessionValue ⇒
             // No placeholders in JsonMapper for now to avoid people running into infinite recursion
             // Could be enabled if there is a use case for it.
-            transform(JsonPath.run(jsonPath, sessionValue).values.toString)
+            JsonPath.run(jsonPath, sessionValue)
+              .map(_.noSpaces)
+              .map(transform)
           }
       }
   }

@@ -8,7 +8,7 @@ import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.CornichonJson
-import org.json4s._
+import io.circe.Json
 
 import scala.concurrent.duration._
 
@@ -16,14 +16,14 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  private type WithPayloadCall = (JValue, String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
+  private type WithPayloadCall = (Json, String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
   private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
 
   private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)],
     headers: Seq[(String, String)], extractor: Option[String], requestTimeout: FiniteDuration, expect: Option[Int])(s: Session) =
     for {
       payloadResolved ← resolver.fillPlaceholders(payload)(s)
-      json ← parseJsonXor(payloadResolved)
+      json ← parseJson(payloadResolved)
       r ← resolveCommonRequestParts(url, params, headers)(s)
       resp ← call(json, r._1, r._2, r._3, requestTimeout)
       newSession ← handleResponse(resp, expect, extractor)(s)
