@@ -45,7 +45,7 @@ class MathScenario extends CornichonFeature with MathSteps {
 
       And I estimate_pi_from_ratio("inside", "pi")
 
-      Then assert double_value("pi").isBetween(3.1, 3.2)
+      Then assert double_value("pi").isBetween(3.05, 3.2)
 
       And I show_session("pi")
 
