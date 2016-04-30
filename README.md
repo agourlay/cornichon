@@ -1,10 +1,28 @@
-cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11) [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
-=========
+cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11) [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt) [![Join the chat at https://gitter.im/agourlay/cornichon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![Join the chat at https://gitter.im/agourlay/cornichon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+=========
 
 An extensible Scala DSL for testing JSON HTTP APIs.
 
+
+## Table of contents
+
+1. [Quick start](#quick-start)
+2. [Structure](#structure)
+3. [DSL](#dsl)
+4. [Built-in steps](#built-in-steps)
+5. [DSL composition](#dsl-composition)
+6. [Custom steps](#custom-steps)
+7. [Placeholders](#placeholders)
+8. [Feature options](#feature-options)
+  1. [Before and after hooks](#before-and-after-hooks)
+  2. [Base URL](#base-url)
+  3. [Request timeout](#request-timeout)
+  4. [Register custom extractors](#register-custom-extractors)
+9. [Execution model](#execution-model)
+10. [ScalaTest integration](#scalaTest-integration)
+11. [SSL configuration](#ssl-configuration)
+12. [License](#license)
 
 ## Quick start
 
@@ -775,3 +793,7 @@ akka {
   }
 }
 ```
+
+## License
+
+**Cornichon** is licensed under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
