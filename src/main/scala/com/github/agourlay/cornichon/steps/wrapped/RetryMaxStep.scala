@@ -28,7 +28,6 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
       }
     }
 
-    val titleLog = InfoLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
       retryMaxSteps(nested, session, limit, Vector.empty, 0, depth + 1)
     }
@@ -37,10 +36,10 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
 
     report match {
       case s: SuccessRunSteps ⇒
-        val fullLogs = (titleLog +: report.logs) :+ SuccessLogInstruction(s"RetryMax block with limit '$limit' succeeded after '$retries' retries", depth, Some(executionTime))
+        val fullLogs = successTitleLog(depth) +: report.logs :+ SuccessLogInstruction(s"RetryMax block with limit '$limit' succeeded after '$retries' retries", depth, Some(executionTime))
         SuccessRunSteps(report.session, fullLogs)
       case f: FailedRunSteps ⇒
-        val fullLogs = (titleLog +: report.logs) :+ FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime))
+        val fullLogs = failedTitleLog(depth) +: report.logs :+ FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime))
         FailedRunSteps(f.step, RetryMaxBlockReachedLimit, fullLogs, report.session)
     }
   }
