@@ -62,6 +62,10 @@ case class ResolverParsingError(error: Throwable) extends CornichonError {
   val msg = s"error thrown during resolver parsing ${error.getMessage}"
 }
 
+case class AmbiguousKeyDefinition(key: String) extends CornichonError {
+  val msg = s"ambiguous definition of key '$key' - it is present in both session and extractors"
+}
+
 case class EmptyKeyException(s: Session) extends CornichonError {
   val msg = s"key value can not be empty - session is \n${s.prettyPrint}"
 }
