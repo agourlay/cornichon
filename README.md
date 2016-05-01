@@ -274,7 +274,7 @@ body.asArray.inOrder.ignoringEach("city", "hasSuperpowers", "publisher").is(
   }]
   """)
   
-body.asArray.inOrder.ignoring("publisher").is(
+body.asArray.inOrder.ignoringEach("publisher").is(
  """
   |    name     |    realName    |     city      |  hasSuperpowers |
   | "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |

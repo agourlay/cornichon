@@ -152,8 +152,6 @@ object HttpAssertions {
 
   case class BodyArrayAssertion[A](private val jsonPath: String, ordered: Boolean, private val ignoredEachKeys: Seq[String], resolver: Resolver) extends AssertionStep[A, Iterable[JValue]] {
 
-    def path(path: String): BodyArrayAssertion[A] = copy(jsonPath = path)
-
     def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
 
     def ignoringEach(ignoringEach: String*): BodyArrayAssertion[A] = copy(ignoredEachKeys = ignoringEach)
