@@ -5,6 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.PathMatchers.Remaining
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
@@ -81,7 +82,7 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
             }
           }
       } ~
-      path("publishers" / Rest) { name: String ⇒
+      path("publishers" / Remaining) { name: String ⇒
         get {
           parameters('sessionId) { sessionId: String ⇒
             onSuccess(testData.publisherByName(name, sessionId)) { pub: Publisher ⇒
@@ -121,7 +122,7 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
             }
           }
       } ~
-      path("superheroes" / Rest) { name: String ⇒
+      path("superheroes" / Remaining) { name: String ⇒
         get {
           parameters('protectIdentity ? false) { protectIdentity: Boolean ⇒
             parameters('sessionId) { sessionId: String ⇒
