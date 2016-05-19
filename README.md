@@ -38,7 +38,7 @@ Add the library dependency
 libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.7.3" % "test"
 ```
 
-Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), so place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
+Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), just place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
 
 A ```Feature``` is a class extending ```CornichonFeature``` and implementing the required ```feature``` function.
  
@@ -159,9 +159,9 @@ Statements start with one of the prefixes below followed by a ```step``` definit
 - And I | a | assert | assert_not (expects the step to fail)
 - Then I | a | assert | assert_not (expects the step to fail)
 
-Those prefixes do not change the behaviour of the steps.
+Those prefixes do not change the behaviour of the steps and are here to improve readability.
 
-First run a ```step``` with a side effect or a result then assert its value in a second ```step```.
+The usage pattern is often to first run a ```step``` with a side effect then assert an expected state in a second ```step```.
 
 ## Built-in steps
 
@@ -403,6 +403,8 @@ session_contains("favorite-superhero" → "Batman")
 
 ### Wrapper steps
 
+Wrapper steps allow to control the execution of a series of steps to build more powerfull tests.
+
 - repeating a series of ```steps```
 
 ```scala
@@ -515,7 +517,7 @@ LogDuration(label = "my experiment") {
 
 ### Debug steps
 
-- showing sessing content for debugging purpose
+- showing session content for debugging purpose
 
 ```scala
  And I show_session
@@ -630,6 +632,9 @@ trait MySteps {
 }
 
 ```
+
+Note for advance users: it is also possible to write custom wrapper steps.
+
 
 ## Placeholders
 
