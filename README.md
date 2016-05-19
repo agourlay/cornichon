@@ -10,6 +10,13 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 2. [Structure](#structure)
 3. [DSL](#dsl)
 4. [Built-in steps](#built-in-steps)
+  1. [HTTP effects](#http-effects)
+  2. [HTTP assertions](#http-assertions)
+  3. [HTTP streams](#http-streams)
+  4. [GraphQL steps](#graphql-steps)
+  4. [Session steps](#session-steps)
+  5. [Wrapper steps](#wrapper-steps)
+  6. [Debug steps](#debug-steps)
 5. [DSL composition](#dsl-composition)
 6. [Custom steps](#custom-steps)
 7. [Placeholders](#placeholders)
@@ -161,6 +168,8 @@ First run a ```step``` with a side effect or a result then assert its value in a
 Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.
 
 
+### HTTP effects
+
 - GET, DELETE, HEAD and OPTIONS share the same signature
 
 ```scala
@@ -180,6 +189,9 @@ put("http://superhero.io/batman", "JSON description of Batman goes here").withPa
 
 post("http://superhero.io/batman", "JSON description of Batman goes here").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
 ```
+
+
+### HTTP assertions
 
 - assert response status
 
@@ -300,6 +312,75 @@ body.asArray.contains(
   
 ```
 
+### HTTP streams
+
+- Server-Sent-Event.
+
+```scala
+When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
+
+Then assert body.asArray.hasSize(2)
+
+Then assert body.is("""
+  |   eventType      |    data     |
+  | "superhero name" |  "Batman"   |
+  | "superhero name" | "Superman"  |
+""")
+```
+
+SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
+
+
+### GraphQL steps
+
+Cornichon offers an integration with the library [Sangria](https://github.com/sangria-graphql/sangria) to propose convenient features to test GraphQL API.
+
+
+- GraphQL query
+
+```scala
+import sangria.macros._
+
+ When I query_gql("/<project-key>/graphql").withQuery(
+    graphql"""
+      query MyQuery {
+        superheroes {
+          results {
+            name
+            realName
+            publisher {
+              name
+            }
+          }
+        }
+      }
+    """
+    )
+
+```
+
+
+- GraphQL JSON
+
+all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
+
+```scala
+import com.github.agourlay.cornichon.json.CornichonJson._
+
+And assert body.ignoring("city", "publisher").is(
+  gql"""
+  {
+    name: "Batman",
+    realName: "Bruce Wayne",
+    hasSuperpowers: false
+  }
+  """)
+```
+
+
+
+### Session steps
+
 - setting a value in ```session```
 
 ```scala
@@ -319,17 +400,8 @@ save_body_path("city" -> "batman-city")
 session_contains("favorite-superhero" → "Batman")
 ```
 
-- showing sessing content for debugging purpose
 
-```scala
- And I show_session
-
- And I show_last_status
-
- And I show_last_response_body
-
- And I show_last_response_headers
-```
+### Wrapper steps
 
 - repeating a series of ```steps```
 
@@ -425,39 +497,6 @@ WithBasicAuth("admin", "root"){
 
 ```
 
-- experimental support for Server-Sent-Event.
- 
- SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
-
-```scala
-When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
-
-Then assert body.asArray.hasSize(2)
-
-Then assert body.is("""
-  |   eventType      |    data     |
-  | "superhero name" |  "Batman"   |
-  | "superhero name" | "Superman"  |
-""")
-```
-
-- GraphQL JSON
-
-all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
-
-```scala
-And assert body.ignoring("city", "publisher").is(
-  gql"""
-  {
-    name: "Batman",
-    realName: "Bruce Wayne",
-    hasSuperpowers: false
-  }
-  """)
-```
-
-This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
-
 - Log duration
 
 By default all ```EffectStep``` execution time can be found in the logs, but sometimes one needs to time a series of steps. 
@@ -472,6 +511,20 @@ LogDuration(label = "my experiment") {
   Then assert status.is(200)
 }
 
+```
+
+### Debug steps
+
+- showing sessing content for debugging purpose
+
+```scala
+ And I show_session
+
+ And I show_last_status
+
+ And I show_last_response_body
+
+ And I show_last_response_headers
 ```
 
 
