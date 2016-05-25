@@ -35,6 +35,7 @@ class TestData(implicit executionContext: ExecutionContext) {
     }
   }
 
+  @GraphQLField
   def updateSuperhero(sessionId: String, s: SuperHero) =
     for {
       _ ← superheroByName(sessionId, s.name)
