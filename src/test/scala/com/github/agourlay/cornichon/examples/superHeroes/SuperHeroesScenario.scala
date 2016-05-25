@@ -10,6 +10,8 @@ import com.github.agourlay.cornichon.examples.superHeroes.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 
+import sangria.macros._
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -430,6 +432,31 @@ class SuperHeroesScenario extends CornichonFeature {
         And I show_last_status
         And I show_last_response_body
         And I show_last_response_headers
+      }
+
+      Scenario("GraphQL support") {
+
+        When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
+          graphql"""
+            query($$sessionId: String!) {
+             superheroByName(sessionId: $$sessionId, name: "Batman", protectIdentity: false ) {
+               name
+               city
+             }
+            }
+          """
+        }
+
+        Then assert status.is(200)
+
+        Then assert body.path("data.superheroByName").is(
+          """
+          {
+            "name": "Batman",
+            "city": "Gotham city"
+          }
+          """
+        )
       }
 
       Scenario("demonstrate wrapping DSL blocks") {

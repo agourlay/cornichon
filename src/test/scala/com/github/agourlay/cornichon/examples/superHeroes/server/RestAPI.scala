@@ -11,8 +11,13 @@ import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import de.heikoseeberger.akkasse.{ EventStreamMarshalling, ServerSentEvent }
+import sangria.execution._
+import sangria.parser.QueryParser
+import sangria.marshalling.sprayJson._
+import spray.json._
 
 import scala.concurrent.ExecutionContext
+import scala.util.{ Failure, Success }
 
 class RestAPI() extends JsonSupport with EventStreamMarshalling {
 
@@ -153,6 +158,48 @@ class RestAPI() extends JsonSupport with EventStreamMarshalling {
                   }
                 }
               }
+            }
+          }
+        }
+      } ~
+      path("graphql") {
+        post {
+          entity(as[JsValue]) { requestJson ⇒
+            val JsObject(fields) = requestJson
+
+            val JsString(query) = fields("query")
+
+            val operation = fields.get("operationName") collect {
+              case JsString(op) ⇒ op
+            }
+
+            val vars = fields.get("variables") match {
+              case Some(obj: JsObject)                  ⇒ obj
+              case Some(JsString(s)) if s.trim.nonEmpty ⇒ s.parseJson
+              case _                                    ⇒ JsObject.empty
+            }
+
+            QueryParser.parse(query) match {
+
+              // query parsed successfully, time to execute it!
+              case Success(queryAst) ⇒
+                complete(
+                  Executor.execute(
+                    schema = GraphQlSchema.SuperHeroesSchema,
+                    queryAst = queryAst,
+                    root = testData,
+                    variables = vars,
+                    operationName = operation
+                  ).map(OK → _)
+                    .recover {
+                      case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
+                      case error: ErrorWithResolver  ⇒ InternalServerError → error.resolveError
+                    }
+                )
+
+              // can't parse GraphQL query, return error
+              case Failure(error) ⇒
+                complete(BadRequest, JsObject("error" → JsString(error.getMessage)))
             }
           }
         }

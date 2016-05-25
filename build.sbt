@@ -42,6 +42,7 @@ libraryDependencies ++= {
   val scalacheckV = "1.12.5"
   val sangriaV = "0.6.3"
   val sangriaJsonV = "0.3.1"
+  val sangriaSprayJsonV = "0.3.1"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
@@ -55,6 +56,7 @@ libraryDependencies ++= {
     ,"org.scalacheck"      %% "scalacheck"                        % scalacheckV
     ,"org.sangria-graphql" %% "sangria"                           % sangriaV
     ,"org.sangria-graphql" %% "sangria-json4s-jackson"            % sangriaJsonV
+    ,"org.sangria-graphql" %% "sangria-spray-json"                % sangriaSprayJsonV % "test"
     ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
     ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV   % "test"
   )
