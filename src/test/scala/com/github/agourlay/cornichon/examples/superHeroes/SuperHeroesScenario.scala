@@ -443,14 +443,6 @@ class SuperHeroesScenario extends CornichonFeature {
                name
                city
              }
-
-             root: __type(name: "Root") {
-              fields {name}
-             }
-
-             rootMut: __type(name: "RootMut") {
-              fields {name}
-             }
             }
           """
         }
@@ -465,14 +457,25 @@ class SuperHeroesScenario extends CornichonFeature {
           }
           """
         )
-      }
-
-      Scenario("GraphQL support mut") {
 
         When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
           graphql"""
             mutation ($$sessionId: String!) {
-             updateSuperhero(sessionId: $$sessionId, s: {name: "Batman", realName: "Bar", city: "Berlin", hasSuperpowers: false, publisher: {name: "DC", foundationYear: 2016, location: "Pankow"}}) {
+             updateSuperhero(
+               sessionId: $$sessionId,
+               s: {
+                 name: "Batman",
+                 realName: "Bruce Wayne",
+                 city: "Berlin",
+                 hasSuperpowers: false,
+                 publisher: {
+                   name: "DC",
+                   foundationYear: 2016,
+                   location: "Pankow"
+                 }
+               }
+             )
+             {
                name
                city
              }
@@ -480,7 +483,6 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         }
 
-//        Then I show_last_response_body_as_json
         Then assert status.is(200)
 
         Then assert body.path("data.updateSuperhero").is(

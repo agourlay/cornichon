@@ -359,6 +359,8 @@ import sangria.macros._
 
 ```
 
+```query_gql``` can be also be used for mutation query.
+
 
 - GraphQL JSON
 

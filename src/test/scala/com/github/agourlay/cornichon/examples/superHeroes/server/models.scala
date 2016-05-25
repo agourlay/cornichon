@@ -2,8 +2,7 @@ package com.github.agourlay.cornichon.examples.superHeroes.server
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import de.heikoseeberger.akkasse.ServerSentEvent
-import sangria.marshalling.FromInput
-import spray.json.{JsonWriter, JsonFormat, JsonReader, DefaultJsonProtocol}
+import spray.json.DefaultJsonProtocol
 import sangria.macros.derive._
 import sangria.schema.Schema
 
@@ -26,21 +25,24 @@ object GraphQlSchema {
   )
 
   implicit val PublisherInputType = deriveInputObjectType[Publisher](
-    InputObjectTypeName("PublisherInput"))
+    InputObjectTypeName("PublisherInput")
+  )
 
   implicit val SuperHeroInputType = deriveInputObjectType[SuperHero](
-    InputObjectTypeName("SuperHeroInput"))
-
+    InputObjectTypeName("SuperHeroInput")
+  )
 
   val QueryType = deriveObjectType[Unit, TestData](
     ObjectTypeName("Root"),
     ObjectTypeDescription("Gateway to awesomeness."),
-    ExcludeFields("updateSuperhero"))
+    ExcludeFields("updateSuperhero")
+  )
 
   val MutationType = deriveObjectType[Unit, TestData](
     ObjectTypeName("RootMut"),
     ObjectTypeDescription("Gateway to mutation awesomeness!"),
-    ExcludeFields("publisherByName", "superheroByName"))
+    ExcludeFields("publisherByName", "superheroByName")
+  )
 
   val SuperHeroesSchema = Schema(QueryType, Some(MutationType))
 }
