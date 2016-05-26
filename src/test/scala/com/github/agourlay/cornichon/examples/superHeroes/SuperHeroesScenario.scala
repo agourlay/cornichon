@@ -439,7 +439,7 @@ class SuperHeroesScenario extends CornichonFeature {
         When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
           graphql"""
             query($$sessionId: String!) {
-             superheroByName(sessionId: $$sessionId, name: "Batman", protectIdentity: false ) {
+             superheroByName(sessionId: $$sessionId, name: "Batman", protectIdentity: false) {
                name
                city
              }
@@ -454,6 +454,42 @@ class SuperHeroesScenario extends CornichonFeature {
           {
             "name": "Batman",
             "city": "Gotham city"
+          }
+          """
+        )
+
+        When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
+          graphql"""
+            mutation ($$sessionId: String!) {
+             updateSuperhero(
+               sessionId: $$sessionId,
+               s: {
+                 name: "Batman",
+                 realName: "Bruce Wayne",
+                 city: "Berlin",
+                 hasSuperpowers: false,
+                 publisher: {
+                   name: "DC",
+                   foundationYear: 2016,
+                   location: "Pankow"
+                 }
+               }
+             )
+             {
+               name
+               city
+             }
+            }
+          """
+        }
+
+        Then assert status.is(200)
+
+        Then assert body.path("data.updateSuperhero").is(
+          """
+          {
+            "name": "Batman",
+            "city": "Berlin"
           }
           """
         )

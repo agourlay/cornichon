@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.json.CornichonJson._
+import org.json4s.JValue
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
@@ -86,7 +87,7 @@ object HttpEffects {
   }
 
   case class QueryGQL(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-      query: Document, operationName: Option[String] = None, variables: Option[Map[String, String]] = None) extends HttpRequestWithPayload {
+      query: Document, operationName: Option[String] = None, variables: Option[Map[String, JValue]] = None) extends HttpRequestWithPayload {
     val name = "Query GQL"
 
     def withParams(params: (String, String)*) = copy(params = params)
@@ -95,7 +96,10 @@ object HttpEffects {
     //GQL builder
     def withQuery(query: Document) = copy(query = query).buildBody()
     def withOperationName(operationName: String) = copy(operationName = Some(operationName)).buildBody()
-    def withVariables(newVariables: (String, String)*) = copy(variables = variables.fold(Some(newVariables.toMap))(v ⇒ Some(v ++ newVariables))).buildBody()
+    def withVariables(newVariables: (String, Any)*) = {
+      val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJson(v)}
+      copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples))).buildBody()
+    }
 
     def buildBody() = {
 
@@ -110,7 +114,7 @@ object HttpEffects {
     }
   }
 
-  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, String]])
+  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, JValue]])
 
   sealed trait HttpRequestStreamed extends HttpRequest {
     def takeWithin: FiniteDuration

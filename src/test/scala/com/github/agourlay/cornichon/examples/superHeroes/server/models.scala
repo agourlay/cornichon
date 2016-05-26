@@ -10,24 +10,41 @@ case class Publisher(name: String, foundationYear: Int, location: String)
 
 case class SuperHero(name: String, realName: String, city: String, hasSuperpowers: Boolean, publisher: Publisher)
 
+import sangria.schema._
+import sangria.marshalling.sprayJson._
+
 object GraphQlSchema {
+  import JsonSupport._
 
   implicit val PublisherType = deriveObjectType[Unit, Publisher](
-    ObjectTypeName("Publisher"),
     ObjectTypeDescription("A comics publisher.")
   )
 
   implicit val SuperHeroType = deriveObjectType[Unit, SuperHero](
-    ObjectTypeName("Superhero"),
     ObjectTypeDescription("A superhero.")
+  )
+
+  implicit val PublisherInputType = deriveInputObjectType[Publisher](
+    InputObjectTypeName("PublisherInput")
+  )
+
+  implicit val SuperHeroInputType = deriveInputObjectType[SuperHero](
+    InputObjectTypeName("SuperHeroInput")
   )
 
   val QueryType = deriveObjectType[Unit, TestData](
     ObjectTypeName("Root"),
-    ObjectTypeDescription("Gateway to awesomeness.")
+    ObjectTypeDescription("Gateway to awesomeness."),
+    IncludeMethods("publisherByName", "superheroByName")
   )
 
-  val SuperHeroesSchema = Schema(QueryType)
+  val MutationType = deriveObjectType[Unit, TestData](
+    ObjectTypeName("RootMut"),
+    ObjectTypeDescription("Gateway to mutation awesomeness!"),
+    IncludeMethods("updateSuperhero")
+  )
+
+  val SuperHeroesSchema = Schema(QueryType, Some(MutationType))
 }
 
 trait ResourceNotFound extends Exception {
@@ -46,7 +63,7 @@ case class SuperHeroAlreadyExists(id: String) extends ResourceNotFound
 
 case class HttpError(error: String)
 
-trait JsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
+object JsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val formatCP = jsonFormat3(Publisher)
   implicit val formatSH = jsonFormat5(SuperHero)
   implicit val formatHE = jsonFormat1(HttpError)

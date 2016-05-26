@@ -19,7 +19,9 @@ import spray.json._
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
 
-class RestAPI() extends JsonSupport with EventStreamMarshalling {
+class RestAPI() extends EventStreamMarshalling {
+
+  import JsonSupport._
 
   implicit val system = ActorSystem("testData-http-server")
   implicit val mat = ActorMaterializer()
