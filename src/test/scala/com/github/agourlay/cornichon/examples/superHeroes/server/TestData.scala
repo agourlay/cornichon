@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.examples.superHeroes.server
 
-import sangria.macros.derive.GraphQLField
-
 import scala.collection.mutable
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Random
@@ -22,7 +20,6 @@ class TestData(implicit executionContext: ExecutionContext) {
 
   def superheroesBySessionUnsafe(sessionId: String) = superheroesBySession.getOrElse(sessionId, throw new SessionNotFound(sessionId))
 
-  @GraphQLField
   def publisherByName(sessionId: String, name: String) = Future {
     publishersBySessionUnsafe(sessionId).find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
   }
@@ -35,7 +32,6 @@ class TestData(implicit executionContext: ExecutionContext) {
     }
   }
 
-  @GraphQLField
   def updateSuperhero(sessionId: String, s: SuperHero) =
     for {
       _ ← superheroByName(sessionId, s.name)
@@ -59,7 +55,6 @@ class TestData(implicit executionContext: ExecutionContext) {
       sh
     }
 
-  @GraphQLField
   def superheroByName(sessionId: String, name: String, protectIdentity: Boolean = false) = Future {
     val sh = {
       if (name == "random") Some(randomSuperhero(sessionId))

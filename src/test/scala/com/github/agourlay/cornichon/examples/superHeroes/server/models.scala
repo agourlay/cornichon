@@ -35,13 +35,13 @@ object GraphQlSchema {
   val QueryType = deriveObjectType[Unit, TestData](
     ObjectTypeName("Root"),
     ObjectTypeDescription("Gateway to awesomeness."),
-    ExcludeFields("updateSuperhero")
+    IncludeMethods("publisherByName", "superheroByName")
   )
 
   val MutationType = deriveObjectType[Unit, TestData](
     ObjectTypeName("RootMut"),
     ObjectTypeDescription("Gateway to mutation awesomeness!"),
-    ExcludeFields("publisherByName", "superheroByName")
+    IncludeMethods("updateSuperhero")
   )
 
   val SuperHeroesSchema = Schema(QueryType, Some(MutationType))
