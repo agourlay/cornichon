@@ -331,7 +331,7 @@ Then assert body.is("""
 SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
 
 
-### GraphQL steps
+### GraphQL support
 
 Cornichon offers an integration with the library [Sangria](https://github.com/sangria-graphql/sangria) to propose convenient features to test GraphQL API.
 
@@ -359,7 +359,7 @@ import sangria.macros._
 
 ```
 
-```query_gql``` can be also be used for mutation query.
+```query_gql``` can also be used for mutation query.
 
 
 - GraphQL JSON
