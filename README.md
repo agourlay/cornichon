@@ -13,7 +13,7 @@ An extensible Scala DSL for testing JSON HTTP APIs.
   1. [HTTP effects](#http-effects)
   2. [HTTP assertions](#http-assertions)
   3. [HTTP streams](#http-streams)
-  4. [GraphQL steps](#graphql-steps)
+  4. [GraphQL support](#graphql-support)
   4. [Session steps](#session-steps)
   5. [Wrapper steps](#wrapper-steps)
   6. [Debug steps](#debug-steps)
