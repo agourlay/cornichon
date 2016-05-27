@@ -154,10 +154,25 @@ A ```scenario``` will stop at the first failed step encountered and ignore the r
 
 Statements start with one of the prefixes below followed by a ```step``` definition :
 
-- Given I | a
-- When I | a
-- And I | a | assert | assert_not (expects the step to fail)
-- Then I | a | assert | assert_not (expects the step to fail)
+* Given 
+  - I ```step```
+  - a ```step```
+  
+* When
+  - I ```step```
+  - a ```step```
+  
+* And 
+  - I ```step```
+  - a ```step```
+  - assert ```step```
+  - assert_not ```step``` (expects the step to fail)
+  
+* Then 
+  - I ```step```
+  - a ```step```
+  - assert ```step```
+  - assert_not ```step``` (expects the step to fail)
 
 Those prefixes do not change the behaviour of the steps and are here to improve readability.
 

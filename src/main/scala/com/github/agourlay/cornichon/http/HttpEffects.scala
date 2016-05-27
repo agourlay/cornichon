@@ -97,7 +97,7 @@ object HttpEffects {
     def withQuery(query: Document) = copy(query = query).buildBody()
     def withOperationName(operationName: String) = copy(operationName = Some(operationName)).buildBody()
     def withVariables(newVariables: (String, Any)*) = {
-      val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJson(v)}
+      val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJson(v) }
       copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples))).buildBody()
     }
 
