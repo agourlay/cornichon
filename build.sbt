@@ -43,6 +43,7 @@ libraryDependencies ++= {
   val sangriaV = "0.6.3"
   val sangriaJsonV = "0.3.1"
   val sangriaSprayJsonV = "0.3.1"
+  val fansiV = "0.1.1"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
@@ -54,11 +55,12 @@ libraryDependencies ++= {
     ,"ch.qos.logback"      %  "logback-classic"                   % logbackV
     ,"org.parboiled"       %% "parboiled"                         % parboiledV
     ,"org.scalacheck"      %% "scalacheck"                        % scalacheckV
+    ,"com.lihaoyi"         %% "fansi"                             % fansiV
     ,"org.sangria-graphql" %% "sangria"                           % sangriaV
     ,"org.sangria-graphql" %% "sangria-json4s-jackson"            % sangriaJsonV
     ,"org.sangria-graphql" %% "sangria-spray-json"                % sangriaSprayJsonV % "test"
-    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV   % "test"
+    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV         % "test"
+    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV         % "test"
   )
 }
 

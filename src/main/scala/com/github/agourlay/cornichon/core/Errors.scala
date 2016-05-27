@@ -45,7 +45,8 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
           |'${prettyPrint(expected.asInstanceOf[JValue])}'
           |but actual result is:
           |'${prettyPrint(actual.asInstanceOf[JValue])}'
-          |diff:
+          |
+          |expected diff. actual result is :
           |${prettyDiff(j, expected.asInstanceOf[JValue])}
       """.stripMargin.trim
     case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]]).mkString(", ")}'"

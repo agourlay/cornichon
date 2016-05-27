@@ -68,11 +68,8 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
     s"""testOnly *${this.getClass.getSimpleName} -- -t "$featureName should $scenarioName" """
 
   private def printLogs(logs: Seq[LogInstruction]): Unit = {
-    logs.foreach { log ⇒
-      val printableMsg = log.message.split('\n').map { line ⇒ "   " * log.margin + line }
-      val durationSuffix = log.duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
-      println(log.color + printableMsg.head + durationSuffix + RESET)
-      printableMsg.tail.foreach(line ⇒ println(log.color + line + RESET))
-    }
+    logs.foreach(l ⇒ println(l.colorized))
+    print('\n')
   }
+
 }

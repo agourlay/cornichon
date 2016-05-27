@@ -11,7 +11,7 @@ class Engine(executionContext: ExecutionContext) {
 
   def runScenario(session: Session, finallySteps: Seq[Step] = Seq.empty)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
-    val titleLog = InfoLogInstruction(s"Scenario : ${scenario.name}", initMargin)
+    val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val mainRunReport = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
     if (finallySteps.isEmpty)
       ScenarioReport(scenario.name, mainRunReport)
