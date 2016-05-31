@@ -37,16 +37,16 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
         |'$actual'
         |""".stripMargin.trim
 
-  // TODO Introduce Show typeclass to display objects nicely
+  // TODO Introduce Show + Diff (Eq?) type classes to remove casting and display objects nicely
   val msg = actual match {
     case s: String ⇒ baseMsg
     case j: JValue ⇒
       s"""|expected result was${if (negate) " different than:" else ":"}
-          |'${prettyPrint(expected.asInstanceOf[JValue])}'
+          |${prettyPrint(expected.asInstanceOf[JValue])}
           |but actual result is:
-          |'${prettyPrint(actual.asInstanceOf[JValue])}'
+          |${prettyPrint(actual.asInstanceOf[JValue])}
           |
-          |expected diff. actual result is :
+          |diff. between actual result and expected result is :
           |${prettyDiff(j, expected.asInstanceOf[JValue])}
       """.stripMargin.trim
     case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]]).mkString(", ")}'"

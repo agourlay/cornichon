@@ -690,8 +690,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
   // List of Steps to be executed after each scenario
   beforeEachScenario(
-    post("/session", ""),
-    save_body_path(root → "session-id")
+    When I post("/session", ""),
+    And I save_body_path(root → "session-id")
   )
 
   override def registerExtractors = Map(

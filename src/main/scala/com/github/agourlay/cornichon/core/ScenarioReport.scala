@@ -51,8 +51,8 @@ case class ScenarioReport(scenarioName: String, stepsRunReport: StepsReport) {
     case FailedRunSteps(failedStep, error, _, _) ⇒
       s"""
       |
-      |Scenario '$scenarioName' failed at step
-      |'${failedStep.title}'
+      |Scenario '$scenarioName' failed at step:
+      |${failedStep.title}
       |with error:
       |${error.msg}
       | """.trim.stripMargin
