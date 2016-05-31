@@ -30,7 +30,6 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
       }
     }
 
-    val titleLogs = InfoLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
       repeatStepsDuring(nested, session, duration, Vector.empty, 0, depth + 1)
     }
@@ -39,10 +38,10 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
 
     report match {
       case s: SuccessRunSteps ⇒
-        val fullLogs = (titleLogs +: report.logs) :+ SuccessLogInstruction(s"Repeat block during '$duration' succeeded after '$retries' retries", depth, Some(executionTime))
+        val fullLogs = successTitleLog(depth) +: report.logs :+ SuccessLogInstruction(s"Repeat block during '$duration' succeeded after '$retries' retries", depth, Some(executionTime))
         SuccessRunSteps(report.session, fullLogs)
       case f: FailedRunSteps ⇒
-        val fullLogs = (titleLogs +: report.logs) :+ FailureLogInstruction(s"Repeat block during '$duration' failed after being retried '$retries' times", depth, Some(executionTime))
+        val fullLogs = failedTitleLog(depth) +: report.logs :+ FailureLogInstruction(s"Repeat block during '$duration' failed after being retried '$retries' times", depth, Some(executionTime))
         FailedRunSteps(f.step, RepeatDuringBlockContainFailedSteps, fullLogs, report.session)
     }
   }

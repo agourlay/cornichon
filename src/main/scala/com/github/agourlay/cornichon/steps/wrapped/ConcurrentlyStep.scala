@@ -13,15 +13,14 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
-    val titleLogs = Vector(InfoLogInstruction(title, depth))
     val start = System.nanoTime
     val f = Future.traverse(List.fill(factor)(nested)) { steps ⇒
-      Future { engine.runSteps(steps, session, titleLogs, depth + 1) }
+      Future { engine.runSteps(steps, session, Vector.empty, depth + 1) }
     }
 
     val results = Try { Await.result(f, maxTime) } match {
       case Success(s) ⇒ s
-      case Failure(e) ⇒ List(FailedRunSteps(this, ConcurrentlyTimeout, titleLogs, session))
+      case Failure(e) ⇒ List(FailedRunSteps(this, ConcurrentlyTimeout, Vector(failedTitleLog(depth)), session))
     }
 
     // Only the first error report found is used in the logs.
@@ -32,10 +31,10 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
       //TODO all sessions should be merged?
       val updatedSession = successStepsRun.head.session
       //TODO all logs should be merged?
-      val updatedLogs = successStepsRun.head.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", depth, Some(executionTime))
+      val updatedLogs = successTitleLog(depth) +: successStepsRun.head.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", depth, Some(executionTime))
       SuccessRunSteps(updatedSession, updatedLogs)
     } { f ⇒
-      f.copy(logs = f.logs :+ FailureLogInstruction(s"Concurrently block failed", depth))
+      f.copy(logs = failedTitleLog(depth) +: f.logs :+ FailureLogInstruction(s"Concurrently block failed", depth))
     }
   }
 }

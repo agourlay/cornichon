@@ -25,7 +25,6 @@ case class RepeatStep(nested: Vector[Step], occurence: Int) extends WrapperStep 
       }
     }
 
-    val titleLog = InfoLogInstruction(title, depth)
     val (repeatRes, executionTime) = engine.withDuration {
       repeatSuccessSteps(session)
     }
@@ -34,10 +33,10 @@ case class RepeatStep(nested: Vector[Step], occurence: Int) extends WrapperStep 
 
     report match {
       case s: SuccessRunSteps ⇒
-        val fullLogs = titleLog +: report.logs :+ SuccessLogInstruction(s"Repeat block with occurence '$occurence' succeeded", depth, Some(executionTime))
+        val fullLogs = successTitleLog(depth) +: report.logs :+ SuccessLogInstruction(s"Repeat block with occurence '$occurence' succeeded", depth, Some(executionTime))
         SuccessRunSteps(report.session, fullLogs)
       case f: FailedRunSteps ⇒
-        val fullLogs = titleLog +: report.logs :+ FailureLogInstruction(s"Repeat block with occurence '$occurence' failed after '$retries' occurence", depth, Some(executionTime))
+        val fullLogs = failedTitleLog(depth) +: report.logs :+ FailureLogInstruction(s"Repeat block with occurence '$occurence' failed after '$retries' occurence", depth, Some(executionTime))
         FailedRunSteps(f.step, RepeatBlockContainFailedSteps, fullLogs, report.session)
     }
   }

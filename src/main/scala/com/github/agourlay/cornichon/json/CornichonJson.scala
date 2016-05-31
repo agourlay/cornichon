@@ -71,6 +71,7 @@ trait CornichonJson {
 
   def prettyDiff(first: Json, second: Json) = {
     val Diff(changed, added, deleted) = diff(first, second)
+
     s"""
     |${if (changed == Json.Null) "" else "changed = " + prettyPrint(changed)}
     |${if (added == Json.Null) "" else "added = " + prettyPrint(added)}

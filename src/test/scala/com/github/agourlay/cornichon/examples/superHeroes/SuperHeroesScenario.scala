@@ -10,6 +10,8 @@ import com.github.agourlay.cornichon.examples.superHeroes.server.RestAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 
+import sangria.macros._
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -423,13 +425,74 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        Then assert headers.contain("Server" → "akka-http/2.4.4")
+        Then assert headers.contain("Server" → "akka-http/2.4.6")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
         And I show_last_status
         And I show_last_response_body
         And I show_last_response_headers
+      }
+
+      Scenario("GraphQL support") {
+
+        When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
+          graphql"""
+            query($$sessionId: String!) {
+             superheroByName(sessionId: $$sessionId, name: "Batman", protectIdentity: false) {
+               name
+               city
+             }
+            }
+          """
+        }
+
+        Then assert status.is(200)
+
+        Then assert body.path("data.superheroByName").is(
+          """
+          {
+            "name": "Batman",
+            "city": "Gotham city"
+          }
+          """
+        )
+
+        When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
+          graphql"""
+            mutation ($$sessionId: String!) {
+             updateSuperhero(
+               sessionId: $$sessionId,
+               s: {
+                 name: "Batman",
+                 realName: "Bruce Wayne",
+                 city: "Berlin",
+                 hasSuperpowers: false,
+                 publisher: {
+                   name: "DC",
+                   foundationYear: 2016,
+                   location: "Pankow"
+                 }
+               }
+             )
+             {
+               name
+               city
+             }
+            }
+          """
+        }
+
+        Then assert status.is(200)
+
+        Then assert body.path("data.updateSuperhero").is(
+          """
+          {
+            "name": "Batman",
+            "city": "Berlin"
+          }
+          """
+        )
       }
 
       Scenario("demonstrate wrapping DSL blocks") {
@@ -628,8 +691,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
   // List of Steps to be executed after each scenario
   beforeEachScenario(
-    post("/session", ""),
-    save_body_path(root → "session-id")
+    When I post("/session", ""),
+    And I save_body_path(root → "session-id")
   )
 
   override def registerExtractors = Map(

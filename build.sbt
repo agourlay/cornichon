@@ -32,16 +32,18 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "2.2.6"
-  val akkaHttpV = "2.4.4"
-  val catsV = "0.4.1"
+  val akkaHttpV = "2.4.6"
+  val catsV = "0.6.0"
   val json4sV = "3.3.0"
   val logbackV = "1.1.7"
-  val parboiledV = "2.1.2"
-  val akkaSseV = "1.7.3"
+  val parboiledV = "2.1.3"
+  val akkaSseV = "1.8.0"
   val scalacheckV = "1.12.5"
-  val sangriaV = "0.6.2"
   val sangriaCirceV = "0.4.3"
   val circeVersion = "0.4.1"
+  val sangriaV = "0.6.3"
+  val sangriaSprayJsonV = "0.3.1"
+  val fansiV = "0.1.1"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
@@ -52,14 +54,18 @@ libraryDependencies ++= {
     ,"ch.qos.logback"      %  "logback-classic"                   % logbackV
     ,"org.parboiled"       %% "parboiled"                         % parboiledV
     ,"org.scalacheck"      %% "scalacheck"                        % scalacheckV
+    ,"com.lihaoyi"         %% "fansi"                             % fansiV
     ,"org.sangria-graphql" %% "sangria"                           % sangriaV
     ,"org.sangria-graphql" %% "sangria-circe"                     % sangriaCirceV
     ,"io.circe"            %% "circe-core"                        % circeVersion
     ,"io.circe"            %% "circe-generic"                     % circeVersion
     ,"io.circe"            %% "circe-parser"                      % circeVersion
     ,"io.circe"            %% "circe-optics"                      % circeVersion
-    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV   % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV   % "test"
+    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV         % "test"
+    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV         % "test"
+    ,"org.sangria-graphql" %% "sangria-spray-json"                % sangriaSprayJsonV % "test"
+    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV         % "test"
+    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV         % "test"
   )
 }
 

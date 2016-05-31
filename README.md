@@ -1,20 +1,44 @@
-cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11) [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
+cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=master)](https://travis-ci.org/agourlay/cornichon) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon_2.11) [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt) [![Join the chat at https://gitter.im/agourlay/cornichon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 =========
-
-[![Join the chat at https://gitter.im/agourlay/cornichon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 An extensible Scala DSL for testing JSON HTTP APIs.
 
+
+## Table of contents
+
+1. [Quick start](#quick-start)
+2. [Structure](#structure)
+3. [DSL](#dsl)
+4. [Built-in steps](#built-in-steps)
+  1. [HTTP effects](#http-effects)
+  2. [HTTP assertions](#http-assertions)
+  3. [HTTP streams](#http-streams)
+  4. [GraphQL support](#graphql-support)
+  4. [Session steps](#session-steps)
+  5. [Wrapper steps](#wrapper-steps)
+  6. [Debug steps](#debug-steps)
+5. [DSL composition](#dsl-composition)
+6. [Custom steps](#custom-steps)
+7. [Placeholders](#placeholders)
+8. [Feature options](#feature-options)
+  1. [Before and after hooks](#before-and-after-hooks)
+  2. [Base URL](#base-url)
+  3. [Request timeout](#request-timeout)
+  4. [Register custom extractors](#register-custom-extractors)
+9. [Execution model](#execution-model)
+10. [ScalaTest integration](#scalatest-integration)
+11. [SSL configuration](#ssl-configuration)
+12. [License](#license)
 
 ## Quick start
 
 Add the library dependency
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.7.2" % "test"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.7.4" % "test"
 ```
 
-Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), so place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
+Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), just place your ```Feature``` inside ```src/test/scala``` and run them using ```sbt test```.
 
 A ```Feature``` is a class extending ```CornichonFeature``` and implementing the required ```feature``` function.
  
@@ -130,19 +154,36 @@ A ```scenario``` will stop at the first failed step encountered and ignore the r
 
 Statements start with one of the prefixes below followed by a ```step``` definition :
 
-- Given I | a
-- When I | a
-- And I | a | assert | assert_not (expects the step to fail)
-- Then I | a | assert | assert_not (expects the step to fail)
+* Given 
+  - I ```step```
+  - a ```step```
+  
+* When
+  - I ```step```
+  - a ```step```
+  
+* And 
+  - I ```step```
+  - a ```step```
+  - assert ```step```
+  - assert_not ```step``` (expects the step to fail)
+  
+* Then 
+  - I ```step```
+  - a ```step```
+  - assert ```step```
+  - assert_not ```step``` (expects the step to fail)
 
-Those prefixes do not change the behaviour of the steps.
+Those prefixes do not change the behaviour of the steps and are here to improve readability.
 
-First run a ```step``` with a side effect or a result then assert its value in a second ```step```.
+The usage pattern is often to first run a ```step``` with a side effect then assert an expected state in a second ```step```.
 
 ## Built-in steps
 
 Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.
 
+
+### HTTP effects
 
 - GET, DELETE, HEAD and OPTIONS share the same signature
 
@@ -163,6 +204,9 @@ put("http://superhero.io/batman", "JSON description of Batman goes here").withPa
 
 post("http://superhero.io/batman", "JSON description of Batman goes here").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
 ```
+
+
+### HTTP assertions
 
 - assert response status
 
@@ -245,7 +289,7 @@ body.path("`message.fr`").isAbsent
 If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
-body.asArray.inOrder.ignoring("city", "hasSuperpowers", "publisher").is(
+body.asArray.inOrder.ignoringEach("city", "hasSuperpowers", "publisher").is(
   """
   [{
     "name": "Batman",
@@ -257,7 +301,7 @@ body.asArray.inOrder.ignoring("city", "hasSuperpowers", "publisher").is(
   }]
   """)
   
-body.asArray.inOrder.ignoring("publisher").is(
+body.asArray.inOrder.ignoringEach("publisher").is(
  """
   |    name     |    realName    |     city      |  hasSuperpowers |
   | "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
@@ -283,6 +327,77 @@ body.asArray.contains(
   
 ```
 
+### HTTP streams
+
+- Server-Sent-Event.
+
+```scala
+When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
+
+Then assert body.asArray.hasSize(2)
+
+Then assert body.is("""
+  |   eventType      |    data     |
+  | "superhero name" |  "Batman"   |
+  | "superhero name" | "Superman"  |
+""")
+```
+
+SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
+
+
+### GraphQL support
+
+Cornichon offers an integration with the library [Sangria](https://github.com/sangria-graphql/sangria) to propose convenient features to test GraphQL API.
+
+
+- GraphQL query
+
+```scala
+import sangria.macros._
+
+ When I query_gql("/<project-key>/graphql").withQuery(
+    graphql"""
+      query MyQuery {
+        superheroes {
+          results {
+            name
+            realName
+            publisher {
+              name
+            }
+          }
+        }
+      }
+    """
+    )
+
+```
+
+```query_gql``` can also be used for mutation query.
+
+
+- GraphQL JSON
+
+all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
+
+```scala
+import com.github.agourlay.cornichon.json.CornichonJson._
+
+And assert body.ignoring("city", "publisher").is(
+  gql"""
+  {
+    name: "Batman",
+    realName: "Bruce Wayne",
+    hasSuperpowers: false
+  }
+  """)
+```
+
+
+
+### Session steps
+
 - setting a value in ```session```
 
 ```scala
@@ -302,17 +417,10 @@ save_body_path("city" -> "batman-city")
 session_contains("favorite-superhero" → "Batman")
 ```
 
-- showing sessing content for debugging purpose
 
-```scala
- And I show_session
+### Wrapper steps
 
- And I show_last_status
-
- And I show_last_response_body
-
- And I show_last_response_headers
-```
+Wrapper steps allow to control the execution of a series of steps to build more powerfull tests.
 
 - repeating a series of ```steps```
 
@@ -408,39 +516,6 @@ WithBasicAuth("admin", "root"){
 
 ```
 
-- experimental support for Server-Sent-Event.
- 
- SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.
-
-```scala
-When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
-
-Then assert body.asArray.hasSize(2)
-
-Then assert body.is("""
-  |   eventType      |    data     |
-  | "superhero name" |  "Batman"   |
-  | "superhero name" | "Superman"  |
-""")
-```
-
-- GraphQL JSON
-
-all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
-
-```scala
-And assert body.ignoring("city", "publisher").is(
-  gql"""
-  {
-    name: "Batman",
-    realName: "Bruce Wayne",
-    hasSuperpowers: false
-  }
-  """)
-```
-
-This requires to import ```com.github.agourlay.cornichon.json.CornichonJson._```
-
 - Log duration
 
 By default all ```EffectStep``` execution time can be found in the logs, but sometimes one needs to time a series of steps. 
@@ -455,6 +530,20 @@ LogDuration(label = "my experiment") {
   Then assert status.is(200)
 }
 
+```
+
+### Debug steps
+
+- showing session content for debugging purpose
+
+```scala
+ And I show_session
+
+ And I show_last_status
+
+ And I show_last_response_body
+
+ And I show_last_response_headers
 ```
 
 
@@ -560,6 +649,9 @@ trait MySteps {
 }
 
 ```
+
+Note for advance users: it is also possible to write custom wrapper steps.
+
 
 ## Placeholders
 
@@ -775,3 +867,7 @@ akka {
   }
 }
 ```
+
+## License
+
+**Cornichon** is licensed under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

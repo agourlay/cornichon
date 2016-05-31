@@ -44,5 +44,4 @@ object HttpDslErrors {
   case object UseIgnoringEach extends CornichonError {
     val msg = "use 'ignoringEach' when asserting on a body as an array"
   }
-
 }

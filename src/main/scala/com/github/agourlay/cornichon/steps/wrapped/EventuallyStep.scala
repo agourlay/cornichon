@@ -51,7 +51,6 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
       }
     }
 
-    val titleLogs = InfoLogInstruction(title, depth)
     val (res, executionTime) = engine.withDuration {
       retryEventuallySteps(nested, session, conf, Vector.empty, 0, depth + 1)
     }
@@ -60,10 +59,10 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
 
     report match {
       case s @ SuccessRunSteps(sSession, sLogs) ⇒
-        val fullLogs = titleLogs +: sLogs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", depth, Some(executionTime))
+        val fullLogs = successTitleLog(depth) +: sLogs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", depth, Some(executionTime))
         s.copy(logs = fullLogs)
       case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
-        val fullLogs = titleLogs +: eLogs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", depth, Some(executionTime))
+        val fullLogs = failedTitleLog(depth) +: eLogs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", depth, Some(executionTime))
         f.copy(logs = fullLogs, session = fSession)
     }
   }

@@ -37,15 +37,16 @@ case class StepAssertionError[A](expected: A, actual: A, negate: Boolean) extend
         |'$actual'
         |""".stripMargin.trim
 
-  // TODO Introduce Show typeclass to display objects nicely
+  // TODO Introduce Show + Diff (Eq?) type classes to remove casting and display objects nicely
   val msg = actual match {
     case s: String ⇒ baseMsg
     case j: Json ⇒
       s"""|expected result was${if (negate) " different than:" else ":"}
-          |'${prettyPrint(expected.asInstanceOf[Json])}'
+          |${prettyPrint(expected.asInstanceOf[Json])}
           |but actual result is:
-          |'${prettyPrint(actual.asInstanceOf[Json])}'
-          |diff:
+          |${prettyPrint(actual.asInstanceOf[Json])}
+          |
+          |diff. between actual result and expected result is :
           |${prettyDiff(j, expected.asInstanceOf[Json])}
       """.stripMargin.trim
     case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]]).mkString(", ")}'"
@@ -60,6 +61,10 @@ case class DetailedStepAssertionError[A](result: A, detailedAssertion: A ⇒ Str
 
 case class ResolverParsingError(error: Throwable) extends CornichonError {
   val msg = s"error thrown during resolver parsing ${error.getMessage}"
+}
+
+case class AmbiguousKeyDefinition(key: String) extends CornichonError {
+  val msg = s"ambiguous definition of key '$key' - it is present in both session and extractors"
 }
 
 case class EmptyKeyException(s: Session) extends CornichonError {

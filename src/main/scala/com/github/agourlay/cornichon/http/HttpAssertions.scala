@@ -150,13 +150,11 @@ object HttpAssertions {
         BodyArrayAssertion[A](jsonPath, ordered = false, ignoredKeys, resolver)
   }
 
-  case class BodyArrayAssertion[A](private val jsonPath: String, ordered: Boolean, private val ignoredKeys: Seq[String], resolver: Resolver) extends AssertionStep[A, Iterable[Json]] {
-
-    def path(path: String): BodyArrayAssertion[A] = copy(jsonPath = path)
+  case class BodyArrayAssertion[A](private val jsonPath: String, ordered: Boolean, private val ignoredEachKeys: Seq[String], resolver: Resolver) extends AssertionStep[A, Iterable[Json]] {
 
     def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
 
-    def ignoringEach(ignoring: String*): BodyArrayAssertion[A] = copy(ignoredKeys = ignoring)
+    def ignoringEach(ignoringEach: String*): BodyArrayAssertion[A] = copy(ignoredEachKeys = ignoringEach)
 
     def hasSize(size: Int): AssertStep[Int] = {
       val title = if (jsonPath == JsonPath.root) s"response body array size is '$size'" else s"response body's array '$jsonPath' size is '$size'"
@@ -188,11 +186,11 @@ object HttpAssertions {
           s"response body array $expectedSentence"
         else
           s"response body's array '$jsonPath' $expectedSentence"
-        titleBuilder(titleString, ignoredKeys)
+        titleBuilder(titleString, ignoredEachKeys)
       }
 
       def removeIgnoredPathFromElements(s: Session, jArray: List[Json]) = {
-        val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
+        val ignoredPaths = ignoredEachKeys.map(resolveParseJsonPath(_, resolver)(s))
         jArray.map(removeFieldsByPath(_, ignoredPaths))
       }
 

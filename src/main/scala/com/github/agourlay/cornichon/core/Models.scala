@@ -30,5 +30,8 @@ trait Step {
 
 trait WrapperStep extends Step {
   def nested: Vector[Step]
+
+  def failedTitleLog(depth: Int) = FailureLogInstruction(title, depth)
+  def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
 }
 

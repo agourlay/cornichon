@@ -141,6 +141,13 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
         val content = s"<letter-from-gen>"
         res.fillPlaceholders(content)(Session.newSession) should be(left(GeneratorError("<letter-from-gen>")))
       }
+
+      "fail with clear error message if key is defined in both Session and Extractors" in {
+        val extractor = JsonMapper("customer", "id")
+        val resolverWithExt = new Resolver(Map("customer-id" → extractor))
+        val s = Session.newSession.addValue("customer-id", "12345")
+        resolverWithExt.fillPlaceholders("<customer-id>")(s) should be(left(AmbiguousKeyDefinition("customer-id")))
+      }
     }
   }
 }

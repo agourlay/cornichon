@@ -10,14 +10,13 @@ case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends Wrapp
 
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
-    val titleLog = InfoLogInstruction(title, depth)
     val (res, executionTime) = engine.withDuration {
       engine.runSteps(nested, session, Vector.empty, depth + 1)
     }
 
     res match {
       case s @ SuccessRunSteps(sSession, sLogs) ⇒
-        val successLogs = titleLog +: sLogs
+        val successLogs = successTitleLog(depth) +: sLogs
         if (executionTime.gt(maxDuration)) {
           val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", depth, Some(executionTime))
           // The nested steps were successfull but the did not finish in time, the last step is picked as failed step
@@ -28,7 +27,7 @@ case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends Wrapp
         }
       case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
         // Failure of the nested steps have a higher priority
-        val fullLogs = titleLog +: eLogs
+        val fullLogs = failedTitleLog(depth) +: eLogs
         f.copy(logs = fullLogs, session = fSession)
     }
   }

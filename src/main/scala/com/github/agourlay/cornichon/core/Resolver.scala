@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import java.util.UUID
 
 import cats.data.Xor
-import cats.data.Xor.right
+import cats.data.Xor.{ right, left }
 import com.github.agourlay.cornichon.json.JsonPath
 import org.parboiled2._
 import org.scalacheck.Gen
@@ -22,29 +22,39 @@ class Resolver(extractors: Map[String, Mapper]) {
       case Success(dt)            ⇒ dt.toList
     }
 
-  def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] = ph.key match {
-    case "random-uuid"             ⇒ right(UUID.randomUUID().toString)
-    case "random-positive-integer" ⇒ right(r.nextInt(1000).toString)
-    case "random-string"           ⇒ right(r.nextString(5))
-    case "random-boolean"          ⇒ right(r.nextBoolean().toString)
-    case "timestamp"               ⇒ right((System.currentTimeMillis / 1000).toString)
-    case other: String ⇒
-      // Lookup in Session if no custom mapper found
-      extractors.get(other).fold[Xor[CornichonError, String]] { session.getXor(other, ph.index) } {
-        case SimpleMapper(gen) ⇒
-          Xor.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
-        case GenMapper(gen) ⇒
-          Xor.fromOption(gen.apply(Parameters.default), GeneratorError(ph.fullKey))
-        case TextMapper(key, transform) ⇒
-          session.getXor(key, ph.index).map(transform)
-        case JsonMapper(key, jsonPath, transform) ⇒
-          session.getXor(key, ph.index).flatMap { sessionValue ⇒
-            // No placeholders in JsonMapper for now to avoid people running into infinite recursion
-            // Could be enabled if there is a use case for it.
-            JsonPath.run(jsonPath, sessionValue)
-              .map(_.noSpaces)
-              .map(transform)
-          }
+  def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] =
+    builtInPlaceholders.lift(ph.key).map(right).getOrElse {
+      val other = ph.key
+      (session.getOpt(other, ph.index), extractors.get(other)) match {
+        case (Some(v), Some(m))           ⇒ left(AmbiguousKeyDefinition(other))
+        case (None, None)                 ⇒ left(KeyNotFoundInSession(other, session))
+        case (Some(valueInSession), None) ⇒ right(valueInSession)
+        case (None, Some(mapper))         ⇒ applyMapper(mapper, session, ph)
+      }
+    }
+
+  def builtInPlaceholders: PartialFunction[String, String] = {
+    case "random-uuid"             ⇒ UUID.randomUUID().toString
+    case "random-positive-integer" ⇒ r.nextInt(1000).toString
+    case "random-string"           ⇒ r.nextString(5)
+    case "random-boolean"          ⇒ r.nextBoolean().toString
+    case "timestamp"               ⇒ (System.currentTimeMillis / 1000).toString
+  }
+
+  def applyMapper(m: Mapper, session: Session, ph: Placeholder): Xor[CornichonError, String] = m match {
+    case SimpleMapper(gen) ⇒
+      Xor.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
+    case GenMapper(gen) ⇒
+      Xor.fromOption(gen.apply(Parameters.default), GeneratorError(ph.fullKey))
+    case TextMapper(key, transform) ⇒
+      session.getXor(key, ph.index).map(transform)
+    case JsonMapper(key, jsonPath, transform) ⇒
+      session.getXor(key, ph.index).flatMap { sessionValue ⇒
+        // No placeholders in JsonMapper for now to avoid people running into infinite recursion
+        // Could be enabled if there is a use case for it.
+        JsonPath.run(jsonPath, sessionValue)
+          .map(_.noSpaces)
+          .map(transform)
       }
   }
 
