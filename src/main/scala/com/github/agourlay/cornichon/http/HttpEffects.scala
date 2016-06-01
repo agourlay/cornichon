@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.http
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import io.circe.Json
-import org.json4s.JValue
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
