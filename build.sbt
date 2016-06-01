@@ -20,7 +20,7 @@ scalacOptions ++= Seq(
   "-Ywarn-unused-import"
 )
 
-fork in Test := false
+fork in Test := true
 
 SbtScalariform.scalariformSettings
 
