@@ -63,8 +63,7 @@ trait HttpDsl extends Dsl {
     val inputs = args.map {
       case (path, target) ⇒ FromSessionSetter(LastResponseBodyKey, (session, s) ⇒ {
         val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(session)
-        // fixme cleanup of quotes
-        JsonPath.parse(resolvedPath).run(s).fold(e ⇒ throw e, json ⇒ prettyPrint(json).tail.init.toString)
+        JsonPath.parse(resolvedPath).run(s).fold(e ⇒ throw e, json ⇒ jsonStringValue(json))
       }, target)
     }
     save_from_session(inputs)

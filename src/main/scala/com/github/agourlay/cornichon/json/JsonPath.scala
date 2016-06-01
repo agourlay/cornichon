@@ -11,6 +11,8 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
   val isRoot = operations.isEmpty
 
+  //FIXME should we use Lens or Cursor to implement JsonPath?
+  //FIXME current implement does not work
   //TODO test with key starting with numbers
   private val lense = operations.foldLeft(io.circe.optics.JsonPath.root) { (l, op) ⇒
     op match {
@@ -21,7 +23,7 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
     }
   }
 
-  def run(superSet: Json): Json = lense.json.getOption(superSet).getOrElse(Json.Null)
+  def run(superSet: Json): Json = cursor(superSet).fold(Json.Null)(c ⇒ c.focus)
   def run(json: String): Xor[CornichonError, Json] = parseJson(json).map(run)
 
   def cursor(input: Json) = operations.foldLeft(Option(input.cursor)) { (oc, op) ⇒

@@ -6,6 +6,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.json.CornichonJson.GqlString
 import io.circe.{ Json, JsonObject }
+import org.json4s.JsonAST.JNothing
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
@@ -67,15 +68,25 @@ trait CornichonJson {
     }
   }
 
+  def jsonStringValue(j: Json): String =
+    j.fold(
+      jsonNull = "",
+      jsonBoolean = b ⇒ prettyPrint(j),
+      jsonNumber = b ⇒ prettyPrint(j),
+      jsonString = s ⇒ s,
+      jsonArray = b ⇒ prettyPrint(j),
+      jsonObject = b ⇒ prettyPrint(j)
+    )
+
   def prettyPrint(json: Json) = json.spaces2
 
   def prettyDiff(first: Json, second: Json) = {
     val Diff(changed, added, deleted) = diff(first, second)
 
     s"""
-    |${if (changed == Json.Null) "" else "changed = " + prettyPrint(changed)}
-    |${if (added == Json.Null) "" else "added = " + prettyPrint(added)}
-    |${if (deleted == Json.Null) "" else "deleted = " + prettyPrint(deleted)}
+    |${if (changed == Json.Null) "" else "changed = " + jsonStringValue(changed)}
+    |${if (added == Json.Null) "" else "added = " + jsonStringValue(added)}
+    |${if (deleted == Json.Null) "" else "deleted = " + jsonStringValue(deleted)}
       """.stripMargin
   }
 
@@ -83,11 +94,15 @@ trait CornichonJson {
     import org.json4s.JValue
     import org.json4s.jackson.JsonMethods._
 
-    def circeToJson4s(c: Json): JValue =
-      parse(c.noSpaces)
+    def circeToJson4s(c: Json): JValue = c match {
+      case Json.Null ⇒ JNothing
+      case _         ⇒ parse(c.noSpaces)
+    }
 
-    def json4sToCirce(j: JValue): Json =
-      parseJsonUnsafe(compact(render(j)))
+    def json4sToCirce(j: JValue): Json = j match {
+      case JNothing ⇒ Json.Null
+      case _        ⇒ parseJsonUnsafe(compact(render(j)))
+    }
 
     val diff = circeToJson4s(v1).diff(circeToJson4s(v2))
 

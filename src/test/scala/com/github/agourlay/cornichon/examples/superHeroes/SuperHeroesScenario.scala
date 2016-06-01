@@ -401,12 +401,6 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         // Extract value from response into session for reuse
-        And I save_body_path(
-          "city" → "batman-city",
-          "realName" → "batman-real-name"
-        )
-
-        // Or with extractor
         And I save_body_path("city" → "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
@@ -639,12 +633,12 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.is(
           """
-              |   eventType      |      data      |
-              | "superhero name" |    "Batman"    |
-              | "superhero name" |   "Superman"   |
-              | "superhero name" | "GreenLantern" |
-              | "superhero name" |   "Spiderman"  |
-              | "superhero name" |    "IronMan"   |
+              |   eventType      |      data      |  id  | retry |
+              | "superhero name" |    "Batman"    | null | null  |
+              | "superhero name" |   "Superman"   | null | null  |
+              | "superhero name" | "GreenLantern" | null | null  |
+              | "superhero name" |   "Spiderman"  | null | null  |
+              | "superhero name" |    "IronMan"   | null | null  |
             """
         )
       }

@@ -44,9 +44,11 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
       val now = System.nanoTime
       engine.runScenario(Session.newSession)(s).stepsRunReport.isSuccess should be(true)
       val executionTime = Duration.fromNanos(System.nanoTime - now)
-      executionTime.gt(50.millis) should be(true)
-      // empiric values for the upper bound here
-      executionTime.lt(55.millis) should be(true)
+      withClue(executionTime.toMillis) {
+        executionTime.gt(50.millis) should be(true)
+        // empiric values for the upper bound here
+        executionTime.lt(60.millis) should be(true)
+      }
     }
 
     "repeat steps inside 'repeatDuring' at least once if they take more time than the duration param" in {
@@ -66,10 +68,11 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
       val now = System.nanoTime
       engine.runScenario(Session.newSession)(s).stepsRunReport.isSuccess should be(true)
       val executionTime = Duration.fromNanos(System.nanoTime - now)
-      //println(executionTime)
-      executionTime.gt(50.millis) should be(true)
-      // empiric values for the upper bound here
-      executionTime.lt(550.millis) should be(true)
+      withClue(executionTime.toMillis) {
+        executionTime.gt(50.millis) should be(true)
+        // empiric values for the upper bound here
+        executionTime.lt(550.millis) should be(true)
+      }
     }
   }
 
