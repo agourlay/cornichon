@@ -81,7 +81,7 @@ object HttpAssertions {
       if (whiteList && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
-        val baseTitle = if (jsonPath == JsonPath.root) s"response body is '$expected'" else s"response body's field '$jsonPath' is '$expected'"
+        val baseTitle = if (jsonPath == JsonPath.root) s"response body is $expected" else s"response body's field '$jsonPath' is $expected"
         from_session_step(
           key = LastResponseBodyKey,
           title = titleBuilder(baseTitle, ignoredKeys, whiteList),
@@ -181,7 +181,7 @@ object HttpAssertions {
 
     override def is(expected: A): AssertStep[Iterable[Json]] = {
       val assertionTitle = {
-        val expectedSentence = if (ordered) s"in order is '$expected'" else s"is '$expected'"
+        val expectedSentence = if (ordered) s"in order is $expected" else s"is $expected"
         val titleString = if (jsonPath == JsonPath.root)
           s"response body array $expectedSentence"
         else
@@ -227,7 +227,7 @@ object HttpAssertions {
 
     def contains(elements: A*) = {
       val prettyElements = elements.mkString(" and ")
-      val title = if (jsonPath == JsonPath.root) s"response body array contains '$prettyElements'" else s"response body's array '$jsonPath.pretty' contains '$prettyElements'"
+      val title = if (jsonPath == JsonPath.root) s"response body array contains $prettyElements" else s"response body's array '$jsonPath' contains $prettyElements"
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,

@@ -57,8 +57,8 @@ class SuperHeroesScenario extends CornichonFeature {
         And assert body.ignoring("city", "publisher").is(
           gql"""
           {
-            name: "Batman",
-            realName: "Bruce Wayne",
+            name: "Batman"
+            realName: "Bruce Wayne"
             hasSuperpowers: false
           }
           """
@@ -103,7 +103,8 @@ class SuperHeroesScenario extends CornichonFeature {
             "name":"DC",
             "foundationYear":1934,
             "location":"Burbank, California"
-          } """
+          }
+          """
         )
 
         Then assert body.path("publisher").ignoring("location").is(
@@ -111,7 +112,8 @@ class SuperHeroesScenario extends CornichonFeature {
           {
             "name":"DC",
             "foundationYear":1934
-          } """
+          }
+          """
         )
 
         Then assert body.path("publisher.name").is("DC")
@@ -278,7 +280,8 @@ class SuperHeroesScenario extends CornichonFeature {
             "realName": "Tony Stark",
             "hasSuperpowers": false,
             "city": "New York"
-          }]"""
+          }]
+          """
         )
 
         Then assert body.asArray.ignoringEach("publisher").is(
@@ -318,7 +321,8 @@ class SuperHeroesScenario extends CornichonFeature {
             "name": "GreenLantern",
             "realName": "Hal Jordan",
             "city": "Coast City"
-          }]"""
+          }]
+          """
         )
 
         Then assert body.asArray.hasSize(5)
