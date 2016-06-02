@@ -38,34 +38,31 @@ libraryDependencies ++= {
   val logbackV = "1.1.7"
   val parboiledV = "2.1.3"
   val akkaSseV = "1.8.0"
-  val scalacheckV = "1.12.5"
+  val scalaCheckV = "1.12.5"
   val sangriaCirceV = "0.4.4"
   val circeVersion = "0.5.0-M1"
   val sangriaV = "0.6.3"
-  val sangriaSprayJsonV = "0.3.1"
   val fansiV = "0.1.1"
+  val akkaHttpCirce = "1.6.0"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
-    ,"org.json4s"          %% "json4s-jackson"                    % json4sV
+    ,"org.json4s"          %% "json4s-jackson"                    % json4sV   // Only use for Json diff - remove asap.
     ,"org.typelevel"       %% "cats-macros"                       % catsV
     ,"org.typelevel"       %% "cats-core"                         % catsV
     ,"org.scalatest"       %% "scalatest"                         % scalaTestV
     ,"ch.qos.logback"      %  "logback-classic"                   % logbackV
     ,"org.parboiled"       %% "parboiled"                         % parboiledV
-    ,"org.scalacheck"      %% "scalacheck"                        % scalacheckV
+    ,"org.scalacheck"      %% "scalacheck"                        % scalaCheckV
     ,"com.lihaoyi"         %% "fansi"                             % fansiV
     ,"org.sangria-graphql" %% "sangria"                           % sangriaV
     ,"org.sangria-graphql" %% "sangria-circe"                     % sangriaCirceV
     ,"io.circe"            %% "circe-core"                        % circeVersion
     ,"io.circe"            %% "circe-generic"                     % circeVersion
     ,"io.circe"            %% "circe-parser"                      % circeVersion
-    ,"io.circe"            %% "circe-optics"                      % circeVersion
-    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV         % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV         % "test"
-    ,"org.sangria-graphql" %% "sangria-spray-json"                % sangriaSprayJsonV % "test"
-    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV         % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV         % "test"
+    ,"io.circe"            %% "circe-optics"                      % circeVersion // Remove if cursors are used instead or lenses for JsonPath.
+    ,"de.heikoseeberger"   %% "akka-http-circe"                   % akkaHttpCirce   % "test"
+    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV       % "test"
   )
 }
 
