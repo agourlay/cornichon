@@ -17,7 +17,6 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
                   """
 
       val p = new DataTableParser(input)
-      println(p.dataTableRule.run())
       p.dataTableRule.run().isFailure should be(true)
     }
 
