@@ -3,6 +3,8 @@ package com.github.agourlay.cornichon.dsl
 import io.circe.{ Json, JsonObject }
 import org.parboiled2._
 
+import com.github.agourlay.cornichon.json.CornichonJson._
+
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
@@ -28,8 +30,7 @@ class DataTableParser(val input: ParserInput) extends Parser {
 
   def HeaderRule = rule { Separator ~ oneOrMore(HeaderTXT).separatedBy(Separator) ~ Separator ~> Headers }
 
-  //fix me - should not swallow error
-  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(io.circe.parser.parse(_).getOrElse(Json.Null)))) }
+  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseString(_).fold(e ⇒ throw e, identity)))) }
 
   val delims = s"$delimeter\r\n"
 

@@ -10,6 +10,17 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
 
   "DataTable parser" must {
 
+    "report malformed JSON" in {
+      val input = """
+                    |   Name  |   Age   |
+                    |  "John" |   5a    |
+                  """
+
+      val p = new DataTableParser(input)
+      println(p.dataTableRule.run())
+      p.dataTableRule.run().isFailure should be(true)
+    }
+
     "process a single line with 1 value without new line on first" in {
       val input = """ |   Name   |
                       |  "John"  |
