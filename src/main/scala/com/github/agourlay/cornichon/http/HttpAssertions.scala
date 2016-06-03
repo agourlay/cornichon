@@ -8,6 +8,7 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }
 import com.github.agourlay.cornichon.steps.regular.AssertStep
+import com.github.agourlay.cornichon.util.Formats._
 import io.circe.Json
 
 object HttpAssertions {
@@ -59,7 +60,7 @@ object HttpAssertions {
         key = LastResponseHeadersKey,
         expected = s ⇒ true,
         mapValue = (session, sessionHeaders) ⇒ {
-        val sessionHeadersValue = sessionHeaders.split(",")
+        val sessionHeadersValue = sessionHeaders.split(InterHeadersValueDelim)
         val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
         (predicate, headersDoesNotContainError(displayTuples(elements), sessionHeaders))
       }

@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.dsl.Dsl._
+import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import io.circe.Json
 import sangria.ast.Document

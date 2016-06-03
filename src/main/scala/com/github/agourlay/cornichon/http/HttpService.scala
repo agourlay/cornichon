@@ -107,7 +107,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }.addValues(Seq(
       LastResponseStatusKey → response.status.intValue().toString,
       LastResponseBodyKey → response.body,
-      LastResponseHeadersKey → response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(",")
+      LastResponseHeadersKey → encodeSessionHeaders(response)
     ))
 
   def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
@@ -127,10 +127,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   def extractWithHeadersSession(session: Session): Xor[MalformedHeadersError, Seq[HttpHeader]] =
     session.getOpt(WithHeadersKey).fold[Xor[MalformedHeadersError, Seq[HttpHeader]]](right(Seq.empty[HttpHeader])) { headers ⇒
-      val tuples = headers.split(',').toSeq.map { header ⇒
-        val elms = header.split(HeadersKeyValueDelim)
-        (elms.head, elms.tail.head)
-      }
+      val tuples: Seq[(String, String)] = decodeSessionHeaders(headers)
       parseHttpHeaders(tuples)
     }
 
@@ -143,4 +140,18 @@ object HttpService {
   val LastResponseHeadersKey = "last-response-headers"
   val WithHeadersKey = "with-headers"
   val HeadersKeyValueDelim = '|'
+  val InterHeadersValueDelim = ";"
+
+  def encodeSessionHeaders(response: CornichonHttpResponse): String =
+    response.headers.map { h ⇒
+      s"${h.name()}$HeadersKeyValueDelim${h.value()}"
+    }.mkString(InterHeadersValueDelim)
+
+  def decodeSessionHeaders(headers: String): Seq[(String, String)] = {
+    val tuples = headers.split(InterHeadersValueDelim).toSeq.map { header ⇒
+      val elms = header.split(HeadersKeyValueDelim)
+      (elms.head, elms.tail.head)
+    }
+    tuples
+  }
 }
