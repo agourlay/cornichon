@@ -42,7 +42,7 @@ libraryDependencies ++= {
   val sangriaCirceV = "0.4.4"
   val circeVersion = "0.5.0-M1"
   val sangriaV = "0.6.3"
-  val fansiV = "0.1.2"
+  val fansiV = "0.1.3"
   val akkaHttpCirce = "1.6.0"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
