@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.examples.superHeroes.server
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.model.{ ContentTypes, HttpEntity }
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.PathMatchers.Remaining
@@ -11,10 +12,12 @@ import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import de.heikoseeberger.akkasse.{ EventStreamMarshalling, ServerSentEvent }
+import de.heikoseeberger.akkahttpcirce.CirceSupport._
 import sangria.execution._
 import sangria.parser.QueryParser
-import sangria.marshalling.sprayJson._
-import spray.json._
+import sangria.marshalling.circe._
+import io.circe.{ Json, JsonObject }
+import io.circe.generic.auto._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
@@ -67,7 +70,7 @@ class RestAPI() extends EventStreamMarshalling {
     path("session") {
       post {
         onSuccess(testData.createSession()) { session: String ⇒
-          complete(ToResponseMarshallable(Created → session))
+          complete(Created → HttpEntity(ContentTypes.`text/html(UTF-8)`, session))
         }
       }
     } ~
@@ -166,43 +169,39 @@ class RestAPI() extends EventStreamMarshalling {
       } ~
       path("graphql") {
         post {
-          entity(as[JsValue]) { requestJson ⇒
-            val JsObject(fields) = requestJson
+          entity(as[Json]) { requestJson ⇒
+            val obj = requestJson.asObject
+            val query = obj.flatMap(_("query")).flatMap(_.asString)
+            val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
+            val vars = obj.flatMap(_("variables")).getOrElse(Json.fromJsonObject(JsonObject.empty))
 
-            val JsString(query) = fields("query")
+            query.fold(complete(BadRequest, Json.obj("error" → Json.fromString("Query is required")))) { q ⇒
 
-            val operation = fields.get("operationName") collect {
-              case JsString(op) ⇒ op
+              QueryParser.parse(q) match {
+
+                // query parsed successfully, time to execute it!
+                case Success(queryAst) ⇒
+                  complete(
+                    Executor.execute(
+                      schema = GraphQlSchema.SuperHeroesSchema,
+                      queryAst = queryAst,
+                      root = testData,
+                      variables = vars,
+                      operationName = operation
+                    ).map(OK → _)
+                      .recover {
+                        case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
+                        case error: ErrorWithResolver  ⇒ InternalServerError → error.resolveError
+                      }
+                  )
+
+                // can't parse GraphQL query, return error
+                case Failure(error) ⇒
+                  complete(BadRequest, Json.obj("error" → Json.fromString(error.getMessage)))
+              }
+
             }
 
-            val vars = fields.get("variables") match {
-              case Some(obj: JsObject)                  ⇒ obj
-              case Some(JsString(s)) if s.trim.nonEmpty ⇒ s.parseJson
-              case _                                    ⇒ JsObject.empty
-            }
-
-            QueryParser.parse(query) match {
-
-              // query parsed successfully, time to execute it!
-              case Success(queryAst) ⇒
-                complete(
-                  Executor.execute(
-                    schema = GraphQlSchema.SuperHeroesSchema,
-                    queryAst = queryAst,
-                    root = testData,
-                    variables = vars,
-                    operationName = operation
-                  ).map(OK → _)
-                    .recover {
-                      case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
-                      case error: ErrorWithResolver  ⇒ InternalServerError → error.resolveError
-                    }
-                )
-
-              // can't parse GraphQL query, return error
-              case Failure(error) ⇒
-                complete(BadRequest, JsObject("error" → JsString(error.getMessage)))
-            }
           }
         }
       }

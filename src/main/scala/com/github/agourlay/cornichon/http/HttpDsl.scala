@@ -63,7 +63,7 @@ trait HttpDsl extends Dsl {
     val inputs = args.map {
       case (path, target) ⇒ FromSessionSetter(LastResponseBodyKey, (session, s) ⇒ {
         val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(session)
-        JsonPath.parse(resolvedPath).run(s).values.toString
+        JsonPath.parse(resolvedPath).run(s).fold(e ⇒ throw e, json ⇒ jsonStringValue(json))
       }, target)
     }
     save_from_session(inputs)
@@ -77,7 +77,7 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def show_key_as_json(key: String) = show_session(key, v ⇒ prettyPrint(parseJson(v)))
+  def show_key_as_json(key: String) = show_session(key, v ⇒ parseJson(v).fold(e ⇒ throw e, prettyPrint(_)))
 
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))

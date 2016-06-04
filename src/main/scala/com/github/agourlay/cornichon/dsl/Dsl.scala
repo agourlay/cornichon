@@ -5,6 +5,7 @@ import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.CoreAssertion.{ SessionAssertion, SessionValuesAssertion }
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
+import com.github.agourlay.cornichon.util.Formats._
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
@@ -149,10 +150,6 @@ object Dsl {
         targets.zip(extracted).foldLeft(session)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
       }
     )
-  }
-
-  def displayTuples(params: Seq[(String, String)]): String = {
-    params.map { case (name, value) ⇒ s"'$name' -> '$value'" }.mkString(", ")
   }
 
   def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =

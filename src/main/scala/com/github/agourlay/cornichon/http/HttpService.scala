@@ -8,7 +8,7 @@ import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.CornichonJson
-import org.json4s._
+import io.circe.Json
 
 import scala.concurrent.duration._
 
@@ -16,14 +16,14 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  private type WithPayloadCall = (JValue, String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
+  private type WithPayloadCall = (Json, String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
   private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
 
   private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)],
     headers: Seq[(String, String)], extractor: Option[String], requestTimeout: FiniteDuration, expect: Option[Int])(s: Session) =
     for {
       payloadResolved ← resolver.fillPlaceholders(payload)(s)
-      json ← parseJsonXor(payloadResolved)
+      json ← parseJson(payloadResolved)
       r ← resolveCommonRequestParts(url, params, headers)(s)
       resp ← call(json, r._1, r._2, r._3, requestTimeout)
       newSession ← handleResponse(resp, expect, extractor)(s)
@@ -107,7 +107,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }.addValues(Seq(
       LastResponseStatusKey → response.status.intValue().toString,
       LastResponseBodyKey → response.body,
-      LastResponseHeadersKey → response.headers.map(h ⇒ s"${h.name()}$HeadersKeyValueDelim${h.value()}").mkString(",")
+      LastResponseHeadersKey → encodeSessionHeaders(response)
     ))
 
   def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
@@ -127,10 +127,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   def extractWithHeadersSession(session: Session): Xor[MalformedHeadersError, Seq[HttpHeader]] =
     session.getOpt(WithHeadersKey).fold[Xor[MalformedHeadersError, Seq[HttpHeader]]](right(Seq.empty[HttpHeader])) { headers ⇒
-      val tuples = headers.split(',').toSeq.map { header ⇒
-        val elms = header.split(HeadersKeyValueDelim)
-        (elms.head, elms.tail.head)
-      }
+      val tuples: Seq[(String, String)] = decodeSessionHeaders(headers)
       parseHttpHeaders(tuples)
     }
 
@@ -143,4 +140,18 @@ object HttpService {
   val LastResponseHeadersKey = "last-response-headers"
   val WithHeadersKey = "with-headers"
   val HeadersKeyValueDelim = '|'
+  val InterHeadersValueDelim = ";"
+
+  def encodeSessionHeaders(response: CornichonHttpResponse): String =
+    response.headers.map { h ⇒
+      s"${h.name()}$HeadersKeyValueDelim${h.value()}"
+    }.mkString(InterHeadersValueDelim)
+
+  def decodeSessionHeaders(headers: String): Seq[(String, String)] = {
+    val tuples = headers.split(InterHeadersValueDelim).toSeq.map { header ⇒
+      val elms = header.split(HeadersKeyValueDelim)
+      (elms.head, elms.tail.head)
+    }
+    tuples
+  }
 }

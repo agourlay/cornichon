@@ -25,7 +25,8 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
 
   def getXor(key: String, stackingIndice: Option[Int] = None) = Xor.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, this))
 
-  def getJson(key: String, stackingIndice: Option[Int] = None) = parseJson(get(key, stackingIndice))
+  def getJson(key: String, stackingIndice: Option[Int] = None) =
+    parseJson(get(key, stackingIndice)).fold(e ⇒ throw e, identity)
 
   def getJsonOpt(key: String, stackingIndice: Option[Int] = None) = getOpt(key, stackingIndice).map(parseJson)
 

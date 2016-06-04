@@ -55,6 +55,7 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
                        |${scenarioReport.msg}
                        |replay only this scenario with:
                        |${replayCmd(feat.name, s.name)}
+                       |
                        |""".stripMargin
                   )
               }

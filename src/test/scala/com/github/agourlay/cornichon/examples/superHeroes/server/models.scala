@@ -1,17 +1,18 @@
 package com.github.agourlay.cornichon.examples.superHeroes.server
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import de.heikoseeberger.akkasse.ServerSentEvent
-import spray.json.DefaultJsonProtocol
 import sangria.macros.derive._
 import sangria.schema.Schema
+
+import io.circe.generic.auto._
+import io.circe.syntax._
 
 case class Publisher(name: String, foundationYear: Int, location: String)
 
 case class SuperHero(name: String, realName: String, city: String, hasSuperpowers: Boolean, publisher: Publisher)
 
 import sangria.schema._
-import sangria.marshalling.sprayJson._
+import sangria.marshalling.circe._
 
 object GraphQlSchema {
   import JsonSupport._
@@ -63,11 +64,8 @@ case class SuperHeroAlreadyExists(id: String) extends ResourceNotFound
 
 case class HttpError(error: String)
 
-object JsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
-  implicit val formatCP = jsonFormat3(Publisher)
-  implicit val formatSH = jsonFormat5(SuperHero)
-  implicit val formatHE = jsonFormat1(HttpError)
+object JsonSupport {
   implicit def toServerSentEvent(sh: SuperHero): ServerSentEvent = {
-    ServerSentEvent(eventType = "superhero", data = formatSH.write(sh).compactPrint)
+    ServerSentEvent(eventType = "superhero", data = sh.asJson.noSpaces)
   }
 }

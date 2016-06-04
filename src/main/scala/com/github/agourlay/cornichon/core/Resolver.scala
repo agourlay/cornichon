@@ -3,8 +3,8 @@ package com.github.agourlay.cornichon.core
 import java.util.UUID
 
 import cats.data.Xor
-import cats.data.Xor.{ right, left }
-import com.github.agourlay.cornichon.json.JsonPath
+import cats.data.Xor.{ left, right }
+import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import org.parboiled2._
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
@@ -49,10 +49,12 @@ class Resolver(extractors: Map[String, Mapper]) {
     case TextMapper(key, transform) ⇒
       session.getXor(key, ph.index).map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
-      session.getXor(key, ph.index).map { sessionValue ⇒
+      session.getXor(key, ph.index).flatMap { sessionValue ⇒
         // No placeholders in JsonMapper for now to avoid people running into infinite recursion
         // Could be enabled if there is a use case for it.
-        transform(JsonPath.run(jsonPath, sessionValue).values.toString)
+        JsonPath.run(jsonPath, sessionValue)
+          .map(CornichonJson.jsonStringValue)
+          .map(transform)
       }
   }
 

@@ -9,7 +9,7 @@ trait MathSteps {
 
   case class adding_values(arg1: String, arg2: String) {
     def equals(res: Int) = AssertStep(
-      title = s"Value of $arg1 + $arg2 should be $res",
+      title = s"value of $arg1 + $arg2 should be $res",
       action = s ⇒ {
       val v1 = s.get(arg1).toInt
       val v2 = s.get(arg2).toInt
@@ -20,7 +20,7 @@ trait MathSteps {
 
   def generate_random_int(target: String, max: Int = 100) =
     EffectStep(
-      title = s"Generate random Int into '$target' (max=$max)",
+      title = s"generate random Int into '$target' (max=$max)",
       effect = s ⇒ {
       s.addValue(target, Random.nextInt(max).toString)
     }
@@ -28,7 +28,7 @@ trait MathSteps {
 
   def generate_random_double(target: String) =
     EffectStep(
-      title = s"Generate random Double into '$target'",
+      title = s"generate random Double into '$target'",
       effect = s ⇒ {
       s.addValue(target, Random.nextDouble().toString)
     }
@@ -37,7 +37,7 @@ trait MathSteps {
   case class double_value(source: String) {
     def isBetween(low: Double, high: Double) =
       AssertStep(
-        title = s"Double value of '$source' is between '$low' and '$high'",
+        title = s"double value of '$source' is between '$low' and '$high'",
         action = s ⇒ {
         val v = s.get(source).toDouble
         DetailedStepAssertion(true, v > low && v < high, ratioError(v, low, high))
@@ -48,7 +48,7 @@ trait MathSteps {
   private def ratioError(v: Double, low: Double, high: Double): Boolean ⇒ String = b ⇒ s"$v is not between $low and $high"
 
   def calculate_point_in_circle(target: String) = EffectStep(
-    title = s"Calculate points inside circle",
+    title = s"calculate points inside circle",
     effect = s ⇒ {
     val x = s.get("x").toDouble
     val y = s.get("y").toDouble
@@ -59,7 +59,7 @@ trait MathSteps {
 
   def estimate_pi_from_ratio(inside: String, target: String) =
     EffectStep(
-      title = s"Estimate PI from ration into key '$target'",
+      title = s"estimate PI from ratio into key '$target'",
       effect = s ⇒ {
       val insides = s.getHistory(inside)
       val trial = insides.size

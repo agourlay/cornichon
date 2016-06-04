@@ -57,8 +57,8 @@ class SuperHeroesScenario extends CornichonFeature {
         And assert body.ignoring("city", "publisher").is(
           gql"""
           {
-            name: "Batman",
-            realName: "Bruce Wayne",
+            name: "Batman"
+            realName: "Bruce Wayne"
             hasSuperpowers: false
           }
           """
@@ -103,7 +103,8 @@ class SuperHeroesScenario extends CornichonFeature {
             "name":"DC",
             "foundationYear":1934,
             "location":"Burbank, California"
-          } """
+          }
+          """
         )
 
         Then assert body.path("publisher").ignoring("location").is(
@@ -111,7 +112,8 @@ class SuperHeroesScenario extends CornichonFeature {
           {
             "name":"DC",
             "foundationYear":1934
-          } """
+          }
+          """
         )
 
         Then assert body.path("publisher.name").is("DC")
@@ -278,7 +280,8 @@ class SuperHeroesScenario extends CornichonFeature {
             "realName": "Tony Stark",
             "hasSuperpowers": false,
             "city": "New York"
-          }]"""
+          }]
+          """
         )
 
         Then assert body.asArray.ignoringEach("publisher").is(
@@ -318,7 +321,8 @@ class SuperHeroesScenario extends CornichonFeature {
             "name": "GreenLantern",
             "realName": "Hal Jordan",
             "city": "Coast City"
-          }]"""
+          }]
+          """
         )
 
         Then assert body.asArray.hasSize(5)
@@ -401,12 +405,6 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         // Extract value from response into session for reuse
-        And I save_body_path(
-          "city" → "batman-city",
-          "realName" → "batman-real-name"
-        )
-
-        // Or with extractor
         And I save_body_path("city" → "batman-city")
 
         Then assert session_contains("batman-city" → "Gotham city")
@@ -425,7 +423,7 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        Then assert headers.contain("Server" → "akka-http/2.4.6")
+        Then assert headers.contain("Server" → "akka-http/2.4.7")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
@@ -639,12 +637,12 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.is(
           """
-              |   eventType      |      data      |
-              | "superhero name" |    "Batman"    |
-              | "superhero name" |   "Superman"   |
-              | "superhero name" | "GreenLantern" |
-              | "superhero name" |   "Spiderman"  |
-              | "superhero name" |    "IronMan"   |
+              |   eventType      |      data      |  id  | retry |
+              | "superhero name" |    "Batman"    | null | null  |
+              | "superhero name" |   "Superman"   | null | null  |
+              | "superhero name" | "GreenLantern" | null | null  |
+              | "superhero name" |   "Spiderman"  | null | null  |
+              | "superhero name" |    "IronMan"   | null | null  |
             """
         )
       }
@@ -661,6 +659,7 @@ class SuperHeroesScenario extends CornichonFeature {
   def superhero_exists(name: String) =
     Attach {
       When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+      Then I show_session
       Then assert status.is(200)
     }
 
