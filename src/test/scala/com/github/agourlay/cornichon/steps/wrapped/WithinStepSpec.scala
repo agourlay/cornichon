@@ -28,7 +28,7 @@ class WithinStepSpec extends WordSpec with Matchers {
         WithinStep(nested, d)
       )
       val s = Scenario("scenario with Within", steps)
-      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(true)
+      engine.runScenario(session)(s).isSuccess should be(true)
     }
 
     "fail if duration of 'within' is exceeded" in {
@@ -47,7 +47,7 @@ class WithinStepSpec extends WordSpec with Matchers {
         WithinStep(nested, d)
       )
       val s = Scenario("scenario with Within", steps)
-      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(false)
+      engine.runScenario(session)(s).isSuccess should be(false)
     }
   }
 

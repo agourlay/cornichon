@@ -17,7 +17,7 @@ class EffectStepSpec extends WordSpec with Matchers {
         s
       })
       val s = Scenario("scenario with broken effect step", Vector(step))
-      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(false)
+      engine.runScenario(session)(s).isSuccess should be(false)
     }
   }
 }

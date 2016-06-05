@@ -15,7 +15,7 @@ class EngineSpec extends WordSpec with Matchers {
         val session = Session.newSession
         val steps = Vector(AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)))
         val s = Scenario("test", steps)
-        engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(true)
+        engine.runScenario(session)(s).isSuccess should be(true)
       }
 
       "stop at first failed step" in {
@@ -27,11 +27,11 @@ class EngineSpec extends WordSpec with Matchers {
           step1, step2, step3
         )
         val s = Scenario("test", steps)
-        val res = engine.runScenario(session)(s).stepsExecutionResult
+        val res = engine.runScenario(session)(s)
         withClue(s"logs were ${res.logs}") {
           res match {
-            case s: SuccessStepsResult ⇒ fail("Should be a FailedScenarioReport")
-            case f: FailureStepsResult ⇒
+            case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
+            case f: FailureScenarioReport ⇒
               f.failedStep.error.msg.replaceAll("\r", "") should be("""
               |expected result was:
               |'4'

@@ -24,7 +24,7 @@ class EventuallyStepSpec extends WordSpec with Matchers {
 
       val steps = Vector(EventuallyStep(nested, eventuallyConf))
       val s = Scenario("scenario with eventually", steps)
-      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(true)
+      engine.runScenario(session)(s).isSuccess should be(true)
     }
 
     "replay eventually wrapped steps until limit" in {
@@ -39,7 +39,7 @@ class EventuallyStepSpec extends WordSpec with Matchers {
         EventuallyStep(nested, eventuallyConf)
       )
       val s = Scenario("scenario with eventually that fails", steps)
-      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(false)
+      engine.runScenario(session)(s).isSuccess should be(false)
     }
 
   }

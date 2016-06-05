@@ -15,12 +15,11 @@ class Engine(executionContext: ExecutionContext) {
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val mainRunReport = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
     if (finallySteps.isEmpty)
-      ScenarioReport(scenario.name, mainRunReport)
+      ScenarioReport.build(scenario.name, mainRunReport)
     else {
       // Reuse mainline session
       val finallyReport = runSteps(finallySteps.toVector, mainRunReport.session, Vector.empty, initMargin + 1)
-      val mergedReport = mainRunReport.merge(finallyReport)
-      ScenarioReport(scenario.name, mergedReport)
+      ScenarioReport.build(scenario.name, mainRunReport, finallyReport)
     }
   }
 
@@ -43,7 +42,7 @@ class Engine(executionContext: ExecutionContext) {
       case Xor.Left(e) ⇒
         val runLogs = errorLogs(title, e, depth)
         val failedStep = FailedStep(currentStep, e)
-        FailureStepsResult(failedStep, runLogs, session)
+        FailureStepsResult(failedStep, session, runLogs)
 
       case Xor.Right(newSession) ⇒
         val runLogs = if (show) Vector(SuccessLogInstruction(title, depth, duration)) else Vector.empty

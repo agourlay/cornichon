@@ -16,7 +16,7 @@ case class DebugStep(message: Session ⇒ String) extends Step {
       case Failure(e) ⇒
         val runLogs = engine.errorLogs(title, e, depth)
         val failedStep = FailedStep.fromThrowable(this, e)
-        FailureStepsResult(failedStep, runLogs, session)
+        FailureStepsResult(failedStep, session, runLogs)
     }
   }
 }

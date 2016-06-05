@@ -20,7 +20,7 @@ class AssertStepSpec extends WordSpec with Matchers {
         })
       )
       val s = Scenario("scenario with stupid test", steps)
-      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(false)
+      engine.runScenario(session)(s).isSuccess should be(false)
     }
 
     "success if non equality was expected" in {
@@ -31,7 +31,7 @@ class AssertStepSpec extends WordSpec with Matchers {
         )
       )
       val s = Scenario("scenario with unresolved", steps)
-      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(true)
+      engine.runScenario(session)(s).isSuccess should be(true)
     }
   }
 

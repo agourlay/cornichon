@@ -23,7 +23,7 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
         s
       case Failure(e) ⇒
         val failedStep = FailedStep(this, ConcurrentlyTimeout)
-        List(FailureStepsResult(failedStep, Vector(failedTitleLog(depth)), session))
+        List(FailureStepsResult(failedStep, session, Vector(failedTitleLog(depth))))
     }
 
     // Only the first error report found is used in the logs.

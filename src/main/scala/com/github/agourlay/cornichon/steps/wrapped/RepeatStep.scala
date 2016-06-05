@@ -38,7 +38,7 @@ case class RepeatStep(nested: Vector[Step], occurence: Int) extends WrapperStep 
       case f: FailureStepsResult ⇒
         val fullLogs = failedTitleLog(depth) +: report.logs :+ FailureLogInstruction(s"Repeat block with occurence '$occurence' failed after '$retries' occurence", depth, Some(executionTime))
         val failedStep = FailedStep(f.failedStep.step, RepeatBlockContainFailedSteps)
-        FailureStepsResult(failedStep, fullLogs, report.session)
+        FailureStepsResult(failedStep, report.session, fullLogs)
     }
   }
 }

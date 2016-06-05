@@ -24,7 +24,7 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
           else
             // In case of success all logs are returned but they are not printed by default.
             (retriesNumber, s.copy(logs = accLogs ++ sLogs))
-        case f @ FailureStepsResult(_, eLogs, _) ⇒
+        case f @ FailureStepsResult(_, _, eLogs) ⇒
           // In case of failure only the logs of the last run are shown to avoid giant traces.
           (retriesNumber, f.copy(logs = eLogs))
       }
@@ -43,7 +43,7 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
       case f: FailureStepsResult ⇒
         val fullLogs = failedTitleLog(depth) +: report.logs :+ FailureLogInstruction(s"Repeat block during '$duration' failed after being retried '$retries' times", depth, Some(executionTime))
         val failedStep = FailedStep(f.failedStep.step, RepeatDuringBlockContainFailedSteps)
-        FailureStepsResult(failedStep, fullLogs, report.session)
+        FailureStepsResult(failedStep, report.session, fullLogs)
     }
   }
 }
