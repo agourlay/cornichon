@@ -19,20 +19,23 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
     }
 
     val results = Try { Await.result(f, maxTime) } match {
-      case Success(s) ⇒ s
-      case Failure(e) ⇒ List(FailedRunSteps(this, ConcurrentlyTimeout, Vector(failedTitleLog(depth)), session))
+      case Success(s) ⇒
+        s
+      case Failure(e) ⇒
+        val failedStep = FailedStep(this, ConcurrentlyTimeout)
+        List(FailureStepsResult(failedStep, Vector(failedTitleLog(depth)), session))
     }
 
     // Only the first error report found is used in the logs.
-    val failedStepRun = results.collectFirst { case f @ FailedRunSteps(_, _, _, _) ⇒ f }
-    failedStepRun.fold[StepsReport] {
+    val failedStepRun = results.collectFirst { case f @ FailureStepsResult(_, _, _) ⇒ f }
+    failedStepRun.fold[StepsResult] {
       val executionTime = Duration.fromNanos(System.nanoTime - start)
-      val successStepsRun = results.collect { case s @ SuccessRunSteps(_, _) ⇒ s }
+      val successStepsRun = results.collect { case s @ SuccessStepsResult(_, _) ⇒ s }
       //TODO all sessions should be merged?
       val updatedSession = successStepsRun.head.session
       //TODO all logs should be merged?
       val updatedLogs = successTitleLog(depth) +: successStepsRun.head.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", depth, Some(executionTime))
-      SuccessRunSteps(updatedSession, updatedLogs)
+      SuccessStepsResult(updatedSession, updatedLogs)
     } { f ⇒
       f.copy(logs = failedTitleLog(depth) +: f.logs :+ FailureLogInstruction(s"Concurrently block failed", depth))
     }

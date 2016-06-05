@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
@@ -23,14 +24,16 @@ class Engine(executionContext: ExecutionContext) {
     }
   }
 
-  def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsReport =
-    steps.headOption.fold[StepsReport](SuccessRunSteps(session, accLogs)) { step ⇒
-      step.run(this, session, depth) match {
-        case SuccessRunSteps(newSession, updatedLogs) ⇒
+  @tailrec
+  final def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsResult =
+    if (steps.isEmpty) SuccessStepsResult(session, accLogs)
+    else {
+      steps(0).run(this, session, depth) match {
+        case SuccessStepsResult(newSession, updatedLogs) ⇒
           val nextSteps = steps.drop(1)
           runSteps(nextSteps, newSession, accLogs ++ updatedLogs, depth)
 
-        case f: FailedRunSteps ⇒
+        case f: FailureStepsResult ⇒
           f.copy(logs = accLogs ++ f.logs)
       }
     }
@@ -39,11 +42,12 @@ class Engine(executionContext: ExecutionContext) {
     res match {
       case Xor.Left(e) ⇒
         val runLogs = errorLogs(title, e, depth)
-        FailedRunSteps(currentStep, e, runLogs, session)
+        val failedStep = FailedStep(currentStep, e)
+        FailureStepsResult(failedStep, runLogs, session)
 
       case Xor.Right(newSession) ⇒
         val runLogs = if (show) Vector(SuccessLogInstruction(title, depth, duration)) else Vector.empty
-        SuccessRunSteps(newSession, runLogs)
+        SuccessStepsResult(newSession, runLogs)
     }
 
   def errorLogs(title: String, e: Throwable, depth: Int) = {

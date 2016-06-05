@@ -17,7 +17,7 @@ class DebugStepSpec extends WordSpec with Matchers {
         "Never gonna read this"
       })
       val s = Scenario("scenario with faulty debug step", Vector(step))
-      engine.runScenario(session)(s).stepsRunReport.isSuccess should be(false)
+      engine.runScenario(session)(s).stepsExecutionResult.isSuccess should be(false)
     }
   }
 }

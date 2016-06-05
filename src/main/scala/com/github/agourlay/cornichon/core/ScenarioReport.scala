@@ -1,101 +1,59 @@
 package com.github.agourlay.cornichon.core
 
-import scala.concurrent.duration.Duration
 
-sealed trait StepsReport {
-  def logs: Vector[LogInstruction]
-  def session: Session
-  def isSuccess: Boolean
-  def merge(otherStepsReport: StepsReport): StepsReport
-}
+case class ScenarioReport(scenarioName: String, stepsExecutionResult: StepsResult) {
 
-case class SuccessRunSteps(session: Session, logs: Vector[LogInstruction]) extends StepsReport {
-  val isSuccess = true
-
-  def merge(otherStepRunReport: StepsReport) = otherStepRunReport match {
-    case s: SuccessRunSteps ⇒
-      // Success + Sucess = Success
-      SuccessRunSteps(session.merge(otherStepRunReport.session), logs ++ otherStepRunReport.logs)
-    case f: FailedRunSteps ⇒
-      // Success + Error = Error
-      f.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
-  }
-
-}
-case class FailedRunSteps(step: Step, error: CornichonError, logs: Vector[LogInstruction], session: Session) extends StepsReport {
-  val isSuccess = false
-
-  def merge(otherStepRunReport: StepsReport) = otherStepRunReport match {
-    case s: SuccessRunSteps ⇒
-      // Error + Success = Error
-      this.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
-    case f: FailedRunSteps ⇒
-      // Error + Error = Error
-      f.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
-  }
-}
-
-object FailedRunSteps {
-  def apply(step: Step, error: Throwable, logs: Vector[LogInstruction], session: Session): FailedRunSteps = {
-    val e = CornichonError.fromThrowable(error)
-    FailedRunSteps(step, e, logs, session)
-  }
-}
-
-case class ScenarioReport(scenarioName: String, stepsRunReport: StepsReport) {
-
-  val msg = stepsRunReport match {
-    case s: SuccessRunSteps ⇒
+  val msg = stepsExecutionResult match {
+    case s: SuccessStepsResult ⇒
       s"Scenario '$scenarioName' succeeded"
 
-    case FailedRunSteps(failedStep, error, _, _) ⇒
+    case FailureStepsResult(failedStep, _, _) ⇒
       s"""
       |
       |Scenario '$scenarioName' failed at step:
-      |${failedStep.title}
+      |${failedStep.step.title}
       |with error:
-      |${error.msg}
+      |${failedStep.error.msg}
       | """.trim.stripMargin
   }
 }
 
-sealed trait LogInstruction {
-  def message: String
-  def marginNb: Int
-  def duration: Option[Duration]
-  def colorized: String
-  val physicalMargin = "   "
-  val completeMessage = {
+sealed trait StepsResult {
+  def logs: Vector[LogInstruction]
+  def session: Session
+  def isSuccess: Boolean
+  def merge(otherStepsReport: StepsResult): StepsResult
+}
 
-    def withDuration(line: String) = physicalMargin * marginNb + line + duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
+case class SuccessStepsResult(session: Session, logs: Vector[LogInstruction]) extends StepsResult {
+  val isSuccess = true
 
-    // Inject duration at the end of the first line
-    message.split('\n').toList match {
-      case head :: Nil ⇒
-        withDuration(head)
-      case head :: tail ⇒
-        (withDuration(head) :: tail.map(l ⇒ physicalMargin * marginNb + l)).mkString("\n")
-      case _ ⇒ withDuration("")
-    }
+  def merge(otherStepsResult: StepsResult) = otherStepsResult match {
+    case s: SuccessStepsResult ⇒
+      // Success + Sucess = Success
+      SuccessStepsResult(session.merge(otherStepsResult.session), logs ++ otherStepsResult.logs)
+    case f: FailureStepsResult ⇒
+      // Success + Error = Error
+      f.copy(session = session.merge(otherStepsResult.session), logs = logs ++ otherStepsResult.logs)
   }
 }
 
-case class ScenarioTitleLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  val colorized = '\n' + fansi.Color.White(completeMessage).overlay(attrs = fansi.Underlined.On, start = (physicalMargin * marginNb).length).render
+case class FailedStep(step: Step, error: CornichonError)
+
+object FailedStep {
+  def fromThrowable(step: Step, error: Throwable) =
+    FailedStep(step, CornichonError.fromThrowable(error))
 }
 
-case class InfoLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  val colorized = fansi.Color.White(completeMessage).render
-}
+case class FailureStepsResult(failedStep: FailedStep, logs: Vector[LogInstruction], session: Session) extends StepsResult {
+  val isSuccess = false
 
-case class SuccessLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  val colorized = fansi.Color.Green(completeMessage).render
-}
-
-case class FailureLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  val colorized = fansi.Color.Red(completeMessage).render
-}
-
-case class DebugLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  val colorized = fansi.Color.Cyan(completeMessage).render
+  def merge(otherStepRunReport: StepsResult) = otherStepRunReport match {
+    case s: SuccessStepsResult ⇒
+      // Error + Success = Error
+      this.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
+    case f: FailureStepsResult ⇒
+      // Error + Error = Error
+      f.copy(session = session.merge(otherStepRunReport.session), logs = logs ++ otherStepRunReport.logs)
+  }
 }

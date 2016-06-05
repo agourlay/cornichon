@@ -45,24 +45,24 @@ libraryDependencies ++= {
   val fansiV = "0.1.3"
   val akkaHttpCirce = "1.6.0"
   Seq(
-     "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
-    ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
-    ,"org.json4s"          %% "json4s-jackson"                    % json4sV   // Only use for Json diff - remove asap.
-    ,"org.typelevel"       %% "cats-macros"                       % catsV
-    ,"org.typelevel"       %% "cats-core"                         % catsV
-    ,"org.scalatest"       %% "scalatest"                         % scalaTestV
-    ,"ch.qos.logback"      %  "logback-classic"                   % logbackV
-    ,"org.parboiled"       %% "parboiled"                         % parboiledV
-    ,"org.scalacheck"      %% "scalacheck"                        % scalaCheckV
-    ,"com.lihaoyi"         %% "fansi"                             % fansiV
-    ,"org.sangria-graphql" %% "sangria"                           % sangriaV
-    ,"org.sangria-graphql" %% "sangria-circe"                     % sangriaCirceV
-    ,"io.circe"            %% "circe-core"                        % circeVersion
-    ,"io.circe"            %% "circe-generic"                     % circeVersion
-    ,"io.circe"            %% "circe-parser"                      % circeVersion
-    ,"io.circe"            %% "circe-optics"                      % circeVersion // Remove if cursors are used instead or lenses for JsonPath.
-    ,"de.heikoseeberger"   %% "akka-http-circe"                   % akkaHttpCirce   % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV       % "test"
+     "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
+    ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
+    ,"org.json4s"          %% "json4s-jackson"         % json4sV   // Only used for Json diff - remove asap.
+    ,"org.typelevel"       %% "cats-macros"            % catsV
+    ,"org.typelevel"       %% "cats-core"              % catsV
+    ,"org.scalatest"       %% "scalatest"              % scalaTestV
+    ,"ch.qos.logback"      %  "logback-classic"        % logbackV
+    ,"org.parboiled"       %% "parboiled"              % parboiledV
+    ,"org.scalacheck"      %% "scalacheck"             % scalaCheckV
+    ,"com.lihaoyi"         %% "fansi"                  % fansiV
+    ,"org.sangria-graphql" %% "sangria"                % sangriaV
+    ,"org.sangria-graphql" %% "sangria-circe"          % sangriaCirceV
+    ,"io.circe"            %% "circe-core"             % circeVersion
+    ,"io.circe"            %% "circe-generic"          % circeVersion
+    ,"io.circe"            %% "circe-parser"           % circeVersion
+    ,"io.circe"            %% "circe-optics"           % circeVersion // Remove if cursors are used instead or lenses for JsonPath.
+    ,"de.heikoseeberger"   %% "akka-http-circe"        % akkaHttpCirce   % "test"
+    ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV       % "test"
   )
 }
 
