@@ -22,7 +22,7 @@ import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
 
-class RestAPI() extends EventStreamMarshalling {
+class HttpAPI() extends EventStreamMarshalling {
 
   import JsonSupport._
 

@@ -15,7 +15,6 @@ import sangria.schema._
 import sangria.marshalling.circe._
 
 object GraphQlSchema {
-  import JsonSupport._
 
   implicit val PublisherType = deriveObjectType[Unit, Publisher](
     ObjectTypeDescription("A comics publisher.")
