@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-trait ScenarioReport {
+sealed trait ScenarioReport {
   def scenarioName: String
   def isSuccess: Boolean
   def session: Session
@@ -8,45 +8,54 @@ trait ScenarioReport {
 }
 
 object ScenarioReport {
-  def build(scenarioName: String, stepsResult: StepsResult*): ScenarioReport = mergeReport(stepsResult) match {
-    case SuccessStepsResult(s, l)    ⇒ SuccessScenarioReport(scenarioName, s, l)
-    case FailureStepsResult(f, s, l) ⇒ FailureScenarioReport(scenarioName, f, s, l)
-  }
+  def build(scenarioName: String, mainResult: StepsResult, finallyResult: Option[StepsResult] = None): ScenarioReport =
+    finallyResult.fold {
+      mainResult match {
+        case SuccessStepsResult(s, l)    ⇒ SuccessScenarioReport(scenarioName, s, l)
+        case FailureStepsResult(f, s, l) ⇒ FailureScenarioReport(scenarioName, Vector(f), s, l)
+      }
+    } { finallyRes ⇒
 
-  def mergeReport(stepsResults: Seq[StepsResult]) = {
-    stepsResults.reduceLeft { (acc, nextResult) ⇒
-      (acc, nextResult) match {
+      (mainResult, finallyRes) match {
         // Success + Sucess = Success
         case (SuccessStepsResult(leftSession, leftLogs), SuccessStepsResult(rightSession, rightLogs)) ⇒
-          SuccessStepsResult(leftSession.merge(rightSession), leftLogs ++ rightLogs)
+          SuccessScenarioReport(scenarioName, leftSession.merge(rightSession), leftLogs ++ rightLogs)
+
         // Success + Error = Error
         case (SuccessStepsResult(leftSession, leftLogs), FailureStepsResult(failedStep, rightSession, rightLogs)) ⇒
-          FailureStepsResult(failedStep, leftSession.merge(rightSession), leftLogs ++ rightLogs)
+          FailureScenarioReport(scenarioName, Vector(failedStep), leftSession.merge(rightSession), leftLogs ++ rightLogs)
+
         // Error + Success = Error
         case (FailureStepsResult(failedStep, leftSession, leftLogs), SuccessStepsResult(rightSession, rightLogs)) ⇒
-          FailureStepsResult(failedStep, leftSession.merge(rightSession), leftLogs ++ rightLogs)
-        // Error + Error = Error
+          FailureScenarioReport(scenarioName, Vector(failedStep), leftSession.merge(rightSession), leftLogs ++ rightLogs)
+
+        // Error + Error = Errors accumulated
         case (FailureStepsResult(leftFailedStep, leftSession, leftLogs), FailureStepsResult(rightFailedStep, rightSession, rightLogs)) ⇒
-          FailureStepsResult(leftFailedStep, leftSession.merge(rightSession), leftLogs ++ rightLogs)
+          FailureScenarioReport(scenarioName, Vector(leftFailedStep, rightFailedStep), leftSession.merge(rightSession), leftLogs ++ rightLogs)
       }
     }
-  }
 }
 
 case class SuccessScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
   val isSuccess = true
 }
 
-case class FailureScenarioReport(scenarioName: String, failedStep: FailedStep, session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
+case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[FailedStep], session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
 
   val isSuccess = false
 
-  val msg = s"""
-      |
-      |Scenario '$scenarioName' failed at step:
-      |${failedStep.step.title}
-      |with error:
-      |${failedStep.error.msg}
+  private def messageForFailedStep(failedStep: FailedStep) =
+    s"""
+    |${failedStep.step.title}
+    |with error:
+    |${failedStep.error.msg}
+    |
+    |""".stripMargin
+
+  val msg =
+    s"""
+      |Scenario '$scenarioName' failed at step(s):
+      |${failedSteps.map(messageForFailedStep).mkString("and\n")}
       | """.trim.stripMargin
 }
 

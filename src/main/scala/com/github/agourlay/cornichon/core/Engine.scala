@@ -19,7 +19,7 @@ class Engine(executionContext: ExecutionContext) {
     else {
       // Reuse mainline session
       val finallyReport = runSteps(finallySteps.toVector, mainRunReport.session, Vector.empty, initMargin + 1)
-      ScenarioReport.build(scenario.name, mainRunReport, finallyReport)
+      ScenarioReport.build(scenario.name, mainRunReport, Some(finallyReport))
     }
   }
 

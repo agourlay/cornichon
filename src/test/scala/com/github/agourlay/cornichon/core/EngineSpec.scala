@@ -32,12 +32,44 @@ class EngineSpec extends WordSpec with Matchers {
           res match {
             case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
             case f: FailureScenarioReport ⇒
-              f.failedStep.error.msg.replaceAll("\r", "") should be("""
+              f.failedSteps.head.error.msg should be("""
               |expected result was:
               |'4'
               |but actual result is:
               |'5'""".stripMargin.trim)
           }
+        }
+      }
+
+      "accumulated errors if 'main' and 'finally' fail" in {
+        val session = Session.newSession
+        val mainStep = AssertStep[Boolean]("main step", s ⇒ SimpleStepAssertion(true, false))
+        val finallyStep = AssertStep[Boolean]("finally step", s ⇒ SimpleStepAssertion(true, false))
+        val s = Scenario("test", Vector(mainStep))
+        val res = engine.runScenario(session, Vector(finallyStep))(s)
+        res match {
+          case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
+          case f: FailureScenarioReport ⇒
+            f.msg should be("""Scenario 'test' failed at step(s):
+             |
+             |main step
+             |with error:
+             |expected result was:
+             |'true'
+             |but actual result is:
+             |'false'
+             |
+             |and
+             |
+             |finally step
+             |with error:
+             |expected result was:
+             |'true'
+             |but actual result is:
+             |'false'
+             |
+             |
+             |""".stripMargin)
         }
       }
     }
