@@ -34,7 +34,7 @@ trait HttpDsl extends Dsl {
       case Patch(url, payload, params, headers)        ⇒ http.Patch(url, payload, params, headers)(s)
       case OpenSSE(url, takeWithin, params, headers)   ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
       case OpenWS(url, takeWithin, params, headers)    ⇒ http.OpenWS(url, takeWithin, params, headers)(s)
-      case q @ QueryGQL(url, params, headers, _, _, _) ⇒ http.Post(url, q.payload, params, headers)(s)
+      case q @ QueryGQL(url, params, headers, _, _, _) ⇒ http.Post(url, q.fullPayload, params, headers)(s)
     }
   )
 

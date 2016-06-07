@@ -88,7 +88,7 @@ object HttpEffects {
 
   case class QueryGQL(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
       query: Document, operationName: Option[String] = None, variables: Option[Map[String, Json]] = None) extends HttpRequestWithPayload {
-    val name = "Query GraphQL"
+    val name = "POST GraphQL query"
 
     def withParams(params: (String, String)*) = copy(params = params)
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
@@ -100,13 +100,15 @@ object HttpEffects {
       copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples)))
     }
 
-    lazy val payload = {
+    // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
+    lazy val payload = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
+
+    lazy val fullPayload = {
       import io.circe.generic.auto._
       import io.circe.syntax._
 
-      val queryDoc = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
-      val newPayload = GqlPayload(queryDoc, operationName, variables)
-      prettyPrint(newPayload.asJson)
+      val gqlPayload = GqlPayload(payload, operationName, variables)
+      prettyPrint(gqlPayload.asJson)
     }
   }
 
