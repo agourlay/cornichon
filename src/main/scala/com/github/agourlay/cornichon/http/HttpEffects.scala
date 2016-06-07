@@ -86,28 +86,27 @@ object HttpEffects {
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
   }
 
-  case class QueryGQL(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
+  case class QueryGQL(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
       query: Document, operationName: Option[String] = None, variables: Option[Map[String, Json]] = None) extends HttpRequestWithPayload {
-    val name = "Query GQL"
+    val name = "Query GraphQL"
 
     def withParams(params: (String, String)*) = copy(params = params)
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
 
-    //GQL builder
-    def withQuery(query: Document) = copy(query = query).buildBody()
-    def withOperationName(operationName: String) = copy(operationName = Some(operationName)).buildBody()
+    def withQuery(query: Document) = copy(query = query)
+    def withOperationName(operationName: String) = copy(operationName = Some(operationName))
     def withVariables(newVariables: (String, Any)*) = {
       val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }
-      copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples))).buildBody()
+      copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples)))
     }
 
-    def buildBody() = {
+    lazy val payload = {
       import io.circe.generic.auto._
       import io.circe.syntax._
 
       val queryDoc = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
       val newPayload = GqlPayload(queryDoc, operationName, variables)
-      copy(payload = prettyPrint(newPayload.asJson))
+      prettyPrint(newPayload.asJson)
     }
   }
 
