@@ -90,6 +90,7 @@ trait CornichonJson {
       """.stripMargin
   }
 
+  //FIXME implement JSON diff independently from JSON4s
   def diff(v1: Json, v2: Json): Diff = {
     import org.json4s.JValue
     import org.json4s.jackson.JsonMethods._

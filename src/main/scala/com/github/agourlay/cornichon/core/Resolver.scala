@@ -50,8 +50,7 @@ class Resolver(extractors: Map[String, Mapper]) {
       session.getXor(key, ph.index).map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
       session.getXor(key, ph.index).flatMap { sessionValue ⇒
-        // No placeholders in JsonMapper for now to avoid people running into infinite recursion
-        // Could be enabled if there is a use case for it.
+        // No placeholders in JsonMapper to avoid accidental infinite recursions.
         JsonPath.run(jsonPath, sessionValue)
           .map(CornichonJson.jsonStringValue)
           .map(transform)
