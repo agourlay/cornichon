@@ -78,6 +78,9 @@ trait CornichonJson {
       jsonObject = b ⇒ prettyPrint(j)
     )
 
+  def extract(json: Json, path: String) =
+    JsonPath.run(path, json)
+
   def prettyPrint(json: Json) = json.spaces2
 
   def prettyDiff(first: Json, second: Json) = {

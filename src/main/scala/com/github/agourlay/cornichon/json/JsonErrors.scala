@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core.CornichonError
+import io.circe.Json
 
 sealed trait JsonError extends CornichonError
 
@@ -26,3 +27,8 @@ case class JsonPathError(input: String, error: Throwable) extends JsonError {
 
 case class WhiteListError(msg: String) extends CornichonError
 
+case class NotStringFieldError(input: Json, field: String) extends JsonError {
+  val msg =
+    s"""field '$field' is not of type String in JSON
+       |${CornichonJson.prettyPrint(input)}""".stripMargin
+}
