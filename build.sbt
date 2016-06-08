@@ -34,7 +34,6 @@ libraryDependencies ++= {
   val scalaTestV = "2.2.6"
   val akkaHttpV = "2.4.7"
   val catsV = "0.6.0"
-  val json4sV = "3.3.0"
   val logbackV = "1.1.7"
   val parboiledV = "2.1.3"
   val akkaSseV = "1.8.1"
@@ -47,7 +46,6 @@ libraryDependencies ++= {
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
-    ,"org.json4s"          %% "json4s-jackson"         % json4sV   // Only used for Json diff - remove asap.
     ,"org.typelevel"       %% "cats-macros"            % catsV
     ,"org.typelevel"       %% "cats-core"              % catsV
     ,"org.scalatest"       %% "scalatest"              % scalaTestV
@@ -68,7 +66,7 @@ libraryDependencies ++= {
 
 // Wartremover
 wartremoverErrors in (Compile, compile) ++= Seq(
-  Wart.Any2StringAdd, Wart.Option2Iterable, Wart.OptionPartial,
+  Wart.Any2StringAdd, Wart.Option2Iterable,
   Wart.Return, Wart.TryPartial)
 
 // Publishing
