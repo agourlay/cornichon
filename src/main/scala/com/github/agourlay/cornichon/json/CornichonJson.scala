@@ -5,8 +5,8 @@ import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.json.CornichonJson.GqlString
+import com.github.agourlay.cornichon.json.JsonDiff.Diff
 import io.circe.{ Json, JsonObject }
-import org.json4s.JsonAST.JNothing
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
@@ -84,7 +84,7 @@ trait CornichonJson {
   def prettyPrint(json: Json) = json.spaces2
 
   def prettyDiff(first: Json, second: Json) = {
-    val Diff(changed, added, deleted) = diff(first, second)
+    val Diff(changed, added, deleted) = JsonDiff.diff(first, second)
 
     s"""
     |${if (changed == Json.Null) "" else "changed = " + jsonStringValue(changed)}
@@ -92,28 +92,6 @@ trait CornichonJson {
     |${if (deleted == Json.Null) "" else "deleted = " + jsonStringValue(deleted)}
       """.stripMargin
   }
-
-  //FIXME implement JSON diff independently from JSON4s
-  def diff(v1: Json, v2: Json): Diff = {
-    import org.json4s.JValue
-    import org.json4s.jackson.JsonMethods._
-
-    def circeToJson4s(c: Json): JValue = c match {
-      case Json.Null ⇒ JNothing
-      case _         ⇒ parse(c.noSpaces)
-    }
-
-    def json4sToCirce(j: JValue): Json = j match {
-      case JNothing ⇒ Json.Null
-      case _        ⇒ parseJsonUnsafe(compact(render(j)))
-    }
-
-    val diff = circeToJson4s(v1).diff(circeToJson4s(v2))
-
-    Diff(changed = json4sToCirce(diff.changed), added = json4sToCirce(diff.added), deleted = json4sToCirce(diff.deleted))
-  }
-
-  case class Diff(changed: Json, added: Json, deleted: Json)
 }
 
 object CornichonJson extends CornichonJson {
