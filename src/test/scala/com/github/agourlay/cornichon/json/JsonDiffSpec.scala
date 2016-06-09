@@ -138,6 +138,189 @@ class JsonDiffSpec extends WordSpec with Matchers with PropertyChecks {
       JsonDiff.diff(jsonLeft, jsonRight) should be(Diff(Json.Null, expectedJson, Json.Null))
     }
 
-  }
+    "changed object nested field" in {
+      val left =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brother": {
+          |   "Name" : "Paul",
+          |   "Age": 50
+          | }
+          |}
+        """.stripMargin
 
+      val right =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brother": {
+          |   "Name" : "Paul",
+          |   "Age": 51
+          | }
+          |}
+        """.stripMargin
+
+      val jsonLeft = CornichonJson.parseJsonUnsafe(left)
+      val jsonRight = CornichonJson.parseJsonUnsafe(right)
+
+      val expected =
+        """
+          |{
+          |"brother" : {
+          |  "Age" : 51
+          | }
+          |}
+        """.stripMargin
+
+      val expectedJson = CornichonJson.parseJsonUnsafe(expected)
+
+      JsonDiff.diff(jsonLeft, jsonRight) should be(Diff(expectedJson, Json.Null, Json.Null))
+    }
+
+    "added object nested field" in {
+      val left =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brother": {
+          |   "Name" : "Paul",
+          |   "Age": 50
+          | }
+          |}
+        """.stripMargin
+
+      val right =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brother": {
+          |   "Name" : "Paul",
+          |   "Age": 50,
+          |   "Job": "Farmer"
+          | }
+          |}
+        """.stripMargin
+
+      val jsonLeft = CornichonJson.parseJsonUnsafe(left)
+      val jsonRight = CornichonJson.parseJsonUnsafe(right)
+
+      val expected =
+        """
+          |{
+          |"brother" : {
+          |  "Job" : "Farmer"
+          | }
+          |}
+        """.stripMargin
+
+      val expectedJson = CornichonJson.parseJsonUnsafe(expected)
+
+      JsonDiff.diff(jsonLeft, jsonRight) should be(Diff(Json.Null, expectedJson, Json.Null))
+    }
+
+    "deleted object nested field" in {
+      val left =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brother": {
+          |   "Name" : "Paul",
+          |   "Age": 50
+          | }
+          |}
+        """.stripMargin
+
+      val right =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brother": {
+          |   "Name" : "Paul"
+          | }
+          |}
+        """.stripMargin
+
+      val jsonLeft = CornichonJson.parseJsonUnsafe(left)
+      val jsonRight = CornichonJson.parseJsonUnsafe(right)
+
+      val expected =
+        """
+          |{
+          |"brother" : {
+          |  "Age" : 50
+          | }
+          |}
+        """.stripMargin
+
+      val expectedJson = CornichonJson.parseJsonUnsafe(expected)
+
+      JsonDiff.diff(jsonLeft, jsonRight) should be(Diff(Json.Null, Json.Null, expectedJson))
+    }
+
+    "diff identical arrays" in {
+      val one = Json.fromString("one")
+      val two = Json.fromString("two")
+
+      val rightArray = Json.fromValues(one :: two :: Nil)
+      val leftArray = Json.fromValues(one :: two :: Nil)
+
+      JsonDiff.diff(leftArray, rightArray) should be(Diff(Json.Null, Json.Null, Json.Null))
+    }
+
+    "removed element in arrays" in {
+      val one = Json.fromString("one")
+      val two = Json.fromString("two")
+      val three = Json.fromString("three")
+
+      val rightArray = Json.fromValues(one :: two :: Nil)
+      val leftArray = Json.fromValues(one :: two :: three :: Nil)
+
+      JsonDiff.diff(leftArray, rightArray) should be(Diff(Json.Null, Json.Null, Json.fromValues(three :: Nil)))
+    }
+
+    "added element in arrays" in {
+      val one = Json.fromString("one")
+      val two = Json.fromString("two")
+      val three = Json.fromString("three")
+
+      val leftArray = Json.fromValues(one :: two :: Nil)
+      val rightArray = Json.fromValues(one :: two :: three :: Nil)
+
+      JsonDiff.diff(leftArray, rightArray) should be(Diff(Json.Null, Json.fromValues(three :: Nil), Json.Null))
+    }
+
+    "changed element in arrays" in {
+      val one = Json.fromString("one")
+      val two = Json.fromString("two")
+      val three = Json.fromString("three")
+
+      val leftArray = Json.fromValues(one :: two :: Nil)
+      val rightArray = Json.fromValues(one :: three :: Nil)
+
+      JsonDiff.diff(leftArray, rightArray) should be(Diff(three, Json.Null, Json.Null))
+    }
+
+    "changed order in arrays" in {
+      val one = Json.fromString("one")
+      val two = Json.fromString("two")
+
+      val rightArray = Json.fromValues(one :: two :: Nil)
+      val leftArray = Json.fromValues(two :: one :: Nil)
+
+      JsonDiff.diff(leftArray, rightArray) should be(Diff(Json.fromValues(one :: two :: Nil), Json.Null, Json.Null))
+    }
+  }
 }

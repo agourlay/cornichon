@@ -7,10 +7,9 @@ import io.circe.{ Json, JsonObject }
 object JsonDiff {
 
   case class Diff(changed: Json, added: Json, deleted: Json) {
-    def toField(name: String): Diff = {
-      def applyTo(x: Json): Json = if (x == Json.Null) Json.Null else Json.fromJsonObject(JsonObject.singleton(name, x))
-
-      Diff(applyTo(changed), applyTo(added), applyTo(deleted))
+    def asField(name: String): Diff = {
+      def bindTo(x: Json): Json = if (x == Json.Null) Json.Null else Json.fromJsonObject(JsonObject.singleton(name, x))
+      Diff(bindTo(changed), bindTo(added), bindTo(deleted))
     }
   }
 
@@ -22,19 +21,14 @@ object JsonDiff {
     else if (v2.isArray) Json.fromValues(v1 +: v2.asArray.get)
     else Json.fromValues(v1 :: v2 :: Nil)
 
-  type JField = (String, Json)
-
-  private def merge(v1: Json, v2: Json): Json = {
-    if (v2.isNull) v1
-    else v1.deepMerge(v2)
-  }
+  private def merge(v1: Json, v2: Json) = if (v2.isNull) v1 else v1.deepMerge(v2)
 
   private def diffJsonObject(v1: JsonObject, v2: JsonObject): Diff = {
-    def diffRec(leftFields: List[JField], rightFields: List[JField]): Diff = leftFields match {
+    def diffRec(leftFields: List[(String, Json)], rightFields: List[(String, Json)]): Diff = leftFields match {
       case Nil ⇒ Diff(Json.Null, if (rightFields.isEmpty) Json.Null else Json.fromJsonObject(JsonObject.fromIterable(rightFields)), Json.Null)
       case x :: xs ⇒ rightFields find (_._1 == x._1) match {
         case Some(fieldInBoth) ⇒
-          val Diff(c1, a1, d1) = diff(x._2, fieldInBoth._2).toField(fieldInBoth._1)
+          val Diff(c1, a1, d1) = diff(x._2, fieldInBoth._2).asField(fieldInBoth._1)
           val fieldsAdded = rightFields filterNot (_ == fieldInBoth)
           val Diff(c2, a2, d2) = diffRec(xs, fieldsAdded)
           Diff(merge(c1, c2), merge(a1, a2), merge(d1, d2))
