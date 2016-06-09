@@ -14,7 +14,7 @@ object JsonDiff {
     }
   }
 
-  def append(v1: Json, v2: Json): Json =
+  private def append(v1: Json, v2: Json): Json =
     if (v1.isNull) v2
     else if (v2.isNull) v1
     else if (v1.isArray && v2.isArray) Json.fromValues(v1.asArray.get ::: v2.asArray.get)
@@ -24,24 +24,30 @@ object JsonDiff {
 
   type JField = (String, Json)
 
-  def diffJsonObject(v1: JsonObject, v2: JsonObject): Diff = {
-    def diffRec(xleft: List[JField], yleft: List[JField]): Diff = xleft match {
-      case Nil ⇒ Diff(Json.Null, if (yleft.isEmpty) Json.Null else Json.fromJsonObject(JsonObject.fromIterable(yleft)), Json.Null)
-      case x :: xs ⇒ yleft find (_._1 == x._1) match {
-        case Some(y) ⇒
-          val Diff(c1, a1, d1) = diff(x._2, y._2).toField(y._1)
-          val Diff(c2, a2, d2) = diffRec(xs, yleft filterNot (_ == y))
-          Diff(c1.deepMerge(c2), a1.deepMerge(a2), d1.deepMerge(d2))
+  private def merge(v1: Json, v2: Json): Json = {
+    if (v2.isNull) v1
+    else v1.deepMerge(v2)
+  }
+
+  private def diffJsonObject(v1: JsonObject, v2: JsonObject): Diff = {
+    def diffRec(leftFields: List[JField], rightFields: List[JField]): Diff = leftFields match {
+      case Nil ⇒ Diff(Json.Null, if (rightFields.isEmpty) Json.Null else Json.fromJsonObject(JsonObject.fromIterable(rightFields)), Json.Null)
+      case x :: xs ⇒ rightFields find (_._1 == x._1) match {
+        case Some(fieldInBoth) ⇒
+          val Diff(c1, a1, d1) = diff(x._2, fieldInBoth._2).toField(fieldInBoth._1)
+          val fieldsAdded = rightFields filterNot (_ == fieldInBoth)
+          val Diff(c2, a2, d2) = diffRec(xs, fieldsAdded)
+          Diff(merge(c1, c2), merge(a1, a2), merge(d1, d2))
         case None ⇒
-          val Diff(c, a, d) = diffRec(xs, yleft)
-          Diff(c, a, Json.fromJsonObject(JsonObject.fromIterable(x :: Nil)).deepMerge(d))
+          val Diff(c, a, d) = diffRec(xs, rightFields)
+          Diff(c, a, merge(Json.fromJsonObject(JsonObject.fromIterable(x :: Nil)), d))
       }
     }
 
     diffRec(v1.toList, v2.toList)
   }
 
-  def diffJsonArray(v1: List[Json], v2: List[Json]): Diff = {
+  private def diffJsonArray(v1: List[Json], v2: List[Json]): Diff = {
     def diffRec(xleft: List[Json], yleft: List[Json]): Diff = (xleft, yleft) match {
       case (xs, Nil) ⇒ Diff(Json.Null, Json.Null, if (xs.isEmpty) Json.Null else Json.fromValues(xs))
       case (Nil, ys) ⇒ Diff(Json.Null, if (ys.isEmpty) Json.Null else Json.fromValues(ys), Json.Null)
