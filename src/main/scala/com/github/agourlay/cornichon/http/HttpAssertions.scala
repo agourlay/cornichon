@@ -158,6 +158,8 @@ object HttpAssertions {
 
     def ignoringEach(ignoringEach: String*): BodyArrayAssertion[A] = copy(ignoredEachKeys = ignoringEach)
 
+    def isEmpty = hasSize(0)
+
     def hasSize(size: Int): AssertStep[Int] = {
       val title = if (jsonPath == JsonPath.root) s"response body array size is '$size'" else s"response body's array '$jsonPath' size is '$size'"
       from_session_detail_step(
