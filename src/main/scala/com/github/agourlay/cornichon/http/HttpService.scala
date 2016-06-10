@@ -20,30 +20,30 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
 
   private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)],
-    headers: Seq[(String, String)], extractor: ResponseExtractor, requestTimeout: FiniteDuration, expect: Option[Int])(s: Session) =
+    headers: Seq[(String, String)], extractor: ResponseExtractor, requestTimeout: FiniteDuration, expectedStatus: Option[Int])(s: Session) =
     for {
       payloadResolved ← resolver.fillPlaceholders(payload)(s)
       json ← parseJson(payloadResolved)
       r ← resolveCommonRequestParts(url, params, headers)(s)
       resp ← call(json, r._1, r._2, r._3, requestTimeout)
-      newSession ← handleResponse(resp, expect, extractor)(s)
+      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield {
       (resp, newSession)
     }
 
   private def withoutPayload(call: WithoutPayloadCall, url: String, params: Seq[(String, String)],
-    headers: Seq[(String, String)], extractor: ResponseExtractor, requestTimeout: FiniteDuration, expect: Option[Int])(s: Session) =
+    headers: Seq[(String, String)], extractor: ResponseExtractor, requestTimeout: FiniteDuration, expectedStatus: Option[Int])(s: Session) =
     for {
       r ← resolveCommonRequestParts(url, params, headers)(s)
       resp ← call(r._1, r._2, r._3, requestTimeout)
-      newSession ← handleResponse(resp, expect, extractor)(s)
+      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield {
       (resp, newSession)
     }
 
-  private def handleResponse(resp: CornichonHttpResponse, expect: Option[Int], extractor: ResponseExtractor)(session: Session) =
+  private def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
     for {
-      resExpected ← expectStatusCode(resp, expect)
+      resExpected ← expectStatusCode(resp, expectedStatus)
       newSession = fillInSessionWithResponse(session, resp, extractor)
     } yield {
       newSession
@@ -75,32 +75,32 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   }
 
   def Post(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expected: Option[Int] = None)(s: Session) =
-    withPayload(client.postJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
+           extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session) =
+    withPayload(client.postJson, payload, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
 
   def Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expected: Option[Int] = None)(s: Session): Session =
-    withPayload(client.putJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
+          extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
+    withPayload(client.putJson, payload, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
 
   def Patch(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expected: Option[Int] = None)(s: Session): Session =
-    withPayload(client.patchJson, payload, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
+            extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
+    withPayload(client.patchJson, payload, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
 
   def Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.getJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
+          extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
+    withoutPayload(client.getJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
 
   def Head(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.headJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
+           extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
+    withoutPayload(client.headJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
 
   def Options(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.optionsJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
+              extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
+    withoutPayload(client.optionsJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
 
   def Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expected: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.deleteJson, url, params, headers, extractor, requestTimeout, expected)(s).fold(e ⇒ throw e, _._2)
+             extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
+    withoutPayload(client.deleteJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
 
   def OpenSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
