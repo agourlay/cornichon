@@ -34,5 +34,45 @@ class JsonPathSpec extends WordSpec with Matchers with PropertyChecks {
 
       JsonPath.parse("Age").run(input) should be(right(Json.fromInt(50)))
     }
+
+    "select properly nested field in Object" in {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brother": {
+          |   "Name" : "Paul",
+          |   "Age": 50
+          | }
+          |}
+        """.stripMargin
+
+      JsonPath.parse("brother.Age").run(input) should be(right(Json.fromInt(50)))
+    }
+
+    "select properly nested field in Array" in {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brothers": [
+          |   {
+          |     "Name" : "Paul",
+          |     "Age": 50
+          |   },
+          |   {
+          |     "Name": "Bob",
+          |     "Age" : 30
+          |   }
+          | ]
+          |}
+        """.stripMargin
+
+      JsonPath.parse("brothers[1].Age").run(input) should be(right(Json.fromInt(30)))
+    }
   }
 }
