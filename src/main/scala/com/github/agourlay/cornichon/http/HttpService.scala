@@ -122,10 +122,10 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       case NoOpExtraction ⇒
         commonSessionExtraction(session, response)
 
-      case RootResponseExtractor(targetKey) ⇒
+      case RootExtractor(targetKey) ⇒
         commonSessionExtraction(session, response).addValue(targetKey, response.body)
 
-      case PathResponseExtractor(path, targetKey) ⇒
+      case PathExtractor(path, targetKey) ⇒
         val extractedJson = JsonPath.run(path, response.body).fold(e ⇒ throw e, identity)
         commonSessionExtraction(session, response).addValue(targetKey, CornichonJson.jsonStringValue(extractedJson))
     }
@@ -156,8 +156,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 }
 
 sealed trait ResponseExtractor
-case class RootResponseExtractor(targetKey: String) extends ResponseExtractor
-case class PathResponseExtractor(path: String, targetKey: String) extends ResponseExtractor
+case class RootExtractor(targetKey: String) extends ResponseExtractor
+case class PathExtractor(path: String, targetKey: String) extends ResponseExtractor
 object NoOpExtraction extends ResponseExtractor
 
 object HttpService {

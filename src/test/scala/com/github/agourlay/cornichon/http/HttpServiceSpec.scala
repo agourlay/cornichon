@@ -36,7 +36,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       "extract content with RootResponseExtraction" in {
         val s = Session.newSession
         val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
-        val filledSession = service.fillInSessionWithResponse(s, resp, RootResponseExtractor("copy-body"))
+        val filledSession = service.fillInSessionWithResponse(s, resp, RootExtractor("copy-body"))
         filledSession.get("last-response-status") should be("200")
         filledSession.get("last-response-body") should be("hello world")
         filledSession.get("copy-body") should be("hello world")
@@ -50,7 +50,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
               "name" : "batman"
             }
           """)
-        val filledSession = service.fillInSessionWithResponse(s, resp, PathResponseExtractor("name", "part-of-body"))
+        val filledSession = service.fillInSessionWithResponse(s, resp, PathExtractor("name", "part-of-body"))
         filledSession.get("last-response-status") should be("200")
         filledSession.get("last-response-body") should be(
           """
