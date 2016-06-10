@@ -25,11 +25,41 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
   "HttpService" when {
     "fillInSessionWithResponse" must {
-      "extract content" in {
+      "extract content with NoOpExtraction" in {
         val s = Session.newSession
         val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
-        service.fillInSessionWithResponse(s, resp, None).get("last-response-status") should be("200")
-        service.fillInSessionWithResponse(s, resp, None).get("last-response-body") should be("hello world")
+        val filledSession = service.fillInSessionWithResponse(s, resp, NoOpExtraction)
+        filledSession.get("last-response-status") should be("200")
+        filledSession.get("last-response-body") should be("hello world")
+      }
+
+      "extract content with RootResponseExtraction" in {
+        val s = Session.newSession
+        val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
+        val filledSession = service.fillInSessionWithResponse(s, resp, RootResponseExtractor("copy-body"))
+        filledSession.get("last-response-status") should be("200")
+        filledSession.get("last-response-body") should be("hello world")
+        filledSession.get("copy-body") should be("hello world")
+      }
+
+      "extract content with PathResponseExtraction" in {
+        val s = Session.newSession
+        val resp = CornichonHttpResponse(StatusCodes.OK, Nil,
+          """
+            {
+              "name" : "batman"
+            }
+          """)
+        val filledSession = service.fillInSessionWithResponse(s, resp, PathResponseExtractor("name", "part-of-body"))
+        filledSession.get("last-response-status") should be("200")
+        filledSession.get("last-response-body") should be(
+          """
+            {
+              "name" : "batman"
+            }
+          """
+        )
+        filledSession.get("part-of-body") should be("batman")
       }
     }
 
