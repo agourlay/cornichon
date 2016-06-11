@@ -65,7 +65,8 @@ class OpenMovieDatabase extends CornichonFeature {
         And assert body.ignoring("Episodes", "Response").is("""
           {
             "Title": "Game of Thrones",
-            "Season": "1"
+            "Season": "1",
+            "totalSeasons" : "7"
           }
           """)
 
@@ -74,6 +75,7 @@ class OpenMovieDatabase extends CornichonFeature {
           {
             "Title": "Game of Thrones",
             "Season": "1",
+            "totalSeasons" : "7",
             "Episodes": [
               {
                 "Title": "Winter Is Coming",
