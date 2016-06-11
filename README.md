@@ -18,8 +18,10 @@ An extensible Scala DSL for testing JSON HTTP APIs.
   5. [Wrapper steps](#wrapper-steps)
   6. [Debug steps](#debug-steps)
 5. [DSL composition](#dsl-composition)
-6. [Custom steps](#custom-steps)
-7. [Placeholders](#placeholders)
+6. [Placeholders](#placeholders)
+7. [Custom steps](#custom-steps)
+  1. [Effects and Assertions](#effects-and-assertions)
+  2. [HTTP service](#http-service)
 8. [Feature options](#feature-options)
   1. [Before and after hooks](#before-and-after-hooks)
   2. [Base URL](#base-url)
@@ -585,74 +587,6 @@ class CornichonExamplesSpec extends CornichonFeature {
       
 ```
 
-## Custom steps
-
-There are two kind of ```step``` :
-- EffectStep ```Session => Session``` : It runs a side effect and populates the ```Session``` with values.
-- AssertStep ```Sesssion => StepAssertion[A]``` : Describes the expectation of the test.
-
- 
-A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
-
-A ```StepAssertion``` is simply a container for 2 values, the expected value and the actual result. The test engine is responsible to test the equality of the ```StepAssertion``` values.
- 
-The engine will try its best to provide a meaningful error message, if a specific error message is required tt is also possible to provide a custom error message using a ```DetailedStepAssertion```.
-
-```scala
- DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ String)
-```
-
-The engine will feed the actual result to the ```details``` function.
-
-In practice the simplest runnable statement in the DSL is
-
-```scala
-When I AssertStep("do nothing", s => StepAssertion(true, true))
-```
-
-Let's try to assert the result of a computation
-
-```scala
-When I AssertStep("calculate", s => StepAssertion(2 + 2, 4))
-```
-
-The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
-
-
-```scala
-When I EffectStep(
-  title = "run crazy computation",
-  action = s => {
-    val pi = piComputation()
-    s.add("result", res)
-  })
-
-Then assert AssertStep(
-  title = "check computation infos",
-  action = s => {
-    val pi = s.get("result")
-    StepAssertion(pi, 3.14)
-  })
-```
-
-This is rather low level and you not should write your steps like that directly inside the DSL.
-
-Fortunately a bunch of built-in steps and primitive building blocs are already available.
-
-Most of the time you will create your own trait containing your custom steps :
-
-```scala
-trait MySteps {
-  this: CornichonFeature ⇒
-
-  // here access all the goodies from the DSLs and the HttpService.
-}
-
-```
-
-Note for advance users: it is also possible to write custom wrapper steps.
-
-
 ## Placeholders
 
 Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the ```session```:
@@ -721,6 +655,109 @@ It becomes then possible to retrieve past values :
 - ```<name>``` always uses the latest value taken by the key.
 - ```<name[0]>``` uses the first value taken by the key
 - ```<name[1]>``` uses the second element taken by the key
+
+## Custom steps
+
+### Effects and Assertions
+
+There are two kind of ```step``` :
+- EffectStep ```Session => Session``` : It runs a side effect and populates the ```Session``` with values.
+- AssertStep ```Sesssion => StepAssertion[A]``` : Describes the expectation of the test.
+
+ 
+A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
+
+A ```StepAssertion``` is simply a container for 2 values, the expected value and the actual result. The test engine is responsible to test the equality of the ```StepAssertion``` values.
+ 
+The engine will try its best to provide a meaningful error message, if a specific error message is required it is also possible to provide a custom error message using a ```DetailedStepAssertion```.
+
+```scala
+ DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ String)
+```
+
+The engine will feed the actual result to the ```details``` function.
+
+In practice the simplest runnable statement in the DSL is
+
+```scala
+When I AssertStep("do nothing", s => StepAssertion(true, true))
+```
+
+Let's try to assert the result of a computation
+
+```scala
+When I AssertStep("calculate", s => StepAssertion(2 + 2, 4))
+```
+
+The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
+
+
+```scala
+When I EffectStep(
+  title = "run crazy computation",
+  action = s =>
+    val pi = piComputation()
+    s.add("result", res)
+  )
+
+Then assert AssertStep(
+  title = "check computation infos",
+  action = s =>
+    val pi = s.get("result")
+    StepAssertion(pi, 3.14)
+  )
+```
+
+This is rather low level and you not should write your steps like that directly inside the DSL.
+
+Fortunately a bunch of built-in steps and primitive building blocs are already available for you.
+
+Note for advance users: it is also possible to write custom wrapper steps by implementing ```WrapperStep```.
+
+
+### HTTP service
+
+Sometimes you still want to perform HTTP calls inside of custom effect steps, this is where the ```http``` service comes in handy. 
+
+In order to illustrate its usage let's take the following example, you would like to write a custom step like:
+
+```scala
+def feature = Feature("Customer endpoint"){
+
+    Scenario("create customer"){
+    
+       When I create_customer
+       
+       Then assert status.is(201)
+    
+    }
+```
+
+Most of the time you will create your own trait containing your custom steps and declare a self-type on ```CornichonFeature``` to be able to access the ```http``` service.
+
+```scala
+trait MySteps {
+  this: CornichonFeature ⇒
+
+  def create_customer = EffectStep(
+      title = "create new customer",
+      effect = s ⇒ 
+          http.Post(
+            url = "/customer",
+            payload = some_json_payload_to_define,
+            params = Seq.empty,
+            headers = Seq.empty,
+            extractor = RootExtractor("customer")
+          )(s)
+    )
+}
+
+```
+
+The built-in HTTP steps available on the DSL are actually built on top of the ```http``` service which means that you benefit from all the existing placeholder resolution features.
+
+The ```http``` service call returns effect steps that you can reuse and can be parametrized with different response extractors to fill the session automatically. 
+
 
 ## Feature options
 
