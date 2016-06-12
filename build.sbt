@@ -43,6 +43,7 @@ libraryDependencies ++= {
   val sangriaV = "0.7.0"
   val fansiV = "0.1.3"
   val akkaHttpCirce = "1.7.0"
+  val catsScalaTest = "1.3.0"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
@@ -61,6 +62,7 @@ libraryDependencies ++= {
     //,"io.circe"            %% "circe-optics"           % circeVersion  Remove if cursors are used instead or lenses for JsonPath.
     ,"de.heikoseeberger"   %% "akka-http-circe"        % akkaHttpCirce   % "test"
     ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV       % "test"
+    ,"com.ironcorelabs"    %% "cats-scalatest"         % catsScalaTest   % "test"
   )
 }
 

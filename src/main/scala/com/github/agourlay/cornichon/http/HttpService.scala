@@ -7,12 +7,14 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
-import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.json.JsonPath
+import com.github.agourlay.cornichon.json.CornichonJson._
 import io.circe.Json
 
+import scala.annotation.tailrec
 import scala.concurrent.duration._
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) extends CornichonJson {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
 
   import com.github.agourlay.cornichon.http.HttpService._
 
@@ -27,9 +29,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       r ← resolveCommonRequestParts(url, params, headers)(s)
       resp ← call(json, r._1, r._2, r._3, requestTimeout)
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
-    } yield {
-      (resp, newSession)
-    }
+    } yield (resp, newSession)
 
   private def withoutPayload(call: WithoutPayloadCall, url: String, params: Seq[(String, String)],
     headers: Seq[(String, String)], extractor: ResponseExtractor, requestTimeout: FiniteDuration, expectedStatus: Option[Int])(s: Session) =
@@ -37,17 +37,13 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       r ← resolveCommonRequestParts(url, params, headers)(s)
       resp ← call(r._1, r._2, r._3, requestTimeout)
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
-    } yield {
-      (resp, newSession)
-    }
+    } yield (resp, newSession)
 
   private def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
     for {
       resExpected ← expectStatusCode(resp, expectedStatus)
-      newSession = fillInSessionWithResponse(session, resp, extractor)
-    } yield {
-      newSession
-    }
+      newSession ← fillInSessionWithResponse(session, resp, extractor)
+    } yield newSession
 
   def resolveCommonRequestParts(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
     for {
@@ -56,17 +52,15 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
-    } yield {
-      (urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders)
-    }
+    } yield (urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders)
 
   private def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =
-    expected.fold[Xor[CornichonError, CornichonHttpResponse]](right(httpResponse)) { e ⇒
-      if (httpResponse.status == StatusCode.int2StatusCode(e))
+    expected.map { expectedStatus ⇒
+      if (httpResponse.status == StatusCode.int2StatusCode(expectedStatus))
         right(httpResponse)
       else
-        left(StatusNonExpected(e, httpResponse))
-    }
+        left(StatusNonExpected(expectedStatus, httpResponse))
+    }.getOrElse(right(httpResponse))
 
   def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Xor[CornichonError, Seq[(String, String)]] = {
     val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
@@ -117,22 +111,23 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       LastResponseHeadersKey → encodeSessionHeaders(response)
     ))
 
-  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Session = {
+  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Xor[CornichonError, Session] =
     extractor match {
       case NoOpExtraction ⇒
-        commonSessionExtraction(session, response)
+        right(commonSessionExtraction(session, response))
 
       case RootExtractor(targetKey) ⇒
-        commonSessionExtraction(session, response).addValue(targetKey, response.body)
+        right(commonSessionExtraction(session, response).addValue(targetKey, response.body))
 
       case PathExtractor(path, targetKey) ⇒
-        val extractedJson = JsonPath.run(path, response.body).fold(e ⇒ throw e, identity)
-        commonSessionExtraction(session, response).addValue(targetKey, CornichonJson.jsonStringValue(extractedJson))
+        JsonPath.run(path, response.body)
+          .map { extractedJson ⇒
+            commonSessionExtraction(session, response).addValue(targetKey, jsonStringValue(extractedJson))
+          }
     }
-  }
 
   def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
-    @scala.annotation.tailrec
+    @tailrec
     def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
       if (headers.isEmpty) right(acc)
       else {

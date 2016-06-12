@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.ActorMaterializer
 import cats.data.Xor.right
+import cats.scalatest.XorValues
 import com.github.agourlay.cornichon.core.{ Resolver, Session }
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
@@ -11,7 +12,7 @@ import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
+class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with XorValues {
 
   implicit val system = ActorSystem("akka-http-client")
   implicit val mat = ActorMaterializer()
@@ -29,17 +30,17 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
         val s = Session.newSession
         val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, NoOpExtraction)
-        filledSession.get("last-response-status") should be("200")
-        filledSession.get("last-response-body") should be("hello world")
+        filledSession.value.get("last-response-status") should be("200")
+        filledSession.value.get("last-response-body") should be("hello world")
       }
 
       "extract content with RootResponseExtraction" in {
         val s = Session.newSession
         val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, RootExtractor("copy-body"))
-        filledSession.get("last-response-status") should be("200")
-        filledSession.get("last-response-body") should be("hello world")
-        filledSession.get("copy-body") should be("hello world")
+        filledSession.value.get("last-response-status") should be("200")
+        filledSession.value.get("last-response-body") should be("hello world")
+        filledSession.value.get("copy-body") should be("hello world")
       }
 
       "extract content with PathResponseExtraction" in {
@@ -51,15 +52,15 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll {
             }
           """)
         val filledSession = service.fillInSessionWithResponse(s, resp, PathExtractor("name", "part-of-body"))
-        filledSession.get("last-response-status") should be("200")
-        filledSession.get("last-response-body") should be(
+        filledSession.value.get("last-response-status") should be("200")
+        filledSession.value.get("last-response-body") should be(
           """
             {
               "name" : "batman"
             }
           """
         )
-        filledSession.get("part-of-body") should be("batman")
+        filledSession.value.get("part-of-body") should be("batman")
       }
     }
 

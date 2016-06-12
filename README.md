@@ -117,9 +117,13 @@ class ReadmeExample extends CornichonFeature {
 
 For more examples see the following files which are part of the test pipeline:
 
+- [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala).
+
 - [OpenMovieDatabase API](https://github.com/agourlay/cornichon/blob/master/src/it/scala/com.github.agourlay.cornichon.examples/OpenMovieDatabase.scala).
 
-- [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala).
+- [DeckOfCard API](https://github.com/agourlay/cornichon/blob/master/src/it/scala/com.github.agourlay.cornichon.examples/DeckOfCard.scala).
+
+- [Star Wars API](https://github.com/agourlay/cornichon/blob/master/src/it/scala/com.github.agourlay.cornichon.examples/StarWars.scala).
 
 - [Math Operations](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/math/MathScenario.scala).
 
