@@ -121,6 +121,7 @@ For more examples see the following files which are part of the test pipeline:
 
 - [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala).
 
+- [Math Operations](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/math/MathScenario.scala).
 
 ## Structure
 
@@ -496,6 +497,24 @@ Within(maxDuration = 10 seconds) {
   Then assert status.is(200)
 }
 
+```
+
+- repeat a series of steps with different inputs specified via a datatable
+
+```scala
+WithDataInputs(
+  """
+    | a | b  | c  |
+    | 1 | 3  | 4  |
+    | 7 | 4  | 11 |
+    | 1 | -1 | 0  |
+  """
+) {
+  Then assert a_plus_b_equals_c
+}
+
+def a_plus_b_equals_c =
+  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ SimpleStepAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
 ```
 
 - WithHeaders automatically sets headers for several steps useful for authenticated scenario.

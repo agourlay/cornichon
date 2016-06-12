@@ -40,14 +40,18 @@ class Engine(executionContext: ExecutionContext) {
   def XorToStepReport(currentStep: Step, session: Session, res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean, duration: Option[Duration] = None) =
     res match {
       case Xor.Left(e) ⇒
-        val runLogs = errorLogs(title, e, depth)
-        val failedStep = FailedStep(currentStep, e)
-        FailureStepsResult(failedStep, session, runLogs)
+        exceptionToFailureStep(currentStep, session, title, depth, e)
 
       case Xor.Right(newSession) ⇒
         val runLogs = if (show) Vector(SuccessLogInstruction(title, depth, duration)) else Vector.empty
         SuccessStepsResult(newSession, runLogs)
     }
+
+  def exceptionToFailureStep(currentStep: Step, session: Session, title: String, depth: Int, e: CornichonError): FailureStepsResult = {
+    val runLogs = errorLogs(title, e, depth)
+    val failedStep = FailedStep(currentStep, e)
+    FailureStepsResult(failedStep, session, runLogs)
+  }
 
   def errorLogs(title: String, e: Throwable, depth: Int) = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)

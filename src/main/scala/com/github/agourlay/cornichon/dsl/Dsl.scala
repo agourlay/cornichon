@@ -95,6 +95,11 @@ trait Dsl {
       LogDurationStep(steps, label)
     }
 
+  def WithDataInputs(where: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      WithDataInputStep(steps, where)
+    }
+
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
     effect = s ⇒ {
