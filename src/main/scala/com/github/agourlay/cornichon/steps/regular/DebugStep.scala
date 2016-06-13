@@ -12,10 +12,11 @@ case class DebugStep(message: Session ⇒ String) extends Step {
     Try { message(session) } match {
       case Success(debugMessage) ⇒
         val runLogs = Vector(DebugLogInstruction(message(session), depth))
-        SuccessRunSteps(session, runLogs)
+        SuccessStepsResult(session, runLogs)
       case Failure(e) ⇒
         val runLogs = engine.errorLogs(title, e, depth)
-        FailedRunSteps(this, e, runLogs, session)
+        val failedStep = FailedStep.fromThrowable(this, e)
+        FailureStepsResult(failedStep, session, runLogs)
     }
   }
 }

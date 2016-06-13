@@ -8,23 +8,29 @@ import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.ws.{ TextMessage, Message, WebSocketRequest }
+import akka.http.scaladsl.model.ws.{ Message, TextMessage, WebSocketRequest }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.ConnectionContext
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, Sink, Keep, Source }
+import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+
 import com.github.agourlay.cornichon.http._
+import com.github.agourlay.cornichon.json.CornichonJson._
+
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeoutException
 import javax.net.ssl._
+
+import io.circe.Json
+import io.circe.generic.auto._
+import io.circe.syntax._
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
@@ -49,8 +55,6 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     ConnectionContext.https(ssl)
   }
 
-  implicit private val formats = DefaultFormats
-
   private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
     val request = req.withHeaders(collection.immutable.Seq(headers: _*))
     val f = Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
@@ -66,18 +70,18 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
       }
     }
 
-  implicit def JValueMarshaller: ToEntityMarshaller[JValue] =
-    Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(j ⇒ compact(render(j)))
+  implicit def JsonMarshaller: ToEntityMarshaller[Json] =
+    Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(j ⇒ j.noSpaces)
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
-  def postJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+  def postJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
     requestRunner(Post(uriBuilder(url, params), payload), headers, timeout)
 
-  def putJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+  def putJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
     requestRunner(Put(uriBuilder(url, params), payload), headers, timeout)
 
-  def patchJson(payload: JValue, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
+  def patchJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
     requestRunner(Patch(uriBuilder(url, params), payload), headers, timeout)
 
   def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
@@ -106,7 +110,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
               CornichonHttpResponse(
                 status = StatusCodes.OK,
                 headers = collection.immutable.Seq.empty[HttpHeader],
-                body = compact(render(JArray(events.map(Extraction.decompose(_)).toList)))
+                body = prettyPrint(Json.fromValues(events.map(_.asJson).toList))
               )
             }
           Await.result(r, takeWithin)
@@ -145,7 +149,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
         CornichonHttpResponse(
           status = StatusCodes.OK,
           headers = collection.immutable.Seq.empty[HttpHeader],
-          body = compact(render(JArray(received.map(Extraction.decompose(_)).toList)))
+          body = prettyPrint(Json.fromValues(received.map(_.asJson).toList))
         )
       }
     }

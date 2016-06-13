@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
@@ -14,23 +15,24 @@ class Engine(executionContext: ExecutionContext) {
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val mainRunReport = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
     if (finallySteps.isEmpty)
-      ScenarioReport(scenario.name, mainRunReport)
+      ScenarioReport.build(scenario.name, mainRunReport)
     else {
       // Reuse mainline session
       val finallyReport = runSteps(finallySteps.toVector, mainRunReport.session, Vector.empty, initMargin + 1)
-      val mergedReport = mainRunReport.merge(finallyReport)
-      ScenarioReport(scenario.name, mergedReport)
+      ScenarioReport.build(scenario.name, mainRunReport, Some(finallyReport))
     }
   }
 
-  def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsReport =
-    steps.headOption.fold[StepsReport](SuccessRunSteps(session, accLogs)) { step ⇒
-      step.run(this, session, depth) match {
-        case SuccessRunSteps(newSession, updatedLogs) ⇒
+  @tailrec
+  final def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsResult =
+    if (steps.isEmpty) SuccessStepsResult(session, accLogs)
+    else {
+      steps(0).run(this, session, depth) match {
+        case SuccessStepsResult(newSession, updatedLogs) ⇒
           val nextSteps = steps.drop(1)
           runSteps(nextSteps, newSession, accLogs ++ updatedLogs, depth)
 
-        case f: FailedRunSteps ⇒
+        case f: FailureStepsResult ⇒
           f.copy(logs = accLogs ++ f.logs)
       }
     }
@@ -38,13 +40,18 @@ class Engine(executionContext: ExecutionContext) {
   def XorToStepReport(currentStep: Step, session: Session, res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean, duration: Option[Duration] = None) =
     res match {
       case Xor.Left(e) ⇒
-        val runLogs = errorLogs(title, e, depth)
-        FailedRunSteps(currentStep, e, runLogs, session)
+        exceptionToFailureStep(currentStep, session, title, depth, e)
 
       case Xor.Right(newSession) ⇒
         val runLogs = if (show) Vector(SuccessLogInstruction(title, depth, duration)) else Vector.empty
-        SuccessRunSteps(newSession, runLogs)
+        SuccessStepsResult(newSession, runLogs)
     }
+
+  def exceptionToFailureStep(currentStep: Step, session: Session, title: String, depth: Int, e: CornichonError): FailureStepsResult = {
+    val runLogs = errorLogs(title, e, depth)
+    val failedStep = FailedStep(currentStep, e)
+    FailureStepsResult(failedStep, session, runLogs)
+  }
 
   def errorLogs(title: String, e: Throwable, depth: Int) = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)

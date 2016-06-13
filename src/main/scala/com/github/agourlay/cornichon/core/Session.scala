@@ -1,7 +1,8 @@
 package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
-import com.github.agourlay.cornichon.json.CornichonJson
+import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath, NotStringFieldError }
+import io.circe.Json
 
 import scala.collection.immutable.HashMap
 
@@ -25,9 +26,25 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
 
   def getXor(key: String, stackingIndice: Option[Int] = None) = Xor.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, this))
 
-  def getJson(key: String, stackingIndice: Option[Int] = None) = parseJson(get(key, stackingIndice))
+  def getJsonXor(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Xor[CornichonError, Json] =
+    for {
+      sessionValue ← getXor(key, stackingIndice)
+      jsonValue ← parseJson(sessionValue)
+      extracted ← Xor.catchNonFatal(JsonPath.run(path, jsonValue)).leftMap(CornichonError.fromThrowable)
+    } yield extracted
 
-  def getJsonOpt(key: String, stackingIndice: Option[Int] = None) = getOpt(key, stackingIndice).map(parseJson)
+  def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    getJsonXor(key, stackingIndice, path).fold(e ⇒ throw e, identity)
+
+  def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) = {
+    val res = for {
+      json ← getJsonXor(key, stackingIndice, path)
+      field ← Xor.fromOption(json.asString, new NotStringFieldError(json, path))
+    } yield field
+    res.fold(e ⇒ throw e, identity)
+  }
+
+  def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] = getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
 
   def getList(keys: Seq[String]) = keys.map(v ⇒ get(v))
 

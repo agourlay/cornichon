@@ -32,41 +32,43 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "2.2.6"
-  val akkaHttpV = "2.4.6"
+  val akkaHttpV = "2.4.7"
   val catsV = "0.6.0"
-  val sprayJsonV = "1.3.2"
-  val json4sV = "3.3.0"
   val logbackV = "1.1.7"
   val parboiledV = "2.1.3"
-  val akkaSseV = "1.8.0"
-  val scalacheckV = "1.12.5"
-  val sangriaV = "0.6.3"
-  val sangriaJsonV = "0.3.1"
-  val sangriaSprayJsonV = "0.3.1"
-  val fansiV = "0.1.1"
+  val akkaSseV = "1.8.1"
+  val scalaCheckV = "1.12.5"
+  val sangriaCirceV = "0.4.4"
+  val circeVersion = "0.5.0-M1"
+  val sangriaV = "0.7.0"
+  val fansiV = "0.1.3"
+  val akkaHttpCirce = "1.7.0"
+  val catsScalaTest = "1.3.0"
   Seq(
-     "com.typesafe.akka"   %% "akka-http-core"                    % akkaHttpV
-    ,"de.heikoseeberger"   %% "akka-sse"                          % akkaSseV
-    ,"org.json4s"          %% "json4s-jackson"                    % json4sV
-    ,"io.spray"            %% "spray-json"                        % sprayJsonV
-    ,"org.typelevel"       %% "cats-macros"                       % catsV
-    ,"org.typelevel"       %% "cats-core"                         % catsV
-    ,"org.scalatest"       %% "scalatest"                         % scalaTestV
-    ,"ch.qos.logback"      %  "logback-classic"                   % logbackV
-    ,"org.parboiled"       %% "parboiled"                         % parboiledV
-    ,"org.scalacheck"      %% "scalacheck"                        % scalacheckV
-    ,"com.lihaoyi"         %% "fansi"                             % fansiV
-    ,"org.sangria-graphql" %% "sangria"                           % sangriaV
-    ,"org.sangria-graphql" %% "sangria-json4s-jackson"            % sangriaJsonV
-    ,"org.sangria-graphql" %% "sangria-spray-json"                % sangriaSprayJsonV % "test"
-    ,"com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaHttpV         % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental"            % akkaHttpV         % "test"
+     "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
+    ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
+    ,"org.typelevel"       %% "cats-macros"            % catsV
+    ,"org.typelevel"       %% "cats-core"              % catsV
+    ,"org.scalatest"       %% "scalatest"              % scalaTestV
+    ,"ch.qos.logback"      %  "logback-classic"        % logbackV
+    ,"org.parboiled"       %% "parboiled"              % parboiledV
+    ,"org.scalacheck"      %% "scalacheck"             % scalaCheckV
+    ,"com.lihaoyi"         %% "fansi"                  % fansiV
+    ,"org.sangria-graphql" %% "sangria"                % sangriaV
+    ,"org.sangria-graphql" %% "sangria-circe"          % sangriaCirceV
+    ,"io.circe"            %% "circe-core"             % circeVersion
+    ,"io.circe"            %% "circe-generic"          % circeVersion
+    ,"io.circe"            %% "circe-parser"           % circeVersion
+    //,"io.circe"            %% "circe-optics"           % circeVersion  Remove if cursors are used instead or lenses for JsonPath.
+    ,"de.heikoseeberger"   %% "akka-http-circe"        % akkaHttpCirce   % "test"
+    ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV       % "test"
+    ,"com.ironcorelabs"    %% "cats-scalatest"         % catsScalaTest   % "test"
   )
 }
 
 // Wartremover
 wartremoverErrors in (Compile, compile) ++= Seq(
-  Wart.Any2StringAdd, Wart.Option2Iterable, Wart.OptionPartial,
+  Wart.Any2StringAdd, Wart.Option2Iterable,
   Wart.Return, Wart.TryPartial)
 
 // Publishing

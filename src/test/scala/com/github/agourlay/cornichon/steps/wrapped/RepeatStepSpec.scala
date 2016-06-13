@@ -22,7 +22,7 @@ class RepeatStepSpec extends WordSpec with Matchers {
         RepeatStep(nested, 5)
       )
       val s = Scenario("scenario with Repeat", steps)
-      engine.runScenario(Session.newSession)(s).stepsRunReport.isSuccess should be(false)
+      engine.runScenario(Session.newSession)(s).isSuccess should be(false)
     }
 
     "repeat steps inside a 'repeat' block" in {
@@ -41,7 +41,7 @@ class RepeatStepSpec extends WordSpec with Matchers {
         RepeatStep(nested, loop)
       )
       val s = Scenario("scenario with Repeat", steps)
-      engine.runScenario(Session.newSession)(s).stepsRunReport.isSuccess should be(true)
+      engine.runScenario(Session.newSession)(s).isSuccess should be(true)
       uglyCounter should be(loop)
     }
   }

@@ -24,7 +24,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
         RepeatDuringStep(nested, 5.millis)
       )
       val s = Scenario("scenario with RepeatDuring", steps)
-      engine.runScenario(Session.newSession)(s).stepsRunReport.isSuccess should be(false)
+      engine.runScenario(Session.newSession)(s).isSuccess should be(false)
     }
 
     "repeat steps inside 'repeatDuring' for at least the duration param" in {
@@ -42,11 +42,13 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
       )
       val s = Scenario("scenario with RepeatDuring", steps)
       val now = System.nanoTime
-      engine.runScenario(Session.newSession)(s).stepsRunReport.isSuccess should be(true)
+      engine.runScenario(Session.newSession)(s).isSuccess should be(true)
       val executionTime = Duration.fromNanos(System.nanoTime - now)
-      executionTime.gt(50.millis) should be(true)
-      // empiric values for the upper bound here
-      executionTime.lt(55.millis) should be(true)
+      withClue(executionTime.toMillis) {
+        executionTime.gt(50.millis) should be(true)
+        // empiric values for the upper bound here
+        executionTime.lt(60.millis) should be(true)
+      }
     }
 
     "repeat steps inside 'repeatDuring' at least once if they take more time than the duration param" in {
@@ -64,12 +66,13 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
       )
       val s = Scenario("scenario with RepeatDuring", steps)
       val now = System.nanoTime
-      engine.runScenario(Session.newSession)(s).stepsRunReport.isSuccess should be(true)
+      engine.runScenario(Session.newSession)(s).isSuccess should be(true)
       val executionTime = Duration.fromNanos(System.nanoTime - now)
-      //println(executionTime)
-      executionTime.gt(50.millis) should be(true)
-      // empiric values for the upper bound here
-      executionTime.lt(550.millis) should be(true)
+      withClue(executionTime.toMillis) {
+        executionTime.gt(50.millis) should be(true)
+        // empiric values for the upper bound here
+        executionTime.lt(550.millis) should be(true)
+      }
     }
   }
 

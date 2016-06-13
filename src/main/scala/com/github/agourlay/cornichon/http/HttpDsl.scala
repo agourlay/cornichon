@@ -25,16 +25,16 @@ trait HttpDsl extends Dsl {
     title = request.description,
     effect = s ⇒
     request match {
-      case Get(url, params, headers)                        ⇒ http.Get(url, params, headers)(s)
-      case Head(url, params, headers)                       ⇒ http.Head(url, params, headers)(s)
-      case Options(url, params, headers)                    ⇒ http.Options(url, params, headers)(s)
-      case Delete(url, params, headers)                     ⇒ http.Delete(url, params, headers)(s)
-      case Post(url, payload, params, headers)              ⇒ http.Post(url, payload, params, headers)(s)
-      case Put(url, payload, params, headers)               ⇒ http.Put(url, payload, params, headers)(s)
-      case Patch(url, payload, params, headers)             ⇒ http.Patch(url, payload, params, headers)(s)
-      case OpenSSE(url, takeWithin, params, headers)        ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
-      case OpenWS(url, takeWithin, params, headers)         ⇒ http.OpenWS(url, takeWithin, params, headers)(s)
-      case QueryGQL(url, payload, params, headers, _, _, _) ⇒ http.Post(url, payload, params, headers)(s)
+      case Get(url, params, headers)                   ⇒ http.Get(url, params, headers)(s)
+      case Head(url, params, headers)                  ⇒ http.Head(url, params, headers)(s)
+      case Options(url, params, headers)               ⇒ http.Options(url, params, headers)(s)
+      case Delete(url, params, headers)                ⇒ http.Delete(url, params, headers)(s)
+      case Post(url, payload, params, headers)         ⇒ http.Post(url, payload, params, headers)(s)
+      case Put(url, payload, params, headers)          ⇒ http.Put(url, payload, params, headers)(s)
+      case Patch(url, payload, params, headers)        ⇒ http.Patch(url, payload, params, headers)(s)
+      case OpenSSE(url, takeWithin, params, headers)   ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
+      case OpenWS(url, takeWithin, params, headers)    ⇒ http.OpenWS(url, takeWithin, params, headers)(s)
+      case q @ QueryGQL(url, params, headers, _, _, _) ⇒ http.Post(url, q.fullPayload, params, headers)(s)
     }
   )
 
@@ -47,7 +47,7 @@ trait HttpDsl extends Dsl {
   def open_sse(url: String, takeWithin: FiniteDuration) = OpenSSE(url, takeWithin, Seq.empty, Seq.empty)
   def open_ws(url: String, takeWithin: FiniteDuration) = OpenWS(url, takeWithin, Seq.empty, Seq.empty)
 
-  def query_gql(url: String) = QueryGQL(url, "", Seq.empty, Seq.empty, Document(List.empty))
+  def query_gql(url: String) = QueryGQL(url, Seq.empty, Seq.empty, Document(List.empty))
 
   val root = JsonPath.root
 
@@ -63,7 +63,7 @@ trait HttpDsl extends Dsl {
     val inputs = args.map {
       case (path, target) ⇒ FromSessionSetter(LastResponseBodyKey, (session, s) ⇒ {
         val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(session)
-        JsonPath.parse(resolvedPath).run(s).values.toString
+        JsonPath.parse(resolvedPath).run(s).fold(e ⇒ throw e, json ⇒ jsonStringValue(json))
       }, target)
     }
     save_from_session(inputs)
@@ -77,7 +77,7 @@ trait HttpDsl extends Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def show_key_as_json(key: String) = show_session(key, v ⇒ prettyPrint(parseJson(v)))
+  def show_key_as_json(key: String) = show_session(key, v ⇒ parseJson(v).fold(e ⇒ throw e, prettyPrint(_)))
 
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))

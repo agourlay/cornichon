@@ -3,8 +3,8 @@ package com.github.agourlay.cornichon.core
 import java.util.UUID
 
 import cats.data.Xor
-import cats.data.Xor.{ right, left }
-import com.github.agourlay.cornichon.json.JsonPath
+import cats.data.Xor.{ left, right }
+import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import org.parboiled2._
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
@@ -15,11 +15,11 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   val r = new scala.util.Random()
 
-  def findPlaceholders(input: String): List[Placeholder] =
+  def findPlaceholders(input: String): Xor[CornichonError, List[Placeholder]] =
     new PlaceholderParser(input).placeholdersRule.run() match {
-      case Failure(e: ParseError) ⇒ List.empty
-      case Failure(e: Throwable)  ⇒ throw new ResolverParsingError(e)
-      case Success(dt)            ⇒ dt.toList
+      case Failure(e: ParseError) ⇒ right(List.empty)
+      case Failure(e: Throwable)  ⇒ left(new ResolverParsingError(e))
+      case Success(dt)            ⇒ right(dt.toList)
     }
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] =
@@ -49,10 +49,11 @@ class Resolver(extractors: Map[String, Mapper]) {
     case TextMapper(key, transform) ⇒
       session.getXor(key, ph.index).map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
-      session.getXor(key, ph.index).map { sessionValue ⇒
-        // No placeholders in JsonMapper for now to avoid people running into infinite recursion
-        // Could be enabled if there is a use case for it.
-        transform(JsonPath.run(jsonPath, sessionValue).values.toString)
+      session.getXor(key, ph.index).flatMap { sessionValue ⇒
+        // No placeholders in JsonMapper to avoid accidental infinite recursions.
+        JsonPath.run(jsonPath, sessionValue)
+          .map(CornichonJson.jsonStringValue)
+          .map(transform)
       }
   }
 
@@ -65,7 +66,7 @@ class Resolver(extractors: Map[String, Mapper]) {
         } yield res
       }
 
-    loop(findPlaceholders(input), input)
+    findPlaceholders(input).flatMap(loop(_, input))
   }
 
   def fillPlaceholdersUnsafe(input: String)(session: Session): String =

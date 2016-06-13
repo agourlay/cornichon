@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.dsl.Dsl._
+import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.json.CornichonJson._
-import org.json4s.JValue
+import io.circe.Json
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
@@ -86,35 +86,33 @@ object HttpEffects {
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
   }
 
-  case class QueryGQL(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-      query: Document, operationName: Option[String] = None, variables: Option[Map[String, JValue]] = None) extends HttpRequestWithPayload {
-    val name = "Query GQL"
+  case class QueryGQL(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
+      query: Document, operationName: Option[String] = None, variables: Option[Map[String, Json]] = None) extends HttpRequestWithPayload {
+    val name = "POST GraphQL query"
 
     def withParams(params: (String, String)*) = copy(params = params)
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
 
-    //GQL builder
-    def withQuery(query: Document) = copy(query = query).buildBody()
-    def withOperationName(operationName: String) = copy(operationName = Some(operationName)).buildBody()
+    def withQuery(query: Document) = copy(query = query)
+    def withOperationName(operationName: String) = copy(operationName = Some(operationName))
     def withVariables(newVariables: (String, Any)*) = {
-      val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJson(v) }
-      copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples))).buildBody()
+      val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }
+      copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples)))
     }
 
-    def buildBody() = {
+    // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
+    lazy val payload = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
 
-      import org.json4s.Extraction
-      import org.json4s.FieldSerializer
+    lazy val fullPayload = {
+      import io.circe.generic.auto._
+      import io.circe.syntax._
 
-      implicit val formats = org.json4s.DefaultFormats + FieldSerializer[GqlPayload]()
-
-      val queryDoc = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
-      val newPayload = GqlPayload(queryDoc, operationName, variables)
-      copy(payload = prettyPrint(Extraction.decompose(newPayload)))
+      val gqlPayload = GqlPayload(payload, operationName, variables)
+      prettyPrint(gqlPayload.asJson)
     }
   }
 
-  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, JValue]])
+  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, Json]])
 
   sealed trait HttpRequestStreamed extends HttpRequest {
     def takeWithin: FiniteDuration

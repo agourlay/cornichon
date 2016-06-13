@@ -14,11 +14,11 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
     @tailrec
-    def retryMaxSteps(steps: Vector[Step], session: Session, limit: Int, accLogs: Vector[LogInstruction], retriesNumber: Long, depth: Int): (Long, StepsReport) = {
+    def retryMaxSteps(steps: Vector[Step], session: Session, limit: Int, accLogs: Vector[LogInstruction], retriesNumber: Long, depth: Int): (Long, StepsResult) = {
       engine.runSteps(steps, session, Vector.empty, depth) match {
-        case s @ SuccessRunSteps(_, sLogs) ⇒
+        case s @ SuccessStepsResult(_, sLogs) ⇒
           (retriesNumber, s.copy(logs = accLogs ++ sLogs))
-        case f @ FailedRunSteps(_, _, eLogs, fSession) ⇒
+        case f @ FailureStepsResult(_, fSession, eLogs) ⇒
           if (limit > 0)
             // In case of success all logs are returned but they are not printed by default.
             retryMaxSteps(steps, session, limit - 1, accLogs ++ eLogs, retriesNumber + 1, depth)
@@ -35,12 +35,13 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
     val (retries, report) = repeatRes
 
     report match {
-      case s: SuccessRunSteps ⇒
+      case s: SuccessStepsResult ⇒
         val fullLogs = successTitleLog(depth) +: report.logs :+ SuccessLogInstruction(s"RetryMax block with limit '$limit' succeeded after '$retries' retries", depth, Some(executionTime))
-        SuccessRunSteps(report.session, fullLogs)
-      case f: FailedRunSteps ⇒
+        SuccessStepsResult(report.session, fullLogs)
+      case f: FailureStepsResult ⇒
         val fullLogs = failedTitleLog(depth) +: report.logs :+ FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime))
-        FailedRunSteps(f.step, RetryMaxBlockReachedLimit, fullLogs, report.session)
+        val failedStep = FailedStep(f.failedStep.step, RetryMaxBlockReachedLimit)
+        FailureStepsResult(failedStep, report.session, fullLogs)
     }
   }
 }

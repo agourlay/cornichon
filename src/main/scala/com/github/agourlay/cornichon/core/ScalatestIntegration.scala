@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.core.LogInstruction._
 import org.scalatest.{ BeforeAndAfterAll, ParallelTestExecution, WordSpecLike }
 
-import scala.Console._
 import scala.util.{ Failure, Success, Try }
 
 trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
@@ -42,34 +42,28 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
             s.name ignore {}
           else
             s.name in {
-              val scenarioReport = runScenario(s)
-              scenarioReport.stepsRunReport match {
-                case SuccessRunSteps(newSession, logs) ⇒
+              runScenario(s) match {
+                case SuccessScenarioReport(_, _, logs) ⇒
                   // In case of success, logs are only shown if the scenario contains DebugLogInstruction
                   if (logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty) printLogs(logs)
                   assert(true)
-                case FailedRunSteps(_, _, logs, _) ⇒
+                case f @ FailureScenarioReport(_, _, _, logs) ⇒
                   printLogs(logs)
                   fail(
                     s"""
-                       |${scenarioReport.msg}
+                       |${f.msg}
                        |replay only this scenario with:
-                       |${replayCmd(feat.name, s.name)}
+                       |${scalaTestReplayCmd(feat.name, s.name)}
+                       |
                        |""".stripMargin
                   )
               }
             }
         }
       }
-
   }
 
-  private def replayCmd(featureName: String, scenarioName: String) =
+  private def scalaTestReplayCmd(featureName: String, scenarioName: String) =
     s"""testOnly *${this.getClass.getSimpleName} -- -t "$featureName should $scenarioName" """
-
-  private def printLogs(logs: Seq[LogInstruction]): Unit = {
-    logs.foreach(l ⇒ println(l.colorized))
-    print('\n')
-  }
 
 }

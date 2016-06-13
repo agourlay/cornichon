@@ -15,8 +15,8 @@ case class LogDurationStep(nested: Vector[Step], label: String) extends WrapperS
     }
     val fullLogs = titleLog +: repeatRes.logs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime))
     repeatRes match {
-      case s: SuccessRunSteps ⇒ s.copy(logs = fullLogs)
-      case f: FailedRunSteps  ⇒ f.copy(logs = fullLogs)
+      case s: SuccessStepsResult ⇒ s.copy(logs = fullLogs)
+      case f: FailureStepsResult ⇒ f.copy(logs = fullLogs)
     }
   }
 
