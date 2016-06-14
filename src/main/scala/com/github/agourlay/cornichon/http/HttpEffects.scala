@@ -16,9 +16,11 @@ object HttpEffects {
 
     def params: Seq[(String, String)]
     def withParams(params: (String, String)*): HttpRequest
+    def addParams(params: (String, String)*): HttpRequest
 
     def headers: Seq[(String, String)]
-    def withHeaders(params: (String, String)*): HttpRequest
+    def withHeaders(headers: (String, String)*): HttpRequest
+    def addHeaders(headers: (String, String)*): HttpRequest
 
     def description: String = {
       val base = s"$name $url"
@@ -33,28 +35,40 @@ object HttpEffects {
     val name = "GET"
 
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
   case class Head(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
     val name = "HEAD"
 
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
   case class Options(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
     val name = "OPTIONS"
 
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
   case class Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequest {
     val name = "DELETE"
 
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
   }
 
@@ -71,19 +85,28 @@ object HttpEffects {
   case class Post(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestWithPayload {
     val name = "POST"
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
   case class Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestWithPayload {
     val name = "PUT"
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
   case class Patch(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestWithPayload {
     val name = "PATCH"
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
   case class QueryGQL(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
@@ -91,7 +114,10 @@ object HttpEffects {
     val name = "POST GraphQL query"
 
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
     def withQuery(query: Document) = copy(query = query)
     def withOperationName(operationName: String) = copy(operationName = Some(operationName))
@@ -121,13 +147,19 @@ object HttpEffects {
   case class OpenSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestStreamed {
     val name = "Open SSE"
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
   case class OpenWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)]) extends HttpRequestStreamed {
     val name = "Open WS"
     def withParams(params: (String, String)*) = copy(params = params)
+    def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
     def withHeaders(headers: (String, String)*) = copy(headers = headers)
+    def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
   }
 
 }
