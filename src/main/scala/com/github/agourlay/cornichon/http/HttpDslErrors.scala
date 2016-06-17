@@ -7,6 +7,7 @@ import com.github.agourlay.cornichon.util.Formats._
 
 object HttpDslErrors {
 
+  //TODO negate
   def statusError(expected: Int, body: String): Int ⇒ String = actual ⇒ {
     s"""expected '$expected' but actual is '$actual' with response body:
       |${prettyPrint(parseJsonUnsafe(body))}""".stripMargin
