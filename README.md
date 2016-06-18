@@ -611,6 +611,8 @@ class CornichonExamplesSpec extends CornichonFeature {
       
 ```
 
+It is possible to give a title to an attached bloc using ```AttachAs(title)```.
+
 ## Placeholders
 
 Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the ```session```:
