@@ -241,7 +241,7 @@ object HttpAssertions {
       containsInSession(title, elements)
     }
 
-    def containsInSession[A](title: String, elements: Seq[A]): AssertStep[Boolean] = {
+    private def containsInSession(title: String, elements: Seq[A]): AssertStep[Boolean] = {
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,
