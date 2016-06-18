@@ -26,8 +26,6 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert status.is(200)
 
-        Then assert status.not(201)
-
         And assert body.is(
           """
           {

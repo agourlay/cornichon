@@ -5,12 +5,6 @@ import com.github.agourlay.cornichon.steps.regular.AssertStep
 
 trait AssertionStep[A, B] {
   def is(expected: A): AssertStep[B]
-
-  // Convenient negation - title is not bulletproof though.
-  def not(expected: A): AssertStep[B] = {
-    val s = is(expected)
-    s.copy(negate = true, title = s.title.replace(" is ", " is not "))
-  }
 }
 
 trait CollectionAssertionStep[A, B] {

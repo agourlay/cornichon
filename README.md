@@ -159,29 +159,30 @@ A ```scenario``` will stop at the first failed step encountered and ignore the r
 
 ## DSL
 
-Statements start with one of the prefixes below followed by a ```step``` definition :
+The structure of a statement is the following:
 
-* Given 
-  - I ```step```
-  - a ```step```
-  
-* When
-  - I ```step```
-  - a ```step```
-  
-* And 
-  - I ```step```
-  - a ```step```
-  - assert ```step```
-  - assert_not ```step``` (expects the step to fail)
-  
-* Then 
-  - I ```step```
-  - a ```step```
-  - assert ```step```
-  - assert_not ```step``` (expects the step to fail)
+1 - starts with either ```Given``` - ```When``` - ```And``` - ```Then```
+
+2 - followed by any single word (could be several words wrapped in backticks)
+
+3 - ending with a ```step``` definition
+
+For example :
+
+```scala
+Given I step_definition
+
+When a step_definition
+
+And \`another really important\` step_definition
+
+Then assert step_definition
+
+```
 
 Those prefixes do not change the behaviour of the steps and are here to improve readability.
+
+This structure was chosen to increase the freedom of customisation while still benefiting from Scala's infix notation.
 
 The usage pattern is often to first run a ```step``` with a side effect then assert an expected state in a second ```step```.
 
