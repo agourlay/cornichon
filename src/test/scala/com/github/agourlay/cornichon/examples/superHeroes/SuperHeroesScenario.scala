@@ -353,7 +353,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.hasSize(4)
 
-        And assert_not body.asArray.contains(
+        And assert body.asArray.not_contains(
           """
           {
             "name": "IronMan",
@@ -657,7 +657,7 @@ class SuperHeroesScenario extends CornichonFeature {
     }
 
   def superhero_exists(name: String) =
-    Attach {
+    AttachAs("superhero exits") {
       When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
       Then I show_session
       Then assert status.is(200)

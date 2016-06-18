@@ -229,9 +229,19 @@ object HttpAssertions {
         )
     }
 
+    def not_contains(elements: A*) = {
+      val prettyElements = elements.mkString(" and ")
+      val title = if (jsonPath == JsonPath.root) s"response body array does not contain $prettyElements" else s"response body's array '$jsonPath' does not contain $prettyElements"
+      containsInSession(title, elements).copy(negate = true)
+    }
+
     def contains(elements: A*) = {
       val prettyElements = elements.mkString(" and ")
       val title = if (jsonPath == JsonPath.root) s"response body array contains $prettyElements" else s"response body's array '$jsonPath' contains $prettyElements"
+      containsInSession(title, elements)
+    }
+
+    private def containsInSession(title: String, elements: Seq[A]): AssertStep[Boolean] = {
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,

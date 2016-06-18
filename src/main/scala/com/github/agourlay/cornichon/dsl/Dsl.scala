@@ -8,6 +8,7 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
+import scala.language.dynamics
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 trait Dsl {
@@ -18,45 +19,30 @@ trait Dsl {
   def Scenario(name: String, ignored: Boolean = false) =
     BodyElementCollector[Step, Scenario](steps ⇒ ScenarioDef(name, steps, ignored))
 
-  sealed trait Starters {
+  sealed trait Starters extends Dynamic {
     def name: String
 
-    def I(steps: Seq[Step]) = steps
-
-    def I(step: Step) = step
-
-    def I[A](step: EffectStep) =
-      step.copy(s"$name I ${step.title}")
-
-    def a[A](step: EffectStep) =
-      step.copy(s"$name a ${step.title}")
-
-    def I(ds: DebugStep) = ds
+    def applyDynamic(mandatoryWord: String)(step: Step) = step match {
+      case e: EffectStep    ⇒ e.copy(s"$name $mandatoryWord ${e.title}")
+      case a: AssertStep[_] ⇒ a.copy(s"$name $mandatoryWord ${a.title}")
+      case a: AttachAsStep  ⇒ a.copy(s"$name $mandatoryWord ${a.title}")
+      case _                ⇒ step
+    }
   }
 
   case object When extends Starters { val name = "When" }
   case object Given extends Starters { val name = "Given" }
+  case object Then extends Starters { val name = "Then" }
+  case object And extends Starters { val name = "And" }
 
-  sealed trait WithAssert {
-    self: Starters ⇒
+  def Attach: BodyElementCollector[Step, Step] =
+    BodyElementCollector[Step, Step] { steps ⇒
+      AttachStep(nested = steps)
+    }
 
-    def assert(steps: Seq[Step]) = steps
-
-    def assert(step: Step) = step
-
-    def assert[A](step: AssertStep[A]) =
-      step.copy(s"$name assert ${step.title}")
-
-    def assert_not[A](step: AssertStep[A]) =
-      step.copy(s"$name assert not ${step.title}").copy(negate = true)
-  }
-
-  case object Then extends Starters with WithAssert { val name = "Then" }
-  case object And extends Starters with WithAssert { val name = "And" }
-
-  def Attach =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      steps
+  def AttachAs(title: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      AttachAsStep(title, steps)
     }
 
   def Repeat(times: Int) =
