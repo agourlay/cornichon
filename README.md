@@ -58,7 +58,10 @@ class ReadmeExample extends CornichonFeature {
 
      Scenario("list GOT season 1 episodes"){
      
-        When I get("http://www.omdbapi.com").withParams("t" -> "Game of Thrones", "Season" -> "1")
+        When I get("http://www.omdbapi.com").withParams(
+          "t" -> "Game of Thrones",
+          "Season" -> "1"
+        )
    
         Then assert status.is(200)
    
@@ -72,17 +75,17 @@ class ReadmeExample extends CornichonFeature {
    
         And assert body.path("Episodes").is(
           """
-            |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
-            | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
-            | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "7.8"   | "tt1668746" |
-            | "Lord Snow"                             | "2011-05-01" |   "3"   |    "7.6"   | "tt1829962" |
-            | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "7.7"   | "tt1829963" |
-            | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "8.0"   | "tt1829964" |
-            | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
-            | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
-            | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
-            | "Baelor"                                | "2011-06-12" |   "9"   |    "8.6"   | "tt1851398" |
-            | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
+          |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
+          | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
+          | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "7.8"   | "tt1668746" |
+          | "Lord Snow"                             | "2011-05-01" |   "3"   |    "7.6"   | "tt1829962" |
+          | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "7.7"   | "tt1829963" |
+          | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "8.0"   | "tt1829964" |
+          | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
+          | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
+          | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
+          | "Baelor"                                | "2011-06-12" |   "9"   |    "8.6"   | "tt1851398" |
+          | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
           """)
    
         And assert body.path("Episodes").asArray.hasSize(10)
@@ -131,9 +134,9 @@ For more examples see the following files which are part of the test pipeline:
 
 A Cornichon test is the definition of a so-called ```feature```. 
 
-A ```feature``` can have several ```scenarios``` which can have several ```steps```.
+A ```feature``` can have several ```scenarios``` which in turn can have several ```steps```.
 
-In the example below, we have one ```feature``` with one ```scenario``` with two ```steps```.
+The example below contains one ```feature``` with one ```scenario``` with two ```steps```.
 
 ```scala
 class CornichonExamplesSpec extends CornichonFeature {
@@ -150,22 +153,35 @@ class CornichonExamplesSpec extends CornichonFeature {
 }
 ```
 
-A ```feature``` fails - if one or more ```scenarios``` fail.
+The failure modes are the following:
 
-A ```scenario``` fails - if at least one ```step``` fails.
 
-A ```scenario``` will stop at the first failed step encountered and ignore the remaining ```steps```.
+- A ```feature``` fails if one or more ```scenarios``` fail.
+
+- A ```scenario``` fails if at least one ```step``` fails.
+
+- A ```scenario``` will stop at the first failed step encountered and ignore the remaining ```steps```.
 
 
 ## DSL
 
-The structure of a statement is the following:
+The content of a ```feature``` is described using a domain-specific language (DSL) providing a clear structure for statement definitions.
+
+The structure of a step statement is the following:
 
 1 - starts with either ```Given``` - ```When``` - ```And``` - ```Then```
 
+The prefixes do not change the behaviour of the steps but are present to improve the readability.
+
+
 2 - followed by any single word (could be several words wrapped in backticks)
 
+This structure was chosen to increase the freedom of customisation while still benefiting from Scala's infix notation.
+
+
 3 - ending with a ```step``` definition
+
+The usage pattern is often to first run a ```step``` with a side effect then assert an expected state in a second ```step```.
 
 For example :
 
@@ -180,11 +196,8 @@ Then assert step_definition
 
 ```
 
-Those prefixes do not change the behaviour of the steps and are here to improve readability.
+```step_definition``` stands here for any object of type ```Step```, those can be manually defined or simply built-in in Cornichon.
 
-This structure was chosen to increase the freedom of customisation while still benefiting from Scala's infix notation.
-
-The usage pattern is often to first run a ```step``` with a side effect then assert an expected state in a second ```step```.
 
 ## Built-in steps
 

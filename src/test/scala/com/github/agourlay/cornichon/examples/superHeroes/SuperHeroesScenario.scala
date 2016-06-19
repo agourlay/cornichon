@@ -657,7 +657,7 @@ class SuperHeroesScenario extends CornichonFeature {
     }
 
   def superhero_exists(name: String) =
-    AttachAs("superhero exits") {
+    AttachAs("superhero exists") {
       When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
       Then I show_session
       Then assert status.is(200)
