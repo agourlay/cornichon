@@ -175,7 +175,7 @@ class HttpAPI() extends EventStreamMarshalling {
             val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
             val vars = obj.flatMap(_("variables")).getOrElse(Json.fromJsonObject(JsonObject.empty))
 
-            query.fold(complete(BadRequest, Json.obj("error" → Json.fromString("Query is required")))) { q ⇒
+            query.fold(complete(BadRequest → Json.obj("error" → Json.fromString("Query is required")))) { q ⇒
 
               QueryParser.parse(q) match {
 
@@ -197,7 +197,7 @@ class HttpAPI() extends EventStreamMarshalling {
 
                 // can't parse GraphQL query, return error
                 case Failure(error) ⇒
-                  complete(BadRequest, Json.obj("error" → Json.fromString(error.getMessage)))
+                  complete(BadRequest → Json.obj("error" → Json.fromString(error.getMessage)))
               }
 
             }
