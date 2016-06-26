@@ -13,11 +13,15 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.ConnectionContext
 import akka.stream.Materializer
 import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+import akka.http.scaladsl.model.{ HttpRequest ⇒ AkkaHttpRequest }
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 
 import com.github.agourlay.cornichon.http._
+import com.github.agourlay.cornichon.http.HttpMethod
+import com.github.agourlay.cornichon.http.HttpMethods._
+import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
 
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
@@ -55,13 +59,24 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     ConnectionContext.https(ssl)
   }
 
-  private def requestRunner(req: HttpRequest, headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
-    val request = req.withHeaders(collection.immutable.Seq(headers: _*))
+  def httpMethodMapper(method: HttpMethod) = method match {
+    case DELETE  ⇒ Delete
+    case GET     ⇒ Get
+    case HEAD    ⇒ Head
+    case OPTIONS ⇒ Options
+    case PATCH   ⇒ Patch
+    case POST    ⇒ Post
+    case PUT     ⇒ Put
+  }
+
+  def runRequest(method: HttpMethod, url: String, payload: Option[Json], params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) = {
+    val requestBuilder = httpMethodMapper(method)
+    val request = requestBuilder(uriBuilder(url, params), payload).withHeaders(collection.immutable.Seq(headers: _*))
     val f = Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
     waitForRequestFuture(request, f, timeout)
   }
 
-  private def waitForRequestFuture(initialRequest: HttpRequest, f: Future[Xor[HttpError, CornichonHttpResponse]], t: FiniteDuration): Xor[HttpError, CornichonHttpResponse] =
+  private def waitForRequestFuture(initialRequest: AkkaHttpRequest, f: Future[Xor[HttpError, CornichonHttpResponse]], t: FiniteDuration): Xor[HttpError, CornichonHttpResponse] =
     Try { Await.result(f, t) } match {
       case Success(s) ⇒ s
       case Failure(failure) ⇒ failure match {
@@ -75,26 +90,10 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
-  def postJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
-    requestRunner(Post(uriBuilder(url, params), payload), headers, timeout)
-
-  def putJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
-    requestRunner(Put(uriBuilder(url, params), payload), headers, timeout)
-
-  def patchJson(payload: Json, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
-    requestRunner(Patch(uriBuilder(url, params), payload), headers, timeout)
-
-  def deleteJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
-    requestRunner(Delete(uriBuilder(url, params)), headers, timeout)
-
-  def getJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
-    requestRunner(Get(uriBuilder(url, params)), headers, timeout)
-
-  def headJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
-    requestRunner(Head(uriBuilder(url, params)), headers, timeout)
-
-  def optionsJson(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration) =
-    requestRunner(Options(uriBuilder(url, params)), headers, timeout)
+  def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = stream match {
+    case SSE ⇒ openSSE(url, params, headers, takeWithin)
+    case WS  ⇒ openWS(url, params, headers, takeWithin)
+  }
 
   def openSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
     val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))

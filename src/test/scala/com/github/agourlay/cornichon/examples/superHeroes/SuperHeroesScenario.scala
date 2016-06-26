@@ -132,7 +132,7 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        When I post("/superheroes", payload =
+        When I post("/superheroes").withPayload(
           """
           {
             "name": "Scalaman",
@@ -145,14 +145,15 @@ class SuperHeroesScenario extends CornichonFeature {
               "location":"Burbank, California"
             }
           }
-          """).withParams("sessionId" → "<session-id>")
+          """
+        ).withParams("sessionId" → "<session-id>")
 
         Then assert status.is(401)
 
         Then assert body.is("The resource requires authentication, which was not supplied with the request")
 
         // Try again with authentication
-        When I post("/superheroes", payload =
+        When I post("/superheroes").withPayload(
           """
           {
             "name": "Scalaman",
@@ -165,7 +166,8 @@ class SuperHeroesScenario extends CornichonFeature {
               "location":"Burbank, California"
             }
           }
-          """)
+          """
+        )
           .withParams("sessionId" → "<session-id>")
           .withHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8))))
 
@@ -199,8 +201,12 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         WithBasicAuth("admin", "cornichon") {
-          When I put("/superheroes", payload =
-            """
+          When I put("/superheroes").withParams(
+            "sessionId" → "<session-id>"
+          ).withHeaders(
+              "Accept-Encoding" → "gzip"
+            ).withPayload(
+                """
             {
               "name": "Scalaman",
               "realName": "Oleg Ilyenko",
@@ -212,7 +218,8 @@ class SuperHeroesScenario extends CornichonFeature {
                 "location":"Burbank, California"
               }
             }
-            """).withParams("sessionId" → "<session-id>").withHeaders("Accept-Encoding" → "gzip")
+            """
+              )
 
           Then assert headers.contain("Content-Encoding" → "gzip")
 
@@ -689,7 +696,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
   // List of Steps to be executed after each scenario
   beforeEachScenario(
-    When I post("/session", ""),
+    When I post("/session"),
     And I save_body_path(root → "session-id")
   )
 

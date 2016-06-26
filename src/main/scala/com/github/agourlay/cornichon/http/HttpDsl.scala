@@ -8,7 +8,8 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertions._
-import com.github.agourlay.cornichon.http.HttpEffects._
+import com.github.agourlay.cornichon.http.HttpMethods._
+import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.steps.regular.EffectStep
@@ -21,33 +22,24 @@ trait HttpDsl extends Dsl {
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  implicit def toStep(request: HttpRequest): EffectStep = EffectStep(
-    title = request.description,
-    effect = s ⇒
-    request match {
-      case Get(url, params, headers)                   ⇒ http.Get(url, params, headers)(s)
-      case Head(url, params, headers)                  ⇒ http.Head(url, params, headers)(s)
-      case Options(url, params, headers)               ⇒ http.Options(url, params, headers)(s)
-      case Delete(url, params, headers)                ⇒ http.Delete(url, params, headers)(s)
-      case Post(url, payload, params, headers)         ⇒ http.Post(url, payload, params, headers)(s)
-      case Put(url, payload, params, headers)          ⇒ http.Put(url, payload, params, headers)(s)
-      case Patch(url, payload, params, headers)        ⇒ http.Patch(url, payload, params, headers)(s)
-      case OpenSSE(url, takeWithin, params, headers)   ⇒ http.OpenSSE(url, takeWithin, params, headers)(s)
-      case OpenWS(url, takeWithin, params, headers)    ⇒ http.OpenWS(url, takeWithin, params, headers)(s)
-      case q @ QueryGQL(url, params, headers, _, _, _) ⇒ http.Post(url, q.fullPayload, params, headers)(s)
-    }
-  )
+  implicit def toStep(request: HttpRequest): EffectStep = http.requestEffect(request)
 
-  def get(url: String) = Get(url, Seq.empty, Seq.empty)
-  def delete(url: String) = Delete(url, Seq.empty, Seq.empty)
+  def get(url: String) = HttpRequest(GET, url, None, Seq.empty, Seq.empty)
+  def head(url: String) = HttpRequest(HEAD, url, None, Seq.empty, Seq.empty)
+  def options(url: String) = HttpRequest(OPTIONS, url, None, Seq.empty, Seq.empty)
+  def delete(url: String) = HttpRequest(DELETE, url, None, Seq.empty, Seq.empty)
+  def post(url: String) = HttpRequest(POST, url, None, Seq.empty, Seq.empty)
+  def put(url: String) = HttpRequest(PUT, url, None, Seq.empty, Seq.empty)
+  def patch(url: String) = HttpRequest(PATCH, url, None, Seq.empty, Seq.empty)
 
-  def post(url: String, payload: String) = Post(url, payload, Seq.empty, Seq.empty)
-  def put(url: String, payload: String) = Put(url, payload, Seq.empty, Seq.empty)
+  implicit def toStep(request: HttpStreamedRequest): EffectStep = http.streamEffect(request)
 
-  def open_sse(url: String, takeWithin: FiniteDuration) = OpenSSE(url, takeWithin, Seq.empty, Seq.empty)
-  def open_ws(url: String, takeWithin: FiniteDuration) = OpenWS(url, takeWithin, Seq.empty, Seq.empty)
+  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
+  def open_ws(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(WS, url, takeWithin, Seq.empty, Seq.empty)
 
-  def query_gql(url: String) = QueryGQL(url, Seq.empty, Seq.empty, Document(List.empty))
+  implicit def toStep(query: QueryGQL): EffectStep = http.queryGqlEffect(query)
+
+  def query_gql(url: String) = QueryGQL(url, Document(List.empty))
 
   val root = JsonPath.root
 

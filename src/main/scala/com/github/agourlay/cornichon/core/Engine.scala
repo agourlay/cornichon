@@ -25,8 +25,9 @@ class Engine(executionContext: ExecutionContext) {
 
   @tailrec
   final def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsResult =
-    if (steps.isEmpty) SuccessStepsResult(session, accLogs)
-    else {
+    if (steps.isEmpty)
+      SuccessStepsResult(session, accLogs)
+    else
       steps(0).run(this, session, depth) match {
         case SuccessStepsResult(newSession, updatedLogs) ⇒
           val nextSteps = steps.drop(1)
@@ -35,7 +36,6 @@ class Engine(executionContext: ExecutionContext) {
         case f: FailureStepsResult ⇒
           f.copy(logs = accLogs ++ f.logs)
       }
-    }
 
   def XorToStepReport(currentStep: Step, session: Session, res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean, duration: Option[Duration] = None) =
     res.fold(

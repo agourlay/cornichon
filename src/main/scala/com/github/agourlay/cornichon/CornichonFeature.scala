@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   import com.github.agourlay.cornichon.CornichonFeature._
 
-  private val (globalClient, ec) = globalRuntime
+  private lazy val (globalClient, ec) = globalRuntime
   private val engine = new Engine(ec)
 
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
