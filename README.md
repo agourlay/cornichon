@@ -206,24 +206,24 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 
 ### HTTP effects
 
-- GET, DELETE, HEAD and OPTIONS share the same signature
+- GET, DELETE, HEAD, OPTIONS, POST, PUT and PATCH use the same request builder for request's body, URL parameters and headers.
 
 ```scala
-get("http://superhero.io/daredevil")
+head("http://superhero.io/daredevil")
 
-get("http://superhero.io/daredevil").withParams("firstParam" → "value1", "secondParam" → "value2")
+get("http://superhero.io/daredevil").withParams(
+  "firstParam" → "value1",
+  "secondParam" → "value2")
 
 delete("http://superhero.io/daredevil").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
-```
 
-- POST, PUT and PATCH share the same signature
+post("http://superhero.io/batman").withBody("JSON description of Batman goes here")
 
-```scala
-post("http://superhero.io/batman", "JSON description of Batman goes here")
+put("http://superhero.io/batman").withBody("JSON description of Batman goes here").withParams(
+  "firstParam" → "value1",
+  "secondParam" → "value2")
 
-put("http://superhero.io/batman", "JSON description of Batman goes here").withParams("firstParam" → "value1", "secondParam" → "value2")
-
-post("http://superhero.io/batman", "JSON description of Batman goes here").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
+patch("http://superhero.io/batman").withBody("JSON description of Batman goes here")
 ```
 
 
@@ -680,7 +680,8 @@ It is also possible to inject random values inside placeholders using:
 - ```<timestamp>``` for the current timestamp
 
 ```scala
-post("http://url.io/somethingWithAnId", payload = """
+post("http://url.io/somethingWithAnId").withBody(
+"""
   {
     "id" : "<random-uuid>"
   }
@@ -780,14 +781,14 @@ trait MySteps {
 
   def create_customer = EffectStep(
       title = "create new customer",
-      effect = s ⇒ 
-          http.Post(
-            url = "/customer",
-            payload = some_json_payload_to_define,
-            params = Seq.empty,
-            headers = Seq.empty,
-            extractor = RootExtractor("customer")
-          )(s)
+      effect =
+          http.post(
+              url = "/customer",
+              body = some_json_payload_to_define,
+              params = Seq.empty,
+              headers = Seq.empty,
+              extractor = RootExtractor("customer")
+          )
     )
 }
 

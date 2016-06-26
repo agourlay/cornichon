@@ -26,11 +26,11 @@ trait BaseRequest {
 
   def description: String
 
-  def paramsTitle = if (params.isEmpty) "" else s" with params ${displayTuples(params)}"
+  def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${displayTuples(params)}"
   def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayTuples(headers)}"
 }
 
-case class HttpRequest(method: HttpMethod, url: String, payload: Option[String], params: Seq[(String, String)], headers: Seq[(String, String)])
+case class HttpRequest(method: HttpMethod, url: String, body: Option[String], params: Seq[(String, String)], headers: Seq[(String, String)])
     extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
@@ -39,11 +39,11 @@ case class HttpRequest(method: HttpMethod, url: String, payload: Option[String],
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
-  def withPayload(payload: String) = copy(payload = Some(payload))
+  def withBody(body: String) = copy(body = Some(body))
 
   def description: String = {
     val base = s"${method.name} $url"
-    val payloadTitle = payload.fold("")(p ⇒ s" with payload $p")
+    val payloadTitle = body.fold("")(p ⇒ s" with body $p")
     base + payloadTitle + paramsTitle + headersTitle
   }
 }
@@ -51,8 +51,8 @@ case class HttpRequest(method: HttpMethod, url: String, payload: Option[String],
 case class HttpStream(name: String)
 
 object HttpStreams {
-  val SSE = HttpStream("SSE")
-  val WS = HttpStream("WS")
+  val SSE = HttpStream("Server-Sent-Event")
+  val WS = HttpStream("WebSocket")
 }
 
 case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])
@@ -71,10 +71,11 @@ case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: Fini
 }
 
 case class QueryGQL(url: String, query: Document, operationName: Option[String] = None, variables: Option[Map[String, Json]] = None) {
-  val name = "POST GraphQL query"
 
   def withQuery(query: Document) = copy(query = query)
+
   def withOperationName(operationName: String) = copy(operationName = Some(operationName))
+
   def withVariables(newVariables: (String, Any)*) = {
     val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }
     copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples)))

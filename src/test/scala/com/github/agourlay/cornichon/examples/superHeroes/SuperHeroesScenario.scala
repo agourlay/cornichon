@@ -132,7 +132,28 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        When I post("/superheroes").withPayload(
+        When I post("/superheroes").withParams(
+          "sessionId" → "<session-id>"
+        ).withBody("""
+          {
+            "name": "Scalaman",
+            "realName": "Oleg Ilyenko",
+            "city": "Berlin",
+            "hasSuperpowers": false,
+            "publisher":{
+              "name":"DC",
+              "foundationYear":1934,
+              "location":"Burbank, California"
+            }
+          }
+          """)
+
+        Then assert status.is(401)
+
+        Then assert body.is("The resource requires authentication, which was not supplied with the request")
+
+        // Try again with authentication
+        When I post("/superheroes").withBody(
           """
           {
             "name": "Scalaman",
@@ -147,28 +168,6 @@ class SuperHeroesScenario extends CornichonFeature {
           }
           """
         ).withParams("sessionId" → "<session-id>")
-
-        Then assert status.is(401)
-
-        Then assert body.is("The resource requires authentication, which was not supplied with the request")
-
-        // Try again with authentication
-        When I post("/superheroes").withPayload(
-          """
-          {
-            "name": "Scalaman",
-            "realName": "Oleg Ilyenko",
-            "city": "Berlin",
-            "hasSuperpowers": false,
-            "publisher":{
-              "name":"DC",
-              "foundationYear":1934,
-              "location":"Burbank, California"
-            }
-          }
-          """
-        )
-          .withParams("sessionId" → "<session-id>")
           .withHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8))))
 
         Then assert status.is(201)
@@ -205,7 +204,7 @@ class SuperHeroesScenario extends CornichonFeature {
             "sessionId" → "<session-id>"
           ).withHeaders(
               "Accept-Encoding" → "gzip"
-            ).withPayload(
+            ).withBody(
                 """
             {
               "name": "Scalaman",
@@ -439,7 +438,7 @@ class SuperHeroesScenario extends CornichonFeature {
         And I show_last_response_headers
       }
 
-      Scenario("GraphQL support") {
+      Scenario("demonstrate GraphQL support") {
 
         When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
           graphql"""
@@ -498,6 +497,8 @@ class SuperHeroesScenario extends CornichonFeature {
           }
           """
         )
+
+        And I show_last_status
       }
 
       Scenario("demonstrate wrapping DSL blocks") {
@@ -537,8 +538,6 @@ class SuperHeroesScenario extends CornichonFeature {
             Then assert status.is(200)
           }
         }
-
-        And I show_last_status
 
         // Execute steps in parallel 'factor times'
         Concurrently(factor = 3, maxTime = 20 seconds) {
@@ -635,7 +634,7 @@ class SuperHeroesScenario extends CornichonFeature {
       Scenario("demonstrate streaming support") {
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I open_sse("/sseStream/superheroes", takeWithin = 3 second).withParams(
+        When I open_sse("/sseStream/superheroes", takeWithin = 3 seconds).withParams(
           "sessionId" → "<session-id>",
           "justName" → "true"
         )
@@ -644,14 +643,16 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.is(
           """
-              |   eventType      |      data      |  id  | retry |
-              | "superhero name" |    "Batman"    | null | null  |
-              | "superhero name" |   "Superman"   | null | null  |
-              | "superhero name" | "GreenLantern" | null | null  |
-              | "superhero name" |   "Spiderman"  | null | null  |
-              | "superhero name" |    "IronMan"   | null | null  |
-            """
+            |   eventType      |      data      |  id  | retry |
+            | "superhero name" |    "Batman"    | null | null  |
+            | "superhero name" |   "Superman"   | null | null  |
+            | "superhero name" | "GreenLantern" | null | null  |
+            | "superhero name" |   "Spiderman"  | null | null  |
+            | "superhero name" |    "IronMan"   | null | null  |
+           """
         )
+
+        And I show_last_status
       }
 
       Scenario("demonstrate DSL composition") {
@@ -660,13 +661,13 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert random_superheroes_until("Batman")
 
+        And I show_last_status
       }
     }
 
   def superhero_exists(name: String) =
     AttachAs("superhero exists") {
       When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
-      Then I show_session
       Then assert status.is(200)
     }
 

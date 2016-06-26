@@ -11,9 +11,12 @@ import com.github.agourlay.cornichon.http.HttpAssertions._
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonPath
+import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.util.Formats
+import io.circe.Json
 import sangria.ast.Document
+import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration._
 
@@ -22,7 +25,11 @@ trait HttpDsl extends Dsl {
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  implicit def toStep(request: HttpRequest): EffectStep = http.requestEffect(request)
+  implicit def toStep(request: HttpRequest): EffectStep =
+    EffectStep(
+      title = request.description,
+      effect = http.requestEffect(request)
+    )
 
   def get(url: String) = HttpRequest(GET, url, None, Seq.empty, Seq.empty)
   def head(url: String) = HttpRequest(HEAD, url, None, Seq.empty, Seq.empty)
@@ -32,12 +39,37 @@ trait HttpDsl extends Dsl {
   def put(url: String) = HttpRequest(PUT, url, None, Seq.empty, Seq.empty)
   def patch(url: String) = HttpRequest(PATCH, url, None, Seq.empty, Seq.empty)
 
-  implicit def toStep(request: HttpStreamedRequest): EffectStep = http.streamEffect(request)
+  implicit def toStep(request: HttpStreamedRequest): EffectStep =
+    EffectStep(
+      title = request.description,
+      effect = http.streamEffect(request)
+    )
 
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
   def open_ws(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(WS, url, takeWithin, Seq.empty, Seq.empty)
 
-  implicit def toStep(query: QueryGQL): EffectStep = http.queryGqlEffect(query)
+  implicit def toStep(queryGQL: QueryGQL): EffectStep = {
+    import io.circe.generic.auto._
+    import io.circe.syntax._
+
+    // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
+    val payload = queryGQL.query.source.getOrElse(QueryRenderer.render(queryGQL.query, QueryRenderer.Pretty))
+
+    val fullPayload = prettyPrint(GqlPayload(payload, queryGQL.operationName, queryGQL.variables).asJson)
+
+    val prettyVar = queryGQL.variables.fold("") { variables ⇒
+      " and with variables " + Formats.displayMap(variables, CornichonJson.prettyPrint)
+    }
+
+    val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")
+
+    EffectStep(
+      title = s"query GraphQL endpoint ${queryGQL.url} with query $payload$prettyVar$prettyOp",
+      effect = http.post(queryGQL.url, Some(fullPayload), Seq.empty, Seq.empty)
+    )
+  }
+
+  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, Json]])
 
   def query_gql(url: String) = QueryGQL(url, Document(List.empty))
 
