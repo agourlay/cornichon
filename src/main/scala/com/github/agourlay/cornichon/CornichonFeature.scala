@@ -8,14 +8,13 @@ import scala.concurrent.duration._
 trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   import com.github.agourlay.cornichon.CornichonFeature._
 
-  private lazy val (globalClient, ec) = globalRuntime
-  private val engine = new Engine(ec)
-
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
   protected var afterFeature: Seq[() ⇒ Unit] = Nil
 
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
+
+  private lazy val (globalClient, ec) = globalRuntime 
 
   lazy val requestTimeout = 2000.millis
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
@@ -27,6 +26,7 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   protected def unregisterFeature() = releaseGlobalRuntime()
 
   protected def runScenario(s: Scenario) = {
+    val engine = new Engine(ec)
     println(s"Starting scenario '${s.name}'")
     engine.runScenario(Session.newSession, afterEachScenario) {
       s.copy(steps = beforeEachScenario.toVector ++ s.steps)
@@ -61,11 +61,11 @@ private object CornichonFeature {
   import java.util.concurrent.atomic.AtomicInteger
   import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 
-  implicit private val system = ActorSystem("akka-http-client")
-  implicit private val ec = system.dispatcher
-  implicit private val mat = ActorMaterializer()
+  implicit private lazy val system = ActorSystem("akka-http-client")
+  implicit private lazy val ec = system.dispatcher
+  implicit private lazy val mat = ActorMaterializer()
 
-  private val client = new AkkaHttpClient()
+  private lazy val client = new AkkaHttpClient()
 
   private val registeredUsage = new AtomicInteger
   private val safePassInRow = new AtomicInteger
@@ -84,7 +84,7 @@ private object CornichonFeature {
     } else if (safePassInRow.get() > 0) safePassInRow.decrementAndGet()
   }
 
-  val globalRuntime = (client, system.dispatcher)
+  lazy val globalRuntime = (client, system.dispatcher)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
   def releaseGlobalRuntime(): Unit = registeredUsage.decrementAndGet()
 }
