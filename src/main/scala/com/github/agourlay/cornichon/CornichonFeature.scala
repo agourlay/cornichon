@@ -15,6 +15,7 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   protected var afterEachScenario: Seq[Step] = Nil
 
   private lazy val (globalClient, ec) = globalRuntime
+  private lazy val engine = new Engine(ec)
 
   lazy val requestTimeout = 2000.millis
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
@@ -26,9 +27,8 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   protected def unregisterFeature() = releaseGlobalRuntime()
 
   protected def runScenario(s: Scenario) = {
-    val engine = new Engine(ec)
     println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newSession, afterEachScenario) {
+    engine.runScenario(Session.newSession, afterEachScenario.toVector) {
       s.copy(steps = beforeEachScenario.toVector ++ s.steps)
     }
   }

@@ -10,7 +10,7 @@ class Engine(executionContext: ExecutionContext) {
 
   private implicit val ec = executionContext
 
-  def runScenario(session: Session, finallySteps: Seq[Step] = Seq.empty)(scenario: Scenario): ScenarioReport = {
+  def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val mainRunReport = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
@@ -18,7 +18,7 @@ class Engine(executionContext: ExecutionContext) {
       ScenarioReport.build(scenario.name, mainRunReport)
     else {
       // Reuse mainline session
-      val finallyReport = runSteps(finallySteps.toVector, mainRunReport.session, Vector.empty, initMargin + 1)
+      val finallyReport = runSteps(finallySteps, mainRunReport.session, Vector.empty, initMargin + 1)
       ScenarioReport.build(scenario.name, mainRunReport, Some(finallyReport))
     }
   }

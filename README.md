@@ -674,7 +674,7 @@ Then assert body.is(
 It is also possible to inject random values inside placeholders using:
 
 - ```<random-uuid>``` for a random UUID
-- ```<random-positive-integer>``` for a random Integer between 0-1000
+- ```<random-positive-integer>``` for a random Integer between 0-10000
 - ```<random-string>``` for a random String of length 5
 - ```<random-boolean>``` for a random Boolean string
 - ```<timestamp>``` for the current timestamp
