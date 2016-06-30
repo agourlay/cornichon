@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath, NotStringFieldError }
+import com.github.agourlay.cornichon.util.Formats
 import io.circe.Json
 
 import scala.collection.immutable.HashMap
@@ -64,7 +65,7 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
   def merge(otherSession: Session) =
     copy(content = content ++ otherSession.content)
 
-  val prettyPrint = content.toSeq.sortBy(_._1).map(pair ⇒ pair._1 + " -> " + pair._2).mkString("\n")
+  val prettyPrint = Formats.displayMap(content)
 
 }
 

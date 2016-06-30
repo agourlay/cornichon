@@ -10,7 +10,7 @@ class Engine(executionContext: ExecutionContext) {
 
   private implicit val ec = executionContext
 
-  def runScenario(session: Session, finallySteps: Seq[Step] = Seq.empty)(scenario: Scenario): ScenarioReport = {
+  def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val mainRunReport = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
@@ -18,15 +18,16 @@ class Engine(executionContext: ExecutionContext) {
       ScenarioReport.build(scenario.name, mainRunReport)
     else {
       // Reuse mainline session
-      val finallyReport = runSteps(finallySteps.toVector, mainRunReport.session, Vector.empty, initMargin + 1)
+      val finallyReport = runSteps(finallySteps, mainRunReport.session, Vector.empty, initMargin + 1)
       ScenarioReport.build(scenario.name, mainRunReport, Some(finallyReport))
     }
   }
 
   @tailrec
   final def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsResult =
-    if (steps.isEmpty) SuccessStepsResult(session, accLogs)
-    else {
+    if (steps.isEmpty)
+      SuccessStepsResult(session, accLogs)
+    else
       steps(0).run(this, session, depth) match {
         case SuccessStepsResult(newSession, updatedLogs) ⇒
           val nextSteps = steps.drop(1)
@@ -35,7 +36,6 @@ class Engine(executionContext: ExecutionContext) {
         case f: FailureStepsResult ⇒
           f.copy(logs = accLogs ++ f.logs)
       }
-    }
 
   def XorToStepReport(currentStep: Step, session: Session, res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean, duration: Option[Duration] = None) =
     res.fold(

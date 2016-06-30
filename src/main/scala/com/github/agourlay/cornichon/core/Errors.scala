@@ -59,8 +59,8 @@ case class DetailedStepAssertionError[A](result: A, detailedAssertion: A ⇒ Str
   val msg = detailedAssertion(result)
 }
 
-case class ResolverParsingError(error: Throwable) extends CornichonError {
-  val msg = s"error thrown during resolver parsing ${error.getMessage}"
+case class ResolverParsingError(input: String, error: Throwable) extends CornichonError {
+  val msg = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {

@@ -18,7 +18,7 @@ class Resolver(extractors: Map[String, Mapper]) {
   def findPlaceholders(input: String): Xor[CornichonError, List[Placeholder]] =
     new PlaceholderParser(input).placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒ right(List.empty)
-      case Failure(e: Throwable)  ⇒ left(new ResolverParsingError(e))
+      case Failure(e: Throwable)  ⇒ left(new ResolverParsingError(input, e))
       case Success(dt)            ⇒ right(dt.toList)
     }
 
@@ -35,7 +35,7 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   def builtInPlaceholders: PartialFunction[String, String] = {
     case "random-uuid"             ⇒ UUID.randomUUID().toString
-    case "random-positive-integer" ⇒ r.nextInt(1000).toString
+    case "random-positive-integer" ⇒ r.nextInt(10000).toString
     case "random-string"           ⇒ r.nextString(5)
     case "random-boolean"          ⇒ r.nextBoolean().toString
     case "timestamp"               ⇒ (System.currentTimeMillis / 1000).toString

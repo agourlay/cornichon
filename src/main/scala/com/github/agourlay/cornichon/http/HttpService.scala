@@ -9,6 +9,8 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.http.HttpMethods._
+import com.github.agourlay.cornichon.http.HttpStreams._
 import io.circe.Json
 
 import scala.annotation.tailrec
@@ -18,43 +20,35 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  private type WithPayloadCall = (Json, String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
-  private type WithoutPayloadCall = (String, Seq[(String, String)], Seq[HttpHeader], FiniteDuration) ⇒ Xor[HttpError, CornichonHttpResponse]
-
-  private def withPayload(call: WithPayloadCall, payload: String, url: String, params: Seq[(String, String)],
-    headers: Seq[(String, String)], extractor: ResponseExtractor, requestTimeout: FiniteDuration, expectedStatus: Option[Int])(s: Session) =
+  def resolveRequestParts(url: String, body: Option[String], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
     for {
-      payloadResolved ← resolver.fillPlaceholders(payload)(s)
-      json ← parseJson(payloadResolved)
-      r ← resolveCommonRequestParts(url, params, headers)(s)
-      resp ← call(json, r._1, r._2, r._3, requestTimeout)
-      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
-    } yield (resp, newSession)
-
-  private def withoutPayload(call: WithoutPayloadCall, url: String, params: Seq[(String, String)],
-    headers: Seq[(String, String)], extractor: ResponseExtractor, requestTimeout: FiniteDuration, expectedStatus: Option[Int])(s: Session) =
-    for {
-      r ← resolveCommonRequestParts(url, params, headers)(s)
-      resp ← call(r._1, r._2, r._3, requestTimeout)
-      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
-    } yield (resp, newSession)
-
-  private def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
-    for {
-      resExpected ← expectStatusCode(resp, expectedStatus)
-      newSession ← fillInSessionWithResponse(session, resp, extractor)
-    } yield newSession
-
-  def resolveCommonRequestParts(url: String, params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
-    for {
+      jsonBodyResolved ← body.fold[Xor[CornichonError, Option[Json]]](right(None)) { p ⇒
+        resolver.fillPlaceholders(p)(s)
+          .flatMap(parseJson)
+          .map(Some(_))
+      }
       urlResolved ← resolver.fillPlaceholders(withBaseUrl(url))(s)
       paramsResolved ← resolveParams(url, params)(s)
       headersResolved ← resolver.tuplesResolver(headers, s)
       parsedHeaders ← parseHttpHeaders(headersResolved)
       extractedHeaders ← extractWithHeadersSession(s)
-    } yield (urlResolved, paramsResolved, parsedHeaders ++ extractedHeaders)
+    } yield (urlResolved, jsonBodyResolved, paramsResolved, parsedHeaders ++ extractedHeaders)
 
-  private def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =
+  def runRequest(r: HttpRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
+    for {
+      parts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
+      resp ← client.runRequest(r.method, parts._1, parts._2, parts._3, parts._4, requestTimeout)
+      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
+    } yield (resp, newSession)
+
+  def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
+    for {
+      parts ← resolveRequestParts(r.url, None, r.params, r.headers)(s)
+      resp ← client.openStream(r.stream, parts._1, parts._3, parts._4, r.takeWithin)
+      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
+    } yield (resp, newSession)
+
+  def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =
     expected.map { expectedStatus ⇒
       if (httpResponse.status == StatusCode.int2StatusCode(expectedStatus))
         right(httpResponse)
@@ -68,41 +62,11 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     resolver.tuplesResolver(urlParams.toSeq ++ params, session)
   }
 
-  def Post(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session) =
-    withPayload(client.postJson, payload, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
-
-  def Put(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
-    withPayload(client.putJson, payload, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
-
-  def Patch(url: String, payload: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
-    withPayload(client.patchJson, payload, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
-
-  def Get(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.getJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
-
-  def Head(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.headJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
-
-  def Options(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.optionsJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
-
-  def Delete(url: String, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None)(s: Session): Session =
-    withoutPayload(client.deleteJson, url, params, headers, extractor, requestTimeout, expectedStatus)(s).fold(e ⇒ throw e, _._2)
-
-  def OpenSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
-    withoutPayload(client.openSSE, url, params, headers, extractor, takeWithin, None)(s).fold(e ⇒ throw e, _._2)
-
-  def OpenWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
-    withoutPayload(client.openWS, url, params, headers, extractor, takeWithin, None)(s).fold(e ⇒ throw e, _._2)
+  def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
+    for {
+      resExpected ← expectStatusCode(resp, expectedStatus)
+      newSession ← fillInSessionWithResponse(session, resp, extractor)
+    } yield newSession
 
   def commonSessionExtraction(session: Session, response: CornichonHttpResponse): Session =
     session.addValues(Seq(
@@ -128,7 +92,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
     @tailrec
-    def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
+    def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Xor[MalformedHeadersError, Seq[HttpHeader]] =
       if (headers.isEmpty) right(acc)
       else {
         val (name, value) = headers.head
@@ -137,7 +101,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
           case ParsingResult.Error(e) ⇒ left(MalformedHeadersError(e.formatPretty))
         }
       }
-    }
+
     loop(headers, Seq.empty[HttpHeader])
   }
 
@@ -148,6 +112,66 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }
 
   private def withBaseUrl(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
+
+  def requestEffect(request: HttpRequest, extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
+    s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
+
+  def post(url: String, body: Option[String], params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpRequest(POST, url, body, params, headers)
+    requestEffect(req, extractor, expectedStatus)
+  }
+
+  def put(url: String, body: Option[String], params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpRequest(PUT, url, body, params, headers)
+    requestEffect(req, extractor, expectedStatus)
+  }
+
+  def patch(url: String, body: Option[String], params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpRequest(PATCH, url, body, params, headers)
+    requestEffect(req, extractor, expectedStatus)
+  }
+
+  def get(url: String, body: Option[String] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpRequest(GET, url, body, params, headers)
+    requestEffect(req, extractor, expectedStatus)
+  }
+
+  def head(url: String, body: Option[String] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpRequest(HEAD, url, body, params, headers)
+    requestEffect(req, extractor, expectedStatus)
+  }
+
+  def options(url: String, body: Option[String] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpRequest(OPTIONS, url, body, params, headers)
+    requestEffect(req, extractor, expectedStatus)
+  }
+
+  def delete(url: String, body: Option[String] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpRequest(DELETE, url, body, params, headers)
+    requestEffect(req, extractor, expectedStatus)
+  }
+
+  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Session =
+    s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
+
+  def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpStreamedRequest(SSE, url, takeWithin, params, headers)
+    streamEffect(req, expectedStatus, extractor)
+  }
+
+  def openWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    val req = HttpStreamedRequest(WS, url, takeWithin, params, headers)
+    streamEffect(req, expectedStatus, extractor)
+  }
 }
 
 sealed trait ResponseExtractor
@@ -168,11 +192,9 @@ object HttpService {
       s"${h.name()}$HeadersKeyValueDelim${h.value()}"
     }.mkString(InterHeadersValueDelim)
 
-  def decodeSessionHeaders(headers: String): Seq[(String, String)] = {
-    val tuples = headers.split(InterHeadersValueDelim).toSeq.map { header ⇒
+  def decodeSessionHeaders(headers: String): Seq[(String, String)] =
+    headers.split(InterHeadersValueDelim).toSeq.map { header ⇒
       val elms = header.split(HeadersKeyValueDelim)
       (elms.head, elms.tail.head)
     }
-    tuples
-  }
 }
