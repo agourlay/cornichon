@@ -1,12 +1,21 @@
 package com.github.agourlay.cornichon.dsl
 
 import io.circe.Json
+import org.parboiled2.ParseError
 import org.scalatest.{ Matchers, TryValues, WordSpec }
+
+import scala.util.{Failure, Success}
 
 class DataTableSpec extends WordSpec with Matchers with TryValues {
 
   def referenceParser(input: String) =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
+
+  def parse(p: DataTableParser) = p.dataTableRule.run() match {
+    case Success(value) ⇒ value
+    case Failure(error: ParseError) ⇒ fail(p.formatError(error))
+    case Failure(error) ⇒ fail(error)
+  }
 
   "DataTable parser" must {
 
@@ -32,7 +41,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run().success.value should be(expected)
+      parse(p) should be(expected)
     }
 
     "process a single line with 1 value" in {
@@ -48,7 +57,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run().success.value should be(expected)
+      parse(p) should be(expected)
     }
 
     "process a single line with 2 values" in {
@@ -64,7 +73,25 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run().success.value should be(expected)
+      parse(p) should be(expected)
+    }
+
+    "process string values nd headers with unicode characters and escaping" in {
+      val input =
+        """
+          | Name                  |   Größe \u00DF " \| test |
+          | "öÖß \u00DF \" test " |   50                     |
+        """
+
+      val expected = DataTable(
+        headers = Headers(Seq("Name", """Größe ß " | test""")),
+        rows = Seq(
+          Row(Seq(Json.fromString("""öÖß ß " test """), Json.fromInt(50)))
+        )
+      )
+
+      val p = new DataTableParser(input)
+      parse(p) should be(expected)
     }
 
     "process multiline string" in {
@@ -82,7 +109,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         )
       )
       val p = new DataTableParser(input)
-      p.dataTableRule.run().success.value should be(expected)
+      parse(p) should be(expected)
     }
 
     "notify malformed table" in {
@@ -117,7 +144,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
         """
 
       val p = new DataTableParser(input)
-      val objects = p.dataTableRule.run().success.value.objectList
+      val objects = parse(p).objectList
       Json.fromValues(objects.map(Json.fromJsonObject)) should be(referenceParser(expected))
     }
   }
