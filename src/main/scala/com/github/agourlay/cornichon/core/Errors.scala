@@ -9,6 +9,8 @@ import scala.util.control.NoStackTrace
 
 trait CornichonError extends Exception with NoStackTrace {
   def msg: String
+
+  override def getMessage = msg
 }
 
 object CornichonError {
