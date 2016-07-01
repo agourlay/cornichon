@@ -41,7 +41,7 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
   val WhiteSpace = CharPredicate("\u0009\u0020")
 
-  def Spaces = rule { zeroOrMore(WhiteSpace) }
+  def Spaces = rule { quiet(zeroOrMore(WhiteSpace)) }
 
   def Separator = rule { Spaces ~ delimeter ~ Spaces }
 
@@ -68,7 +68,7 @@ case class Row(fields: Seq[Json])
 trait StringHeaderParserSupport extends StringBuilding {
   this: Parser ⇒
 
-  def delims : CharPredicate
+  def delims: CharPredicate
 
   def HeaderValue = rule {
     atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.trim))
