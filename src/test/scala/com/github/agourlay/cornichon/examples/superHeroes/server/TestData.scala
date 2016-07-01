@@ -16,16 +16,16 @@ class TestData(implicit executionContext: ExecutionContext) {
     newSessionId
   }
 
-  def publishersBySessionUnsafe(sessionId: String) = publishersBySession.getOrElse(sessionId, throw new SessionNotFound(sessionId))
+  def publishersBySessionUnsafe(sessionId: String) = publishersBySession.getOrElse(sessionId, throw SessionNotFound(sessionId))
 
-  def superheroesBySessionUnsafe(sessionId: String) = superheroesBySession.getOrElse(sessionId, throw new SessionNotFound(sessionId))
+  def superheroesBySessionUnsafe(sessionId: String) = superheroesBySession.getOrElse(sessionId, throw SessionNotFound(sessionId))
 
   def publisherByName(sessionId: String, name: String) = Future {
-    publishersBySessionUnsafe(sessionId).find(_.name == name).fold(throw new PublisherNotFound(name)) { c ⇒ c }
+    publishersBySessionUnsafe(sessionId).find(_.name == name).fold(throw PublisherNotFound(name)) { c ⇒ c }
   }
 
   def addPublisher(sessionId: String, p: Publisher) = Future {
-    if (publishersBySessionUnsafe(sessionId).exists(_.name == p.name)) throw new PublisherAlreadyExists(p.name)
+    if (publishersBySessionUnsafe(sessionId).exists(_.name == p.name)) throw PublisherAlreadyExists(p.name)
     else {
       publishersBySession.addBinding(sessionId, p)
       p
@@ -42,7 +42,7 @@ class TestData(implicit executionContext: ExecutionContext) {
 
   def addSuperhero(sessionId: String, s: SuperHero) =
     publisherByName(sessionId, s.publisher.name).map { _ ⇒
-      if (superheroesBySessionUnsafe(sessionId).exists(_.name == s.name)) throw new SuperHeroAlreadyExists(s.name)
+      if (superheroesBySessionUnsafe(sessionId).exists(_.name == s.name)) throw SuperHeroAlreadyExists(s.name)
       else {
         superheroesBySession.addBinding(sessionId, s)
         s
@@ -60,7 +60,7 @@ class TestData(implicit executionContext: ExecutionContext) {
       if (name == "random") Some(randomSuperhero(sessionId))
       else superheroesBySessionUnsafe(sessionId).find(_.name == name)
     }
-    sh.fold(throw new SuperHeroNotFound(name)) { c ⇒
+    sh.fold(throw SuperHeroNotFound(name)) { c ⇒
       if (protectIdentity) c.copy(realName = "XXXXX")
       else c
     }

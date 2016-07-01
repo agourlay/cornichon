@@ -29,9 +29,9 @@ object JsonPathParser {
     val p = new JsonPathParser(input)
     p.placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒
-        throw new JsonPathParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true)))
+        throw JsonPathParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true)))
       case Failure(e: Throwable) ⇒
-        throw new JsonPathError(input, e)
+        throw JsonPathError(input, e)
       case Success(dt) ⇒
         dt.toList
     }

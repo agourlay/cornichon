@@ -94,7 +94,7 @@ object HttpAssertions {
                 val expectedJson = resolveParseJson(expected, session, resolver)
                 val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
                 val Diff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
-                if (deleted != Json.Null) throw new WhiteListError(s"White list error - '${prettyPrint(deleted)}' is not defined in object '${prettyPrint(sessionValueJson)}")
+                if (deleted != Json.Null) throw WhiteListError(s"White list error - '${prettyPrint(deleted)}' is not defined in object '${prettyPrint(sessionValueJson)}")
                 if (changed != Json.Null) changed else expectedJson
               } else {
                 val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
@@ -208,9 +208,9 @@ object HttpAssertions {
           title = assertionTitle,
           expected = s ⇒ {
             resolveParseJson(expected, s, resolver).arrayOrObject(
-              throw new NotAnArrayError(expected),
+              throw NotAnArrayError(expected),
               values ⇒ values,
-              obj ⇒ throw new NotAnArrayError(expected)
+              obj ⇒ throw NotAnArrayError(expected)
             )
           }
         )
@@ -221,9 +221,9 @@ object HttpAssertions {
           title = assertionTitle,
           expected = s ⇒ {
             resolveParseJson(expected, s, resolver).arrayOrObject(
-              throw new NotAnArrayError(expected),
+              throw NotAnArrayError(expected),
               values ⇒ values.toSet,
-              obj ⇒ throw new NotAnArrayError(expected)
+              obj ⇒ throw NotAnArrayError(expected)
             )
           }
         )

@@ -4,7 +4,7 @@ import io.circe.Json
 import org.parboiled2.ParseError
 import org.scalatest.{ Matchers, TryValues, WordSpec }
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class DataTableSpec extends WordSpec with Matchers with TryValues {
 
@@ -12,9 +12,9 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
 
   def parse(p: DataTableParser) = p.dataTableRule.run() match {
-    case Success(value) ⇒ value
+    case Success(value)             ⇒ value
     case Failure(error: ParseError) ⇒ fail(p.formatError(error))
-    case Failure(error) ⇒ fail(error)
+    case Failure(error)             ⇒ fail(error)
   }
 
   "DataTable parser" must {

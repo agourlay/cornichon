@@ -23,7 +23,7 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
 
   }
 
-  def get(key: String, stackingIndice: Option[Int] = None): String = getOpt(key, stackingIndice).getOrElse(throw new KeyNotFoundInSession(key, this))
+  def get(key: String, stackingIndice: Option[Int] = None): String = getOpt(key, stackingIndice).getOrElse(throw KeyNotFoundInSession(key, this))
 
   def getXor(key: String, stackingIndice: Option[Int] = None) = Xor.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, this))
 
@@ -40,7 +40,7 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
   def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) = {
     val res = for {
       json ← getJsonXor(key, stackingIndice, path)
-      field ← Xor.fromOption(json.asString, new NotStringFieldError(json, path))
+      field ← Xor.fromOption(json.asString, NotStringFieldError(json, path))
     } yield field
     res.fold(e ⇒ throw e, identity)
   }
@@ -52,7 +52,7 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
   def getHistory(key: String) = content.getOrElse(key, Vector.empty)
 
   def addValue(key: String, value: String) =
-    if (key.trim.isEmpty) throw new EmptyKeyException(this)
+    if (key.trim.isEmpty) throw EmptyKeyException(this)
     else
       content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
         Session((content - key) + (key → values.:+(value)))

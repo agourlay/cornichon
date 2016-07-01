@@ -20,9 +20,9 @@ object HttpMethods {
 }
 
 trait BaseRequest {
-  val url: String
-  val params: Seq[(String, String)]
-  val headers: Seq[(String, String)]
+  def url: String
+  def params: Seq[(String, String)]
+  def headers: Seq[(String, String)]
 
   def description: String
 

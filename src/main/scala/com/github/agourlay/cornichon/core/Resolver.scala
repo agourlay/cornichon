@@ -18,7 +18,7 @@ class Resolver(extractors: Map[String, Mapper]) {
   def findPlaceholders(input: String): Xor[CornichonError, List[Placeholder]] =
     new PlaceholderParser(input).placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒ right(List.empty)
-      case Failure(e: Throwable)  ⇒ left(new ResolverParsingError(input, e))
+      case Failure(e: Throwable)  ⇒ left(ResolverParsingError(input, e))
       case Success(dt)            ⇒ right(dt.toList)
     }
 

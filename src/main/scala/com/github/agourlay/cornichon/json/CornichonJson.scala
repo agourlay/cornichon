@@ -33,31 +33,31 @@ trait CornichonJson {
     parseJson(input).fold(e ⇒ throw e, identity)
 
   def parseString(s: String) =
-    io.circe.parser.parse(s).leftMap(f ⇒ new MalformedJsonError(s, f.message))
+    io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
 
   def parseDataTable(table: String): List[JsonObject] =
     DataTableParser.parseDataTable(table).objectList
 
   def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
     case Success(value) ⇒ right(value.convertMarshaled[Json])
-    case Failure(e)     ⇒ left(new MalformedGraphQLJsonError(input, e))
+    case Failure(e)     ⇒ left(MalformedGraphQLJsonError(input, e))
   }
 
   def parseArray(input: String): Xor[CornichonError, List[Json]] =
     parseJson(input).flatMap { json ⇒
       json.arrayOrObject(
-        left(new NotAnArrayError(input)),
+        left(NotAnArrayError(input)),
         values ⇒ right(values),
-        obj ⇒ left(new NotAnArrayError(input))
+        obj ⇒ left(NotAnArrayError(input))
       )
     }
 
   def selectArrayJsonPath(path: JsonPath, sessionValue: String): Xor[CornichonError, List[Json]] = {
     path.run(sessionValue).flatMap { json ⇒
       json.arrayOrObject(
-        left(new NotAnArrayError(json)),
+        left(NotAnArrayError(json)),
         values ⇒ right(values),
-        obj ⇒ left(new NotAnArrayError(json))
+        obj ⇒ left(NotAnArrayError(json))
       )
     }
   }
