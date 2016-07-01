@@ -20,27 +20,28 @@ object DataTableParser {
   }
 }
 
-class DataTableParser(val input: ParserInput) extends Parser {
-
-  val delimeter = '|'
+class DataTableParser(val input: ParserInput) extends Parser with StringHeaderParserSupport {
+  val delimeter = CharPredicate('|')
 
   def dataTableRule = rule {
-    optional(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ optional(NL) ~ EOI ~> DataTable
+    zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> DataTable
   }
 
-  def HeaderRule = rule { Separator ~ oneOrMore(HeaderTXT).separatedBy(Separator) ~ Separator ~> Headers }
+  def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
 
   def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseString(_).fold(e ⇒ throw e, identity)))) }
 
-  val delims = s"$delimeter\r\n"
+  val delims = CharPredicate(delimeter, '\r', '\n')
 
-  def HeaderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- delims)))
+  def TXT = rule { capture(oneOrMore(ContentsChar)) }
 
-  def TXT = rule(capture(oneOrMore(CharPredicate.Printable -- delims)))
+  def ContentsChar = rule { !delims ~ ANY }
 
   def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
 
-  def Spaces = rule { zeroOrMore(' ') }
+  val WhiteSpace = CharPredicate("\u0009\u0020")
+
+  def Spaces = rule { quiet(zeroOrMore(WhiteSpace)) }
 
   def Separator = rule { Spaces ~ delimeter ~ Spaces }
 
@@ -63,3 +64,32 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
 
 case class Headers(fields: Seq[String])
 case class Row(fields: Seq[Json])
+
+trait StringHeaderParserSupport extends StringBuilding {
+  this: Parser ⇒
+
+  def delims: CharPredicate
+
+  def HeaderValue = rule {
+    atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.trim))
+  }
+
+  def Characters = rule { oneOrMore(NormalChar | '\\' ~ EscapedChar) }
+
+  val Backslash = CharPredicate('\\')
+
+  def NormalChar = rule { !(delims | Backslash) ~ ANY ~ appendSB() }
+
+  def EscapedChar = rule {
+    Backslash ~ appendSB() |
+      'b' ~ appendSB('\b') |
+      'f' ~ appendSB('\f') |
+      'n' ~ appendSB('\n') |
+      'r' ~ appendSB('\r') |
+      't' ~ appendSB('\t') |
+      '|' ~ appendSB('|') |
+      Unicode ~> { code ⇒ sb.append(code.asInstanceOf[Char]); () }
+  }
+
+  def Unicode = rule { 'u' ~ capture(4 times CharPredicate.HexDigit) ~> (Integer.parseInt(_, 16)) }
+}
