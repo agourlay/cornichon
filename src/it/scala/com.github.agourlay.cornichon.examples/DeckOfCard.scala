@@ -13,11 +13,21 @@ class DeckOfCard extends CornichonFeature {
 
       Scenario("draw any king") {
 
-        Given I get("/deck/new/shuffle/?deck_count=1").withParams(
+        Given I get("/deck/new/shuffle/").withParams(
           "deck_count" -> "1"
         )
 
         Then assert status.is(200)
+
+        And assert body.ignoring("deck_id").is(
+          """
+          {
+            "success": true,
+            "shuffled": true,
+            "remaining": 52
+          }
+          """
+        )
 
         And I save_body_path("deck_id" -> "deck-id")
 

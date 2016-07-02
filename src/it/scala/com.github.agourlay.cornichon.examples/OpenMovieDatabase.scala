@@ -26,7 +26,7 @@ class OpenMovieDatabase extends CornichonFeature {
             "Genre": "Adventure, Drama, Fantasy",
             "Director": "N/A",
             "Writer": "David Benioff, D.B. Weiss",
-            "Actors": "Peter Dinklage, Lena Headey, Kit Harington, Emilia Clarke",
+            "Actors": "Peter Dinklage, Lena Headey, Emilia Clarke, Kit Harington",
             "Plot": "While a civil war brews between several noble families in Westeros, the children of the former rulers of the land attempt to rise up to power. Meanwhile a forgotten race, bent on destruction, plans to return after thousands of years in the North.",
             "Language": "English",
             "Country": "USA, UK",
