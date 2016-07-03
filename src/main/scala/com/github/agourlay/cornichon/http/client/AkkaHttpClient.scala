@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.http.client
 
-import akka.Done
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
@@ -8,11 +7,11 @@ import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.ws.{ Message, TextMessage, WebSocketRequest }
+import akka.http.scaladsl.model.ws.WebSocketRequest
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.ConnectionContext
 import akka.stream.Materializer
-import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+import akka.stream.scaladsl.Source
 import akka.http.scaladsl.model.{ HttpRequest ⇒ AkkaHttpRequest }
 
 import cats.data.Xor
@@ -118,14 +117,14 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
     waitForRequestFuture(request, f, takeWithin)
   }
 
-  // FIXME barbaric implementation
+  // TODO implement WS support
   def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
     val uri = uriBuilder(url, params)
     val req = WebSocketRequest(uri).copy(extraHeaders = collection.immutable.Seq(headers: _*))
 
     val received = ListBuffer.empty[String]
 
-    val incoming: Sink[Message, Future[Done]] =
+    /*val incoming: Sink[Message, Future[Done]] =
       Sink.foreach {
         case message: TextMessage.Strict ⇒
           received += message.text
@@ -151,7 +150,8 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends Ht
           body = prettyPrint(Json.fromValues(received.map(_.asJson).toList))
         )
       }
-    }
+    }*/
+    ???
   }
 
   private def expectSSE(httpResponse: HttpResponse): Future[Xor[HttpError, Source[ServerSentEvent, Any]]] =

@@ -46,7 +46,6 @@ trait HttpDsl extends Dsl {
     )
 
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
-  def open_ws(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(WS, url, takeWithin, Seq.empty, Seq.empty)
 
   implicit def toStep(queryGQL: QueryGQL): EffectStep = {
     import io.circe.generic.auto._
