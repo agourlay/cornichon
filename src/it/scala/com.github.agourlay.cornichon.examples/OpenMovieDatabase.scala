@@ -33,6 +33,7 @@ class OpenMovieDatabase extends CornichonFeature {
             "Metascore": "N/A",
             "imdbID": "tt0944947",
             "Type": "series",
+            "totalSeasons" : "7",
             "Response": "True"
           }
           """)
