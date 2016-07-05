@@ -65,7 +65,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
     for {
       resExpected ← expectStatusCode(resp, expectedStatus)
-      newSession ← fillInSessionWithResponse(session, resp, extractor)
+      newSession ← fillInSessionWithResponse(session, resExpected, extractor)
     } yield newSession
 
   def commonSessionExtraction(session: Session, response: CornichonHttpResponse): Session =

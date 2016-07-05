@@ -122,6 +122,8 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
 
           And assert body.path("success").is(true)
 
+          And assert body.path("cards").asArray.hasSize(2)
+
           Then I save_body_path("cards[0].value" -> "c1")
           Then I save_body_path("cards[1].value" -> "c2")
 
