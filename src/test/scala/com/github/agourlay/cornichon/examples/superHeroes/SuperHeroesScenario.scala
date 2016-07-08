@@ -429,7 +429,7 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        Then assert headers.contain("Server" → "akka-http/2.4.7")
+        Then assert headers.contain("Server" → "akka-http/2.4.8")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
