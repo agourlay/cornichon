@@ -40,8 +40,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
 
-class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer) extends HttpClient {
-  implicit private val ec: ExecutionContext = system.dispatcher
+class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer, executionContext: ExecutionContext) extends HttpClient {
 
   // Disable JDK built-in checks
   // https://groups.google.com/forum/#!topic/akka-user/ziI1fPBtxV8

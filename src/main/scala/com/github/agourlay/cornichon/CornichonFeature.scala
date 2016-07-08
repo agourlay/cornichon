@@ -1,8 +1,11 @@
 package com.github.agourlay.cornichon
 
+import java.util.concurrent.Executors
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 trait CornichonFeature extends HttpDsl with ScalatestIntegration {
@@ -33,7 +36,8 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
     }
   }
 
-  def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) = new HttpService(baseUrl, timeout, globalClient, resolver)
+  def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
+    new HttpService(baseUrl, timeout, globalClient, resolver)
 
   def feature: FeatureDef
 
@@ -62,7 +66,7 @@ private object CornichonFeature {
   import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 
   implicit private lazy val system = ActorSystem("akka-http-client")
-  implicit private lazy val ec = system.dispatcher
+  implicit private lazy val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool)
   implicit private lazy val mat = ActorMaterializer()
 
   private lazy val client = new AkkaHttpClient()
@@ -76,6 +80,7 @@ private object CornichonFeature {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 3) {
+        ec.shutdown()
         client.shutdown().map { _ ⇒
           mat.shutdown()
           system.terminate()
