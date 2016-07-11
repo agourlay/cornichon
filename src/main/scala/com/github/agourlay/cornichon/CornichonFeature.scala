@@ -80,9 +80,9 @@ private object CornichonFeature {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 3) {
-        ec.shutdown()
         client.shutdown().map { _ ⇒
           mat.shutdown()
+          ec.shutdown()
           system.terminate()
         }
       }
