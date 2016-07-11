@@ -24,7 +24,7 @@ import scala.util.{ Failure, Success }
 
 class HttpAPI() extends EventStreamMarshalling {
 
-  import JsonSupport._
+  import com.github.agourlay.cornichon.examples.superHeroes.server.JsonSupport._
 
   implicit val system = ActorSystem("testData-http-server")
   implicit val mat = ActorMaterializer()
