@@ -28,9 +28,10 @@ An extensible Scala DSL for testing JSON HTTP APIs.
   3. [Request timeout](#request-timeout)
   4. [Register custom extractors](#register-custom-extractors)
 9. [Execution model](#execution-model)
-10. [ScalaTest integration](#scalatest-integration)
-11. [SSL configuration](#ssl-configuration)
-12. [License](#license)
+10. [Ignoring features or scenarios](#ignoring-features-or-scenarios)
+11. [ScalaTest integration](#scalatest-integration)
+12. [SSL configuration](#ssl-configuration)
+13. [License](#license)
 
 ## Quick start
 
@@ -884,15 +885,17 @@ It works for all keys in ```Session```, let's say we also have objects registere
 
 ## Execution model
 
-By default the scenarios are executed in parallel.
+By default the ```features``` are executed sequentially and the ```scenarios``` within are executed in parallel.
 
-To disable this behaviour it is necessary to manually set a flag in your SBT build file.
+To run ```features``` in parallel it is necessary to manually set a flag in your SBT build file.
 
 ```scala
-parallelExecution in Test := false
+parallelExecution in Test := true
 ```
 
-or through the command line ```sbt test parallelExecution in Test := false```
+or through the command line ```sbt test parallelExecution in Test := true```
+
+## Ignoring features or scenarios
 
 ```Feature``` or individual ```scenario``` can also be marked to be ignored.
 
