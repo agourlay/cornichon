@@ -8,8 +8,15 @@ import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
+import com.typesafe.config.ConfigFactory
+
+import net.ceedubs.ficus.Ficus._
+import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+
 trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   import com.github.agourlay.cornichon.CornichonFeature._
+
+  lazy val config = ConfigFactory.load().as[Config]("cornichon")
 
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
   protected var afterFeature: Seq[() ⇒ Unit] = Nil

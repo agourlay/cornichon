@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.LogInstruction._
-import org.scalatest.{ BeforeAndAfterAll, ParallelTestExecution, WordSpecLike }
+import org.scalatest.{ Args, BeforeAndAfterAll, ParallelTestExecution, WordSpecLike }
 
 import scala.util.{ Failure, Success, Try }
 
@@ -18,6 +18,10 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
     afterFeature.foreach(f ⇒ f())
     unregisterFeature()
   }
+
+  override def run(testName: Option[String], args: Args) =
+    if (config.executeScenarioInParallel) super.run(testName, args)
+    else super.run(testName, args.copy(distributor = None))
 
   Try { feature } match {
     case Failure(e) ⇒

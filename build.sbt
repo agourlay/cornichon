@@ -44,12 +44,14 @@ libraryDependencies ++= {
   val fansiV = "0.1.3"
   val akkaHttpCirce = "1.7.0"
   val catsScalaTest = "1.3.0"
+  val ficusV = "1.1.2"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
     ,"org.typelevel"       %% "cats-macros"            % catsV
     ,"org.typelevel"       %% "cats-core"              % catsV
     ,"org.scalatest"       %% "scalatest"              % scalaTestV
+    ,"net.ceedubs"         %% "ficus"                  % ficusV
     ,"ch.qos.logback"      %  "logback-classic"        % logbackV
     ,"org.parboiled"       %% "parboiled"              % parboiledV
     ,"org.scalacheck"      %% "scalacheck"             % scalaCheckV
