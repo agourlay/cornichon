@@ -20,7 +20,7 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
   }
 
   override def run(testName: Option[String], args: Args) =
-    if (config.executeScenarioInParallel) super.run(testName, args)
+    if (config.executeScenariosInParallel) super.run(testName, args)
     else super.run(testName, args.copy(distributor = None))
 
   Try { feature } match {
