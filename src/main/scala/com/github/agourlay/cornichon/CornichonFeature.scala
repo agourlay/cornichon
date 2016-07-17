@@ -6,7 +6,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
+import scala.concurrent.duration.FiniteDuration
 
 import com.typesafe.config.ConfigFactory
 
@@ -27,9 +27,9 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   private lazy val (globalClient, ec) = globalRuntime
   private lazy val engine = new Engine(ec)
 
-  lazy val requestTimeout = 2000.millis
+  lazy val requestTimeout = config.requestTimeout
+  lazy val baseUrl = config.baseUrl
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
-  lazy val baseUrl = ""
   lazy val resolver = new Resolver(registerExtractors)
 
   protected def registerFeature() = reserveGlobalRuntime()
