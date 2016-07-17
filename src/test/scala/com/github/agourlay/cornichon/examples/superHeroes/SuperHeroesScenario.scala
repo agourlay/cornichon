@@ -79,7 +79,7 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         // Compare only against provided keys
-        And assert body.whiteListing.is(
+        And assert body.whitelisting.is(
           """
           {
             "name": "Batman",

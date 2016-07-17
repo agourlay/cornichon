@@ -40,7 +40,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
         And assert body.path("imdbRating").is("9.5")
 
-        And assert body.whiteListing.is(
+        And assert body.whitelisting.is(
           """
           {
             "Title": "Game of Thrones",

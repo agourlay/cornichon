@@ -71,26 +71,26 @@ object HttpAssertions {
     override def inOrder: HeadersAssertion = copy(ordered = true)
   }
 
-  case class BodyAssertion[A](private val jsonPath: String, private val ignoredKeys: Seq[String], whiteList: Boolean = false, resolver: Resolver) extends AssertionStep[A, Json] {
+  case class BodyAssertion[A](private val jsonPath: String, private val ignoredKeys: Seq[String], whitelist: Boolean = false, resolver: Resolver) extends AssertionStep[A, Json] {
 
     def path(path: String): BodyAssertion[A] = copy(jsonPath = path)
 
     def ignoring(ignoring: String*): BodyAssertion[A] = copy(ignoredKeys = ignoring)
 
-    def whiteListing: BodyAssertion[A] = copy(whiteList = true)
+    def whitelisting: BodyAssertion[A] = copy(whitelist = true)
 
     override def is(expected: A): AssertStep[Json] = {
-      if (whiteList && ignoredKeys.nonEmpty)
+      if (whitelist && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
         val baseTitle = if (jsonPath == JsonPath.root) s"response body is $expected" else s"response body's field '$jsonPath' is $expected"
         from_session_step(
           key = LastResponseBodyKey,
-          title = titleBuilder(baseTitle, ignoredKeys, whiteList),
+          title = titleBuilder(baseTitle, ignoredKeys, whitelist),
           expected = s ⇒ resolveParseJson(expected, s, resolver),
           mapValue =
             (session, sessionValue) ⇒ {
-              if (whiteList) {
+              if (whitelist) {
                 val expectedJson = resolveParseJson(expected, session, resolver)
                 val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
                 val Diff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
@@ -113,7 +113,7 @@ object HttpAssertions {
       val baseTitle = if (jsonPath == JsonPath.root) s"response body is absent" else s"response body's field '$jsonPath' is absent"
       from_session_detail_step(
         key = LastResponseBodyKey,
-        title = titleBuilder(baseTitle, ignoredKeys, whiteList),
+        title = titleBuilder(baseTitle, ignoredKeys, whitelist),
         expected = s ⇒ true,
         mapValue =
           (session, sessionValue) ⇒ {
@@ -131,7 +131,7 @@ object HttpAssertions {
       val baseTitle = if (jsonPath == JsonPath.root) s"response body is present" else s"response body's field '$jsonPath' is present"
       from_session_detail_step(
         key = LastResponseBodyKey,
-        title = titleBuilder(baseTitle, ignoredKeys, whiteList),
+        title = titleBuilder(baseTitle, ignoredKeys, whitelist),
         expected = s ⇒ true,
         mapValue =
           (session, sessionValue) ⇒ {

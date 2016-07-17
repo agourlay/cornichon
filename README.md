@@ -244,7 +244,7 @@ headers.contain("cache-control" → "no-cache")
 
 ```
 
-- assert response body comes with different flavours (ignoringKeys, whiteList)
+- assert response body comes with different flavours (ignoringKeys, whitelisting)
 
 ```scala
 body.is(
@@ -270,7 +270,7 @@ body.ignoring("city", "hasSuperpowers", "publisher").is(
   }
   """)
 
-body.whiteListing.is(
+body.whitelisting.is(
   """
   {
     "name": "Batman",

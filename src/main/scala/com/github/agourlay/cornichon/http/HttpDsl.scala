@@ -80,7 +80,7 @@ trait HttpDsl extends Dsl {
 
   def session_json_values(k1: String, k2: String) = SessionJsonValuesAssertion(k1, k2, Seq.empty, resolver)
 
-  def body[A] = BodyAssertion[A](root, Seq.empty, whiteList = false, resolver)
+  def body[A] = BodyAssertion[A](root, Seq.empty, whitelist = false, resolver)
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
