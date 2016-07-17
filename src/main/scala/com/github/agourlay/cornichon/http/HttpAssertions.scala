@@ -25,7 +25,12 @@ object HttpAssertions {
     )
   }
 
-  case class SessionJsonValuesAssertion(k1: String, k2: String, private val ignoredKeys: Seq[String], private val resolver: Resolver) {
+  case class SessionJsonValuesAssertion(
+      private val k1: String,
+      private val k2: String,
+      private val ignoredKeys: Seq[String],
+      private val resolver: Resolver
+  ) {
 
     def ignoring(ignoring: String*): SessionJsonValuesAssertion = copy(ignoredKeys = ignoring)
 
@@ -40,7 +45,7 @@ object HttpAssertions {
     )
   }
 
-  case class HeadersAssertion(ordered: Boolean) extends CollectionAssertionStep[(String, String), String] {
+  case class HeadersAssertion(private val ordered: Boolean) extends CollectionAssertionStep[(String, String), String] {
     def is(expected: (String, String)*) = from_session_step(
       title = s"headers is ${displayTuples(expected)}",
       key = LastResponseHeadersKey,
@@ -71,7 +76,12 @@ object HttpAssertions {
     override def inOrder: HeadersAssertion = copy(ordered = true)
   }
 
-  case class BodyAssertion[A](private val jsonPath: String, private val ignoredKeys: Seq[String], whitelist: Boolean = false, resolver: Resolver) extends AssertionStep[A, Json] {
+  case class BodyAssertion[A](
+      private val jsonPath: String,
+      private val ignoredKeys: Seq[String],
+      private val whitelist: Boolean = false,
+      private val resolver: Resolver
+  ) extends AssertionStep[A, Json] {
 
     def path(path: String): BodyAssertion[A] = copy(jsonPath = path)
 
@@ -152,7 +162,12 @@ object HttpAssertions {
         BodyArrayAssertion[A](jsonPath, ordered = false, ignoredKeys, resolver)
   }
 
-  case class BodyArrayAssertion[A](private val jsonPath: String, ordered: Boolean, private val ignoredEachKeys: Seq[String], resolver: Resolver) extends AssertionStep[A, Iterable[Json]] {
+  case class BodyArrayAssertion[A](
+      private val jsonPath: String,
+      private val ordered: Boolean,
+      private val ignoredEachKeys: Seq[String],
+      private val resolver: Resolver
+  ) extends AssertionStep[A, Iterable[Json]] {
 
     def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
 
