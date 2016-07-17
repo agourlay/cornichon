@@ -4,6 +4,7 @@ import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.util.Formats
+import com.github.agourlay.cornichon.core.Engine._
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -34,13 +35,13 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
 
     Xor.catchNonFatal(CornichonJson.parseDataTable(where))
       .fold(
-        t ⇒ engine.exceptionToFailureStep(this, session, title, depth, CornichonError.fromThrowable(t)),
+        t ⇒ exceptionToFailureStep(this, session, title, depth, CornichonError.fromThrowable(t)),
         parsedTable ⇒ {
           val inputs = parsedTable.map { line ⇒
             line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
           }
 
-          val (inputsRes, executionTime) = engine.withDuration {
+          val (inputsRes, executionTime) = withDuration {
             runInputs(inputs, Vector.empty, depth + 1)
           }
 

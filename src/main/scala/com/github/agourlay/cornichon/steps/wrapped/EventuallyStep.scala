@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.Engine._
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -25,7 +26,7 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
 
     @tailrec
     def retryEventuallySteps(stepsToRetry: Vector[Step], session: Session, conf: EventuallyConf, accLogs: Vector[LogInstruction], retriesNumber: Long, depth: Int): (Long, StepsResult) = {
-      val (res, executionTime) = engine.withDuration {
+      val (res, executionTime) = withDuration {
         engine.runSteps(stepsToRetry, session, Vector.empty, depth)
       }
       val remainingTime = conf.maxTime - executionTime
@@ -52,7 +53,7 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
       }
     }
 
-    val (res, executionTime) = engine.withDuration {
+    val (res, executionTime) = withDuration {
       retryEventuallySteps(nested, session, conf, Vector.empty, 0, depth + 1)
     }
 

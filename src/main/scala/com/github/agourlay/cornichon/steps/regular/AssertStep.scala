@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.regular
 import cats.data.Xor
 import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.Engine._
 
 import scala.concurrent.ExecutionContext
 
@@ -19,7 +20,7 @@ case class AssertStep[A](
       .flatMap { assertion ⇒
         runStepPredicate(session, assertion)
       }
-    engine.XorToStepReport(this, session, res, title, depth, show)
+    xorToStepReport(this, session, res, title, depth, show)
   }
 
   //TODO think about making StepAssertion concrete implem. custom as well

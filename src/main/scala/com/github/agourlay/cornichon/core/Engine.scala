@@ -36,8 +36,18 @@ class Engine(executionContext: ExecutionContext) {
         case f: FailureStepsResult ⇒
           f.copy(logs = accLogs ++ f.logs)
       }
+}
 
-  def XorToStepReport(currentStep: Step, session: Session, res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean, duration: Option[Duration] = None) =
+object Engine {
+
+  def withDuration[A](fct: ⇒ A): (A, Duration) = {
+    val now = System.nanoTime
+    val res = fct
+    val executionTime = Duration.fromNanos(System.nanoTime - now)
+    (res, executionTime)
+  }
+
+  def xorToStepReport(currentStep: Step, session: Session, res: Xor[CornichonError, Session], title: String, depth: Int, show: Boolean, duration: Option[Duration] = None) =
     res.fold(
       e ⇒ exceptionToFailureStep(currentStep, session, title, depth, e),
       newSession ⇒ {
@@ -60,10 +70,4 @@ class Engine(executionContext: ExecutionContext) {
     }
   }
 
-  def withDuration[A](fct: ⇒ A): (A, Duration) = {
-    val now = System.nanoTime
-    val res = fct
-    val executionTime = Duration.fromNanos(System.nanoTime - now)
-    (res, executionTime)
-  }
 }

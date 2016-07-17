@@ -4,6 +4,7 @@ import com.github.agourlay.cornichon.core._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success, Try }
+import com.github.agourlay.cornichon.core.Engine._
 
 case class DebugStep(message: Session ⇒ String) extends Step {
   val title = s"Debug step with message `$message`"
@@ -14,7 +15,7 @@ case class DebugStep(message: Session ⇒ String) extends Step {
         val runLogs = Vector(DebugLogInstruction(message(session), depth))
         SuccessStepsResult(session, runLogs)
       case Failure(e) ⇒
-        val runLogs = engine.errorLogs(title, e, depth)
+        val runLogs = errorLogs(title, e, depth)
         val failedStep = FailedStep.fromThrowable(this, e)
         FailureStepsResult(failedStep, session, runLogs)
     }

@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.Engine._
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -13,7 +14,7 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
 
     @tailrec
     def repeatStepsDuring(steps: Vector[Step], session: Session, duration: Duration, accLogs: Vector[LogInstruction], retriesNumber: Long, depth: Int): (Long, StepsResult) = {
-      val (res, executionTime) = engine.withDuration {
+      val (res, executionTime) = withDuration {
         engine.runSteps(steps, session, Vector.empty, depth)
       }
       val remainingTime = duration - executionTime
@@ -30,7 +31,7 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
       }
     }
 
-    val (repeatRes, executionTime) = engine.withDuration {
+    val (repeatRes, executionTime) = withDuration {
       repeatStepsDuring(nested, session, duration, Vector.empty, 0, depth + 1)
     }
 

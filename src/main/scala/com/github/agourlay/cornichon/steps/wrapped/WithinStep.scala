@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.Engine._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -10,7 +11,7 @@ case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends Wrapp
 
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
-    val (res, executionTime) = engine.withDuration {
+    val (res, executionTime) = withDuration {
       engine.runSteps(nested, session, Vector.empty, depth + 1)
     }
 

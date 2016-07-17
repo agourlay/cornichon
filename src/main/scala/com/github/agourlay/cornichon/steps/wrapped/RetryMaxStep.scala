@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.Engine._
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -28,7 +29,7 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
       }
     }
 
-    val (repeatRes, executionTime) = engine.withDuration {
+    val (repeatRes, executionTime) = withDuration {
       retryMaxSteps(nested, session, limit, Vector.empty, 0, depth + 1)
     }
 
