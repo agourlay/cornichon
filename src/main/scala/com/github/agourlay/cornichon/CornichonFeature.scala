@@ -96,7 +96,7 @@ private object CornichonFeature {
     } else if (safePassInRow.get() > 0) safePassInRow.decrementAndGet()
   }
 
-  lazy val globalRuntime = (client, system.dispatcher)
+  lazy val globalRuntime = (client, ec)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
   def releaseGlobalRuntime(): Unit = registeredUsage.decrementAndGet()
 }
