@@ -52,18 +52,6 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        // Support for GraphQL JSON input for lightweight definition
-        // Requires the import of com.github.agourlay.cornichon.json.CornichonJson._
-        And assert body.ignoring("city", "publisher").is(
-          gql"""
-          {
-            name: "Batman"
-            realName: "Bruce Wayne"
-            hasSuperpowers: false
-          }
-          """
-        )
-
         And assert body.ignoring("publisher.name", "publisher.location").is(
           """
           {
@@ -458,6 +446,17 @@ class SuperHeroesScenario extends CornichonFeature {
           {
             "name": "Batman",
             "city": "Gotham city"
+          }
+          """
+        )
+
+        // Support for GraphQL JSON input for lightweight definition
+        // Requires the import of com.github.agourlay.cornichon.json.CornichonJson._
+        Then assert body.path("data.superheroByName").is(
+          gql"""
+          {
+            name : "Batman"
+            city : "Gotham city"
           }
           """
         )

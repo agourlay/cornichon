@@ -43,6 +43,9 @@ trait CornichonJson {
     case Failure(e)     ⇒ left(MalformedGraphQLJsonError(input, e))
   }
 
+  def parseGraphQLJsonUnsafe(input: String) =
+    parseGraphQLJson(input).fold(e ⇒ throw e, identity)
+
   def parseArray(input: String): Xor[CornichonError, List[Json]] =
     parseJson(input).flatMap { json ⇒
       json.arrayOrObject(

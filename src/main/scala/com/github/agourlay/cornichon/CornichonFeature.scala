@@ -3,13 +3,12 @@ package com.github.agourlay.cornichon
 import java.util.concurrent.Executors
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
-
 import com.typesafe.config.ConfigFactory
-
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
@@ -76,7 +75,7 @@ private object CornichonFeature {
   implicit private lazy val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool)
   implicit private lazy val mat = ActorMaterializer()
 
-  private lazy val client = new AkkaHttpClient()
+  private lazy val client: HttpClient = new AkkaHttpClient()
 
   private val registeredUsage = new AtomicInteger
   private val safePassInRow = new AtomicInteger
