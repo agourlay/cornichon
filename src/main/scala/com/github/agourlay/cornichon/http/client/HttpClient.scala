@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.http.client
 
-import akka.http.scaladsl.model.HttpHeader
 import cats.data.Xor
-import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpError, HttpMethod, HttpStream }
+import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpMethod, HttpStream }
 import io.circe.Json
 
 import scala.concurrent.Future
@@ -10,9 +10,11 @@ import scala.concurrent.duration.FiniteDuration
 
 trait HttpClient {
 
-  def runRequest(method: HttpMethod, url: String, payload: Option[Json], params: Seq[(String, String)], headers: Seq[HttpHeader], timeout: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
+  def runRequest(method: HttpMethod, url: String, payload: Option[Json], params: Seq[(String, String)], headers: Seq[(String, String)], timeout: FiniteDuration): Xor[CornichonError, CornichonHttpResponse]
 
-  def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse]
+  def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], takeWithin: FiniteDuration): Xor[CornichonError, CornichonHttpResponse]
 
   def shutdown(): Future[Unit]
+
+  def paramsFromUrl(url: String): Seq[(String, String)]
 }

@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.StatusCodes
 import akka.stream.ActorMaterializer
 import cats.data.Xor.right
 import cats.scalatest.XorValues
@@ -28,7 +27,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
     "fillInSessionWithResponse" must {
       "extract content with NoOpExtraction" in {
         val s = Session.newSession
-        val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
+        val resp = CornichonHttpResponse(200, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, NoOpExtraction)
         filledSession.value.get("last-response-status") should be("200")
         filledSession.value.get("last-response-body") should be("hello world")
@@ -36,7 +35,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
 
       "extract content with RootResponseExtraction" in {
         val s = Session.newSession
-        val resp = CornichonHttpResponse(StatusCodes.OK, Nil, "hello world")
+        val resp = CornichonHttpResponse(200, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, RootExtractor("copy-body"))
         filledSession.value.get("last-response-status") should be("200")
         filledSession.value.get("last-response-body") should be("hello world")
@@ -45,7 +44,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
 
       "extract content with PathResponseExtraction" in {
         val s = Session.newSession
-        val resp = CornichonHttpResponse(StatusCodes.OK, Nil,
+        val resp = CornichonHttpResponse(200, Nil,
           """
             {
               "name" : "batman"

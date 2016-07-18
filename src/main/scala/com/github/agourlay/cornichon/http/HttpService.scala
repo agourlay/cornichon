@@ -1,19 +1,15 @@
 package com.github.agourlay.cornichon.http
 
-import akka.http.scaladsl.model.{ HttpHeader, StatusCode }
-import akka.http.scaladsl.model.HttpHeader.ParsingResult
-import akka.http.scaladsl.model.Uri.Query
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import io.circe.Json
 
-import scala.annotation.tailrec
 import scala.concurrent.duration._
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
@@ -22,17 +18,12 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   def resolveRequestParts(url: String, body: Option[String], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
     for {
-      jsonBodyResolved ← body.fold[Xor[CornichonError, Option[Json]]](right(None)) { p ⇒
-        resolver.fillPlaceholders(p)(s)
-          .flatMap(parseJson)
-          .map(Some(_))
-      }
+      bodyResolved ← body.map(b ⇒ resolver.fillPlaceholders(b)(s).map(Some(_))).getOrElse(right(None))
+      jsonBodyResolved ← bodyResolved.map(br ⇒ parseJson(br).map(Some(_))).getOrElse(right(None))
       urlResolved ← resolver.fillPlaceholders(withBaseUrl(url))(s)
       paramsResolved ← resolveParams(url, params)(s)
       headersResolved ← resolver.tuplesResolver(headers, s)
-      parsedHeaders ← parseHttpHeaders(headersResolved)
-      extractedHeaders ← extractWithHeadersSession(s)
-    } yield (urlResolved, jsonBodyResolved, paramsResolved, parsedHeaders ++ extractedHeaders)
+    } yield (urlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
 
   def runRequest(r: HttpRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
     for {
@@ -50,7 +41,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =
     expected.map { expectedStatus ⇒
-      if (httpResponse.status == StatusCode.int2StatusCode(expectedStatus))
+      if (httpResponse.status == expectedStatus)
         right(httpResponse)
       else
         left(StatusNonExpected(expectedStatus, httpResponse))
@@ -58,8 +49,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Xor[CornichonError, Seq[(String, String)]] = {
     val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
-    val urlParams = if (urlsParamsPart.trim.isEmpty) Map.empty else Query.apply(urlsParamsPart).toMap
-    resolver.tuplesResolver(urlParams.toSeq ++ params, session)
+    val urlParams = if (urlsParamsPart.trim.isEmpty) Seq.empty else client.paramsFromUrl(urlsParamsPart)
+    resolver.tuplesResolver(urlParams ++ params, session)
   }
 
   def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
@@ -90,25 +81,9 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
           }
     }
 
-  def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
-    @tailrec
-    def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Xor[MalformedHeadersError, Seq[HttpHeader]] =
-      if (headers.isEmpty) right(acc)
-      else {
-        val (name, value) = headers.head
-        HttpHeader.parse(name, value) match {
-          case ParsingResult.Ok(h, e) ⇒ loop(headers.tail, acc :+ h)
-          case ParsingResult.Error(e) ⇒ left(MalformedHeadersError(e.formatPretty))
-        }
-      }
-
-    loop(headers, Seq.empty[HttpHeader])
-  }
-
-  def extractWithHeadersSession(session: Session): Xor[MalformedHeadersError, Seq[HttpHeader]] =
-    session.getOpt(WithHeadersKey).fold[Xor[MalformedHeadersError, Seq[HttpHeader]]](right(Seq.empty[HttpHeader])) { headers ⇒
-      val tuples: Seq[(String, String)] = decodeSessionHeaders(headers)
-      parseHttpHeaders(tuples)
+  def extractWithHeadersSession(session: Session): Seq[(String, String)] =
+    session.getOpt(WithHeadersKey).fold(Seq.empty[(String, String)]) { headers ⇒
+      decodeSessionHeaders(headers)
     }
 
   private def withBaseUrl(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
@@ -189,7 +164,7 @@ object HttpService {
 
   def encodeSessionHeaders(response: CornichonHttpResponse): String =
     response.headers.map { h ⇒
-      s"${h.name()}$HeadersKeyValueDelim${h.value()}"
+      s"${h._1}$HeadersKeyValueDelim${h._2}"
     }.mkString(InterHeadersValueDelim)
 
   def decodeSessionHeaders(headers: String): Seq[(String, String)] =
