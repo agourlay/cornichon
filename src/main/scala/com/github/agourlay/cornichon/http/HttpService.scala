@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.http
 
+import java.util.concurrent.TimeoutException
+
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 
@@ -10,7 +12,9 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+import scala.util.{ Failure, Success, Try }
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
 
@@ -28,14 +32,18 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def runRequest(r: HttpRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
     for {
       parts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
-      resp ← client.runRequest(r.method, parts._1, parts._2, parts._3, parts._4, requestTimeout)
+      resp ← waitForRequestFuture(parts._1, requestTimeout) {
+        client.runRequest(r.method, parts._1, parts._2, parts._3, parts._4)
+      }
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield (resp, newSession)
 
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       parts ← resolveRequestParts(r.url, None, r.params, r.headers)(s)
-      resp ← client.openStream(r.stream, parts._1, parts._3, parts._4, r.takeWithin)
+      resp ← waitForRequestFuture(parts._1, r.takeWithin) {
+        client.openStream(r.stream, parts._1, parts._3, parts._4, r.takeWithin)
+      }
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield (resp, newSession)
 
@@ -87,6 +95,15 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }
 
   private def withBaseUrl(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
+
+  private def waitForRequestFuture(initialRequestUrl: String, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): Xor[CornichonError, CornichonHttpResponse] =
+    Try { Await.result(f, t) } match {
+      case Success(s) ⇒ s
+      case Failure(failure) ⇒ failure match {
+        case e: TimeoutException ⇒ left(TimeoutError(e.getMessage, initialRequestUrl))
+        case t: Throwable        ⇒ left(RequestError(t, initialRequestUrl))
+      }
+    }
 
   def requestEffect(request: HttpRequest, extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)

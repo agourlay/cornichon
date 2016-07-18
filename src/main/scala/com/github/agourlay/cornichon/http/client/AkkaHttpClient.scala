@@ -10,9 +10,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.ws.WebSocketRequest
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.ConnectionContext
-import akka.stream.Materializer
+import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
-import akka.http.scaladsl.model.{ HttpRequest ⇒ AkkaHttpRequest }
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
 
 import cats.data.Xor
@@ -23,12 +22,13 @@ import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.core.CornichonError
 
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
+
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import java.util.concurrent.TimeoutException
 import javax.net.ssl._
 
 import io.circe.Json
@@ -39,9 +39,10 @@ import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
-import scala.util.{ Failure, Success, Try }
 
-class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer, executionContext: ExecutionContext) extends HttpClient {
+class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionContext) extends HttpClient {
+
+  implicit private lazy val mat = ActorMaterializer()
 
   // Disable JDK built-in checks
   // https://groups.google.com/forum/#!topic/akka-user/ziI1fPBtxV8
@@ -83,23 +84,22 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer, executionC
     loop(headers, Seq.empty[HttpHeader])
   }
 
-  override def runRequest(method: HttpMethod, url: String, payload: Option[Json], params: Seq[(String, String)], headers: Seq[(String, String)], timeout: FiniteDuration) = {
+  override def runRequest(
+    method: HttpMethod,
+    url: String,
+    payload: Option[Json],
+    params: Seq[(String, String)],
+    headers: Seq[(String, String)]
+  ): Future[Xor[CornichonError, CornichonHttpResponse]] = {
     val requestBuilder = httpMethodMapper(method)
-    parseHttpHeaders(headers).flatMap { akkaHeaders ⇒
-      val request = requestBuilder(uriBuilder(url, params), payload).withHeaders(collection.immutable.Seq(akkaHeaders: _*))
-      val f = Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
-      waitForRequestFuture(request, f, timeout)
-    }
-  }
-
-  private def waitForRequestFuture(initialRequest: AkkaHttpRequest, f: Future[Xor[HttpError, CornichonHttpResponse]], t: FiniteDuration): Xor[HttpError, CornichonHttpResponse] =
-    Try { Await.result(f, t) } match {
-      case Success(s) ⇒ s
-      case Failure(failure) ⇒ failure match {
-        case e: TimeoutException ⇒ left(TimeoutError(e.getMessage, initialRequest.getUri().toString))
-        case t: Throwable        ⇒ left(RequestError(t, initialRequest.getUri().toString))
+    parseHttpHeaders(headers).fold(
+      mh ⇒ Future.successful(left(mh)),
+      akkaHeaders ⇒ {
+        val request = requestBuilder(uriBuilder(url, params), payload).withHeaders(collection.immutable.Seq(akkaHeaders: _*))
+        Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
       }
-    }
+    )
+  }
 
   implicit def JsonMarshaller: ToEntityMarshaller[Json] =
     Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(j ⇒ j.noSpaces)
@@ -107,17 +107,20 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer, executionC
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
   override def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], takeWithin: FiniteDuration) = {
-    parseHttpHeaders(headers).flatMap { akkaHeaders ⇒
-      stream match {
-        case SSE ⇒ openSSE(url, params, akkaHeaders, takeWithin)
-        case WS  ⇒ openWS(url, params, akkaHeaders, takeWithin)
+    parseHttpHeaders(headers).fold(
+      mh ⇒ Future.successful(left(mh)),
+      akkaHeaders ⇒ {
+        stream match {
+          case SSE ⇒ openSSE(url, params, akkaHeaders, takeWithin)
+          case WS  ⇒ openWS(url, params, akkaHeaders, takeWithin)
+        }
       }
-    }
+    )
   }
 
   def openSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
     val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))
-    val f = Http().singleRequest(request, sslContext)
+    Http().singleRequest(request, sslContext)
       .flatMap(expectSSE)
       .map { sse ⇒
         sse.map { source ⇒
@@ -135,11 +138,10 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer, executionC
           Await.result(r, takeWithin)
         }
       }
-    waitForRequestFuture(request, f, takeWithin)
   }
 
   // TODO implement WS support
-  def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Xor[HttpError, CornichonHttpResponse] = {
+  def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Future[Xor[HttpError, CornichonHttpResponse]] = {
     val uri = uriBuilder(url, params)
     val req = WebSocketRequest(uri).copy(extraHeaders = collection.immutable.Seq(headers: _*))
 
@@ -182,7 +184,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer, executionC
       case e: Exception ⇒ left(SseError(e))
     }
 
-  private def toCornichonResponse(httpResponse: HttpResponse): Future[Xor[HttpError, CornichonHttpResponse]] =
+  private def toCornichonResponse(httpResponse: HttpResponse): Future[Xor[CornichonError, CornichonHttpResponse]] =
     Unmarshal(Gzip.decode(httpResponse)).to[String].map { body: String ⇒
       right(
         CornichonHttpResponse(
@@ -196,7 +198,7 @@ class AkkaHttpClient(implicit system: ActorSystem, mat: Materializer, executionC
         left(UnmarshallingResponseError(e, httpResponse.toString()))
     }
 
-  override def shutdown() = Http().shutdownAllConnectionPools()
+  override def shutdown() = Http().shutdownAllConnectionPools().map(_ ⇒ mat.shutdown())
 
   override def paramsFromUrl(url: String): Seq[(String, String)] = Query(url)
 

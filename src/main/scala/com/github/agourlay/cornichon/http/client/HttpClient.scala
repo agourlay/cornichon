@@ -10,9 +10,21 @@ import scala.concurrent.duration.FiniteDuration
 
 trait HttpClient {
 
-  def runRequest(method: HttpMethod, url: String, payload: Option[Json], params: Seq[(String, String)], headers: Seq[(String, String)], timeout: FiniteDuration): Xor[CornichonError, CornichonHttpResponse]
+  def runRequest(
+    method: HttpMethod,
+    url: String,
+    payload: Option[Json],
+    params: Seq[(String, String)],
+    headers: Seq[(String, String)]
+  ): Future[Xor[CornichonError, CornichonHttpResponse]]
 
-  def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], takeWithin: FiniteDuration): Xor[CornichonError, CornichonHttpResponse]
+  def openStream(
+    stream: HttpStream,
+    url: String,
+    params: Seq[(String, String)],
+    headers: Seq[(String, String)],
+    takeWithin: FiniteDuration
+  ): Future[Xor[CornichonError, CornichonHttpResponse]]
 
   def shutdown(): Future[Unit]
 

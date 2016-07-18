@@ -65,15 +65,13 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
 // Protect and free resources
 private object CornichonFeature {
 
-  import akka.stream.ActorMaterializer
   import akka.actor.ActorSystem
   import scala.concurrent.duration._
   import java.util.concurrent.atomic.AtomicInteger
   import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 
-  implicit private lazy val system = ActorSystem("akka-http-client")
+  implicit private lazy val system = ActorSystem("cornichon-actor-system")
   implicit private lazy val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool)
-  implicit private lazy val mat = ActorMaterializer()
 
   private lazy val client: HttpClient = new AkkaHttpClient()
 
@@ -87,7 +85,6 @@ private object CornichonFeature {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 3) {
         client.shutdown().map { _ ⇒
-          mat.shutdown()
           ec.shutdown()
           system.terminate()
         }
