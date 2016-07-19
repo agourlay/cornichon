@@ -25,25 +25,30 @@ trait HttpDsl extends Dsl {
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  implicit def toStep(request: HttpRequest): EffectStep =
+  implicit def toStep[A: Resolvable](request: HttpRequest[A]): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.requestEffect(request)
     )
 
-  def get(url: String) = HttpRequest(GET, url, None, Seq.empty, Seq.empty)
-  def head(url: String) = HttpRequest(HEAD, url, None, Seq.empty, Seq.empty)
-  def options(url: String) = HttpRequest(OPTIONS, url, None, Seq.empty, Seq.empty)
-  def delete(url: String) = HttpRequest(DELETE, url, None, Seq.empty, Seq.empty)
-  def post(url: String) = HttpRequest(POST, url, None, Seq.empty, Seq.empty)
-  def put(url: String) = HttpRequest(PUT, url, None, Seq.empty, Seq.empty)
-  def patch(url: String) = HttpRequest(PATCH, url, None, Seq.empty, Seq.empty)
+  def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty)
+  def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty)
+  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Seq.empty, Seq.empty)
+  def delete(url: String) = HttpRequest[String](DELETE, url, None, Seq.empty, Seq.empty)
+  def post(url: String) = HttpRequest[String](POST, url, None, Seq.empty, Seq.empty)
+  def put(url: String) = HttpRequest[String](PUT, url, None, Seq.empty, Seq.empty)
+  def patch(url: String) = HttpRequest[String](PATCH, url, None, Seq.empty, Seq.empty)
 
   implicit def toStep(request: HttpStreamedRequest): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.streamEffect(request)
     )
+
+  implicit val gqlResolvableForm = new Resolvable[GqlString] {
+    def toResolvableForm(g: GqlString) = g.input
+    def fromResolvableForm(s: String) = GqlString(s)
+  }
 
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
 

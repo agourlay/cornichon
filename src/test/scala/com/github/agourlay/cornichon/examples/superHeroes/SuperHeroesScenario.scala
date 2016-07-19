@@ -122,16 +122,16 @@ class SuperHeroesScenario extends CornichonFeature {
 
         When I post("/superheroes").withParams(
           "sessionId" → "<session-id>"
-        ).withBody("""
+        ).withBody(gql"""
           {
-            "name": "Scalaman",
-            "realName": "Oleg Ilyenko",
-            "city": "Berlin",
-            "hasSuperpowers": false,
-            "publisher":{
-              "name":"DC",
-              "foundationYear":1934,
-              "location":"Burbank, California"
+            name: "Scalaman"
+            realName: "Oleg Ilyenko"
+            city: "Berlin"
+            hasSuperpowers: false
+            publisher:{
+              name:"DC"
+              foundationYear:1934
+              location:"Burbank, California"
             }
           }
           """)
