@@ -1,8 +1,9 @@
 package com.github.agourlay.cornichon.json
 
+import cats.Show
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.core.{ CornichonError, Resolvable }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.json.CornichonJson.GqlString
 import com.github.agourlay.cornichon.json.JsonDiff.Diff
@@ -99,8 +100,18 @@ trait CornichonJson {
 
 object CornichonJson extends CornichonJson {
 
-  case class GqlString(input: String) {
-    override val toString = s"GraphQl JSON $input"
+  case class GqlString(input: String)
+
+  object GqlString {
+
+    implicit val gqlResolvableForm = new Resolvable[GqlString] {
+      def toResolvableForm(g: GqlString) = g.input
+      def fromResolvableForm(s: String) = GqlString(s)
+    }
+
+    implicit val gqlShow = new Show[GqlString] {
+      def show(g: GqlString) = s"GraphQl JSON ${g.input}"
+    }
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {

@@ -20,12 +20,12 @@ import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends Dsl {
+trait HttpDsl extends Dsl with InputOps {
   this: CornichonFeature ⇒
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  implicit def toStep[A: Resolvable](request: HttpRequest[A]): EffectStep =
+  implicit def toStep[A: Input](request: HttpRequest[A]): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.requestEffect(request)
@@ -44,11 +44,6 @@ trait HttpDsl extends Dsl {
       title = request.description,
       effect = http.streamEffect(request)
     )
-
-  implicit val gqlResolvableForm = new Resolvable[GqlString] {
-    def toResolvableForm(g: GqlString) = g.input
-    def fromResolvableForm(s: String) = GqlString(s)
-  }
 
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
 
