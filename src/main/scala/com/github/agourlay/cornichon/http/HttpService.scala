@@ -19,10 +19,10 @@ import scala.util.{ Failure, Success, Try }
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
 
   import com.github.agourlay.cornichon.http.HttpService._
-  import com.github.agourlay.cornichon.core.Input._
+  import com.github.agourlay.cornichon.http.BodyInput._
 
-  def resolveRequestParts[A: Input](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
-    val ri = implicitly[Input[A]]
+  def resolveRequestParts[A: BodyInput](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
+    val ri = implicitly[BodyInput[A]]
     for {
       bodyResolved ← {
         body.map { b ⇒
@@ -42,7 +42,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     } yield (urlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
-  def runRequest[A: Input](r: HttpRequest[A], expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
+  def runRequest[A: BodyInput](r: HttpRequest[A], expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
     for {
       parts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
       resp ← waitForRequestFuture(parts._1, requestTimeout) {
@@ -118,46 +118,46 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       }
     }
 
-  def requestEffect[A: Input](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
+  def requestEffect[A: BodyInput](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
 
-  def post[A: Input](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)],
+  def post[A: BodyInput](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
     val req = HttpRequest(POST, url, body, params, headers)
     requestEffect(req, extractor, expectedStatus)
   }
 
-  def put[A: Input](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)],
+  def put[A: BodyInput](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
     val req = HttpRequest(PUT, url, body, params, headers)
     requestEffect(req, extractor, expectedStatus)
   }
 
-  def patch[A: Input](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)],
+  def patch[A: BodyInput](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
     val req = HttpRequest(PATCH, url, body, params, headers)
     requestEffect(req, extractor, expectedStatus)
   }
 
-  def get[A: Input](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+  def get[A: BodyInput](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
     val req = HttpRequest(GET, url, body, params, headers)
     requestEffect(req, extractor, expectedStatus)
   }
 
-  def head[A: Input](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+  def head[A: BodyInput](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
     val req = HttpRequest(HEAD, url, body, params, headers)
     requestEffect(req, extractor, expectedStatus)
   }
 
-  def options[A: Input](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+  def options[A: BodyInput](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
     val req = HttpRequest(OPTIONS, url, body, params, headers)
     requestEffect(req, extractor, expectedStatus)
   }
 
-  def delete[A: Input](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
+  def delete[A: BodyInput](url: String, body: Option[A] = None, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
     val req = HttpRequest(DELETE, url, body, params, headers)
     requestEffect(req, extractor, expectedStatus)

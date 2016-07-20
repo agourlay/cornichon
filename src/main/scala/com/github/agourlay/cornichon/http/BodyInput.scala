@@ -1,9 +1,9 @@
-package com.github.agourlay.cornichon.core
+package com.github.agourlay.cornichon.http
 
 import cats.Show
 
 // Alias binding all typeclass
-sealed abstract class Input[I: Show: Resolvable] {
+sealed abstract class BodyInput[I: Show: Resolvable] {
 
   def show(f: I): String
   def toResolvableForm(r: I): String
@@ -11,11 +11,11 @@ sealed abstract class Input[I: Show: Resolvable] {
 
 }
 
-object Input extends InputOps
+object BodyInput extends BodyInputOps
 
-trait InputOps {
+trait BodyInputOps {
 
-  implicit def default[I: Show: Resolvable] = new Input[I] {
+  implicit def default[I: Show: Resolvable] = new BodyInput[I] {
     def show(f: I): String = implicitly[Show[I]].show(f)
     def toResolvableForm(r: I): String = implicitly[Resolvable[I]].toResolvableForm(r)
     def fromResolvableForm(r: String): I = implicitly[Resolvable[I]].fromResolvableForm(r)

@@ -20,12 +20,12 @@ import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends Dsl with InputOps {
+trait HttpDsl extends Dsl with BodyInputOps {
   this: CornichonFeature ⇒
 
   import com.github.agourlay.cornichon.http.HttpService._
 
-  implicit def toStep[A: Input](request: HttpRequest[A]): EffectStep =
+  implicit def toStep[A: BodyInput](request: HttpRequest[A]): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.requestEffect(request)

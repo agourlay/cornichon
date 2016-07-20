@@ -3,8 +3,9 @@ package com.github.agourlay.cornichon.json
 import cats.Show
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-import com.github.agourlay.cornichon.core.{ CornichonError, Resolvable }
+import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
+import com.github.agourlay.cornichon.http.Resolvable
 import com.github.agourlay.cornichon.json.CornichonJson.GqlString
 import com.github.agourlay.cornichon.json.JsonDiff.Diff
 import io.circe.{ Json, JsonObject }

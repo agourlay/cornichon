@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.core.Input
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import io.circe.Json
@@ -31,7 +30,7 @@ trait BaseRequest {
   def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayTuples(headers)}"
 }
 
-case class HttpRequest[A: Input](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
+case class HttpRequest[A: BodyInput](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
     extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
@@ -40,10 +39,10 @@ case class HttpRequest[A: Input](method: HttpMethod, url: String, body: Option[A
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
-  def withBody[B: Input](body: B) = copy(body = Some(body))
+  def withBody[B: BodyInput](body: B) = copy(body = Some(body))
 
   def description: String = {
-    val input = implicitly[Input[A]]
+    val input = implicitly[BodyInput[A]]
     val base = s"${method.name} $url"
     val payloadTitle = body.fold("")(p ⇒ s" with body ${input.show(p)}")
     base + payloadTitle + paramsTitle + headersTitle
