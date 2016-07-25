@@ -1,6 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.data.Xor
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.Done._
+import cats.data.Xor._
 
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration.Duration
@@ -23,22 +26,23 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
         s
       case Failure(e) ⇒
         val failedStep = FailedStep(this, ConcurrentlyTimeout)
-        List((session, FailureStepsResult(failedStep, Vector(failedTitleLog(depth)))))
+        List((session, Vector(failedTitleLog(depth)), left(failedStep)))
     }
 
     // Only the first error report found is used in the logs.
-    val failedStepRun = results.collectFirst { case (s, r @ FailureStepsResult(_, _)) ⇒ (s, r) }
-    failedStepRun.fold[(Session, StepsResult)] {
+    val failedStepRun = results.collectFirst { case (s, l, r @ Xor.Left(_)) ⇒ (s, l, r) }
+    failedStepRun.fold[(Session, Vector[LogInstruction], Xor[FailedStep, Done])] {
       val executionTime = Duration.fromNanos(System.nanoTime - start)
-      val successStepsRun = results.collect { case (s, r @ SuccessStepsResult(_)) ⇒ (s, r) }
+      val successStepsRun = results.collect { case (s, l, r @ Xor.Right(_)) ⇒ (s, l, r) }
       //TODO all sessions should be merged?
       val updatedSession = successStepsRun.head._1
       //TODO all logs should be merged?
-      val updatedLogs = successTitleLog(depth) +: successStepsRun.head._2.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", depth, Some(executionTime))
-      (updatedSession, SuccessStepsResult(updatedLogs))
+      val updatedLogs = successTitleLog(depth) +: successStepsRun.head._2 :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", depth, Some(executionTime))
+      (updatedSession, updatedLogs, rightDone)
     } {
-      case (s, f) ⇒
-        (s, f.copy(logs = failedTitleLog(depth) +: f.logs :+ FailureLogInstruction(s"Concurrently block failed", depth)))
+      case (s, l, f) ⇒
+        val updatedLogs = failedTitleLog(depth) +: l :+ FailureLogInstruction(s"Concurrently block failed", depth)
+        (s, updatedLogs, f)
     }
   }
 }

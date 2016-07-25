@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.core
 
+import cats.data.Xor
+
 import scala.concurrent.ExecutionContext
 
 case class FeatureDef(name: String, scenarios: Vector[Scenario], ignored: Boolean = false) {
@@ -25,7 +27,7 @@ case class DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ Strin
 
 trait Step {
   def title: String
-  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext): (Session, StepsResult)
+  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext): (Session, Vector[LogInstruction], Xor[FailedStep, Done])
 }
 
 trait WrapperStep extends Step {
@@ -34,4 +36,3 @@ trait WrapperStep extends Step {
   def failedTitleLog(depth: Int) = FailureLogInstruction(title, depth)
   def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
 }
-

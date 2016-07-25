@@ -1,5 +1,8 @@
 package com.github.agourlay.cornichon.core
 
+import cats.data.Xor
+import cats.data.Xor._
+
 sealed trait ScenarioReport {
   def scenarioName: String
   def isSuccess: Boolean
@@ -8,30 +11,30 @@ sealed trait ScenarioReport {
 }
 
 object ScenarioReport {
-  def build(scenarioName: String, session: Session, mainResult: StepsResult, finallyResult: Option[StepsResult] = None): ScenarioReport =
+  def build(scenarioName: String, session: Session, logs: Vector[LogInstruction], mainResult: Xor[FailedStep, Done], finallyResult: Option[Xor[FailedStep, Done]] = None): ScenarioReport =
     finallyResult.fold {
       mainResult match {
-        case SuccessStepsResult(l)    ⇒ SuccessScenarioReport(scenarioName, session, l)
-        case FailureStepsResult(f, l) ⇒ FailureScenarioReport(scenarioName, Vector(f), session, l)
+        case Right(done)      ⇒ SuccessScenarioReport(scenarioName, session, logs)
+        case Left(failedStep) ⇒ FailureScenarioReport(scenarioName, Vector(failedStep), session, logs)
       }
     } { finallyRes ⇒
 
       (mainResult, finallyRes) match {
-        // Success + Sucess = Success
-        case (SuccessStepsResult(leftLogs), SuccessStepsResult(rightLogs)) ⇒
-          SuccessScenarioReport(scenarioName, session, leftLogs ++ rightLogs)
+        // Success + Success = Success
+        case (Right(_), Right(_)) ⇒
+          SuccessScenarioReport(scenarioName, session, logs)
 
         // Success + Error = Error
-        case (SuccessStepsResult(leftLogs), FailureStepsResult(failedStep, rightLogs)) ⇒
-          FailureScenarioReport(scenarioName, Vector(failedStep), session, leftLogs ++ rightLogs)
+        case (Right(_), Left(failedStep)) ⇒
+          FailureScenarioReport(scenarioName, Vector(failedStep), session, logs)
 
         // Error + Success = Error
-        case (FailureStepsResult(failedStep, leftLogs), SuccessStepsResult(rightLogs)) ⇒
-          FailureScenarioReport(scenarioName, Vector(failedStep), session, leftLogs ++ rightLogs)
+        case (Left(failedStep), Right(_)) ⇒
+          FailureScenarioReport(scenarioName, Vector(failedStep), session, logs)
 
         // Error + Error = Errors accumulated
-        case (FailureStepsResult(leftFailedStep, leftLogs), FailureStepsResult(rightFailedStep, rightLogs)) ⇒
-          FailureScenarioReport(scenarioName, Vector(leftFailedStep, rightFailedStep), session, leftLogs ++ rightLogs)
+        case (Left(leftFailedStep), Left(rightFailedStep)) ⇒
+          FailureScenarioReport(scenarioName, Vector(leftFailedStep, rightFailedStep), session, logs)
       }
     }
 }
@@ -59,16 +62,13 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[Faile
       | """.trim.stripMargin
 }
 
-sealed trait StepsResult {
-  def logs: Vector[LogInstruction]
+sealed abstract class Done
+case object Done extends Done {
+  val rightDone = Xor.right(Done)
 }
-
-case class SuccessStepsResult(logs: Vector[LogInstruction]) extends StepsResult
 
 case class FailedStep(step: Step, error: CornichonError)
 
 object FailedStep {
   def fromThrowable(step: Step, error: Throwable) = FailedStep(step, CornichonError.fromThrowable(error))
 }
-
-case class FailureStepsResult(failedStep: FailedStep, logs: Vector[LogInstruction]) extends StepsResult
