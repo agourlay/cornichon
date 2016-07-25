@@ -16,19 +16,20 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
   def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
 
     @tailrec
-    def runInputs(inputs: List[List[(String, String)]], accLogs: Vector[LogInstruction], depth: Int): StepsResult = {
-      if (inputs.isEmpty) SuccessStepsResult(session, accLogs)
+    def runInputs(inputs: List[List[(String, String)]], accLogs: Vector[LogInstruction], depth: Int): (Session, StepsResult) = {
+      if (inputs.isEmpty) (session, SuccessStepsResult(accLogs))
       else {
         val currentInputs = inputs.head
         val filledSession = session.addValues(currentInputs)
         val runInfo = InfoLogInstruction(s"Run with inputs ${Formats.displayTuples(currentInputs)}", depth)
-        engine.runSteps(nested, filledSession, Vector(runInfo), depth + 1) match {
-          case SuccessStepsResult(_, logs) ⇒
+        val (newSession, stepsResult) = engine.runSteps(nested, filledSession, Vector(runInfo), depth + 1)
+        stepsResult match {
+          case SuccessStepsResult(logs) ⇒
             // Logs are propogated but not the session
             runInputs(inputs.tail, accLogs ++ logs, depth)
           case f: FailureStepsResult ⇒
             // Prepend previous logs
-            f.copy(logs = accLogs ++ f.logs)
+            (newSession, f.copy(logs = accLogs ++ f.logs))
         }
       }
     }
@@ -41,18 +42,18 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
             line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
           }
 
-          val (inputsRes, executionTime) = withDuration {
+          val ((newSession, inputsRes), executionTime) = withDuration {
             runInputs(inputs, Vector.empty, depth + 1)
           }
 
           inputsRes match {
             case s: SuccessStepsResult ⇒
               val fullLogs = successTitleLog(depth) +: inputsRes.logs :+ SuccessLogInstruction(s"With data input succeeded for all inputs", depth, Some(executionTime))
-              SuccessStepsResult(session, fullLogs)
+              (newSession, SuccessStepsResult(fullLogs))
             case f: FailureStepsResult ⇒
               val fullLogs = failedTitleLog(depth) +: inputsRes.logs :+ FailureLogInstruction(s"With data input failed for one input", depth, Some(executionTime))
               val failedStep = FailedStep(f.failedStep.step, RetryMaxBlockReachedLimit)
-              FailureStepsResult(failedStep, session, fullLogs)
+              (newSession, FailureStepsResult(failedStep, fullLogs))
           }
         }
       )

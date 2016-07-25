@@ -8,30 +8,30 @@ sealed trait ScenarioReport {
 }
 
 object ScenarioReport {
-  def build(scenarioName: String, mainResult: StepsResult, finallyResult: Option[StepsResult] = None): ScenarioReport =
+  def build(scenarioName: String, session: Session, mainResult: StepsResult, finallyResult: Option[StepsResult] = None): ScenarioReport =
     finallyResult.fold {
       mainResult match {
-        case SuccessStepsResult(s, l)    ⇒ SuccessScenarioReport(scenarioName, s, l)
-        case FailureStepsResult(f, s, l) ⇒ FailureScenarioReport(scenarioName, Vector(f), s, l)
+        case SuccessStepsResult(l)    ⇒ SuccessScenarioReport(scenarioName, session, l)
+        case FailureStepsResult(f, l) ⇒ FailureScenarioReport(scenarioName, Vector(f), session, l)
       }
     } { finallyRes ⇒
 
       (mainResult, finallyRes) match {
         // Success + Sucess = Success
-        case (SuccessStepsResult(leftSession, leftLogs), SuccessStepsResult(rightSession, rightLogs)) ⇒
-          SuccessScenarioReport(scenarioName, leftSession.merge(rightSession), leftLogs ++ rightLogs)
+        case (SuccessStepsResult(leftLogs), SuccessStepsResult(rightLogs)) ⇒
+          SuccessScenarioReport(scenarioName, session, leftLogs ++ rightLogs)
 
         // Success + Error = Error
-        case (SuccessStepsResult(leftSession, leftLogs), FailureStepsResult(failedStep, rightSession, rightLogs)) ⇒
-          FailureScenarioReport(scenarioName, Vector(failedStep), leftSession.merge(rightSession), leftLogs ++ rightLogs)
+        case (SuccessStepsResult(leftLogs), FailureStepsResult(failedStep, rightLogs)) ⇒
+          FailureScenarioReport(scenarioName, Vector(failedStep), session, leftLogs ++ rightLogs)
 
         // Error + Success = Error
-        case (FailureStepsResult(failedStep, leftSession, leftLogs), SuccessStepsResult(rightSession, rightLogs)) ⇒
-          FailureScenarioReport(scenarioName, Vector(failedStep), leftSession.merge(rightSession), leftLogs ++ rightLogs)
+        case (FailureStepsResult(failedStep, leftLogs), SuccessStepsResult(rightLogs)) ⇒
+          FailureScenarioReport(scenarioName, Vector(failedStep), session, leftLogs ++ rightLogs)
 
         // Error + Error = Errors accumulated
-        case (FailureStepsResult(leftFailedStep, leftSession, leftLogs), FailureStepsResult(rightFailedStep, rightSession, rightLogs)) ⇒
-          FailureScenarioReport(scenarioName, Vector(leftFailedStep, rightFailedStep), leftSession.merge(rightSession), leftLogs ++ rightLogs)
+        case (FailureStepsResult(leftFailedStep, leftLogs), FailureStepsResult(rightFailedStep, rightLogs)) ⇒
+          FailureScenarioReport(scenarioName, Vector(leftFailedStep, rightFailedStep), session, leftLogs ++ rightLogs)
       }
     }
 }
@@ -61,11 +61,10 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[Faile
 
 sealed trait StepsResult {
   def logs: Vector[LogInstruction]
-  def session: Session
   def isSuccess: Boolean
 }
 
-case class SuccessStepsResult(session: Session, logs: Vector[LogInstruction]) extends StepsResult {
+case class SuccessStepsResult(logs: Vector[LogInstruction]) extends StepsResult {
   val isSuccess = true
 }
 
@@ -76,6 +75,6 @@ object FailedStep {
     FailedStep(step, CornichonError.fromThrowable(error))
 }
 
-case class FailureStepsResult(failedStep: FailedStep, session: Session, logs: Vector[LogInstruction]) extends StepsResult {
+case class FailureStepsResult(failedStep: FailedStep, logs: Vector[LogInstruction]) extends StepsResult {
   val isSuccess = false
 }

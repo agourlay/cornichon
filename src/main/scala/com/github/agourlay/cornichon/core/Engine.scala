@@ -13,29 +13,32 @@ class Engine(executionContext: ExecutionContext) {
   def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-    val mainRunReport = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
+    val (mainSession, mainRunReport) = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
     if (finallySteps.isEmpty)
-      ScenarioReport.build(scenario.name, mainRunReport)
+      ScenarioReport.build(scenario.name, mainSession, mainRunReport)
     else {
       // Reuse mainline session
-      val finallyReport = runSteps(finallySteps, mainRunReport.session, Vector.empty, initMargin + 1)
-      ScenarioReport.build(scenario.name, mainRunReport, Some(finallyReport))
+      val (finallySession, finallyReport) = runSteps(finallySteps, mainSession, Vector.empty, initMargin + 1)
+      val combinedSession = mainSession.merge(finallySession)
+      ScenarioReport.build(scenario.name, combinedSession, mainRunReport, Some(finallyReport))
     }
   }
 
   @tailrec
-  final def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): StepsResult =
+  final def runSteps(steps: Vector[Step], session: Session, accLogs: Vector[LogInstruction], depth: Int): (Session, StepsResult) =
     if (steps.isEmpty)
-      SuccessStepsResult(session, accLogs)
-    else
-      steps(0).run(this, session, depth) match {
-        case SuccessStepsResult(newSession, updatedLogs) ⇒
+      (session, SuccessStepsResult(accLogs))
+    else {
+      val (newSession, stepResult) = steps(0).run(this, session, depth)
+      stepResult match {
+        case SuccessStepsResult(updatedLogs) ⇒
           val nextSteps = steps.drop(1)
           runSteps(nextSteps, newSession, accLogs ++ updatedLogs, depth)
 
         case f: FailureStepsResult ⇒
-          f.copy(logs = accLogs ++ f.logs)
+          (newSession, f.copy(logs = accLogs ++ f.logs))
       }
+    }
 }
 
 object Engine {
@@ -52,14 +55,14 @@ object Engine {
       e ⇒ exceptionToFailureStep(currentStep, session, title, depth, e),
       newSession ⇒ {
         val runLogs = if (show) Vector(SuccessLogInstruction(title, depth, duration)) else Vector.empty
-        SuccessStepsResult(newSession, runLogs)
+        (newSession, SuccessStepsResult(runLogs))
       }
     )
 
-  def exceptionToFailureStep(currentStep: Step, session: Session, title: String, depth: Int, e: CornichonError): FailureStepsResult = {
+  def exceptionToFailureStep(currentStep: Step, session: Session, title: String, depth: Int, e: CornichonError): (Session, FailureStepsResult) = {
     val runLogs = errorLogs(title, e, depth)
     val failedStep = FailedStep(currentStep, e)
-    FailureStepsResult(failedStep, session, runLogs)
+    (session, FailureStepsResult(failedStep, runLogs))
   }
 
   def errorLogs(title: String, e: Throwable, depth: Int) = {
