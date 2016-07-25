@@ -61,20 +61,14 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[Faile
 
 sealed trait StepsResult {
   def logs: Vector[LogInstruction]
-  def isSuccess: Boolean
 }
 
-case class SuccessStepsResult(logs: Vector[LogInstruction]) extends StepsResult {
-  val isSuccess = true
-}
+case class SuccessStepsResult(logs: Vector[LogInstruction]) extends StepsResult
 
 case class FailedStep(step: Step, error: CornichonError)
 
 object FailedStep {
-  def fromThrowable(step: Step, error: Throwable) =
-    FailedStep(step, CornichonError.fromThrowable(error))
+  def fromThrowable(step: Step, error: Throwable) = FailedStep(step, CornichonError.fromThrowable(error))
 }
 
-case class FailureStepsResult(failedStep: FailedStep, logs: Vector[LogInstruction]) extends StepsResult {
-  val isSuccess = false
-}
+case class FailureStepsResult(failedStep: FailedStep, logs: Vector[LogInstruction]) extends StepsResult
