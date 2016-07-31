@@ -16,70 +16,57 @@ class Engine(executionContext: ExecutionContext) {
   def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): ScenarioReport = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-    val (mainSession, mainLogs, mainRunReport) = runSteps(scenario.steps, session, Vector(titleLog), initMargin + 1)
+    val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
+    val (mainState, mainRunReport) = runSteps(initialRunState)
     if (finallySteps.isEmpty)
-      ScenarioReport.build(scenario.name, mainSession, mainLogs, mainRunReport)
+      ScenarioReport.build(scenario.name, mainState.session, mainState.logs, mainRunReport)
     else {
       // Reuse mainline session
-      val (finallySession, finallyLogs, finallyReport) = runSteps(finallySteps, mainSession, Vector.empty, initMargin + 1)
-      val combinedSession = mainSession.merge(finallySession)
-      val combinedLogs = mainLogs ++ finallyLogs
+      val finallyRunState = initialRunState.withSteps(finallySteps).withLog(titleLog)
+      val (finallyState, finallyReport) = runSteps(finallyRunState)
+      val combinedSession = mainState.session.merge(finallyState.session)
+      val combinedLogs = mainState.logs ++ finallyState.logs
       ScenarioReport.build(scenario.name, combinedSession, combinedLogs, mainRunReport, Some(finallyReport))
     }
   }
 
   @tailrec
-  final def runSteps(
-    steps: Vector[Step],
-    session: Session,
-    accLogs: Vector[LogInstruction],
-    depth: Int
-  ): (Session, Vector[LogInstruction], Xor[FailedStep, Done]) =
-    if (steps.isEmpty)
-      (session, accLogs, right(Done))
+  final def runSteps(runState: RunState): (RunState, FailedStep Xor Done) =
+    if (runState.endReached)
+      (runState, rightDone)
     else {
-      val (newSession, runLogs, stepResult) = steps(0).run(this, session, depth)
+      val (newState, stepResult) = runState.currentStep.run(this, runState)
       stepResult match {
         case Right(Done) ⇒
-          val nextSteps = steps.drop(1)
-          runSteps(nextSteps, newSession, accLogs ++ runLogs, depth)
-
+          runSteps(newState.consumCurrentStep)
         case Left(failedStep) ⇒
-          (newSession, accLogs ++ runLogs, left(failedStep))
+          (newState, left(failedStep))
       }
     }
 }
 
 object Engine {
 
-  def withDuration[A](fct: ⇒ A): (A, Duration) = {
-    val now = System.nanoTime
-    val res = fct
-    val executionTime = Duration.fromNanos(System.nanoTime - now)
-    (res, executionTime)
-  }
-
   def xorToStepReport(
     currentStep: Step,
-    session: Session,
     res: Xor[CornichonError, Session],
     title: String,
-    depth: Int,
+    runState: RunState,
     show: Boolean,
     duration: Option[Duration] = None
-  ): (Session, Vector[LogInstruction], Xor[FailedStep, Done]) =
+  ): (RunState, FailedStep Xor Done) =
     res.fold(
-      e ⇒ exceptionToFailureStep(currentStep, session, title, depth, e),
+      e ⇒ exceptionToFailureStep(currentStep, runState, title, e),
       newSession ⇒ {
-        val runLogs = if (show) Vector(SuccessLogInstruction(title, depth, duration)) else Vector.empty
-        (newSession, runLogs, rightDone)
+        val runLogs = if (show) Vector(SuccessLogInstruction(title, runState.depth, duration)) else Vector.empty
+        (runState.withSession(newSession).appendLogs(runLogs), rightDone)
       }
     )
 
-  def exceptionToFailureStep(currentStep: Step, session: Session, title: String, depth: Int, e: CornichonError): (Session, Vector[LogInstruction], Xor[FailedStep, Done]) = {
-    val runLogs = errorLogs(title, e, depth)
+  def exceptionToFailureStep(currentStep: Step, runState: RunState, title: String, e: CornichonError): (RunState, FailedStep Xor Done) = {
+    val runLogs = errorLogs(title, e, runState.depth)
     val failedStep = FailedStep(currentStep, e)
-    (session, runLogs, left(failedStep))
+    (runState.appendLogs(runLogs), left(failedStep))
   }
 
   def errorLogs(title: String, e: Throwable, depth: Int) = {

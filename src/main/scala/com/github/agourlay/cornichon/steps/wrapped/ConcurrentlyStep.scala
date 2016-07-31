@@ -15,34 +15,39 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
 
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
-  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine, runState: RunState)(implicit ec: ExecutionContext) = {
+    val nestedRunState = runState.withSteps(nested).resetLogs.goDeeper
     val start = System.nanoTime
     val f = Future.traverse(List.fill(factor)(nested)) { steps ⇒
-      Future { engine.runSteps(steps, session, Vector.empty, depth + 1) }
+      Future { engine.runSteps(nestedRunState) }
     }
+
+    val initialDepth = runState.depth
 
     val results = Try { Await.result(f, maxTime) } match {
       case Success(s) ⇒
         s
       case Failure(e) ⇒
         val failedStep = FailedStep(this, ConcurrentlyTimeout)
-        List((session, Vector(failedTitleLog(depth)), left(failedStep)))
+        List((nestedRunState.appendLog(failedTitleLog(initialDepth)), left(failedStep)))
     }
 
     // Only the first error report found is used in the logs.
-    val failedStepRun = results.collectFirst { case (s, l, r @ Xor.Left(_)) ⇒ (s, l, r) }
-    failedStepRun.fold[(Session, Vector[LogInstruction], Xor[FailedStep, Done])] {
+    val failedStepRun = results.collectFirst { case (s, r @ Xor.Left(_)) ⇒ (s, r) }
+    failedStepRun.fold[(RunState, Xor[FailedStep, Done])] {
       val executionTime = Duration.fromNanos(System.nanoTime - start)
-      val successStepsRun = results.collect { case (s, l, r @ Xor.Right(_)) ⇒ (s, l, r) }
+      val successStepsRun = results.collect { case (s, r @ Xor.Right(_)) ⇒ (s, r) }
+      // all runs were successfull, we pick the first one
+      val resultState = successStepsRun.head._1
       //TODO all sessions should be merged?
-      val updatedSession = successStepsRun.head._1
+      val updatedSession = resultState.session
       //TODO all logs should be merged?
-      val updatedLogs = successTitleLog(depth) +: successStepsRun.head._2 :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", depth, Some(executionTime))
-      (updatedSession, updatedLogs, rightDone)
+      val updatedLogs = successTitleLog(initialDepth) +: resultState.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
+      (runState.withSession(updatedSession).appendLogs(updatedLogs), rightDone)
     } {
-      case (s, l, f) ⇒
-        val updatedLogs = failedTitleLog(depth) +: l :+ FailureLogInstruction(s"Concurrently block failed", depth)
-        (s, updatedLogs, f)
+      case (s, failedXor) ⇒
+        val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Concurrently block failed", initialDepth)
+        (runState.withSession(s.session).appendLogs(updatedLogs), failedXor)
     }
   }
 }

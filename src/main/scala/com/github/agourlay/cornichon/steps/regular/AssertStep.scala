@@ -14,13 +14,14 @@ case class AssertStep[A](
     show: Boolean = true
 ) extends Step {
 
-  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
+    val session = initialRunState.session
     val res = Xor.catchNonFatal(action(session))
       .leftMap(CornichonError.fromThrowable)
       .flatMap { assertion ⇒
         runStepPredicate(session, assertion)
       }
-    xorToStepReport(this, session, res, title, depth, show)
+    xorToStepReport(this, res, title, initialRunState, show)
   }
 
   //TODO think about making StepAssertion concrete implem. custom as well

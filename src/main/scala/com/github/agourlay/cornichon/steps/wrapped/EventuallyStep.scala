@@ -4,8 +4,8 @@ import cats.data.Xor
 import cats.data.Xor._
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.util.Timing._
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
@@ -26,50 +26,56 @@ object EventuallyConf {
 case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine, runState: RunState)(implicit ec: ExecutionContext) = {
+
+    val initialDepth = runState.depth
 
     @tailrec
-    def retryEventuallySteps(stepsToRetry: Vector[Step], session: Session, conf: EventuallyConf, accLogs: Vector[LogInstruction], retriesNumber: Long, depth: Int): (Long, Session, Vector[LogInstruction], Xor[FailedStep, Done]) = {
-      val ((newSession, logs, res), executionTime) = withDuration {
-        engine.runSteps(stepsToRetry, session, Vector.empty, depth)
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): (Long, RunState, Xor[FailedStep, Done]) = {
+      val ((newRunState, res), executionTime) = withDuration {
+        val retryRunState = RunState(runState.remainingSteps, runState.session, Vector.empty, runState.depth)
+        engine.runSteps(retryRunState)
       }
       val remainingTime = conf.maxTime - executionTime
       res match {
         case Left(failedStep) ⇒
           if ((remainingTime - conf.interval).gt(Duration.Zero)) {
             Thread.sleep(conf.interval.toMillis)
-            retryEventuallySteps(stepsToRetry, session, conf.consume(executionTime + conf.interval), accLogs ++ logs, retriesNumber + 1, depth)
+            retryEventuallySteps(runState.appendLogs(newRunState.logs), conf.consume(executionTime + conf.interval), retriesNumber + 1)
           } else {
             // In case of failure only the logs of the last run are shown to avoid giant traces.
-            (retriesNumber, newSession, logs, left(failedStep))
+            (retriesNumber, newRunState, left(failedStep))
           }
 
         case Right(done) ⇒
-          val runLogs = accLogs ++ logs
+          val state = runState.withSession(newRunState.session).appendLogs(newRunState.logs)
           if (remainingTime.gt(Duration.Zero)) {
             // In case of success all logs are returned but they are not printed by default.
-            (retriesNumber, newSession, runLogs, rightDone)
+            (retriesNumber, state, rightDone)
           } else {
             // Run was a success but the time is up.
-            val failedStep = FailedStep(stepsToRetry.last, EventuallyBlockSucceedAfterMaxDuration)
-            (retriesNumber, newSession, runLogs, left(failedStep))
+            val failedStep = FailedStep(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
+            (retriesNumber, state, left(failedStep))
           }
       }
     }
 
-    val ((retries, newSession, logs, report), executionTime) = withDuration {
-      retryEventuallySteps(nested, session, conf, Vector.empty, 0, depth + 1)
+    val ((retries, retriedRunState, report), executionTime) = withDuration {
+      val initialRetryState = runState.withSteps(nested).resetLogs.goDeeper
+      retryEventuallySteps(initialRetryState, conf, 0)
     }
 
-    report.fold(
+    val (fullLogs, xor) = report.fold(
       failedStep ⇒ {
-        val fullLogs = failedTitleLog(depth) +: logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", depth, Some(executionTime))
-        (newSession, fullLogs, left(failedStep))
+        val fullLogs = failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
+        (fullLogs, left(failedStep))
       },
       done ⇒ {
-        val fullLogs = successTitleLog(depth) +: logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", depth, Some(executionTime))
-        (newSession, fullLogs, rightDone)
+        val fullLogs = successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
+        (fullLogs, rightDone)
       }
     )
+
+    (runState.withSession(retriedRunState.session).appendLogs(fullLogs), xor)
   }
 }

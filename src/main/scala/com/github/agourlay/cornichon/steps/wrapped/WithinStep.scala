@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -10,30 +10,36 @@ import scala.concurrent.duration.Duration
 import cats.data.Xor._
 
 case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends WrapperStep {
+
   val title = s"Within block with max duration '$maxDuration'"
 
-  def run(engine: Engine, session: Session, depth: Int)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
 
-    val ((newSession, logs, res), executionTime) = withDuration {
-      engine.runSteps(nested, session, Vector.empty, depth + 1)
+    val initialDepth = initialRunState.depth
+
+    val ((withinState, res), executionTime) = withDuration {
+      engine.runSteps(initialRunState.withSteps(nested).resetLogs.goDeeper)
     }
 
-    res match {
+    val (fullLogs, xor) = res match {
       case Right(done) ⇒
-        val successLogs = successTitleLog(depth) +: logs
+        val successLogs = successTitleLog(initialDepth) +: withinState.logs
         if (executionTime.gt(maxDuration)) {
-          val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", depth, Some(executionTime))
+          val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", initialDepth, Some(executionTime))
           // The nested steps were successful but the did not finish in time, the last step is picked as failed step
           val failedStep = FailedStep(nested.last, WithinBlockSucceedAfterMaxDuration)
-          (newSession, fullLogs, left(failedStep))
+          (fullLogs, left(failedStep))
         } else {
-          val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", depth, Some(executionTime))
-          (newSession, fullLogs, rightDone)
+          val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", initialDepth, Some(executionTime))
+          (fullLogs, rightDone)
         }
       case Left(failedStep) ⇒
         // Failure of the nested steps have a higher priority
-        val fullLogs = failedTitleLog(depth) +: logs
-        (newSession, fullLogs, left(failedStep))
+        val fullLogs = failedTitleLog(initialDepth) +: withinState.logs
+        (fullLogs, left(failedStep))
     }
+
+    (initialRunState.withSession(withinState.session).appendLogs(fullLogs), xor)
+
   }
 }
