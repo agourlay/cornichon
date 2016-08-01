@@ -13,7 +13,7 @@ case class EffectStep(
     show: Boolean = true
 ) extends Step {
 
-  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val (res, executionTime) = withDuration {
       Xor.catchNonFatal(effect(initialRunState.session))
         .leftMap(CornichonError.fromThrowable)

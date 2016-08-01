@@ -17,9 +17,7 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
 
   val title = s"With data input block $where"
 
-  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
-
-    val initialDepth = initialRunState.depth
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
 
     @tailrec
     def runInputs(inputs: List[List[(String, String)]], runState: RunState): (RunState, Xor[FailedStep, Done]) = {
@@ -50,6 +48,8 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
         val ((inputsState, inputsRes), executionTime) = withDuration {
           runInputs(inputs, initialRunState.withSteps(nested).resetLogs.goDeeper)
         }
+
+        val initialDepth = initialRunState.depth
 
         val (fullLogs, xor) = inputsRes match {
           case Right(done) ⇒

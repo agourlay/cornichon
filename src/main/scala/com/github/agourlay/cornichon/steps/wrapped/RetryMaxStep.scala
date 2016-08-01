@@ -16,7 +16,7 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
 
   val title = s"RetryMax block with limit '$limit'"
 
-  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
 
     @tailrec
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): (Long, RunState, Xor[FailedStep, Done]) = {

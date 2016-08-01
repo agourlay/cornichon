@@ -6,7 +6,6 @@ import cats.data.Xor._
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
-
 import com.github.agourlay.cornichon.core.Done._
 
 class Engine(executionContext: ExecutionContext) {
@@ -35,7 +34,7 @@ class Engine(executionContext: ExecutionContext) {
     if (runState.endReached)
       (runState, rightDone)
     else {
-      val (newState, stepResult) = runState.currentStep.run(this, runState)
+      val (newState, stepResult) = runState.currentStep.run(this)(runState)
       stepResult match {
         case Right(Done) ⇒
           runSteps(newState.consumCurrentStep)

@@ -11,14 +11,14 @@ import scala.concurrent.ExecutionContext
 // Steps are wrapped/indented with a specific title
 case class AttachAsStep(title: String, nested: Vector[Step]) extends WrapperStep {
 
-  override def run(engine: Engine, runState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val ((attachedRunState, res), executionTime) = withDuration {
-      val nestedRunState = runState.withSteps(nested).resetLogs.goDeeper
+      val nestedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
       engine.runSteps(nestedRunState)
     }
 
     val nestedLogs = attachedRunState.logs
-    val initialDepth = runState.depth
+    val initialDepth = initialRunState.depth
     val (fullLogs, xor) = res.fold(
       failedStep ⇒ {
         val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(s"'$title' failed", initialDepth)
@@ -29,6 +29,6 @@ case class AttachAsStep(title: String, nested: Vector[Step]) extends WrapperStep
         (successLogs, rightDone)
       }
     )
-    (runState.withSession(attachedRunState.session).appendLogs(fullLogs), xor)
+    (initialRunState.withSession(attachedRunState.session).appendLogs(fullLogs), xor)
   }
 }

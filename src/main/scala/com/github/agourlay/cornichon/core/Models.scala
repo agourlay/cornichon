@@ -27,7 +27,7 @@ case class DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ Strin
 
 trait Step {
   def title: String
-  def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext): (RunState, FailedStep Xor Done)
+  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext): (RunState, FailedStep Xor Done)
 }
 
 trait WrapperStep extends Step {

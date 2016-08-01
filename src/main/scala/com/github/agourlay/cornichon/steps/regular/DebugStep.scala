@@ -12,7 +12,7 @@ import com.github.agourlay.cornichon.core.Engine._
 case class DebugStep(message: Session ⇒ String) extends Step {
   val title = s"Debug step"
 
-  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val (fullLogs, xor) = Try {
       message(initialRunState.session)
     } match {

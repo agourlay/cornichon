@@ -26,9 +26,7 @@ object EventuallyConf {
 case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine, runState: RunState)(implicit ec: ExecutionContext) = {
-
-    val initialDepth = runState.depth
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
 
     @tailrec
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): (Long, RunState, Xor[FailedStep, Done]) = {
@@ -61,9 +59,11 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
     }
 
     val ((retries, retriedRunState, report), executionTime) = withDuration {
-      val initialRetryState = runState.withSteps(nested).resetLogs.goDeeper
+      val initialRetryState = initialRunState.withSteps(nested).resetLogs.goDeeper
       retryEventuallySteps(initialRetryState, conf, 0)
     }
+
+    val initialDepth = initialRunState.depth
 
     val (fullLogs, xor) = report.fold(
       failedStep ⇒ {
@@ -76,6 +76,6 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
       }
     )
 
-    (runState.withSession(retriedRunState.session).appendLogs(fullLogs), xor)
+    (initialRunState.withSession(retriedRunState.session).appendLogs(fullLogs), xor)
   }
 }

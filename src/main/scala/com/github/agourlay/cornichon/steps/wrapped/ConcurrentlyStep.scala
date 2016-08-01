@@ -15,14 +15,14 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
 
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
-  override def run(engine: Engine, runState: RunState)(implicit ec: ExecutionContext) = {
-    val nestedRunState = runState.withSteps(nested).resetLogs.goDeeper
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+    val nestedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
     val start = System.nanoTime
     val f = Future.traverse(List.fill(factor)(nested)) { steps ⇒
       Future { engine.runSteps(nestedRunState) }
     }
 
-    val initialDepth = runState.depth
+    val initialDepth = initialRunState.depth
 
     val results = Try { Await.result(f, maxTime) } match {
       case Success(s) ⇒
@@ -43,11 +43,11 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
       val updatedSession = resultState.session
       //TODO all logs should be merged?
       val updatedLogs = successTitleLog(initialDepth) +: resultState.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
-      (runState.withSession(updatedSession).appendLogs(updatedLogs), rightDone)
+      (initialRunState.withSession(updatedSession).appendLogs(updatedLogs), rightDone)
     } {
       case (s, failedXor) ⇒
         val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Concurrently block failed", initialDepth)
-        (runState.withSession(s.session).appendLogs(updatedLogs), failedXor)
+        (initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor)
     }
   }
 }

@@ -16,7 +16,7 @@ case class RepeatStep(nested: Vector[Step], occurrence: Int) extends WrapperStep
 
   val title = s"Repeat block with occurrence '$occurrence'"
 
-  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
 
     @tailrec
     def repeatSuccessSteps(retriesNumber: Long, runState: RunState): (Long, RunState, Xor[FailedStep, Done]) = {

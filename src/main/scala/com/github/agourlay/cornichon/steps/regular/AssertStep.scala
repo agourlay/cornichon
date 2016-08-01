@@ -14,7 +14,7 @@ case class AssertStep[A](
     show: Boolean = true
 ) extends Step {
 
-  override def run(engine: Engine, initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val session = initialRunState.session
     val res = Xor.catchNonFatal(action(session))
       .leftMap(CornichonError.fromThrowable)

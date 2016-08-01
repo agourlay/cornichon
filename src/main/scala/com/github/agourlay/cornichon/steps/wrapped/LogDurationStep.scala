@@ -9,14 +9,14 @@ case class LogDurationStep(nested: Vector[Step], label: String) extends WrapperS
 
   val title = s"Log duration block with label '$label' started"
 
-  override def run(engine: Engine, runState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val ((logState, repeatRes), executionTime) = withDuration {
-      val logRunState = runState.withSteps(nested).resetLogs.goDeeper
+      val logRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
       engine.runSteps(logRunState)
     }
-    val titleLog = DebugLogInstruction(title, runState.depth)
-    val fullLogs = titleLog +: logState.logs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", runState.depth, Some(executionTime))
-    (runState.withSession(logState.session).appendLogs(fullLogs), repeatRes)
+    val titleLog = DebugLogInstruction(title, initialRunState.depth)
+    val fullLogs = titleLog +: logState.logs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", initialRunState.depth, Some(executionTime))
+    (initialRunState.withSession(logState.session).appendLogs(fullLogs), repeatRes)
   }
 
 }
