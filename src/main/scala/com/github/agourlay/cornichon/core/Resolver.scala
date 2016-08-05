@@ -8,6 +8,7 @@ import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import org.parboiled2._
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
+import org.scalacheck.rng.Seed
 
 import scala.util._
 
@@ -45,7 +46,7 @@ class Resolver(extractors: Map[String, Mapper]) {
     case SimpleMapper(gen) ⇒
       Xor.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
     case GenMapper(gen) ⇒
-      Xor.fromOption(gen.apply(Parameters.default), GeneratorError(ph.fullKey))
+      Xor.fromOption(gen.apply(Parameters.default, Seed.random()), GeneratorError(ph.fullKey))
     case TextMapper(key, transform) ⇒
       session.getXor(key, ph.index).map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
