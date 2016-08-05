@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.steps.regular.AssertStep
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
@@ -13,16 +13,16 @@ class EngineSpec extends WordSpec with Matchers {
     "runScenario" must {
       "executes all steps of a scenario" in {
         val session = Session.newSession
-        val steps = Vector(AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2 + 1, 3)))
+        val steps = Vector(AssertStep[Int]("first step", s ⇒ SimpleAssertion(2 + 1, 3)))
         val s = Scenario("test", steps)
         engine.runScenario(session)(s).isSuccess should be(true)
       }
 
       "stops at first failed step" in {
         val session = Session.newSession
-        val step1 = AssertStep[Int]("first step", s ⇒ SimpleStepAssertion(2, 2))
-        val step2 = AssertStep[Int]("second step", s ⇒ SimpleStepAssertion(4, 5))
-        val step3 = AssertStep[Int]("third step", s ⇒ SimpleStepAssertion(1, 1))
+        val step1 = AssertStep[Int]("first step", s ⇒ SimpleAssertion(2, 2))
+        val step2 = AssertStep[Int]("second step", s ⇒ SimpleAssertion(4, 5))
+        val step3 = AssertStep[Int]("third step", s ⇒ SimpleAssertion(1, 1))
         val steps = Vector(
           step1, step2, step3
         )
@@ -43,8 +43,8 @@ class EngineSpec extends WordSpec with Matchers {
 
       "accumulates errors if 'main' and 'finally' fail" in {
         val session = Session.newSession
-        val mainStep = AssertStep[Boolean]("main step", s ⇒ SimpleStepAssertion(true, false))
-        val finallyStep = AssertStep[Boolean]("finally step", s ⇒ SimpleStepAssertion(true, false))
+        val mainStep = AssertStep[Boolean]("main step", s ⇒ SimpleAssertion(true, false))
+        val finallyStep = AssertStep[Boolean]("finally step", s ⇒ SimpleAssertion(true, false))
         val s = Scenario("test", Vector(mainStep))
         val res = engine.runScenario(session, Vector(finallyStep))(s)
         res match {

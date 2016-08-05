@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.AssertStep
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
@@ -19,7 +19,7 @@ class RetryMaxStepSpec extends WordSpec with Matchers {
           "always fails",
           s ⇒ {
             uglyCounter = uglyCounter + 1
-            SimpleStepAssertion(true, false)
+            SimpleAssertion(true, false)
           }
         )
       )
@@ -40,7 +40,7 @@ class RetryMaxStepSpec extends WordSpec with Matchers {
           "always fails",
           s ⇒ {
             uglyCounter = uglyCounter + 1
-            SimpleStepAssertion(true, uglyCounter == max - 2)
+            SimpleAssertion(true, uglyCounter == max - 2)
           }
         )
       )

@@ -11,18 +11,6 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
-case class EventuallyConf(maxTime: Duration, interval: Duration) {
-  def consume(burnt: Duration) = {
-    val rest = maxTime - burnt
-    val newMax = if (rest.lteq(Duration.Zero)) Duration.Zero else rest
-    copy(maxTime = newMax)
-  }
-}
-
-object EventuallyConf {
-  def empty = EventuallyConf(Duration.Zero, Duration.Zero)
-}
-
 case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
@@ -78,4 +66,20 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
 
     (initialRunState.withSession(retriedRunState.session).appendLogs(fullLogs), xor)
   }
+}
+
+case class EventuallyConf(maxTime: Duration, interval: Duration) {
+  def consume(burnt: Duration) = {
+    val rest = maxTime - burnt
+    val newMax = if (rest.lteq(Duration.Zero)) Duration.Zero else rest
+    copy(maxTime = newMax)
+  }
+}
+
+object EventuallyConf {
+  def empty = EventuallyConf(Duration.Zero, Duration.Zero)
+}
+
+case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
+  val msg = "eventually block succeeded after 'maxDuration'"
 }

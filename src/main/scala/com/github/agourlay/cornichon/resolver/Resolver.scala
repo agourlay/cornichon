@@ -1,16 +1,16 @@
-package com.github.agourlay.cornichon.core
+package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import org.parboiled2._
-import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
 import org.scalacheck.rng.Seed
 
-import scala.util._
+import scala.util.{ Failure, Success }
 
 class Resolver(extractors: Map[String, Mapper]) {
 
@@ -92,45 +92,18 @@ object Resolver {
   def withoutExtractor(): Resolver = new Resolver(Map.empty[String, Mapper])
 }
 
-class PlaceholderParser(val input: ParserInput) extends Parser {
-
-  def placeholdersRule = rule {
-    Ignore ~ zeroOrMore(PlaceholderRule).separatedBy(Ignore) ~ Ignore ~ EOI
-  }
-
-  def PlaceholderRule = rule('<' ~ PlaceholderTXT ~ optIndex ~ '>' ~> Placeholder)
-
-  val notAllowedInKey = "\r\n<>[] "
-
-  def optIndex = rule(optional('[' ~ Number ~ ']'))
-
-  def PlaceholderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInKey)))
-
-  def Ignore = rule { zeroOrMore(!'<' ~ ANY) }
-
-  def Number = rule { capture(Digits) ~> (_.toInt) }
-
-  def Digits = rule { oneOrMore(CharPredicate.Digit) }
+case class ResolverParsingError(input: String, error: Throwable) extends CornichonError {
+  val msg = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
 }
 
-case class Placeholder(key: String, index: Option[Int]) {
-  val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
+case class AmbiguousKeyDefinition(key: String) extends CornichonError {
+  val msg = s"ambiguous definition of key '$key' - it is present in both session and extractors"
 }
 
-sealed trait Mapper
-
-case class SimpleMapper(generator: () ⇒ String) extends Mapper
-
-object SimpleMapper {
-  implicit def fromFct(generator: () ⇒ String): SimpleMapper = SimpleMapper(generator)
+case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
+  val msg = s"exception thrown in SimpleMapper '$key' : '${CornichonError.genStacktrace(e)}'"
 }
 
-case class GenMapper(gen: Gen[String]) extends Mapper
-
-object GenMapper {
-  implicit def fromGen(generator: Gen[String]): GenMapper = GenMapper(generator)
+case class GeneratorError(placeholder: String) extends CornichonError {
+  val msg = s"generator mapped to placeholder '$placeholder' did not generate a value"
 }
-
-case class TextMapper(key: String, transform: String ⇒ String = identity) extends Mapper
-
-case class JsonMapper(key: String, jsonPath: String, transform: String ⇒ String = identity) extends Mapper

@@ -56,3 +56,7 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
     }
   }
 }
+
+case object RepeatDuringBlockContainFailedSteps extends CornichonError {
+  val msg = "repeatDuring block contains failed step(s)"
+}

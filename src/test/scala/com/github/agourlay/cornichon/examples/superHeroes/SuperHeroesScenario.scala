@@ -5,11 +5,10 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.JsonMapper
 import com.github.agourlay.cornichon.examples.superHeroes.server.HttpAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
-
+import com.github.agourlay.cornichon.resolver.JsonMapper
 import sangria.macros._
 
 import scala.concurrent.Await

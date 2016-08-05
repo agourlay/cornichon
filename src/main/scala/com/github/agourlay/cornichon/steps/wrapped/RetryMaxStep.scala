@@ -56,3 +56,6 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
   }
 }
 
+case object RetryMaxBlockReachedLimit extends CornichonError {
+  val msg = "retry max block reached the limit"
+}

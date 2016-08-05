@@ -1,23 +1,24 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.{ AssertionStep, CollectionAssertionStep }
+import com.github.agourlay.cornichon.dsl.{ AssertionSyntax, CollectionAssertionSyntax }
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpDslErrors._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonDiff._
 import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }
-import com.github.agourlay.cornichon.steps.regular.AssertStep
+import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, DetailedAssertion, SimpleAssertion }
 import com.github.agourlay.cornichon.util.Formats._
 import io.circe.Json
 
 object HttpAssertions {
 
-  case object StatusAssertion extends AssertionStep[Int, Int] {
+  case object StatusAssertion extends AssertionSyntax[Int, Int] {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = s ⇒ DetailedStepAssertion(
+      action = s ⇒ DetailedAssertion(
       expected = expected,
       result = s.get(LastResponseStatusKey).toInt,
       details = statusError(expected, s.get(LastResponseBodyKey))
@@ -40,12 +41,12 @@ object HttpAssertions {
         val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
         val v1 = removeFieldsByPath(s.getJson(k1), ignoredPaths)
         val v2 = removeFieldsByPath(s.getJson(k2), ignoredPaths)
-        SimpleStepAssertion(v1, v2)
+        SimpleAssertion(v1, v2)
       }
     )
   }
 
-  case class HeadersAssertion(private val ordered: Boolean) extends CollectionAssertionStep[(String, String), String] {
+  case class HeadersAssertion(private val ordered: Boolean) extends CollectionAssertionSyntax[(String, String), String] {
     def is(expected: (String, String)*) = from_session_step(
       title = s"headers is ${displayTuples(expected)}",
       key = LastResponseHeadersKey,
@@ -81,7 +82,7 @@ object HttpAssertions {
       private val ignoredKeys: Seq[String],
       private val whitelist: Boolean = false,
       private val resolver: Resolver
-  ) extends AssertionStep[A, Json] {
+  ) extends AssertionSyntax[A, Json] {
 
     def path(path: String): BodyAssertion[A] = copy(jsonPath = path)
 
@@ -167,7 +168,7 @@ object HttpAssertions {
       private val ordered: Boolean,
       private val ignoredEachKeys: Seq[String],
       private val resolver: Resolver
-  ) extends AssertionStep[A, Iterable[Json]] {
+  ) extends AssertionSyntax[A, Iterable[Json]] {
 
     def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
 

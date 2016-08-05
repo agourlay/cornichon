@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.examples.math
 
-import com.github.agourlay.cornichon.core.{ DetailedStepAssertion, SimpleStepAssertion }
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, EffectStep }
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, DetailedAssertion, EffectStep, SimpleAssertion }
 
 import scala.util.Random
 
@@ -13,7 +12,7 @@ trait MathSteps {
       action = s ⇒ {
       val v1 = s.get(arg1).toInt
       val v2 = s.get(arg2).toInt
-      SimpleStepAssertion(res, v1 + v2)
+      SimpleAssertion(res, v1 + v2)
     }
     )
   }
@@ -40,7 +39,7 @@ trait MathSteps {
         title = s"double value of '$source' is between '$low' and '$high'",
         action = s ⇒ {
         val v = s.get(source).toDouble
-        DetailedStepAssertion(true, v > low && v < high, ratioError(v, low, high))
+        DetailedAssertion(true, v > low && v < high, ratioError(v, low, high))
       }
       )
   }

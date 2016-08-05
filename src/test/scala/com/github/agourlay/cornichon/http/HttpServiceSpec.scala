@@ -4,8 +4,9 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.data.Xor.right
 import cats.scalatest.XorValues
-import com.github.agourlay.cornichon.core.{ Resolver, Session }
+import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
+import com.github.agourlay.cornichon.resolver.Resolver
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
 import scala.concurrent.duration._

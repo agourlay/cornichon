@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.AssertStep
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
@@ -20,7 +20,7 @@ class WithinStepSpec extends WordSpec with Matchers {
           "possible random value step",
           s ⇒ {
             Thread.sleep(100)
-            SimpleStepAssertion(true, true)
+            SimpleAssertion(true, true)
           }
         )
       )
@@ -39,7 +39,7 @@ class WithinStepSpec extends WordSpec with Matchers {
           "possible random value step",
           s ⇒ {
             Thread.sleep(250)
-            SimpleStepAssertion(true, true)
+            SimpleAssertion(true, true)
           }
         )
       )

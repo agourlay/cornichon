@@ -1,12 +1,13 @@
-package com.github.agourlay.cornichon.core
+package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
 
 import cats.scalatest.XorValues
+import com.github.agourlay.cornichon.core.SessionSpec._
+import com.github.agourlay.cornichon.core.{ KeyNotFoundInSession, Session }
+import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
-import org.scalacheck.Gen
-import com.github.agourlay.cornichon.core.SessionSpec._
 
 class ResolverSpec extends WordSpec with Matchers with OptionValues with PropertyChecks with XorValues {
 

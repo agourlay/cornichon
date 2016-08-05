@@ -116,7 +116,7 @@ trait Dsl {
   def session_contains(key: String, value: String) =
     AssertStep(
       title = s"session key '$key' equals '$value'",
-      action = s ⇒ SimpleStepAssertion(value, s.get(key))
+      action = s ⇒ SimpleAssertion(value, s.get(key))
     )
 
   def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
@@ -146,7 +146,7 @@ object Dsl {
   def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
-      s ⇒ SimpleStepAssertion(
+      s ⇒ SimpleAssertion(
         expected = expected(s),
         result = mapValue(s, s.get(key))
       )
@@ -157,7 +157,7 @@ object Dsl {
       title,
       s ⇒ {
         val (res, details) = mapValue(s, s.get(key))
-        DetailedStepAssertion(
+        DetailedAssertion(
           expected = expected(s),
           result = res,
           details = details

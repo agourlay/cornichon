@@ -72,3 +72,11 @@ case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
 object Session {
   def newSession = Session(HashMap.empty)
 }
+
+case class EmptyKeyException(s: Session) extends CornichonError {
+  val msg = s"key value can not be empty - session is \n${s.prettyPrint}"
+}
+
+case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
+  val msg = s"key '$key' can not be found in session : \n${s.prettyPrint}"
+}

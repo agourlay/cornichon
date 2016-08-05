@@ -5,6 +5,7 @@ import java.util.concurrent.Executors
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
+import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration

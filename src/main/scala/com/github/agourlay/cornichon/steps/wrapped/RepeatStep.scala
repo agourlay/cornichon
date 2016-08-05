@@ -54,3 +54,7 @@ case class RepeatStep(nested: Vector[Step], occurrence: Int) extends WrapperStep
     (initialRunState.withSession(repeatedState.session).appendLogs(fullLogs), xor)
   }
 }
+
+case object RepeatBlockContainFailedSteps extends CornichonError {
+  val msg = "repeat block contains failed step(s)"
+}

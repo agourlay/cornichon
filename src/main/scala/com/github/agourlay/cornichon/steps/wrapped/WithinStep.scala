@@ -43,3 +43,7 @@ case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends Wrapp
 
   }
 }
+
+case object WithinBlockSucceedAfterMaxDuration extends CornichonError {
+  val msg = "within block succeeded after 'maxDuration'"
+}

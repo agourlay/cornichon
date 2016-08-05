@@ -51,3 +51,7 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
     }
   }
 }
+
+case object ConcurrentlyTimeout extends CornichonError {
+  val msg = "concurrent block did not reach completion in 'maxTime'"
+}

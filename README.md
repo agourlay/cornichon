@@ -533,7 +533,7 @@ WithDataInputs(
 }
 
 def a_plus_b_equals_c =
-  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ SimpleStepAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
+  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ SimpleAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
 ```
 
 - WithHeaders automatically sets headers for several steps useful for authenticated scenario.
@@ -703,17 +703,17 @@ It becomes then possible to retrieve past values :
 
 There are two kind of ```step``` :
 - EffectStep ```Session => Session``` : It runs a side effect and populates the ```Session``` with values.
-- AssertStep ```Sesssion => StepAssertion[A]``` : Describes the expectation of the test.
+- AssertStep ```Sesssion => Assertion[A]``` : Describes the expectation of the test.
 
  
 A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
 
-A ```StepAssertion``` is simply a container for 2 values, the expected value and the actual result. The test engine is responsible to test the equality of the ```StepAssertion``` values.
+An ```Assertion``` is simply a container for 2 values, the expected value and the actual result. The test engine is responsible to test the equality of the ```Assertion``` values.
  
-The engine will try its best to provide a meaningful error message, if a specific error message is required it is also possible to provide a custom error message using a ```DetailedStepAssertion```.
+The engine will try its best to provide a meaningful error message, if a specific error message is required it is also possible to provide a custom error message using a ```DetailedAssertion```.
 
 ```scala
- DetailedStepAssertion[A](expected: A, result: A, details: A ⇒ String)
+ DetailedAssertion[A](expected: A, result: A, details: A ⇒ String)
 ```
 
 The engine will feed the actual result to the ```details``` function.
@@ -721,13 +721,13 @@ The engine will feed the actual result to the ```details``` function.
 In practice the simplest runnable statement in the DSL is
 
 ```scala
-When I AssertStep("do nothing", s => StepAssertion(true, true))
+When I AssertStep("do nothing", s => SimpleAssertion(true, true))
 ```
 
 Let's try to assert the result of a computation
 
 ```scala
-When I AssertStep("calculate", s => StepAssertion(2 + 2, 4))
+When I AssertStep("calculate", s => SimpleAssertion(2 + 2, 4))
 ```
 
 The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
@@ -745,7 +745,7 @@ Then assert AssertStep(
   title = "check computation infos",
   action = s =>
     val pi = s.get("result")
-    StepAssertion(pi, 3.14)
+    SimpleAssertion(pi, 3.14)
   )
 ```
 

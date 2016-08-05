@@ -4,13 +4,13 @@ import java.util.concurrent.TimeoutException
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
+import com.github.agourlay.cornichon.resolver.Resolver
 
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
