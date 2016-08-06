@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.http
 
 import cats.Show
+import cats.syntax.show._
 
 // Alias binding all typeclass
 sealed abstract class BodyInput[I: Show: Resolvable] {
@@ -16,13 +17,9 @@ object BodyInput extends BodyInputOps
 trait BodyInputOps {
 
   implicit def default[I: Show: Resolvable] = new BodyInput[I] {
-    def show(f: I): String = implicitly[Show[I]].show(f)
+    def show(f: I): String = f.show
     def toResolvableForm(r: I): String = implicitly[Resolvable[I]].toResolvableForm(r)
     def fromResolvableForm(r: String): I = implicitly[Resolvable[I]].fromResolvableForm(r)
-  }
-
-  implicit val showString = new Show[String] {
-    def show(f: String) = f
   }
 }
 

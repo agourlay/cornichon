@@ -16,7 +16,7 @@ class AssertStepSpec extends WordSpec with Matchers {
       val steps = Vector(
         AssertStep[Int]("stupid step", s ⇒ {
           6 / 0
-          SimpleAssertion(2, 2)
+          GenericAssertion(2, 2)
         })
       )
       val s = Scenario("scenario with stupid test", steps)
@@ -27,7 +27,7 @@ class AssertStepSpec extends WordSpec with Matchers {
       val session = Session.newSession
       val steps = Vector(
         AssertStep(
-          "non equals step", s ⇒ SimpleAssertion(1, 2), negate = true
+          "non equals step", s ⇒ GenericAssertion(1, 2, negate = true)
         )
       )
       val s = Scenario("scenario with unresolved", steps)
@@ -38,9 +38,9 @@ class AssertStepSpec extends WordSpec with Matchers {
   "runStepPredicate" must {
     "return session if assertion is True" in {
       val session = Session.newSession
-      val assertion = SimpleAssertion(2, 2)
+      val assertion = GenericAssertion(2, 2)
       val step = AssertStep[Int]("stupid step", s ⇒ assertion)
-      step.runStepPredicate(session, assertion).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
+      step.runStepPredicate(session)(assertion).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))
     }
   }
 }

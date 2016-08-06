@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
@@ -18,7 +18,7 @@ class EventuallyStepSpec extends WordSpec with Matchers {
       val nested: Vector[Step] = Vector(
         AssertStep(
           "possible random value step",
-          s ⇒ SimpleAssertion(scala.util.Random.nextInt(10), 5)
+          s ⇒ GenericAssertion(scala.util.Random.nextInt(10), 5)
         )
       )
 
@@ -32,7 +32,7 @@ class EventuallyStepSpec extends WordSpec with Matchers {
       val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
       val nested: Vector[Step] = Vector(
         AssertStep(
-          "impossible random value step", s ⇒ SimpleAssertion(11, scala.util.Random.nextInt(10))
+          "impossible random value step", s ⇒ GenericAssertion(11, scala.util.Random.nextInt(10))
         )
       )
       val steps = Vector(

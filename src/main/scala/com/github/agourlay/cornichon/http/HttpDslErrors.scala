@@ -13,12 +13,15 @@ object HttpDslErrors {
   }
 
   def arraySizeError(expected: Int, sourceArray: String): Int ⇒ String = actual ⇒ {
-    s"""expected array size '$expected' but actual is '$actual' with array:
+    val base = s"""expected array size '$expected' but actual size is '$actual'"""
+    if (actual != 0)
+      base + """ with array:
       |$sourceArray""".stripMargin
+    else base
   }
 
-  def arrayDoesNotContainError(expected: Seq[String], sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
-    s"""expected array to contain
+  def arrayContainsError(expected: Seq[String], sourceArray: String, contains: Boolean): Boolean ⇒ String = resFalse ⇒ {
+    s"""expected array to ${if (contains) "" else "not "}contain
       |'${expected.mkString(" and ")}'
       |but it is not the case with array:
       |$sourceArray""".stripMargin

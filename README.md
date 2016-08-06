@@ -533,7 +533,7 @@ WithDataInputs(
 }
 
 def a_plus_b_equals_c =
-  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ SimpleAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
+  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
 ```
 
 - WithHeaders automatically sets headers for several steps useful for authenticated scenario.
@@ -708,26 +708,28 @@ There are two kind of ```step``` :
  
 A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
 
-An ```Assertion``` is simply a container for 2 values, the expected value and the actual result. The test engine is responsible to test the equality of the ```Assertion``` values.
+The test engine is responsible to test the equality of the ```Assertion``` values which has two concrete implementations.
+
+The ```GenericAssertion``` is simply a container for 2 values, the expected value and the actual result, when used, the engine will try its best to provide a meaningful error message.
  
-The engine will try its best to provide a meaningful error message, if a specific error message is required it is also possible to provide a custom error message using a ```DetailedAssertion```.
+If a specific error message is prefered, it is also possible to provide a custom error message using the ```CustomMessageAssertion```.
 
 ```scala
- DetailedAssertion[A](expected: A, result: A, details: A ⇒ String)
+ CustomMessageAssertion[A](expected: A, result: A, customMessage: A ⇒ String)
 ```
 
-The engine will feed the actual result to the ```details``` function.
+The engine will feed the actual result to the ```customMessage``` function.
 
 In practice the simplest runnable statement in the DSL is
 
 ```scala
-When I AssertStep("do nothing", s => SimpleAssertion(true, true))
+When I AssertStep("do nothing", s => GenericAssertion(true, true))
 ```
 
 Let's try to assert the result of a computation
 
 ```scala
-When I AssertStep("calculate", s => SimpleAssertion(2 + 2, 4))
+When I AssertStep("calculate", s => GenericAssertion(2 + 2, 4))
 ```
 
 The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
@@ -745,7 +747,7 @@ Then assert AssertStep(
   title = "check computation infos",
   action = s =>
     val pi = s.get("result")
-    SimpleAssertion(pi, 3.14)
+    GenericAssertion(pi, 3.14)
   )
 ```
 

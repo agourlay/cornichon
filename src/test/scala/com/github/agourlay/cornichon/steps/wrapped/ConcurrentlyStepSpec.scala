@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
@@ -18,7 +18,7 @@ class ConcurrentlyStepSpec extends WordSpec with Matchers {
       val nested: Vector[Step] = Vector(
         AssertStep(
           "always fails",
-          s ⇒ SimpleAssertion(true, false)
+          s ⇒ GenericAssertion(true, false)
         )
       )
       val steps = Vector(
@@ -36,7 +36,7 @@ class ConcurrentlyStepSpec extends WordSpec with Matchers {
           "increment captured counter",
           s ⇒ {
             uglyCounter.incrementAndGet()
-            SimpleAssertion(true, true)
+            GenericAssertion(true, true)
           }
         )
       )

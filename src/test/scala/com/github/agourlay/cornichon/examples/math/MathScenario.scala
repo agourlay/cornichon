@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 
 import scala.concurrent.duration._
 
@@ -62,7 +62,7 @@ class MathScenario extends CornichonFeature with MathSteps {
           | 1 | -1 | 0  |
         """
       ) {
-          Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ SimpleAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
+          Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
         }
     }
   }

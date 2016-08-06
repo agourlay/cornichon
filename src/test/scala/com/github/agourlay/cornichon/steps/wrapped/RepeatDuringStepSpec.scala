@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
@@ -17,7 +17,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
       val nested: Vector[Step] = Vector(
         AssertStep(
           "always fails",
-          s ⇒ SimpleAssertion(true, false)
+          s ⇒ GenericAssertion(true, false)
         )
       )
       val steps = Vector(
@@ -33,7 +33,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
           "always valid",
           s ⇒ {
             Thread.sleep(1)
-            SimpleAssertion(true, true)
+            GenericAssertion(true, true)
           }
         )
       )
@@ -57,7 +57,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers {
           "always valid",
           s ⇒ {
             Thread.sleep(500)
-            SimpleAssertion(true, true)
+            GenericAssertion(true, true)
           }
         )
       )

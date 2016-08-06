@@ -11,6 +11,7 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.util.ShowInstances._
 
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._

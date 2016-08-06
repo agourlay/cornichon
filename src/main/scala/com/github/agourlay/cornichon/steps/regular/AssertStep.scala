@@ -9,52 +9,43 @@ import io.circe.Json
 
 import scala.concurrent.ExecutionContext
 
-case class AssertStep[A](
-    title: String,
-    action: Session ⇒ Assertion[A],
-    negate: Boolean = false,
-    show: Boolean = true
-) extends Step {
+case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: Boolean = true) extends Step {
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val session = initialRunState.session
     val res = Xor.catchNonFatal(action(session))
       .leftMap(CornichonError.fromThrowable)
-      .flatMap { assertion ⇒
-        runStepPredicate(session, assertion)
-      }
+      .flatMap(runStepPredicate(session))
     xorToStepReport(this, res, title, initialRunState, show)
   }
 
-  //TODO think about making StepAssertion concrete implem. custom as well
-  def runStepPredicate(newSession: Session, stepAssertion: Assertion[A]): Xor[CornichonError, Session] = {
-    val succeedAsExpected = stepAssertion.isSuccess && !negate
-    val failedAsExpected = !stepAssertion.isSuccess && negate
-
-    if (succeedAsExpected || failedAsExpected) right(newSession)
+  def runStepPredicate(newSession: Session)(assertion: Assertion[A]): Xor[CornichonError, Session] =
+    if (assertion.isSuccessful)
+      right(newSession)
     else
-      stepAssertion match {
-        case SimpleAssertion(expected, actual) ⇒
-          left(AssertionError(expected, actual, negate))
-        case DetailedAssertion(expected, actual, details) ⇒
-          left(DetailedAssertionError(actual, details))
-      }
+      left(assertion.assertionError)
+
+}
+
+abstract class Assertion[A] {
+  val expected: A
+  val actual: A
+  val expectedEqualsActual = expected == actual
+  val isSuccessful = {
+    val succeedAsExpected = expectedEqualsActual && !negate
+    val failedAsExpected = !expectedEqualsActual && negate
+
+    succeedAsExpected || failedAsExpected
   }
+  val negate: Boolean
+  def assertionError: CornichonError
 }
 
-sealed trait Assertion[A] {
-  def isSuccess: Boolean
+case class GenericAssertion[A](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
+  lazy val assertionError = GenericAssertionError(expected, actual, negate)
 }
 
-case class SimpleAssertion[A](expected: A, result: A) extends Assertion[A] {
-  val isSuccess = expected == result
-}
-
-case class DetailedAssertion[A](expected: A, result: A, details: A ⇒ String) extends Assertion[A] {
-  val isSuccess = expected == result
-}
-
-case class AssertionError[A](expected: A, actual: A, negate: Boolean) extends CornichonError {
+case class GenericAssertionError[A](expected: A, actual: A, negate: Boolean) extends CornichonError {
   private val baseMsg =
     s"""|expected result was${if (negate) " different than:" else ":"}
         |'$expected'
@@ -62,24 +53,35 @@ case class AssertionError[A](expected: A, actual: A, negate: Boolean) extends Co
         |'$actual'
         |""".stripMargin.trim
 
-  // TODO Introduce Show + Diff (Eq?) type classes to remove casting and display objects nicely
-  val msg = actual match {
-    case s: String ⇒ baseMsg
-    case j: Json ⇒
+  // TODO Introduce Show + Eq + Diff type classes to extract logic
+  val msg = (expected, actual) match {
+    case (expectedString: String, actualString: String) ⇒
+      baseMsg
+
+    case (expectedJson: Json, actualJson: Json) ⇒
       s"""|expected result was${if (negate) " different than:" else ":"}
-          |${prettyPrint(expected.asInstanceOf[Json])}
+          |${prettyPrint(expectedJson)}
           |but actual result is:
-          |${prettyPrint(actual.asInstanceOf[Json])}
+          |${prettyPrint(actualJson)}
           |
           |diff. between actual result and expected result is :
-          |${prettyDiff(j, expected.asInstanceOf[Json])}
+          |${prettyDiff(actualJson, expectedJson)}
       """.stripMargin.trim
-    case j: Seq[A] ⇒ s"$baseMsg \n Seq diff is '${j.diff(expected.asInstanceOf[Seq[A]]).mkString(", ")}'"
-    case j: Set[A] ⇒ s"$baseMsg \n Set diff is '${j.diff(expected.asInstanceOf[Set[A]]).mkString(", ")}'"
-    case _         ⇒ baseMsg
+
+    case (expectedSeq: Seq[A], actualSeq: Seq[A]) ⇒
+      s"$baseMsg \n Seq diff is '${actualSeq.diff(expectedSeq).mkString(", ")}'"
+
+    case (expectedSet: Set[A], actualSet: Set[A]) ⇒
+      s"$baseMsg \n Set diff is '${actualSet.diff(expectedSet).mkString(", ")}'"
+
+    case _ ⇒ baseMsg
   }
 }
 
-case class DetailedAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
+case class CustomMessageAssertion[A](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
+  lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
+}
+
+case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
   val msg = detailedAssertion(result)
 }

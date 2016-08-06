@@ -9,8 +9,9 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonDiff._
 import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }
 import com.github.agourlay.cornichon.resolver.Resolver
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, DetailedAssertion, SimpleAssertion }
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion, GenericAssertion }
 import com.github.agourlay.cornichon.util.Formats._
+
 import io.circe.Json
 
 object HttpAssertions {
@@ -18,10 +19,10 @@ object HttpAssertions {
   case object StatusAssertion extends AssertionSyntax[Int, Int] {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = s ⇒ DetailedAssertion(
+      action = s ⇒ CustomMessageAssertion(
       expected = expected,
-      result = s.get(LastResponseStatusKey).toInt,
-      details = statusError(expected, s.get(LastResponseBodyKey))
+      actual = s.get(LastResponseStatusKey).toInt,
+      customMessage = statusError(expected, s.get(LastResponseBodyKey))
     )
     )
   }
@@ -41,13 +42,13 @@ object HttpAssertions {
         val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
         val v1 = removeFieldsByPath(s.getJson(k1), ignoredPaths)
         val v2 = removeFieldsByPath(s.getJson(k2), ignoredPaths)
-        SimpleAssertion(v1, v2)
+        GenericAssertion(v1, v2)
       }
     )
   }
 
   case class HeadersAssertion(private val ordered: Boolean) extends CollectionAssertionSyntax[(String, String), String] {
-    def is(expected: (String, String)*) = from_session_step(
+    def is(expected: (String, String)*) = from_session_step[Iterable[String]](
       title = s"headers is ${displayTuples(expected)}",
       key = LastResponseHeadersKey,
       expected = s ⇒ expected.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" },
@@ -170,7 +171,7 @@ object HttpAssertions {
       private val resolver: Resolver
   ) extends AssertionSyntax[A, Iterable[Json]] {
 
-    def inOrder: BodyArrayAssertion[A] = copy(ordered = true)
+    def inOrder = copy[A](ordered = true)
 
     def ignoringEach(ignoringEach: String*): BodyArrayAssertion[A] = copy(ignoredEachKeys = ignoringEach)
 
@@ -248,25 +249,25 @@ object HttpAssertions {
     def not_contains(elements: A*) = {
       val prettyElements = elements.mkString(" and ")
       val title = if (jsonPath == JsonPath.root) s"response body array does not contain $prettyElements" else s"response body's array '$jsonPath' does not contain $prettyElements"
-      containsInSession(title, elements).copy(negate = true)
+      bodyContainsElmt(title, elements, expected = false)
     }
 
     def contains(elements: A*) = {
       val prettyElements = elements.mkString(" and ")
       val title = if (jsonPath == JsonPath.root) s"response body array contains $prettyElements" else s"response body's array '$jsonPath' contains $prettyElements"
-      containsInSession(title, elements)
+      bodyContainsElmt(title, elements, expected = true)
     }
 
-    private def containsInSession(title: String, elements: Seq[A]): AssertStep[Boolean] = {
+    private def bodyContainsElmt(title: String, elements: Seq[A], expected: Boolean): AssertStep[Boolean] = {
       from_session_detail_step(
         title = title,
         key = LastResponseBodyKey,
-        expected = s ⇒ true,
+        expected = s ⇒ expected,
         mapValue = (s, sessionValue) ⇒ {
         val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
         val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
         val containsAll = resolvedJson.forall(jArr.contains)
-        (containsAll, arrayDoesNotContainError(resolvedJson.map(prettyPrint), prettyPrint(Json.fromValues(jArr))))
+        (containsAll, arrayContainsError(resolvedJson.map(prettyPrint), prettyPrint(Json.fromValues(jArr)), expected))
       }
       )
     }
@@ -281,7 +282,12 @@ object HttpAssertions {
     jArr.fold(e ⇒ throw e, identity)
   }
 
-  private def body_array_transform[A](arrayExtractor: (Session, String) ⇒ List[Json], mapFct: (Session, List[Json]) ⇒ A, title: String, expected: Session ⇒ A): AssertStep[A] =
+  private def body_array_transform[A](
+    arrayExtractor: (Session, String) ⇒ List[Json],
+    mapFct: (Session, List[Json]) ⇒ A,
+    title: String,
+    expected: Session ⇒ A
+  ): AssertStep[A] =
     from_session_step[A](
       title = title,
       key = LastResponseBodyKey,

@@ -6,12 +6,13 @@ import com.github.agourlay.cornichon.dsl.CoreAssertion.{ SessionAssertion, Sessi
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
+import com.github.agourlay.cornichon.util.ShowInstances
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-trait Dsl {
+trait Dsl extends ShowInstances {
 
   def Feature(name: String, ignored: Boolean = false) =
     BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
@@ -116,7 +117,7 @@ trait Dsl {
   def session_contains(key: String, value: String) =
     AssertStep(
       title = s"session key '$key' equals '$value'",
-      action = s ⇒ SimpleAssertion(value, s.get(key))
+      action = s ⇒ GenericAssertion(value, s.get(key))
     )
 
   def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
@@ -146,9 +147,9 @@ object Dsl {
   def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
-      s ⇒ SimpleAssertion(
+      s ⇒ GenericAssertion(
         expected = expected(s),
-        result = mapValue(s, s.get(key))
+        actual = mapValue(s, s.get(key))
       )
     )
 
@@ -157,10 +158,10 @@ object Dsl {
       title,
       s ⇒ {
         val (res, details) = mapValue(s, s.get(key))
-        DetailedAssertion(
+        CustomMessageAssertion(
           expected = expected(s),
-          result = res,
-          details = details
+          actual = res,
+          customMessage = details
         )
       }
     )

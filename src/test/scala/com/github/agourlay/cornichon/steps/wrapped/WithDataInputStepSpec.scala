@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, SimpleAssertion }
+import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
@@ -16,7 +16,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers {
       val nested: Vector[Step] = Vector(
         AssertStep(
           "always ok",
-          s ⇒ SimpleAssertion(true, true)
+          s ⇒ GenericAssertion(true, true)
         )
       )
       val inputs =
@@ -39,7 +39,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers {
       val nested: Vector[Step] = Vector(
         AssertStep(
           "always fails",
-          s ⇒ SimpleAssertion(true, false)
+          s ⇒ GenericAssertion(true, false)
         )
       )
       val inputs =
@@ -64,7 +64,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers {
           "always ok",
           s ⇒ {
             uglyCounter = uglyCounter + 1
-            SimpleAssertion(true, true)
+            GenericAssertion(true, true)
           }
         )
       )
@@ -91,7 +91,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers {
           "sum of 'a' + 'b' = 'c'",
           s ⇒ {
             val sum = s.get("a").toInt + s.get("b").toInt
-            SimpleAssertion(sum, s.get("c").toInt)
+            GenericAssertion(sum, s.get("c").toInt)
           }
         )
       )
