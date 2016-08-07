@@ -3,6 +3,7 @@ cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=m
 
 An extensible Scala DSL for testing JSON HTTP APIs.
 
+Warning : documentation updated for the version 0.9.0 that is to be released very soon.
 
 ## Table of contents
 
