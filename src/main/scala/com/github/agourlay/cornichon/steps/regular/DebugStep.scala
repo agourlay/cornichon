@@ -9,8 +9,9 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
 
-case class DebugStep(message: Session ⇒ String) extends Step {
-  val title = s"Debug step"
+case class DebugStep(message: Session ⇒ String, title: String = "Debug step") extends Step {
+
+  def setTitle(newTitle: String) = copy(title = newTitle)
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val (fullLogs, xor) = Try {

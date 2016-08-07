@@ -1,14 +1,15 @@
 package com.github.agourlay.cornichon.core
 
+import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
-
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.concurrent.ExecutionContext
 
 class EngineSpec extends WordSpec with Matchers {
 
-  val engine = new Engine(ExecutionContext.global)
+  val resolver = Resolver.withoutExtractor()
+  val engine = Engine.withStepTitleResolver(resolver, ExecutionContext.global)
 
   "An engine" when {
     "runScenario" must {

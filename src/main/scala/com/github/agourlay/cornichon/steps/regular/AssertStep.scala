@@ -11,12 +11,14 @@ import scala.concurrent.ExecutionContext
 
 case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: Boolean = true) extends Step {
 
+  def setTitle(newTitle: String) = copy(title = newTitle)
+
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val session = initialRunState.session
     val res = Xor.catchNonFatal(action(session))
       .leftMap(CornichonError.fromThrowable)
       .flatMap(runStepPredicate(session))
-    xorToStepReport(this, res, title, initialRunState, show)
+    xorToStepReport(this, res, initialRunState, show)
   }
 
   def runStepPredicate(newSession: Session)(assertion: Assertion[A]): Xor[CornichonError, Session] =

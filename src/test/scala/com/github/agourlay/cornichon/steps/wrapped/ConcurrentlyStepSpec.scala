@@ -3,15 +3,13 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-class ConcurrentlyStepSpec extends WordSpec with Matchers {
-
-  val engine = new Engine(ExecutionContext.global)
+class ConcurrentlyStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "ConcurrentlyStep" must {
     "fail if 'concurrently' block contains a failed step" in {

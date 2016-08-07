@@ -1,15 +1,13 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-class WithinStepSpec extends WordSpec with Matchers {
-
-  val engine = new Engine(ExecutionContext.global)
+class WithinStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "WithinStep" must {
     "control duration of 'within' wrapped steps" in {

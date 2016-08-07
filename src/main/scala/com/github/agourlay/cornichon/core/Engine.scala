@@ -7,8 +7,9 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.resolver.Resolver
 
-class Engine(executionContext: ExecutionContext) {
+class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext) {
 
   private implicit val ec = executionContext
 
@@ -34,36 +35,51 @@ class Engine(executionContext: ExecutionContext) {
     if (runState.endReached)
       (runState, rightDone)
     else {
-      val (newState, stepResult) = runState.currentStep.run(this)(runState)
-      stepResult match {
-        case Right(Done) ⇒
-          runSteps(newState.consumCurrentStep)
-        case Left(failedStep) ⇒
-          (newState, left(failedStep))
+      val currentStep = runState.currentStep
+      val currentSession = runState.session
+      val preparedStep = stepPreparers.foldLeft[CornichonError Xor Step](right(currentStep)) {
+        (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(currentSession))
+      }
+      preparedStep match {
+        case Left(ce) ⇒
+          Engine.exceptionToFailureStep(currentStep, runState, ce)
+        case Right(ps) ⇒
+          val (newState, stepResult) = ps.run(this)(runState)
+          stepResult match {
+            case Right(Done) ⇒
+              runSteps(newState.consumCurrentStep)
+            case Left(failedStep) ⇒
+              (newState, left(failedStep))
+          }
       }
     }
 }
 
 object Engine {
 
+  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext) =
+    new Engine(
+      stepPreparers = StepPreparerTitleResolver(resolver) :: Nil,
+      executionContext = executionContext
+    )
+
   def xorToStepReport(
     currentStep: Step,
     res: Xor[CornichonError, Session],
-    title: String,
     runState: RunState,
     show: Boolean,
     duration: Option[Duration] = None
   ): (RunState, FailedStep Xor Done) =
     res.fold(
-      e ⇒ exceptionToFailureStep(currentStep, runState, title, e),
+      e ⇒ exceptionToFailureStep(currentStep, runState, e),
       newSession ⇒ {
-        val runLogs = if (show) Vector(SuccessLogInstruction(title, runState.depth, duration)) else Vector.empty
+        val runLogs = if (show) Vector(SuccessLogInstruction(currentStep.title, runState.depth, duration)) else Vector.empty
         (runState.withSession(newSession).appendLogs(runLogs), rightDone)
       }
     )
 
-  def exceptionToFailureStep(currentStep: Step, runState: RunState, title: String, e: CornichonError): (RunState, FailedStep Xor Done) = {
-    val runLogs = errorLogs(title, e, runState.depth)
+  def exceptionToFailureStep(currentStep: Step, runState: RunState, e: CornichonError): (RunState, FailedStep Xor Done) = {
+    val runLogs = errorLogs(currentStep.title, e, runState.depth)
     val failedStep = FailedStep(currentStep, e)
     (runState.appendLogs(runLogs), left(failedStep))
   }
@@ -75,34 +91,5 @@ object Engine {
       FailureLogInstruction(m, depth)
     }
   }
-
-}
-
-case class RunState(remainingSteps: Vector[Step], session: Session, logs: Vector[LogInstruction], depth: Int) {
-
-  lazy val endReached = remainingSteps.isEmpty
-
-  lazy val currentStep = remainingSteps.head
-
-  def goDeeper = copy(depth = depth + 1)
-
-  def withSteps(steps: Vector[Step]) = copy(remainingSteps = steps)
-  def consumCurrentStep = copy(remainingSteps = remainingSteps.drop(1))
-
-  def withSession(s: Session) = copy(session = s)
-  def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValues(tuples))
-
-  def withLogs(logs: Vector[LogInstruction]) = copy(logs = logs)
-  def withLog(log: LogInstruction) = copy(logs = Vector(log))
-
-  def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
-  def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
-
-  def prependLog(add: LogInstruction) = copy(logs = add +: logs)
-  def prependLogs(add: Vector[LogInstruction]) = copy(logs = add ++ logs)
-
-  def resetLogs = copy(logs = Vector.empty)
-
-  def prependSteps(prepend: Vector[Step]) = copy(remainingSteps = prepend ++ remainingSteps)
 
 }

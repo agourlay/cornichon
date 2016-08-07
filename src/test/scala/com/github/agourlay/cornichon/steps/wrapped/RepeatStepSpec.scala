@@ -1,14 +1,11 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.concurrent.ExecutionContext
-
-class RepeatStepSpec extends WordSpec with Matchers {
-
-  val engine = new Engine(ExecutionContext.global)
+class RepeatStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "RepeatStep" must {
     "fail if 'repeat' block contains a failed step" in {

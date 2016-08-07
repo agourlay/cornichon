@@ -25,7 +25,7 @@ trait CornichonFeature extends HttpDsl with ScalatestIntegration {
   protected var afterEachScenario: Seq[Step] = Nil
 
   private lazy val (globalClient, ec) = globalRuntime
-  private lazy val engine = new Engine(ec)
+  private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
 
   lazy val requestTimeout = config.requestTimeout
   lazy val baseUrl = config.baseUrl

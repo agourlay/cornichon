@@ -39,7 +39,7 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
     }
 
     Xor.catchNonFatal(CornichonJson.parseDataTable(where)).fold(
-      t ⇒ exceptionToFailureStep(this, initialRunState, title, CornichonError.fromThrowable(t)),
+      t ⇒ exceptionToFailureStep(this, initialRunState, CornichonError.fromThrowable(t)),
       parsedTable ⇒ {
         val inputs = parsedTable.map { line ⇒
           line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }

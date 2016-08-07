@@ -23,12 +23,7 @@ trait Dsl extends ShowInstances {
   sealed trait Starters extends Dynamic {
     def name: String
 
-    def applyDynamic(mandatoryWord: String)(step: Step) = step match {
-      case e: EffectStep    ⇒ e.copy(s"$name $mandatoryWord ${e.title}")
-      case a: AssertStep[_] ⇒ a.copy(s"$name $mandatoryWord ${a.title}")
-      case a: AttachAsStep  ⇒ a.copy(s"$name $mandatoryWord ${a.title}")
-      case _                ⇒ step
-    }
+    def applyDynamic(mandatoryWord: String)(step: Step) = step.setTitle(s"$name $mandatoryWord ${step.title}")
   }
 
   case object When extends Starters { val name = "When" }

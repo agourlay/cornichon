@@ -1,13 +1,10 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
+import com.github.agourlay.cornichon.core.{ Scenario, Session }
+import com.github.agourlay.cornichon.steps.StepUtilSpec
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.concurrent.ExecutionContext
-
-class EffectStepSpec extends WordSpec with Matchers {
-
-  val engine = new Engine(ExecutionContext.global)
+class EffectStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "EffectStep" must {
     "return error if an Effect step throw an exception" in {
