@@ -131,7 +131,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "The Pointy End",
                 "Released": "2011-06-05",
                 "Episode": "8",
-                "imdbRating": "8.9",
+                "imdbRating": "9.0",
                 "imdbID": "tt1837864"
               },
               {
@@ -164,7 +164,7 @@ class OpenMovieDatabase extends CornichonFeature {
             | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "9.0"   | "tt1829964" |
             | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "9.1"   | "tt1837862" |
             | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "9.2"   | "tt1837863" |
-            | "The Pointy End"                        | "2011-06-05" |   "8"   |    "8.9"   | "tt1837864" |
+            | "The Pointy End"                        | "2011-06-05" |   "8"   |    "9.0"   | "tt1837864" |
             | "Baelor"                                | "2011-06-12" |   "9"   |    "9.5"   | "tt1851398" |
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
