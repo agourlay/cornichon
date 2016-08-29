@@ -655,7 +655,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate DSL composition") {
 
-        Then assert superhero_exists("batman")
+        Then assert superhero_exists("Batman")
 
         Then assert random_superheroes_until("Batman")
 
@@ -665,7 +665,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
   def superhero_exists(name: String) =
     AttachAs("superhero exists") {
-      When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+      When I get(s"/superheroes/$name").withParams("sessionId" → "<session-id>")
       Then assert status.is(200)
     }
 

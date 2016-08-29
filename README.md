@@ -613,7 +613,7 @@ class CornichonExamplesSpec extends CornichonFeature {
     
   def superhero_exists(name: String) =
     Attach {
-      When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+      When I get(s"/superheroes/$name").withParams("sessionId" → "<session-id>")
       Then assert status.is(200)
     }
   
