@@ -42,7 +42,7 @@ libraryDependencies ++= {
   val circeVersion = "0.5.0-M2"
   val sangriaV = "0.7.3"
   val fansiV = "0.2.0"
-  val akkaHttpCirce = "1.8.0"
+  val akkaHttpCirce = "1.9.0"
   val catsScalaTest = "1.3.0"
   val ficusV = "1.1.2"
   Seq(
