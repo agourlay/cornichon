@@ -798,9 +798,11 @@ trait MySteps {
 
 ```
 
-The built-in HTTP steps available on the DSL are actually built on top of the ```http``` service which means that you benefit from all the existing placeholder resolution features.
+The built-in HTTP steps available on the DSL are actually built on top of the ```httpService``` which means that you benefit from all the existing infrastructure to:
 
-The ```http``` service call returns effect steps that you can reuse and can be parametrized with different response extractors to fill the session automatically. 
+- resolve placeholders in URL, query params, body and headers.
+- automatically populate the session with the results of the call such as response body, status and headers (it is also possible to pass a custom extractor).
+- handle common errors such as timeout and malformed requests.
 
 
 ## Feature options
