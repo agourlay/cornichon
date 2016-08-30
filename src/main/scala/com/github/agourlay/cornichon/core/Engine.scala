@@ -22,7 +22,7 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
       ScenarioReport.build(scenario.name, mainState.session, mainState.logs, mainRunReport)
     else {
       // Reuse mainline session
-      val finallyRunState = initialRunState.withSteps(finallySteps).withLog(titleLog)
+      val finallyRunState = mainState.withSteps(finallySteps).withLog(titleLog)
       val (finallyState, finallyReport) = runSteps(finallyRunState)
       val combinedSession = mainState.session.merge(finallyState.session)
       val combinedLogs = mainState.logs ++ finallyState.logs
