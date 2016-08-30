@@ -1,13 +1,14 @@
 package com.github.agourlay.cornichon.core
 
 import cats.data.Xor
-import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath, NotStringFieldError }
+import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
+import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.Formats
 import io.circe.Json
 
 import scala.collection.immutable.HashMap
 
-case class Session(content: Map[String, Vector[String]]) extends CornichonJson {
+case class Session(content: Map[String, Vector[String]]) {
 
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] = {
 
