@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.{ AssertionSyntax, CollectionAssertionSyntax }
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpDslErrors._
-import com.github.agourlay.cornichon.http.HttpService._
+import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonDiff._
 import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }

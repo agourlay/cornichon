@@ -49,6 +49,21 @@ case class HttpRequest[A: BodyInput](method: HttpMethod, url: String, body: Opti
   }
 }
 
+trait HttpRequestsDsl extends BodyInputOps {
+  import com.github.agourlay.cornichon.http.HttpMethods._
+  import com.github.agourlay.cornichon.util.ShowInstances._
+
+  def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty)
+  def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty)
+  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Seq.empty, Seq.empty)
+  def delete(url: String) = HttpRequest[String](DELETE, url, None, Seq.empty, Seq.empty)
+  def post(url: String) = HttpRequest[String](POST, url, None, Seq.empty, Seq.empty)
+  def put(url: String) = HttpRequest[String](PUT, url, None, Seq.empty, Seq.empty)
+  def patch(url: String) = HttpRequest[String](PATCH, url, None, Seq.empty, Seq.empty)
+}
+
+object HttpRequest extends HttpRequestsDsl
+
 case class HttpStream(name: String)
 
 object HttpStreams {

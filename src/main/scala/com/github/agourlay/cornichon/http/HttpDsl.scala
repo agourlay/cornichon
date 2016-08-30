@@ -8,7 +8,6 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertions._
-import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
@@ -20,24 +19,16 @@ import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends Dsl with BodyInputOps {
+trait HttpDsl extends HttpRequestsDsl with Dsl {
   this: CornichonFeature ⇒
 
-  import com.github.agourlay.cornichon.http.HttpService._
+  import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 
   implicit def toStep[A: BodyInput](request: HttpRequest[A]): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.requestEffect(request)
     )
-
-  def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty)
-  def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty)
-  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Seq.empty, Seq.empty)
-  def delete(url: String) = HttpRequest[String](DELETE, url, None, Seq.empty, Seq.empty)
-  def post(url: String) = HttpRequest[String](POST, url, None, Seq.empty, Seq.empty)
-  def put(url: String) = HttpRequest[String](PUT, url, None, Seq.empty, Seq.empty)
-  def patch(url: String) = HttpRequest[String](PATCH, url, None, Seq.empty, Seq.empty)
 
   implicit def toStep(request: HttpStreamedRequest): EffectStep =
     EffectStep(
@@ -64,7 +55,10 @@ trait HttpDsl extends Dsl with BodyInputOps {
 
     EffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $payload$prettyVar$prettyOp",
-      effect = http.post(queryGQL.url, Some(fullPayload), Seq.empty, Seq.empty)
+      effect = {
+      val req = post(queryGQL.url).withBody(fullPayload)
+      http.requestEffect(req)
+    }
     )
   }
 

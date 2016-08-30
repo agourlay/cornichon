@@ -700,6 +700,6 @@ class SuperHeroesScenario extends CornichonFeature {
   )
 
   override def registerExtractors = Map(
-    "name" → JsonMapper(HttpService.LastResponseBodyKey, "name")
+    "name" → JsonMapper(HttpService.SessionKeys.LastResponseBodyKey, "name")
   )
 }
