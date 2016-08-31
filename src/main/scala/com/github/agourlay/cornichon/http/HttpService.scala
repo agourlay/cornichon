@@ -43,7 +43,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     } yield (urlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
-  private def runRequest[A: BodyInput](r: HttpRequest[A], expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction)(s: Session) =
+  private def runRequest[A: BodyInput](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       parts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
       resp ← waitForRequestFuture(parts._1, requestTimeout) {

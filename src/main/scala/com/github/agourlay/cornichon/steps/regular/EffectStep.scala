@@ -7,11 +7,7 @@ import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.ExecutionContext
 
-case class EffectStep(
-    title: String,
-    effect: Session ⇒ Session,
-    show: Boolean = true
-) extends Step {
+case class EffectStep(title: String, effect: Session ⇒ Session, show: Boolean = true) extends Step {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 

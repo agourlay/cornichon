@@ -15,7 +15,7 @@ object HttpDslErrors {
   def arraySizeError(expected: Int, sourceArray: String): Int ⇒ String = actual ⇒ {
     val base = s"""expected array size '$expected' but actual size is '$actual'"""
     if (actual != 0)
-      base + """ with array:
+      base + s""" with array:
       |$sourceArray""".stripMargin
     else base
   }

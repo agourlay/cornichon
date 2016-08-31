@@ -55,10 +55,7 @@ trait HttpDsl extends HttpRequestsDsl with Dsl {
 
     EffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $payload$prettyVar$prettyOp",
-      effect = {
-      val req = post(queryGQL.url).withBody(fullPayload)
-      http.requestEffect(req)
-    }
+      effect = http.requestEffect(post(queryGQL.url).withBody(fullPayload))
     )
   }
 

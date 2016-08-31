@@ -14,10 +14,13 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-encoding", "UTF-8",
   "-Ywarn-dead-code",
+  "-Ywarn-unused",
+  "-Ywarn-unused-import",
+  "-Ywarn-numeric-widen",
   "-language:implicitConversions",
   "-language:postfixOps",
   "-feature",
-  "-Ywarn-unused-import"
+  "-Xlint:missing-interpolator"
 )
 
 fork in Test := true
@@ -43,7 +46,7 @@ libraryDependencies ++= {
   val sangriaV = "0.7.3"
   val fansiV = "0.2.0"
   val akkaHttpCirce = "1.9.0"
-  val catsScalaTest = "1.3.0"
+  val catsScalaTest = "1.4.0"
   val ficusV = "1.1.2"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV

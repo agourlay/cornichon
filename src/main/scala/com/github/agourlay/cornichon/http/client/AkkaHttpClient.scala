@@ -7,7 +7,6 @@ import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.ws.WebSocketRequest
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.ConnectionContext
 import akka.stream.ActorMaterializer
@@ -36,7 +35,6 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 
 import scala.annotation.tailrec
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
@@ -142,12 +140,12 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
 
   // TODO implement WS support
   def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Future[Xor[HttpError, CornichonHttpResponse]] = {
-    val uri = uriBuilder(url, params)
+    /*val uri = uriBuilder(url, params)
     val req = WebSocketRequest(uri).copy(extraHeaders = collection.immutable.Seq(headers: _*))
 
     val received = ListBuffer.empty[String]
 
-    /*val incoming: Sink[Message, Future[Done]] =
+    val incoming: Sink[Message, Future[Done]] =
       Sink.foreach {
         case message: TextMessage.Strict ⇒
           received += message.text
