@@ -108,7 +108,11 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       decodeSessionHeaders(headers)
     }
 
-  private def withBaseUrl(input: String) = if (baseUrl.isEmpty) input else baseUrl + input
+  private def withBaseUrl(input: String) =
+    if (baseUrl.isEmpty) input
+    // the base URL is not applied if the input URL already starts with the protocol
+    else if (input.startsWith("https://") || input.startsWith("http://")) input
+    else baseUrl + input
 
   private def waitForRequestFuture(initialRequestUrl: String, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): Xor[CornichonError, CornichonHttpResponse] =
     Try { Await.result(f, t) } match {
