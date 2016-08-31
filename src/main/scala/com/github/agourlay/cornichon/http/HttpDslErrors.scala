@@ -45,7 +45,7 @@ object HttpDslErrors {
 
   def notContainedError(expectedPart: String, source: String): Boolean ⇒ String = resFalse ⇒ {
     s"""expected string '$expectedPart' to be contained but it is not the case with value :
-        |$source""".stripMargin
+      |$source""".stripMargin
   }
 
   case object InvalidIgnoringConfigError extends CornichonError {
