@@ -23,7 +23,7 @@ case class AttachAsStep(title: String, nested: Vector[Step]) extends WrapperStep
     val initialDepth = initialRunState.depth
     val (fullLogs, xor) = res.fold(
       failedStep ⇒ {
-        val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(s"'$title' failed", initialDepth)
+        val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(s"$title failed", initialDepth)
         (failureLogs, left(failedStep))
       },
       done ⇒ {
