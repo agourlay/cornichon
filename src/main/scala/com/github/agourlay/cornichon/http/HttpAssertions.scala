@@ -121,6 +121,21 @@ object HttpAssertions {
       }
     }
 
+    def containsString(expectedPart: String): AssertStep[Boolean] = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"response body contains '$expectedPart'" else s"response body's field '$jsonPath' contains '$expectedPart'"
+      from_session_detail_step(
+        key = LastResponseBodyKey,
+        title = titleBuilder(baseTitle, ignoredKeys, whitelist),
+        expected = s ⇒ true,
+        mapValue =
+          (session, sessionValue) ⇒ {
+            val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+            val predicate = prettyPrint(subJson).contains(expectedPart)
+            (predicate, notContainedError(expectedPart, prettyPrint(subJson)))
+          }
+      )
+    }
+
     def isAbsent: AssertStep[Boolean] = {
       val baseTitle = if (jsonPath == JsonPath.root) s"response body is absent" else s"response body's field '$jsonPath' is absent"
       from_session_detail_step(

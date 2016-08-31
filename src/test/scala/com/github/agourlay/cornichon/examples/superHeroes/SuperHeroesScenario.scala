@@ -80,6 +80,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.path("city").is("Gotham city")
 
+        Then assert body.path("city").containsString("Gotham")
+
         Then assert body.path("country").isAbsent
 
         Then assert body.path("hasSuperpowers").is(false)
