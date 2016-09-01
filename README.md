@@ -42,6 +42,14 @@ Add the library dependency
 libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.8.4" % "test"
 ```
 
+or for the latest version
+
+``` scala
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.9.0-SNAPSHOT" % "test"
+
+resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+```
+
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
 
 A ```Feature``` is a class extending ```CornichonFeature``` and implementing the required ```feature``` function.
@@ -290,6 +298,8 @@ body.path("city").is("Gotham city")
 body.path("hasSuperpowers").is(false)
 
 body.path("publisher.name").is("DC")
+
+body.path("city").containsString("Gotham")
 
 body.path("publisher.foundationYear").is(1934)
 
@@ -739,16 +749,18 @@ The ```session``` is used to store the result of a computation in order to reuse
 ```scala
 When I EffectStep(
   title = "run crazy computation",
-  action = s =>
-    val pi = piComputation()
-    s.add("result", res)
+  action = s => {
+      val pi = piComputation()
+      s.add("result", res)
+    }
   )
 
 Then assert AssertStep(
   title = "check computation infos",
-  action = s =>
-    val pi = s.get("result")
-    GenericAssertion(pi, 3.14)
+  action = s => {
+      val pi = s.get("result")
+      GenericAssertion(pi, 3.14)
+    }
   )
 ```
 
@@ -777,23 +789,22 @@ def feature = Feature("Customer endpoint"){
     }
 ```
 
-Most of the time you will create your own trait containing your custom steps and declare a self-type on ```CornichonFeature``` to be able to access the ```http``` service.
+Most of the time you will create your own trait containing your custom steps and declare a self-type on ```CornichonFeature``` to be able to access the ```httpService```. 
+
+It exposes a method ```requestEffect``` turning an ```HttpRequest``` into an effect.
 
 ```scala
 trait MySteps {
   this: CornichonFeature ⇒
 
   def create_customer = EffectStep(
-      title = "create new customer",
-      effect =
-          http.post(
-              url = "/customer",
-              body = some_json_payload_to_define,
-              params = Seq.empty,
-              headers = Seq.empty,
-              extractor = RootExtractor("customer")
-          )
+    title = "create new customer",
+    effect = http.requestEffect(
+      request = HttpRequest.post("/customer").withPayload("someJson"),
+      expectedStatus = Some(201)
+      extractor = RootExtractor("customer")
     )
+  )
 }
 
 ```
@@ -848,6 +859,8 @@ and then only provide the missing part in the HTTP step definition
  When I delete("/superheroes/GreenLantern")
 
 ```
+
+You can still override the base URL of a single step by providing the complete URL starting with the HTTP protocol.
 
 ### Request timeout
 
