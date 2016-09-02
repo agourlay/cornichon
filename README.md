@@ -3,8 +3,6 @@ cornichon [![Build Status](https://travis-ci.org/agourlay/cornichon.png?branch=m
 
 An extensible Scala DSL for testing JSON HTTP APIs.
 
-Warning : documentation updated for the version 0.9.0 that is to be released very soon.
-
 ## Table of contents
 
 1. [Quick start](#quick-start)
@@ -39,15 +37,7 @@ Warning : documentation updated for the version 0.9.0 that is to be released ver
 Add the library dependency
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.8.4" % "test"
-```
-
-or for the latest version
-
-``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.9.0-SNAPSHOT" % "test"
-
-resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.9" % "test"
 ```
 
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
