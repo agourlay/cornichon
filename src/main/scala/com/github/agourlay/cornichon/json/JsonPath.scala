@@ -34,7 +34,7 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
           downC ← c.downField(field)
         } yield downC
 
-      case RootArraySelection(indice) ⇒
+      case RootArrayElementSelection(indice) ⇒
         for {
           c ← oc
           arrayC ← c.downArray
@@ -76,7 +76,7 @@ object JsonPath {
   def fromSegments(segments: List[JsonSegment]) = {
     val operations = segments.map {
       case JsonSegment(field, None)                ⇒ FieldSelection(field)
-      case JsonSegment(JsonPath.root, Some(index)) ⇒ RootArraySelection(index)
+      case JsonSegment(JsonPath.root, Some(index)) ⇒ RootArrayElementSelection(index)
       case JsonSegment(field, Some(index))         ⇒ ArrayFieldSelection(field, index)
     }
     JsonPath(operations)
@@ -93,7 +93,7 @@ case class FieldSelection(field: String) extends JsonPathOperation {
   val pretty = field
 }
 
-case class RootArraySelection(indice: Int) extends JsonPathOperation {
+case class RootArrayElementSelection(indice: Int) extends JsonPathOperation {
   val field = JsonPath.root
   val pretty = s"$field[$indice]"
 }
