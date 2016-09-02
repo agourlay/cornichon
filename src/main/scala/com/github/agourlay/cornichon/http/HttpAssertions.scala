@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.http.HttpDslErrors._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonDiff._
-import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhiteListError }
+import com.github.agourlay.cornichon.json.{ JsonPath, NotAnArrayError, WhitelistingError }
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion, GenericAssertion }
 import com.github.agourlay.cornichon.util.Formats._
@@ -106,7 +106,7 @@ object HttpAssertions {
                 val expectedJson = resolveParseJson(expected, session, resolver)
                 val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
                 val Diff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
-                if (deleted != Json.Null) throw WhiteListError(s"White list error - '${prettyPrint(deleted)}' is not defined in object '${prettyPrint(sessionValueJson)}")
+                if (deleted != Json.Null) throw WhitelistingError(elementNotDefined = prettyPrint(deleted), source = prettyPrint(sessionValueJson))
                 if (changed != Json.Null) changed else expectedJson
               } else {
                 val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)

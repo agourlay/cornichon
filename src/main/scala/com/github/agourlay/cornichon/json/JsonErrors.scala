@@ -25,7 +25,13 @@ case class JsonPathError(input: String, error: Throwable) extends JsonError {
   val msg = s"error thrown during JsonPath parsing for input '$input' : ${error.getMessage}"
 }
 
-case class WhiteListError(msg: String) extends CornichonError
+case class WhitelistingError(elementNotDefined: String, source: String) extends JsonError {
+  val msg =
+    s"""whitelisting error
+       |$elementNotDefined
+       |is not defined in object
+       |$source""".stripMargin
+}
 
 case class NotStringFieldError(input: Json, field: String) extends JsonError {
   val msg =
