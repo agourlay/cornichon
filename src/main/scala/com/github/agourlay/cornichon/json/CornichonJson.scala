@@ -88,8 +88,10 @@ trait CornichonJson {
 
   def prettyPrint(json: Json) = json.spaces2
 
+  def diff(first: Json, second: Json): Diff = JsonDiff.diff(first, second)
+
   def prettyDiff(first: Json, second: Json) = {
-    val Diff(changed, added, deleted) = JsonDiff.diff(first, second)
+    val Diff(changed, added, deleted) = diff(first, second)
 
     s"""
     |${if (changed == Json.Null) "" else "changed = " + jsonStringValue(changed)}

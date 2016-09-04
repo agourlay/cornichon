@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.dsl
 
+import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.steps.regular._
@@ -12,6 +13,7 @@ import scala.language.dynamics
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 trait Dsl extends ShowInstances {
+  this: CornichonFeature ⇒
 
   def Feature(name: String, ignored: Boolean = false) =
     BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
@@ -102,7 +104,7 @@ trait Dsl extends ShowInstances {
     effect = s ⇒ s.removeKey(key)
   )
 
-  def session_value(key: String, indice: Option[Int] = None) = SessionAssertion(key, indice)
+  def session_value(key: String, indice: Option[Int] = None) = SessionAssertion(key, indice, resolver)
 
   def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
 

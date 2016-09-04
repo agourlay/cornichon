@@ -3,8 +3,10 @@ package com.github.agourlay.cornichon
 import java.util.concurrent.Executors
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
+import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
 
 import scala.concurrent.ExecutionContext
@@ -13,7 +15,7 @@ import com.typesafe.config.ConfigFactory
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
-trait CornichonFeature extends HttpDsl with ScalatestIntegration {
+trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestIntegration {
   import com.github.agourlay.cornichon.CornichonFeature._
 
   lazy val config = ConfigFactory.load().as[Config]("cornichon")

@@ -10,6 +10,7 @@ import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertions._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.util.Formats
@@ -19,8 +20,8 @@ import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends HttpRequestsDsl with Dsl {
-  this: CornichonFeature ⇒
+trait HttpDsl extends HttpRequestsDsl {
+  this: CornichonFeature with Dsl ⇒
 
   import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 
@@ -63,15 +64,12 @@ trait HttpDsl extends HttpRequestsDsl with Dsl {
 
   def query_gql(url: String) = QueryGQL(url, Document(List.empty))
 
-  val root = JsonPath.root
-
   def status = StatusAssertion
 
   def headers = HeadersAssertion(ordered = false)
 
-  def session_json_values(k1: String, k2: String) = SessionJsonValuesAssertion(k1, k2, Seq.empty, resolver)
-
-  def body[A] = BodyAssertion[A](root, Seq.empty, whitelist = false, resolver)
+  //FIXME the body is expected to always contains JSON currently
+  def body[A] = JsonAssertion[A](resolver, LastResponseBodyKey, Some("response body"))
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {

@@ -2,8 +2,10 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion, GenericAssertion }
 import com.github.agourlay.cornichon.dsl.SessionAssertionErrors._
+import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
+import com.github.agourlay.cornichon.resolver.Resolver
 
-case class SessionAssertion(private val key: String, private val indice: Option[Int] = None) extends AssertionSyntax[String, String] {
+case class SessionAssertion(private val key: String, private val indice: Option[Int] = None, private val resolver: Resolver) extends AssertionSyntax[String, String] {
   def is(expected: String) = AssertStep(
     title = s"session key '$key' is '$expected'",
     action = s ⇒ GenericAssertion(expected, s.get(key, indice))
@@ -26,5 +28,7 @@ case class SessionAssertion(private val key: String, private val indice: Option[
     title = s"session does not contain key '$key'",
     action = s ⇒ CustomMessageAssertion(None, s.getOpt(key, indice), keyIsPresentError(key))
   )
+
+  def asJson = JsonAssertion(resolver, key)
 
 }
