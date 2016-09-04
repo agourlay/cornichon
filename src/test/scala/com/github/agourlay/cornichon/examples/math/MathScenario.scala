@@ -27,7 +27,7 @@ class MathScenario extends CornichonFeature with MathSteps {
 
         When I generate_random_int("random-2")
 
-        Then assert session_values("random-1", "random-2").areEquals
+        Then assert session_value("random-1").isEqualToSessionValue("random-2")
 
       }
     }

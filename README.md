@@ -437,7 +437,7 @@ save_body_path("city" -> "batman-city")
 - asserting value in ```session```
 
 ```scala
-session_contains("favorite-superhero" → "Batman")
+session_value("favorite-superhero").is("Batman")
 ```
 
 
@@ -641,7 +641,7 @@ Most built-in steps can use placeholders in their arguments, those will be autom
 ```scala
 Given I save("favorite-superhero" → "Batman")
 
-Then assert session_contains("favorite-superhero" → "Batman")
+Then assert session_value("favorite-superhero").is("Batman")
 
 When I get("http://localhost:8080/superheroes/<favorite-superhero>")
 
@@ -658,7 +658,7 @@ Then assert body.is(
 
 And I save_body_path("city" -> "batman-city")
 
-Then assert session_contains("batman-city" → "Gotham city")
+Then assert session_value("batman-city").is("Gotham city")
 
 Then assert body.is(
   """

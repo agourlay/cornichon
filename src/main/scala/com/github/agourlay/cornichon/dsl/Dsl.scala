@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
-import com.github.agourlay.cornichon.dsl.CoreAssertion.{ SessionAssertion, SessionValuesAssertion }
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
@@ -103,17 +102,7 @@ trait Dsl extends ShowInstances {
     effect = s ⇒ s.removeKey(key)
   )
 
-  def session_contains(input: (String, String)): AssertStep[String] = session_contains(input._1, input._2)
-
-  def session_value(key: String) = SessionAssertion(key)
-
-  def session_values(k1: String, k2: String) = SessionValuesAssertion(k1, k2)
-
-  def session_contains(key: String, value: String) =
-    AssertStep(
-      title = s"session key '$key' equals '$value'",
-      action = s ⇒ GenericAssertion(value, s.get(key))
-    )
+  def session_value(key: String, indice: Option[Int] = None) = SessionAssertion(key, indice)
 
   def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
 
