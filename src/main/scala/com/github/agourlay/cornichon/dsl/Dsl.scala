@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.dsl
 
+import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
@@ -106,9 +107,10 @@ trait Dsl extends ShowInstances {
 
   def session_value(key: String, indice: Option[Int] = None) = SessionAssertion(key, indice, resolver)
 
-  def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
+  def show_session = DebugStep(s ⇒ s"Session content is\n${s.prettyPrint}")
 
-  def show_session(key: String, transform: String ⇒ String = identity) = DebugStep(s ⇒ s"Session content for key '$key' is '${transform(s.get(key))}'")
+  def show_session(key: String, transform: String ⇒ String = identity) =
+    DebugStep(s ⇒ s"Session content for key '$key' is\n${transform(s.get(key))}")
 
   def print_step(message: String) = DebugStep(s ⇒ message)
 }
@@ -130,7 +132,7 @@ object Dsl {
     )
   }
 
-  def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A: Show](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
       s ⇒ GenericAssertion(
@@ -139,7 +141,7 @@ object Dsl {
       )
     )
 
-  def from_session_detail_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+  def from_session_detail_step[A: Show](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
     AssertStep(
       title,
       s ⇒ {

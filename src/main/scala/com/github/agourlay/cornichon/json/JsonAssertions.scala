@@ -1,13 +1,14 @@
 package com.github.agourlay.cornichon.json
 
+import cats.Show
 import com.github.agourlay.cornichon.core.Session
-import com.github.agourlay.cornichon.dsl.AssertionSyntax
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonDiff.Diff
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.util.ShowInstances._
 import io.circe.Json
 
 object JsonAssertions {
@@ -32,24 +33,24 @@ object JsonAssertions {
     )
   }
 
-  case class JsonAssertion[A](
+  case class JsonAssertion(
       private val resolver: Resolver,
       private val sessionKey: String,
       private val prettySessionKeyTitle: Option[String] = None,
       private val jsonPath: String = JsonPath.root,
       private val ignoredKeys: Seq[String] = Seq.empty,
       private val whitelist: Boolean = false
-  ) extends AssertionSyntax[A, Json] {
+  ) {
 
     private val target = prettySessionKeyTitle.getOrElse(sessionKey)
 
-    def path(path: String): JsonAssertion[A] = copy(jsonPath = path)
+    def path(path: String): JsonAssertion = copy(jsonPath = path)
 
-    def ignoring(ignoring: String*): JsonAssertion[A] = copy(ignoredKeys = ignoring)
+    def ignoring(ignoring: String*): JsonAssertion = copy(ignoredKeys = ignoring)
 
-    def whitelisting: JsonAssertion[A] = copy(whitelist = true)
+    def whitelisting: JsonAssertion = copy(whitelist = true)
 
-    override def is(expected: A): AssertStep[Json] = {
+    def is[A: Show](expected: A): AssertStep[Json] = {
       if (whitelist && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
@@ -134,23 +135,23 @@ object JsonAssertions {
       if (ignoredKeys.nonEmpty)
         throw UseIgnoringEach
       else
-        JsonArrayAssertion[A](sessionKey, jsonPath, ordered = false, ignoredKeys, resolver, prettySessionKeyTitle)
+        JsonArrayAssertion(sessionKey, jsonPath, ordered = false, ignoredKeys, resolver, prettySessionKeyTitle)
   }
 
-  case class JsonArrayAssertion[A](
+  case class JsonArrayAssertion(
       private val sessionKey: String,
       private val jsonPath: String,
       private val ordered: Boolean,
       private val ignoredEachKeys: Seq[String],
       private val resolver: Resolver,
       private val prettySessionKeyTitle: Option[String] = None
-  ) extends AssertionSyntax[A, Iterable[Json]] {
+  ) {
 
     private val target = prettySessionKeyTitle.getOrElse(sessionKey)
 
-    def inOrder = copy[A](ordered = true)
+    def inOrder = copy(ordered = true)
 
-    def ignoringEach(ignoringEach: String*): JsonArrayAssertion[A] = copy(ignoredEachKeys = ignoringEach)
+    def ignoringEach(ignoringEach: String*): JsonArrayAssertion = copy(ignoredEachKeys = ignoringEach)
 
     def isEmpty = hasSize(0)
 
@@ -177,7 +178,7 @@ object JsonAssertions {
       )
     }
 
-    override def is(expected: A): AssertStep[Iterable[Json]] = {
+    def is[A: Show](expected: A): AssertStep[Iterable[Json]] = {
       val assertionTitle = {
         val expectedSentence = if (ordered) s"in order is $expected" else s"is $expected"
         val titleString = if (jsonPath == JsonPath.root)
@@ -225,19 +226,19 @@ object JsonAssertions {
         )
     }
 
-    def not_contains(elements: A*) = {
+    def not_contains[A: Show](elements: A*) = {
       val prettyElements = elements.mkString(" and ")
       val title = if (jsonPath == JsonPath.root) s"$target array does not contain $prettyElements" else s"$target's array '$jsonPath' does not contain $prettyElements"
       bodyContainsElmt(title, elements, expected = false)
     }
 
-    def contains(elements: A*) = {
+    def contains[A: Show](elements: A*) = {
       val prettyElements = elements.mkString(" and ")
       val title = if (jsonPath == JsonPath.root) s"$target array contains $prettyElements" else s"$target's array '$jsonPath' contains $prettyElements"
       bodyContainsElmt(title, elements, expected = true)
     }
 
-    private def bodyContainsElmt(title: String, elements: Seq[A], expected: Boolean): AssertStep[Boolean] = {
+    private def bodyContainsElmt[A: Show](title: String, elements: Seq[A], expected: Boolean): AssertStep[Boolean] = {
       from_session_detail_step(
         title = title,
         key = sessionKey,
@@ -261,7 +262,7 @@ object JsonAssertions {
     jArr.fold(e ⇒ throw e, identity)
   }
 
-  private def body_array_transform[A](
+  private def body_array_transform[A: Show](
     sessionKey: String,
     arrayExtractor: (Session, String) ⇒ List[Json],
     mapFct: (Session, List[Json]) ⇒ A,

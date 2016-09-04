@@ -6,7 +6,7 @@ import com.github.agourlay.cornichon.util.Formats._
 
 object HttpAssertionErrors {
 
-  // TODO do not assume that body is JSON
+  // TODO do not assume that body is JSON - use content-type
   def statusError(expected: Int, body: String): Int ⇒ String = actual ⇒ {
     s"""expected '$expected' but actual is '$actual' with response body:
       |${prettyPrint(parseJsonUnsafe(body))}""".stripMargin

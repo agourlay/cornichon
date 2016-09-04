@@ -4,8 +4,13 @@ import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAs
 import com.github.agourlay.cornichon.dsl.SessionAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.util.ShowInstances._
 
-case class SessionAssertion(private val key: String, private val indice: Option[Int] = None, private val resolver: Resolver) extends AssertionSyntax[String, String] {
+case class SessionAssertion(
+    private val key: String,
+    private val indice: Option[Int] = None,
+    private val resolver: Resolver
+) {
   def is(expected: String) = AssertStep(
     title = s"session key '$key' is '$expected'",
     action = s ⇒ GenericAssertion(expected, s.get(key, indice))

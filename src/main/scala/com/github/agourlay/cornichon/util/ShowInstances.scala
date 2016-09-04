@@ -4,7 +4,6 @@ import cats.Show
 
 import cats.syntax.show._
 
-// Most of those are not yet used - this is a preparation for the GenericAssertion[A : Show]
 trait ShowInstances {
 
   implicit val showString = new Show[String] {
@@ -17,6 +16,10 @@ trait ShowInstances {
 
   implicit val showInt = new Show[Int] {
     def show(i: Int) = i.toString
+  }
+
+  implicit def showOption[A: Show]: Show[Option[A]] = new Show[Option[A]] {
+    def show(oa: Option[A]): String = oa.map(_.show).toString
   }
 
   implicit def showIterable[A: Show]: Show[Iterable[A]] = new Show[Iterable[A]] {

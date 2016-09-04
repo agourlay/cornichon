@@ -25,21 +25,19 @@ trait HttpDsl extends HttpRequestsDsl {
 
   import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 
-  implicit def toStep[A: BodyInput](request: HttpRequest[A]): EffectStep =
+  implicit def httpRequestToStep[A: BodyInput](request: HttpRequest[A]): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.requestEffect(request)
     )
 
-  implicit def toStep(request: HttpStreamedRequest): EffectStep =
+  implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.streamEffect(request)
     )
 
-  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
-
-  implicit def toStep(queryGQL: QueryGQL): EffectStep = {
+  implicit def queryGqlToStep(queryGQL: QueryGQL): EffectStep = {
     import io.circe.generic.auto._
     import io.circe.syntax._
 
@@ -64,12 +62,14 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def query_gql(url: String) = QueryGQL(url, Document(List.empty))
 
+  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
+
   def status = StatusAssertion
 
   def headers = HeadersAssertion(ordered = false)
 
   //FIXME the body is expected to always contains JSON currently
-  def body[A] = JsonAssertion[A](resolver, LastResponseBodyKey, Some("response body"))
+  def body = JsonAssertion(resolver, LastResponseBodyKey, Some("response body"))
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
@@ -88,8 +88,6 @@ trait HttpDsl extends HttpRequestsDsl {
   def show_last_response_body_as_json = show_key_as_json(LastResponseBodyKey)
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
-
-  def show_key_as_json(key: String) = show_session(key, v ⇒ parseJson(v).fold(e ⇒ throw e, prettyPrint))
 
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))

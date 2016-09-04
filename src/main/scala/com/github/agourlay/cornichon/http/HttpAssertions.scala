@@ -1,15 +1,16 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.dsl.{ AssertionSyntax, CollectionAssertionSyntax }
+import com.github.agourlay.cornichon.dsl.CollectionAssertionSyntax
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertionErrors._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion }
 import com.github.agourlay.cornichon.util.Formats._
+import com.github.agourlay.cornichon.util.ShowInstances._
 
 object HttpAssertions {
 
-  case object StatusAssertion extends AssertionSyntax[Int, Int] {
+  case object StatusAssertion {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
       action = s ⇒ CustomMessageAssertion(

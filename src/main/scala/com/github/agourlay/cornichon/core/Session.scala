@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.core
 
+import cats.Show
 import cats.data.Xor
 import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -72,6 +73,9 @@ case class Session(content: Map[String, Vector[String]]) {
 
 object Session {
   def newSession = Session(HashMap.empty)
+  implicit val showSession = new Show[Session] {
+    def show(s: Session) = s.prettyPrint
+  }
 }
 
 case class EmptyKeyException(s: Session) extends CornichonError {
@@ -79,5 +83,5 @@ case class EmptyKeyException(s: Session) extends CornichonError {
 }
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
-  val msg = s"key '$key' can not be found in session : \n${s.prettyPrint}"
+  val msg = s"key '$key' can not be found in session \n${s.prettyPrint}"
 }
