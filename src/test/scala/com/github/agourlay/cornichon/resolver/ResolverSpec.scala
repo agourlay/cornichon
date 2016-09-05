@@ -91,7 +91,7 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
       "return ResolverError if placeholder not found" in {
         val session = Session.newSession.addValue("project-name", "cornichon")
         val content = "This project is named <project-new-name>"
-        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("project-new-name", session))
+        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("project-new-name", None, session))
       }
 
       "resolve two placeholders" in {
@@ -103,7 +103,7 @@ class ResolverSpec extends WordSpec with Matchers with OptionValues with Propert
       "return ResolverError for the first placeholder not found" in {
         val session = Session.newSession.addValues(Seq("project-name" → "cornichon", "taste" → "tasty"))
         val content = "This project is named <project-name> and is super <new-taste>"
-        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("new-taste", session))
+        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("new-taste", None, session))
       }
 
       "generate random uuid if <random-uuid>" in {

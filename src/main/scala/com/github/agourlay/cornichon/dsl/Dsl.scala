@@ -105,7 +105,7 @@ trait Dsl extends ShowInstances {
     effect = s ⇒ s.removeKey(key)
   )
 
-  def session_value(key: String, indice: Option[Int] = None) = SessionAssertion(key, indice, resolver)
+  def session_value(key: String) = SessionAssertion(resolver, key)
 
   def show_session = DebugStep(s ⇒ s"Session content is\n${s.prettyPrint}")
 
@@ -132,7 +132,7 @@ object Dsl {
     )
   }
 
-  def from_session_step[A: Show](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A: Show](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
       s ⇒ GenericAssertion(
@@ -141,7 +141,7 @@ object Dsl {
       )
     )
 
-  def from_session_detail_step[A: Show](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+  def from_session_detail_step[A: Show](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
     AssertStep(
       title,
       s ⇒ {
