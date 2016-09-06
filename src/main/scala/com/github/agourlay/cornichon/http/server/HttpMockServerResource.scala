@@ -4,6 +4,8 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
+import com.github.agourlay.cornichon.json.CornichonJson
+import io.circe.Json
 
 case class HttpMockServerResource(label: String, port: Int) extends BlockScopedResource {
   val sessionTarget: String = label
@@ -29,10 +31,17 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
 
   def resourceResults() = {
     val requests = mockRequestHandler.getRecordedRequests
-    val requestsCount = requests.size
-    val sessionWithBodies = requests.foldLeft(Session.newSession)((s, r) ⇒
-      s.addValue(s"$sessionTarget$receivedBodiesSuffix", r.body.getOrElse("")))
-    sessionWithBodies.addValue(s"$sessionTarget$nbReceivedCallsSuffix", requestsCount.toString)
+    val jsonRequests = requests.map { req ⇒
+      val fields = Seq(
+        "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
+        "url" → Json.fromString(req.url),
+        "verb" → Json.fromString(req.method.name)
+      )
+      Json.fromFields(fields)
+    }
+    Session.newSession
+      .addValue(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
+      .addValue(s"$sessionTarget$nbReceivedCallsSuffix", requests.size.toString)
   }
 }
 

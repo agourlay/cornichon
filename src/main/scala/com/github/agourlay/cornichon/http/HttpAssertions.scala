@@ -62,12 +62,8 @@ object HttpAssertions {
       action = s ⇒ GenericAssertion(expected = count, actual = s.get(s"$name$nbReceivedCallsSuffix").toInt)
     )
 
-    def first_received_body = received_body_nb(1)
+    def received_requests =
+      JsonAssertion(resolver, SessionKey(s"$name$receivedBodiesSuffix"), prettySessionKeyTitle = Some(s"HTTP mock server '$name' received requests"))
 
-    def received_body_nb(nb: Int) = {
-      val physicalIndice = nb - 1
-      val nbLabel = if (physicalIndice == 0) "first" else physicalIndice.toString
-      JsonAssertion(resolver, SessionKey(s"$name$receivedBodiesSuffix").atIndex(physicalIndice), Some(s"HTTP mock server '$name' $nbLabel received body"))
-    }
   }
 }

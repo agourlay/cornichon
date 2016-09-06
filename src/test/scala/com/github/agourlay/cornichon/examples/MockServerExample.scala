@@ -55,19 +55,34 @@ class MockServerExample extends CornichonFeature {
 
       And assert httpListen("awesome-server").received_calls(2)
 
-      And assert httpListen("awesome-server").first_received_body.is(
+      And assert httpListen("awesome-server").received_requests.is(
         """
-          {
-            "name": "Batman",
-            "realName": "Bruce Wayne",
-            "hasSuperpowers": false
-          }
+          [
+            {
+              "body" : {
+                "name" : "Batman",
+                "realName" : "Bruce Wayne",
+                "hasSuperpowers" : false
+              },
+              "url" : "/",
+              "verb" : "POST"
+            },
+            {
+              "body" : {
+                "name" : "Superman",
+                "realName" : "Clark Kent",
+                "hasSuperpowers" : true
+              },
+              "url" : "/",
+              "verb" : "POST"
+            }
+          ]
         """
       )
 
-      And assert httpListen("awesome-server").first_received_body.path("name").is("Batman")
+      And assert httpListen("awesome-server").received_requests.path("$[0].body.name").is("Batman")
 
-      And assert httpListen("awesome-server").received_body_nb(2).is(
+      And assert httpListen("awesome-server").received_requests.path("$[1].body").is(
         """
         {
           "name": "Superman",
