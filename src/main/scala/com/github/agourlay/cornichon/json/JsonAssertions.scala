@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.json
 
 import cats.Show
-import com.github.agourlay.cornichon.core.Session
+import com.github.agourlay.cornichon.core.{ Session, SessionKey }
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonDiff.Diff
@@ -35,14 +35,14 @@ object JsonAssertions {
 
   case class JsonAssertion(
       private val resolver: Resolver,
-      private val sessionKey: String,
+      private val sessionKey: SessionKey,
       private val prettySessionKeyTitle: Option[String] = None,
       private val jsonPath: String = JsonPath.root,
       private val ignoredKeys: Seq[String] = Seq.empty,
       private val whitelist: Boolean = false
   ) {
 
-    private val target = prettySessionKeyTitle.getOrElse(sessionKey)
+    private val target = prettySessionKeyTitle.getOrElse(sessionKey.name)
 
     def path(path: String): JsonAssertion = copy(jsonPath = path)
 
@@ -139,7 +139,7 @@ object JsonAssertions {
   }
 
   case class JsonArrayAssertion(
-      private val sessionKey: String,
+      private val sessionKey: SessionKey,
       private val jsonPath: String,
       private val ordered: Boolean,
       private val ignoredEachKeys: Seq[String],
@@ -263,7 +263,7 @@ object JsonAssertions {
   }
 
   private def body_array_transform[A: Show](
-    sessionKey: String,
+    sessionKey: SessionKey,
     arrayExtractor: (Session, String) ⇒ List[Json],
     mapFct: (Session, List[Json]) ⇒ A,
     title: String,

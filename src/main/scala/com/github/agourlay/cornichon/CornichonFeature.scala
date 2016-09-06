@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon
 
 import java.util.concurrent.Executors
 
+import akka.stream.ActorMaterializer
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.http.client.HttpClient
@@ -26,7 +27,7 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestInteg
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  private lazy val (globalClient, ec) = globalRuntime
+  private lazy val (globalClient, ec, _, _) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
 
   lazy val requestTimeout = config.requestTimeout
@@ -74,6 +75,7 @@ private object CornichonFeature {
   import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 
   implicit private lazy val system = ActorSystem("cornichon-actor-system")
+  implicit private lazy val mat = ActorMaterializer()
   implicit private lazy val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool)
 
   private lazy val client: HttpClient = new AkkaHttpClient()
@@ -89,13 +91,14 @@ private object CornichonFeature {
       if (safePassInRow.get() == 3) {
         client.shutdown().map { _ ⇒
           ec.shutdown()
+          mat.shutdown()
           system.terminate()
         }
       }
     } else if (safePassInRow.get() > 0) safePassInRow.decrementAndGet()
   }
 
-  lazy val globalRuntime = (client, ec)
+  lazy val globalRuntime = (client, ec, system, mat)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
   def releaseGlobalRuntime(): Unit = registeredUsage.decrementAndGet()
 }

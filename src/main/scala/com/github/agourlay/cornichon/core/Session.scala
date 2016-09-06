@@ -25,9 +25,13 @@ case class Session(content: Map[String, Vector[String]]) {
 
   }
 
-  def get(key: String, stackingIndice: Option[Int] = None): String = getOpt(key, stackingIndice).getOrElse(throw KeyNotFoundInSession(key, this))
+  def get(key: String, stackingIndice: Option[Int] = None): String =
+    getOpt(key, stackingIndice).getOrElse(throw KeyNotFoundInSession(key, stackingIndice, this))
 
-  def getXor(key: String, stackingIndice: Option[Int] = None) = Xor.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, this))
+  def get(sessionKey: SessionKey): String = get(sessionKey.name, sessionKey.index)
+
+  def getXor(key: String, stackingIndice: Option[Int] = None) =
+    Xor.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, stackingIndice, this))
 
   def getJsonXor(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Xor[CornichonError, Json] =
     for {
@@ -78,10 +82,14 @@ object Session {
   }
 }
 
+case class SessionKey(name: String, index: Option[Int] = None) {
+  def atIndex(index: Int) = copy(index = Some(index))
+}
+
 case class EmptyKeyException(s: Session) extends CornichonError {
   val msg = s"key value can not be empty - session is \n${s.prettyPrint}"
 }
 
-case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
-  val msg = s"key '$key' can not be found in session \n${s.prettyPrint}"
+case class KeyNotFoundInSession(key: String, indice: Option[Int], s: Session) extends CornichonError {
+  val msg = s"key '$key'${indice.fold("")(i ⇒ s" at indice '$i'")} can not be found in session \n${s.prettyPrint}"
 }

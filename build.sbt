@@ -50,6 +50,7 @@ libraryDependencies ++= {
   val ficusV = "1.1.2"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
+    ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
     ,"org.typelevel"       %% "cats-macros"            % catsV
     ,"org.typelevel"       %% "cats-core"              % catsV
@@ -66,7 +67,6 @@ libraryDependencies ++= {
     ,"io.circe"            %% "circe-parser"           % circeVersion
     //,"io.circe"            %% "circe-optics"           % circeVersion  Remove if cursors are used instead or lenses for JsonPath.
     ,"de.heikoseeberger"   %% "akka-http-circe"        % akkaHttpCirce   % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV       % "test"
     ,"com.ironcorelabs"    %% "cats-scalatest"         % catsScalaTest   % "test"
   )
 }

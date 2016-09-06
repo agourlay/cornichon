@@ -9,10 +9,12 @@ import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertions._
 import com.github.agourlay.cornichon.http.HttpStreams._
+import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.util.Formats
 import io.circe.Json
 import sangria.ast.Document
@@ -69,7 +71,9 @@ trait HttpDsl extends HttpRequestsDsl {
   def headers = HeadersAssertion(ordered = false)
 
   //FIXME the body is expected to always contains JSON currently
-  def body = JsonAssertion(resolver, LastResponseBodyKey, Some("response body"))
+  def body = JsonAssertion(resolver, SessionKey(LastResponseBodyKey), Some("response body"))
+
+  def httpListen(label: String) = HttpListen(label, resolver)
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
@@ -97,5 +101,11 @@ trait HttpDsl extends HttpRequestsDsl {
       val saveStep = save((WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(","))).copy(show = false)
       val removeStep = remove(WithHeadersKey).copy(show = false)
       saveStep +: steps :+ removeStep
+    }
+
+  def HttpListenTo(label: String, port: Int) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      val serverResource = HttpMockServerResource(label, port)
+      WithBlockScopedResource(nested = steps, resource = serverResource)
     }
 }
