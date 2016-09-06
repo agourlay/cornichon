@@ -59,10 +59,7 @@ object HttpAssertions {
   case class HttpListen(name: String, resolver: Resolver) {
     def received_calls(count: Int) = AssertStep(
       title = s"HTTP mock server '$name' received '$count' calls",
-      action = s ⇒ GenericAssertion(
-      expected = count,
-      actual = s.get(s"$name$nbReceivedCallsSuffix").toInt
-    )
+      action = s ⇒ GenericAssertion(expected = count, actual = s.get(s"$name$nbReceivedCallsSuffix").toInt)
     )
 
     def first_received_body = received_body_nb(1)
