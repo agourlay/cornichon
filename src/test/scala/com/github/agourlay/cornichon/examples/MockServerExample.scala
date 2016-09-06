@@ -29,7 +29,7 @@ class MockServerExample extends CornichonFeature {
 
     Scenario("Reply to POST request with 201 and assert on received bodies") {
       HttpListenTo(label = "awesome-server", port = 9092) {
-        When I post("http://localhost:9092/").withBody(
+        When I post("http://localhost:9092/heroes/batman").withBody(
           """
           {
             "name": "Batman",
@@ -39,7 +39,7 @@ class MockServerExample extends CornichonFeature {
           """
         )
 
-        When I post("http://localhost:9092/").withBody(
+        When I post("http://localhost:9092/heroes/superman").withBody(
           """
           {
             "name": "Superman",
@@ -64,7 +64,7 @@ class MockServerExample extends CornichonFeature {
                 "realName" : "Bruce Wayne",
                 "hasSuperpowers" : false
               },
-              "url" : "/",
+              "url" : "/heroes/batman",
               "verb" : "POST"
             },
             {
@@ -73,7 +73,7 @@ class MockServerExample extends CornichonFeature {
                 "realName" : "Clark Kent",
                 "hasSuperpowers" : true
               },
-              "url" : "/",
+              "url" : "/heroes/superman",
               "verb" : "POST"
             }
           ]
