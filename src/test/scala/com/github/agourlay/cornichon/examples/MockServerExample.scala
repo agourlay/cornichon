@@ -17,10 +17,10 @@ class MockServerExample extends CornichonFeature {
     }
 
     Scenario("Counters valid under concurrent requests") {
-      HttpListenTo(label = "awesome-server", port = 9092) {
+      HttpListenTo(label = "awesome-server", port = 9091) {
         Concurrently(2, 10.seconds) {
           Repeat(10) {
-            When I get("http://localhost:9092/")
+            When I get("http://localhost:9091/")
           }
         }
       }
@@ -28,8 +28,8 @@ class MockServerExample extends CornichonFeature {
     }
 
     Scenario("Reply to POST request with 201 and assert on received bodies") {
-      HttpListenTo(label = "awesome-server", port = 9091) {
-        When I post("http://localhost:9091/").withBody(
+      HttpListenTo(label = "awesome-server", port = 9092) {
+        When I post("http://localhost:9092/").withBody(
           """
           {
             "name": "Batman",
@@ -39,7 +39,7 @@ class MockServerExample extends CornichonFeature {
           """
         )
 
-        When I post("http://localhost:9091/").withBody(
+        When I post("http://localhost:9092/").withBody(
           """
           {
             "name": "Superman",
@@ -78,6 +78,22 @@ class MockServerExample extends CornichonFeature {
       )
 
       And I show_session
+    }
+
+    Scenario("httpListen blocks can be nested in one another") {
+      HttpListenTo(label = "first-server", port = 9093) {
+        HttpListenTo(label = "second-server", port = 9094) {
+          HttpListenTo(label = "third-server", port = 9095) {
+            When I get("http://localhost:9093/")
+            When I get("http://localhost:9094/")
+            When I get("http://localhost:9095/")
+          }
+        }
+      }
+      And assert httpListen("first-server").received_calls(1)
+      And assert httpListen("second-server").received_calls(1)
+      And assert httpListen("third-server").received_calls(1)
+
     }
 
   }
