@@ -440,6 +440,12 @@ save_body_path("city" -> "batman-city")
 session_value("favorite-superhero").is("Batman")
 ```
 
+- asserting JSON value in ```session```
+
+```scala
+session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is(...)
+```
+
 
 ### Wrapper steps
 
