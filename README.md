@@ -447,6 +447,13 @@ session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is(...)
 ```
 
 
+- asserting existence of value in ```session```
+
+```scala
+  session_value("favorite-superhero").isPresent
+  session_value("favorite-superhero").isAbsence
+````
+
 ### Wrapper steps
 
 Wrapper steps allow to control the execution of a series of steps to build more powerfull tests.
