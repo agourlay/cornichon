@@ -384,7 +384,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Set a key/value in the Scenario's session
         And I save("favorite-superhero" → "Batman")
 
-        Then assert session_contains("favorite-superhero" → "Batman")
+        Then assert session_value("favorite-superhero").is("Batman")
 
         // Retrieve dynamically from session with <key> for URL construction
         When I get("/superheroes/<favorite-superhero>").withParams("sessionId" → "<session-id>")
@@ -399,10 +399,12 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
+        And assert session_value("batman-city").isAbsent
+
         // Extract value from response into session for reuse
         And I save_body_path("city" → "batman-city")
 
-        Then assert session_contains("batman-city" → "Gotham city")
+        And assert session_value("batman-city").isPresent
 
         Then assert session_value("batman-city").is("Gotham city")
 
@@ -418,7 +420,7 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        Then assert headers.contain("Server" → "akka-http/2.4.9")
+        Then assert headers.contain("Server" → "akka-http/2.4.10")
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session

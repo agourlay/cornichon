@@ -1,10 +1,12 @@
 package com.github.agourlay.cornichon.examples.math
 
+import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion, EffectStep, GenericAssertion }
 
 import scala.util.Random
 
 trait MathSteps {
+  this: CornichonFeature ⇒
 
   case class adding_values(arg1: String, arg2: String) {
     def equals(res: Int) = AssertStep(

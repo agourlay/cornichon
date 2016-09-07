@@ -134,6 +134,7 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
 }
 
 trait DeckSteps {
+  this : CornichonFeature =>
 
   def verify_hand_score = AssertStep(
     title = "value of 'c1' with 'c2' is 'score'",

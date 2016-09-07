@@ -1,8 +1,9 @@
 package com.github.agourlay.cornichon.dsl
 
+import cats.Show
+import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
-import com.github.agourlay.cornichon.dsl.CoreAssertion.{ SessionAssertion, SessionValuesAssertion }
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
@@ -13,6 +14,7 @@ import scala.language.dynamics
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 trait Dsl extends ShowInstances {
+  this: CornichonFeature ⇒
 
   def Feature(name: String, ignored: Boolean = false) =
     BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
@@ -103,21 +105,12 @@ trait Dsl extends ShowInstances {
     effect = s ⇒ s.removeKey(key)
   )
 
-  def session_contains(input: (String, String)): AssertStep[String] = session_contains(input._1, input._2)
+  def session_value(key: String) = SessionAssertion(resolver, key)
 
-  def session_value(key: String) = SessionAssertion(key)
+  def show_session = DebugStep(s ⇒ s"Session content is\n${s.prettyPrint}")
 
-  def session_values(k1: String, k2: String) = SessionValuesAssertion(k1, k2)
-
-  def session_contains(key: String, value: String) =
-    AssertStep(
-      title = s"session key '$key' equals '$value'",
-      action = s ⇒ GenericAssertion(value, s.get(key))
-    )
-
-  def show_session = DebugStep(s ⇒ s"Session content : \n${s.prettyPrint}")
-
-  def show_session(key: String, transform: String ⇒ String = identity) = DebugStep(s ⇒ s"Session content for key '$key' is '${transform(s.get(key))}'")
+  def show_session(key: String, transform: String ⇒ String = identity) =
+    DebugStep(s ⇒ s"Session content for key '$key' is\n${transform(s.get(key))}")
 
   def print_step(message: String) = DebugStep(s ⇒ message)
 }
@@ -139,7 +132,7 @@ object Dsl {
     )
   }
 
-  def from_session_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A: Show](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
       s ⇒ GenericAssertion(
@@ -148,7 +141,7 @@ object Dsl {
       )
     )
 
-  def from_session_detail_step[A](key: String, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+  def from_session_detail_step[A: Show](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
     AssertStep(
       title,
       s ⇒ {

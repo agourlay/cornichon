@@ -25,10 +25,11 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] =
     builtInPlaceholders.lift(ph.key).map(right).getOrElse {
-      val other = ph.key
-      (session.getOpt(other, ph.index), extractors.get(other)) match {
-        case (Some(v), Some(m))           ⇒ left(AmbiguousKeyDefinition(other))
-        case (None, None)                 ⇒ left(KeyNotFoundInSession(other, session))
+      val otherKeyName = ph.key
+      val otherKeyIndice = ph.index
+      (session.getOpt(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
+        case (Some(v), Some(m))           ⇒ left(AmbiguousKeyDefinition(otherKeyName))
+        case (None, None)                 ⇒ left(KeyNotFoundInSession(otherKeyName, otherKeyIndice, session))
         case (Some(valueInSession), None) ⇒ right(valueInSession)
         case (None, Some(mapper))         ⇒ applyMapper(mapper, session, ph)
       }

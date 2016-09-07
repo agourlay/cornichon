@@ -35,14 +35,14 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "3.0.0"
-  val akkaHttpV = "2.4.9"
+  val akkaHttpV = "2.4.10"
   val catsV = "0.7.2"
   val logbackV = "1.1.7"
   val parboiledV = "2.1.3"
   val akkaSseV = "1.10.0"
   val scalaCheckV = "1.13.2"
   val sangriaCirceV = "0.5.0"
-  val circeVersion = "0.5.0"
+  val circeVersion = "0.5.1"
   val sangriaV = "0.7.3"
   val fansiV = "0.2.0"
   val akkaHttpCirce = "1.9.0"
@@ -50,6 +50,7 @@ libraryDependencies ++= {
   val ficusV = "1.1.2"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
+    ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
     ,"org.typelevel"       %% "cats-macros"            % catsV
     ,"org.typelevel"       %% "cats-core"              % catsV
@@ -66,7 +67,6 @@ libraryDependencies ++= {
     ,"io.circe"            %% "circe-parser"           % circeVersion
     //,"io.circe"            %% "circe-optics"           % circeVersion  Remove if cursors are used instead or lenses for JsonPath.
     ,"de.heikoseeberger"   %% "akka-http-circe"        % akkaHttpCirce   % "test"
-    ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV       % "test"
     ,"com.ironcorelabs"    %% "cats-scalatest"         % catsScalaTest   % "test"
   )
 }

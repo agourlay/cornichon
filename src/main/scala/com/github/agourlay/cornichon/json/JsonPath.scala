@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.util.ShowInstances._
 import io.circe.Json
 import cats.data.Xor
 

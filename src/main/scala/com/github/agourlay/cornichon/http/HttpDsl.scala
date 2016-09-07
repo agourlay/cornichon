@@ -3,42 +3,45 @@ package com.github.agourlay.cornichon.http
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertions._
 import com.github.agourlay.cornichon.http.HttpStreams._
+import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.util.Formats
-import io.circe.Json
+import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends HttpRequestsDsl with Dsl {
-  this: CornichonFeature ⇒
+trait HttpDsl extends HttpRequestsDsl {
+  this: CornichonFeature with Dsl ⇒
 
   import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 
-  implicit def toStep[A: BodyInput](request: HttpRequest[A]): EffectStep =
+  implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.requestEffect(request)
     )
 
-  implicit def toStep(request: HttpStreamedRequest): EffectStep =
+  implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.streamEffect(request)
     )
 
-  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
-
-  implicit def toStep(queryGQL: QueryGQL): EffectStep = {
+  implicit def queryGqlToStep(queryGQL: QueryGQL): EffectStep = {
     import io.circe.generic.auto._
     import io.circe.syntax._
 
@@ -63,15 +66,16 @@ trait HttpDsl extends HttpRequestsDsl with Dsl {
 
   def query_gql(url: String) = QueryGQL(url, Document(List.empty))
 
-  val root = JsonPath.root
+  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
 
   def status = StatusAssertion
 
   def headers = HeadersAssertion(ordered = false)
 
-  def session_json_values(k1: String, k2: String) = SessionJsonValuesAssertion(k1, k2, Seq.empty, resolver)
+  //FIXME the body is expected to always contains JSON currently
+  def body = JsonAssertion(resolver, SessionKey(LastResponseBodyKey), Some("response body"))
 
-  def body[A] = BodyAssertion[A](root, Seq.empty, whitelist = false, resolver)
+  def httpListen(label: String) = HttpListen(label, resolver)
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
@@ -91,8 +95,6 @@ trait HttpDsl extends HttpRequestsDsl with Dsl {
 
   def show_last_response_headers = show_session(LastResponseHeadersKey)
 
-  def show_key_as_json(key: String) = show_session(key, v ⇒ parseJson(v).fold(e ⇒ throw e, prettyPrint))
-
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
 
@@ -101,5 +103,11 @@ trait HttpDsl extends HttpRequestsDsl with Dsl {
       val saveStep = save((WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(","))).copy(show = false)
       val removeStep = remove(WithHeadersKey).copy(show = false)
       saveStep +: steps :+ removeStep
+    }
+
+  def HttpListenTo(label: String, port: Int) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      val serverResource = HttpMockServerResource(label, port)
+      WithBlockScopedResource(nested = steps, resource = serverResource)
     }
 }

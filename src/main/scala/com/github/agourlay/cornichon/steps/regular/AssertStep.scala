@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.regular
 
+import cats.Show
+import cats.syntax.show._
 import cats.data.Xor
 import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
@@ -29,7 +31,7 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
 
 }
 
-abstract class Assertion[A] {
+abstract class Assertion[A: Show] {
   val expected: A
   val actual: A
   val expectedEqualsActual = expected == actual
@@ -43,47 +45,52 @@ abstract class Assertion[A] {
   def assertionError: CornichonError
 }
 
-case class GenericAssertion[A](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
+case class GenericAssertion[A: Show](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
   lazy val assertionError = GenericAssertionError(expected, actual, negate)
 }
 
-case class GenericAssertionError[A](expected: A, actual: A, negate: Boolean) extends CornichonError {
+case class GenericAssertionError[A: Show](expected: A, actual: A, negate: Boolean) extends CornichonError {
   private val baseMsg =
     s"""|expected result was${if (negate) " different than:" else ":"}
-        |'$expected'
+        |'${expected.show}'
         |but actual result is:
-        |'$actual'
+        |'${actual.show}'
         |""".stripMargin.trim
 
-  // TODO Introduce Show + Eq + Diff type classes to extract logic
+  // TODO Introduce Eq + Diff type classes to extract logic
   val msg = (expected, actual) match {
     case (expectedString: String, actualString: String) ⇒
       baseMsg
 
     case (expectedJson: Json, actualJson: Json) ⇒
-      s"""|expected result was${if (negate) " different than:" else ":"}
-          |${prettyPrint(expectedJson)}
-          |but actual result is:
-          |${prettyPrint(actualJson)}
+      s"""|$baseMsg
           |
-          |diff. between actual result and expected result is :
+          |JSON diff. between actual result and expected result is :
           |${prettyDiff(actualJson, expectedJson)}
       """.stripMargin.trim
 
     case (expectedSeq: Seq[A], actualSeq: Seq[A]) ⇒
-      s"$baseMsg \n Seq diff is '${actualSeq.diff(expectedSeq).mkString(", ")}'"
+      s"""|$baseMsg
+          |
+          |Collection diff. between actual result and expected result is :
+          |${actualSeq.diff(expectedSeq).mkString(", ")}
+      """.stripMargin.trim
 
     case (expectedSet: Set[A], actualSet: Set[A]) ⇒
-      s"$baseMsg \n Set diff is '${actualSet.diff(expectedSet).mkString(", ")}'"
+      s"""$baseMsg
+         |
+         |Set diff. between actual result and expected result is :
+         |${actualSet.diff(expectedSet).mkString(", ")}
+       """.stripMargin.trim
 
     case _ ⇒ baseMsg
   }
 }
 
-case class CustomMessageAssertion[A](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
+case class CustomMessageAssertion[A: Show](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
   lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
 }
 
-case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
+case class CustomMessageAssertionError[A: Show](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
   val msg = detailedAssertion(result)
 }

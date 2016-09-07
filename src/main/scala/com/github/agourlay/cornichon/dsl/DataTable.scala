@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.dsl
 
+import com.github.agourlay.cornichon.core.CornichonError
 import io.circe.{ Json, JsonObject }
 import org.parboiled2._
-
 import com.github.agourlay.cornichon.json.CornichonJson._
 
 import scala.util.{ Failure, Success }
@@ -93,3 +93,9 @@ trait StringHeaderParserSupport extends StringBuilding {
 
   def Unicode = rule { 'u' ~ capture(4 times CharPredicate.HexDigit) ~> (Integer.parseInt(_, 16)) }
 }
+
+case class DataTableError(error: Throwable, input: String) extends CornichonError {
+  val msg = s"error thrown '${error.getMessage}' while parsing data table $input"
+}
+
+case class DataTableParseError(msg: String) extends CornichonError
