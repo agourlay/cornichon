@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.ShowInstances._
-import io.circe.Json
+import io.circe.{ Encoder, Json }
 
 object JsonAssertions {
 
@@ -50,7 +50,7 @@ object JsonAssertions {
 
     def whitelisting: JsonAssertion = copy(whitelist = true)
 
-    def is[A: Show](expected: A): AssertStep[Json] = {
+    def is[A: Show: Encoder](expected: A): AssertStep[Json] = {
       if (whitelist && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
@@ -178,7 +178,7 @@ object JsonAssertions {
       )
     }
 
-    def is[A: Show](expected: A): AssertStep[Iterable[Json]] = {
+    def is[A: Show: Encoder](expected: A): AssertStep[Iterable[Json]] = {
       val assertionTitle = {
         val expectedSentence = if (ordered) s"in order is $expected" else s"is $expected"
         val titleString = if (jsonPath == JsonPath.root)
@@ -226,19 +226,19 @@ object JsonAssertions {
         )
     }
 
-    def not_contains[A: Show](elements: A*) = {
+    def not_contains[A: Show: Encoder](elements: A*) = {
       val prettyElements = elements.mkString(" and ")
       val title = if (jsonPath == JsonPath.root) s"$target array does not contain $prettyElements" else s"$target's array '$jsonPath' does not contain $prettyElements"
       bodyContainsElmt(title, elements, expected = false)
     }
 
-    def contains[A: Show](elements: A*) = {
+    def contains[A: Show: Encoder](elements: A*) = {
       val prettyElements = elements.mkString(" and ")
       val title = if (jsonPath == JsonPath.root) s"$target array contains $prettyElements" else s"$target's array '$jsonPath' contains $prettyElements"
       bodyContainsElmt(title, elements, expected = true)
     }
 
-    private def bodyContainsElmt[A: Show](title: String, elements: Seq[A], expected: Boolean): AssertStep[Boolean] = {
+    private def bodyContainsElmt[A: Show: Encoder](title: String, elements: Seq[A], expected: Boolean): AssertStep[Boolean] = {
       from_session_detail_step(
         title = title,
         key = sessionKey,
@@ -286,7 +286,7 @@ object JsonAssertions {
     else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }
 
-  private def resolveParseJson[A](input: A, session: Session, resolver: Resolver): Json =
+  private def resolveParseJson[A: Show: Encoder](input: A, session: Session, resolver: Resolver): Json =
     parseJson {
       input match {
         case string: String ⇒ resolver.fillPlaceholdersUnsafe(string)(session).asInstanceOf[A]

@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.http
+package com.github.agourlay.cornichon.resolver
 
 trait Resolvable[A] {
 
@@ -12,5 +12,4 @@ object Resolvable {
     def toResolvableForm(s: String) = s
     def fromResolvableForm(s: String) = s
   }
-
 }

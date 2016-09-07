@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.http
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.util.Formats._
+import com.github.agourlay.cornichon.util.ShowInstances._
 
 object HttpAssertionErrors {
 

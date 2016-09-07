@@ -4,6 +4,7 @@ import io.circe.{ Json, JsonObject }
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 import cats.data.Xor._
+import com.github.agourlay.cornichon.util.ShowInstances._
 
 class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with CornichonJson {
 

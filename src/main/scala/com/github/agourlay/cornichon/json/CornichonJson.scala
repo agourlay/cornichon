@@ -1,14 +1,16 @@
 package com.github.agourlay.cornichon.json
 
 import cats.Show
+import cats.syntax.show._
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
-import com.github.agourlay.cornichon.http.Resolvable
-import com.github.agourlay.cornichon.json.CornichonJson.GqlString
 import com.github.agourlay.cornichon.json.JsonDiff.Diff
-import io.circe.{ Json, JsonObject }
+import com.github.agourlay.cornichon.resolver.Resolvable
+import com.github.agourlay.cornichon.util.ShowInstances._
+import io.circe.{ Encoder, Json, JsonObject }
+import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
@@ -18,20 +20,20 @@ import scala.util.{ Failure, Success }
 
 trait CornichonJson {
 
-  def parseJson[A](input: A): Xor[CornichonError, Json] = input match {
-    case s: String if s.trim.headOption.contains('|') ⇒ right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject)))
-    case s: String if s.trim.headOption.contains('{') ⇒ parseString(s)
-    case s: String if s.trim.headOption.contains('[') ⇒ parseString(s)
-    case s: String                                    ⇒ right(Json.fromString(s))
-    case d: Double                                    ⇒ right(Json.fromDoubleOrNull(d))
-    case b: BigDecimal                                ⇒ right(Json.fromBigDecimal(b))
-    case i: Int                                       ⇒ right(Json.fromInt(i))
-    case l: Long                                      ⇒ right(Json.fromLong(l))
-    case b: Boolean                                   ⇒ right(Json.fromBoolean(b))
-    case GqlString(g)                                 ⇒ parseGraphQLJson(g)
+  def parseJson[A: Encoder: Show](input: A): Xor[CornichonError, Json] = input match {
+    case s: String if s.trim.headOption.contains('|') ⇒
+      right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject))) // table
+    case s: String if s.trim.headOption.contains('{') ⇒
+      parseString(s) // parse object
+    case s: String if s.trim.headOption.contains('[') ⇒
+      parseString(s) // parse array
+    case s: String ⇒
+      right(Json.fromString(s))
+    case _ ⇒
+      Xor.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
   }
 
-  def parseJsonUnsafe[A](input: A): Json =
+  def parseJsonUnsafe[A: Encoder: Show](input: A): Json =
     parseJson(input).fold(e ⇒ throw e, identity)
 
   def parseString(s: String) =
@@ -114,6 +116,10 @@ object CornichonJson extends CornichonJson {
 
     implicit val gqlShow = new Show[GqlString] {
       def show(g: GqlString) = s"GraphQl JSON ${g.input}"
+    }
+
+    implicit val gqlEncode: Encoder[GqlString] = new Encoder[GqlString] {
+      final def apply(g: GqlString): Json = parseGraphQLJsonUnsafe(g.input)
     }
   }
 

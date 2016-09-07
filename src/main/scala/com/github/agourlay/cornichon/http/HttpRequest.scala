@@ -1,8 +1,10 @@
 package com.github.agourlay.cornichon.http
 
+import cats.Show
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.json.CornichonJson._
-import io.circe.Json
+import com.github.agourlay.cornichon.resolver.Resolvable
+import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 
 import scala.concurrent.duration.FiniteDuration
@@ -30,7 +32,7 @@ trait BaseRequest {
   def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayTuples(headers)}"
 }
 
-case class HttpRequest[A: BodyInput](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
+case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
     extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
@@ -39,17 +41,17 @@ case class HttpRequest[A: BodyInput](method: HttpMethod, url: String, body: Opti
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
-  def withBody[B: BodyInput](body: B) = copy(body = Some(body))
+  def withBody[B: Show: Resolvable: Encoder](body: B) = copy(body = Some(body))
 
   def description: String = {
-    val input = implicitly[BodyInput[A]]
+    val input = implicitly[Show[A]]
     val base = s"${method.name} $url"
     val payloadTitle = body.fold("")(p ⇒ s" with body ${input.show(p)}")
     base + payloadTitle + paramsTitle + headersTitle
   }
 }
 
-trait HttpRequestsDsl extends BodyInputOps {
+trait HttpRequestsDsl {
   import com.github.agourlay.cornichon.http.HttpMethods._
   import com.github.agourlay.cornichon.util.ShowInstances._
 
@@ -92,7 +94,7 @@ case class QueryGQL(url: String, query: Document, operationName: Option[String] 
 
   def withOperationName(operationName: String) = copy(operationName = Some(operationName))
 
-  def withVariables(newVariables: (String, Any)*) = {
+  def withVariables[A: Encoder: Show](newVariables: (String, A)*) = {
     val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }
     copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples)))
   }

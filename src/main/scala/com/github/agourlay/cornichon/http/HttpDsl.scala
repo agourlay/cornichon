@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.http
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
@@ -13,10 +14,11 @@ import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.util.Formats
-import io.circe.Json
+import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
@@ -27,7 +29,7 @@ trait HttpDsl extends HttpRequestsDsl {
 
   import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 
-  implicit def httpRequestToStep[A: BodyInput](request: HttpRequest[A]): EffectStep =
+  implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
     EffectStep(
       title = request.description,
       effect = http.requestEffect(request)

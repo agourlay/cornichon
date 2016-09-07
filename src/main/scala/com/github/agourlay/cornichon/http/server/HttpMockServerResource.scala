@@ -5,6 +5,7 @@ import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import com.github.agourlay.cornichon.json.CornichonJson
+import com.github.agourlay.cornichon.util.ShowInstances._
 import io.circe.Json
 
 case class HttpMockServerResource(label: String, port: Int) extends BlockScopedResource {

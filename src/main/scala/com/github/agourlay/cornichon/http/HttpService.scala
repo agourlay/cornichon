@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.http
 
 import java.util.concurrent.TimeoutException
 
+import cats.Show
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core._
@@ -9,8 +10,9 @@ import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.util.ShowInstances._
+import io.circe.Encoder
 
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
@@ -19,11 +21,11 @@ import scala.util.{ Failure, Success, Try }
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
 
   import com.github.agourlay.cornichon.http.HttpService._
-  import com.github.agourlay.cornichon.http.BodyInput._
+
   import HttpService.SessionKeys._
 
-  private def resolveRequestParts[A: BodyInput](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
-    val ri = implicitly[BodyInput[A]]
+  private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
+    val ri = implicitly[Resolvable[A]]
     for {
       bodyResolved ← {
         body.map { b ⇒
@@ -43,7 +45,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     } yield (urlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
-  private def runRequest[A: BodyInput](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
+  private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       parts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
       resp ← waitForRequestFuture(parts._1, requestTimeout) {
@@ -123,7 +125,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       }
     }
 
-  def requestEffect[A: BodyInput](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
+  def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
 
   def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Session =

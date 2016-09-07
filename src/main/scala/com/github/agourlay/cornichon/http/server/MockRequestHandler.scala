@@ -7,7 +7,6 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.github.agourlay.cornichon.http.{ HttpMethod ⇒ CornichonHttpMethod, HttpMethods ⇒ CornichonHttpMethods, HttpRequest ⇒ CornichonHttpRequest }
-import com.github.agourlay.cornichon.http.BodyInput._
 import com.github.agourlay.cornichon.util.ShowInstances._
 
 import scala.concurrent.ExecutionContext
