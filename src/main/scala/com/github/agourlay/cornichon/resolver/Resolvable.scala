@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
+import scala.annotation.implicitNotFound
 
+@implicitNotFound("No instance of typeclass Resolvable found for type ${A} - this instance is required if you are trying to use ${A} as custom HTTP body type")
 trait Resolvable[A] {
 
   def toResolvableForm(r: A): String
@@ -9,6 +11,8 @@ trait Resolvable[A] {
 }
 
 object Resolvable {
+
+  def apply[A](implicit resolvable: Resolvable[A]): Resolvable[A] = resolvable
 
   implicit val stringResolvable = new Resolvable[String] {
     def toResolvableForm(s: String) = s
