@@ -1,13 +1,14 @@
 package com.github.agourlay.cornichon.json
 
 import cats.Show
+import cats.syntax.show._
 import com.github.agourlay.cornichon.core.{ Session, SessionKey }
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
-import com.github.agourlay.cornichon.json.JsonDiff.Diff
+import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Diff, GenericAssertion }
 import com.github.agourlay.cornichon.util.ShowInstances._
 import io.circe.{ Encoder, Json }
 
@@ -64,8 +65,8 @@ object JsonAssertions {
               if (whitelist) {
                 val expectedJson = resolveParseJson(expected, session, resolver)
                 val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-                val Diff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
-                if (deleted != Json.Null) throw WhitelistingError(elementNotDefined = prettyPrint(deleted), source = prettyPrint(sessionValueJson))
+                val JsonDiff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
+                if (deleted != Json.Null) throw WhitelistingError(elementNotDefined = deleted.show, source = sessionValueJson.show)
                 if (changed != Json.Null) changed else expectedJson
               } else {
                 val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
@@ -89,8 +90,9 @@ object JsonAssertions {
         mapValue =
           (session, sessionValue) ⇒ {
             val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-            val predicate = prettyPrint(subJson).contains(expectedPart)
-            (predicate, notContainedError(expectedPart, prettyPrint(subJson)))
+            val prettyJson = subJson.show
+            val predicate = prettyJson.contains(expectedPart)
+            (predicate, notContainedError(expectedPart, prettyJson))
           }
       )
     }
@@ -108,7 +110,7 @@ object JsonAssertions {
               case Json.Null ⇒ true
               case _         ⇒ false
             }
-            (predicate, keyIsPresentError(jsonPath, prettyPrint(subJson)))
+            (predicate, keyIsPresentError(jsonPath, subJson.show))
           }
       )
     }
@@ -126,7 +128,7 @@ object JsonAssertions {
               case Json.Null ⇒ false
               case _         ⇒ true
             }
-            (predicate, keyIsAbsentError(jsonPath, prettyPrint(parseJsonUnsafe(sessionValue))))
+            (predicate, keyIsAbsentError(jsonPath, parseJsonUnsafe(sessionValue).show))
           }
       )
     }
@@ -172,13 +174,13 @@ object JsonAssertions {
         }
         jArray.fold(
           e ⇒ throw e,
-          l ⇒ (l.size, arraySizeError(size, prettyPrint(Json.fromValues(l))))
+          l ⇒ (l.size, arraySizeError(size, Json.fromValues(l).show))
         )
       }
       )
     }
 
-    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep[Iterable[Json]] = {
+    def is[A: Show: Resolvable: Encoder](expected: A) = {
       val assertionTitle = {
         val expectedSentence = if (ordered) s"in order is $expected" else s"is $expected"
         val titleString = if (jsonPath == JsonPath.root)
@@ -247,7 +249,7 @@ object JsonAssertions {
         val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
         val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
         val containsAll = resolvedJson.forall(jArr.contains)
-        (containsAll, arrayContainsError(resolvedJson.map(prettyPrint), prettyPrint(Json.fromValues(jArr)), expected))
+        (containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
       }
       )
     }
@@ -262,7 +264,7 @@ object JsonAssertions {
     jArr.fold(e ⇒ throw e, identity)
   }
 
-  private def body_array_transform[A: Show](
+  private def body_array_transform[A: Show: Diff](
     sessionKey: SessionKey,
     arrayExtractor: (Session, String) ⇒ List[Json],
     mapFct: (Session, List[Json]) ⇒ A,

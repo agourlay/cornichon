@@ -1,14 +1,13 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.core.SessionKey
-import com.github.agourlay.cornichon.dsl.CollectionAssertionSyntax
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertionErrors._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.resolver.Resolver
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.util.ShowInstances._
 
@@ -25,12 +24,12 @@ object HttpAssertions {
     )
   }
 
-  case class HeadersAssertion(private val ordered: Boolean) extends CollectionAssertionSyntax[(String, String), String] {
-    def is(expected: (String, String)*) = from_session_step[Iterable[String]](
+  case class HeadersAssertion(private val ordered: Boolean) {
+    def is(expected: (String, String)*) = from_session_step(
       title = s"headers is ${displayTuples(expected)}",
       key = SessionKey(lastResponseHeadersKey),
       expected = s ⇒ expected.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" },
-      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",")
+      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").toSeq
     )
 
     def hasSize(expected: Int) = from_session_step(
@@ -53,7 +52,7 @@ object HttpAssertions {
       )
     }
 
-    override def inOrder: HeadersAssertion = copy(ordered = true)
+    def inOrder: HeadersAssertion = copy(ordered = true)
   }
 
   case class HttpListen(name: String, resolver: Resolver) {

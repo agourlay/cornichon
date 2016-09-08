@@ -1,5 +1,8 @@
 package com.github.agourlay.cornichon.util
 
+import cats.Show
+import cats.syntax.show._
+
 object Formats {
 
   def displayTuples(params: Seq[(String, String)]): String =
@@ -7,7 +10,7 @@ object Formats {
 
   val defaultShow = (elm: Any) ⇒ elm.toString
 
-  def displayMap[A](map: Map[String, A], show: A ⇒ String = defaultShow): String =
-    map.toSeq.sortBy(_._1).map(pair ⇒ pair._1 + " -> " + show(pair._2)).mkString("\n")
+  def displayMap[A: Show](map: Map[String, A]): String =
+    map.toSeq.sortBy(_._1).map(pair ⇒ pair._1 + " -> " + pair._2.show).mkString("\n")
 
 }

@@ -52,6 +52,26 @@ trait ShowInstances {
       fa.toIterator.map(_.show).mkString("Iterable(", ", ", ")")
   }
 
+  implicit def showSeq[A: Show]: Show[Seq[A]] = new Show[Seq[A]] {
+    def show(fa: Seq[A]): String =
+      fa.toIterator.map(_.show).mkString("Seq(", ", ", ")")
+  }
+
+  implicit def showVector[A: Show]: Show[Vector[A]] = new Show[Vector[A]] {
+    def show(fa: Vector[A]): String =
+      fa.toIterator.map(_.show).mkString("Vector(", ", ", ")")
+  }
+
+  implicit def showList[A: Show]: Show[List[A]] = new Show[List[A]] {
+    def show(fa: List[A]): String =
+      fa.toIterator.map(_.show).mkString("List(", ", ", ")")
+  }
+
+  implicit def showSet[A: Show]: Show[Set[A]] = new Show[Set[A]] {
+    def show(fa: Set[A]): String =
+      fa.toIterator.map(_.show).mkString("Set(", ", ", ")")
+  }
+
 }
 
 object ShowInstances extends ShowInstances

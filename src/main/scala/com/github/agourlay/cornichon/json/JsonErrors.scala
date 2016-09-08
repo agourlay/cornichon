@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.json
 
+import cats.syntax.show._
 import com.github.agourlay.cornichon.core.CornichonError
 import io.circe.Json
 
@@ -36,5 +37,5 @@ case class WhitelistingError(elementNotDefined: String, source: String) extends 
 case class NotStringFieldError(input: Json, field: String) extends JsonError {
   val msg =
     s"""field '$field' is not of type String in JSON
-       |${CornichonJson.prettyPrint(input)}""".stripMargin
+       |${input.show}""".stripMargin
 }

@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.steps.regular
 
 import com.github.agourlay.cornichon.core.{ Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
 class AssertStepSpec extends WordSpec with Matchers with StepUtilSpec {

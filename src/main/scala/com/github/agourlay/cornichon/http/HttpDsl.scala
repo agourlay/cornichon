@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import cats.Show
+import cats.syntax.show._
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
@@ -13,7 +14,7 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
-import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
@@ -47,10 +48,10 @@ trait HttpDsl extends HttpRequestsDsl {
     // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
     val payload = queryGQL.query.source.getOrElse(QueryRenderer.render(queryGQL.query, QueryRenderer.Pretty))
 
-    val fullPayload = prettyPrint(GqlPayload(payload, queryGQL.operationName, queryGQL.variables).asJson)
+    val fullPayload = GqlPayload(payload, queryGQL.operationName, queryGQL.variables).asJson.show
 
     val prettyVar = queryGQL.variables.fold("") { variables ⇒
-      " and with variables " + Formats.displayMap(variables, CornichonJson.prettyPrint)
+      " and with variables " + Formats.displayMap(variables)
     }
 
     val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")

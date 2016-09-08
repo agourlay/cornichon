@@ -2,8 +2,9 @@ package com.github.agourlay.cornichon.dsl
 
 import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.{ Session, SessionKey, FeatureDef, Step, Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.steps.regular._
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, Diff, GenericAssertion }
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.util.ShowInstances
@@ -131,7 +132,7 @@ object Dsl {
     )
   }
 
-  def from_session_step[A: Show](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A: Show: Diff](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
       s ⇒ GenericAssertion(
@@ -140,7 +141,7 @@ object Dsl {
       )
     )
 
-  def from_session_detail_step[A: Show](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+  def from_session_detail_step[A](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
     AssertStep(
       title,
       s ⇒ {

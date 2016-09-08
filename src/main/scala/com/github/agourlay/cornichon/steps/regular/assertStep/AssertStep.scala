@@ -1,13 +1,11 @@
-package com.github.agourlay.cornichon.steps.regular
+package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.Show
-import cats.syntax.show._
 import cats.data.Xor
 import cats.data.Xor._
-import com.github.agourlay.cornichon.core._
+import cats.syntax.show._
 import com.github.agourlay.cornichon.core.Engine._
-import com.github.agourlay.cornichon.json.CornichonJson._
-import io.circe.Json
+import com.github.agourlay.cornichon.core._
 
 import scala.concurrent.ExecutionContext
 
@@ -31,7 +29,8 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
 
 }
 
-abstract class Assertion[A: Show] {
+// TODO Introduce Equal type classes
+abstract class Assertion[A] {
   val expected: A
   val actual: A
   val expectedEqualsActual = expected == actual
@@ -45,11 +44,11 @@ abstract class Assertion[A: Show] {
   def assertionError: CornichonError
 }
 
-case class GenericAssertion[A: Show](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
+case class GenericAssertion[A: Show: Diff](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
   lazy val assertionError = GenericAssertionError(expected, actual, negate)
 }
 
-case class GenericAssertionError[A: Show](expected: A, actual: A, negate: Boolean) extends CornichonError {
+case class GenericAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
   private val baseMsg =
     s"""|expected result was${if (negate) " different than:" else ":"}
         |'${expected.show}'
@@ -57,40 +56,18 @@ case class GenericAssertionError[A: Show](expected: A, actual: A, negate: Boolea
         |'${actual.show}'
         |""".stripMargin.trim
 
-  // TODO Introduce Eq + Diff type classes to extract logic
-  val msg = (expected, actual) match {
-    case (expectedString: String, actualString: String) ⇒
-      baseMsg
-
-    case (expectedJson: Json, actualJson: Json) ⇒
-      s"""|$baseMsg
-          |
-          |JSON diff. between actual result and expected result is :
-          |${prettyDiff(actualJson, expectedJson)}
+  val msg = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg ⇒
+    s"""|$baseMsg
+        |
+        |$diffMsg}
       """.stripMargin.trim
-
-    case (expectedSeq: Seq[A], actualSeq: Seq[A]) ⇒
-      s"""|$baseMsg
-          |
-          |Collection diff. between actual result and expected result is :
-          |${actualSeq.diff(expectedSeq).mkString(", ")}
-      """.stripMargin.trim
-
-    case (expectedSet: Set[A], actualSet: Set[A]) ⇒
-      s"""$baseMsg
-         |
-         |Set diff. between actual result and expected result is :
-         |${actualSet.diff(expectedSet).mkString(", ")}
-       """.stripMargin.trim
-
-    case _ ⇒ baseMsg
   }
 }
 
-case class CustomMessageAssertion[A: Show](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
+case class CustomMessageAssertion[A](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
   lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
 }
 
-case class CustomMessageAssertionError[A: Show](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
+case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
   val msg = detailedAssertion(result)
 }

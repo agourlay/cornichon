@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.SessionKey
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion, GenericAssertion }
 import com.github.agourlay.cornichon.dsl.SessionAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
 import com.github.agourlay.cornichon.util.ShowInstances._
 
 case class SessionAssertion(

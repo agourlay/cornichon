@@ -1,7 +1,8 @@
 package com.github.agourlay.cornichon.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.{AssertStep, GenericAssertion}
+import com.github.agourlay.cornichon.steps.regular.GenericAssertion
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericAssertion}
 
 import scala.concurrent.duration._
 

@@ -15,12 +15,12 @@ import akka.http.scaladsl.model.HttpHeader.ParsingResult
 
 import cats.data.Xor
 import cats.data.Xor.{ left, right }
+import cats.syntax.show._
 
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.core.CornichonError
 
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
@@ -130,7 +130,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
               CornichonHttpResponse(
                 status = StatusCodes.OK.intValue,
                 headers = Seq.empty,
-                body = prettyPrint(Json.fromValues(events.map(_.asJson).toList))
+                body = Json.fromValues(events.map(_.asJson).toList).show
               )
             }
           Await.result(r, takeWithin)

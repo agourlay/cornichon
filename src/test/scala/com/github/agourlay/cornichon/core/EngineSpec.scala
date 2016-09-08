@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.resolver.Resolver
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
 import com.github.agourlay.cornichon.util.ShowInstances
 import org.scalatest.{ Matchers, WordSpec }
 

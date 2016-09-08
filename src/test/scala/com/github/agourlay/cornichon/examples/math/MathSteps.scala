@@ -1,7 +1,8 @@
 package com.github.agourlay.cornichon.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.{ AssertStep, CustomMessageAssertion, EffectStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.EffectStep
 
 import scala.util.Random
 

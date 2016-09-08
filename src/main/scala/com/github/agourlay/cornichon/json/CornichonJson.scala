@@ -6,7 +6,7 @@ import cats.data.Xor
 import cats.data.Xor.{ left, right }
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
-import com.github.agourlay.cornichon.json.JsonDiff.Diff
+import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.util.ShowInstances._
 import io.circe.{ Encoder, Json, JsonObject }
@@ -78,11 +78,11 @@ trait CornichonJson {
   def jsonStringValue(j: Json): String =
     j.fold(
       jsonNull = "",
-      jsonBoolean = b ⇒ prettyPrint(j),
-      jsonNumber = b ⇒ prettyPrint(j),
+      jsonBoolean = b ⇒ j.show,
+      jsonNumber = b ⇒ j.show,
       jsonString = s ⇒ s,
-      jsonArray = b ⇒ prettyPrint(j),
-      jsonObject = b ⇒ prettyPrint(j)
+      jsonArray = b ⇒ j.show,
+      jsonObject = b ⇒ j.show
     )
 
   def extract(json: Json, path: String) =
@@ -90,10 +90,10 @@ trait CornichonJson {
 
   def prettyPrint(json: Json) = json.spaces2
 
-  def diff(first: Json, second: Json): Diff = JsonDiff.diff(first, second)
+  def diff(first: Json, second: Json): JsonDiff = JsonDiffer.diff(first, second)
 
   def prettyDiff(first: Json, second: Json) = {
-    val Diff(changed, added, deleted) = diff(first, second)
+    val JsonDiff(changed, added, deleted) = diff(first, second)
 
     s"""
     |${if (changed == Json.Null) "" else "changed = " + jsonStringValue(changed)}
