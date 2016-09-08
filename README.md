@@ -28,9 +28,10 @@ An extensible Scala DSL for testing JSON HTTP APIs.
   4. [Register custom extractors](#register-custom-extractors)
 9. [Execution model](#execution-model)
 10. [Ignoring features or scenarios](#ignoring-features-or-scenarios)
-11. [ScalaTest integration](#scalatest-integration)
-12. [SSL configuration](#ssl-configuration)
-13. [License](#license)
+11. [Custom HTTP body type](#custom-http-body-type)
+12. [ScalaTest integration](#scalatest-integration)
+13. [SSL configuration](#ssl-configuration)
+14. [License](#license)
 
 ## Quick start
 
@@ -226,6 +227,8 @@ put("http://superhero.io/batman").withBody("JSON description of Batman goes here
 patch("http://superhero.io/batman").withBody("JSON description of Batman goes here")
 ```
 
+
+There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section [Custom HTTP body type](#custom-http-body-type).
 
 ### HTTP assertions
 
@@ -945,6 +948,36 @@ class CornichonExamplesSpec extends CornichonFeature {
       }
   }
 }
+```
+
+
+## Custom HTTP body type
+
+By default the HTTP DSL expects a String body but in some cases you might want to work at a higher level of abstraction.
+
+In order to use a custom type as body, it is necessary to provide 3 typeclass instances:
+
+- ```cats.Show``` used to print the values
+- ```io.circe.Encoder``` used to convert the values to JSON
+- ```com.github.agourlay.cornichon.resolver.Resolvable``` used to provide a custom String representation in which placeholders can be resolved
+
+For instance if you wish to use the ```JsObject``` from ```play-json``` as HTTP request's body you can define the following instances in your code:
+
+```scala
+
+  lazy implicit val jsonResolvableForm = new Resolvable[JsObject] {
+    def toResolvableForm(s: JsObject) = s.toString()
+    def fromResolvableForm(s: String) = Json.parse(s).as[JsObject]
+  }
+
+  lazy implicit val showJson = new Show[JsObject] {
+    override def show(f: JsObject): String = f.toString()
+  }
+
+  lazy implicit val JsonEncoder:Encoder[JsObject] = new Encoder[JsObject] {
+    override def apply(a: JsObject): cJson = parse(a.toString()).getOrElse(cJson.Null)
+  }
+
 ```
 
 
