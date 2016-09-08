@@ -25,20 +25,9 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   import HttpService.SessionKeys._
 
   private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
-    val ri = implicitly[Resolvable[A]]
     for {
-      bodyResolved ← {
-        body.map { b ⇒
-          val resolvableForm = ri.toResolvableForm(b)
-          resolver.fillPlaceholders(resolvableForm)(s).map(Some(_))
-        }.getOrElse(right(None))
-      }
-      jsonBodyResolved ← {
-        bodyResolved.map { br ⇒
-          val initialType = ri.fromResolvableForm(br)
-          parseJson(initialType).map(Some(_))
-        }.getOrElse(right(None))
-      }
+      bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(right(None))
+      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(right(None))
       urlResolved ← resolver.fillPlaceholders(withBaseUrl(url))(s)
       paramsResolved ← resolveParams(url, params)(s)
       headersResolved ← resolver.tuplesResolver(headers, s)

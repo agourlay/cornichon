@@ -59,6 +59,17 @@ class Resolver(extractors: Map[String, Mapper]) {
       }
   }
 
+  def fillPlaceholders[A: Resolvable](input: A)(session: Session): Xor[CornichonError, A] = {
+    val ri = implicitly[Resolvable[A]]
+    val resolvableForm = ri.toResolvableForm(input)
+    fillPlaceholders(resolvableForm)(session).map { resolved ⇒
+      // If the input did not contain placeholders,
+      // we can return the original value directly
+      // and avoid an extra transformation from the resolved form
+      if (resolved == resolvableForm) input else ri.fromResolvableForm(resolved)
+    }
+  }
+
   def fillPlaceholders(input: String)(session: Session) = {
     def loop(placeholders: List[Placeholder], acc: String): Xor[CornichonError, String] =
       placeholders.headOption.fold[Xor[CornichonError, String]](right(acc)) { ph ⇒

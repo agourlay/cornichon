@@ -286,13 +286,14 @@ object JsonAssertions {
     else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }
 
-  private def resolveParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json =
-    parseJson {
-      val ri = implicitly[Resolvable[A]]
-      val resolvableForm = ri.toResolvableForm(input)
-      val resolved = resolver.fillPlaceholdersUnsafe(resolvableForm)(session)
-      ri.fromResolvableForm(resolved)
-    }.fold(e ⇒ throw e, identity)
+  private def resolveParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
+    val xorJson = for {
+      resolved ← resolver.fillPlaceholders(input)(session)
+      json ← parseJson(resolved)
+    } yield json
+
+    xorJson.fold(e ⇒ throw e, identity)
+  }
 
   private def resolveParseJsonPath(path: String, resolver: Resolver)(s: Session) =
     resolver.fillPlaceholders(path)(s).map(JsonPath.parse).fold(e ⇒ throw e, identity)
