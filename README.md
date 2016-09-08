@@ -451,7 +451,7 @@ session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is(...)
 
 ```scala
   session_value("favorite-superhero").isPresent
-  session_value("favorite-superhero").isAbsence
+  session_value("favorite-superhero").isAbsent
 ````
 
 ### Wrapper steps
