@@ -9,7 +9,7 @@ class AssertStepSpec extends WordSpec with Matchers with StepUtilSpec {
   "AssertStep" must {
 
     "fail if instruction throws exception" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val steps = Vector(
         AssertStep[Int]("stupid step", s ⇒ {
           6 / 0
@@ -21,7 +21,7 @@ class AssertStepSpec extends WordSpec with Matchers with StepUtilSpec {
     }
 
     "success if non equality was expected" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val steps = Vector(
         AssertStep(
           "non equals step", s ⇒ GenericAssertion(1, 2, negate = true)
@@ -34,7 +34,7 @@ class AssertStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "runStepPredicate" must {
     "return session if assertion is True" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val assertion = GenericAssertion(2, 2)
       val step = AssertStep[Int]("stupid step", s ⇒ assertion)
       step.runStepPredicate(session)(assertion).fold(e ⇒ fail("should have been Right"), s ⇒ s should be(session))

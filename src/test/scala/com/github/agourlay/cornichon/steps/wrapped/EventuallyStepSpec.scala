@@ -11,7 +11,7 @@ class EventuallyStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "EventuallyStep" must {
     "replay eventually wrapped steps" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
       val nested: Vector[Step] = Vector(
         AssertStep(
@@ -26,7 +26,7 @@ class EventuallyStepSpec extends WordSpec with Matchers with StepUtilSpec {
     }
 
     "replay eventually wrapped steps until limit" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
       val nested: Vector[Step] = Vector(
         AssertStep(

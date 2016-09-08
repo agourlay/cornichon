@@ -77,7 +77,7 @@ case class Session(content: Map[String, Vector[String]]) {
 }
 
 object Session {
-  def newSession = Session(HashMap.empty)
+  def newEmpty = Session(HashMap.empty)
   implicit val showSession = new Show[Session] {
     def show(s: Session) = s.prettyPrint
   }

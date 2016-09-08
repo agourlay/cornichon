@@ -15,14 +15,14 @@ class EngineSpec extends WordSpec with Matchers with ShowInstances {
   "An engine" when {
     "runScenario" must {
       "executes all steps of a scenario" in {
-        val session = Session.newSession
+        val session = Session.newEmpty
         val steps = Vector(AssertStep[Int]("first step", s ⇒ GenericAssertion(2 + 1, 3)))
         val s = Scenario("test", steps)
         engine.runScenario(session)(s).isSuccess should be(true)
       }
 
       "stops at first failed step" in {
-        val session = Session.newSession
+        val session = Session.newEmpty
         val step1 = AssertStep[Int]("first step", s ⇒ GenericAssertion(2, 2))
         val step2 = AssertStep[Int]("second step", s ⇒ GenericAssertion(4, 5))
         val step3 = AssertStep[Int]("third step", s ⇒ GenericAssertion(1, 1))
@@ -45,7 +45,7 @@ class EngineSpec extends WordSpec with Matchers with ShowInstances {
       }
 
       "accumulates errors if 'main' and 'finally' fail" in {
-        val session = Session.newSession
+        val session = Session.newEmpty
         val mainStep = AssertStep[Boolean]("main step", s ⇒ GenericAssertion(true, false))
         val finallyStep = AssertStep[Boolean]("finally step", s ⇒ GenericAssertion(true, false))
         val s = Scenario("test", Vector(mainStep))

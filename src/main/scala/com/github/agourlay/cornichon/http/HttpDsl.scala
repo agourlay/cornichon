@@ -17,6 +17,7 @@ import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
+import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.util.Formats
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
@@ -26,8 +27,6 @@ import scala.concurrent.duration._
 
 trait HttpDsl extends HttpRequestsDsl {
   this: CornichonFeature with Dsl ⇒
-
-  import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
     EffectStep(
@@ -73,13 +72,13 @@ trait HttpDsl extends HttpRequestsDsl {
   def headers = HeadersAssertion(ordered = false)
 
   //FIXME the body is expected to always contains JSON currently
-  def body = JsonAssertion(resolver, SessionKey(LastResponseBodyKey), Some("response body"))
+  def body = JsonAssertion(resolver, SessionKey(lastResponseBodyKey), Some("response body"))
 
   def httpListen(label: String) = HttpListen(label, resolver)
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
-      case (path, target) ⇒ FromSessionSetter(LastResponseBodyKey, (session, s) ⇒ {
+      case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, (session, s) ⇒ {
         val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(session)
         JsonPath.parse(resolvedPath).run(s).fold(e ⇒ throw e, json ⇒ jsonStringValue(json))
       }, target)
@@ -87,21 +86,21 @@ trait HttpDsl extends HttpRequestsDsl {
     save_from_session(inputs)
   }
 
-  def show_last_status = show_session(LastResponseStatusKey)
+  def show_last_status = show_session(lastResponseStatusKey)
 
-  def show_last_response_body = show_session(LastResponseBodyKey)
+  def show_last_response_body = show_session(lastResponseBodyKey)
 
-  def show_last_response_body_as_json = show_key_as_json(LastResponseBodyKey)
+  def show_last_response_body_as_json = show_key_as_json(lastResponseBodyKey)
 
-  def show_last_response_headers = show_session(LastResponseHeadersKey)
+  def show_last_response_headers = show_session(lastResponseHeadersKey)
 
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
 
   def WithHeaders(headers: (String, String)*) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      val saveStep = save((WithHeadersKey, headers.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" }.mkString(","))).copy(show = false)
-      val removeStep = remove(WithHeadersKey).copy(show = false)
+      val saveStep = save((withHeadersKey, headers.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }.mkString(","))).copy(show = false)
+      val removeStep = remove(withHeadersKey).copy(show = false)
       saveStep +: steps :+ removeStep
     }
 

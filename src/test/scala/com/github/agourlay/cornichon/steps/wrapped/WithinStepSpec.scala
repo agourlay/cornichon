@@ -11,7 +11,7 @@ class WithinStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "WithinStep" must {
     "control duration of 'within' wrapped steps" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val d = 200.millis
       val nested: Vector[Step] = Vector(
         AssertStep(
@@ -30,7 +30,7 @@ class WithinStepSpec extends WordSpec with Matchers with StepUtilSpec {
     }
 
     "fail if duration of 'within' is exceeded" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val d = 200.millis
       val nested: Vector[Step] = Vector(
         AssertStep(

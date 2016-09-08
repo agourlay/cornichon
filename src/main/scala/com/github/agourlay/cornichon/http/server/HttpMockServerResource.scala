@@ -40,7 +40,7 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
       )
       Json.fromFields(fields)
     }
-    Session.newSession
+    Session.newEmpty
       .addValue(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
       .addValue(s"$sessionTarget$nbReceivedCallsSuffix", requests.size.toString)
   }

@@ -8,7 +8,7 @@ class DebugStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "DebugStep" must {
     "return error if a Debug step throw an exception" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val step = DebugStep(s ⇒ {
         6 / 0
         "Never gonna read this"

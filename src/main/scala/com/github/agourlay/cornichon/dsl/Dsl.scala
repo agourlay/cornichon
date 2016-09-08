@@ -2,8 +2,7 @@ package com.github.agourlay.cornichon.dsl
 
 import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.{ Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.core.{ Session, SessionKey, FeatureDef, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
@@ -17,10 +16,10 @@ trait Dsl extends ShowInstances {
   this: CornichonFeature ⇒
 
   def Feature(name: String, ignored: Boolean = false) =
-    BodyElementCollector[Scenario, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
+    BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
 
   def Scenario(name: String, ignored: Boolean = false) =
-    BodyElementCollector[Step, Scenario](steps ⇒ ScenarioDef(name, steps, ignored))
+    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(name, steps, ignored))
 
   sealed trait Starters extends Dynamic {
     def name: String

@@ -5,7 +5,6 @@ import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.{ AssertStep, GenericAssertion }
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
 
 class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
@@ -22,7 +21,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
         RepeatDuringStep(nested, 5.millis)
       )
       val s = Scenario("scenario with RepeatDuring", steps)
-      engine.runScenario(Session.newSession)(s).isSuccess should be(false)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
     }
 
     "repeat steps inside 'repeatDuring' for at least the duration param" in {
@@ -40,7 +39,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
       )
       val s = Scenario("scenario with RepeatDuring", steps)
       val now = System.nanoTime
-      engine.runScenario(Session.newSession)(s).isSuccess should be(true)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
       val executionTime = Duration.fromNanos(System.nanoTime - now)
       withClue(executionTime.toMillis) {
         executionTime.gt(50.millis) should be(true)
@@ -64,7 +63,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
       )
       val s = Scenario("scenario with RepeatDuring", steps)
       val now = System.nanoTime
-      engine.runScenario(Session.newSession)(s).isSuccess should be(true)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
       val executionTime = Duration.fromNanos(System.nanoTime - now)
       withClue(executionTime.toMillis) {
         executionTime.gt(50.millis) should be(true)

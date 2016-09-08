@@ -9,6 +9,7 @@ import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
+import com.github.agourlay.cornichon.CornichonFeature._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -17,7 +18,6 @@ import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
 trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestIntegration {
-  import com.github.agourlay.cornichon.CornichonFeature._
 
   lazy val config = ConfigFactory.load().as[Config]("cornichon")
 
@@ -41,7 +41,7 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestInteg
 
   protected def runScenario(s: Scenario) = {
     println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newSession, afterEachScenario.toVector) {
+    engine.runScenario(Session.newEmpty, afterEachScenario.toVector) {
       s.copy(steps = beforeEachScenario.toVector ++ s.steps)
     }
   }

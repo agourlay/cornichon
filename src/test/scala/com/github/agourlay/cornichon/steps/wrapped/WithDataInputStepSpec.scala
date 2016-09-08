@@ -28,7 +28,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
         WithDataInputStep(nested, inputs)
       )
       val s = Scenario("scenario with WithDataInput", steps)
-      val res = engine.runScenario(Session.newSession)(s)
+      val res = engine.runScenario(Session.newEmpty)(s)
       res.isSuccess should be(false)
     }
 
@@ -51,7 +51,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
         WithDataInputStep(nested, inputs)
       )
       val s = Scenario("scenario with WithDataInput", steps)
-      engine.runScenario(Session.newSession)(s).isSuccess should be(false)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
     }
 
     "execute all steps if successful" in {
@@ -77,7 +77,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
         WithDataInputStep(nested, inputs)
       )
       val s = Scenario("scenario with WithDataInput", steps)
-      val res = engine.runScenario(Session.newSession)(s)
+      val res = engine.runScenario(Session.newEmpty)(s)
       res.isSuccess should be(true)
       uglyCounter should be(3)
     }
@@ -104,7 +104,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
         WithDataInputStep(nested, inputs)
       )
       val s = Scenario("scenario with WithDataInput", steps)
-      val res = engine.runScenario(Session.newSession)(s)
+      val res = engine.runScenario(Session.newEmpty)(s)
       res.isSuccess should be(true)
     }
   }

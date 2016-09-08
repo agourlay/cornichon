@@ -19,8 +19,8 @@ object HttpAssertions {
       title = s"status is '$expected'",
       action = s ⇒ CustomMessageAssertion(
       expected = expected,
-      actual = s.get(LastResponseStatusKey).toInt,
-      customMessage = statusError(expected, s.get(LastResponseBodyKey))
+      actual = s.get(lastResponseStatusKey).toInt,
+      customMessage = statusError(expected, s.get(lastResponseBodyKey))
     )
     )
   }
@@ -28,14 +28,14 @@ object HttpAssertions {
   case class HeadersAssertion(private val ordered: Boolean) extends CollectionAssertionSyntax[(String, String), String] {
     def is(expected: (String, String)*) = from_session_step[Iterable[String]](
       title = s"headers is ${displayTuples(expected)}",
-      key = SessionKey(LastResponseHeadersKey),
-      expected = s ⇒ expected.map { case (name, value) ⇒ s"$name$HeadersKeyValueDelim$value" },
+      key = SessionKey(lastResponseHeadersKey),
+      expected = s ⇒ expected.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" },
       mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",")
     )
 
     def hasSize(expected: Int) = from_session_step(
       title = s"headers size is '$expected'",
-      key = SessionKey(LastResponseHeadersKey),
+      key = SessionKey(lastResponseHeadersKey),
       expected = s ⇒ expected,
       mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").length
     )
@@ -43,11 +43,11 @@ object HttpAssertions {
     def contain(elements: (String, String)*) = {
       from_session_detail_step(
         title = s"headers contain ${displayTuples(elements)}",
-        key = SessionKey(LastResponseHeadersKey),
+        key = SessionKey(lastResponseHeadersKey),
         expected = s ⇒ true,
         mapValue = (session, sessionHeaders) ⇒ {
-          val sessionHeadersValue = sessionHeaders.split(InterHeadersValueDelim)
-          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$HeadersKeyValueDelim$value") }
+          val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
+          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
           (predicate, headersDoesNotContainError(displayTuples(elements), sessionHeaders))
         }
       )

@@ -27,7 +27,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
   "HttpService" when {
     "fillInSessionWithResponse" must {
       "extract content with NoOpExtraction" in {
-        val s = Session.newSession
+        val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, NoOpExtraction)
         filledSession.value.get("last-response-status") should be("200")
@@ -35,7 +35,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
       }
 
       "extract content with RootResponseExtraction" in {
-        val s = Session.newSession
+        val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, RootExtractor("copy-body"))
         filledSession.value.get("last-response-status") should be("200")
@@ -44,7 +44,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
       }
 
       "extract content with PathResponseExtraction" in {
-        val s = Session.newSession
+        val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil,
           """
             {
@@ -66,21 +66,21 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
 
     "resolveParams" must {
       "resolve also params in URL" in {
-        val s = Session.newSession
+        val s = Session.newEmpty
           .addValues(Seq("hero" → "batman", "color" → "blue"))
         val url = "http://yada.com?hero=<hero>&color=<color>"
         service.resolveParams(url, params = Seq.empty)(s) should be(right(Seq("hero" → "batman", "color" → "blue")))
       }
 
       "detect non resolvable params" in {
-        val s = Session.newSession
+        val s = Session.newEmpty
           .addValues(Seq("hero" → "batman", "color" → "blue"))
         val url = "http://yada.com?hero=<hero>&color=<color2>"
         service.resolveParams(url, params = Seq.empty)(s).isLeft should be(true)
       }
 
       "handle URL without param" in {
-        val s = Session.newSession
+        val s = Session.newEmpty
         val url = "http://yada.com"
         service.resolveParams(url, params = Seq.empty)(s) should be(right(Seq.empty))
       }

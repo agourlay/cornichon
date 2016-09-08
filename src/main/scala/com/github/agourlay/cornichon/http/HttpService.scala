@@ -12,6 +12,8 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.http.HttpService._
+import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import io.circe.Encoder
 
 import scala.concurrent.{ Await, Future }
@@ -20,17 +22,13 @@ import scala.util.{ Failure, Success, Try }
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
 
-  import com.github.agourlay.cornichon.http.HttpService._
-
-  import HttpService.SessionKeys._
-
   private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
     for {
       bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(right(None))
       jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(right(None))
       urlResolved ← resolver.fillPlaceholders(withBaseUrl(url))(s)
       paramsResolved ← resolveParams(url, params)(s)
-      headersResolved ← resolver.tuplesResolver(headers, s)
+      headersResolved ← resolver.fillPlaceholders(headers)(s)
     } yield (urlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
@@ -65,7 +63,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Xor[CornichonError, Seq[(String, String)]] = {
     val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
     val urlParams = if (urlsParamsPart.trim.isEmpty) Seq.empty else client.paramsFromUrl(urlsParamsPart)
-    resolver.tuplesResolver(urlParams ++ params, session)
+    resolver.fillPlaceholders(urlParams ++ params)(session)
   }
 
   private def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
@@ -76,9 +74,9 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def commonSessionExtraction(session: Session, response: CornichonHttpResponse): Session =
     session.addValues(Seq(
-      LastResponseStatusKey → response.status.intValue().toString,
-      LastResponseBodyKey → response.body,
-      LastResponseHeadersKey → encodeSessionHeaders(response)
+      lastResponseStatusKey → response.status.intValue().toString,
+      lastResponseBodyKey → response.body,
+      lastResponseHeadersKey → encodeSessionHeaders(response)
     ))
 
   def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Xor[CornichonError, Session] =
@@ -97,7 +95,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }
 
   private def extractWithHeadersSession(session: Session): Seq[(String, String)] =
-    session.getOpt(WithHeadersKey).fold(Seq.empty[(String, String)]) { headers ⇒
+    session.getOpt(withHeadersKey).fold(Seq.empty[(String, String)]) { headers ⇒
       decodeSessionHeaders(headers)
     }
 
@@ -142,24 +140,24 @@ object NoOpExtraction extends ResponseExtractor
 
 object HttpService {
   object SessionKeys {
-    val LastResponseBodyKey = "last-response-body"
-    val LastResponseStatusKey = "last-response-status"
-    val LastResponseHeadersKey = "last-response-headers"
-    val WithHeadersKey = "with-headers"
-    val HeadersKeyValueDelim = '|'
-    val InterHeadersValueDelim = ";"
+    val lastResponseBodyKey = "last-response-body"
+    val lastResponseStatusKey = "last-response-status"
+    val lastResponseHeadersKey = "last-response-headers"
+    val withHeadersKey = "with-headers"
+    val headersKeyValueDelim = '|'
+    val interHeadersValueDelim = ";"
   }
 
   import HttpService.SessionKeys._
 
   def encodeSessionHeaders(response: CornichonHttpResponse): String =
-    response.headers.map { h ⇒
-      s"${h._1}$HeadersKeyValueDelim${h._2}"
-    }.mkString(InterHeadersValueDelim)
+    response.headers.map {
+      case (name, value) ⇒ s"$name$headersKeyValueDelim$value"
+    }.mkString(interHeadersValueDelim)
 
   def decodeSessionHeaders(headers: String): Seq[(String, String)] =
-    headers.split(InterHeadersValueDelim).toSeq.map { header ⇒
-      val elms = header.split(HeadersKeyValueDelim)
+    headers.split(interHeadersValueDelim).toSeq.map { header ⇒
+      val elms = header.split(headersKeyValueDelim)
       (elms.head, elms.tail.head)
     }
 }

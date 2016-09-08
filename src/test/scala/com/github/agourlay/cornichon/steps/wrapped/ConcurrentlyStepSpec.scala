@@ -23,7 +23,7 @@ class ConcurrentlyStepSpec extends WordSpec with Matchers with StepUtilSpec {
         ConcurrentlyStep(nested, 3, 200.millis)
       )
       val s = Scenario("scenario with Concurrently", steps)
-      engine.runScenario(Session.newSession)(s).isSuccess should be(false)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
     }
 
     "run nested block 'n' times" in {
@@ -42,7 +42,7 @@ class ConcurrentlyStepSpec extends WordSpec with Matchers with StepUtilSpec {
         ConcurrentlyStep(nested, loop, 300.millis)
       )
       val s = Scenario("scenario with Concurrently", steps)
-      engine.runScenario(Session.newSession)(s).isSuccess should be(true)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
       uglyCounter.intValue() should be(loop)
     }
   }

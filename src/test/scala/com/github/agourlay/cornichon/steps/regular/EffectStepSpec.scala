@@ -8,7 +8,7 @@ class EffectStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "EffectStep" must {
     "return error if an Effect step throw an exception" in {
-      val session = Session.newSession
+      val session = Session.newEmpty
       val step = EffectStep(title = "buggy effect", s ⇒ {
         6 / 0
         s

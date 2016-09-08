@@ -24,7 +24,7 @@ class RetryMaxStepSpec extends WordSpec with Matchers with StepUtilSpec {
         RetryMaxStep(nested, loop)
       )
       val s = Scenario("scenario with RetryMax", steps)
-      engine.runScenario(Session.newSession)(s).isSuccess should be(false)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
       // Initial run + 'loop' retries
       uglyCounter should be(loop + 1)
     }
@@ -45,7 +45,7 @@ class RetryMaxStepSpec extends WordSpec with Matchers with StepUtilSpec {
         RetryMaxStep(nested, max)
       )
       val s = Scenario("scenario with RetryMax", steps)
-      engine.runScenario(Session.newSession)(s).isSuccess should be(true)
+      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
       uglyCounter should be(max - 2)
     }
   }
