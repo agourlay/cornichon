@@ -36,18 +36,20 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      parts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
-      resp ← waitForRequestFuture(parts._1, requestTimeout) {
-        client.runRequest(r.method, parts._1, parts._2, parts._3, parts._4)
+      resolvedRequestParts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
+      (url, jsonBody, params, headers) = resolvedRequestParts
+      resp ← waitForRequestFuture(url, requestTimeout) {
+        client.runRequest(r.method, url, jsonBody, params, headers)
       }
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield (resp, newSession)
 
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      parts ← resolveRequestParts[String](r.url, None, r.params, r.headers)(s)
-      resp ← waitForRequestFuture(parts._1, r.takeWithin) {
-        client.openStream(r.stream, parts._1, parts._3, parts._4, r.takeWithin)
+      resolvedRequestParts ← resolveRequestParts[String](r.url, None, r.params, r.headers)(s)
+      (url, _, params, headers) = resolvedRequestParts
+      resp ← waitForRequestFuture(url, r.takeWithin) {
+        client.openStream(r.stream, url, params, headers, r.takeWithin)
       }
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield (resp, newSession)

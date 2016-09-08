@@ -65,7 +65,6 @@ libraryDependencies ++= {
     ,"io.circe"            %% "circe-core"             % circeVersion
     ,"io.circe"            %% "circe-generic"          % circeVersion
     ,"io.circe"            %% "circe-parser"           % circeVersion
-    //,"io.circe"            %% "circe-optics"           % circeVersion  Remove if cursors are used instead or lenses for JsonPath.
     ,"de.heikoseeberger"   %% "akka-http-circe"        % akkaHttpCirce   % "test"
     ,"com.ironcorelabs"    %% "cats-scalatest"         % catsScalaTest   % "test"
   )

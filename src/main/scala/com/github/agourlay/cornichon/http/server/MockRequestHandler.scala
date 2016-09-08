@@ -37,7 +37,7 @@ class MockRequestHandler(implicit system: ActorMaterializer, executionContext: E
     case Put.method     ⇒ CornichonHttpMethods.PUT
   }
 
-  //FIXME Don't look to close here...
+  //FIXME Don't look too close here...
   def saveRequest(akkaReq: HttpRequest) = {
     Unmarshal(Gzip.decode(akkaReq)).to[String].map { decodeBody: String ⇒
       val req = CornichonHttpRequest[String](
