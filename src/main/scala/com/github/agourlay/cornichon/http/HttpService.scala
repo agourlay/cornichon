@@ -150,9 +150,12 @@ object HttpService {
 
   import HttpService.SessionKeys._
 
+  def encodeSessionHeader(name: String, value: String) =
+    s"$name$headersKeyValueDelim$value"
+
   def encodeSessionHeaders(response: CornichonHttpResponse): String =
     response.headers.map {
-      case (name, value) ⇒ s"$name$headersKeyValueDelim$value"
+      case (name, value) ⇒ encodeSessionHeader(name, value)
     }.mkString(interHeadersValueDelim)
 
   def decodeSessionHeaders(headers: String): Seq[(String, String)] =

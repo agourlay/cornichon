@@ -19,6 +19,7 @@ import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
+import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.util.Formats
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
@@ -97,6 +98,11 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
+
+  def addToWithHeaders(name: String, value: String)(s: Session) = {
+    val currentHeader = s.getOpt(withHeadersKey).fold("")(v ⇒ v + s"$v$interHeadersValueDelim")
+    s.addValue("with-headers", s"$currentHeader${encodeSessionHeader(name, value)}")
+  }
 
   def WithHeaders(headers: (String, String)*) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
