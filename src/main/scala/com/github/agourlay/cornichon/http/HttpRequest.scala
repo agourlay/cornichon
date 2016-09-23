@@ -1,9 +1,11 @@
 package com.github.agourlay.cornichon.http
 
 import cats.Show
+import cats.syntax.show._
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.Resolvable
+import com.github.agourlay.cornichon.util.Formats
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 
@@ -26,7 +28,7 @@ trait BaseRequest {
   def params: Seq[(String, String)]
   def headers: Seq[(String, String)]
 
-  def description: String
+  def compactDescription: String
 
   def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${displayTuples(params)}"
   def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayTuples(headers)}"
@@ -43,10 +45,9 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
   def withBody[B: Show: Resolvable: Encoder](body: B) = copy(body = Some(body))
 
-  def description: String = {
-    val input = implicitly[Show[A]]
+  def compactDescription: String = {
     val base = s"${method.name} $url"
-    val payloadTitle = body.fold("")(p ⇒ s" with body ${input.show(p)}")
+    val payloadTitle = body.fold("")(p ⇒ s" with body ${p.show}")
     base + payloadTitle + paramsTitle + headersTitle
   }
 }
@@ -64,7 +65,22 @@ trait HttpRequestsDsl {
   def patch(url: String) = HttpRequest[String](PATCH, url, None, Seq.empty, Seq.empty)
 }
 
-object HttpRequest extends HttpRequestsDsl
+object HttpRequest extends HttpRequestsDsl {
+
+  implicit def showRequest[A: Show] = new Show[HttpRequest[A]] {
+    def show(r: HttpRequest[A]): String = {
+      val body = r.body.fold("without body")(b ⇒ s"with body ${b.show}")
+      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${Formats.displayTuples(r.params)}"
+      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${Formats.displayTuples(r.headers)}"
+
+      s"""|HTTP ${r.method.name} to ${r.url}
+          |$params
+          |$headers
+          |$body""".stripMargin
+    }
+  }
+
+}
 
 case class HttpStream(name: String)
 
@@ -82,10 +98,25 @@ case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: Fini
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
-  def description: String = {
+  def compactDescription: String = {
     val base = s"open ${stream.name} to $url"
     base + paramsTitle + headersTitle
   }
+}
+
+object HttpStreamedRequest {
+
+  implicit val showStreamedRequest = new Show[HttpStreamedRequest] {
+    def show(r: HttpStreamedRequest): String = {
+      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${Formats.displayTuples(r.params)}"
+      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${Formats.displayTuples(r.headers)}"
+
+      s"""|${r.stream.name} to ${r.url}
+          |$params
+          |$headers""".stripMargin
+    }
+  }
+
 }
 
 case class QueryGQL(url: String, query: Document, operationName: Option[String] = None, variables: Option[Map[String, Json]] = None) {

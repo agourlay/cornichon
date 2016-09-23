@@ -32,13 +32,13 @@ trait HttpDsl extends HttpRequestsDsl {
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
     EffectStep(
-      title = request.description,
+      title = request.compactDescription,
       effect = http.requestEffect(request)
     )
 
   implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): EffectStep =
     EffectStep(
-      title = request.description,
+      title = request.compactDescription,
       effect = http.streamEffect(request)
     )
 

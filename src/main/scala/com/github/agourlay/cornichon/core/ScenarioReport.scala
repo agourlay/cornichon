@@ -49,17 +49,17 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[Faile
 
   private def messageForFailedStep(failedStep: FailedStep) =
     s"""
+    |step:
     |${failedStep.step.title}
-    |with error:
+    |
+    |failed with error:
     |${failedStep.error.msg}
     |
     |""".stripMargin
 
   val msg =
-    s"""
-      |Scenario '$scenarioName' failed at step(s):
-      |${failedSteps.map(messageForFailedStep).mkString("and\n")}
-      | """.trim.stripMargin
+    s"""|Scenario '$scenarioName' failed at step(s):
+        |${failedSteps.map(messageForFailedStep).mkString("and\n")}""".stripMargin
 }
 
 sealed abstract class Done

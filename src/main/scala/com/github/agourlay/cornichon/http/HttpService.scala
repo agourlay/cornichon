@@ -22,6 +22,18 @@ import scala.util.{ Failure, Success, Try }
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
 
+  private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
+    for {
+      resolvedRequestParts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
+      (url, jsonBody, params, headers) = resolvedRequestParts
+    } yield HttpRequest(r.method, url, jsonBody, params, headers)
+
+  private def resolveStreamedRequest[A: Show: Resolvable: Encoder](r: HttpStreamedRequest)(s: Session) =
+    for {
+      resolvedRequestParts ← resolveRequestParts(r.url, None, r.params, r.headers)(s)
+      (url, _, params, headers) = resolvedRequestParts
+    } yield HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
+
   private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
     for {
       bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(right(None))
@@ -34,20 +46,18 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequestParts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
-      (url, jsonBody, params, headers) = resolvedRequestParts
-      resp ← waitForRequestFuture(url, requestTimeout) {
-        client.runRequest(r.method, url, jsonBody, params, headers)
+      resolvedRequest ← resolveRequest(r)(s)
+      resp ← waitForRequestFuture(resolvedRequest, requestTimeout) {
+        client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers)
       }
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield (resp, newSession)
 
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequestParts ← resolveRequestParts[String](r.url, None, r.params, r.headers)(s)
-      (url, _, params, headers) = resolvedRequestParts
-      resp ← waitForRequestFuture(url, r.takeWithin) {
-        client.openStream(r.stream, url, params, headers, r.takeWithin)
+      resolvedRequest ← resolveStreamedRequest[String](r)(s)
+      resp ← waitForRequestFuture(resolvedRequest, r.takeWithin) {
+        client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin)
       }
       newSession ← handleResponse(resp, expectedStatus, extractor)(s)
     } yield (resp, newSession)
@@ -105,12 +115,12 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     else if (input.startsWith("https://") || input.startsWith("http://")) input
     else baseUrl + input
 
-  private def waitForRequestFuture(initialRequestUrl: String, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): Xor[CornichonError, CornichonHttpResponse] =
+  private def waitForRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): Xor[CornichonError, CornichonHttpResponse] =
     Try { Await.result(f, t) } match {
       case Success(s) ⇒ s
       case Failure(failure) ⇒ failure match {
-        case e: TimeoutException ⇒ left(TimeoutError(e.getMessage, initialRequestUrl))
-        case t: Throwable        ⇒ left(RequestError(t, initialRequestUrl))
+        case e: TimeoutException ⇒ left(TimeoutError(request, e))
+        case t: Throwable        ⇒ left(RequestError(request, t))
       }
     }
 

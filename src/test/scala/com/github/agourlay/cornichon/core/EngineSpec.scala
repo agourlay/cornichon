@@ -55,8 +55,10 @@ class EngineSpec extends WordSpec with Matchers with ShowInstances {
           case f: FailureScenarioReport ⇒
             f.msg should be("""Scenario 'test' failed at step(s):
              |
+             |step:
              |main step
-             |with error:
+             |
+             |failed with error:
              |expected result was:
              |'true'
              |but actual result is:
@@ -64,13 +66,14 @@ class EngineSpec extends WordSpec with Matchers with ShowInstances {
              |
              |and
              |
+             |step:
              |finally step
-             |with error:
+             |
+             |failed with error:
              |expected result was:
              |'true'
              |but actual result is:
              |'false'
-             |
              |
              |""".stripMargin)
         }

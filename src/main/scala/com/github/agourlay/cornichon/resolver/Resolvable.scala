@@ -1,6 +1,11 @@
 package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
+
+import com.github.agourlay.cornichon.json.CornichonJson
+import com.github.agourlay.cornichon.util.ShowInstances._
+import io.circe.Json
+
 import scala.annotation.implicitNotFound
 
 @implicitNotFound("No instance of typeclass Resolvable found for type ${A} - this instance is required if you are trying to use ${A} as custom HTTP body type")
@@ -57,6 +62,11 @@ object Resolvable {
   implicit val uuidResolvable = new Resolvable[UUID] {
     def toResolvableForm(u: UUID) = u.toString
     def fromResolvableForm(u: String) = UUID.fromString(u)
+  }
+
+  implicit val jsonResolvable = new Resolvable[Json] {
+    def toResolvableForm(j: Json) = j.spaces2
+    def fromResolvableForm(j: String) = CornichonJson.parseJsonUnsafe(j)
   }
 
 }
