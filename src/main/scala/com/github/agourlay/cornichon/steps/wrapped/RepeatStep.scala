@@ -23,7 +23,7 @@ case class RepeatStep(nested: Vector[Step], occurrence: Int) extends WrapperStep
       // reset logs at each loop to have the possibility to not aggregate in failure case
       val (onceMoreRunState, stepResult) = engine.runSteps(runState.resetLogs)
       stepResult match {
-        case Right(done) ⇒
+        case Right(_) ⇒
           val successState = runState.withSession(onceMoreRunState.session).appendLogs(onceMoreRunState.logs)
           // only show last successful run to avoid giant traces.
           if (retriesNumber == occurrence - 1) (retriesNumber, successState, rightDone)
@@ -42,7 +42,7 @@ case class RepeatStep(nested: Vector[Step], occurrence: Int) extends WrapperStep
     val depth = initialRunState.depth
 
     val (fullLogs, xor) = report match {
-      case Right(done) ⇒
+      case Right(_) ⇒
         val fullLogs = successTitleLog(depth) +: repeatedState.logs :+ SuccessLogInstruction(s"Repeat block with occurrence '$occurrence' succeeded", depth, Some(executionTime))
         (fullLogs, rightDone)
       case Left(failedStep) ⇒

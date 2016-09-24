@@ -1,17 +1,23 @@
 package com.github.agourlay.cornichon.json
 
+import cats.Show
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.CornichonError
 import io.circe.Json
 
 sealed trait JsonError extends CornichonError
 
-case class NotAnArrayError[A](badPayload: A) extends JsonError {
-  val msg = s"expected JSON Array but got $badPayload"
+case class NotAnArrayError[A: Show](badPayload: A) extends JsonError {
+  val msg = s"""expected JSON Array but got
+               |${badPayload.show}""".stripMargin
 }
 
-case class MalformedJsonError[A](input: A, message: String) extends JsonError {
-  val msg = s"malformed JSON input $input: $message"
+case class MalformedJsonError[A: Show](input: A, message: String) extends JsonError {
+  val msg =
+    s"""malformed JSON error
+       |$message
+       |for input
+       |${input.show}""".stripMargin
 }
 
 case class MalformedGraphQLJsonError[A](input: A, exception: Throwable) extends JsonError {

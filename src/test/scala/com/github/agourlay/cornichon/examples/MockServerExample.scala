@@ -65,7 +65,7 @@ class MockServerExample extends CornichonFeature {
                 "hasSuperpowers" : false
               },
               "url" : "/heroes/batman",
-              "verb" : "POST"
+              "method" : "POST"
             },
             {
               "body" : {
@@ -74,7 +74,7 @@ class MockServerExample extends CornichonFeature {
                 "hasSuperpowers" : true
               },
               "url" : "/heroes/superman",
-              "verb" : "POST"
+              "method" : "POST"
             }
           ]
         """

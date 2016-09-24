@@ -36,7 +36,7 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
       val fields = Seq(
         "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
         "url" → Json.fromString(req.url),
-        "verb" → Json.fromString(req.method.name)
+        "method" → Json.fromString(req.method.name)
       )
       Json.fromFields(fields)
     }

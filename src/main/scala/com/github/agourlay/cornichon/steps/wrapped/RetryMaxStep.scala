@@ -22,7 +22,7 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): (Long, RunState, Xor[FailedStep, Done]) = {
       val (retriedState, stepsResult) = engine.runSteps(runState.resetLogs)
       stepsResult match {
-        case Right(done) ⇒
+        case Right(_) ⇒
           val successState = runState.withSession(retriedState.session).appendLogs(retriedState.logs)
           (retriesNumber, successState, rightDone)
         case Left(failedStep) ⇒
@@ -43,7 +43,7 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
     val depth = initialRunState.depth
 
     val (fullLogs, xor) = report match {
-      case Right(done) ⇒
+      case Right(_) ⇒
         val fullLogs = successTitleLog(depth) +: retriedState.logs :+ SuccessLogInstruction(s"RetryMax block with limit '$limit' succeeded after '$retries' retries", depth, Some(executionTime))
         (fullLogs, rightDone)
       case Left(failedStep) ⇒

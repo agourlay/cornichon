@@ -51,31 +51,34 @@ class EngineSpec extends WordSpec with Matchers with ShowInstances {
         val s = Scenario("test", Vector(mainStep))
         val res = engine.runScenario(session, Vector(finallyStep))(s)
         res match {
-          case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
+          case s: SuccessScenarioReport ⇒ fail(s"Should be a FailedScenarioReport and not success with\n${s.logs}")
           case f: FailureScenarioReport ⇒
-            f.msg should be("""Scenario 'test' failed at step(s):
-             |
-             |step:
-             |main step
-             |
-             |failed with error:
-             |expected result was:
-             |'true'
-             |but actual result is:
-             |'false'
-             |
-             |and
-             |
-             |step:
-             |finally step
-             |
-             |failed with error:
-             |expected result was:
-             |'true'
-             |but actual result is:
-             |'false'
-             |
-             |""".stripMargin)
+            withClue(f.msg) {
+              f.msg should be(
+                """Scenario 'test' failed:
+                |
+                |at step:
+                |main step
+                |
+                |with error:
+                |expected result was:
+                |'true'
+                |but actual result is:
+                |'false'
+                |
+                |and
+                |
+                |at step:
+                |finally step
+                |
+                |with error:
+                |expected result was:
+                |'true'
+                |but actual result is:
+                |'false'
+                |""".stripMargin
+              )
+            }
         }
       }
     }

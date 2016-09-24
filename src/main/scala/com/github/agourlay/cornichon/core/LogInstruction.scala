@@ -35,7 +35,7 @@ case class ScenarioTitleLogInstruction(message: String, marginNb: Int, duration:
 }
 
 case class InfoLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  val colorized = fansi.Color.White(completeMessage).render
+  val colorized = fansi.Color.DarkGray(completeMessage).render
 }
 
 case class SuccessLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {

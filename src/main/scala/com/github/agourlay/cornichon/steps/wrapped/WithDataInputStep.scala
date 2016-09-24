@@ -28,7 +28,7 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
         val boostrapFilledInput = runState.withSteps(nested).addToSession(currentInputs).withLog(runInfo).goDeeper
         val (filledState, stepsResult) = engine.runSteps(boostrapFilledInput)
         stepsResult match {
-          case Right(done) ⇒
+          case Right(_) ⇒
             // Logs are propogated but not the session
             runInputs(inputs.tail, runState.appendLogs(filledState.logs))
           case Left(failedStep) ⇒
@@ -52,7 +52,7 @@ case class WithDataInputStep(nested: Vector[Step], where: String) extends Wrappe
         val initialDepth = initialRunState.depth
 
         val (fullLogs, xor) = inputsRes match {
-          case Right(done) ⇒
+          case Right(_) ⇒
             val fullLogs = successTitleLog(initialDepth) +: inputsState.logs :+ SuccessLogInstruction(s"With data input succeeded for all inputs", initialDepth, Some(executionTime))
             (fullLogs, rightDone)
           case Left(failedStep) ⇒

@@ -28,7 +28,7 @@ class Resolver(extractors: Map[String, Mapper]) {
       val otherKeyName = ph.key
       val otherKeyIndice = ph.index
       (session.getOpt(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
-        case (Some(v), Some(m))           ⇒ left(AmbiguousKeyDefinition(otherKeyName))
+        case (Some(_), Some(_))           ⇒ left(AmbiguousKeyDefinition(otherKeyName))
         case (None, None)                 ⇒ left(KeyNotFoundInSession(otherKeyName, otherKeyIndice, session))
         case (Some(valueInSession), None) ⇒ right(valueInSession)
         case (None, Some(mapper))         ⇒ applyMapper(mapper, session, ph)

@@ -54,12 +54,9 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
                 case f @ FailureScenarioReport(_, _, _, logs) ⇒
                   printLogs(logs)
                   fail(
-                    s"""
-                       |${f.msg}
-                       |replay only this scenario with:
-                       |${scalaTestReplayCmd(feat.name, s.name)}
-                       |
-                       |""".stripMargin
+                    s"""|${f.msg}
+                        |${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
+                        |${scalaTestReplayCmd(feat.name, s.name)}""".stripMargin
                   )
               }
             }

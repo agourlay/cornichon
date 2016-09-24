@@ -22,7 +22,7 @@ case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends Wrapp
     }
 
     val (fullLogs, xor) = res match {
-      case Right(done) ⇒
+      case Right(_) ⇒
         val successLogs = successTitleLog(initialDepth) +: withinState.logs
         if (executionTime.gt(maxDuration)) {
           val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", initialDepth, Some(executionTime))

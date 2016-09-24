@@ -14,7 +14,7 @@ object ScenarioReport {
   def build(scenarioName: String, session: Session, logs: Vector[LogInstruction], mainResult: Xor[FailedStep, Done], finallyResult: Option[Xor[FailedStep, Done]] = None): ScenarioReport =
     finallyResult.fold {
       mainResult match {
-        case Right(done)      ⇒ SuccessScenarioReport(scenarioName, session, logs)
+        case Right(_)         ⇒ SuccessScenarioReport(scenarioName, session, logs)
         case Left(failedStep) ⇒ FailureScenarioReport(scenarioName, Vector(failedStep), session, logs)
       }
     } { finallyRes ⇒
@@ -49,17 +49,16 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[Faile
 
   private def messageForFailedStep(failedStep: FailedStep) =
     s"""
-    |step:
+    |at step:
     |${failedStep.step.title}
     |
-    |failed with error:
+    |with error:
     |${failedStep.error.msg}
-    |
     |""".stripMargin
 
   val msg =
-    s"""|Scenario '$scenarioName' failed at step(s):
-        |${failedSteps.map(messageForFailedStep).mkString("and\n")}""".stripMargin
+    s"""|Scenario '$scenarioName' failed:
+        |${failedSteps.map(messageForFailedStep).mkString("\nand\n")}""".stripMargin
 }
 
 sealed abstract class Done

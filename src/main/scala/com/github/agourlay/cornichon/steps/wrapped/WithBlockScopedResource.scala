@@ -5,15 +5,18 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.duration._
 
-//TODO chain futures once https://github.com/agourlay/cornichon/issues/80
 case class WithBlockScopedResource(nested: Vector[Step], resource: BlockScopedResource) extends WrapperStep {
 
   val title = resource.openingTitle
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
-    resource.startResource()
+
+    // FIXME chain futures once https://github.com/agourlay/cornichon/issues/80
+    Await.result(resource.startResource(), 10.seconds)
+
     val resourcedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
     val (resourcedState, resourcedRes) = engine.runSteps(resourcedRunState)
 
@@ -31,7 +34,9 @@ case class WithBlockScopedResource(nested: Vector[Step], resource: BlockScopedRe
       }
     )
 
-    resource.stopResource()
+    // FIXME chain futures once https://github.com/agourlay/cornichon/issues/80
+    Await.result(resource.stopResource(), 10.seconds)
+
     val resourceResults = resource.resourceResults()
     val completeSession = resourcedState.session.merge(resourceResults)
     (initialRunState.withSession(completeSession).appendLogs(fullLogs), xor)

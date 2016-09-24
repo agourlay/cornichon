@@ -74,7 +74,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
       else {
         val (name, value) = headers.head
         HttpHeader.parse(name, value) match {
-          case ParsingResult.Ok(h, e) ⇒ loop(headers.tail, acc :+ h)
+          case ParsingResult.Ok(h, _) ⇒ loop(headers.tail, acc :+ h)
           case ParsingResult.Error(e) ⇒ left(MalformedHeadersError(e.formatPretty))
         }
       }

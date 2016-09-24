@@ -33,7 +33,7 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
             (retriesNumber, newRunState, left(failedStep))
           }
 
-        case Right(done) ⇒
+        case Right(_) ⇒
           val state = runState.withSession(newRunState.session).appendLogs(newRunState.logs)
           if (remainingTime.gt(Duration.Zero)) {
             // In case of success all logs are returned but they are not printed by default.

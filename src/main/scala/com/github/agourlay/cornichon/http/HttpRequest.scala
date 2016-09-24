@@ -69,11 +69,11 @@ object HttpRequest extends HttpRequestsDsl {
 
   implicit def showRequest[A: Show] = new Show[HttpRequest[A]] {
     def show(r: HttpRequest[A]): String = {
-      val body = r.body.fold("without body")(b ⇒ s"with body ${b.show}")
+      val body = r.body.fold("without body")(b ⇒ s"with body\n${b.show}")
       val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${Formats.displayTuples(r.params)}"
       val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${Formats.displayTuples(r.headers)}"
 
-      s"""|HTTP ${r.method.name} to ${r.url}
+      s"""|HTTP ${r.method.name} request to ${r.url}
           |$params
           |$headers
           |$body""".stripMargin
@@ -111,7 +111,7 @@ object HttpStreamedRequest {
       val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${Formats.displayTuples(r.params)}"
       val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${Formats.displayTuples(r.headers)}"
 
-      s"""|${r.stream.name} to ${r.url}
+      s"""|${r.stream.name} request to ${r.url}
           |$params
           |$headers""".stripMargin
     }

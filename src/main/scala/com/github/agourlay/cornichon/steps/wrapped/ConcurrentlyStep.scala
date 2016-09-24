@@ -27,7 +27,7 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: Duration
     val results = Try { Await.result(f, maxTime) } match {
       case Success(s) ⇒
         s
-      case Failure(e) ⇒
+      case Failure(_) ⇒
         val failedStep = FailedStep(this, ConcurrentlyTimeout)
         List((nestedRunState.appendLog(failedTitleLog(initialDepth)), left(failedStep)))
     }
