@@ -100,7 +100,7 @@ trait HttpDsl extends HttpRequestsDsl {
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
 
   def addToWithHeaders(name: String, value: String)(s: Session) = {
-    val currentHeader = s.getOpt(withHeadersKey).fold("")(v ⇒ v + s"$v$interHeadersValueDelim")
+    val currentHeader = s.getOpt(withHeadersKey).fold("")(v ⇒ s"$v$interHeadersValueDelim")
     s.addValue("with-headers", s"$currentHeader${encodeSessionHeader(name, value)}")
   }
 
