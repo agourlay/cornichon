@@ -59,7 +59,7 @@ case class GenericAssertionError[A: Show: Diff](expected: A, actual: A, negate: 
   val msg = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg ⇒
     s"""|$baseMsg
         |
-        |$diffMsg}
+        |$diffMsg
       """.stripMargin.trim
   }
 }
