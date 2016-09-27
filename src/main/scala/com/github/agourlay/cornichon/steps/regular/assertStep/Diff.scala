@@ -30,27 +30,37 @@ object Diff {
   }
 
   implicit def seqDiff[A: Show] = new Diff[Seq[A]] {
-    def diff(left: Seq[A], right: Seq[A]): Option[String] = Some(
+    def diff(left: Seq[A], right: Seq[A]): Option[String] = Some {
+      val added = left.diff(right)
+      val deleted = right.diff(left)
       s"""|Seq diff. between actual result and expected result is :
-          |${left.diff(right).show}
+          |${if (added.nonEmpty) "" else "added = " + added.show}
+          |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
       """.stripMargin.trim
-    )
+    }
   }
 
+  //TODO add info about elements out of order
   implicit def listDiff[A: Show] = new Diff[List[A]] {
-    def diff(left: List[A], right: List[A]): Option[String] = Some(
+    def diff(left: List[A], right: List[A]): Option[String] = Some {
+      val added = left.diff(right)
+      val deleted = right.diff(left)
       s"""|List diff. between actual result and expected result is :
-          |${left.diff(right).show}
+          |${if (added.nonEmpty) "" else "added = " + added.show}
+          |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
       """.stripMargin.trim
-    )
+    }
   }
 
   implicit def immutableSetDiff[A: Show] = new Diff[Set[A]] {
-    def diff(left: Set[A], right: Set[A]): Option[String] = Some(
+    def diff(left: Set[A], right: Set[A]): Option[String] = Some {
+      val added = left.diff(right)
+      val deleted = right.diff(left)
       s"""|Set diff. between actual result and expected result is :
-          |${left.diff(right).show}
+          |${if (added.nonEmpty) "" else "added = " + added.show}
+          |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
       """.stripMargin.trim
-    )
+    }
   }
 
   implicit val intDiff = new Diff[Int] {
