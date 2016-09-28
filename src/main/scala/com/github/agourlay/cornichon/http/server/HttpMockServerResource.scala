@@ -4,8 +4,6 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
-import com.github.agourlay.cornichon.json.CornichonJson
-import com.github.agourlay.cornichon.util.ShowInstances._
 import io.circe.Json
 
 case class HttpMockServerResource(label: String, port: Int) extends BlockScopedResource {
@@ -18,7 +16,7 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
   def startResource() = {
     CornichonFeature.reserveGlobalRuntime()
     val mockRequestHandler = MockServerRequestHandler(label, port)
-    val akkaServer = new AkkaHttpServer(port, mockRequestHandler.requestReceivedRepo, mockRequestHandler.requestHandler)
+    val akkaServer = new AkkaHttpServer(port, mockRequestHandler.requestHandler)
     akkaServer.startServer().map { serverCloseHandler ⇒
       new ResourceHandle {
         def resourceResults() = requestsResults(mockRequestHandler)
@@ -31,21 +29,10 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
   }
 
   def requestsResults(mockRequestHandler: MockServerRequestHandler) =
-    mockRequestHandler.getRecordedRequests.map { requests ⇒
-      val jsonRequests = requests.map { req ⇒
-        Json.fromFields(
-          Seq(
-            "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
-            "url" → Json.fromString(req.url),
-            "method" → Json.fromString(req.method.name),
-            "parameters" → Json.fromFields(req.params.map { case (n, v) ⇒ (n, Json.fromString(v)) }),
-            "headers" → Json.fromFields(req.headers.map { case (n, v) ⇒ (n, Json.fromString(v)) })
-          )
-        )
-      }
+    mockRequestHandler.fetchRecordedRequestsAsJson().map { jsonRequests ⇒
       Session.newEmpty
         .addValue(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
-        .addValue(s"$sessionTarget$nbReceivedCallsSuffix", requests.size.toString)
+        .addValue(s"$sessionTarget$nbReceivedCallsSuffix", jsonRequests.size.toString)
     }
 }
 

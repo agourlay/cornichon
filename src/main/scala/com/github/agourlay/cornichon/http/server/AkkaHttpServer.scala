@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http.server
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ HttpRequest, HttpResponse }
 import akka.stream.ActorMaterializer
@@ -11,8 +11,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class AkkaHttpServer(
     port: Int,
-    resultRepoRef: ActorRef,
-    requestHandler: ActorRef ⇒ HttpRequest ⇒ Future[HttpResponse]
+    requestHandler: HttpRequest ⇒ Future[HttpResponse]
 )(implicit
   system: ActorSystem,
     mat: ActorMaterializer,
@@ -21,7 +20,7 @@ class AkkaHttpServer(
   def startServer() = {
     Http()
       .bind(interface = "localhost", port)
-      .to(Sink.foreach { _ handleWithAsyncHandler requestHandler(resultRepoRef) })
+      .to(Sink.foreach { _ handleWithAsyncHandler requestHandler })
       .run()
       .map { serverBinding ⇒
         new CloseableResource {

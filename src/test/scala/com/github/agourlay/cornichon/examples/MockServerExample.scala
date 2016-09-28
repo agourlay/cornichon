@@ -51,8 +51,39 @@ class MockServerExample extends CornichonFeature {
 
         Then assert status.is(201)
 
+        // HTTP Mock exposes what it received
+        When I get("http://localhost:9092/requests-received")
+
+        Then assert body.asArray.ignoringEach("headers").is(
+          """
+          [
+            {
+              "body" : {
+                "name" : "Batman",
+                "realName" : "Bruce Wayne",
+                "hasSuperpowers" : false
+              },
+              "url" : "/heroes/batman",
+              "method" : "POST",
+              "parameters" : {}
+            },
+            {
+              "body" : {
+                "name" : "Superman",
+                "realName" : "Clark Kent",
+                "hasSuperpowers" : true
+              },
+              "url" : "/heroes/superman",
+              "method" : "POST",
+              "parameters" : {}
+            }
+          ]
+        """
+        )
+
       }
 
+      // Once HTTP Mock closed, the recorded requests are dumped in the session
       And assert httpListen("awesome-server").received_calls(2)
 
       And assert httpListen("awesome-server").received_requests.asArray.ignoringEach("headers").is(
