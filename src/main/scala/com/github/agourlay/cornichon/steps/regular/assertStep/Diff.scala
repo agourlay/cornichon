@@ -29,34 +29,37 @@ object Diff {
     def diff(left: Boolean, right: Boolean): Option[String] = None
   }
 
-  implicit def seqDiff[A: Show] = new Diff[Seq[A]] {
-    def diff(left: Seq[A], right: Seq[A]): Option[String] = Some {
-      val added = left.diff(right)
-      val deleted = right.diff(left)
-      s"""|Seq diff. between actual result and expected result is :
-          |${if (added.nonEmpty) "" else "added = " + added.show}
-          |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
+  //TODO add info about elements out of order
+  def orderedCollectionDiff[A: Show](left: Seq[A], right: Seq[A]) = {
+    val added = left.diff(right)
+    val deleted = right.diff(left)
+    s"""|Ordered collection diff. between actual result and expected result is :
+        |${if (added.nonEmpty) "" else "added = " + added.show}
+        |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
       """.stripMargin.trim
-    }
   }
 
-  //TODO add info about elements out of order
+  implicit def seqDiff[A: Show] = new Diff[Seq[A]] {
+    def diff(left: Seq[A], right: Seq[A]): Option[String] = Some(orderedCollectionDiff(left, right))
+  }
+
   implicit def listDiff[A: Show] = new Diff[List[A]] {
-    def diff(left: List[A], right: List[A]): Option[String] = Some {
-      val added = left.diff(right)
-      val deleted = right.diff(left)
-      s"""|List diff. between actual result and expected result is :
-          |${if (added.nonEmpty) "" else "added = " + added.show}
-          |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
-      """.stripMargin.trim
-    }
+    def diff(left: List[A], right: List[A]): Option[String] = Some(orderedCollectionDiff(left, right))
+  }
+
+  implicit def vectorDiff[A: Show] = new Diff[Vector[A]] {
+    def diff(left: Vector[A], right: Vector[A]): Option[String] = Some(orderedCollectionDiff(left, right))
+  }
+
+  implicit def arrayDiff[A: Show] = new Diff[Array[A]] {
+    def diff(left: Array[A], right: Array[A]): Option[String] = Some(orderedCollectionDiff(left, right))
   }
 
   implicit def immutableSetDiff[A: Show] = new Diff[Set[A]] {
     def diff(left: Set[A], right: Set[A]): Option[String] = Some {
       val added = left.diff(right)
       val deleted = right.diff(left)
-      s"""|Set diff. between actual result and expected result is :
+      s"""|Non ordered collection diff. between actual result and expected result is :
           |${if (added.nonEmpty) "" else "added = " + added.show}
           |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
       """.stripMargin.trim
