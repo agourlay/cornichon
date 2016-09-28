@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.http.server
 
 import akka.pattern._
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.ActorSystem
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._

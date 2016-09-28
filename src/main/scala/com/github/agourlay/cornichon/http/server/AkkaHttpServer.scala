@@ -9,13 +9,7 @@ import com.github.agourlay.cornichon.dsl.CloseableResource
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class AkkaHttpServer(
-    port: Int,
-    requestHandler: HttpRequest ⇒ Future[HttpResponse]
-)(implicit
-  system: ActorSystem,
-    mat: ActorMaterializer,
-    executionContext: ExecutionContext) extends HttpServer {
+class AkkaHttpServer(port: Int, requestHandler: HttpRequest ⇒ Future[HttpResponse])(implicit system: ActorSystem, mat: ActorMaterializer, executionContext: ExecutionContext) extends HttpServer {
 
   def startServer() = {
     Http()
