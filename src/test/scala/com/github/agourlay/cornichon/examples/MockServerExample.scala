@@ -55,7 +55,7 @@ class MockServerExample extends CornichonFeature {
 
       And assert httpListen("awesome-server").received_calls(2)
 
-      And assert httpListen("awesome-server").received_requests.is(
+      And assert httpListen("awesome-server").received_requests.asArray.ignoringEach("headers").is(
         """
           [
             {
@@ -65,7 +65,8 @@ class MockServerExample extends CornichonFeature {
                 "hasSuperpowers" : false
               },
               "url" : "/heroes/batman",
-              "method" : "POST"
+              "method" : "POST",
+              "parameters" : {}
             },
             {
               "body" : {
@@ -74,7 +75,8 @@ class MockServerExample extends CornichonFeature {
                 "hasSuperpowers" : true
               },
               "url" : "/heroes/superman",
-              "method" : "POST"
+              "method" : "POST",
+              "parameters" : {}
             }
           ]
         """

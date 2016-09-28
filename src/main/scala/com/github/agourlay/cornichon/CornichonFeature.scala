@@ -84,11 +84,11 @@ private object CornichonFeature {
   private val safePassInRow = new AtomicInteger
 
   // Custom Reaper process for the time being
-  // Will tear down stuff if no Feature registers during 30 secs
-  system.scheduler.schedule(5.seconds, 10.seconds) {
+  // Will tear down stuff if no Feature registers during 10 secs
+  system.scheduler.schedule(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
-      if (safePassInRow.get() == 3) {
+      if (safePassInRow.get() == 2) {
         client.shutdown().map { _ ⇒
           ec.shutdown()
           mat.shutdown()

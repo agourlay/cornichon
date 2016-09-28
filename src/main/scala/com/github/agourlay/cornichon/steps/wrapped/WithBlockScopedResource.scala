@@ -15,7 +15,7 @@ case class WithBlockScopedResource(nested: Vector[Step], resource: BlockScopedRe
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
 
     // FIXME chain futures once https://github.com/agourlay/cornichon/issues/80
-    Await.result(resource.startResource(), 10.seconds)
+    val resourceHandle = Await.result(resource.startResource(), 10.seconds)
 
     val resourcedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
     val (resourcedState, resourcedRes) = engine.runSteps(resourcedRunState)
@@ -34,10 +34,14 @@ case class WithBlockScopedResource(nested: Vector[Step], resource: BlockScopedRe
       }
     )
 
-    // FIXME chain futures once https://github.com/agourlay/cornichon/issues/80
-    Await.result(resource.stopResource(), 10.seconds)
+    val resourceResultsF = for {
+      results ← resourceHandle.resourceResults()
+      _ ← resourceHandle.stopResource()
+    } yield results
 
-    val resourceResults = resource.resourceResults()
+    // FIXME chain futures once https://github.com/agourlay/cornichon/issues/80
+    val resourceResults = Await.result(resourceResultsF, 10.seconds)
+
     val completeSession = resourcedState.session.merge(resourceResults)
     (initialRunState.withSession(completeSession).appendLogs(fullLogs), xor)
   }

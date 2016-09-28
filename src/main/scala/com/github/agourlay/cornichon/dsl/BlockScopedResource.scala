@@ -11,9 +11,13 @@ trait BlockScopedResource {
   val openingTitle: String
   val closingTitle: String
 
-  def startResource(): Future[Unit]
+  def startResource(): Future[ResourceHandle]
+}
 
+trait ResourceHandle extends CloseableResource {
+  def resourceResults(): Future[Session]
+}
+
+trait CloseableResource {
   def stopResource(): Future[Unit]
-
-  def resourceResults(): Session
 }

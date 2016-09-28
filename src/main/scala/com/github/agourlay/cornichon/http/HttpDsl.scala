@@ -113,7 +113,6 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def HttpListenTo(label: String, port: Int) =
     BodyElementCollector[Step, Step] { steps ⇒
-      val serverResource = HttpMockServerResource(label, port)
-      WithBlockScopedResource(nested = steps, resource = serverResource)
+      WithBlockScopedResource(nested = steps, resource = HttpMockServerResource(label, port))
     }
 }

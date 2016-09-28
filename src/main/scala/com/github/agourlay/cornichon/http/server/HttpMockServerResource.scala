@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.http.server
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.Session
-import com.github.agourlay.cornichon.dsl.BlockScopedResource
+import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.util.ShowInstances._
@@ -13,37 +13,40 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
   val openingTitle: String = s"Starting HTTP mock server '$label' listening on port '$port'"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
-  // FIXME vars :(
-  var akkaServer: AkkaHttpServer = _
-  var mockRequestHandler: MockRequestHandler = _
+  implicit val (_, ec, system, mat) = CornichonFeature.globalRuntime
 
   def startResource() = {
     CornichonFeature.reserveGlobalRuntime()
-    implicit val (_, ec, system, mat) = CornichonFeature.globalRuntime
-    mockRequestHandler = new MockRequestHandler()
-    akkaServer = new AkkaHttpServer(port, mockRequestHandler.requestHandler)
-    akkaServer.startServer
-  }
-
-  def stopResource() = {
-    CornichonFeature.releaseGlobalRuntime()
-    akkaServer.stopServer
-  }
-
-  def resourceResults() = {
-    val requests = mockRequestHandler.getRecordedRequests
-    val jsonRequests = requests.map { req ⇒
-      val fields = Seq(
-        "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
-        "url" → Json.fromString(req.url),
-        "method" → Json.fromString(req.method.name)
-      )
-      Json.fromFields(fields)
+    val mockRequestHandler = MockServerRequestHandler(label, port)
+    val akkaServer = new AkkaHttpServer(port, mockRequestHandler.requestReceivedRepo, mockRequestHandler.requestHandler)
+    akkaServer.startServer().map { serverCloseHandler ⇒
+      new ResourceHandle {
+        def resourceResults() = requestsResults(mockRequestHandler)
+        def stopResource() = serverCloseHandler.stopResource().map { _ ⇒
+          mockRequestHandler.shutdown()
+          CornichonFeature.releaseGlobalRuntime()
+        }
+      }
     }
-    Session.newEmpty
-      .addValue(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
-      .addValue(s"$sessionTarget$nbReceivedCallsSuffix", requests.size.toString)
   }
+
+  def requestsResults(mockRequestHandler: MockServerRequestHandler) =
+    mockRequestHandler.getRecordedRequests.map { requests ⇒
+      val jsonRequests = requests.map { req ⇒
+        Json.fromFields(
+          Seq(
+            "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
+            "url" → Json.fromString(req.url),
+            "method" → Json.fromString(req.method.name),
+            "parameters" → Json.fromFields(req.params.map { case (n, v) ⇒ (n, Json.fromString(v)) }),
+            "headers" → Json.fromFields(req.headers.map { case (n, v) ⇒ (n, Json.fromString(v)) })
+          )
+        )
+      }
+      Session.newEmpty
+        .addValue(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
+        .addValue(s"$sessionTarget$nbReceivedCallsSuffix", requests.size.toString)
+    }
 }
 
 object HttpMockServerResource {
