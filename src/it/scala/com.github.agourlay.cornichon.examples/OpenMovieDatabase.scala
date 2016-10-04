@@ -33,7 +33,7 @@ class OpenMovieDatabase extends CornichonFeature {
             "Metascore": "N/A",
             "imdbID": "tt0944947",
             "Type": "series",
-            "totalSeasons" : "7",
+            "totalSeasons" : "8",
             "Response": "True"
           }
           """)
@@ -67,7 +67,7 @@ class OpenMovieDatabase extends CornichonFeature {
           {
             "Title": "Game of Thrones",
             "Season": "1",
-            "totalSeasons" : "7"
+            "totalSeasons" : "8"
           }
           """)
 
@@ -76,7 +76,7 @@ class OpenMovieDatabase extends CornichonFeature {
           {
             "Title": "Game of Thrones",
             "Season": "1",
-            "totalSeasons" : "7",
+            "totalSeasons" : "8",
             "Episodes": [
               {
                 "Title": "Winter Is Coming",
