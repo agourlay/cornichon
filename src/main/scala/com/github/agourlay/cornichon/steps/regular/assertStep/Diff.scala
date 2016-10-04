@@ -29,13 +29,15 @@ object Diff {
     def diff(left: Boolean, right: Boolean): Option[String] = None
   }
 
-  //TODO add info about elements out of order
   def orderedCollectionDiff[A: Show](left: Seq[A], right: Seq[A]) = {
     val added = left.diff(right)
-    val deleted = right.diff(left)
+    val (deletedTuple, stillPresent) = left.map(e ⇒ (e, right.indexWhere(_ == e))).partition(_._2 == -1)
+    val deleted = deletedTuple.map(_._1)
+    val moved = stillPresent.map { case (elem, newIndice) ⇒ MovedElement(elem, newIndice, left.indexWhere(_ == elem)) }.filter(_.changed)
     s"""|Ordered collection diff. between actual result and expected result is :
-        |${if (added.nonEmpty) "" else "added = " + added.show}
-        |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
+        |${if (added.isEmpty) "" else "added elements:\n" + added.show}
+        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
+        |${if (moved.isEmpty) "" else "moved elements:\n" + moved.map(_.show).mkString("\n")}
       """.stripMargin.trim
   }
 
@@ -60,8 +62,8 @@ object Diff {
       val added = left.diff(right)
       val deleted = right.diff(left)
       s"""|Non ordered collection diff. between actual result and expected result is :
-          |${if (added.nonEmpty) "" else "added = " + added.show}
-          |${if (deleted.nonEmpty) "" else "deleted = " + deleted.show}
+          |${if (added.isEmpty) "" else "added elements:\n" + added.show}
+          |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
       """.stripMargin.trim
     }
   }
@@ -82,4 +84,17 @@ object Diff {
     def diff(left: Float, right: Float): Option[String] = None
   }
 
+}
+
+case class MovedElement[A: Show](element: A, newIndice: Int, oldIndice: Int) {
+  val changed = newIndice != oldIndice
+}
+
+object MovedElement {
+  implicit def showMoved[A: Show]: Show[MovedElement[A]] = new Show[MovedElement[A]] {
+    def show(ma: MovedElement[A]): String = {
+      s"""from indice ${ma.oldIndice} to indice ${ma.newIndice}
+         |${ma.element.show}"""
+    }
+  }
 }
