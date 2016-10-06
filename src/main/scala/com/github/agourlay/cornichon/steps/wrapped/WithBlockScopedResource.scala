@@ -17,7 +17,7 @@ case class WithBlockScopedResource(nested: Vector[Step], resource: BlockScopedRe
     // FIXME chain futures once https://github.com/agourlay/cornichon/issues/80
     val resourceHandle = Await.result(resource.startResource(), 10.seconds)
 
-    val resourcedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
+    val resourcedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper.mergeSessions(resourceHandle.initialisedSession)
     val (resourcedState, resourcedRes) = engine.runSteps(resourcedRunState)
 
     val nestedLogs = resourcedState.logs

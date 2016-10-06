@@ -16,6 +16,7 @@ trait BlockScopedResource {
 
 trait ResourceHandle extends CloseableResource {
   def resourceResults(): Future[Session]
+  val initialisedSession: Session
 }
 
 trait CloseableResource {

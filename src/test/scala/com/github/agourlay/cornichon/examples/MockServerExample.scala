@@ -8,19 +8,19 @@ class MockServerExample extends CornichonFeature {
   lazy val feature = Feature("Cornichon feature mock server examples") {
 
     Scenario("Assert number of received calls") {
-      HttpListenTo(label = "awesome-server", port = 9090) {
+      HttpListenTo(label = "awesome-server") {
         Repeat(10) {
-          When I get("http://localhost:9090/")
+          When I get("<awesome-server-url>/")
         }
       }
       And assert httpListen("awesome-server").received_calls(10)
     }
 
     Scenario("Counters valid under concurrent requests") {
-      HttpListenTo(label = "awesome-server", port = 9091) {
+      HttpListenTo(label = "awesome-server") {
         Concurrently(2, 10.seconds) {
           Repeat(10) {
-            When I get("http://localhost:9091/")
+            When I get("<awesome-server-url>/")
           }
         }
       }
@@ -28,8 +28,8 @@ class MockServerExample extends CornichonFeature {
     }
 
     Scenario("Reply to POST request with 201 and assert on received bodies") {
-      HttpListenTo(label = "awesome-server", port = 9092) {
-        When I post("http://localhost:9092/heroes/batman").withBody(
+      HttpListenTo(label = "awesome-server") {
+        When I post("<awesome-server-url>/heroes/batman").withBody(
           """
           {
             "name": "Batman",
@@ -39,7 +39,7 @@ class MockServerExample extends CornichonFeature {
           """
         )
 
-        When I post("http://localhost:9092/heroes/superman").withBody(
+        When I post("<awesome-server-url>/heroes/superman").withBody(
           """
           {
             "name": "Superman",
@@ -52,7 +52,7 @@ class MockServerExample extends CornichonFeature {
         Then assert status.is(201)
 
         // HTTP Mock exposes what it received
-        When I get("http://localhost:9092/requests-received")
+        When I get("<awesome-server-url>/requests-received")
 
         Then assert body.asArray.ignoringEach("headers").is(
           """
@@ -129,19 +129,18 @@ class MockServerExample extends CornichonFeature {
     }
 
     Scenario("httpListen blocks can be nested in one another") {
-      HttpListenTo(label = "first-server", port = 9093) {
-        HttpListenTo(label = "second-server", port = 9094) {
-          HttpListenTo(label = "third-server", port = 9095) {
-            When I get("http://localhost:9093/")
-            When I get("http://localhost:9094/")
-            When I get("http://localhost:9095/")
+      HttpListenTo(label = "first-server") {
+        HttpListenTo(label = "second-server") {
+          HttpListenTo(label = "third-server") {
+            When I get("<first-server-url>/")
+            When I get("<second-server-url>/")
+            When I get("<third-server-url>/")
           }
         }
       }
       And assert httpListen("first-server").received_calls(1)
       And assert httpListen("second-server").received_calls(1)
       And assert httpListen("third-server").received_calls(1)
-
     }
 
   }

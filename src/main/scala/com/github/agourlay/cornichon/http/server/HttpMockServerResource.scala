@@ -8,7 +8,7 @@ import io.circe.Json
 
 case class HttpMockServerResource(label: String, port: Int) extends BlockScopedResource {
   val sessionTarget: String = label
-  val openingTitle: String = s"Starting HTTP mock server '$label' listening on port '$port'"
+  val openingTitle: String = s"Starting HTTP mock server '$label' ${if (port != 0) s"on port $port" else ""}"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
   implicit val (_, ec, system, mat) = CornichonFeature.globalRuntime
@@ -20,7 +20,10 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
     akkaServer.startServer().map { serverCloseHandler ⇒
       new ResourceHandle {
         def resourceResults() = requestsResults(mockRequestHandler)
-        def stopResource() = serverCloseHandler.stopResource().map { _ ⇒
+
+        val initialisedSession = Session.newEmpty.addValue(s"$label-url", serverCloseHandler._1)
+
+        def stopResource() = serverCloseHandler._2.stopResource().map { _ ⇒
           mockRequestHandler.shutdown()
           CornichonFeature.releaseGlobalRuntime()
         }

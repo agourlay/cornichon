@@ -86,11 +86,11 @@ object Diff {
 
 }
 
-case class MovedElement[A: Show](element: A, newIndice: Int, oldIndice: Int) {
+private case class MovedElement[A: Show](element: A, newIndice: Int, oldIndice: Int) {
   val changed = newIndice != oldIndice
 }
 
-object MovedElement {
+private object MovedElement {
   implicit def showMoved[A: Show]: Show[MovedElement[A]] = new Show[MovedElement[A]] {
     def show(ma: MovedElement[A]): String = {
       s"""from indice ${ma.oldIndice} to indice ${ma.newIndice}

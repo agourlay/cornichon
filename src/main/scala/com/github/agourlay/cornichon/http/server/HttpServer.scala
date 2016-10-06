@@ -5,5 +5,5 @@ import com.github.agourlay.cornichon.dsl.CloseableResource
 import scala.concurrent.Future
 
 trait HttpServer {
-  def startServer: Future[CloseableResource]
+  def startServer: Future[(String, CloseableResource)]
 }

@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.http.server
 
+import java.util.UUID
+
 import akka.pattern._
 import akka.actor.ActorSystem
 import akka.http.scaladsl.client.RequestBuilding._
@@ -19,7 +21,7 @@ import scala.concurrent.duration._
 
 case class MockServerRequestHandler(serverName: String, port: Int)(implicit system: ActorSystem, am: ActorMaterializer, executionContext: ExecutionContext) {
 
-  val requestReceivedRepo = system.actorOf(MockServerResultsHolder.props(), s"MockServerResultsHolder-$serverName-$port")
+  val requestReceivedRepo = system.actorOf(MockServerResultsHolder.props(), s"MockServerResultsHolder-$serverName-${UUID.randomUUID()}")
 
   // TODO one more future to chain later
   implicit private val timeout = akka.util.Timeout(500.millis)

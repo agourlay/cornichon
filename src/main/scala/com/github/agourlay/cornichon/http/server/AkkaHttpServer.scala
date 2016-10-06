@@ -11,15 +11,19 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class AkkaHttpServer(port: Int, requestHandler: HttpRequest ⇒ Future[HttpResponse])(implicit system: ActorSystem, mat: ActorMaterializer, executionContext: ExecutionContext) extends HttpServer {
 
+  private val interface = "localhost"
+
   def startServer() = {
     Http()
-      .bind(interface = "localhost", port)
+      .bind(interface = interface, port)
       .to(Sink.foreach { _ handleWithAsyncHandler requestHandler })
       .run()
       .map { serverBinding ⇒
-        new CloseableResource {
+        val fullAddress = s"http://$interface:${serverBinding.localAddress.getPort}"
+        val closeable = new CloseableResource {
           def stopResource() = serverBinding.unbind()
         }
+        (fullAddress, closeable)
       }
   }
 }
