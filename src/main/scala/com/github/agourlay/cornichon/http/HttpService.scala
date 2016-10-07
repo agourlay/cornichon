@@ -38,10 +38,11 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     for {
       bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(right(None))
       jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(right(None))
-      urlResolved ← resolver.fillPlaceholders(withBaseUrl(url))(s)
+      urlResolved ← resolver.fillPlaceholders(url)(s)
+      completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       paramsResolved ← resolveParams(url, params)(s)
       headersResolved ← resolver.fillPlaceholders(headers)(s)
-    } yield (urlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
+    } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
