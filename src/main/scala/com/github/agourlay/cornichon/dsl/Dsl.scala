@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
+import java.util.concurrent.Executors
+
 import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
@@ -9,12 +11,16 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.util.ShowInstances
 
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 trait Dsl extends ShowInstances {
   this: CornichonFeature ⇒
+
+  //FIXME
+  private implicit val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool)
 
   def Feature(name: String, ignored: Boolean = false) =
     BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
@@ -86,7 +92,7 @@ trait Dsl extends ShowInstances {
 
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ {
+    effect = s ⇒ Future {
     Thread.sleep(duration.toMillis)
     s
   }
@@ -96,13 +102,13 @@ trait Dsl extends ShowInstances {
     val (key, value) = input
     EffectStep(
       s"add '$key'->'$value' to session",
-      s ⇒ s.addValue(key, value)
+      s ⇒ Future.successful(s.addValue(key, value))
     )
   }
 
   def remove(key: String) = EffectStep(
     title = s"remove '$key' from session",
-    effect = s ⇒ s.removeKey(key)
+    effect = s ⇒ Future.successful(s.removeKey(key))
   )
 
   def session_value(key: String) = SessionAssertion(resolver, key)
@@ -125,7 +131,7 @@ object Dsl {
     val targets = args.map(_.target)
     EffectStep(
       s"save parts from session '${displayTuples(keys.zip(targets))}'",
-      session ⇒ {
+      session ⇒ Future.successful {
         val extracted = session.getList(keys).zip(extractors).map { case (value, extractor) ⇒ extractor(session, value) }
         targets.zip(extracted).foldLeft(session)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
       }

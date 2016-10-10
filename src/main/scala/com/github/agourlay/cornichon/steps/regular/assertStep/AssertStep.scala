@@ -7,7 +7,7 @@ import cats.syntax.show._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: Boolean = true) extends Step {
 
@@ -18,7 +18,7 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
     val res = Xor.catchNonFatal(action(session))
       .leftMap(CornichonError.fromThrowable)
       .flatMap(runStepPredicate(session))
-    xorToStepReport(this, res, initialRunState, show)
+    Future.successful(xorToStepReport(this, res, initialRunState, show))
   }
 
   def runStepPredicate(newSession: Session)(assertion: Assertion[A]): Xor[CornichonError, Session] =

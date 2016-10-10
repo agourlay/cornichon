@@ -45,6 +45,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
+  // TODO use XorT[Future, A, B]
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       resolvedRequest ← resolveRequest(r)(s)
@@ -125,10 +126,10 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       }
     }
 
-  def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
+  def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Session] =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
 
-  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Session =
+  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Future[Session] =
     s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
 
   def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
