@@ -581,7 +581,7 @@ WithBasicAuth("admin", "root"){
 
 - HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.
 
-By default this server respond 201 to any POST request and 200 for all the rest.
+By default this server responds with 201 to any POST request and 200 for all the rest.
 
 The server records all requests received as a JSON array of HTTP request for later assertions. 
 
