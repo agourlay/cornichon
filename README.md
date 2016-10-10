@@ -579,6 +579,18 @@ WithBasicAuth("admin", "root"){
 
 ```
 
+- HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.
+
+By default this server respond 201 to any POST request and 200 for all the rest.
+
+The server records all requests received as a JSON array of HTTP request for later assertions. 
+
+There are two ways to perform assertions on the server statistics, either by querying the session at the end of the block or by contacting directly the server while it runs.
+
+Refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/MockServerExample.scala) for more information.
+
+This feature is experimental and subject to changes.
+
 - Log duration
 
 By default all ```EffectStep``` execution time can be found in the logs, but sometimes one needs to time a series of steps. 
