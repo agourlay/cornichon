@@ -5,11 +5,11 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, AsyncWordSpec }
 
 import scala.concurrent.duration._
 
-class ConcurrentlyStepSpec extends WordSpec with Matchers with StepUtilSpec {
+class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "ConcurrentlyStep" must {
     "fail if 'concurrently' block contains a failed step" in {
@@ -23,7 +23,7 @@ class ConcurrentlyStepSpec extends WordSpec with Matchers with StepUtilSpec {
         ConcurrentlyStep(nested, 3, 200.millis)
       )
       val s = Scenario("scenario with Concurrently", steps)
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
     "run nested block 'n' times" in {
@@ -42,7 +42,7 @@ class ConcurrentlyStepSpec extends WordSpec with Matchers with StepUtilSpec {
         ConcurrentlyStep(nested, loop, 300.millis)
       )
       val s = Scenario("scenario with Concurrently", steps)
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
       uglyCounter.intValue() should be(loop)
     }
   }

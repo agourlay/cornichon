@@ -17,21 +17,25 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
   private implicit val ec = executionContext
 
   //TODO define max duration scenario
-  def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): ScenarioReport = {
+  def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): Future[ScenarioReport] = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
-    val (mainState, mainRunReport) = Await.result(runSteps(initialRunState), 30.seconds)
-    if (finallySteps.isEmpty)
-      ScenarioReport.build(scenario.name, mainState.session, mainState.logs, mainRunReport)
-    else {
-      // Reuse mainline session
-      val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-      val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
-      val (finallyState, finallyReport) = Await.result(runSteps(finallyRunState), 30.seconds)
-      val combinedSession = mainState.session.merge(finallyState.session)
-      val combinedLogs = mainState.logs ++ finallyState.logs
-      ScenarioReport.build(scenario.name, combinedSession, combinedLogs, mainRunReport, Some(finallyReport))
+    runSteps(initialRunState).flatMap {
+      case (mainState, mainRunReport) ⇒
+        if (finallySteps.isEmpty)
+          Future.successful(ScenarioReport.build(scenario.name, mainState.session, mainState.logs, mainRunReport))
+        else {
+          // Reuse mainline session
+          val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+          val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
+          runSteps(finallyRunState).map {
+            case (finallyState, finallyReport) ⇒
+              val combinedSession = mainState.session.merge(finallyState.session)
+              val combinedLogs = mainState.logs ++ finallyState.logs
+              ScenarioReport.build(scenario.name, combinedSession, combinedLogs, mainRunReport, Some(finallyReport))
+          }
+        }
     }
   }
 

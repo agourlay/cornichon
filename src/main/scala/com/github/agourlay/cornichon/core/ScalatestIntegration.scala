@@ -2,11 +2,12 @@ package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.LogInstruction._
-import org.scalatest.{ Args, BeforeAndAfterAll, ParallelTestExecution, WordSpecLike }
+import org.scalatest._
 
+import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
-trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
+trait ScalatestIntegration extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: CornichonFeature ⇒
 
   override def beforeAll() = {
@@ -43,10 +44,10 @@ trait ScalatestIntegration extends WordSpecLike with BeforeAndAfterAll with Para
       feat.name should {
         feat.scenarios.foreach { s ⇒
           if (feat.ignored || s.ignored)
-            s.name ignore {}
+            s.name ignore { Future.successful(Succeeded) }
           else
             s.name in {
-              runScenario(s) match {
+              runScenario(s).map {
                 case SuccessScenarioReport(_, _, logs) ⇒
                   // In case of success, logs are only shown if the scenario contains DebugLogInstruction
                   if (logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty) printLogs(logs)

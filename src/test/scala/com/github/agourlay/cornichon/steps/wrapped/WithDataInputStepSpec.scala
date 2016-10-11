@@ -3,9 +3,9 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, AsyncWordSpec }
 
-class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
+class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "WithDataInputStep" must {
 
@@ -29,7 +29,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
       )
       val s = Scenario("scenario with WithDataInput", steps)
       val res = engine.runScenario(Session.newEmpty)(s)
-      res.isSuccess should be(false)
+      res.map(_.isSuccess should be(false))
     }
 
     "fail at first failed input" in {
@@ -51,7 +51,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
         WithDataInputStep(nested, inputs)
       )
       val s = Scenario("scenario with WithDataInput", steps)
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
     "execute all steps if successful" in {
@@ -78,8 +78,10 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
       )
       val s = Scenario("scenario with WithDataInput", steps)
       val res = engine.runScenario(Session.newEmpty)(s)
-      res.isSuccess should be(true)
-      uglyCounter should be(3)
+      res.map { res ⇒
+        res.isSuccess should be(true)
+        uglyCounter should be(3)
+      }
     }
 
     "inject values in session" in {
@@ -105,7 +107,7 @@ class WithDataInputStepSpec extends WordSpec with Matchers with StepUtilSpec {
       )
       val s = Scenario("scenario with WithDataInput", steps)
       val res = engine.runScenario(Session.newEmpty)(s)
-      res.isSuccess should be(true)
+      res.map(_.isSuccess should be(true))
     }
   }
 

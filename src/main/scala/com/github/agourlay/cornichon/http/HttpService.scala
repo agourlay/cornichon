@@ -19,6 +19,7 @@ import io.circe.Encoder
 
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
+import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext) {
@@ -115,14 +116,14 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     else if (input.startsWith("https://") || input.startsWith("http://")) input
     else baseUrl + input
 
-  private def waitForRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): Xor[CornichonError, CornichonHttpResponse] =
-    Try { Await.result(f, t) } match {
-      case Success(s) ⇒ s
-      case Failure(failure) ⇒ failure match {
-        case e: TimeoutException ⇒ left(TimeoutError(request, e))
-        case t: Throwable        ⇒ left(RequestError(request, t))
-      }
-    }
+  /*  private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): XorT[Future, CornichonError, CornichonHttpResponse] =
+    XorT.apply(f)
+      .recover {
+        case NonFatal(failure) ⇒ failure match {
+          case e: TimeoutException ⇒ XorT.left[Future, CornichonError, CornichonHttpResponse](Future.successful(TimeoutError(request, e)))
+          case t: Throwable        ⇒ XorT.left[Future, CornichonError, CornichonHttpResponse](Future.successful(RequestError(request, t)))
+        }
+      }*/
 
   def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Session] =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)

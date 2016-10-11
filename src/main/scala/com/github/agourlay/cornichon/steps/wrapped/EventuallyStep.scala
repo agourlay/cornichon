@@ -4,10 +4,11 @@ import cats.data.Xor
 import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.util.Timeouts
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
@@ -25,8 +26,9 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
           res match {
             case Left(failedStep) ⇒
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-                Thread.sleep(conf.interval.toMillis)
-                retryEventuallySteps(runState.appendLogs(newRunState.logs), conf.consume(executionTime + conf.interval), retriesNumber + 1)
+                Timeouts.timeoutF(conf.interval) {
+                  retryEventuallySteps(runState.appendLogs(newRunState.logs), conf.consume(executionTime + conf.interval), retriesNumber + 1)
+                }
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
                 Future.successful(retriesNumber, newRunState, left(failedStep))
@@ -71,8 +73,8 @@ case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends Wr
   }
 }
 
-case class EventuallyConf(maxTime: Duration, interval: Duration) {
-  def consume(burnt: Duration) = {
+case class EventuallyConf(maxTime: FiniteDuration, interval: FiniteDuration) {
+  def consume(burnt: FiniteDuration) = {
     val rest = maxTime - burnt
     val newMax = if (rest.lteq(Duration.Zero)) Duration.Zero else rest
     copy(maxTime = newMax)

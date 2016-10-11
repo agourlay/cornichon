@@ -3,9 +3,9 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, AsyncWordSpec }
 
-class RetryMaxStepSpec extends WordSpec with Matchers with StepUtilSpec {
+class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "RetryMaxStep" must {
     "fail if 'retryMax' block never succeeds" in {
@@ -24,9 +24,11 @@ class RetryMaxStepSpec extends WordSpec with Matchers with StepUtilSpec {
         RetryMaxStep(nested, loop)
       )
       val s = Scenario("scenario with RetryMax", steps)
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
-      // Initial run + 'loop' retries
-      uglyCounter should be(loop + 1)
+      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+        res.isSuccess should be(false)
+        // Initial run + 'loop' retries
+        uglyCounter should be(loop + 1)
+      }
     }
 
     "repeat 'retryMax' and might succeed later" in {
@@ -45,8 +47,10 @@ class RetryMaxStepSpec extends WordSpec with Matchers with StepUtilSpec {
         RetryMaxStep(nested, max)
       )
       val s = Scenario("scenario with RetryMax", steps)
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
-      uglyCounter should be(max - 2)
+      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+        res.isSuccess should be(true)
+        uglyCounter should be(max - 2)
+      }
     }
   }
 }

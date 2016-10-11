@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.dsl
 
-import java.util.concurrent.Executors
-
 import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
@@ -9,12 +7,12 @@ import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, Diff, GenericAssertion }
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
-import com.github.agourlay.cornichon.util.ShowInstances
+import com.github.agourlay.cornichon.util.{ ShowInstances, Timeouts }
 
 import scala.concurrent.Future
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
-import scala.concurrent.duration.{ Duration, FiniteDuration }
+import scala.concurrent.duration.FiniteDuration
 
 trait Dsl extends ShowInstances {
   this: CornichonFeature ⇒
@@ -56,23 +54,23 @@ trait Dsl extends ShowInstances {
       RetryMaxStep(steps, limit)
     }
 
-  def RepeatDuring(duration: Duration) =
+  def RepeatDuring(duration: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       RepeatDuringStep(steps, duration)
     }
 
-  def Eventually(maxDuration: Duration, interval: Duration) =
+  def Eventually(maxDuration: FiniteDuration, interval: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       val conf = EventuallyConf(maxDuration, interval)
       EventuallyStep(steps, conf)
     }
 
-  def Concurrently(factor: Int, maxTime: Duration) =
+  def Concurrently(factor: Int, maxTime: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       ConcurrentlyStep(steps, factor, maxTime)
     }
 
-  def Within(maxDuration: Duration) =
+  def Within(maxDuration: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       WithinStep(steps, maxDuration)
     }
@@ -87,13 +85,9 @@ trait Dsl extends ShowInstances {
       WithDataInputStep(steps, where)
     }
 
-  //TODO use delayed future
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ Future {
-    Thread.sleep(duration.toMillis)
-    s
-  }
+    effect = s ⇒ Timeouts.timeout(duration)(s)
   )
 
   def save(input: (String, String)) = {

@@ -1,22 +1,24 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.concurrent.TimeUnit
+
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.FiniteDuration
 import cats.data.Xor._
 
-case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends WrapperStep {
+case class RepeatDuringStep(nested: Vector[Step], duration: FiniteDuration) extends WrapperStep {
   val title = s"Repeat block during '$duration'"
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
 
     val initialDepth = initialRunState.depth
 
-    def repeatStepsDuring(runState: RunState, duration: Duration, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] = {
+    def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] = {
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
         engine.runSteps(runState.resetLogs)
@@ -28,7 +30,7 @@ case class RepeatDuringStep(nested: Vector[Step], duration: Duration) extends Wr
           res match {
             case Right(done) ⇒
               val successState = runState.withSession(repeatedOnceMore.session).appendLogs(repeatedOnceMore.logs)
-              if (remainingTime.gt(Duration.Zero))
+              if (remainingTime.gt(FiniteDuration(0, TimeUnit.MILLISECONDS)))
                 repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
               else
                 // In case of success all logs are returned but they are not printed by default.

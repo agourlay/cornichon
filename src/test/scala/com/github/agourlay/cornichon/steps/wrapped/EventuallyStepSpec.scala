@@ -3,11 +3,11 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, AsyncWordSpec }
 
 import scala.concurrent.duration._
 
-class EventuallyStepSpec extends WordSpec with Matchers with StepUtilSpec {
+class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "EventuallyStep" must {
     "replay eventually wrapped steps" in {
@@ -22,7 +22,7 @@ class EventuallyStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
       val steps = Vector(EventuallyStep(nested, eventuallyConf))
       val s = Scenario("scenario with eventually", steps)
-      engine.runScenario(session)(s).isSuccess should be(true)
+      engine.runScenario(session)(s).map(_.isSuccess should be(true))
     }
 
     "replay eventually wrapped steps until limit" in {
@@ -37,7 +37,7 @@ class EventuallyStepSpec extends WordSpec with Matchers with StepUtilSpec {
         EventuallyStep(nested, eventuallyConf)
       )
       val s = Scenario("scenario with eventually that fails", steps)
-      engine.runScenario(session)(s).isSuccess should be(false)
+      engine.runScenario(session)(s).map(_.isSuccess should be(false))
     }
 
   }

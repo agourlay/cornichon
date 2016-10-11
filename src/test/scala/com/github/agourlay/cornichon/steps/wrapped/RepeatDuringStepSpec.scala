@@ -3,11 +3,11 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, AsyncWordSpec }
 
 import scala.concurrent.duration._
 
-class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
+class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "RepeatDuringStep" must {
     "fail if 'repeatDuring' block contains a failed step" in {
@@ -21,7 +21,7 @@ class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
         RepeatDuringStep(nested, 5.millis)
       )
       val s = Scenario("scenario with RepeatDuring", steps)
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(false)
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
     "repeat steps inside 'repeatDuring' for at least the duration param" in {
@@ -39,12 +39,14 @@ class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
       )
       val s = Scenario("scenario with RepeatDuring", steps)
       val now = System.nanoTime
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
-      val executionTime = Duration.fromNanos(System.nanoTime - now)
-      withClue(executionTime.toMillis) {
-        executionTime.gt(50.millis) should be(true)
-        // empiric values for the upper bound here
-        executionTime.lt(60.millis) should be(true)
+      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+        res.isSuccess should be(true)
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        withClue(executionTime.toMillis) {
+          executionTime.gt(50.millis) should be(true)
+          // empiric values for the upper bound here
+          executionTime.lt(60.millis) should be(true)
+        }
       }
     }
 
@@ -63,12 +65,14 @@ class RepeatDuringStepSpec extends WordSpec with Matchers with StepUtilSpec {
       )
       val s = Scenario("scenario with RepeatDuring", steps)
       val now = System.nanoTime
-      engine.runScenario(Session.newEmpty)(s).isSuccess should be(true)
-      val executionTime = Duration.fromNanos(System.nanoTime - now)
-      withClue(executionTime.toMillis) {
-        executionTime.gt(50.millis) should be(true)
-        // empiric values for the upper bound here
-        executionTime.lt(550.millis) should be(true)
+      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+        res.isSuccess should be(true)
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        withClue(executionTime.toMillis) {
+          executionTime.gt(50.millis) should be(true)
+          // empiric values for the upper bound here
+          executionTime.lt(550.millis) should be(true)
+        }
       }
     }
   }
