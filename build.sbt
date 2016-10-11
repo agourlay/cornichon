@@ -46,7 +46,7 @@ libraryDependencies ++= {
   val sangriaV = "0.7.3"
   val fansiV = "0.2.2"
   val akkaHttpCirce = "1.10.1"
-  val catsScalaTest = "1.4.0"
+  val catsScalaTest = "2.0.0"
   val ficusV = "1.1.2"
   Seq(
      "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
