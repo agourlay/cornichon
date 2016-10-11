@@ -1,19 +1,18 @@
 package com.github.agourlay.cornichon.http
 
-import java.util.concurrent.TimeoutException
-
 import cats.Show
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.CornichonError
 
+import scala.concurrent.duration.FiniteDuration
 import scala.util.control.NoStackTrace
 
 sealed trait HttpError extends CornichonError with NoStackTrace
 
-case class TimeoutError[A: Show](request: A, error: TimeoutException) extends HttpError {
+case class TimeoutErrorAfter[A: Show](request: A, after: FiniteDuration) extends HttpError {
   val msg =
     s"""|${request.show}
-        |connection timed out error - ${error.getMessage}""".trim.stripMargin
+        |connection timed out error after ${after.toMillis} ms""".trim.stripMargin
 }
 
 case class RequestError[A: Show](request: A, e: Throwable) extends HttpError {

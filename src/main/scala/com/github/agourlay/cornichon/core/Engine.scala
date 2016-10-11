@@ -3,9 +3,8 @@ package com.github.agourlay.cornichon.core
 import cats.data.Xor
 import cats.data.Xor._
 
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.Duration
-import scala.concurrent.duration._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.Resolver

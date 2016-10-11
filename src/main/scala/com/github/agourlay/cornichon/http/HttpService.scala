@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.http
 
-import java.util.concurrent.TimeoutException
-
 import cats.Show
 import cats.data.{ Xor, XorT }
 import cats.data.Xor.{ left, right }
@@ -15,12 +13,12 @@ import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.util.ShowInstances._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
+import com.github.agourlay.cornichon.util.Timeouts
 import io.circe.Encoder
 
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success, Try }
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext) {
 
@@ -47,19 +45,21 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
-  // TODO setup timeout on future itself
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       resolvedRequest ← XorT(Future.successful(resolveRequest(r)(s)))
-      resp ← XorT(client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers))
+      resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
+        client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers)
+      }
       newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
-  // TODO setup timeout on future itself
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       resolvedRequest ← XorT(Future.successful(resolveStreamedRequest[String](r)(s)))
-      resp ← XorT(client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin))
+      resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
+        client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin)
+      }
       newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
@@ -116,14 +116,16 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     else if (input.startsWith("https://") || input.startsWith("http://")) input
     else baseUrl + input
 
-  /*  private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): XorT[Future, CornichonError, CornichonHttpResponse] =
-    XorT.apply(f)
+  private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): XorT[Future, CornichonError, CornichonHttpResponse] = {
+    val failedAfter = Timeouts.failAfter(t)(f)(TimeoutErrorAfter(request, t))
       .recover {
         case NonFatal(failure) ⇒ failure match {
-          case e: TimeoutException ⇒ XorT.left[Future, CornichonError, CornichonHttpResponse](Future.successful(TimeoutError(request, e)))
-          case t: Throwable        ⇒ XorT.left[Future, CornichonError, CornichonHttpResponse](Future.successful(RequestError(request, t)))
+          case t @ TimeoutErrorAfter(_, _) ⇒ left(t)
+          case t: Throwable                ⇒ left(RequestError(request, t))
         }
-      }*/
+      }
+    XorT(failedAfter)
+  }
 
   def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Session] =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
