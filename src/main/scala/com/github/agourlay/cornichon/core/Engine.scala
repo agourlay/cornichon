@@ -6,9 +6,11 @@ import cats.data.Xor._
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
-
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.Resolver
+
+import scala.util.control.NonFatal
 
 class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext) {
 
@@ -42,16 +44,20 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
         (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(currentSession))
       }
       preparedStep.fold(
-        ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, ce)),
-        ps ⇒ ps.run(this)(runState).flatMap {
-          case (newState, stepResult) ⇒
-            stepResult match {
-              case Right(Done) ⇒
-                runSteps(newState.consumCurrentStep)
-              case Left(failedStep) ⇒
-                Future.successful(newState, left(failedStep))
-            }
-        }
+        ce ⇒
+          Future.successful(Engine.exceptionToFailureStep(currentStep, runState, ce)),
+        ps ⇒
+          ps.run(this)(runState).flatMap {
+            case (newState, stepResult) ⇒
+              stepResult match {
+                case Right(Done) ⇒
+                  runSteps(newState.consumCurrentStep)
+                case Left(failedStep) ⇒
+                  Future.successful(newState, left(failedStep))
+              }
+          }.recover {
+            case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, CornichonError.fromThrowable(t))
+          }
       )
     }
 }

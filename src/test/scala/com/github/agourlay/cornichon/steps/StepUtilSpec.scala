@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext
 
 trait StepUtilSpec extends ShowInstances {
 
-  val ec = ExecutionContext.global
+  implicit val ec = ExecutionContext.global
   val resolver = Resolver.withoutExtractor()
   val engine = Engine.withStepTitleResolver(resolver, ec)
 

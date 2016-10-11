@@ -11,16 +11,13 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.util.ShowInstances
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 trait Dsl extends ShowInstances {
   this: CornichonFeature ⇒
-
-  //FIXME
-  private implicit val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool)
 
   def Feature(name: String, ignored: Boolean = false) =
     BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
@@ -90,6 +87,7 @@ trait Dsl extends ShowInstances {
       WithDataInputStep(steps, where)
     }
 
+  //TODO use delayed future
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
     effect = s ⇒ Future {

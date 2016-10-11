@@ -4,12 +4,14 @@ import com.github.agourlay.cornichon.core.{ Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import org.scalatest.{ Matchers, WordSpec }
 
+import scala.concurrent.Future
+
 class EffectStepSpec extends WordSpec with Matchers with StepUtilSpec {
 
   "EffectStep" must {
     "return error if an Effect step throw an exception" in {
       val session = Session.newEmpty
-      val step = EffectStep(title = "buggy effect", s ⇒ {
+      val step = EffectStep(title = "buggy effect", s ⇒ Future {
         6 / 0
         s
       })

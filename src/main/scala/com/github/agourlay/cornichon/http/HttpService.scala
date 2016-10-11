@@ -3,8 +3,9 @@ package com.github.agourlay.cornichon.http
 import java.util.concurrent.TimeoutException
 
 import cats.Show
-import cats.data.Xor
+import cats.data.{ Xor, XorT }
 import cats.data.Xor.{ left, right }
+import cats.instances.future._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
@@ -16,11 +17,11 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import io.circe.Encoder
 
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext) {
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {
@@ -45,23 +46,20 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
   }
 
-  // TODO use XorT[Future, A, B]
+  // TODO setup timeout on future itself
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequest ← resolveRequest(r)(s)
-      resp ← waitForRequestFuture(resolvedRequest, requestTimeout) {
-        client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers)
-      }
-      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
+      resolvedRequest ← XorT(Future.successful(resolveRequest(r)(s)))
+      resp ← XorT(client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers))
+      newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
+  // TODO setup timeout on future itself
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequest ← resolveStreamedRequest[String](r)(s)
-      resp ← waitForRequestFuture(resolvedRequest, r.takeWithin) {
-        client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin)
-      }
-      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
+      resolvedRequest ← XorT(Future.successful(resolveStreamedRequest[String](r)(s)))
+      resp ← XorT(client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin))
+      newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =

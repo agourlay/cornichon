@@ -27,7 +27,7 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestInteg
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  private lazy val (globalClient, ec, _, _) = globalRuntime
+  implicit lazy val (globalClient, ec, _, _) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
 
   lazy val requestTimeout = config.requestTimeout
