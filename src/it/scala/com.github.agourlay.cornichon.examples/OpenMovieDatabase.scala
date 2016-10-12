@@ -15,7 +15,7 @@ class OpenMovieDatabase extends CornichonFeature {
 
         Then assert status.is(200)
 
-        And assert body.ignoring("imdbRating", "imdbVotes", "Awards", "Poster").is(
+        And assert body.ignoring("imdbRating", "imdbVotes", "Awards", "Poster", "Plot").is(
           """
           {
             "Title": "Game of Thrones",
@@ -27,7 +27,6 @@ class OpenMovieDatabase extends CornichonFeature {
             "Director": "N/A",
             "Writer": "David Benioff, D.B. Weiss",
             "Actors": "Peter Dinklage, Lena Headey, Emilia Clarke, Kit Harington",
-            "Plot": "While a civil war brews between several noble families in Westeros, the children of the former rulers of the land attempt to rise up to power. Meanwhile a forgotten race, bent on destruction, plans to return after thousands of years in the North.",
             "Language": "English",
             "Country": "USA, UK",
             "Metascore": "N/A",
