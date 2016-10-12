@@ -29,7 +29,9 @@ object Timeouts {
     timer.schedule(new TimerTask {
       override def run(): Unit = {
         // make sure we do not block the timer thread
-        promise.completeWith(what)
+        Future {
+          promise.completeWith(what)
+        }
       }
     }, waitFor.toMillis)
 

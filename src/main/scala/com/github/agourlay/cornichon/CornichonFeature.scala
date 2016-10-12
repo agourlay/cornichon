@@ -28,7 +28,7 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestInteg
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  implicit lazy val (globalClient, ec, system, mat, timer) = globalRuntime
+  implicit lazy val (globalClient, ec, _, _, timer) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
 
   lazy val requestTimeout = config.requestTimeout
@@ -78,19 +78,18 @@ private object CornichonFeature {
   implicit private lazy val system = ActorSystem("cornichon-actor-system")
   implicit private lazy val mat = ActorMaterializer()
 
+  implicit private lazy val timer = new Timer("cornichon-timer")
   implicit private lazy val ec = ExecutionContext.fromExecutorService(
     Executors.newFixedThreadPool(
       Runtime.getRuntime.availableProcessors() + 1,
       new ThreadFactory {
         val count = new AtomicInteger(0)
         override def newThread(r: Runnable) = {
-          new Thread(r, "cornichon" + "-" + count.incrementAndGet)
+          new Thread(r, "cornichon-" + count.incrementAndGet)
         }
       }
     )
   )
-
-  implicit private lazy val timer = new Timer()
 
   private lazy val client: HttpClient = new AkkaHttpClient()
 
