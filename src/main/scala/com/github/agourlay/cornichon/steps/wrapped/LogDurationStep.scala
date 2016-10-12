@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing._
 
@@ -9,7 +11,7 @@ case class LogDurationStep(nested: Vector[Step], label: String) extends WrapperS
 
   val title = s"Log duration block with label '$label' started"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     withDuration {
       val logRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
       engine.runSteps(logRunState)

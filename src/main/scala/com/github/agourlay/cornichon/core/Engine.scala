@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.core
 
+import java.util.Timer
+
 import cats.data.Xor
 import cats.data.Xor._
 
@@ -11,7 +13,7 @@ import com.github.agourlay.cornichon.resolver.Resolver
 
 import scala.util.control.NonFatal
 
-class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext) {
+class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext)(implicit timer: Timer) {
 
   private implicit val ec = executionContext
 
@@ -66,7 +68,7 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
 
 object Engine {
 
-  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext) =
+  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext)(implicit timer: Timer) =
     new Engine(
       stepPreparers = StepPreparerTitleResolver(resolver) :: Nil,
       executionContext = executionContext

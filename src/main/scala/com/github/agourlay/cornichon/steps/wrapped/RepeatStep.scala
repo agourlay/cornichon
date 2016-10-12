@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import cats.data.Xor
 import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
@@ -14,7 +16,7 @@ case class RepeatStep(nested: Vector[Step], occurrence: Int) extends WrapperStep
 
   val title = s"Repeat block with occurrence '$occurrence'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
     def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Xor[FailedStep, Done])] =
       // reset logs at each loop to have the possibility to not aggregate in failure case

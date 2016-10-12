@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.core
 
+import java.util.Timer
+
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
 import com.github.agourlay.cornichon.util.ShowInstances
@@ -9,6 +11,7 @@ import scala.concurrent.ExecutionContext
 
 class EngineSpec extends AsyncWordSpec with Matchers with ShowInstances {
 
+  implicit val timer = new Timer()
   val resolver = Resolver.withoutExtractor()
   val engine = Engine.withStepTitleResolver(resolver, ExecutionContext.global)
 

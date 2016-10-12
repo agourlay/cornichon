@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.http
 
+import java.util.Timer
+
 import cats.Show
 import cats.data.{ Xor, XorT }
 import cats.data.Xor.{ left, right }
@@ -20,7 +22,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext, timer: Timer) {
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {

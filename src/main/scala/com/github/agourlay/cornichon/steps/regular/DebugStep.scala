@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.regular
 
+import java.util.Timer
+
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
 import cats.data.Xor._
@@ -11,7 +13,7 @@ case class DebugStep(message: Session ⇒ String, title: String = "Debug step") 
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     val (fullLogs, xor) = Try {
       message(initialRunState.session)
     } match {

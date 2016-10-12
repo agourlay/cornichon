@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.regular
 
+import java.util.Timer
+
 import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Engine._
@@ -12,7 +14,7 @@ case class AsyncEffectStep(title: String, effect: Session ⇒ Future[Session], s
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     withDuration {
       effect(initialRunState.session)
         .map(s ⇒ Xor.Right(s))

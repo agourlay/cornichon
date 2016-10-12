@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import cats.data.Xor._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core._
@@ -11,7 +13,7 @@ case class WithBlockScopedResource(nested: Vector[Step], resource: BlockScopedRe
 
   val title = resource.openingTitle
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
     for {
       resourceHandle ← resource.startResource()

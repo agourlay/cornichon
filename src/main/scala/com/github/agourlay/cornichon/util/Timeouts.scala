@@ -8,11 +8,9 @@ import scala.util.Try
 
 object Timeouts {
 
-  private val timer = new Timer()
-
   // Credits goes to https://github.com/johanandren/futiles/blob/master/src/main/scala/markatta/futiles/Timeouts.scala#L32
   // Copied here because needed only a single method from the jar and added Future version
-  def timeout[A](waitFor: FiniteDuration)(what: ⇒ A)(implicit ec: ExecutionContext): Future[A] = {
+  def timeout[A](waitFor: FiniteDuration)(what: ⇒ A)(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
     val promise = Promise[A]()
     timer.schedule(new TimerTask {
       override def run(): Unit = {
@@ -26,7 +24,7 @@ object Timeouts {
     promise.future
   }
 
-  def timeoutF[A](waitFor: FiniteDuration)(what: ⇒ Future[A])(implicit ec: ExecutionContext): Future[A] = {
+  def timeoutF[A](waitFor: FiniteDuration)(what: ⇒ Future[A])(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
     val promise = Promise[A]()
     timer.schedule(new TimerTask {
       override def run(): Unit = {
@@ -38,7 +36,7 @@ object Timeouts {
     promise.future
   }
 
-  def failAfter[A](after: FiniteDuration)(what: ⇒ Future[A])(error: Exception)(implicit ec: ExecutionContext): Future[A] = {
+  def failAfter[A](after: FiniteDuration)(what: ⇒ Future[A])(error: Exception)(implicit ec: ExecutionContext, timer: Timer): Future[A] = {
     val timeoutValue = timeoutF(after)(Future.failed(error))
     Future.firstCompletedOf(Seq(timeoutValue, what))
   }

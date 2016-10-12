@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
+import java.util.Timer
+
 import cats.Show
 import cats.data.Xor
 import cats.data.Xor._
@@ -14,7 +16,7 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     val session = initialRunState.session
     val (res, duration) = Timing.withDuration {
       Xor.catchNonFatal(action(session))

@@ -11,7 +11,7 @@ case class HttpMockServerResource(label: String, port: Int) extends BlockScopedR
   val openingTitle: String = s"Starting HTTP mock server '$label' ${if (port != 0) s"on port $port" else ""}"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
-  implicit val (_, ec, system, mat) = CornichonFeature.globalRuntime
+  implicit val (_, ec, system, mat, _) = CornichonFeature.globalRuntime
 
   def startResource() = {
     CornichonFeature.reserveGlobalRuntime()

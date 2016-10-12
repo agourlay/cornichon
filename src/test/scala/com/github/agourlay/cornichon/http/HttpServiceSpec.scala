@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.http
 
+import java.util.Timer
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.data.Xor.right
@@ -16,6 +18,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
 
   implicit val system = ActorSystem("akka-http-client")
   implicit val mat = ActorMaterializer()
+  implicit val timer = new Timer()
 
   val client = new AkkaHttpClient()
   val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor())

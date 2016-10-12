@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import cats.data.Xor
 import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
@@ -13,7 +15,7 @@ import scala.concurrent.duration.{ Duration, FiniteDuration }
 case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] = {
       withDuration {

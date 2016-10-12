@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import cats.data.Xor
 import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
@@ -14,7 +16,7 @@ case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
 
   val title = s"RetryMax block with limit '$limit'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] =
       engine.runSteps(runState.resetLogs).flatMap {

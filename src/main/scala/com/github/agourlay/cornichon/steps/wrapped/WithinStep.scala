@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -12,7 +14,7 @@ case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends Wrapp
 
   val title = s"Within block with max duration '$maxDuration'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
     val initialDepth = initialRunState.depth
 

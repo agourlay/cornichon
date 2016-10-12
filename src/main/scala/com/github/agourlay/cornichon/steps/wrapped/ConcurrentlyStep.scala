@@ -1,9 +1,10 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timeouts
-
 import cats.data.Xor._
 import cats.data.Xor
 
@@ -17,7 +18,7 @@ case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: FiniteDu
 
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     val nestedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
