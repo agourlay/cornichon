@@ -8,6 +8,7 @@ class MacroErrorSpec extends WordSpec with Matchers {
     "compile valid feature definitions" in {
       """
         import com.github.agourlay.cornichon.CornichonFeature
+        import com.github.agourlay.cornichon.steps.regular.AsyncEffectStep
         import com.github.agourlay.cornichon.steps.regular.EffectStep
         import scala.concurrent.Future
 
@@ -15,10 +16,10 @@ class MacroErrorSpec extends WordSpec with Matchers {
           val feature =
             Feature("foo") {
               Scenario("aaa") {
-                EffectStep("just testing", s => Future.successful(s))
+                EffectStep("just testing", identity)
 
                 Repeat(10) {
-                  EffectStep("just testing repeat", s => Future.successful(s))
+                  AsyncEffectStep("just testing repeat", s => Future.successful(s))
                 }
               }
             }
@@ -29,18 +30,19 @@ class MacroErrorSpec extends WordSpec with Matchers {
     "not compile if feature definition contains invalid expressions" in {
       """
         import com.github.agourlay.cornichon.CornichonFeature
+        import com.github.agourlay.cornichon.steps.regular.AsyncEffectStep
         import com.github.agourlay.cornichon.steps.regular.EffectStep
 
         class Foo extends CornichonFeature {
           val feature =
             Feature("foo") {
               Scenario("aaa") {
-                EffectStep("just testing", s => Future.successful(s))
+                AsyncEffectStep("just testing", s => Future.successful(s))
 
                 val oops = "Hello World!"
 
                 Repeat(10) {
-                  EffectStep("just testing repeat", s => Future.successful(s))
+                  EffectStep("just testing repeat", identity)
                 }
               }
             }
