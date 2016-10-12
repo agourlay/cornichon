@@ -6,6 +6,7 @@ import cats.data.Xor._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.util.Timing
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -15,10 +16,12 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
     val session = initialRunState.session
-    val res = Xor.catchNonFatal(action(session))
-      .leftMap(CornichonError.fromThrowable)
-      .flatMap(runStepPredicate(session))
-    Future.successful(xorToStepReport(this, res, initialRunState, show))
+    val (res, duration) = Timing.withDuration {
+      Xor.catchNonFatal(action(session))
+        .leftMap(CornichonError.fromThrowable)
+        .flatMap(runStepPredicate(session))
+    }
+    Future.successful(xorToStepReport(this, res, initialRunState, show, Some(duration)))
   }
 
   def runStepPredicate(newSession: Session)(assertion: Assertion[A]): Xor[CornichonError, Session] =
