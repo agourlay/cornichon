@@ -16,7 +16,7 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.regular.AsyncEffectStep
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
@@ -30,19 +30,19 @@ import scala.concurrent.duration._
 trait HttpDsl extends HttpRequestsDsl {
   this: CornichonFeature with Dsl ⇒
 
-  implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
-    EffectStep(
+  implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): AsyncEffectStep =
+    AsyncEffectStep(
       title = request.compactDescription,
       effect = http.requestEffect(request)
     )
 
-  implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): EffectStep =
-    EffectStep(
+  implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): AsyncEffectStep =
+    AsyncEffectStep(
       title = request.compactDescription,
       effect = http.streamEffect(request)
     )
 
-  implicit def queryGqlToStep(queryGQL: QueryGQL): EffectStep = {
+  implicit def queryGqlToStep(queryGQL: QueryGQL): AsyncEffectStep = {
     import io.circe.generic.auto._
     import io.circe.syntax._
 
@@ -57,7 +57,7 @@ trait HttpDsl extends HttpRequestsDsl {
 
     val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")
 
-    EffectStep(
+    AsyncEffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $payload$prettyVar$prettyOp",
       effect = http.requestEffect(post(queryGQL.url).withBody(fullPayload))
     )

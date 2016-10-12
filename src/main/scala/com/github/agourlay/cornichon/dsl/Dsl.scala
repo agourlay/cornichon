@@ -9,7 +9,6 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.util.{ ShowInstances, Timeouts }
 
-import scala.concurrent.Future
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
@@ -85,7 +84,7 @@ trait Dsl extends ShowInstances {
       WithDataInputStep(steps, where)
     }
 
-  def wait(duration: FiniteDuration) = EffectStep(
+  def wait(duration: FiniteDuration) = AsyncEffectStep(
     title = s"wait for ${duration.toMillis} millis",
     effect = s ⇒ Timeouts.timeout(duration)(s)
   )
@@ -94,13 +93,13 @@ trait Dsl extends ShowInstances {
     val (key, value) = input
     EffectStep(
       s"add '$key'->'$value' to session",
-      s ⇒ Future.successful(s.addValue(key, value))
+      s ⇒ s.addValue(key, value)
     )
   }
 
   def remove(key: String) = EffectStep(
     title = s"remove '$key' from session",
-    effect = s ⇒ Future.successful(s.removeKey(key))
+    effect = s ⇒ s.removeKey(key)
   )
 
   def session_value(key: String) = SessionAssertion(resolver, key)
@@ -123,7 +122,7 @@ object Dsl {
     val targets = args.map(_.target)
     EffectStep(
       s"save parts from session '${displayTuples(keys.zip(targets))}'",
-      session ⇒ Future.successful {
+      session ⇒ {
         val extracted = session.getList(keys).zip(extractors).map { case (value, extractor) ⇒ extractor(session, value) }
         targets.zip(extracted).foldLeft(session)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
       }

@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.regular.AsyncEffectStep
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -22,7 +22,7 @@ trait MathSteps {
   }
 
   def generate_random_int(target: String, max: Int = 100) =
-    EffectStep(
+    AsyncEffectStep(
       title = s"generate random Int into '$target' (max=$max)",
       effect = s ⇒ Future.successful {
       s.addValue(target, Random.nextInt(max).toString)
@@ -30,7 +30,7 @@ trait MathSteps {
     )
 
   def generate_random_double(target: String) =
-    EffectStep(
+    AsyncEffectStep(
       title = s"generate random Double into '$target'",
       effect = s ⇒ Future.successful {
       s.addValue(target, Random.nextDouble().toString)
@@ -50,7 +50,7 @@ trait MathSteps {
 
   private def ratioError(v: Double, low: Double, high: Double): Boolean ⇒ String = b ⇒ s"$v is not between $low and $high"
 
-  def calculate_point_in_circle(target: String) = EffectStep(
+  def calculate_point_in_circle(target: String) = AsyncEffectStep(
     title = s"calculate points inside circle",
     effect = s ⇒ Future {
     val x = s.get("x").toDouble
@@ -61,7 +61,7 @@ trait MathSteps {
   )
 
   def estimate_pi_from_ratio(inside: String, target: String) =
-    EffectStep(
+    AsyncEffectStep(
       title = s"estimate PI from ratio into key '$target'",
       effect = s ⇒ Future {
       val insides = s.getHistory(inside)
