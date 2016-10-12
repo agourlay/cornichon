@@ -15,7 +15,6 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
 
   private implicit val ec = executionContext
 
-  //TODO define max duration scenario
   def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): Future[ScenarioReport] = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)

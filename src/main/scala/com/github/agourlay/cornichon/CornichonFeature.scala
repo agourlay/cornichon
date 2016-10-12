@@ -76,7 +76,7 @@ private object CornichonFeature {
 
   implicit private lazy val system = ActorSystem("cornichon-actor-system")
   implicit private lazy val mat = ActorMaterializer()
-  implicit private lazy val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool)
+  implicit private lazy val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors() + 1))
 
   private lazy val client: HttpClient = new AkkaHttpClient()
 
