@@ -38,7 +38,7 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 Add the library dependency
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.9.3" % "test"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.10" % "test"
 ```
 
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
@@ -593,7 +593,7 @@ This feature is experimental and subject to changes.
 
 - Log duration
 
-By default all ```EffectStep``` execution time can be found in the logs, but sometimes one needs to time a series of steps. 
+By default all ```Step``` execution time can be found in the logs, but sometimes one needs to time a series of steps.
 
 This is where ```LogDuration``` comes in handy, it requires a label that will be printed as well to identify results.
 
@@ -737,7 +737,8 @@ It becomes then possible to retrieve past values :
 ### Effects and Assertions
 
 There are two kind of ```step``` :
-- EffectStep ```Session => Session``` : It runs a side effect and populates the ```Session``` with values.
+- EffectStep ```Session => Session``` : Runs a side effect and populates the ```Session``` with values.
+- AsyncEffectStep ```Session => Future[Session]``` : Runs an async side effect and populates the ```Session``` with values.
 - AssertStep ```Sesssion => Assertion[A]``` : Describes the expectation of the test.
 
  
@@ -815,13 +816,13 @@ def feature = Feature("Customer endpoint"){
 
 Most of the time you will create your own trait containing your custom steps and declare a self-type on ```CornichonFeature``` to be able to access the ```httpService```. 
 
-It exposes a method ```requestEffect``` turning an ```HttpRequest``` into an effect.
+It exposes a method ```requestEffect``` turning an ```HttpRequest``` into an asynchronous effect.
 
 ```scala
 trait MySteps {
   this: CornichonFeature ⇒
 
-  def create_customer = EffectStep(
+  def create_customer = AsyncEffectStep(
     title = "create new customer",
     effect = http.requestEffect(
       request = HttpRequest.post("/customer").withPayload("someJson"),
