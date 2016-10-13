@@ -96,7 +96,10 @@ trait Dsl extends ShowInstances {
     val (key, value) = input
     EffectStep(
       s"add '$key'->'$value' to session",
-      s ⇒ s.addValue(key, value)
+      s ⇒ {
+        val resolved = resolver.fillPlaceholdersUnsafe(value)(s)
+        s.addValue(key, resolved)
+      }
     )
   }
 
