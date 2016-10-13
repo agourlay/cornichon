@@ -23,7 +23,6 @@ case class MockServerRequestHandler(serverName: String, port: Int)(implicit syst
 
   val requestReceivedRepo = system.actorOf(MockServerResultsHolder.props(), s"MockServerResultsHolder-$serverName-${UUID.randomUUID()}")
 
-  // TODO one more future to chain later
   implicit private val timeout = akka.util.Timeout(500.millis)
 
   def fetchRecordedRequests(): Future[Vector[CornichonHttpRequest[String]]] =

@@ -12,7 +12,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues {
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
 
   def parse(p: DataTableParser) = p.dataTableRule.run() match {
-    case Success(value)             ⇒ value
+    case Success(dt)                ⇒ dt
     case Failure(error: ParseError) ⇒ fail(p.formatError(error))
     case Failure(error)             ⇒ fail(error)
   }
