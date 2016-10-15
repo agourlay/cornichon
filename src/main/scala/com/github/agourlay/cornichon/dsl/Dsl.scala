@@ -6,8 +6,8 @@ import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Ste
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, Diff, GenericAssertion }
 import com.github.agourlay.cornichon.steps.wrapped._
-import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.util.{ ShowInstances, Timeouts }
+import com.github.agourlay.cornichon.util.ShowInstances._
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
@@ -92,7 +92,7 @@ trait Dsl extends ShowInstances {
   def save(input: (String, String)) = {
     val (key, value) = input
     EffectStep(
-      s"add '$key'->'$value' to session",
+      s"add value '$value' to session under key '$key' ",
       s ⇒ s.addValue(key, value)
     )
   }
@@ -121,7 +121,7 @@ object Dsl {
     val extractors = args.map(_.trans)
     val targets = args.map(_.target)
     EffectStep(
-      s"save parts from session '${displayTuples(keys.zip(targets))}'",
+      s"save parts from session '${displayStringPairs(keys.zip(targets))}'",
       session ⇒ {
         val extracted = session.getList(keys).zip(extractors).map { case (value, extractor) ⇒ extractor(session, value) }
         targets.zip(extracted).foldLeft(session)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))

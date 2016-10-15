@@ -21,7 +21,7 @@ trait ScalatestIntegration extends AsyncWordSpecLike with BeforeAndAfterAll with
   }
 
   override def run(testName: Option[String], args: Args) =
-    if (config.executeScenariosInParallel) super.run(testName, args)
+    if (executeScenariosInParallel) super.run(testName, args)
     else super.run(testName, args.copy(distributor = None))
 
   Try { feature } match {

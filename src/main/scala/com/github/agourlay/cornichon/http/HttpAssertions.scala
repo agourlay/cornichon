@@ -8,7 +8,6 @@ import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionK
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
-import com.github.agourlay.cornichon.util.Formats._
 import com.github.agourlay.cornichon.util.ShowInstances._
 
 object HttpAssertions {
@@ -26,7 +25,7 @@ object HttpAssertions {
 
   case class HeadersAssertion(private val ordered: Boolean) {
     def is(expected: (String, String)*) = from_session_step(
-      title = s"headers is ${displayTuples(expected)}",
+      title = s"headers is ${displayStringPairs(expected)}",
       key = SessionKey(lastResponseHeadersKey),
       expected = s ⇒ expected.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" },
       mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").toSeq
@@ -41,13 +40,13 @@ object HttpAssertions {
 
     def contain(elements: (String, String)*) = {
       from_session_detail_step(
-        title = s"headers contain ${displayTuples(elements)}",
+        title = s"headers contain ${displayStringPairs(elements)}",
         key = SessionKey(lastResponseHeadersKey),
         expected = s ⇒ true,
         mapValue = (session, sessionHeaders) ⇒ {
           val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
           val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
-          (predicate, headersDoesNotContainError(displayTuples(elements), sessionHeaders))
+          (predicate, headersDoesNotContainError(displayStringPairs(elements), sessionHeaders))
         }
       )
     }

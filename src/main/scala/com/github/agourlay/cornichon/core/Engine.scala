@@ -43,25 +43,20 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
     if (runState.endReached) Future.successful(runState, rightDone)
     else {
       val currentStep = runState.currentStep
-      val currentSession = runState.session
       val preparedStep = stepPreparers.foldLeft[CornichonError Xor Step](right(currentStep)) {
-        (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(currentSession))
+        (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(runState.session))
       }
       preparedStep.fold(
-        ce ⇒
-          Future.successful(Engine.exceptionToFailureStep(currentStep, runState, ce)),
-        ps ⇒
-          ps.run(this)(runState).flatMap {
-            case (newState, stepResult) ⇒
-              stepResult match {
-                case Right(Done) ⇒
-                  runSteps(newState.consumCurrentStep)
-                case Left(failedStep) ⇒
-                  Future.successful(newState, left(failedStep))
-              }
-          }.recover {
-            case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, CornichonError.fromThrowable(t))
-          }
+        ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, ce)),
+        ps ⇒ ps.run(this)(runState).flatMap {
+          case (newState, stepResult) ⇒
+            stepResult.fold(
+              failedStep ⇒ Future.successful(newState, left(failedStep)),
+              _ ⇒ runSteps(newState.consumCurrentStep)
+            )
+        }.recover {
+          case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, CornichonError.fromThrowable(t))
+        }
       )
     }
 }

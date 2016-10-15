@@ -20,8 +20,6 @@ import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
 trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestIntegration {
 
-  lazy val config = ConfigFactory.load().as[Config]("cornichon")
-
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
   protected var afterFeature: Seq[() ⇒ Unit] = Nil
 
@@ -31,8 +29,11 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestInteg
   implicit lazy val (globalClient, ec, _, _, timer) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
 
+  private lazy val config = ConfigFactory.load().as[Config]("cornichon")
   lazy val requestTimeout = config.requestTimeout
   lazy val baseUrl = config.baseUrl
+  lazy val executeScenariosInParallel = config.executeScenariosInParallel
+
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
   lazy val resolver = new Resolver(registerExtractors)
 

@@ -4,7 +4,9 @@ import java.util.UUID
 
 import cats.Show
 import cats.syntax.show._
+import scala.collection.immutable.IndexedSeq
 
+// Most of those instances are already present in Cats but we are trying to make it easier for potential non dev-users.
 trait ShowInstances {
 
   implicit val showString = new Show[String] {
@@ -62,6 +64,16 @@ trait ShowInstances {
       fa.toIterator.map(_.show).mkString("Vector(", ", ", ")")
   }
 
+  implicit def showArray[A: Show]: Show[Array[A]] = new Show[Array[A]] {
+    def show(fa: Array[A]): String =
+      fa.toIterator.map(_.show).mkString("Array(", ", ", ")")
+  }
+
+  implicit def showIndexedSeq[A: Show]: Show[IndexedSeq[A]] = new Show[IndexedSeq[A]] {
+    def show(fa: IndexedSeq[A]): String =
+      fa.toIterator.map(_.show).mkString("IndexedSeq(", ", ", ")")
+  }
+
   implicit def showList[A: Show]: Show[List[A]] = new Show[List[A]] {
     def show(fa: List[A]): String =
       fa.toIterator.map(_.show).mkString("List(", ", ", ")")
@@ -71,6 +83,14 @@ trait ShowInstances {
     def show(fa: Set[A]): String =
       fa.toIterator.map(_.show).mkString("Set(", ", ", ")")
   }
+
+  implicit def showMap[A: Show: Ordering, B: Show]: Show[Map[A, B]] = new Show[Map[A, B]] {
+    def show(ma: Map[A, B]): String =
+      ma.toSeq.sortBy(_._1).map(pair ⇒ pair._1.show + " -> " + pair._2.show).mkString("\n")
+  }
+
+  def displayStringPairs(params: Seq[(String, String)]): String =
+    params.map { case (name, value) ⇒ s"'$name' -> '$value'" }.mkString(", ")
 
 }
 

@@ -5,6 +5,7 @@ import java.util.Base64
 
 import cats.Show
 import cats.syntax.show._
+
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
@@ -20,7 +21,7 @@ import com.github.agourlay.cornichon.steps.regular.AsyncEffectStep
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
-import com.github.agourlay.cornichon.util.Formats
+
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
@@ -52,7 +53,7 @@ trait HttpDsl extends HttpRequestsDsl {
     val fullPayload = GqlPayload(payload, queryGQL.operationName, queryGQL.variables).asJson.show
 
     val prettyVar = queryGQL.variables.fold("") { variables ⇒
-      " and with variables " + Formats.displayMap(variables)
+      " and with variables " + variables.show
     }
 
     val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")

@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.core
 
 import cats.Show
+import cats.syntax.show._
 import cats.data.Xor
 import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.util.Formats
 import com.github.agourlay.cornichon.util.ShowInstances._
 import io.circe.Json
 
@@ -72,8 +72,11 @@ case class Session(content: Map[String, Vector[String]]) {
   def merge(otherSession: Session) =
     copy(content = content ++ otherSession.content)
 
-  val prettyPrint = Formats.displayMap(content)
-
+  val prettyPrint =
+    content.toSeq
+      .sortBy(_._1)
+      .map(pair ⇒ pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
+      .mkString("\n")
 }
 
 object Session {
