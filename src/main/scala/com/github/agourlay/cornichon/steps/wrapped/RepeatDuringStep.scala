@@ -30,7 +30,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
           val remainingTime = duration - executionTime
           res match {
             case Right(done) ⇒
-              val successState = runState.withSession(repeatedOnceMore.session).appendLogs(repeatedOnceMore.logs)
+              val successState = runState.withSession(repeatedOnceMore.session).appendLogsFrom(repeatedOnceMore)
               if (remainingTime.gt(FiniteDuration(0, TimeUnit.MILLISECONDS)))
                 repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
               else
@@ -44,7 +44,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
     }
 
     withDuration {
-      val bootstrapRepeatState = initialRunState.withSteps(nested).resetLogs.goDeeper
+      val bootstrapRepeatState = initialRunState.forNestedSteps(nested)
       repeatStepsDuring(bootstrapRepeatState, duration, 0)
     }.map {
       case (run, executionTime) ⇒

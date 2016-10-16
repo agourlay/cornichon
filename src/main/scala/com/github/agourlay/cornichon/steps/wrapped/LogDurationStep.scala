@@ -13,7 +13,7 @@ case class LogDurationStep(nested: List[Step], label: String) extends WrapperSte
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     withDuration {
-      val logRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
+      val logRunState = initialRunState.forNestedSteps(nested)
       engine.runSteps(logRunState)
     }.map {
       case (run, executionTime) ⇒

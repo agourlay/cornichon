@@ -19,7 +19,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
     val initialDepth = initialRunState.depth
 
     withDuration {
-      engine.runSteps(initialRunState.withSteps(nested).resetLogs.goDeeper)
+      engine.runSteps(initialRunState.forNestedSteps(nested))
     }.map {
       case (run, executionTime) ⇒
 

@@ -19,7 +19,7 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
-    val nestedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
+    val nestedRunState = initialRunState.forNestedSteps(nested)
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
     val f = Future.traverse(List.fill(factor)(nested)) { steps ⇒

@@ -17,7 +17,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
 
     for {
       resourceHandle ← resource.startResource()
-      resourcedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper.mergeSessions(resourceHandle.initialisedSession)
+      resourcedRunState = initialRunState.forNestedSteps(nested).mergeSessions(resourceHandle.initialisedSession)
       (resourcedState, resourcedRes) ← engine.runSteps(resourcedRunState)
       (fullLogs, xor) = {
         val nestedLogs = resourcedState.logs

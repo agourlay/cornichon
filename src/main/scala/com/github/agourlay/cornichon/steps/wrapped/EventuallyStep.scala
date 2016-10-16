@@ -19,7 +19,8 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] = {
       withDuration {
-        val retryRunState = RunState(runState.remainingSteps, runState.session, Vector.empty, runState.depth)
+        // reset logs at each loop to have the possibility to not aggregate in failure case
+        val retryRunState = runState.resetLogs
         engine.runSteps(retryRunState)
       }.flatMap {
         case (run, executionTime) ⇒
@@ -29,7 +30,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
             case Left(failedStep) ⇒
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
                 Timeouts.timeoutF(conf.interval) {
-                  retryEventuallySteps(runState.appendLogs(newRunState.logs), conf.consume(executionTime + conf.interval), retriesNumber + 1)
+                  retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime + conf.interval), retriesNumber + 1)
                 }
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
@@ -37,7 +38,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
               }
 
             case Right(_) ⇒
-              val state = runState.withSession(newRunState.session).appendLogs(newRunState.logs)
+              val state = runState.withSession(newRunState.session).appendLogsFrom(newRunState)
               if (remainingTime.gt(Duration.Zero)) {
                 // In case of success all logs are returned but they are not printed by default.
                 Future.successful(retriesNumber, state, rightDone)
@@ -51,7 +52,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
     }
 
     withDuration {
-      val initialRetryState = initialRunState.withSteps(nested).resetLogs.goDeeper
+      val initialRetryState = initialRunState.forNestedSteps(nested)
       retryEventuallySteps(initialRetryState, conf, 0)
     }.map {
       case (run, executionTime) ⇒

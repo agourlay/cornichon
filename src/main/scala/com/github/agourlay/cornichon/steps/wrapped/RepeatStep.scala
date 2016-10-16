@@ -24,7 +24,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
         case (onceMoreRunState, stepResult) ⇒
           stepResult match {
             case Right(_) ⇒
-              val successState = runState.withSession(onceMoreRunState.session).appendLogs(onceMoreRunState.logs)
+              val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
               // only show last successful run to avoid giant traces.
               if (retriesNumber == occurrence - 1) Future.successful(retriesNumber, successState, rightDone)
               else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session))
@@ -35,7 +35,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
       }
 
     withDuration {
-      val bootstrapRepeatState = initialRunState.withSteps(nested).resetLogs.goDeeper
+      val bootstrapRepeatState = initialRunState.forNestedSteps(nested)
       repeatSuccessSteps(0, bootstrapRepeatState)
     }.map {
       case (run, executionTime) ⇒

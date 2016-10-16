@@ -36,7 +36,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
       }
 
     withDuration {
-      val bootstrapRetryState = initialRunState.withSteps(nested).resetLogs.goDeeper
+      val bootstrapRetryState = initialRunState.forNestedSteps(nested)
       retryMaxSteps(bootstrapRetryState, limit, 0)
     }.map {
       case (run, executionTime) ⇒

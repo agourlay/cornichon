@@ -16,7 +16,7 @@ case class AttachAsStep(title: String, nested: List[Step]) extends WrapperStep {
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) =
     withDuration {
-      val nestedRunState = initialRunState.withSteps(nested).resetLogs.goDeeper
+      val nestedRunState = initialRunState.forNestedSteps(nested)
       engine.runSteps(nestedRunState)
     }.map {
       case (run, executionTime) ⇒

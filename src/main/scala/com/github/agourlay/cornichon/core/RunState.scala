@@ -2,10 +2,15 @@ package com.github.agourlay.cornichon.core
 
 case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[LogInstruction], depth: Int) {
 
-  def goDeeper = copy(depth = depth + 1)
+  lazy val goDeeper = copy(depth = depth + 1)
+
+  lazy val resetLogs = copy(logs = Vector.empty)
+
+  lazy val consumCurrentStep = copy(remainingSteps = remainingSteps.tail)
 
   def withSteps(steps: List[Step]) = copy(remainingSteps = steps)
-  def consumCurrentStep = copy(remainingSteps = remainingSteps.tail)
+  // Helper fct to set remaining steps, go deeper and reset logs
+  def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValues(tuples))
@@ -14,10 +19,10 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
   def withLogs(logs: Vector[LogInstruction]) = copy(logs = logs)
   def withLog(log: LogInstruction) = copy(logs = Vector(log))
 
-  def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
+  // Vector concat. is not great, maybe change logs data structure
   def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
-
-  def resetLogs = copy(logs = Vector.empty)
+  def appendLogsFrom(fromRun: RunState) = copy(logs = logs ++ fromRun.logs)
+  def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
 
   def prependSteps(prepend: List[Step]) = copy(remainingSteps = prepend ++ remainingSteps)
 

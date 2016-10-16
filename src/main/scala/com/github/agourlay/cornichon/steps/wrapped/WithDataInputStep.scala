@@ -30,10 +30,10 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
             stepsResult match {
               case Right(_) ⇒
                 // Logs are propogated but not the session
-                runInputs(inputs.tail, runState.appendLogs(filledState.logs))
+                runInputs(inputs.tail, runState.appendLogsFrom(filledState))
               case Left(failedStep) ⇒
                 // Prepend previous logs
-                Future.successful(runState.withSession(filledState.session).appendLogs(filledState.logs), left(failedStep))
+                Future.successful(runState.withSession(filledState.session).appendLogsFrom(filledState), left(failedStep))
             }
         }
       }
@@ -47,7 +47,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
         }
 
         withDuration {
-          runInputs(inputs, initialRunState.withSteps(nested).resetLogs.goDeeper)
+          runInputs(inputs, initialRunState.forNestedSteps(nested))
         }.map {
           case (run, executionTime) ⇒
 
