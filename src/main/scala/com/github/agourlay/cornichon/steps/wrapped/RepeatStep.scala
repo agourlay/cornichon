@@ -10,7 +10,7 @@ import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class RepeatStep(nested: Vector[Step], occurrence: Int) extends WrapperStep {
+case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
 
   require(occurrence > 0, "repeat block must contain a positive number of occurence")
 

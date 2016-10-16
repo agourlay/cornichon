@@ -12,7 +12,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.FiniteDuration
 import cats.data.Xor._
 
-case class RepeatDuringStep(nested: Vector[Step], duration: FiniteDuration) extends WrapperStep {
+case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extends WrapperStep {
   val title = s"Repeat block during '$duration'"
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {

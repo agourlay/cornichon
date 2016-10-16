@@ -12,7 +12,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.util.control.NonFatal
 
-case class ConcurrentlyStep(nested: Vector[Step], factor: Int, maxTime: FiniteDuration) extends WrapperStep {
+case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDuration) extends WrapperStep {
 
   require(factor > 0, "concurrently block must contain a positive factor")
 

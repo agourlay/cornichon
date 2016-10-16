@@ -9,35 +9,27 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "RepeatStep" must {
     "fail if 'repeat' block contains a failed step" in {
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "always fails",
-          s ⇒ GenericAssertion(true, false)
-        )
-      )
-      val steps = Vector(
-        RepeatStep(nested, 5)
-      )
-      val s = Scenario("scenario with Repeat", steps)
+      val nested = AssertStep(
+        "always fails",
+        s ⇒ GenericAssertion(true, false)
+      ) :: Nil
+      val repeatStep = RepeatStep(nested, 5)
+      val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
     "repeat steps inside a 'repeat' block" in {
       var uglyCounter = 0
       val loop = 5
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "increment captured counter",
-          s ⇒ {
-            uglyCounter = uglyCounter + 1
-            GenericAssertion(true, true)
-          }
-        )
-      )
-      val steps = Vector(
-        RepeatStep(nested, loop)
-      )
-      val s = Scenario("scenario with Repeat", steps)
+      val nested = AssertStep(
+        "increment captured counter",
+        s ⇒ {
+          uglyCounter = uglyCounter + 1
+          GenericAssertion(true, true)
+        }
+      ) :: Nil
+      val repeatStep = RepeatStep(nested, loop)
+      val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         uglyCounter should be(loop)

@@ -13,15 +13,11 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
 
   "ConcurrentlyStep" must {
     "fail if 'concurrently' block contains a failed step" in {
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "always fails",
-          s ⇒ GenericAssertion(true, false)
-        )
-      )
-      val steps = Vector(
-        ConcurrentlyStep(nested, 3, 200.millis)
-      )
+      val nested = AssertStep(
+        "always fails",
+        s ⇒ GenericAssertion(true, false)
+      ) :: Nil
+      val steps = ConcurrentlyStep(nested, 3, 200.millis) :: Nil
       val s = Scenario("scenario with Concurrently", steps)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
@@ -29,19 +25,15 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "run nested block 'n' times" in {
       val uglyCounter = new AtomicInteger(0)
       val loop = 5
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "increment captured counter",
-          s ⇒ {
-            uglyCounter.incrementAndGet()
-            GenericAssertion(true, true)
-          }
-        )
-      )
-      val steps = Vector(
-        ConcurrentlyStep(nested, loop, 300.millis)
-      )
-      val s = Scenario("scenario with Concurrently", steps)
+      val nested = AssertStep(
+        "increment captured counter",
+        s ⇒ {
+          uglyCounter.incrementAndGet()
+          GenericAssertion(true, true)
+        }
+      ) :: Nil
+      val concurrentlyStep = ConcurrentlyStep(nested, loop, 300.millis)
+      val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
       uglyCounter.intValue() should be(loop)
     }

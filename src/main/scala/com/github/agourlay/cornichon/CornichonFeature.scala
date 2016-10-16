@@ -43,8 +43,8 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestInteg
 
   protected def runScenario(s: Scenario) = {
     println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newEmpty, afterEachScenario.toVector) {
-      s.copy(steps = beforeEachScenario.toVector ++ s.steps)
+    engine.runScenario(Session.newEmpty, afterEachScenario.toList) {
+      s.copy(steps = beforeEachScenario.toList ++ s.steps)
     }
   }
 

@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.ExecutionContext
 
-case class LogDurationStep(nested: Vector[Step], label: String) extends WrapperStep {
+case class LogDurationStep(nested: List[Step], label: String) extends WrapperStep {
 
   val title = s"Log duration block with label '$label' started"
 

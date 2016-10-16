@@ -19,7 +19,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with ShowInstances {
     "runScenario" must {
       "executes all steps of a scenario" in {
         val session = Session.newEmpty
-        val steps = Vector(AssertStep[Int]("first step", s ⇒ GenericAssertion(2 + 1, 3)))
+        val steps = AssertStep[Int]("first step", s ⇒ GenericAssertion(2 + 1, 3)) :: Nil
         val s = Scenario("test", steps)
         engine.runScenario(session)(s).map(_.isSuccess should be(true))
       }
@@ -29,9 +29,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with ShowInstances {
         val step1 = AssertStep[Int]("first step", s ⇒ GenericAssertion(2, 2))
         val step2 = AssertStep[Int]("second step", s ⇒ GenericAssertion(4, 5))
         val step3 = AssertStep[Int]("third step", s ⇒ GenericAssertion(1, 1))
-        val steps = Vector(
-          step1, step2, step3
-        )
+        val steps = step1 :: step2 :: step3 :: Nil
         val s = Scenario("test", steps)
         engine.runScenario(session)(s).map { res ⇒
           withClue(s"logs were ${res.logs}") {
@@ -40,10 +38,10 @@ class EngineSpec extends AsyncWordSpec with Matchers with ShowInstances {
               case f: FailureScenarioReport ⇒
                 f.failedSteps.head.error.msg should be(
                   """
-              |expected result was:
-              |'4'
-              |but actual result is:
-              |'5'""".
+                  |expected result was:
+                  |'4'
+                  |but actual result is:
+                  |'5'""".
                   stripMargin.trim
                 )
             }
@@ -55,8 +53,8 @@ class EngineSpec extends AsyncWordSpec with Matchers with ShowInstances {
         val session = Session.newEmpty
         val mainStep = AssertStep[Boolean]("main step", s ⇒ GenericAssertion(true, false))
         val finallyStep = AssertStep[Boolean]("finally step", s ⇒ GenericAssertion(true, false))
-        val s = Scenario("test", Vector(mainStep))
-        engine.runScenario(session, Vector(finallyStep))(s).map {
+        val s = Scenario("test", mainStep :: Nil)
+        engine.runScenario(session, finallyStep :: Nil)(s).map {
           case s: SuccessScenarioReport ⇒ fail(s"Should be a FailedScenarioReport and not success with\n${s.logs}")
           case f: FailureScenarioReport ⇒
             withClue(f.msg) {

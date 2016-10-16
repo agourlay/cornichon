@@ -10,7 +10,7 @@ import cats.data.Xor._
 import scala.concurrent.ExecutionContext
 
 // Steps are wrapped/indented with a specific title
-case class AttachAsStep(title: String, nested: Vector[Step]) extends WrapperStep {
+case class AttachAsStep(title: String, nested: List[Step]) extends WrapperStep {
 
   override def setTitle(newTitle: String) = copy(title = newTitle)
 

@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.dsl.BlockScopedResource
 
 import scala.concurrent.ExecutionContext
 
-case class WithBlockScopedResource(nested: Vector[Step], resource: BlockScopedResource) extends WrapperStep {
+case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedResource) extends WrapperStep {
 
   val title = resource.openingTitle
 

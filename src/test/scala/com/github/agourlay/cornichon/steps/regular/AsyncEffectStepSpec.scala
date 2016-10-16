@@ -16,7 +16,7 @@ class AsyncEffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec 
           6 / 0
           s
         })
-        val s = Scenario("scenario with broken effect step", Vector(step))
+        val s = Scenario("scenario with broken effect step", step :: Nil)
         engine.runScenario(session)(s).map(_.isSuccess should be(false))
       }
     }
@@ -28,7 +28,7 @@ class AsyncEffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec 
           6 / 0
           s
         })
-        val s = Scenario("scenario with broken effect step", Vector(step))
+        val s = Scenario("scenario with broken effect step", step :: Nil)
         engine.runScenario(session)(s).map(_.isSuccess should be(false))
       }
     }

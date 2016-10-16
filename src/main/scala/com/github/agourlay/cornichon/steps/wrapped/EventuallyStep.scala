@@ -12,7 +12,7 @@ import com.github.agourlay.cornichon.util.Timing._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
+case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {

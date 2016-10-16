@@ -13,7 +13,7 @@ class DebugStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         6 / 0
         "Never gonna read this"
       })
-      val s = Scenario("scenario with faulty debug step", Vector(step))
+      val s = Scenario("scenario with faulty debug step", step :: Nil)
       engine.runScenario(session)(s).map(_.isSuccess should be(false))
     }
   }

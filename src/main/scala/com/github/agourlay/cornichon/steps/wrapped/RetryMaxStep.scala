@@ -10,7 +10,7 @@ import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class RetryMaxStep(nested: Vector[Step], limit: Int) extends WrapperStep {
+case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   require(limit > 0, "retry max limit must be a positive number")
 

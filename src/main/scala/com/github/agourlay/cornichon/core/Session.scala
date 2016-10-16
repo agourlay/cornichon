@@ -10,11 +10,11 @@ import io.circe.Json
 
 import scala.collection.immutable.HashMap
 
-case class Session(content: Map[String, Vector[String]]) {
+case class Session(private val content: Map[String, Array[String]]) {
 
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] = {
 
-    def valueExtractor(stackingIndice: Option[Int], values: Vector[String]) =
+    def valueExtractor(stackingIndice: Option[Int], values: Array[String]) =
       stackingIndice.fold(values.lastOption) { indice ⇒
         values.lift(indice)
       }
@@ -56,12 +56,12 @@ case class Session(content: Map[String, Vector[String]]) {
 
   def getList(keys: Seq[String]) = keys.map(v ⇒ get(v))
 
-  def getHistory(key: String) = content.getOrElse(key, Vector.empty)
+  def getHistory(key: String): Vector[String] = content.get(key).map(_.toVector).getOrElse(Vector.empty)
 
   def addValue(key: String, value: String) =
     if (key.trim.isEmpty) throw EmptyKeyException(this)
     else
-      content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
+      content.get(key).fold(Session(content + (key → Array(value)))) { values ⇒
         Session((content - key) + (key → values.:+(value)))
       }
 

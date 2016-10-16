@@ -13,38 +13,30 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "control duration of 'within' wrapped steps" in {
       val session = Session.newEmpty
       val d = 200.millis
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "possible random value step",
-          s ⇒ {
-            Thread.sleep(100)
-            GenericAssertion(true, true)
-          }
-        )
-      )
-      val steps = Vector(
-        WithinStep(nested, d)
-      )
-      val s = Scenario("scenario with Within", steps)
+      val nested = AssertStep(
+        "possible random value step",
+        s ⇒ {
+          Thread.sleep(100)
+          GenericAssertion(true, true)
+        }
+      ) :: Nil
+      val withinStep = WithinStep(nested, d)
+      val s = Scenario("scenario with Within", withinStep :: Nil)
       engine.runScenario(session)(s).map(_.isSuccess should be(true))
     }
 
     "fail if duration of 'within' is exceeded" in {
       val session = Session.newEmpty
       val d = 200.millis
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "possible random value step",
-          s ⇒ {
-            Thread.sleep(250)
-            GenericAssertion(true, true)
-          }
-        )
-      )
-      val steps = Vector(
-        WithinStep(nested, d)
-      )
-      val s = Scenario("scenario with Within", steps)
+      val nested = AssertStep(
+        "possible random value step",
+        s ⇒ {
+          Thread.sleep(250)
+          GenericAssertion(true, true)
+        }
+      ) :: Nil
+      val withinStep = WithinStep(nested, d)
+      val s = Scenario("scenario with Within", withinStep :: Nil)
       engine.runScenario(session)(s).map(_.isSuccess should be(false))
     }
   }

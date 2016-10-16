@@ -17,7 +17,7 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
 
   private implicit val ec = executionContext
 
-  def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): Future[ScenarioReport] = {
+  def runScenario(session: Session, finallySteps: List[Step] = List.empty)(scenario: Scenario): Future[ScenarioReport] = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
@@ -40,9 +40,7 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
   }
 
   def runSteps(runState: RunState): Future[(RunState, FailedStep Xor Done)] =
-    if (runState.endReached) Future.successful(runState, rightDone)
-    else {
-      val currentStep = runState.currentStep
+    runState.remainingSteps.headOption.map { currentStep ⇒
       val preparedStep = stepPreparers.foldLeft[CornichonError Xor Step](right(currentStep)) {
         (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(runState.session))
       }
@@ -54,11 +52,9 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
               failedStep ⇒ Future.successful(newState, left(failedStep)),
               _ ⇒ runSteps(newState.consumCurrentStep)
             )
-        }.recover {
-          case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, CornichonError.fromThrowable(t))
-        }
+        }.recover { case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, CornichonError.fromThrowable(t)) }
       )
-    }
+    }.getOrElse(Future.successful(runState, rightDone))
 }
 
 object Engine {

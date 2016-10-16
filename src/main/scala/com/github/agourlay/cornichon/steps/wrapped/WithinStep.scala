@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import cats.data.Xor._
 
-case class WithinStep(nested: Vector[Step], maxDuration: Duration) extends WrapperStep {
+case class WithinStep(nested: List[Step], maxDuration: Duration) extends WrapperStep {
 
   val title = s"Within block with max duration '$maxDuration'"
 

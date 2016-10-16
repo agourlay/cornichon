@@ -13,7 +13,7 @@ trait Step {
 }
 
 trait WrapperStep extends Step {
-  def nested: Vector[Step]
+  def nested: List[Step]
 
   // Without effect by default - wrapper steps usually build dynamically their title
   def setTitle(newTitle: String) = this

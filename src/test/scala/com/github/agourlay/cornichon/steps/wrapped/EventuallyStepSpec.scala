@@ -13,14 +13,12 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "replay eventually wrapped steps" in {
       val session = Session.newEmpty
       val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "possible random value step",
-          s ⇒ GenericAssertion(scala.util.Random.nextInt(10), 5)
-        )
-      )
+      val nested = AssertStep(
+        "possible random value step",
+        s ⇒ GenericAssertion(scala.util.Random.nextInt(10), 5)
+      ) :: Nil
 
-      val steps = Vector(EventuallyStep(nested, eventuallyConf))
+      val steps = EventuallyStep(nested, eventuallyConf) :: Nil
       val s = Scenario("scenario with eventually", steps)
       engine.runScenario(session)(s).map(_.isSuccess should be(true))
     }
@@ -28,15 +26,11 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "replay eventually wrapped steps until limit" in {
       val session = Session.newEmpty
       val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "impossible random value step", s ⇒ GenericAssertion(11, scala.util.Random.nextInt(10))
-        )
-      )
-      val steps = Vector(
-        EventuallyStep(nested, eventuallyConf)
-      )
-      val s = Scenario("scenario with eventually that fails", steps)
+      val nested = AssertStep(
+        "impossible random value step", s ⇒ GenericAssertion(11, scala.util.Random.nextInt(10))
+      ) :: Nil
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf)
+      val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
       engine.runScenario(session)(s).map(_.isSuccess should be(false))
     }
 

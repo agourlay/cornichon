@@ -11,19 +11,15 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "fail if 'retryMax' block never succeeds" in {
       var uglyCounter = 0
       val loop = 10
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "always fails",
-          s ⇒ {
-            uglyCounter = uglyCounter + 1
-            GenericAssertion(true, false)
-          }
-        )
-      )
-      val steps = Vector(
-        RetryMaxStep(nested, loop)
-      )
-      val s = Scenario("scenario with RetryMax", steps)
+      val nested = AssertStep(
+        "always fails",
+        s ⇒ {
+          uglyCounter = uglyCounter + 1
+          GenericAssertion(true, false)
+        }
+      ) :: Nil
+      val retryMaxStep = RetryMaxStep(nested, loop)
+      val s = Scenario("scenario with RetryMax", retryMaxStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(false)
         // Initial run + 'loop' retries
@@ -34,19 +30,15 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "repeat 'retryMax' and might succeed later" in {
       var uglyCounter = 0
       val max = 10
-      val nested: Vector[Step] = Vector(
-        AssertStep(
-          "always fails",
-          s ⇒ {
-            uglyCounter = uglyCounter + 1
-            GenericAssertion(true, uglyCounter == max - 2)
-          }
-        )
-      )
-      val steps = Vector(
-        RetryMaxStep(nested, max)
-      )
-      val s = Scenario("scenario with RetryMax", steps)
+      val nested = AssertStep(
+        "always fails",
+        s ⇒ {
+          uglyCounter = uglyCounter + 1
+          GenericAssertion(true, uglyCounter == max - 2)
+        }
+      ) :: Nil
+      val retryMaxStep = RetryMaxStep(nested, max)
+      val s = Scenario("scenario with RetryMax", retryMaxStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         uglyCounter should be(max - 2)

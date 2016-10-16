@@ -13,7 +13,7 @@ import com.github.agourlay.cornichon.util.ShowInstances._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class WithDataInputStep(nested: Vector[Step], where: String) extends WrapperStep {
+case class WithDataInputStep(nested: List[Step], where: String) extends WrapperStep {
 
   val title = s"With data input block $where"
 
