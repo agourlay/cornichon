@@ -106,8 +106,8 @@ trait Dsl extends ShowInstances {
 
   def show_session = DebugStep(s ⇒ s"Session content is\n${s.prettyPrint}")
 
-  def show_session(key: String, transform: String ⇒ String = identity) =
-    DebugStep(s ⇒ s"Session content for key '$key' is\n${transform(s.get(key))}")
+  def show_session(key: String, indice: Option[Int] = None, transform: String ⇒ String = identity) =
+    DebugStep(s ⇒ s"Session content for key '$key${indice.map(i ⇒ s"[$i]").getOrElse("")}' is\n${transform(s.get(key, indice))}")
 
   def print_step(message: String) = DebugStep(_ ⇒ message)
 }
