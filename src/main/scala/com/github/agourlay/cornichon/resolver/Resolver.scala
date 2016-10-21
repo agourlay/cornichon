@@ -47,7 +47,11 @@ class Resolver(extractors: Map[String, Mapper]) {
     case SimpleMapper(gen) ⇒
       Xor.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
     case GenMapper(gen) ⇒
-      Xor.fromOption(gen.apply(Parameters.default, Seed.random()), GeneratorError(ph.fullKey))
+      Xor.catchNonFatal(gen.apply(Parameters.default, Seed.random())) match {
+        case Xor.Left(e)                ⇒ left(GeneratorError(ph.fullKey, e))
+        case Xor.Right(Some(generated)) ⇒ right(generated)
+        case Xor.Right(None)            ⇒ left(GeneratorEmptyError(ph.fullKey))
+      }
     case TextMapper(key, transform) ⇒
       session.getXor(key, ph.index).map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
@@ -113,9 +117,13 @@ case class AmbiguousKeyDefinition(key: String) extends CornichonError {
 }
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
-  val msg = s"exception thrown in SimpleMapper '$key' : '${CornichonError.genStacktrace(e)}'"
+  val msg = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
 }
 
-case class GeneratorError(placeholder: String) extends CornichonError {
+case class GeneratorEmptyError(placeholder: String) extends CornichonError {
   val msg = s"generator mapped to placeholder '$placeholder' did not generate a value"
+}
+
+case class GeneratorError(placeholder: String, e: Throwable) extends CornichonError {
+  val msg = s"generator mapped to placeholder '$placeholder' failed with:\n'${CornichonError.genStacktrace(e)}'"
 }
