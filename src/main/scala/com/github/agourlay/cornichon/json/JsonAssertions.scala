@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.json
 
-import cats.Show
+import cats.{ Eq, Show }
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.{ Session, SessionKey }
 import com.github.agourlay.cornichon.dsl.Dsl._
@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Diff, GenericAssertion }
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 
 object JsonAssertions {
@@ -264,7 +264,7 @@ object JsonAssertions {
     jArr.fold(e ⇒ throw e, identity)
   }
 
-  private def body_array_transform[A: Show: Diff](
+  private def body_array_transform[A: Show: Diff: Eq](
     sessionKey: SessionKey,
     arrayExtractor: (Session, String) ⇒ List[Json],
     mapFct: (Session, List[Json]) ⇒ A,

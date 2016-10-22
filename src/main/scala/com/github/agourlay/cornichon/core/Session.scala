@@ -5,7 +5,7 @@ import cats.syntax.show._
 import cats.data.Xor
 import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 import io.circe.Json
 
 import scala.collection.immutable.HashMap

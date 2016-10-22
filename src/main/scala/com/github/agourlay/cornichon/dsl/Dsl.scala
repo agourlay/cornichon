@@ -1,19 +1,19 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.Show
+import cats.{ Eq, Show }
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, Diff, GenericAssertion }
 import com.github.agourlay.cornichon.steps.wrapped._
-import com.github.agourlay.cornichon.util.{ ShowInstances, Timeouts }
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
+import com.github.agourlay.cornichon.util.Instances._
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
 
-trait Dsl extends ShowInstances {
+trait Dsl extends Instances {
   this: CornichonFeature ⇒
 
   def Feature(name: String, ignored: Boolean = false) =
@@ -93,7 +93,7 @@ trait Dsl extends ShowInstances {
     val (key, value) = input
     EffectStep(
       s"add value '$value' to session under key '$key' ",
-      s ⇒{
+      s ⇒ {
         val resolved = resolver.fillPlaceholdersUnsafe(value)(s)
         s.addValue(key, resolved)
       }
@@ -132,7 +132,7 @@ object Dsl {
     )
   }
 
-  def from_session_step[A: Show: Diff](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A: Show: Diff: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
       s ⇒ GenericAssertion(
@@ -141,7 +141,7 @@ object Dsl {
       )
     )
 
-  def from_session_detail_step[A](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+  def from_session_detail_step[A: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
     AssertStep(
       title,
       s ⇒ {

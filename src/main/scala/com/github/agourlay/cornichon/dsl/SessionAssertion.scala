@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.dsl.SessionAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 
 case class SessionAssertion(
     private val resolver: Resolver,

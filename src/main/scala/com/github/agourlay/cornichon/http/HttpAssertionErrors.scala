@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpService._
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 
 import cats.syntax.show._
 

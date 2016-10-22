@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._

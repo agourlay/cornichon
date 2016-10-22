@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import java.util.Timer
 
-import cats.Show
+import cats.{ Eq, Show }
 import cats.data.Xor
 import cats.data.Xor._
 import cats.syntax.show._
@@ -34,11 +34,10 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
 
 }
 
-// TODO Introduce Equal type classes
-abstract class Assertion[A] {
+abstract class Assertion[A: Eq] {
   val expected: A
   val actual: A
-  val expectedEqualsActual = expected == actual
+  val expectedEqualsActual = Eq[A].eqv(expected, actual)
   val isSuccessful = {
     val succeedAsExpected = expectedEqualsActual && !negate
     val failedAsExpected = !expectedEqualsActual && negate
@@ -49,7 +48,7 @@ abstract class Assertion[A] {
   def assertionError: CornichonError
 }
 
-case class GenericAssertion[A: Show: Diff](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
+case class GenericAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
   lazy val assertionError = GenericAssertionError(expected, actual, negate)
 }
 
@@ -69,7 +68,7 @@ case class GenericAssertionError[A: Show: Diff](expected: A, actual: A, negate: 
   }
 }
 
-case class CustomMessageAssertion[A](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
+case class CustomMessageAssertion[A: Eq](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
   lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
 }
 

@@ -5,7 +5,7 @@ import cats.syntax.show._
 
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
@@ -55,7 +55,7 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
 trait HttpRequestsDsl {
   import com.github.agourlay.cornichon.http.HttpMethods._
-  import com.github.agourlay.cornichon.util.ShowInstances._
+  import com.github.agourlay.cornichon.util.Instances._
 
   def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty)
   def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty)

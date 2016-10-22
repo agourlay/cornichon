@@ -5,17 +5,18 @@ import java.util.Timer
 import cats.Show
 import cats.data.{ Xor, XorT }
 import cats.data.Xor.{ left, right }
-import cats.instances.future._
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
-import com.github.agourlay.cornichon.util.ShowInstances._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.util.Timeouts
+import com.github.agourlay.cornichon.util.Instances._
+
 import io.circe.Encoder
 
 import scala.concurrent.{ ExecutionContext, Future }

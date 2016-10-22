@@ -4,12 +4,12 @@ import java.util.Timer
 
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
-import com.github.agourlay.cornichon.util.ShowInstances
+import com.github.agourlay.cornichon.util.Instances
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.ExecutionContext
 
-class EngineSpec extends AsyncWordSpec with Matchers with ShowInstances {
+class EngineSpec extends AsyncWordSpec with Matchers with Instances {
 
   implicit val timer = new Timer()
   val resolver = Resolver.withoutExtractor()
