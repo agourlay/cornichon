@@ -737,8 +737,7 @@ It becomes then possible to retrieve past values :
 ### Effects and Assertions
 
 There are two kind of ```step``` :
-- EffectStep ```Session => Session``` : Runs a side effect and populates the ```Session``` with values.
-- AsyncEffectStep ```Session => Future[Session]``` : Runs an async side effect and populates the ```Session``` with values.
+- EffectStep ```Session => Future[Session]``` : Runs a side effect and populates the ```Session``` with values.
 - AssertStep ```Sesssion => Assertion[A]``` : Describes the expectation of the test.
 
  
@@ -822,7 +821,7 @@ It exposes a method ```requestEffect``` turning an ```HttpRequest``` into an asy
 trait MySteps {
   this: CornichonFeature ⇒
 
-  def create_customer = AsyncEffectStep(
+  def create_customer = EffectStep(
     title = "create new customer",
     effect = http.requestEffect(
       request = HttpRequest.post("/customer").withPayload("someJson"),

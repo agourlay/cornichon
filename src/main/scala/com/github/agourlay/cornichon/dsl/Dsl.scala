@@ -84,14 +84,14 @@ trait Dsl extends Instances {
       WithDataInputStep(steps, where)
     }
 
-  def wait(duration: FiniteDuration) = AsyncEffectStep(
+  def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
     effect = s ⇒ Timeouts.timeout(duration)(s)
   )
 
   def save(input: (String, String)) = {
     val (key, value) = input
-    EffectStep(
+    EffectStep.fromSync(
       s"add value '$value' to session under key '$key' ",
       s ⇒ {
         val resolved = resolver.fillPlaceholdersUnsafe(value)(s)
@@ -100,7 +100,7 @@ trait Dsl extends Instances {
     )
   }
 
-  def remove(key: String) = EffectStep(
+  def remove(key: String) = EffectStep.fromSync(
     title = s"remove '$key' from session",
     effect = s ⇒ s.removeKey(key)
   )
@@ -123,7 +123,7 @@ object Dsl {
     val keys = args.map(_.fromKey)
     val extractors = args.map(_.trans)
     val targets = args.map(_.target)
-    EffectStep(
+    EffectStep.fromSync(
       s"save parts from session '${displayStringPairs(keys.zip(targets))}'",
       session ⇒ {
         val extracted = session.getList(keys).zip(extractors).map { case (value, extractor) ⇒ extractor(session, value) }

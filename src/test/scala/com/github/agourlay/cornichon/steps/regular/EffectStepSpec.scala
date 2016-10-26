@@ -6,13 +6,13 @@ import org.scalatest.{ Matchers, AsyncWordSpec }
 
 import scala.concurrent.Future
 
-class AsyncEffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class EffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "EffectStep" when {
     "Async" must {
       "return error if an Effect step throw an exception" in {
         val session = Session.newEmpty
-        val step = AsyncEffectStep(title = "buggy effect", s ⇒ Future {
+        val step = EffectStep(title = "buggy effect", s ⇒ Future {
           6 / 0
           s
         })
@@ -24,7 +24,7 @@ class AsyncEffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec 
     "Sync" must {
       "return error if an Effect step throw an exception" in {
         val session = Session.newEmpty
-        val step = EffectStep(title = "buggy effect", s ⇒ {
+        val step = EffectStep.fromSync(title = "buggy effect", s ⇒ {
           6 / 0
           s
         })
