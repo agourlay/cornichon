@@ -35,6 +35,7 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "3.0.0"
+  val akkaV = "2.4.11"
   val akkaHttpV = "2.4.11"
   val catsV = "0.7.2"
   val logbackV = "1.1.7"
@@ -49,7 +50,8 @@ libraryDependencies ++= {
   val catsScalaTest = "2.0.0"
   val ficusV = "1.1.2"
   Seq(
-     "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
+     "com.typesafe.akka"   %% "akka-actor"             % akkaV
+    ,"com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
     ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV
     ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
     ,"org.typelevel"       %% "cats-macros"            % catsV
