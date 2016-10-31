@@ -1,75 +1,83 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import java.util.Timer
+
 import cats.data.Xor
 import cats.data.Xor._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.util.Timeouts
 import com.github.agourlay.cornichon.util.Timing._
 
-import scala.annotation.tailrec
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.Duration
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-case class EventuallyStep(nested: Vector[Step], conf: EventuallyConf) extends WrapperStep {
+case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
-    @tailrec
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): (Long, RunState, Xor[FailedStep, Done]) = {
-      val ((newRunState, res), executionTime) = withDuration {
-        val retryRunState = RunState(runState.remainingSteps, runState.session, Vector.empty, runState.depth)
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] = {
+      withDuration {
+        // reset logs at each loop to have the possibility to not aggregate in failure case
+        val retryRunState = runState.resetLogs
         engine.runSteps(retryRunState)
-      }
-      val remainingTime = conf.maxTime - executionTime
-      res match {
-        case Left(failedStep) ⇒
-          if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-            Thread.sleep(conf.interval.toMillis)
-            retryEventuallySteps(runState.appendLogs(newRunState.logs), conf.consume(executionTime + conf.interval), retriesNumber + 1)
-          } else {
-            // In case of failure only the logs of the last run are shown to avoid giant traces.
-            (retriesNumber, newRunState, left(failedStep))
-          }
+      }.flatMap {
+        case (run, executionTime) ⇒
+          val (newRunState, res) = run
+          val remainingTime = conf.maxTime - executionTime
+          res match {
+            case Left(failedStep) ⇒
+              if ((remainingTime - conf.interval).gt(Duration.Zero)) {
+                Timeouts.timeoutF(conf.interval) {
+                  retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime + conf.interval), retriesNumber + 1)
+                }
+              } else {
+                // In case of failure only the logs of the last run are shown to avoid giant traces.
+                Future.successful(retriesNumber, newRunState, left(failedStep))
+              }
 
-        case Right(_) ⇒
-          val state = runState.withSession(newRunState.session).appendLogs(newRunState.logs)
-          if (remainingTime.gt(Duration.Zero)) {
-            // In case of success all logs are returned but they are not printed by default.
-            (retriesNumber, state, rightDone)
-          } else {
-            // Run was a success but the time is up.
-            val failedStep = FailedStep(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
-            (retriesNumber, state, left(failedStep))
+            case Right(_) ⇒
+              val state = runState.withSession(newRunState.session).appendLogsFrom(newRunState)
+              if (remainingTime.gt(Duration.Zero)) {
+                // In case of success all logs are returned but they are not printed by default.
+                Future.successful(retriesNumber, state, rightDone)
+              } else {
+                // Run was a success but the time is up.
+                val failedStep = FailedStep(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
+                Future.successful(retriesNumber, state, left(failedStep))
+              }
           }
       }
     }
 
-    val ((retries, retriedRunState, report), executionTime) = withDuration {
-      val initialRetryState = initialRunState.withSteps(nested).resetLogs.goDeeper
+    withDuration {
+      val initialRetryState = initialRunState.forNestedSteps(nested)
       retryEventuallySteps(initialRetryState, conf, 0)
+    }.map {
+      case (run, executionTime) ⇒
+
+        val (retries, retriedRunState, report) = run
+        val initialDepth = initialRunState.depth
+
+        val (fullLogs, xor) = report.fold(
+          failedStep ⇒ {
+            val fullLogs = failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
+            (fullLogs, left(failedStep))
+          },
+          done ⇒ {
+            val fullLogs = successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
+            (fullLogs, rightDone)
+          }
+        )
+
+        (initialRunState.withSession(retriedRunState.session).appendLogs(fullLogs), xor)
     }
-
-    val initialDepth = initialRunState.depth
-
-    val (fullLogs, xor) = report.fold(
-      failedStep ⇒ {
-        val fullLogs = failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
-        (fullLogs, left(failedStep))
-      },
-      done ⇒ {
-        val fullLogs = successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
-        (fullLogs, rightDone)
-      }
-    )
-
-    (initialRunState.withSession(retriedRunState.session).appendLogs(fullLogs), xor)
   }
 }
 
-case class EventuallyConf(maxTime: Duration, interval: Duration) {
-  def consume(burnt: Duration) = {
+case class EventuallyConf(maxTime: FiniteDuration, interval: FiniteDuration) {
+  def consume(burnt: FiniteDuration) = {
     val rest = maxTime - burnt
     val newMax = if (rest.lteq(Duration.Zero)) Duration.Zero else rest
     copy(maxTime = newMax)

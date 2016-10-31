@@ -2,19 +2,35 @@ package com.github.agourlay.cornichon.steps.regular
 
 import com.github.agourlay.cornichon.core.{ Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, AsyncWordSpec }
 
-class EffectStepSpec extends WordSpec with Matchers with StepUtilSpec {
+import scala.concurrent.Future
 
-  "EffectStep" must {
-    "return error if an Effect step throw an exception" in {
-      val session = Session.newEmpty
-      val step = EffectStep(title = "buggy effect", s ⇒ {
-        6 / 0
-        s
-      })
-      val s = Scenario("scenario with broken effect step", Vector(step))
-      engine.runScenario(session)(s).isSuccess should be(false)
+class EffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+
+  "EffectStep" when {
+    "Async" must {
+      "return error if an Effect step throw an exception" in {
+        val session = Session.newEmpty
+        val step = EffectStep(title = "buggy effect", s ⇒ Future {
+          6 / 0
+          s
+        })
+        val s = Scenario("scenario with broken effect step", step :: Nil)
+        engine.runScenario(session)(s).map(_.isSuccess should be(false))
+      }
+    }
+
+    "Sync" must {
+      "return error if an Effect step throw an exception" in {
+        val session = Session.newEmpty
+        val step = EffectStep.fromSync(title = "buggy effect", s ⇒ {
+          6 / 0
+          s
+        })
+        val s = Scenario("scenario with broken effect step", step :: Nil)
+        engine.runScenario(session)(s).map(_.isSuccess should be(false))
+      }
     }
   }
 }

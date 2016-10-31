@@ -11,7 +11,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.github.agourlay.cornichon.http.{ HttpMethod ⇒ CornichonHttpMethod, HttpMethods ⇒ CornichonHttpMethods, HttpRequest ⇒ CornichonHttpRequest }
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 import com.github.agourlay.cornichon.http.server.MockServerResultsHolder._
 import com.github.agourlay.cornichon.json.CornichonJson
 import io.circe.Json
@@ -23,7 +23,6 @@ case class MockServerRequestHandler(serverName: String, port: Int)(implicit syst
 
   val requestReceivedRepo = system.actorOf(MockServerResultsHolder.props(), s"MockServerResultsHolder-$serverName-${UUID.randomUUID()}")
 
-  // TODO one more future to chain later
   implicit private val timeout = akka.util.Timeout(500.millis)
 
   def fetchRecordedRequests(): Future[Vector[CornichonHttpRequest[String]]] =

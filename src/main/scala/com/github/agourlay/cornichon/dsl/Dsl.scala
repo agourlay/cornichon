@@ -1,19 +1,19 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.Show
+import cats.{ Eq, Show }
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, Diff, GenericAssertion }
 import com.github.agourlay.cornichon.steps.wrapped._
-import com.github.agourlay.cornichon.util.Formats._
-import com.github.agourlay.cornichon.util.ShowInstances
+import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
+import com.github.agourlay.cornichon.util.Instances._
 
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
-import scala.concurrent.duration.{ Duration, FiniteDuration }
+import scala.concurrent.duration.FiniteDuration
 
-trait Dsl extends ShowInstances {
+trait Dsl extends Instances {
   this: CornichonFeature ⇒
 
   def Feature(name: String, ignored: Boolean = false) =
@@ -53,23 +53,23 @@ trait Dsl extends ShowInstances {
       RetryMaxStep(steps, limit)
     }
 
-  def RepeatDuring(duration: Duration) =
+  def RepeatDuring(duration: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       RepeatDuringStep(steps, duration)
     }
 
-  def Eventually(maxDuration: Duration, interval: Duration) =
+  def Eventually(maxDuration: FiniteDuration, interval: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       val conf = EventuallyConf(maxDuration, interval)
       EventuallyStep(steps, conf)
     }
 
-  def Concurrently(factor: Int, maxTime: Duration) =
+  def Concurrently(factor: Int, maxTime: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       ConcurrentlyStep(steps, factor, maxTime)
     }
 
-  def Within(maxDuration: Duration) =
+  def Within(maxDuration: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
       WithinStep(steps, maxDuration)
     }
@@ -86,16 +86,13 @@ trait Dsl extends ShowInstances {
 
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ {
-    Thread.sleep(duration.toMillis)
-    s
-  }
+    effect = s ⇒ Timeouts.timeout(duration)(s)
   )
 
   def save(input: (String, String)) = {
     val (key, value) = input
-    EffectStep(
-      s"add '$key'->'$value' to session",
+    EffectStep.fromSync(
+      s"add value '$value' to session under key '$key' ",
       s ⇒ {
         val resolved = resolver.fillPlaceholdersUnsafe(value)(s)
         s.addValue(key, resolved)
@@ -103,7 +100,7 @@ trait Dsl extends ShowInstances {
     )
   }
 
-  def remove(key: String) = EffectStep(
+  def remove(key: String) = EffectStep.fromSync(
     title = s"remove '$key' from session",
     effect = s ⇒ s.removeKey(key)
   )
@@ -112,8 +109,8 @@ trait Dsl extends ShowInstances {
 
   def show_session = DebugStep(s ⇒ s"Session content is\n${s.prettyPrint}")
 
-  def show_session(key: String, transform: String ⇒ String = identity) =
-    DebugStep(s ⇒ s"Session content for key '$key' is\n${transform(s.get(key))}")
+  def show_session(key: String, indice: Option[Int] = None, transform: String ⇒ String = identity) =
+    DebugStep(s ⇒ s"Session content for key '$key${indice.map(i ⇒ s"[$i]").getOrElse("")}' is\n${transform(s.get(key, indice))}")
 
   def print_step(message: String) = DebugStep(_ ⇒ message)
 }
@@ -126,8 +123,8 @@ object Dsl {
     val keys = args.map(_.fromKey)
     val extractors = args.map(_.trans)
     val targets = args.map(_.target)
-    EffectStep(
-      s"save parts from session '${displayTuples(keys.zip(targets))}'",
+    EffectStep.fromSync(
+      s"save parts from session '${displayStringPairs(keys.zip(targets))}'",
       session ⇒ {
         val extracted = session.getList(keys).zip(extractors).map { case (value, extractor) ⇒ extractor(session, value) }
         targets.zip(extracted).foldLeft(session)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
@@ -135,7 +132,7 @@ object Dsl {
     )
   }
 
-  def from_session_step[A: Show: Diff](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
+  def from_session_step[A: Show: Diff: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
     AssertStep(
       title,
       s ⇒ GenericAssertion(
@@ -144,7 +141,7 @@ object Dsl {
       )
     )
 
-  def from_session_detail_step[A](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
+  def from_session_detail_step[A: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
     AssertStep(
       title,
       s ⇒ {

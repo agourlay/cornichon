@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import io.circe.Json
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 
 class JsonDiffSpec extends WordSpec with Matchers with PropertyChecks {
 

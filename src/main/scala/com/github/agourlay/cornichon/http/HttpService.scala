@@ -1,26 +1,29 @@
 package com.github.agourlay.cornichon.http
 
-import java.util.concurrent.TimeoutException
+import java.util.Timer
 
 import cats.Show
-import cats.data.Xor
+import cats.data.{ Xor, XorT }
 import cats.data.Xor.{ left, right }
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
-import com.github.agourlay.cornichon.util.ShowInstances._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
+import com.github.agourlay.cornichon.util.Timeouts
+import com.github.agourlay.cornichon.util.Instances._
+
 import io.circe.Encoder
 
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success, Try }
+import scala.util.control.NonFatal
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext, timer: Timer) {
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {
@@ -47,20 +50,20 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequest ← resolveRequest(r)(s)
-      resp ← waitForRequestFuture(resolvedRequest, requestTimeout) {
+      resolvedRequest ← XorT(Future.successful(resolveRequest(r)(s)))
+      resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
         client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers)
       }
-      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
+      newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequest ← resolveStreamedRequest[String](r)(s)
-      resp ← waitForRequestFuture(resolvedRequest, r.takeWithin) {
+      resolvedRequest ← XorT(Future.successful(resolveStreamedRequest[String](r)(s)))
+      resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
         client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin)
       }
-      newSession ← handleResponse(resp, expectedStatus, extractor)(s)
+      newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =
@@ -116,19 +119,21 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     else if (input.startsWith("https://") || input.startsWith("http://")) input
     else baseUrl + input
 
-  private def waitForRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): Xor[CornichonError, CornichonHttpResponse] =
-    Try { Await.result(f, t) } match {
-      case Success(s) ⇒ s
-      case Failure(failure) ⇒ failure match {
-        case e: TimeoutException ⇒ left(TimeoutError(request, e))
-        case t: Throwable        ⇒ left(RequestError(request, t))
+  private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): XorT[Future, CornichonError, CornichonHttpResponse] = {
+    val failedAfter = Timeouts.failAfter(t)(f)(TimeoutErrorAfter(request, t))
+      .recover {
+        case NonFatal(failure) ⇒ failure match {
+          case t @ TimeoutErrorAfter(_, _) ⇒ left(t)
+          case t: Throwable                ⇒ left(RequestError(request, t))
+        }
       }
-    }
+    XorT(failedAfter)
+  }
 
-  def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Session =
+  def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Session] =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
 
-  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Session =
+  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Future[Session] =
     s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
 
   def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],

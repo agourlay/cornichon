@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.Xor
+import cats.data.{ NonEmptyList, Xor }
 import cats.data.Xor._
 
 sealed trait ScenarioReport {
@@ -15,7 +15,7 @@ object ScenarioReport {
     finallyResult.fold {
       mainResult match {
         case Right(_)         ⇒ SuccessScenarioReport(scenarioName, session, logs)
-        case Left(failedStep) ⇒ FailureScenarioReport(scenarioName, Vector(failedStep), session, logs)
+        case Left(failedStep) ⇒ FailureScenarioReport(scenarioName, NonEmptyList.of(failedStep), session, logs)
       }
     } { finallyRes ⇒
 
@@ -26,15 +26,15 @@ object ScenarioReport {
 
         // Success + Error = Error
         case (Right(_), Left(failedStep)) ⇒
-          FailureScenarioReport(scenarioName, Vector(failedStep), session, logs)
+          FailureScenarioReport(scenarioName, NonEmptyList.of(failedStep), session, logs)
 
         // Error + Success = Error
         case (Left(failedStep), Right(_)) ⇒
-          FailureScenarioReport(scenarioName, Vector(failedStep), session, logs)
+          FailureScenarioReport(scenarioName, NonEmptyList.of(failedStep), session, logs)
 
         // Error + Error = Errors accumulated
         case (Left(leftFailedStep), Left(rightFailedStep)) ⇒
-          FailureScenarioReport(scenarioName, Vector(leftFailedStep, rightFailedStep), session, logs)
+          FailureScenarioReport(scenarioName, NonEmptyList.of(leftFailedStep, rightFailedStep), session, logs)
       }
     }
 }
@@ -43,7 +43,7 @@ case class SuccessScenarioReport(scenarioName: String, session: Session, logs: V
   val isSuccess = true
 }
 
-case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[FailedStep], session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
+case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
 
   val isSuccess = false
 
@@ -58,7 +58,7 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: Vector[Faile
 
   val msg =
     s"""|Scenario '$scenarioName' failed:
-        |${failedSteps.map(messageForFailedStep).mkString("\nand\n")}""".stripMargin
+        |${failedSteps.map(messageForFailedStep).toList.mkString("\nand\n")}""".stripMargin
 }
 
 sealed abstract class Done

@@ -1,15 +1,16 @@
 package com.github.agourlay.cornichon.core
 
-case class RunState(remainingSteps: Vector[Step], session: Session, logs: Vector[LogInstruction], depth: Int) {
+case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[LogInstruction], depth: Int) {
 
-  lazy val endReached = remainingSteps.isEmpty
+  lazy val goDeeper = copy(depth = depth + 1)
 
-  lazy val currentStep = remainingSteps.head
+  lazy val resetLogs = copy(logs = Vector.empty)
 
-  def goDeeper = copy(depth = depth + 1)
+  lazy val consumCurrentStep = copy(remainingSteps = remainingSteps.tail)
 
-  def withSteps(steps: Vector[Step]) = copy(remainingSteps = steps)
-  def consumCurrentStep = copy(remainingSteps = remainingSteps.drop(1))
+  def withSteps(steps: List[Step]) = copy(remainingSteps = steps)
+  // Helper fct to set remaining steps, go deeper and reset logs
+  def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValues(tuples))
@@ -18,14 +19,11 @@ case class RunState(remainingSteps: Vector[Step], session: Session, logs: Vector
   def withLogs(logs: Vector[LogInstruction]) = copy(logs = logs)
   def withLog(log: LogInstruction) = copy(logs = Vector(log))
 
-  def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
+  // Vector concat. is not great, maybe change logs data structure
   def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
+  def appendLogsFrom(fromRun: RunState) = copy(logs = logs ++ fromRun.logs)
+  def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
 
-  def prependLog(add: LogInstruction) = copy(logs = add +: logs)
-  def prependLogs(add: Vector[LogInstruction]) = copy(logs = add ++ logs)
-
-  def resetLogs = copy(logs = Vector.empty)
-
-  def prependSteps(prepend: Vector[Step]) = copy(remainingSteps = prepend ++ remainingSteps)
+  def prependSteps(prepend: List[Step]) = copy(remainingSteps = prepend ++ remainingSteps)
 
 }

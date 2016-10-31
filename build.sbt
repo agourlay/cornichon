@@ -35,38 +35,40 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "3.0.0"
-  val akkaHttpV = "2.4.11"
+  val akkaV = "2.4.12"
+  val akkaHttpV = "3.0.0-RC1"
   val catsV = "0.7.2"
   val logbackV = "1.1.7"
   val parboiledV = "2.1.3"
   val akkaSseV = "1.11.0"
-  val scalaCheckV = "1.13.2"
-  val sangriaCirceV = "0.5.1"
-  val circeVersion = "0.5.3"
+  val scalaCheckV = "1.13.3"
+  val sangriaCirceV = "0.5.3"
+  val circeVersion = "0.5.4"
   val sangriaV = "0.7.3"
   val fansiV = "0.2.2"
   val akkaHttpCirce = "1.10.1"
-  val catsScalaTest = "1.4.0"
+  val catsScalaTest = "2.0.0"
   val ficusV = "1.1.2"
   Seq(
-     "com.typesafe.akka"   %% "akka-http-core"         % akkaHttpV
-    ,"com.typesafe.akka"   %% "akka-http-experimental" % akkaHttpV
-    ,"de.heikoseeberger"   %% "akka-sse"               % akkaSseV
-    ,"org.typelevel"       %% "cats-macros"            % catsV
-    ,"org.typelevel"       %% "cats-core"              % catsV
-    ,"org.scalatest"       %% "scalatest"              % scalaTestV
-    ,"net.ceedubs"         %% "ficus"                  % ficusV
-    ,"ch.qos.logback"      %  "logback-classic"        % logbackV
-    ,"org.parboiled"       %% "parboiled"              % parboiledV
-    ,"org.scalacheck"      %% "scalacheck"             % scalaCheckV
-    ,"com.lihaoyi"         %% "fansi"                  % fansiV
-    ,"org.sangria-graphql" %% "sangria"                % sangriaV
-    ,"org.sangria-graphql" %% "sangria-circe"          % sangriaCirceV
-    ,"io.circe"            %% "circe-core"             % circeVersion
-    ,"io.circe"            %% "circe-generic"          % circeVersion
-    ,"io.circe"            %% "circe-parser"           % circeVersion
-    ,"de.heikoseeberger"   %% "akka-http-circe"        % akkaHttpCirce   % "test"
-    ,"com.ironcorelabs"    %% "cats-scalatest"         % catsScalaTest   % "test"
+     "com.typesafe.akka"   %% "akka-actor"      % akkaV
+    ,"com.typesafe.akka"   %% "akka-http-core"  % akkaHttpV
+    ,"com.typesafe.akka"   %% "akka-http"       % akkaHttpV
+    ,"de.heikoseeberger"   %% "akka-sse"        % akkaSseV
+    ,"org.typelevel"       %% "cats-macros"     % catsV
+    ,"org.typelevel"       %% "cats-core"       % catsV
+    ,"org.scalatest"       %% "scalatest"       % scalaTestV
+    ,"net.ceedubs"         %% "ficus"           % ficusV
+    ,"ch.qos.logback"      %  "logback-classic" % logbackV
+    ,"org.parboiled"       %% "parboiled"       % parboiledV
+    ,"org.scalacheck"      %% "scalacheck"      % scalaCheckV
+    ,"com.lihaoyi"         %% "fansi"           % fansiV
+    ,"org.sangria-graphql" %% "sangria"         % sangriaV
+    ,"org.sangria-graphql" %% "sangria-circe"   % sangriaCirceV
+    ,"io.circe"            %% "circe-core"      % circeVersion
+    ,"io.circe"            %% "circe-generic"   % circeVersion
+    ,"io.circe"            %% "circe-parser"    % circeVersion
+    ,"de.heikoseeberger"   %% "akka-http-circe" % akkaHttpCirce   % "test"
+    ,"com.ironcorelabs"    %% "cats-scalatest"  % catsScalaTest   % "test"
   )
 }
 

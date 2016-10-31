@@ -22,14 +22,14 @@ package object macros {
         val elementType = contextType.typeArgs.head
 
         blockOrApplyExpressionList(body, elementType, s"Unsupported expression. Only expressions of type `$elementType` are allowed here.") { elements ⇒
-          val (finalTree, rest) = elements.foldLeft((q"Vector.empty": Tree) → Vector.empty[Tree]) {
+          val (finalTree, rest) = elements.foldLeft((q"List.empty": Tree) → List.empty[Tree]) {
             case ((accTree, accSingle), elem) if elem.tpe <:< elementType ⇒
               accTree → (accSingle :+ elem)
             case ((accTree, accSingle), elem) ⇒
-              q"$accTree ++ $accSingle.toVector ++ $elem" → Vector.empty
+              q"$accTree ++ $accSingle ++ $elem" → List.empty
           }
 
-          q"${c.prefix.tree}.get(($finalTree ++ $rest.toVector).toVector)"
+          q"${c.prefix.tree}.get($finalTree ++ $rest)"
         }
       }
     }

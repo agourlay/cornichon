@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.resolver
 import java.util.UUID
 
 import com.github.agourlay.cornichon.json.CornichonJson
-import com.github.agourlay.cornichon.util.ShowInstances._
+import com.github.agourlay.cornichon.util.Instances._
 import io.circe.Json
 
 import scala.annotation.implicitNotFound

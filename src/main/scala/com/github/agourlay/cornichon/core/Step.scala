@@ -1,17 +1,19 @@
 package com.github.agourlay.cornichon.core
 
+import java.util.Timer
+
 import cats.data.Xor
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait Step {
   def title: String
   def setTitle(newTitle: String): Step
-  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext): (RunState, FailedStep Xor Done)
+  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer): Future[(RunState, FailedStep Xor Done)]
 }
 
 trait WrapperStep extends Step {
-  def nested: Vector[Step]
+  def nested: List[Step]
 
   // Without effect by default - wrapper steps usually build dynamically their title
   def setTitle(newTitle: String) = this

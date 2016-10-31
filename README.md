@@ -38,7 +38,7 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 Add the library dependency
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.9.3" % "test"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.10" % "test"
 ```
 
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
@@ -57,64 +57,64 @@ class ReadmeExample extends CornichonFeature {
 
   def feature = Feature("OpenMovieDatabase API"){
 
-     Scenario("list GOT season 1 episodes"){
-     
-        When I get("http://www.omdbapi.com").withParams(
-          "t" -> "Game of Thrones",
-          "Season" -> "1"
-        )
-   
-        Then assert status.is(200)
-   
-        And assert body.ignoring("Episodes", "Response").is(
-          """
-          {
-            "Title": "Game of Thrones",
-            "Season": "1"
-          }
-          """)
-   
-        And assert body.path("Episodes").is(
-          """
-          |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
-          | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
-          | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "7.8"   | "tt1668746" |
-          | "Lord Snow"                             | "2011-05-01" |   "3"   |    "7.6"   | "tt1829962" |
-          | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "7.7"   | "tt1829963" |
-          | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "8.0"   | "tt1829964" |
-          | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
-          | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
-          | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
-          | "Baelor"                                | "2011-06-12" |   "9"   |    "8.6"   | "tt1851398" |
-          | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
-          """)
-   
-        And assert body.path("Episodes").asArray.hasSize(10)
-   
-        And assert body.path("Episodes[0]").is(
-          """
-          {
-            "Title": "Winter Is Coming",
-            "Released": "2011-04-17",
-            "Episode": "1",
-            "imdbRating": "8.1",
-            "imdbID": "tt1480055"
-          }
-          """)
-   
-        And assert body.path("Episodes[0].Released").is("2011-04-17")
-   
-        And assert body.path("Episodes").asArray.contains(
-          """
-          {
-            "Title": "Winter Is Coming",
-            "Released": "2011-04-17",
-            "Episode": "1",
-            "imdbRating": "8.1",
-            "imdbID": "tt1480055"
-          }
-          """)
-     }
+    Scenario("list GOT season 1 episodes"){
+
+      When I get("http://www.omdbapi.com").withParams(
+        "t" -> "Game of Thrones",
+        "Season" -> "1"
+      )
+
+      Then assert status.is(200)
+
+      And assert body.ignoring("Episodes", "Response").is(
+        """
+        {
+          "Title": "Game of Thrones",
+          "Season": "1"
+        }
+        """)
+
+      And assert body.path("Episodes").is(
+        """
+        |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
+        | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.1"   | "tt1480055" |
+        | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "7.8"   | "tt1668746" |
+        | "Lord Snow"                             | "2011-05-01" |   "3"   |    "7.6"   | "tt1829962" |
+        | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "7.7"   | "tt1829963" |
+        | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "8.0"   | "tt1829964" |
+        | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "8.1"   | "tt1837862" |
+        | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "8.1"   | "tt1837863" |
+        | "The Pointy End"                        | "2011-06-05" |   "8"   |    "7.9"   | "tt1837864" |
+        | "Baelor"                                | "2011-06-12" |   "9"   |    "8.6"   | "tt1851398" |
+        | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "8.4"   | "tt1851397" |
+        """)
+
+      And assert body.path("Episodes").asArray.hasSize(10)
+
+      And assert body.path("Episodes[0]").is(
+        """
+        {
+          "Title": "Winter Is Coming",
+          "Released": "2011-04-17",
+          "Episode": "1",
+          "imdbRating": "8.1",
+          "imdbID": "tt1480055"
+        }
+        """)
+
+      And assert body.path("Episodes[0].Released").is("2011-04-17")
+
+      And assert body.path("Episodes").asArray.contains(
+        """
+        {
+          "Title": "Winter Is Coming",
+          "Released": "2011-04-17",
+          "Episode": "1",
+          "imdbRating": "8.1",
+          "imdbID": "tt1480055"
+        }
+        """)
+    }
   }
 }
 ```
@@ -144,12 +144,12 @@ class CornichonExamplesSpec extends CornichonFeature {
 
   def feature = Feature("Checking google"){
   
-      Scenario("Google is up and running"){
+    Scenario("Google is up and running"){
   
-          When I get("http://google.com")
-  
-          Then assert status.is(302)
-      }
+      When I get("http://google.com")
+
+      Then assert status.is(302)
+    }
   }
 }
 ```
@@ -593,7 +593,7 @@ This feature is experimental and subject to changes.
 
 - Log duration
 
-By default all ```EffectStep``` execution time can be found in the logs, but sometimes one needs to time a series of steps. 
+By default all ```Step``` execution time can be found in the logs, but sometimes one needs to time a series of steps.
 
 This is where ```LogDuration``` comes in handy, it requires a label that will be printed as well to identify results.
 
@@ -737,7 +737,7 @@ It becomes then possible to retrieve past values :
 ### Effects and Assertions
 
 There are two kind of ```step``` :
-- EffectStep ```Session => Session``` : It runs a side effect and populates the ```Session``` with values.
+- EffectStep ```Session => Future[Session]``` : Runs a side effect and populates the ```Session``` with values.
 - AssertStep ```Sesssion => Assertion[A]``` : Describes the expectation of the test.
 
  
@@ -774,18 +774,18 @@ The ```session``` is used to store the result of a computation in order to reuse
 When I EffectStep(
   title = "run crazy computation",
   action = s => {
-      val pi = piComputation()
-      s.add("result", res)
-    }
-  )
+    val pi = piComputation()
+    s.add("result", res)
+  }
+)
 
 Then assert AssertStep(
   title = "check computation infos",
   action = s => {
-      val pi = s.get("result")
-      GenericAssertion(pi, 3.14)
-    }
-  )
+    val pi = s.get("result")
+    GenericAssertion(pi, 3.14)
+  }
+)
 ```
 
 This is rather low level and you not should write your steps like that directly inside the DSL.
@@ -804,18 +804,18 @@ In order to illustrate its usage let's take the following example, you would lik
 ```scala
 def feature = Feature("Customer endpoint"){
 
-    Scenario("create customer"){
-    
-       When I create_customer
-       
-       Then assert status.is(201)
-    
-    }
+  Scenario("create customer"){
+
+    When I create_customer
+
+    Then assert status.is(201)
+
+  }
 ```
 
 Most of the time you will create your own trait containing your custom steps and declare a self-type on ```CornichonFeature``` to be able to access the ```httpService```. 
 
-It exposes a method ```requestEffect``` turning an ```HttpRequest``` into an effect.
+It exposes a method ```requestEffect``` turning an ```HttpRequest``` into an asynchronous effect.
 
 ```scala
 trait MySteps {
@@ -957,13 +957,13 @@ class CornichonExamplesSpec extends CornichonFeature {
   // Ignore a complete feature
   def feature = Feature("Checking google", ignored = true){
   
-      // Ignore a single scenario 
-      Scenario("Google is up and running", ignored = true){
+    // Ignore a single scenario
+    Scenario("Google is up and running", ignored = true){
   
-          When I get("http://google.com")
+      When I get("http://google.com")
   
-          Then assert status.is(302)
-      }
+      Then assert status.is(302)
+    }
   }
 }
 ```

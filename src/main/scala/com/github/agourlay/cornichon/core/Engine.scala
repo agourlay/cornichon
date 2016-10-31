@@ -1,64 +1,65 @@
 package com.github.agourlay.cornichon.core
 
+import java.util.Timer
+
 import cats.data.Xor
 import cats.data.Xor._
 
-import scala.annotation.tailrec
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.Resolver
 
-class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext) {
+import scala.util.control.NonFatal
+
+class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext)(implicit timer: Timer) {
 
   private implicit val ec = executionContext
 
-  def runScenario(session: Session, finallySteps: Vector[Step] = Vector.empty)(scenario: Scenario): ScenarioReport = {
+  def runScenario(session: Session, finallySteps: List[Step] = List.empty)(scenario: Scenario): Future[ScenarioReport] = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
-    val (mainState, mainRunReport) = runSteps(initialRunState)
-    if (finallySteps.isEmpty)
-      ScenarioReport.build(scenario.name, mainState.session, mainState.logs, mainRunReport)
-    else {
-      // Reuse mainline session
-      val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-      val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
-      val (finallyState, finallyReport) = runSteps(finallyRunState)
-      val combinedSession = mainState.session.merge(finallyState.session)
-      val combinedLogs = mainState.logs ++ finallyState.logs
-      ScenarioReport.build(scenario.name, combinedSession, combinedLogs, mainRunReport, Some(finallyReport))
+    runSteps(initialRunState).flatMap {
+      case (mainState, mainRunReport) ⇒
+        if (finallySteps.isEmpty)
+          Future.successful(ScenarioReport.build(scenario.name, mainState.session, mainState.logs, mainRunReport))
+        else {
+          // Reuse mainline session
+          val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+          val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
+          runSteps(finallyRunState).map {
+            case (finallyState, finallyReport) ⇒
+              val combinedSession = mainState.session.merge(finallyState.session)
+              val combinedLogs = mainState.logs ++ finallyState.logs
+              ScenarioReport.build(scenario.name, combinedSession, combinedLogs, mainRunReport, Some(finallyReport))
+          }
+        }
     }
   }
 
-  @tailrec
-  final def runSteps(runState: RunState): (RunState, FailedStep Xor Done) =
-    if (runState.endReached)
-      (runState, rightDone)
-    else {
-      val currentStep = runState.currentStep
-      val currentSession = runState.session
+  def runSteps(runState: RunState): Future[(RunState, FailedStep Xor Done)] =
+    runState.remainingSteps.headOption.map { currentStep ⇒
       val preparedStep = stepPreparers.foldLeft[CornichonError Xor Step](right(currentStep)) {
-        (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(currentSession))
+        (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(runState.session))
       }
-      preparedStep match {
-        case Left(ce) ⇒
-          Engine.exceptionToFailureStep(currentStep, runState, ce)
-        case Right(ps) ⇒
-          val (newState, stepResult) = ps.run(this)(runState)
-          stepResult match {
-            case Right(Done) ⇒
-              runSteps(newState.consumCurrentStep)
-            case Left(failedStep) ⇒
-              (newState, left(failedStep))
-          }
-      }
-    }
+      preparedStep.fold(
+        ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, ce)),
+        ps ⇒ ps.run(this)(runState).flatMap {
+          case (newState, stepResult) ⇒
+            stepResult.fold(
+              failedStep ⇒ Future.successful(newState, left(failedStep)),
+              _ ⇒ runSteps(newState.consumCurrentStep)
+            )
+        }.recover { case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, CornichonError.fromThrowable(t)) }
+      )
+    }.getOrElse(Future.successful(runState, rightDone))
 }
 
 object Engine {
 
-  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext) =
+  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext)(implicit timer: Timer) =
     new Engine(
       stepPreparers = StepPreparerTitleResolver(resolver) :: Nil,
       executionContext = executionContext
