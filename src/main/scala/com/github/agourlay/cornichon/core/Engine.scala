@@ -24,16 +24,14 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
     runSteps(initialRunState).flatMap {
       case (mainState, mainRunReport) ⇒
         if (finallySteps.isEmpty)
-          Future.successful(ScenarioReport.build(scenario.name, mainState.session, mainState.logs, mainRunReport))
+          Future.successful(ScenarioReport.build(scenario.name, mainState, mainRunReport.toValidatedNel))
         else {
           // Reuse mainline session
           val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
           val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
           runSteps(finallyRunState).map {
             case (finallyState, finallyReport) ⇒
-              val combinedSession = mainState.session.merge(finallyState.session)
-              val combinedLogs = mainState.logs ++ finallyState.logs
-              ScenarioReport.build(scenario.name, combinedSession, combinedLogs, mainRunReport, Some(finallyReport))
+              ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidatedNel))
           }
         }
     }

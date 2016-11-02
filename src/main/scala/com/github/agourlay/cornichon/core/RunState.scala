@@ -8,6 +8,12 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
 
   lazy val consumCurrentStep = copy(remainingSteps = remainingSteps.tail)
 
+  def combine(other: RunState) = this.copy(
+    remainingSteps = remainingSteps ++ other.remainingSteps,
+    session = session.merge(other.session),
+    logs = logs ++ other.logs
+  )
+
   def withSteps(steps: List[Step]) = copy(remainingSteps = steps)
   // Helper fct to set remaining steps, go deeper and reset logs
   def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)
