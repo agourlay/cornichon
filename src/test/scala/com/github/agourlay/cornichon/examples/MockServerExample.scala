@@ -5,10 +5,12 @@ import scala.concurrent.duration._
 
 class MockServerExample extends CornichonFeature {
 
+  def HttpMock = HttpListenTo(interface = None, portRange = None)_
+
   lazy val feature = Feature("Cornichon feature mock server examples") {
 
     Scenario("Assert number of received calls") {
-      HttpListenTo(label = "awesome-server") {
+      HttpMock("awesome-server") {
         Repeat(10) {
           When I get("<awesome-server-url>/")
         }
@@ -17,7 +19,7 @@ class MockServerExample extends CornichonFeature {
     }
 
     Scenario("Counters valid under concurrent requests") {
-      HttpListenTo(label = "awesome-server") {
+      HttpMock("awesome-server") {
         Concurrently(2, 10.seconds) {
           Repeat(10) {
             When I get("<awesome-server-url>/")
@@ -28,7 +30,7 @@ class MockServerExample extends CornichonFeature {
     }
 
     Scenario("Reply to POST request with 201 and assert on received bodies") {
-      HttpListenTo(label = "awesome-server") {
+      HttpMock("awesome-server") {
         When I post("<awesome-server-url>/heroes/batman").withBody(
           """
           {
@@ -129,9 +131,9 @@ class MockServerExample extends CornichonFeature {
     }
 
     Scenario("httpListen blocks can be nested in one another") {
-      HttpListenTo(label = "first-server") {
-        HttpListenTo(label = "second-server") {
-          HttpListenTo(label = "third-server") {
+      HttpMock("first-server") {
+        HttpMock("second-server") {
+          HttpMock("third-server") {
             When I get("<first-server-url>/")
             When I get("<second-server-url>/")
             When I get("<third-server-url>/")

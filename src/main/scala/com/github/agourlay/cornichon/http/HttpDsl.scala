@@ -112,8 +112,8 @@ trait HttpDsl extends HttpRequestsDsl {
       saveStep +: steps :+ removeStep
     }
 
-  def HttpListenTo(label: String, port: Int = 0) =
+  def HttpListenTo(interface: Option[String], portRange: Option[Range])(label: String) =
     BodyElementCollector[Step, Step] { steps ⇒
-      WithBlockScopedResource(nested = steps, resource = HttpMockServerResource(label, port))
+      WithBlockScopedResource(nested = steps, resource = HttpMockServerResource(interface, label, portRange))
     }
 }

@@ -19,7 +19,7 @@ import io.circe.Json
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 
-case class MockServerRequestHandler(serverName: String, port: Int)(implicit system: ActorSystem, am: ActorMaterializer, executionContext: ExecutionContext) {
+case class MockServerRequestHandler(serverName: String)(implicit system: ActorSystem, am: ActorMaterializer, executionContext: ExecutionContext) {
 
   val requestReceivedRepo = system.actorOf(MockServerResultsHolder.props(), s"MockServerResultsHolder-$serverName-${UUID.randomUUID()}")
 

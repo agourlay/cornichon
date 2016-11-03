@@ -6,17 +6,17 @@ import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import io.circe.Json
 
-case class HttpMockServerResource(label: String, port: Int) extends BlockScopedResource {
+case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range]) extends BlockScopedResource {
   val sessionTarget: String = label
-  val openingTitle: String = s"Starting HTTP mock server '$label' ${if (port != 0) s"on port $port" else ""}"
+  val openingTitle: String = s"Starting HTTP mock server '$label'"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
   implicit val (_, ec, system, mat, _) = CornichonFeature.globalRuntime
 
   def startResource() = {
     CornichonFeature.reserveGlobalRuntime()
-    val mockRequestHandler = MockServerRequestHandler(label, port)
-    val akkaServer = new AkkaHttpServer(port, mockRequestHandler.requestHandler)
+    val mockRequestHandler = MockServerRequestHandler(label)
+    val akkaServer = new AkkaHttpServer(interface, portRange, mockRequestHandler.requestHandler)
     akkaServer.startServer().map { serverCloseHandler ⇒
       new ResourceHandle {
         def resourceResults() = requestsResults(mockRequestHandler)

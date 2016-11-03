@@ -11,18 +11,21 @@ import com.github.agourlay.cornichon.dsl.CloseableResource
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.Random
 
-class AkkaHttpServer(port: Int, requestHandler: HttpRequest ⇒ Future[HttpResponse])(implicit system: ActorSystem, mat: ActorMaterializer, executionContext: ExecutionContext) extends HttpServer {
+class AkkaHttpServer(interface: Option[String], port: Option[Range], requestHandler: HttpRequest ⇒ Future[HttpResponse])(implicit system: ActorSystem, mat: ActorMaterializer, executionContext: ExecutionContext) extends HttpServer {
 
-  private val interface = bestInterface()
+  private val selectedInterface = interface.getOrElse(bestInterface())
+  // TODO handle case of random port from range taken, retry?
+  private val selectedPort = port.fold(0)(r ⇒ Random.shuffle(r.toList).head)
 
   def startServer() = {
     Http()
-      .bind(interface = interface, port)
+      .bind(interface = selectedInterface, selectedPort)
       .to(Sink.foreach { _ handleWithAsyncHandler requestHandler })
       .run()
       .map { serverBinding ⇒
-        val fullAddress = s"http://$interface:${serverBinding.localAddress.getPort}"
+        val fullAddress = s"http://$selectedInterface:${serverBinding.localAddress.getPort}"
         val closeable = new CloseableResource {
           def stopResource() = serverBinding.unbind()
         }
