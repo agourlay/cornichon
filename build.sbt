@@ -72,11 +72,6 @@ libraryDependencies ++= {
   )
 }
 
-// Wartremover
-wartremoverErrors in (Compile, compile) ++= Seq(
-  Wart.Any2StringAdd, Wart.Option2Iterable, Wart.NoNeedForMonad,
-  Wart.Return, Wart.TryPartial)
-
 // Publishing
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
