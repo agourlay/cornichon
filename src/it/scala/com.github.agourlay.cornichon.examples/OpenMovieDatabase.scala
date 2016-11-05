@@ -81,7 +81,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "Winter Is Coming",
                 "Released": "2011-04-17",
                 "Episode": "1",
-                "imdbRating": "8.9",
+                "imdbRating": "9.0",
                 "imdbID": "tt1480055"
               },
               {
