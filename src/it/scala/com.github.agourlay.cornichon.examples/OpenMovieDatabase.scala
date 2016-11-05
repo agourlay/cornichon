@@ -156,7 +156,7 @@ class OpenMovieDatabase extends CornichonFeature {
         And assert body.path("Episodes").is(
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
-            | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "8.9"   | "tt1480055" |
+            | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "9.0"   | "tt1480055" |
             | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "8.7"   | "tt1668746" |
             | "Lord Snow"                             | "2011-05-01" |   "3"   |    "8.6"   | "tt1829962" |
             | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "8.7"   | "tt1829963" |
@@ -176,7 +176,7 @@ class OpenMovieDatabase extends CornichonFeature {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",
             "Episode": "1",
-            "imdbRating": "8.9",
+            "imdbRating": "9.0",
             "imdbID": "tt1480055"
           }
           """)
@@ -188,7 +188,7 @@ class OpenMovieDatabase extends CornichonFeature {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",
             "Episode": "1",
-            "imdbRating": "8.9",
+            "imdbRating": "9.0",
             "imdbID": "tt1480055"
           }
           """)
