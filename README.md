@@ -249,6 +249,8 @@ headers.contain("cache-control" → "no-cache")
 
 headers.name("cache_control").isAbsent
 
+save_header_value("cache_control" → "my-cache-control-value")
+
 ```
 
 - assert response body comes with different flavors (ignoring, whitelisting)

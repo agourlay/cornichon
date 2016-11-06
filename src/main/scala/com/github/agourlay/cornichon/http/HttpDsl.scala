@@ -89,6 +89,15 @@ trait HttpDsl extends HttpRequestsDsl {
     save_from_session(inputs)
   }
 
+  def save_header_value(args: (String, String)*) = {
+    val inputs = args.map {
+      case (headerFieldname, target) ⇒ FromSessionSetter(lastResponseHeadersKey, (session, s) ⇒ {
+        decodeSessionHeaders(s).find(_._1 == headerFieldname).map(h ⇒ h._2).getOrElse("")
+      }, target)
+    }
+    save_from_session(inputs)
+  }
+
   def show_last_status = show_session(lastResponseStatusKey)
 
   def show_last_response_body = show_session(lastResponseBodyKey)
