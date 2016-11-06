@@ -130,6 +130,22 @@ class MockServerExample extends CornichonFeature {
       And I show_session
     }
 
+    Scenario("reset registered requests") {
+      HttpMock("awesome-server") {
+        When I get("<awesome-server-url>/")
+        When I get("<awesome-server-url>/requests-received")
+        Then assert body.asArray.hasSize(1)
+
+        When I get("<awesome-server-url>/reset")
+        When I get("<awesome-server-url>/requests-received")
+        Then assert body.asArray.hasSize(0)
+
+        When I get("<awesome-server-url>/")
+        When I get("<awesome-server-url>/requests-received")
+        Then assert body.asArray.hasSize(1)
+      }
+    }
+
     Scenario("httpListen blocks can be nested in one another") {
       HttpMock("first-server") {
         HttpMock("second-server") {

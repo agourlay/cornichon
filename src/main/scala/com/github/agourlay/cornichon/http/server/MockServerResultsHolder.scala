@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.http.server
 
 import akka.actor.{ Actor, Props }
+import com.github.agourlay.cornichon.core.Done
 import com.github.agourlay.cornichon.http
 import com.github.agourlay.cornichon.http.HttpRequest
 import com.github.agourlay.cornichon.http.server.MockServerResultsHolder._
@@ -20,6 +21,7 @@ class MockServerResultsHolder extends Actor {
 
     case ClearRegisteredRequest ⇒
       receivedRequests.clear()
+      sender ! Done
   }
 }
 

@@ -10,6 +10,7 @@ import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
+import com.github.agourlay.cornichon.core.Done
 import com.github.agourlay.cornichon.http.{ HttpMethod ⇒ CornichonHttpMethod, HttpMethods ⇒ CornichonHttpMethods, HttpRequest ⇒ CornichonHttpRequest }
 import com.github.agourlay.cornichon.util.Instances._
 import com.github.agourlay.cornichon.http.server.MockServerResultsHolder._
@@ -29,6 +30,9 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
     (requestReceivedRepo ? GetReceivedRequest)
       .mapTo[RegisteredRequests]
       .map(_.requests)
+
+  def resetRecordedRequests(): Future[Done] =
+    (requestReceivedRepo ? ClearRegisteredRequest).mapTo[Done]
 
   def fetchRecordedRequestsAsJson() = fetchRecordedRequests().map { requests ⇒
     requests.map { req ⇒
@@ -50,6 +54,11 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
         val body = Json.fromValues(reqs)
         val entity = HttpEntity(ContentTypes.`application/json`, body.spaces2)
         HttpResponse(200).withEntity(entity)
+      }
+
+    case HttpRequest(GET, Uri.Path("/reset"), _, _, _) ⇒
+      resetRecordedRequests().map { _ ⇒
+        HttpResponse(200)
       }
 
     case r @ HttpRequest(POST, _, _, _, _) ⇒
