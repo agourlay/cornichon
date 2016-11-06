@@ -7,7 +7,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.{ HttpRequest, _ }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.github.agourlay.cornichon.core.Done
@@ -34,6 +34,12 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
   def resetRecordedRequests(): Future[Done] =
     (requestReceivedRepo ? ClearRegisteredRequest).mapTo[Done]
 
+  def toggleErrorMode(): Future[Done] =
+    (requestReceivedRepo ? ToggleErrorMode).mapTo[Done]
+
+  def fetchErrorMode(): Future[Boolean] =
+    (requestReceivedRepo ? GetErrorMode).mapTo[ErrorMode].map(_.errorMode)
+
   def fetchRecordedRequestsAsJson() = fetchRecordedRequests().map { requests ⇒
     requests.map { req ⇒
       Json.fromFields(
@@ -48,7 +54,7 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
     }
   }
 
-  val requestHandler: HttpRequest ⇒ Future[HttpResponse] = {
+  def withMockAdministration(wrapped: HttpRequest ⇒ HttpResponse)(r: HttpRequest): Future[HttpResponse] = r match {
     case HttpRequest(GET, Uri.Path("/requests-received"), _, _, _) ⇒
       fetchRecordedRequestsAsJson().map { reqs ⇒
         val body = Json.fromValues(reqs)
@@ -61,13 +67,24 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
         HttpResponse(200)
       }
 
-    case r @ HttpRequest(POST, _, _, _, _) ⇒
-      saveRequest(r).map(_ ⇒ HttpResponse(201))
+    case HttpRequest(POST, Uri.Path("/toggle-error-mode"), _, _, _) ⇒
+      toggleErrorMode().map { _ ⇒
+        HttpResponse(200)
+      }
 
-    case r: HttpRequest ⇒
-      saveRequest(r).map(_ ⇒ HttpResponse(200))
-
+    case _ ⇒ fetchErrorMode().flatMap { e ⇒
+      if (e) Future.successful(HttpResponse(500))
+      else saveRequest(r).map(_ ⇒ wrapped(r))
+    }
   }
+
+  val defaultMockRoute: HttpRequest ⇒ HttpResponse = {
+    case HttpRequest(POST, _, _, _, _) ⇒ HttpResponse(201)
+    case _: HttpRequest                ⇒ HttpResponse(200)
+  }
+
+  // The nested route definition could be provided by the client in the future.
+  val requestHandler: HttpRequest ⇒ Future[HttpResponse] = withMockAdministration(defaultMockRoute)
 
   def httpMethodMapper(method: HttpMethod): CornichonHttpMethod = method match {
     case Delete.method  ⇒ CornichonHttpMethods.DELETE

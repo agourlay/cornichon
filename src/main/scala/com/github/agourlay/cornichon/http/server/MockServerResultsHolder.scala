@@ -9,6 +9,7 @@ import com.github.agourlay.cornichon.http.server.MockServerResultsHolder._
 class MockServerResultsHolder extends Actor {
 
   private val receivedRequests = scala.collection.mutable.ArrayBuffer.empty[http.HttpRequest[String]]
+  private var errorMode = false
 
   def receive = {
 
@@ -22,6 +23,13 @@ class MockServerResultsHolder extends Actor {
     case ClearRegisteredRequest ⇒
       receivedRequests.clear()
       sender ! Done
+
+    case ToggleErrorMode ⇒
+      errorMode = !errorMode
+      sender ! Done
+
+    case GetErrorMode ⇒
+      sender ! ErrorMode(errorMode)
   }
 }
 
@@ -32,5 +40,8 @@ object MockServerResultsHolder {
   case class RequestRegistered(request: HttpRequest[String])
   case class RegisteredRequests(requests: Vector[HttpRequest[String]])
   case class RegisterRequest(request: HttpRequest[String])
+  case object ToggleErrorMode
+  case object GetErrorMode
+  case class ErrorMode(errorMode: Boolean)
 }
 

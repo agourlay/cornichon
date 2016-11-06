@@ -9,7 +9,7 @@ class MockServerExample extends CornichonFeature {
 
   lazy val feature = Feature("Cornichon feature mock server examples") {
 
-    Scenario("Assert number of received calls") {
+    Scenario("assert correct number of received calls") {
       HttpMock("awesome-server") {
         Repeat(10) {
           When I get("<awesome-server-url>/")
@@ -18,7 +18,7 @@ class MockServerExample extends CornichonFeature {
       And assert httpListen("awesome-server").received_calls(10)
     }
 
-    Scenario("Counters valid under concurrent requests") {
+    Scenario("keep valid counters under concurrent requests") {
       HttpMock("awesome-server") {
         Concurrently(2, 10.seconds) {
           Repeat(10) {
@@ -29,7 +29,7 @@ class MockServerExample extends CornichonFeature {
       And assert httpListen("awesome-server").received_calls(20)
     }
 
-    Scenario("Reply to POST request with 201 and assert on received bodies") {
+    Scenario("reply to POST request with 201 and assert on received bodies") {
       HttpMock("awesome-server") {
         When I post("<awesome-server-url>/heroes/batman").withBody(
           """
@@ -143,6 +143,21 @@ class MockServerExample extends CornichonFeature {
         When I get("<awesome-server-url>/")
         When I get("<awesome-server-url>/requests-received")
         Then assert body.asArray.hasSize(1)
+      }
+    }
+
+    Scenario("toggle error mode") {
+      HttpMock("awesome-server") {
+        When I get("<awesome-server-url>/")
+        Then assert status.is(200)
+
+        When I post("<awesome-server-url>/toggle-error-mode")
+        When I get("<awesome-server-url>/")
+        Then assert status.is(500)
+
+        When I post("<awesome-server-url>/toggle-error-mode")
+        When I get("<awesome-server-url>/")
+        Then assert status.is(200)
       }
     }
 

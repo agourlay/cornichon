@@ -590,7 +590,12 @@ WithBasicAuth("admin", "root"){
 
 By default this server responds with 201 to any POST request and 200 for all the rest.
 
-The server records all requests received as a JSON array of HTTP request for later assertions. 
+Additionally it provides three administrations features:
+- fetching recorded received requests
+- resetting recorded received requests
+- toggling on/off the error mode to return HTTP 500 to incoming requests
+
+The server records all requests received as a JSON array of HTTP request for later assertions.
 
 There are two ways to perform assertions on the server statistics, either by querying the session at the end of the block or by contacting directly the server while it runs.
 
