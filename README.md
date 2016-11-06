@@ -172,12 +172,12 @@ The structure of a step statement is the following:
 
 1 - starts with either ```Given``` - ```When``` - ```And``` - ```Then```
 
-The prefixes do not change the behaviour of the steps but are present to improve the readability.
+The prefixes do not change the behavior of the steps but are present to improve the readability.
 
 
-2 - followed by any single word (could be several words wrapped in backticks)
+2 - followed by any single word (could be several words wrapped in back-ticks)
 
-This structure was chosen to increase the freedom of customisation while still benefiting from Scala's infix notation.
+This structure was chosen to increase the freedom of customization while still benefiting from Scala's infix notation.
 
 
 3 - ending with a ```step``` definition
@@ -251,7 +251,7 @@ headers.name("cache_control").isAbsent
 
 ```
 
-- assert response body comes with different flavours (ignoring, whitelisting)
+- assert response body comes with different flavors (ignoring, whitelisting)
 
 ```scala
 body.is(
@@ -470,7 +470,7 @@ session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is(...)
 
 ### Wrapper steps
 
-Wrapper steps allow to control the execution of a series of steps to build more powerfull tests.
+Wrapper steps allow to control the execution of a series of steps to build more powerful tests.
 
 - repeating a series of ```steps```
 
@@ -785,7 +785,7 @@ When I EffectStep(
 )
 
 Then assert AssertStep(
-  title = "check computation infos",
+  title = "check computation info",
   action = s => {
     val pi = s.get("result")
     GenericAssertion(pi, 3.14)
@@ -893,7 +893,7 @@ You can still override the base URL of a single step by providing the complete U
 
 ### Request timeout
 
-The default value for the HTTP request timeout is ```2 seconds```. As always it can be overriden per scenario.
+The default value for the HTTP request timeout is ```2 seconds```. As always it can be overridden per scenario.
 
 ```scala
 import scala.concurrent.duration._
@@ -998,7 +998,7 @@ For instance if you wish to use the ```JsObject``` from ```play-json``` as HTTP 
   }
 
   lazy implicit val JsonEncoder:Encoder[JsObject] = new Encoder[JsObject] {
-    override def apply(a: JsObject): cJson = parse(a.toString()).getOrElse(cJson.Null)
+    override def apply(a: JsObject): Json = parse(a.toString()).getOrElse(cJson.Null)
   }
 
 ```
