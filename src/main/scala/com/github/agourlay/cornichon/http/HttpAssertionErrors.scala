@@ -16,7 +16,19 @@ object HttpAssertionErrors {
 
   def headersDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
     val prettyHeaders = displayStringPairs(decodeSessionHeaders(sourceArray))
-    s"""expected headers to contain $expected but it is not the case with headers:
+    s"""expected headers to contain '$expected' but it is not the case with headers:
       |$prettyHeaders""".stripMargin
+  }
+
+  def headersDoesNotContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): Boolean ⇒ String = resFalse ⇒ {
+    val prettyHeaders = displayStringPairs(sourceHeaders)
+    s"""expected headers to contain field with name '$name' but it is not the case with headers:
+       |$prettyHeaders""".stripMargin
+  }
+
+  def headersContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): Boolean ⇒ String = resFalse ⇒ {
+    val prettyHeaders = displayStringPairs(sourceHeaders)
+    s"""expected headers to not contain field with name '$name' but it is not the case with headers:
+       |$prettyHeaders""".stripMargin
   }
 }

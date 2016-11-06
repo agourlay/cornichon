@@ -242,7 +242,12 @@ status.is(200)
 - assert response headers
 
 ```scala
+
+headers.name("cache-control").isPresent
+
 headers.contain("cache-control" → "no-cache")
+
+headers.name("cache_control").isAbsent
 
 ```
 

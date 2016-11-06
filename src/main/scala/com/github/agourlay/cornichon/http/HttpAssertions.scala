@@ -52,6 +52,37 @@ object HttpAssertions {
     }
 
     def inOrder: HeadersAssertion = copy(ordered = true)
+
+    def name(name: String) = HeadersNameAssertion(name)
+  }
+
+  case class HeadersNameAssertion(name: String) {
+    def isPresent: AssertStep[Boolean] = {
+      from_session_detail_step(
+        title = s"headers contain field with name '$name'",
+        key = SessionKey(lastResponseHeadersKey),
+        expected = s ⇒ true,
+        mapValue = (session, sessionHeaders) ⇒ {
+          val sessionHeadersValue = HttpService.decodeSessionHeaders(sessionHeaders)
+          val predicate = sessionHeadersValue.exists { case (hname, _) ⇒ hname == name }
+          (predicate, headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
+        }
+      )
+    }
+
+    def isAbsent: AssertStep[Boolean] = {
+      from_session_detail_step(
+        title = s"headers do not contain field with name '$name'",
+        key = SessionKey(lastResponseHeadersKey),
+        expected = s ⇒ true,
+        mapValue = (session, sessionHeaders) ⇒ {
+          val sessionHeadersValue = HttpService.decodeSessionHeaders(sessionHeaders)
+          val predicate = !sessionHeadersValue.exists { case (hname, _) ⇒ hname == name }
+          (predicate, headersContainFieldWithNameError(name, sessionHeadersValue))
+        }
+      )
+    }
+
   }
 
   case class HttpListen(name: String, resolver: Resolver) {

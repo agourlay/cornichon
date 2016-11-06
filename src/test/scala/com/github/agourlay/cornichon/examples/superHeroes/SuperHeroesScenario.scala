@@ -420,7 +420,9 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
+        Then assert headers.name("Server").isPresent
         Then assert headers.contain("Server" → "akka-http/2.4.12")
+        Then assert headers.name("server").isAbsent
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
