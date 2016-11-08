@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
 import scala.concurrent.Future
@@ -39,12 +39,10 @@ trait MathSteps {
         title = s"double value of '$source' is between '$low' and '$high'",
         action = s ⇒ {
         val v = s.get(source).toDouble
-        CustomMessageEqualityAssertion(true, v > low && v < high, ratioError(v, low, high))
+        BetweenAssertion(low, v, high)
       }
       )
   }
-
-  private def ratioError(v: Double, low: Double, high: Double): Boolean ⇒ String = b ⇒ s"$v is not between $low and $high"
 
   def calculate_point_in_circle(target: String) = EffectStep(
     title = s"calculate points inside circle",

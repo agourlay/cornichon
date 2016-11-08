@@ -155,6 +155,8 @@ object JsonAssertions {
 
     def ignoringEach(ignoringEach: String*): JsonArrayAssertion = copy(ignoredEachKeys = ignoringEach)
 
+    //TODO isNotEmpty
+
     def isEmpty = hasSize(0)
 
     def hasSize(size: Int): AssertStep[Int] = {
