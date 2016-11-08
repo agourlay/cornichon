@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
 import scala.concurrent.Future
@@ -16,7 +16,7 @@ trait MathSteps {
       action = s ⇒ {
       val v1 = s.get(arg1).toInt
       val v2 = s.get(arg2).toInt
-      GenericAssertion(res, v1 + v2)
+      GenericEqualityAssertion(res, v1 + v2)
     }
     )
   }
@@ -39,7 +39,7 @@ trait MathSteps {
         title = s"double value of '$source' is between '$low' and '$high'",
         action = s ⇒ {
         val v = s.get(source).toDouble
-        CustomMessageAssertion(true, v > low && v < high, ratioError(v, low, high))
+        CustomMessageEqualityAssertion(true, v > low && v < high, ratioError(v, low, high))
       }
       )
   }

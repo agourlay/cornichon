@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Diff, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Diff, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 
@@ -29,7 +29,7 @@ object JsonAssertions {
         val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(s))
         val v1 = removeFieldsByPath(s.getJson(k1), ignoredPaths)
         val v2 = removeFieldsByPath(s.getJson(k2), ignoredPaths)
-        GenericAssertion(v1, v2)
+        GenericEqualityAssertion(v1, v2)
       }
     )
   }

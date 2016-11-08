@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ Matchers, AsyncWordSpec }
 
 class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
@@ -12,7 +12,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "fail if table is malformed" in {
       val nested = AssertStep(
         "always ok",
-        s ⇒ GenericAssertion(true, true)
+        s ⇒ GenericEqualityAssertion(true, true)
       ) :: Nil
       val inputs =
         """
@@ -31,7 +31,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "fail at first failed input" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericAssertion(true, false)
+        s ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val inputs =
         """
@@ -52,7 +52,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
         "always ok",
         s ⇒ {
           uglyCounter = uglyCounter + 1
-          GenericAssertion(true, true)
+          GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val inputs =
@@ -77,7 +77,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
         "sum of 'a' + 'b' = 'c'",
         s ⇒ {
           val sum = s.get("a").toInt + s.get("b").toInt
-          GenericAssertion(sum, s.get("c").toInt)
+          GenericEqualityAssertion(sum, s.get("c").toInt)
         }
       ) :: Nil
       val inputs =

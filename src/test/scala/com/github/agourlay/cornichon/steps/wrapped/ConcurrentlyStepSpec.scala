@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ Matchers, AsyncWordSpec }
 
 import scala.concurrent.duration._
@@ -15,7 +15,7 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "fail if 'concurrently' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericAssertion(true, false)
+        s ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 3, 200.millis) :: Nil
       val s = Scenario("scenario with Concurrently", steps)
@@ -29,7 +29,7 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         "increment captured counter",
         s ⇒ {
           uglyCounter.incrementAndGet()
-          GenericAssertion(true, true)
+          GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val concurrentlyStep = ConcurrentlyStep(nested, loop, 300.millis)

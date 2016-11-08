@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ Matchers, AsyncWordSpec }
 
 class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
@@ -11,7 +11,7 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "fail if 'repeat' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericAssertion(true, false)
+        s ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatStep = RepeatStep(nested, 5)
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
@@ -25,7 +25,7 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "increment captured counter",
         s ⇒ {
           uglyCounter = uglyCounter + 1
-          GenericAssertion(true, true)
+          GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val repeatStep = RepeatStep(nested, loop)

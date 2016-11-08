@@ -2,9 +2,9 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import java.util.Timer
 
-import cats.{ Eq, Show }
-import cats.data.Xor
-import cats.data.Xor._
+import cats.{ Eq, Order, Show }
+import cats.data.{ Validated, Xor }
+import cats.data.Validated._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
@@ -21,34 +21,70 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
     val (res, duration) = Timing.withDuration {
       Xor.catchNonFatal(action(session))
         .leftMap(CornichonError.fromThrowable)
-        .flatMap(runStepPredicate(session))
+        .flatMap(runStepPredicate)
     }
-    Future.successful(xorToStepReport(this, res, initialRunState, show, Some(duration)))
+    Future.successful(xorToStepReport(this, res.map(done ⇒ session), initialRunState, show, Some(duration)))
   }
 
-  def runStepPredicate(newSession: Session)(assertion: Assertion[A]): Xor[CornichonError, Session] =
-    if (assertion.isSuccessful)
-      right(newSession)
-    else
-      left(assertion.assertionError)
-
+  def runStepPredicate(assertion: Assertion[A]): Xor[CornichonError, Done] =
+    assertion.isValid.toXor
 }
 
-abstract class Assertion[A: Eq] {
+trait Assertion[A] {
+  val isValid: Validated[CornichonError, Done]
+}
+
+abstract class OrderAssertion[A: Show: Order] extends Assertion[A] {
+  val right: A
+  val left: A
+
+  val isOrdered: Boolean
+  val assertionError: CornichonError
+
+  val isValid = if (isOrdered)
+    valid(Done)
+  else
+    invalid(assertionError)
+}
+
+case class LessThan[A: Show: Order](left: A, right: A) extends OrderAssertion[A] {
+  val isOrdered = Order[A].lt(x = left, y = right)
+  lazy val assertionError = LessThanAssertionError(left, right)
+}
+
+case class LessThanAssertionError[A: Show](left: A, right: A) extends CornichonError {
+  val msg = s"expected '${left.show}' to be less than '${right.show}'"
+}
+
+case class GreaterThan[A: Show: Order](left: A, right: A) extends OrderAssertion[A] {
+  val isOrdered = Order[A].gt(x = left, y = right)
+  lazy val assertionError = GreaterThanAssertionError(left, right)
+}
+
+case class GreaterThanAssertionError[A: Show](left: A, right: A) extends CornichonError {
+  val msg = s"expected '${left.show}' to be greater than '${right.show}'"
+}
+
+abstract class EqualityAssertion[A: Eq] extends Assertion[A] {
   val expected: A
   val actual: A
+
+  val negate: Boolean
+  val assertionError: CornichonError
   val expectedEqualsActual = Eq[A].eqv(expected, actual)
-  val isSuccessful = {
+
+  val isValid = {
     val succeedAsExpected = expectedEqualsActual && !negate
     val failedAsExpected = !expectedEqualsActual && negate
 
-    succeedAsExpected || failedAsExpected
+    if (succeedAsExpected || failedAsExpected)
+      valid(Done)
+    else
+      invalid(assertionError)
   }
-  val negate: Boolean
-  def assertionError: CornichonError
 }
 
-case class GenericAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
+case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends EqualityAssertion[A] {
   lazy val assertionError = GenericAssertionError(expected, actual, negate)
 }
 
@@ -68,7 +104,7 @@ case class GenericAssertionError[A: Show: Diff](expected: A, actual: A, negate: 
   }
 }
 
-case class CustomMessageAssertion[A: Eq](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
+case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends EqualityAssertion[A] {
   lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
 }
 

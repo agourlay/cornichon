@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.resolver.Resolver
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.util.Instances._
 
 object HttpAssertions {
@@ -15,7 +15,7 @@ object HttpAssertions {
   case object StatusAssertion {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = s ⇒ CustomMessageAssertion(
+      action = s ⇒ CustomMessageEqualityAssertion(
       expected = expected,
       actual = s.get(lastResponseStatusKey).toInt,
       customMessage = statusError(expected, s.get(lastResponseBodyKey))
@@ -31,6 +31,7 @@ object HttpAssertions {
       mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").toList
     )
 
+    // TODO use detail assertion to show full headers
     def hasSize(expected: Int) = from_session_step(
       title = s"headers size is '$expected'",
       key = SessionKey(lastResponseHeadersKey),
@@ -88,7 +89,7 @@ object HttpAssertions {
   case class HttpListen(name: String, resolver: Resolver) {
     def received_calls(count: Int) = AssertStep(
       title = s"HTTP mock server '$name' received '$count' calls",
-      action = s ⇒ GenericAssertion(expected = count, actual = s.get(s"$name$nbReceivedCallsSuffix").toInt)
+      action = s ⇒ GenericEqualityAssertion(expected = count, actual = s.get(s"$name$nbReceivedCallsSuffix").toInt)
     )
 
     def received_requests =
