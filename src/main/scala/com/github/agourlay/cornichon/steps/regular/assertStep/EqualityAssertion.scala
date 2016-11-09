@@ -1,0 +1,53 @@
+package com.github.agourlay.cornichon.steps.regular.assertStep
+
+import cats.{ Show, Eq }
+import cats.syntax.show._
+import cats.data.Validated._
+import com.github.agourlay.cornichon.core.{ CornichonError, Done }
+
+abstract class EqualityAssertion[A: Eq] extends Assertion {
+  val expected: A
+  val actual: A
+
+  val negate: Boolean
+  val assertionError: CornichonError
+  val expectedEqualsActual = Eq[A].eqv(expected, actual)
+
+  val validated = {
+    val succeedAsExpected = expectedEqualsActual && !negate
+    val failedAsExpected = !expectedEqualsActual && negate
+
+    if (succeedAsExpected || failedAsExpected)
+      valid(Done)
+    else
+      invalidNel(assertionError)
+  }
+}
+
+case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends EqualityAssertion[A] {
+  lazy val assertionError = GenericEqualityAssertionError(expected, actual, negate)
+}
+
+case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
+  private val baseMsg =
+    s"""|expected result was${if (negate) " different than:" else ":"}
+        |'${expected.show}'
+        |but actual result is:
+        |'${actual.show}'
+        |""".stripMargin.trim
+
+  val msg = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg ⇒
+    s"""|$baseMsg
+        |
+        |$diffMsg
+      """.stripMargin.trim
+  }
+}
+
+case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends EqualityAssertion[A] {
+  lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
+}
+
+case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
+  val msg = detailedAssertion(result)
+}
