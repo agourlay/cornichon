@@ -157,6 +157,29 @@ object JsonAssertions {
 
     //TODO isNotEmpty
 
+    def isNotEmpty: AssertStep = {
+      val title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty"
+      from_session_detail_step(
+        title = title,
+        key = sessionKey,
+        expected = s ⇒ true,
+        mapValue = (s, sessionValue) ⇒ {
+        val jArray = {
+          if (jsonPath == JsonPath.root)
+            parseArray(sessionValue)
+          else {
+            val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
+            selectArrayJsonPath(parsedPath, sessionValue)
+          }
+        }
+        jArray.fold(
+          e ⇒ throw e,
+          l ⇒ (l.nonEmpty, arrayNotEmptyError(Json.fromValues(l).show))
+        )
+      }
+      )
+    }
+
     def isEmpty = hasSize(0)
 
     def hasSize(size: Int): AssertStep = {

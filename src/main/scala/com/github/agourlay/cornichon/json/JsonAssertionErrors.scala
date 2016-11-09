@@ -35,6 +35,11 @@ object JsonAssertionErrors {
     else base
   }
 
+  def arrayNotEmptyError(sourceArray: String): Boolean ⇒ String = actual ⇒ {
+    s"""expected array to be empty but it is not the case with array:
+       |$sourceArray""".stripMargin
+  }
+
   def arrayContainsError(expected: Seq[String], sourceArray: String, contains: Boolean): Boolean ⇒ String = resFalse ⇒ {
     s"""expected array to ${if (contains) "" else "not "}contain
         |'${expected.mkString(" and ")}'

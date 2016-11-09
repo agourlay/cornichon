@@ -244,6 +244,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         When I get("/superheroes").withParams("sessionId" → "<session-id>")
 
+        Then assert body.asArray.isNotEmpty
+
         Then assert body.asArray.ignoringEach("publisher").is(
           """
           [{
