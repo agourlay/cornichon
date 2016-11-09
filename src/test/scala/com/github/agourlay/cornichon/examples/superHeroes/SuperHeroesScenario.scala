@@ -410,7 +410,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert session_value("batman-city").is("Gotham city")
 
-        And I show_last_response_body_as_json
+        And I show_last_response_body_json
 
         Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
