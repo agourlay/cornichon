@@ -160,8 +160,9 @@ object HttpService {
     val lastResponseStatusKey = "last-response-status"
     val lastResponseHeadersKey = "last-response-headers"
     val withHeadersKey = "with-headers"
-    val headersKeyValueDelim = '|'
-    val interHeadersValueDelim = ";"
+    // Using non-ASCII chars to assure that those won't be present inside the headers.
+    val headersKeyValueDelim = '→'
+    val interHeadersValueDelim = '¦'
   }
 
   import HttpService.SessionKeys._
@@ -172,7 +173,7 @@ object HttpService {
   def encodeSessionHeaders(response: CornichonHttpResponse): String =
     response.headers.map {
       case (name, value) ⇒ encodeSessionHeader(name, value)
-    }.mkString(interHeadersValueDelim)
+    }.mkString(interHeadersValueDelim.toString)
 
   def decodeSessionHeaders(headers: String): Seq[(String, String)] =
     headers.split(interHeadersValueDelim).toSeq.map { header ⇒
