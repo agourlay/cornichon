@@ -101,13 +101,20 @@ trait HttpDsl extends HttpRequestsDsl {
     s"""Show last response
        |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
        |status : ${s.get(lastResponseStatusKey)}
+       |body   : ${s.get(lastResponseBodyKey)}
+     """.stripMargin)
+
+  def show_last_response_json = DebugStep(s ⇒
+    s"""Show last response
+       |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
+       |status : ${s.get(lastResponseStatusKey)}
        |body   : ${parseJson(s.get(lastResponseBodyKey)).fold(e ⇒ throw e, _.show)}
      """.stripMargin)
 
   def show_last_status = show_session(lastResponseStatusKey)
 
   def show_last_response_body = show_session(lastResponseBodyKey)
-  def show_last_response_body_as_json = show_key_as_json(lastResponseBodyKey)
+  def show_last_response_body_json = show_key_as_json(lastResponseBodyKey)
 
   def show_last_response_headers = show_session(lastResponseHeadersKey)
 
