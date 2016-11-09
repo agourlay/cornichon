@@ -58,7 +58,7 @@ object HttpAssertions {
   }
 
   case class HeadersNameAssertion(name: String) {
-    def isPresent: AssertStep[Boolean] = {
+    def isPresent: AssertStep = {
       from_session_detail_step(
         title = s"headers contain field with name '$name'",
         key = SessionKey(lastResponseHeadersKey),
@@ -71,7 +71,7 @@ object HttpAssertions {
       )
     }
 
-    def isAbsent: AssertStep[Boolean] = {
+    def isAbsent: AssertStep = {
       from_session_detail_step(
         title = s"headers do not contain field with name '$name'",
         key = SessionKey(lastResponseHeadersKey),

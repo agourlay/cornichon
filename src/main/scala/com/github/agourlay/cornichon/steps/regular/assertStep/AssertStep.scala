@@ -13,7 +13,7 @@ import com.github.agourlay.cornichon.util.Timing
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: Boolean = true) extends Step {
+case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends Step {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
@@ -28,20 +28,26 @@ case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: 
   }
 
   //TODO propage all errors
-  def runStepPredicate(assertion: Assertion[A]): Xor[CornichonError, Done] = assertion.validated.toXor.leftMap(_.head)
+  def runStepPredicate(assertion: Assertion): Xor[CornichonError, Done] = assertion.validated.toXor.leftMap(_.head)
 }
 
-trait Assertion[A] {
+trait Assertion { self ⇒
   def validated: ValidatedNel[CornichonError, Done]
 
-  def and[B](other: Assertion[B]): ValidatedNel[CornichonError, Done] = validated *> other.validated
+  def and(other: Assertion): Assertion = new Assertion {
+    def validated = self.validated *> other.validated
+  }
 
-  def or[B](other: Assertion[B]): ValidatedNel[CornichonError, Done] =
-    if (validated.isValid || other.validated.isValid) valid(Done)
-    else validated *> other.validated
+  def or(other: Assertion): Assertion = new Assertion {
+    def validated =
+      if (self.validated.isValid || other.validated.isValid)
+        valid(Done)
+      else
+        self.validated *> other.validated
+  }
 }
 
-abstract class OrderAssertion[A: Show: Order] extends Assertion[A]
+abstract class OrderAssertion[A: Show: Order] extends Assertion
 
 case class LessThanAssertion[A: Show: Order](left: A, right: A) extends OrderAssertion[A] {
   val validated: ValidatedNel[CornichonError, Done] =
@@ -62,10 +68,10 @@ case class GreaterThanAssertionError[A: Show](left: A, right: A) extends Cornich
 }
 
 case class BetweenAssertion[A: Show: Order](low: A, inspected: A, high: A) extends OrderAssertion[A] {
-  val validated = LessThanAssertion(inspected, high).and(GreaterThanAssertion(inspected, low))
+  val validated = LessThanAssertion(inspected, high).and(GreaterThanAssertion(inspected, low)).validated
 }
 
-abstract class EqualityAssertion[A: Eq] extends Assertion[A] {
+abstract class EqualityAssertion[A: Eq] extends Assertion {
   val expected: A
   val actual: A
 

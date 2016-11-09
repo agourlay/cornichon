@@ -37,10 +37,7 @@ trait MathSteps {
     def isBetween(low: Double, high: Double) =
       AssertStep(
         title = s"double value of '$source' is between '$low' and '$high'",
-        action = s ⇒ {
-        val v = s.get(source).toDouble
-        BetweenAssertion(low, v, high)
-      }
+        action = s ⇒ BetweenAssertion(low, s.get(source).toDouble, high)
       )
   }
 

@@ -51,7 +51,7 @@ object JsonAssertions {
 
     def whitelisting: JsonAssertion = copy(whitelist = true)
 
-    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep[Json] = {
+    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
       if (whitelist && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
@@ -81,7 +81,7 @@ object JsonAssertions {
       }
     }
 
-    def containsString(expectedPart: String): AssertStep[Boolean] = {
+    def containsString(expectedPart: String): AssertStep = {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target contains '$expectedPart'" else s"$target's field '$jsonPath' contains '$expectedPart'"
       from_session_detail_step(
         key = sessionKey,
@@ -97,7 +97,7 @@ object JsonAssertions {
       )
     }
 
-    def isAbsent: AssertStep[Boolean] = {
+    def isAbsent: AssertStep = {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is absent" else s"$target's field '$jsonPath' is absent"
       from_session_detail_step(
         key = sessionKey,
@@ -115,7 +115,7 @@ object JsonAssertions {
       )
     }
 
-    def isPresent: AssertStep[Boolean] = {
+    def isPresent: AssertStep = {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is present" else s"$target's field '$jsonPath' is present"
       from_session_detail_step(
         key = sessionKey,
@@ -159,7 +159,7 @@ object JsonAssertions {
 
     def isEmpty = hasSize(0)
 
-    def hasSize(size: Int): AssertStep[Int] = {
+    def hasSize(size: Int): AssertStep = {
       val title = if (jsonPath == JsonPath.root) s"$target array size is '$size'" else s"$target's array '$jsonPath' size is '$size'"
       from_session_detail_step(
         title = title,
@@ -242,7 +242,7 @@ object JsonAssertions {
       bodyContainsElmt(title, elements, expected = true)
     }
 
-    private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, elements: Seq[A], expected: Boolean): AssertStep[Boolean] = {
+    private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, elements: Seq[A], expected: Boolean): AssertStep = {
       from_session_detail_step(
         title = title,
         key = sessionKey,
@@ -272,7 +272,7 @@ object JsonAssertions {
     mapFct: (Session, List[Json]) ⇒ A,
     title: String,
     expected: Session ⇒ A
-  ): AssertStep[A] =
+  ): AssertStep =
     from_session_step[A](
       title = title,
       key = sessionKey,

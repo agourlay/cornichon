@@ -13,9 +13,9 @@ An extensible Scala DSL for testing JSON HTTP APIs.
   2. [HTTP assertions](#http-assertions)
   3. [HTTP streams](#http-streams)
   4. [GraphQL support](#graphql-support)
-  4. [Session steps](#session-steps)
-  5. [Wrapper steps](#wrapper-steps)
-  6. [Debug steps](#debug-steps)
+  5. [Session steps](#session-steps)
+  6. [Wrapper steps](#wrapper-steps)
+  7. [Debug steps](#debug-steps)
 5. [DSL composition](#dsl-composition)
 6. [Placeholders](#placeholders)
 7. [Custom steps](#custom-steps)
@@ -563,7 +563,7 @@ WithDataInputs(
 }
 
 def a_plus_b_equals_c =
-  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
+  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
 ```
 
 - WithHeaders automatically sets headers for several steps useful for authenticated scenario.
@@ -750,16 +750,20 @@ It becomes then possible to retrieve past values :
 
 There are two kind of ```step``` :
 - EffectStep ```Session => Future[Session]``` : Runs a side effect and populates the ```Session``` with values.
-- AssertStep ```Sesssion => Assertion[A]``` : Describes the expectation of the test.
+- AssertStep ```Sesssion => Assertion``` : Describes the expectation of the test.
 
  
-A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
+A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders) and save the result computations for later assertions.
 
-The test engine is responsible to test the equality of the ```Assertion``` values which has two concrete implementations.
+The test engine is responsible to test the validity of the provided ```Assertion``` which can be one of the following concrete implementations.
 
-The ```GenericAssertion``` is simply a container for 2 values, the expected value and the actual result, when used, the engine will try its best to provide a meaningful error message.
+- ```GenericEqualityAssertion```:  simply a container for 2 values, the expected value and the actual result, the engine will try its best to provide a meaningful error message.
  
-If a specific error message is prefered, it is also possible to provide a custom error message using the ```CustomMessageAssertion```.
+```scala
+When I AssertStep("always true!", s => GenericEqualityAssertion(true, true))
+```
+
+- ```CustomMessageEqualityAssertion```: similar to the above but with a specific error message.
 
 ```scala
  CustomMessageAssertion[A](expected: A, result: A, customMessage: A ⇒ String)
@@ -767,40 +771,24 @@ If a specific error message is prefered, it is also possible to provide a custom
 
 The engine will feed the actual result to the ```customMessage``` function.
 
-In practice the simplest runnable statement in the DSL is
-
-```scala
-When I AssertStep("do nothing", s => GenericAssertion(true, true))
-```
-
-Let's try to assert the result of a computation
-
-```scala
-When I AssertStep("calculate", s => GenericAssertion(2 + 2, 4))
-```
-
-The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
+- ```LessThanAssertion```, ```GreaterThanAssertion``` and ```BetweenAssertion```: provide validation of ordering.
 
 
 ```scala
 When I EffectStep(
-  title = "run crazy computation",
-  action = s => {
-    val pi = piComputation()
-    s.add("result", res)
-  }
+  title = "estimate PI",
+  action = s => s.add("result", piComputation())
 )
 
 Then assert AssertStep(
-  title = "check computation info",
-  action = s => {
-    val pi = s.get("result")
-    GenericAssertion(pi, 3.14)
-  }
+  title = "check estimate",
+  action = s => BetweenAssertion(3.1, s.get("result"), 3.2)
 )
 ```
 
-This is rather low level and you not should write your steps like that directly inside the DSL.
+```Assertions``` can also be composed using ```and``` and ```or```, for instance ```BetweenAssertion``` is the result of ```LessThanAssertion``` and ```GreaterThanAssertion```.
+
+This is rather low level therefore you not should write your steps like that directly inside the DSL but hide them behind functions with appropriate names.
 
 Fortunately a bunch of built-in steps and primitive building blocs are already available for you.
 

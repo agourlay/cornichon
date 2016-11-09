@@ -19,16 +19,16 @@ class EngineSpec extends AsyncWordSpec with Matchers with Instances {
     "runScenario" must {
       "executes all steps of a scenario" in {
         val session = Session.newEmpty
-        val steps = AssertStep[Int]("first step", s ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val steps = AssertStep("first step", s ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
         val s = Scenario("test", steps)
         engine.runScenario(session)(s).map(_.isSuccess should be(true))
       }
 
       "stops at first failed step" in {
         val session = Session.newEmpty
-        val step1 = AssertStep[Int]("first step", s ⇒ GenericEqualityAssertion(2, 2))
-        val step2 = AssertStep[Int]("second step", s ⇒ GenericEqualityAssertion(4, 5))
-        val step3 = AssertStep[Int]("third step", s ⇒ GenericEqualityAssertion(1, 1))
+        val step1 = AssertStep("first step", s ⇒ GenericEqualityAssertion(2, 2))
+        val step2 = AssertStep("second step", s ⇒ GenericEqualityAssertion(4, 5))
+        val step3 = AssertStep("third step", s ⇒ GenericEqualityAssertion(1, 1))
         val steps = step1 :: step2 :: step3 :: Nil
         val s = Scenario("test", steps)
         engine.runScenario(session)(s).map { res ⇒
@@ -51,8 +51,8 @@ class EngineSpec extends AsyncWordSpec with Matchers with Instances {
 
       "accumulates errors if 'main' and 'finally' fail" in {
         val session = Session.newEmpty
-        val mainStep = AssertStep[Boolean]("main step", s ⇒ GenericEqualityAssertion(true, false))
-        val finallyStep = AssertStep[Boolean]("finally step", s ⇒ GenericEqualityAssertion(true, false))
+        val mainStep = AssertStep("main step", s ⇒ GenericEqualityAssertion(true, false))
+        val finallyStep = AssertStep("finally step", s ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
         engine.runScenario(session, finallyStep :: Nil)(s).map {
           case s: SuccessScenarioReport ⇒ fail(s"Should be a FailedScenarioReport and not success with\n${s.logs}")

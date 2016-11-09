@@ -25,7 +25,7 @@ case class SessionAssertion(
     action = s ⇒ GenericEqualityAssertion(s.get(key), s.get(other))
   )
 
-  def isPresent = AssertStep[Boolean](
+  def isPresent = AssertStep(
     title = s"session contains key '$key'",
     action = s ⇒ {
     val predicate = s.getOpt(key, indice).isDefined

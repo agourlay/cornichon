@@ -12,7 +12,7 @@ class AssertStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
     "fail if instruction throws exception" in {
       val session = Session.newEmpty
-      val step = AssertStep[Int]("stupid step", s ⇒ {
+      val step = AssertStep("stupid step", s ⇒ {
         6 / 0
         GenericEqualityAssertion(2, 2)
       })
@@ -31,7 +31,7 @@ class AssertStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
   "runStepPredicate" must {
     "return session if assertion is True" in {
       val assertion = GenericEqualityAssertion(2, 2)
-      val step = AssertStep[Int]("stupid step", s ⇒ assertion)
+      val step = AssertStep("stupid step", s ⇒ assertion)
       step.runStepPredicate(assertion) should be(right)
     }
   }
