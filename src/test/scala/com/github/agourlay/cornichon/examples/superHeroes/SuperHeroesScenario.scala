@@ -410,7 +410,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert session_value("batman-city").is("Gotham city")
 
-        And I show_last_response_body_json
+        And I show_last_body_json
 
         Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
@@ -431,8 +431,8 @@ class SuperHeroesScenario extends CornichonFeature {
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
         And I show_last_status
-        And I show_last_response_body
-        And I show_last_response_headers
+        And I show_last_body
+        And I show_last_headers
       }
 
       Scenario("demonstrate GraphQL support") {

@@ -113,10 +113,10 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def show_last_status = show_session(lastResponseStatusKey)
 
-  def show_last_response_body = show_session(lastResponseBodyKey)
-  def show_last_response_body_json = show_key_as_json(lastResponseBodyKey)
+  def show_last_body = show_session(lastResponseBodyKey)
+  def show_last_body_json = show_key_as_json(lastResponseBodyKey)
 
-  def show_last_response_headers = show_session(lastResponseHeadersKey)
+  def show_last_headers = show_session(lastResponseHeadersKey)
 
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))

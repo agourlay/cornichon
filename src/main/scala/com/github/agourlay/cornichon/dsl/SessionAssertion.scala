@@ -17,12 +17,7 @@ case class SessionAssertion(
 
   def is(expected: String) = AssertStep(
     title = s"session key '$key' is '$expected'",
-    action = s ⇒ GenericEqualityAssertion(expected, s.get(key, indice))
-  )
-
-  def isEqualToSessionValue(other: String, indice: Option[Int] = None) = AssertStep(
-    title = s"content of session key '$key' is equal to the content of key '$other'",
-    action = s ⇒ GenericEqualityAssertion(s.get(key), s.get(other))
+    action = s ⇒ GenericEqualityAssertion(resolver.fillPlaceholdersUnsafe(expected)(s), s.get(key, indice))
   )
 
   def isPresent = AssertStep(

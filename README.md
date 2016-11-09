@@ -626,11 +626,13 @@ LogDuration(label = "my experiment") {
 ```scala
  And I show_session
 
+And I show_last_response
+
  And I show_last_status
 
- And I show_last_response_body
+ And I show_last_body
 
- And I show_last_response_headers
+ And I show_last_headers
 ```
 
 
