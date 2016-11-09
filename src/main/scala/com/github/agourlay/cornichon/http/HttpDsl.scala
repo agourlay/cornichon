@@ -5,7 +5,6 @@ import java.util.Base64
 
 import cats.Show
 import cats.syntax.show._
-
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
@@ -17,11 +16,11 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
-
+import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
@@ -98,10 +97,16 @@ trait HttpDsl extends HttpRequestsDsl {
     save_from_session(inputs)
   }
 
+  def show_last_response = DebugStep(s ⇒
+    s"""Show last response
+       |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
+       |status : ${s.get(lastResponseStatusKey)}
+       |body   : ${parseJson(s.get(lastResponseBodyKey)).fold(e ⇒ throw e, _.show)}
+     """.stripMargin)
+
   def show_last_status = show_session(lastResponseStatusKey)
 
   def show_last_response_body = show_session(lastResponseBodyKey)
-
   def show_last_response_body_as_json = show_key_as_json(lastResponseBodyKey)
 
   def show_last_response_headers = show_session(lastResponseHeadersKey)

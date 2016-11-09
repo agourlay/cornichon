@@ -155,8 +155,6 @@ object JsonAssertions {
 
     def ignoringEach(ignoringEach: String*): JsonArrayAssertion = copy(ignoredEachKeys = ignoringEach)
 
-    //TODO isNotEmpty
-
     def isNotEmpty: AssertStep = {
       val title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty"
       from_session_detail_step(
