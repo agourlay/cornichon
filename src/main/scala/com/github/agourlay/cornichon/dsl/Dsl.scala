@@ -132,15 +132,6 @@ object Dsl {
     )
   }
 
-  def from_session_step[A: Show: Diff: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
-    AssertStep(
-      title,
-      s ⇒ GenericEqualityAssertion(
-        expected = expected(s),
-        actual = mapValue(s, s.get(key))
-      )
-    )
-
   def from_session_detail_step[A: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
     AssertStep(
       title,

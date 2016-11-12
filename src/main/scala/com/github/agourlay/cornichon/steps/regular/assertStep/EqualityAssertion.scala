@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.{ Show, Eq }
+import cats.{ Eq, Show }
 import cats.syntax.show._
 import cats.data.Validated._
-import com.github.agourlay.cornichon.core.{ CornichonError, Done }
+import com.github.agourlay.cornichon.core.{ CornichonError, Done, Session, SessionKey }
 
 abstract class EqualityAssertion[A: Eq] extends Assertion {
   val expected: A
@@ -26,6 +26,14 @@ abstract class EqualityAssertion[A: Eq] extends Assertion {
 
 case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends EqualityAssertion[A] {
   lazy val assertionError = GenericEqualityAssertionError(expected, actual, negate)
+}
+
+object GenericEqualityAssertion {
+  def fromSession[A: Show: Diff: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ A)(expectedProducer: Session ⇒ A) =
+    GenericEqualityAssertion(
+      expected = expectedProducer(s),
+      actual = transformSessionValue(s, s.get(key))
+    )
 }
 
 case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {

@@ -56,27 +56,29 @@ object JsonAssertions {
         throw InvalidIgnoringConfigError
       else {
         val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expected" else s"$target's field '$jsonPath' is $expected"
-        from_session_step(
-          key = sessionKey,
+        AssertStep(
           title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-          expected = s ⇒ resolveParseJson(expected, s, resolver),
-          mapValue =
-            (session, sessionValue) ⇒ {
-              if (whitelist) {
-                val expectedJson = resolveParseJson(expected, session, resolver)
-                val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-                val JsonDiff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
-                if (deleted != Json.Null) throw WhitelistingError(elementNotDefined = deleted.show, source = sessionValueJson.show)
-                if (changed != Json.Null) changed else expectedJson
-              } else {
-                val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-                if (ignoredKeys.isEmpty) subJson
-                else {
-                  val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
-                  removeFieldsByPath(subJson, ignoredPaths)
+          action = s ⇒ GenericEqualityAssertion.fromSession(s, sessionKey) {
+            (session, sessionValue) ⇒
+              {
+                if (whitelist) {
+                  val expectedJson = resolveParseJson(expected, session, resolver)
+                  val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+                  val JsonDiff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
+                  if (deleted != Json.Null) throw WhitelistingError(elementNotDefined = deleted.show, source = sessionValueJson.show)
+                  if (changed != Json.Null) changed else expectedJson
+                } else {
+                  val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+                  if (ignoredKeys.isEmpty) subJson
+                  else {
+                    val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
+                    removeFieldsByPath(subJson, ignoredPaths)
+                  }
                 }
               }
-            }
+          } {
+            s ⇒ resolveParseJson(expected, s, resolver)
+          }
         )
       }
     }
@@ -293,16 +295,12 @@ object JsonAssertions {
     mapFct: (Session, List[Json]) ⇒ A,
     title: String,
     expected: Session ⇒ A
-  ): AssertStep =
-    from_session_step[A](
-      title = title,
-      key = sessionKey,
-      expected = s ⇒ expected(s),
-      mapValue = (session, sessionValue) ⇒ {
-      val array = arrayExtractor(session, sessionValue)
-      mapFct(session, array)
-    }
-    )
+  ) = AssertStep(
+    title = title,
+    action = s ⇒ GenericEqualityAssertion.fromSession(s, sessionKey) {
+    (session, sessionValue) ⇒ mapFct(session, arrayExtractor(session, sessionValue))
+  } { s ⇒ expected(s) }
+  )
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle

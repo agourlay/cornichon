@@ -24,19 +24,21 @@ object HttpAssertions {
   }
 
   case class HeadersAssertion(private val ordered: Boolean) {
-    def is(expected: (String, String)*) = from_session_step(
+    def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${displayStringPairs(expected)}",
-      key = SessionKey(lastResponseHeadersKey),
-      expected = s ⇒ expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" },
-      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").toList
+      action = s ⇒ GenericEqualityAssertion.fromSession(s, SessionKey(lastResponseHeadersKey)) {
+      (session, sessionHeaders) ⇒ sessionHeaders.split(",").toList
+    } {
+      s ⇒ expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }
+    }
     )
 
     // TODO use detail assertion to show full headers
-    def hasSize(expected: Int) = from_session_step(
+    def hasSize(expected: Int) = AssertStep(
       title = s"headers size is '$expected'",
-      key = SessionKey(lastResponseHeadersKey),
-      expected = s ⇒ expected,
-      mapValue = (session, sessionHeaders) ⇒ sessionHeaders.split(",").length
+      action = s ⇒ GenericEqualityAssertion.fromSession(s, SessionKey(lastResponseHeadersKey)) {
+      (session, sessionHeaders) ⇒ sessionHeaders.split(",").length
+    } { s ⇒ expected }
     )
 
     def contain(elements: (String, String)*) = {
