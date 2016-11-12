@@ -1,10 +1,8 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.{ Eq, Show }
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.core.{ FeatureDef, Session, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.steps.regular._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, Diff, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
 import com.github.agourlay.cornichon.util.Instances._
@@ -131,18 +129,5 @@ object Dsl {
       }
     )
   }
-
-  def from_session_detail_step[A: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
-    AssertStep(
-      title,
-      s ⇒ {
-        val (res, details) = mapValue(s, s.get(key))
-        CustomMessageEqualityAssertion(
-          expected = expected(s),
-          actual = res,
-          customMessage = details
-        )
-      }
-    )
 }
 

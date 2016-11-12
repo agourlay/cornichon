@@ -14,8 +14,8 @@ trait Instances extends AllInstances {
       fa.toIterator.map(_.show).mkString("Seq(", ", ", ")")
   }
 
-  implicit def showTraversable[A: Show]: Show[Traversable[A]] = new Show[Traversable[A]] {
-    def show(fa: Traversable[A]): String =
+  implicit def showIterable[A: Show]: Show[Iterable[A]] = new Show[Iterable[A]] {
+    def show(fa: Iterable[A]): String =
       fa.toIterator.map(_.show).mkString("(", ", ", ")")
   }
 

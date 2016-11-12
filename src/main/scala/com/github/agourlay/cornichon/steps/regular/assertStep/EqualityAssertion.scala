@@ -56,6 +56,17 @@ case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customM
   lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
 }
 
+object CustomMessageEqualityAssertion {
+  def fromSession[A: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ (A, A ⇒ String))(expectedProducer: Session ⇒ A) = {
+    val (res, details) = transformSessionValue(s, s.get(key))
+    CustomMessageEqualityAssertion(
+      expected = expectedProducer(s),
+      actual = res,
+      customMessage = details
+    )
+  }
+}
+
 case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
   val msg = detailedAssertion(result)
 }

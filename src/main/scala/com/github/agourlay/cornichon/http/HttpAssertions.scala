@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.core.SessionKey
-import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.http.HttpAssertionErrors._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
@@ -41,18 +40,18 @@ object HttpAssertions {
     } { s ⇒ expected }
     )
 
-    def contain(elements: (String, String)*) = {
-      from_session_detail_step(
-        title = s"headers contain ${displayStringPairs(elements)}",
-        key = SessionKey(lastResponseHeadersKey),
-        expected = s ⇒ true,
-        mapValue = (session, sessionHeaders) ⇒ {
-          val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
-          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
-          (predicate, headersDoesNotContainError(displayStringPairs(elements), sessionHeaders))
-        }
-      )
-    }
+    def contain(elements: (String, String)*) = AssertStep(
+      title = s"headers contain ${displayStringPairs(elements)}",
+      action = s ⇒
+      CustomMessageEqualityAssertion.fromSession(s, SessionKey(lastResponseHeadersKey)) {
+        (session, sessionHeaders) ⇒
+          {
+            val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
+            val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
+            (predicate, headersDoesNotContainError(displayStringPairs(elements), sessionHeaders))
+          }
+      } { s ⇒ true }
+    )
 
     def inOrder: HeadersAssertion = copy(ordered = true)
 
@@ -60,32 +59,29 @@ object HttpAssertions {
   }
 
   case class HeadersNameAssertion(name: String) {
-    def isPresent: AssertStep = {
-      from_session_detail_step(
-        title = s"headers contain field with name '$name'",
-        key = SessionKey(lastResponseHeadersKey),
-        expected = s ⇒ true,
-        mapValue = (session, sessionHeaders) ⇒ {
+    def isPresent = AssertStep(
+      title = s"headers contain field with name '$name'",
+      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, SessionKey(lastResponseHeadersKey)) {
+      (session, sessionHeaders) ⇒
+        {
           val sessionHeadersValue = HttpService.decodeSessionHeaders(sessionHeaders)
           val predicate = sessionHeadersValue.exists { case (hname, _) ⇒ hname == name }
           (predicate, headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
         }
-      )
-    }
+    } { s ⇒ true }
+    )
 
-    def isAbsent: AssertStep = {
-      from_session_detail_step(
-        title = s"headers do not contain field with name '$name'",
-        key = SessionKey(lastResponseHeadersKey),
-        expected = s ⇒ true,
-        mapValue = (session, sessionHeaders) ⇒ {
+    def isAbsent = AssertStep(
+      title = s"headers do not contain field with name '$name'",
+      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, SessionKey(lastResponseHeadersKey)) {
+      (session, sessionHeaders) ⇒
+        {
           val sessionHeadersValue = HttpService.decodeSessionHeaders(sessionHeaders)
           val predicate = !sessionHeadersValue.exists { case (hname, _) ⇒ hname == name }
           (predicate, headersContainFieldWithNameError(name, sessionHeadersValue))
         }
-      )
-    }
-
+    } { s ⇒ true }
+    )
   }
 
   case class HttpListen(name: String, resolver: Resolver) {

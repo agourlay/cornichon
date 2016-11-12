@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core.CornichonError
+import io.circe.Json
+import cats.syntax.show._
 
 object JsonAssertionErrors {
 
@@ -35,9 +37,9 @@ object JsonAssertionErrors {
     else base
   }
 
-  def arrayNotEmptyError(sourceArray: String): Boolean ⇒ String = actual ⇒ {
-    s"""expected array to be empty but it is not the case with array:
-       |$sourceArray""".stripMargin
+  def jsonArrayNotEmptyError(jsonArray: Json): Boolean ⇒ String = actual ⇒ {
+    s"""expected JSON array to be empty but it is not the case with array:
+       |${jsonArray.show}""".stripMargin
   }
 
   def arrayContainsError(expected: Seq[String], sourceArray: String, contains: Boolean): Boolean ⇒ String = resFalse ⇒ {
