@@ -57,9 +57,9 @@ object JsonAssertions {
         val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expected" else s"$target's field '$jsonPath' is $expected"
         AssertStep(
           title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-          action = s ⇒ GenericEqualityAssertion.fromSession(s, sessionKey) {
-            (session, sessionValue) ⇒
-              {
+          action = s ⇒
+            GenericEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
+              val actualValue = {
                 if (whitelist) {
                   val expectedJson = resolveParseJson(expected, session, resolver)
                   val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
@@ -75,9 +75,8 @@ object JsonAssertions {
                   }
                 }
               }
-          } {
-            s ⇒ resolveParseJson(expected, s, resolver)
-          }
+              (resolveParseJson(expected, session, resolver), actualValue)
+            }
         )
       }
     }
@@ -86,15 +85,13 @@ object JsonAssertions {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target contains '$expectedPart'" else s"$target's field '$jsonPath' contains '$expectedPart'"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) {
-          (session, sessionValue) ⇒
-            {
-              val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-              val prettyJson = subJson.show
-              val predicate = prettyJson.contains(expectedPart)
-              (predicate, notContainedError(expectedPart, prettyJson))
-            }
-        } { s ⇒ true }
+        action = s ⇒
+          CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
+            val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+            val prettyJson = subJson.show
+            val predicate = prettyJson.contains(expectedPart)
+            (true, predicate, notContainedError(expectedPart, prettyJson))
+          }
       )
     }
 
@@ -102,17 +99,15 @@ object JsonAssertions {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is absent" else s"$target's field '$jsonPath' is absent"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) {
-          (session, sessionValue) ⇒
-            {
-              val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-              val predicate = subJson match {
-                case Json.Null ⇒ true
-                case _         ⇒ false
-              }
-              (predicate, keyIsPresentError(jsonPath, subJson.show))
+        action = s ⇒
+          CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
+            val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+            val predicate = subJson match {
+              case Json.Null ⇒ true
+              case _         ⇒ false
             }
-        } { s ⇒ true }
+            (true, predicate, keyIsPresentError(jsonPath, subJson.show))
+          }
       )
     }
 
@@ -120,17 +115,15 @@ object JsonAssertions {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is present" else s"$target's field '$jsonPath' is present"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) {
-          (session, sessionValue) ⇒
-            {
-              val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-              val predicate = subJson match {
-                case Json.Null ⇒ false
-                case _         ⇒ true
-              }
-              (predicate, keyIsAbsentError(jsonPath, parseJsonUnsafe(sessionValue).show))
+        action = s ⇒
+          CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
+            val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+            val predicate = subJson match {
+              case Json.Null ⇒ false
+              case _         ⇒ true
             }
-        } { s ⇒ true }
+            (true, predicate, keyIsAbsentError(jsonPath, parseJsonUnsafe(sessionValue).show))
+          }
       )
     }
 
@@ -158,46 +151,42 @@ object JsonAssertions {
 
     def isNotEmpty = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty",
-      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) {
-      (s, sessionValue) ⇒
-        {
-          val jArray = {
-            if (jsonPath == JsonPath.root)
-              parseArray(sessionValue)
-            else {
-              val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
-              selectArrayJsonPath(parsedPath, sessionValue)
-            }
+      action = s ⇒
+      CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
+        val jArray = {
+          if (jsonPath == JsonPath.root)
+            parseArray(sessionValue)
+          else {
+            val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
+            selectArrayJsonPath(parsedPath, sessionValue)
           }
-          jArray.fold(
-            e ⇒ throw e,
-            l ⇒ (l.nonEmpty, jsonArrayNotEmptyError(Json.fromValues(l)))
-          )
         }
-    } { s ⇒ true }
+        jArray.fold(
+          e ⇒ throw e,
+          l ⇒ (true, l.nonEmpty, jsonArrayNotEmptyError(Json.fromValues(l)))
+        )
+      }
     )
 
     def isEmpty = hasSize(0)
 
     def hasSize(size: Int) = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is '$size'" else s"$target's array '$jsonPath' size is '$size'",
-      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) {
-      (s, sessionValue) ⇒
-        {
-          val jArray = {
-            if (jsonPath == JsonPath.root)
-              parseArray(sessionValue)
-            else {
-              val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
-              selectArrayJsonPath(parsedPath, sessionValue)
-            }
+      action = s ⇒
+      CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
+        val jArray = {
+          if (jsonPath == JsonPath.root)
+            parseArray(sessionValue)
+          else {
+            val parsedPath = resolveParseJsonPath(jsonPath, resolver)(s)
+            selectArrayJsonPath(parsedPath, sessionValue)
           }
-          jArray.fold(
-            e ⇒ throw e,
-            l ⇒ (l.size, arraySizeError(size, Json.fromValues(l).show))
-          )
         }
-    } { s ⇒ size }
+        jArray.fold(
+          e ⇒ throw e,
+          l ⇒ (size, l.size, arraySizeError(size, Json.fromValues(l).show))
+        )
+      }
     )
 
     def is[A: Show: Resolvable: Encoder](expected: A) = {
@@ -263,15 +252,13 @@ object JsonAssertions {
     private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, elements: Seq[A], expected: Boolean) =
       AssertStep(
         title = title,
-        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) {
-        (s, sessionValue) ⇒
-          {
-            val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-            val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
-            val containsAll = resolvedJson.forall(jArr.contains)
-            (containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
-          }
-      } { s ⇒ expected }
+        action = s ⇒
+        CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
+          val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
+          val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
+          val containsAll = resolvedJson.forall(jArr.contains)
+          (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
+        }
       )
   }
 
@@ -292,14 +279,16 @@ object JsonAssertions {
     expected: Session ⇒ A
   ) = AssertStep(
     title = title,
-    action = s ⇒ GenericEqualityAssertion.fromSession(s, sessionKey) {
-    (session, sessionValue) ⇒ mapFct(session, arrayExtractor(session, sessionValue))
-  } { s ⇒ expected(s) }
+    action = s ⇒
+    GenericEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
+      val actualValue = mapFct(session, arrayExtractor(session, sessionValue))
+      val expectedValue = expected(s)
+      (expectedValue, actualValue)
+    }
   )
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
-
     if (ignoring.isEmpty) baseWithWhite
     else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }

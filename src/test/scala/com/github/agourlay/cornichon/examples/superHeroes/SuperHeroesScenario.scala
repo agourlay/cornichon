@@ -427,6 +427,7 @@ class SuperHeroesScenario extends CornichonFeature {
         Then assert headers.name("server").isAbsent
         And I save_header_value("Server" → "my-server-version")
         Then assert session_value("my-server-version").is("akka-http/2.4.12")
+        Then assert headers.hasSize(2)
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session

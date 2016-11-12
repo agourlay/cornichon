@@ -29,11 +29,10 @@ case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, n
 }
 
 object GenericEqualityAssertion {
-  def fromSession[A: Show: Diff: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ A)(expectedProducer: Session ⇒ A) =
-    GenericEqualityAssertion(
-      expected = expectedProducer(s),
-      actual = transformSessionValue(s, s.get(key))
-    )
+  def fromSession[A: Show: Diff: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ (A, A)) = {
+    val (expected, actual) = transformSessionValue(s, s.get(key))
+    GenericEqualityAssertion(expected, actual)
+  }
 }
 
 case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
@@ -57,13 +56,9 @@ case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customM
 }
 
 object CustomMessageEqualityAssertion {
-  def fromSession[A: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ (A, A ⇒ String))(expectedProducer: Session ⇒ A) = {
-    val (res, details) = transformSessionValue(s, s.get(key))
-    CustomMessageEqualityAssertion(
-      expected = expectedProducer(s),
-      actual = res,
-      customMessage = details
-    )
+  def fromSession[A: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ (A, A, A ⇒ String)) = {
+    val (expected, actual, details) = transformSessionValue(s, s.get(key))
+    CustomMessageEqualityAssertion(expected, actual, details)
   }
 }
 

@@ -33,6 +33,6 @@ case class CollectionSizeAssertion[A: Show](collection: Iterable[A], size: Int) 
 }
 
 case class CollectionSizeAssertionError[A: Show](collection: Iterable[A], size: Int) extends CornichonError {
-  val msg = s"expected collection to have size '$size' but it contains '${collection.size} elements':\n${collection.show}"
+  val msg = s"expected collection to have size '$size' but it actually contains '${collection.size} elements':\n${collection.show}"
 }
 
