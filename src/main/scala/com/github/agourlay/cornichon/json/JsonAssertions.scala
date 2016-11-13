@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.json
 
-import cats.{ Eq, Show }
+import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ Session, SessionKey }
@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, Diff, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 
@@ -205,37 +205,22 @@ object JsonAssertions {
         jArray.map(removeFieldsByPath(_, ignoredPaths))
       }
 
-      def removeIgnoredPathFromElementsSet(s: Session, jArray: List[Json]) = removeIgnoredPathFromElements(s, jArray).toSet
-
-      //TODO remove duplication between Array and Set base comparation
-      if (ordered)
-        body_array_transform(
-          sessionKey = sessionKey,
-          arrayExtractor = applyPathAndFindArray(jsonPath, resolver),
-          mapFct = removeIgnoredPathFromElements,
-          title = assertionTitle,
-          expected = s ⇒ {
-            resolveParseJson(expected, s, resolver).arrayOrObject(
-              throw NotAnArrayError(expected),
-              values ⇒ values,
-              obj ⇒ throw NotAnArrayError(expected)
-            )
-          }
+      AssertStep(
+        title = assertionTitle,
+        action = s ⇒ {
+        val arrayFromSession = applyPathAndFindArray(jsonPath, resolver)(s, s.get(sessionKey))
+        val actualValue = removeIgnoredPathFromElements(s, arrayFromSession)
+        val expectedArray = resolveParseJson(expected, s, resolver).arrayOrObject(
+          throw NotAnArrayError(expected),
+          values ⇒ values,
+          _ ⇒ throw NotAnArrayError(expected)
         )
-      else
-        body_array_transform(
-          sessionKey = sessionKey,
-          arrayExtractor = applyPathAndFindArray(jsonPath, resolver),
-          mapFct = removeIgnoredPathFromElementsSet,
-          title = assertionTitle,
-          expected = s ⇒ {
-            resolveParseJson(expected, s, resolver).arrayOrObject(
-              throw NotAnArrayError(expected),
-              values ⇒ values.toSet,
-              obj ⇒ throw NotAnArrayError(expected)
-            )
-          }
-        )
+        if (ordered)
+          GenericEqualityAssertion(expectedArray, actualValue)
+        else
+          CollectionsContainSameElements(expectedArray, actualValue)
+      }
+      )
     }
 
     def not_contains[A: Show: Resolvable: Encoder](elements: A*) = {
@@ -271,22 +256,6 @@ object JsonAssertions {
     }
     jArr.fold(e ⇒ throw e, identity)
   }
-
-  private def body_array_transform[A: Show: Diff: Eq](
-    sessionKey: SessionKey,
-    arrayExtractor: (Session, String) ⇒ List[Json],
-    mapFct: (Session, List[Json]) ⇒ A,
-    title: String,
-    expected: Session ⇒ A
-  ) = AssertStep(
-    title = title,
-    action = s ⇒
-    GenericEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
-      val actualValue = mapFct(session, arrayExtractor(session, sessionValue))
-      val expectedValue = expected(s)
-      (expectedValue, actualValue)
-    }
-  )
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle

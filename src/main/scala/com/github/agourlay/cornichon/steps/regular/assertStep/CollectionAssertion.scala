@@ -7,9 +7,7 @@ import cats.syntax.show._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
 import com.github.agourlay.cornichon.util.Instances._
 
-abstract class CollectionAssertion[A: Show] extends Assertion {
-  def withName(collectionName: String): CollectionAssertion[A]
-}
+abstract class CollectionAssertion[A: Show] extends Assertion
 
 case class CollectionNotEmptyAssertion[A: Show](collection: Iterable[A], name: String = "collection") extends CollectionAssertion[A] {
   def withName(collectionName: String) = copy(name = collectionName)
@@ -44,3 +42,19 @@ case class CollectionSizeAssertionError[A: Show](collection: Iterable[A], size: 
   val msg = s"expected '$name' to have size '$size' but it actually contains '${collection.size} elements':\n${collection.show}"
 }
 
+case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) extends CollectionAssertion[A] {
+  val validated: ValidatedNel[CornichonError, Done] = {
+    val deleted = right.diff(left)
+    val added = left.diff(right)
+    if (added.isEmpty && deleted.isEmpty)
+      valid(Done)
+    else invalidNel(CollectionsContainSameElementsAssertionError(added, deleted))
+  }
+}
+
+case class CollectionsContainSameElementsAssertionError[A: Show](added: Seq[A], deleted: Seq[A]) extends CornichonError {
+  val msg = s"""|Non ordered diff. between actual result and expected result is :
+                |${if (added.isEmpty) "" else "added elements:\n" + added.show}
+                |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
+      """.stripMargin.trim
+}
