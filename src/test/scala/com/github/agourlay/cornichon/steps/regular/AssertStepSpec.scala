@@ -1,12 +1,15 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import cats.scalatest.XorMatchers._
-import com.github.agourlay.cornichon.core.{ Scenario, Session }
+import cats.scalatest.EitherValues
+import com.github.agourlay.cornichon.core.{ Done, Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
-class AssertStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class AssertStepSpec extends AsyncWordSpec
+    with Matchers
+    with EitherValues
+    with StepUtilSpec {
 
   "AssertStep" must {
 
@@ -32,7 +35,7 @@ class AssertStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "return session if assertion is True" in {
       val assertion = GenericEqualityAssertion(2, 2)
       val step = AssertStep("stupid step", s ⇒ assertion)
-      step.runStepPredicate(assertion) should be(right)
+      step.runStepPredicate(assertion).value should be(Done)
     }
   }
 }

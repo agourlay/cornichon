@@ -4,7 +4,6 @@ import java.util.Timer
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
-import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
@@ -23,7 +22,7 @@ case class DebugStep(message: Session ⇒ String, title: String = "Debug step") 
       case Failure(e) ⇒
         val debugErrorLogs = errorLogs(title, e, initialRunState.depth)
         val failedStep = FailedStep.fromThrowable(this, e)
-        (debugErrorLogs, left(failedStep))
+        (debugErrorLogs, Left(failedStep))
     }
     Future.successful(initialRunState.appendLogs(fullLogs), xor)
   }

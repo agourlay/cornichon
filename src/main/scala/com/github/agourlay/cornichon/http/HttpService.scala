@@ -3,8 +3,8 @@ package com.github.agourlay.cornichon.http
 import java.util.Timer
 
 import cats.Show
-import cats.data.{ Xor, XorT }
-import cats.data.Xor.{ left, right }
+import cats.data.EitherT
+import cats.syntax.either._
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
@@ -39,8 +39,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
     for {
-      bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(right(None))
-      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(right(None))
+      bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(Right(None))
+      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(Right(None))
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       paramsResolved ← resolveParams(url, params)(s)
@@ -50,31 +50,31 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequest ← XorT(Future.successful(resolveRequest(r)(s)))
+      resolvedRequest ← EitherT(Future.successful(resolveRequest(r)(s)))
       resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
         client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers)
       }
-      newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
+      newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequest ← XorT(Future.successful(resolveStreamedRequest[String](r)(s)))
+      resolvedRequest ← EitherT(Future.successful(resolveStreamedRequest[String](r)(s)))
       resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
         client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin)
       }
-      newSession ← XorT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
+      newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
-  def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Xor[CornichonError, CornichonHttpResponse] =
+  def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Either[CornichonError, CornichonHttpResponse] =
     expected.map { expectedStatus ⇒
       if (httpResponse.status == expectedStatus)
-        right(httpResponse)
+        Right(httpResponse)
       else
-        left(StatusNonExpected(expectedStatus, httpResponse))
-    }.getOrElse(right(httpResponse))
+        Left(StatusNonExpected(expectedStatus, httpResponse))
+    }.getOrElse(Right(httpResponse))
 
-  def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Xor[CornichonError, Seq[(String, String)]] = {
+  def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
     val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
     val urlParams = if (urlsParamsPart.trim.isEmpty) Seq.empty else client.paramsFromUrl(urlsParamsPart)
     resolver.fillPlaceholders(urlParams ++ params)(session)
@@ -93,13 +93,13 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       lastResponseHeadersKey → encodeSessionHeaders(response)
     ))
 
-  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Xor[CornichonError, Session] =
+  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
     extractor match {
       case NoOpExtraction ⇒
-        right(commonSessionExtraction(session, response))
+        Right(commonSessionExtraction(session, response))
 
       case RootExtractor(targetKey) ⇒
-        right(commonSessionExtraction(session, response).addValue(targetKey, response.body))
+        Right(commonSessionExtraction(session, response).addValue(targetKey, response.body))
 
       case PathExtractor(path, targetKey) ⇒
         JsonPath.run(path, response.body)
@@ -119,15 +119,15 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     else if (input.startsWith("https://") || input.startsWith("http://")) input
     else baseUrl + input
 
-  private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Xor[CornichonError, CornichonHttpResponse]]): XorT[Future, CornichonError, CornichonHttpResponse] = {
+  private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Either[CornichonError, CornichonHttpResponse]]): EitherT[Future, CornichonError, CornichonHttpResponse] = {
     val failedAfter = Timeouts.failAfter(t)(f)(TimeoutErrorAfter(request, t))
       .recover {
         case NonFatal(failure) ⇒ failure match {
-          case t @ TimeoutErrorAfter(_, _) ⇒ left(t)
-          case t: Throwable                ⇒ left(RequestError(request, t))
+          case t @ TimeoutErrorAfter(_, _) ⇒ Left(t)
+          case t: Throwable                ⇒ Left(RequestError(request, t))
         }
       }
-    XorT(failedAfter)
+    EitherT(failedAfter)
   }
 
   def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Session] =

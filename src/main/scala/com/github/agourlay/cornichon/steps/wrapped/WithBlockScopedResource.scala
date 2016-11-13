@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
-import cats.data.Xor._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
@@ -26,7 +25,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
         resourcedRes.fold(
           failedStep ⇒ {
             val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(resource.closingTitle, initialDepth)
-            (failureLogs, left(failedStep))
+            (failureLogs, Left(failedStep))
           },
           done ⇒ {
             val successLogs = successTitleLog(initialDepth) +: nestedLogs :+ SuccessLogInstruction(resource.closingTitle, initialDepth, None)

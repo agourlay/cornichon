@@ -2,14 +2,22 @@ package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
 
-import cats.scalatest.XorValues
+import cats.scalatest.{ EitherMatchers, EitherValues }
+import cats.syntax.either._
+
 import com.github.agourlay.cornichon.core.SessionSpec._
 import com.github.agourlay.cornichon.core.{ KeyNotFoundInSession, Session }
+
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 
-class ResolverSpec extends WordSpec with Matchers with OptionValues with PropertyChecks with XorValues {
+class ResolverSpec extends WordSpec
+    with Matchers
+    with OptionValues
+    with PropertyChecks
+    with EitherValues
+    with EitherMatchers {
 
   val resolver = Resolver.withoutExtractor()
 

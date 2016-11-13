@@ -5,6 +5,7 @@ import java.util.Timer
 import cats.data.Validated._
 import cats.data._
 import cats.syntax.cartesian._
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing
@@ -18,7 +19,7 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     val session = initialRunState.session
     val (res, duration) = Timing.withDuration {
-      Xor.catchNonFatal(action(session))
+      Either.catchNonFatal(action(session))
         .leftMap(CornichonError.fromThrowable)
         .flatMap(runStepPredicate)
     }
@@ -26,7 +27,7 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
   }
 
   //TODO propage all errors
-  def runStepPredicate(assertion: Assertion): Xor[CornichonError, Done] = assertion.validated.toXor.leftMap(_.head)
+  def runStepPredicate(assertion: Assertion): Either[CornichonError, Done] = assertion.validated.toEither.leftMap(_.head)
 }
 
 trait Assertion { self ⇒

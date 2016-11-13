@@ -5,7 +5,6 @@ import java.util.Timer
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
-import cats.data.Xor._
 
 import scala.concurrent.ExecutionContext
 
@@ -28,7 +27,7 @@ case class AttachAsStep(title: String, nested: List[Step]) extends WrapperStep {
         val (fullLogs, xor) = res.fold(
           failedStep ⇒ {
             val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(s"$title - Failed", initialDepth)
-            (failureLogs, left(failedStep))
+            (failureLogs, Left(failedStep))
           },
           done ⇒ {
             val successLogs = successTitleLog(initialDepth) +: nestedLogs :+ SuccessLogInstruction(s"$title - Succeeded", initialDepth, Some(executionTime))

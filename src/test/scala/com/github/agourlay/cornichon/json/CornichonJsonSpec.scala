@@ -3,10 +3,15 @@ package com.github.agourlay.cornichon.json
 import io.circe.{ Json, JsonObject }
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
-import cats.data.Xor._
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import com.github.agourlay.cornichon.util.Instances._
 
-class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with CornichonJson {
+class CornichonJsonSpec extends WordSpec
+    with Matchers
+    with PropertyChecks
+    with CornichonJson
+    with EitherValues
+    with EitherMatchers {
 
   def refParser(input: String) =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
@@ -18,41 +23,41 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
     "parseJson" must {
       "parse Boolean" in {
         forAll { bool: Boolean ⇒
-          parseJson(bool) should be(right(Json.fromBoolean(bool)))
+          parseJson(bool) should beRight(Json.fromBoolean(bool))
         }
       }
 
       "parse Int" in {
         forAll { int: Int ⇒
-          parseJson(int) should be(right(Json.fromInt(int)))
+          parseJson(int) should beRight(Json.fromInt(int))
         }
       }
 
       "parse Long" in {
         forAll { long: Long ⇒
-          parseJson(long) should be(right(Json.fromLong(long)))
+          parseJson(long) should beRight(Json.fromLong(long))
         }
       }
 
       "parse Double" in {
         forAll { double: Double ⇒
-          parseJson(double) should be(right(Json.fromDoubleOrNull(double)))
+          parseJson(double) should beRight(Json.fromDoubleOrNull(double))
         }
       }
 
       "parse BigDecimal" in {
         forAll { bigDec: BigDecimal ⇒
-          parseJson(bigDec) should be(right(Json.fromBigDecimal(bigDec)))
+          parseJson(bigDec) should beRight(Json.fromBigDecimal(bigDec))
         }
       }
 
       "parse flat string" in {
-        parseJson("cornichon") should be(right(Json.fromString("cornichon")))
+        parseJson("cornichon") should beRight(Json.fromString("cornichon"))
       }
 
       "parse JSON object string" in {
         val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
-        parseJson("""{"name":"cornichon"}""") should be(right(expected))
+        parseJson("""{"name":"cornichon"}""") should beRight(expected)
       }
 
       "parse JSON Array string" in {
@@ -68,7 +73,7 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
             {"name":"scala"}
            ]
            """
-        ) should be(right(expected))
+        ) should beRight(expected)
       }
 
       "parse data table" in {
@@ -93,7 +98,7 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
            |  Name  |   Age  | 2LettersName |
            | "John" |   50   |    false     |
            | "Bob"  |   11   |    true      |
-         """) should be(right(refParser(expected)))
+         """) should beRight(refParser(expected))
       }
     }
 
@@ -222,7 +227,7 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
           """.stripMargin
 
         val paths = Seq("age").map(JsonPath.parse)
-        removeFieldsByPath(refParser(input), paths) should be(right(refParser(expected)))
+        removeFieldsByPath(refParser(input), paths) should be(Right(refParser(expected)))
       }
 
       //FIXME - done manually in BodyArrayAssertion for now
@@ -266,7 +271,7 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
           """.stripMargin
 
         val paths = Seq("people[*].age").map(JsonPath.parse)
-        removeFieldsByPath(refParser(input), paths) should be(right(refParser(expected)))
+        removeFieldsByPath(refParser(input), paths) should be(Right(refParser(expected)))
       }
 
       "be correct even with duplicate Fields" in {
@@ -345,7 +350,7 @@ class CornichonJsonSpec extends WordSpec with Matchers with PropertyChecks with 
 
         val out = parseGraphQLJson(in)
 
-        out should be(right(refParser(expected)))
+        out should beRight(refParser(expected))
 
       }
     }

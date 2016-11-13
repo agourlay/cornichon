@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.Show
 import cats.syntax.show._
-import cats.data.Xor
+import cats.syntax.either._
 import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.Instances._
@@ -31,14 +31,14 @@ case class Session(private val content: Map[String, Vector[String]]) {
 
   def get(sessionKey: SessionKey): String = get(sessionKey.name, sessionKey.index)
 
-  def getXor(key: String, stackingIndice: Option[Int] = None) =
-    Xor.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, stackingIndice, this))
+  def getXor(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
+    Either.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, stackingIndice, this))
 
-  def getJsonXor(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Xor[CornichonError, Json] =
+  def getJsonXor(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
     for {
       sessionValue ← getXor(key, stackingIndice)
       jsonValue ← parseJson(sessionValue)
-      extracted ← Xor.catchNonFatal(JsonPath.run(path, jsonValue)).leftMap(CornichonError.fromThrowable)
+      extracted ← Either.catchNonFatal(JsonPath.run(path, jsonValue)).leftMap(CornichonError.fromThrowable)
     } yield extracted
 
   def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
@@ -47,7 +47,7 @@ case class Session(private val content: Map[String, Vector[String]]) {
   def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) = {
     val res = for {
       json ← getJsonXor(key, stackingIndice, path)
-      field ← Xor.fromOption(json.asString, NotStringFieldError(json, path))
+      field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
     } yield field
     res.fold(e ⇒ throw e, identity)
   }

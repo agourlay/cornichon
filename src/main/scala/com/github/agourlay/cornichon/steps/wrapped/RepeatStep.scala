@@ -2,8 +2,6 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
-import cats.data.Xor
-import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -18,7 +16,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
-    def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Xor[FailedStep, Done])] =
+    def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Either[FailedStep, Done])] =
       // reset logs at each loop to have the possibility to not aggregate in failure case
       engine.runSteps(runState.resetLogs).flatMap {
         case (onceMoreRunState, stepResult) ⇒
@@ -30,7 +28,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
               else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session))
             case Left(failed) ⇒
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Future.successful(retriesNumber, onceMoreRunState, left(failed))
+              Future.successful(retriesNumber, onceMoreRunState, Left(failed))
           }
       }
 
@@ -50,7 +48,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurence", depth, Some(executionTime))
             val artificialFailedStep = FailedStep(failedStep.step, RepeatBlockContainFailedSteps)
-            (fullLogs, left(artificialFailedStep))
+            (fullLogs, Left(artificialFailedStep))
         }
 
         (initialRunState.withSession(repeatedState.session).appendLogs(fullLogs), xor)

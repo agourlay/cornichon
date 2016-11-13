@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import cats.{ Eq, Show }
 import cats.syntax.show._
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff

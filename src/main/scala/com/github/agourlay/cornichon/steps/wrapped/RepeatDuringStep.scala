@@ -3,14 +3,12 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.Timer
 import java.util.concurrent.TimeUnit
 
-import cats.data.Xor
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.FiniteDuration
-import cats.data.Xor._
 
 case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extends WrapperStep {
   val title = s"Repeat block during '$duration'"
@@ -19,7 +17,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
 
     val initialDepth = initialRunState.depth
 
-    def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] = {
+    def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
         engine.runSteps(runState.resetLogs)
@@ -38,7 +36,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
                 Future.successful(retriesNumber, successState, rightDone)
             case Left(failedStep) ⇒
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Future.successful(retriesNumber, repeatedOnceMore, left(failedStep))
+              Future.successful(retriesNumber, repeatedOnceMore, Left(failedStep))
           }
       }
     }
@@ -60,7 +58,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(initialDepth) +: repeatedRunState.logs :+ FailureLogInstruction(s"Repeat block during '$duration' failed after being retried '$retries' times", initialDepth, Some(executionTime))
             val artificialFailedStep = FailedStep(failedStep.step, RepeatDuringBlockContainFailedSteps)
-            (withSession.appendLogs(fullLogs), left(artificialFailedStep))
+            (withSession.appendLogs(fullLogs), Left(artificialFailedStep))
         }
     }
   }

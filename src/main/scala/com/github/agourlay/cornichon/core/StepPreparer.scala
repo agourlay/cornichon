@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.Xor
+import cats.syntax.either._
 import com.github.agourlay.cornichon.resolver.Resolver
 
 sealed trait StepPreparer {
 
-  def run(session: Session)(step: Step): CornichonError Xor Step
+  def run(session: Session)(step: Step): CornichonError Either Step
 
 }
 
