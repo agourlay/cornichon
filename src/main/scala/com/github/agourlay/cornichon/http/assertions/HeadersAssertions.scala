@@ -1,28 +1,14 @@
-package com.github.agourlay.cornichon.http
+package com.github.agourlay.cornichon.http.assertions
 
 import com.github.agourlay.cornichon.core.SessionKey
-import com.github.agourlay.cornichon.http.HttpAssertionErrors._
+import com.github.agourlay.cornichon.http.HttpService
+import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
-import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
-import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
-import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Instances._
 
-object HttpAssertions {
+object HeadersAssertions {
   private val headersSessionKey = SessionKey(lastResponseHeadersKey)
-
-  case object StatusAssertion {
-    def is(expected: Int) = AssertStep(
-      title = s"status is '$expected'",
-      action = s ⇒
-      CustomMessageEqualityAssertion(
-        expected = expected,
-        actual = s.get(headersSessionKey).toInt,
-        customMessage = statusError(expected, s.get(lastResponseBodyKey))
-      )
-    )
-  }
 
   case class HeadersAssertion(private val ordered: Boolean) {
     def is(expected: (String, String)*) = AssertStep(
@@ -77,14 +63,21 @@ object HttpAssertions {
     )
   }
 
-  case class HttpListen(name: String, resolver: Resolver) {
-    def received_calls(count: Int) = AssertStep(
-      title = s"HTTP mock server '$name' received '$count' calls",
-      action = s ⇒ GenericEqualityAssertion(expected = count, actual = s.get(s"$name$nbReceivedCallsSuffix").toInt)
-    )
+  def headersDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
+    val prettyHeaders = displayStringPairs(decodeSessionHeaders(sourceArray))
+    s"""expected headers to contain '$expected' but it is not the case with headers:
+       |$prettyHeaders""".stripMargin
+  }
 
-    def received_requests =
-      JsonAssertion(resolver, SessionKey(s"$name$receivedBodiesSuffix"), prettySessionKeyTitle = Some(s"HTTP mock server '$name' received requests"))
+  def headersDoesNotContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): Boolean ⇒ String = resFalse ⇒ {
+    val prettyHeaders = displayStringPairs(sourceHeaders)
+    s"""expected headers to contain field with name '$name' but it is not the case with headers:
+       |$prettyHeaders""".stripMargin
+  }
 
+  def headersContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): Boolean ⇒ String = resFalse ⇒ {
+    val prettyHeaders = displayStringPairs(sourceHeaders)
+    s"""expected headers to not contain field with name '$name' but it is not the case with headers:
+       |$prettyHeaders""".stripMargin
   }
 }

@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
-import com.github.agourlay.cornichon.http.HttpAssertions._
+import com.github.agourlay.cornichon.http.assertions.HeadersAssertions._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -20,6 +20,8 @@ import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
+import com.github.agourlay.cornichon.http.assertions.StatusAssertions._
+import com.github.agourlay.cornichon.http.assertions.HttpListenAssertions._
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
