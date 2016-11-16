@@ -48,7 +48,8 @@ case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) 
     val added = left.diff(right)
     if (added.isEmpty && deleted.isEmpty)
       valid(Done)
-    else invalidNel(CollectionsContainSameElementsAssertionError(added, deleted))
+    else
+      invalidNel(CollectionsContainSameElementsAssertionError(added, deleted))
   }
 }
 

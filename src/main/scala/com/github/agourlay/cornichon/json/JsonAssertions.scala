@@ -86,13 +86,11 @@ object JsonAssertions {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target contains '$expectedPart'" else s"$target's field '$jsonPath' contains '$expectedPart'"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒
-          CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
-            val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-            val prettyJson = subJson.show
-            val predicate = prettyJson.contains(expectedPart)
-            (true, predicate, notContainedError(expectedPart, prettyJson))
-          }
+        action = s ⇒ {
+          val sessionValue = s.get(sessionKey)
+          val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(s)
+          StringContainsAssertion(subJson.show, expectedPart)
+        }
       )
     }
 

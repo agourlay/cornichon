@@ -16,11 +16,6 @@ object JsonAssertionErrors {
         |$source""".stripMargin
   }
 
-  def notContainedError(expectedPart: String, source: String): Boolean ⇒ String = resFalse ⇒ {
-    s"""expected string '$expectedPart' to be contained but it is not the case with value :
-        |$source""".stripMargin
-  }
-
   case object InvalidIgnoringConfigError extends CornichonError {
     val msg = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
   }
