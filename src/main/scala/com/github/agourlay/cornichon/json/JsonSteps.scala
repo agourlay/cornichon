@@ -12,16 +12,16 @@ import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 
-object JsonAssertions {
+object JsonSteps {
 
-  case class JsonValuesAssertion(
+  case class JsonValuesStepBuilder(
       private val k1: String,
       private val k2: String,
       private val resolver: Resolver,
       private val ignoredKeys: Seq[String] = Seq.empty
   ) {
 
-    def ignoring(ignoring: String*): JsonValuesAssertion = copy(ignoredKeys = ignoring)
+    def ignoring(ignoring: String*): JsonValuesStepBuilder = copy(ignoredKeys = ignoring)
 
     def areEquals = AssertStep(
       title = jsonAssertionTitleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoredKeys),
@@ -34,7 +34,7 @@ object JsonAssertions {
     )
   }
 
-  case class JsonAssertion(
+  case class JsonStepBuilder(
       private val resolver: Resolver,
       private val sessionKey: SessionKey,
       private val prettySessionKeyTitle: Option[String] = None,
@@ -45,11 +45,11 @@ object JsonAssertions {
 
     private val target = prettySessionKeyTitle.getOrElse(sessionKey.name)
 
-    def path(path: String): JsonAssertion = copy(jsonPath = path)
+    def path(path: String) = copy(jsonPath = path)
 
-    def ignoring(ignoring: String*): JsonAssertion = copy(ignoredKeys = ignoring)
+    def ignoring(ignoring: String*) = copy(ignoredKeys = ignoring)
 
-    def whitelisting: JsonAssertion = copy(whitelist = true)
+    def whitelisting = copy(whitelist = true)
 
     def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
       if (whitelist && ignoredKeys.nonEmpty)
@@ -130,10 +130,10 @@ object JsonAssertions {
       if (ignoredKeys.nonEmpty)
         throw UseIgnoringEach
       else
-        JsonArrayAssertion(sessionKey, jsonPath, ordered = false, ignoredKeys, resolver, prettySessionKeyTitle)
+        JsonArrayStepBuilder(sessionKey, jsonPath, ordered = false, ignoredKeys, resolver, prettySessionKeyTitle)
   }
 
-  case class JsonArrayAssertion(
+  case class JsonArrayStepBuilder(
       private val sessionKey: SessionKey,
       private val jsonPath: String,
       private val ordered: Boolean,
@@ -146,7 +146,7 @@ object JsonAssertions {
 
     def inOrder = copy(ordered = true)
 
-    def ignoringEach(ignoringEach: String*): JsonArrayAssertion = copy(ignoredEachKeys = ignoringEach)
+    def ignoringEach(ignoringEach: String*): JsonArrayStepBuilder = copy(ignoredEachKeys = ignoringEach)
 
     def isNotEmpty = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty",

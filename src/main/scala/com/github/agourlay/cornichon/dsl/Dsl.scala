@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{ FeatureDef, Session, Step, Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
@@ -103,7 +104,7 @@ trait Dsl extends Instances {
     effect = s ⇒ s.removeKey(key)
   )
 
-  def session_value(key: String) = SessionAssertion(resolver, key)
+  def session_value(key: String) = SessionStepBuilder(resolver, key)
 
   def show_session = DebugStep(s ⇒ s"Session content is\n${s.prettyPrint}")
 

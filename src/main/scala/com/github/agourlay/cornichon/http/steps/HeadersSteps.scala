@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.http.assertions
+package com.github.agourlay.cornichon.http.steps
 
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.http.HttpService
@@ -7,10 +7,10 @@ import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Instances._
 
-object HeadersAssertions {
+object HeadersSteps {
   private val headersSessionKey = SessionKey(lastResponseHeadersKey)
 
-  case class HeadersAssertion(private val ordered: Boolean) {
+  case class HeadersStepBuilder(private val ordered: Boolean) {
     def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${displayStringPairs(expected)}",
       action = s ⇒
@@ -36,12 +36,12 @@ object HeadersAssertions {
       }
     )
 
-    def inOrder: HeadersAssertion = copy(ordered = true)
+    def inOrder: HeadersStepBuilder = copy(ordered = true)
 
-    def name(name: String) = HeadersNameAssertion(name)
+    def name(name: String) = HeadersNameStepBuilder(name)
   }
 
-  case class HeadersNameAssertion(name: String) {
+  case class HeadersNameStepBuilder(name: String) {
     def isPresent = AssertStep(
       title = s"headers contain field with name '$name'",
       action = s ⇒
