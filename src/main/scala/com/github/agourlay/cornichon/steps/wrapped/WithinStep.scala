@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 case class WithinStep(nested: List[Step], maxDuration: Duration) extends WrapperStep {
 
@@ -29,7 +29,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
             if (executionTime.gt(maxDuration)) {
               val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", initialDepth, Some(executionTime))
               // The nested steps were successful but the did not finish in time, the last step is picked as failed step
-              val failedStep = FailedStep(nested.last, WithinBlockSucceedAfterMaxDuration)
+              val failedStep = FailedStep(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
               (fullLogs, Left(failedStep))
             } else {
               val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", initialDepth, Some(executionTime))
@@ -47,6 +47,6 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
   }
 }
 
-case object WithinBlockSucceedAfterMaxDuration extends CornichonError {
-  val msg = "Within block succeeded after 'maxDuration'"
+case class WithinBlockSucceedAfterMaxDuration(maxDuration: Duration, executionTime: FiniteDuration) extends CornichonError {
+  val msg = s"Within block succeeded after specified max duration $maxDuration in $executionTime"
 }
