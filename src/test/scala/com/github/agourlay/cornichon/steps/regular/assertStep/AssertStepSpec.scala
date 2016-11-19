@@ -1,9 +1,8 @@
-package com.github.agourlay.cornichon.steps.regular
+package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.scalatest.EitherValues
 import com.github.agourlay.cornichon.core.{ Done, Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 class AssertStepSpec extends AsyncWordSpec
