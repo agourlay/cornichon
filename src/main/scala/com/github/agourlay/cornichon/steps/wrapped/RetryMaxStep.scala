@@ -47,7 +47,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
             (fullLogs, rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(depth) +: retriedState.logs :+ FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RetryMaxBlockReachedLimit)
+            val artificialFailedStep = FailedStep(failedStep.step, RetryMaxBlockReachedLimit(limit, failedStep.error))
             (fullLogs, Left(artificialFailedStep))
         }
 
@@ -56,6 +56,6 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
   }
 }
 
-case object RetryMaxBlockReachedLimit extends CornichonError {
-  val msg = "retry max block reached the limit"
+case class RetryMaxBlockReachedLimit(limit: Int, error: CornichonError) extends CornichonError {
+  val msg = s"Retry max block failed '$limit' times with the last error being:\n${error.msg}"
 }

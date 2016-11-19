@@ -51,5 +51,5 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
 }
 
 case object ConcurrentlyTimeout extends CornichonError {
-  val msg = "concurrent block did not reach completion in 'maxTime'"
+  val msg = "Concurrently block did not reach completion in 'maxTime'"
 }

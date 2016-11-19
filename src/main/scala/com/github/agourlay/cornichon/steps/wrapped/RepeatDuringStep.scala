@@ -57,13 +57,13 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
             (withSession.appendLogs(fullLogs), rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(initialDepth) +: repeatedRunState.logs :+ FailureLogInstruction(s"Repeat block during '$duration' failed after being retried '$retries' times", initialDepth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RepeatDuringBlockContainFailedSteps)
+            val artificialFailedStep = FailedStep(failedStep.step, RepeatDuringBlockContainFailedSteps(duration, failedStep.error))
             (withSession.appendLogs(fullLogs), Left(artificialFailedStep))
         }
     }
   }
 }
 
-case object RepeatDuringBlockContainFailedSteps extends CornichonError {
-  val msg = "repeatDuring block contains failed step(s)"
+case class RepeatDuringBlockContainFailedSteps(duration: FiniteDuration, error: CornichonError) extends CornichonError {
+  val msg = s"RepeatDuring block failed before '$duration' with error:\n${error.msg}"
 }

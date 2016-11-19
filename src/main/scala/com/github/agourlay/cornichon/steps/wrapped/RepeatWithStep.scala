@@ -53,7 +53,7 @@ case class RepeatWithStep[A: Show](nested: List[Step], elements: Seq[A], element
             (fullLogs, rightDone)
           case Left((failedElement, failedStep)) ⇒
             val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"RepeatWith block with elements $printElements failed at element '${failedElement.show}'", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement))
+            val artificialFailedStep = FailedStep(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement, failedStep.error))
             (fullLogs, Left(artificialFailedStep))
         }
 
@@ -62,6 +62,6 @@ case class RepeatWithStep[A: Show](nested: List[Step], elements: Seq[A], element
   }
 }
 
-case class RepeatWithBlockContainFailedSteps[A: Show](element: A) extends CornichonError {
-  val msg = s"RepeatWith block contains failed step(s) for element '${element.show}'"
+case class RepeatWithBlockContainFailedSteps[A: Show](element: A, error: CornichonError) extends CornichonError {
+  val msg = s"RepeatWith block failed for element '${element.show}' with error:\n${error.msg}"
 }

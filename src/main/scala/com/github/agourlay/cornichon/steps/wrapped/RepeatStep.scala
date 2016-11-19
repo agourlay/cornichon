@@ -50,7 +50,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
             (fullLogs, rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurence", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RepeatBlockContainFailedSteps)
+            val artificialFailedStep = FailedStep(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.error))
             (fullLogs, Left(artificialFailedStep))
         }
 
@@ -59,6 +59,6 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
   }
 }
 
-case object RepeatBlockContainFailedSteps extends CornichonError {
-  val msg = "repeat block contains failed step(s)"
+case class RepeatBlockContainFailedSteps(failedOccurence: Long, error: CornichonError) extends CornichonError {
+  val msg = s"Repeat block failed at occurence $failedOccurence with error:\n${error.msg}"
 }

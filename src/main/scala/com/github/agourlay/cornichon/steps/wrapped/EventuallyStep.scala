@@ -87,5 +87,5 @@ object EventuallyConf {
 }
 
 case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
-  val msg = "eventually block succeeded after 'maxDuration'"
+  val msg = "Eventually block succeeded after 'maxDuration'"
 }

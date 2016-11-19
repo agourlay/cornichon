@@ -48,5 +48,5 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
 }
 
 case object WithinBlockSucceedAfterMaxDuration extends CornichonError {
-  val msg = "within block succeeded after 'maxDuration'"
+  val msg = "Qithin block succeeded after 'maxDuration'"
 }
