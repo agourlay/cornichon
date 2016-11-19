@@ -44,7 +44,12 @@ trait Dsl extends Instances {
 
   def Repeat(times: Int) =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatStep(steps, times)
+      RepeatStep(steps, times, None)
+    }
+
+  def Repeat(times: Int, indice: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      RepeatStep(steps, times, Some(indice))
     }
 
   def RetryMax(limit: Int) =

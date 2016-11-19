@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
+case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[String]) extends WrapperStep {
 
   require(occurrence > 0, "repeat block must contain a positive number of occurence")
 
@@ -16,9 +16,11 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
-    def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Either[FailedStep, Done])] =
+    def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
-      engine.runSteps(runState.resetLogs).flatMap {
+      val rs = runState.resetLogs
+      val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
+      engine.runSteps(runStateWithIndex).flatMap {
         case (onceMoreRunState, stepResult) ⇒
           stepResult match {
             case Right(_) ⇒
@@ -31,6 +33,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
               Future.successful(retriesNumber, onceMoreRunState, Left(failed))
           }
       }
+    }
 
     withDuration {
       val bootstrapRepeatState = initialRunState.forNestedSteps(nested)
