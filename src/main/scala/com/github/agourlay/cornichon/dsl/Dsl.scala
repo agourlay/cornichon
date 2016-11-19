@@ -52,6 +52,12 @@ trait Dsl extends Instances {
       RepeatStep(steps, times, Some(indice))
     }
 
+  //FIXME using Show here does not compile
+  def RepeatWith(elements: Seq[String], indice: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      RepeatWithStep(steps, elements, indice)
+    }
+
   def RetryMax(limit: Int) =
     BodyElementCollector[Step, Step] { steps ⇒
       RetryMaxStep(steps, limit)

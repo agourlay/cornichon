@@ -585,14 +585,24 @@ class SuperHeroesScenario extends CornichonFeature {
 
             Then assert body.ignoring("hasSuperpowers", "publisher").is(
               """
-            {
-              "name": "Batman",
-              "realName": "Bruce Wayne",
-              "city": "Gotham city"
-            }
+              {
+                "name": "Batman",
+                "realName": "Bruce Wayne",
+                "city": "Gotham city"
+              }
               """
             )
           }
+        }
+
+        // Repeat for each element
+        RepeatWith(Seq("Superman", "GreenLantern", "Spiderman"), "superhero-name") {
+
+          When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+
+          Then assert status.is(200)
+
+          Then assert body.path("hasSuperpowers").is(true)
         }
 
         // Retry series of Steps with a limit
