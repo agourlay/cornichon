@@ -64,7 +64,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with Instances {
                 |at step:
                 |main step
                 |
-                |with error:
+                |with error(s):
                 |expected result was:
                 |'true'
                 |but actual result is:
@@ -75,7 +75,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with Instances {
                 |at step:
                 |finally step
                 |
-                |with error:
+                |with error(s):
                 |expected result was:
                 |'true'
                 |but actual result is:
