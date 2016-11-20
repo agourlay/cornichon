@@ -43,7 +43,7 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
           Future.successful(initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor)
       }.recover {
         case NonFatal(e) ⇒
-          val failedStep = FailedStep(this, ConcurrentlyTimeout)
+          val failedStep = FailedStep.fromSingle(this, ConcurrentlyTimeout)
           (nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep))
       }
     }
@@ -51,5 +51,5 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
 }
 
 case object ConcurrentlyTimeout extends CornichonError {
-  val msg = "Concurrently block did not reach completion in 'maxTime'"
+  val baseErrorMessage = "Concurrently block did not reach completion in 'maxTime'"
 }

@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -47,7 +48,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
             (fullLogs, rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(depth) +: retriedState.logs :+ FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RetryMaxBlockReachedLimit(limit, failedStep.error))
+            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RetryMaxBlockReachedLimit(limit, failedStep.errors))
             (fullLogs, Left(artificialFailedStep))
         }
 
@@ -56,6 +57,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
   }
 }
 
-case class RetryMaxBlockReachedLimit(limit: Int, error: CornichonError) extends CornichonError {
-  val msg = s"Retry max block failed '$limit' times with the last error being:\n${error.msg}"
+case class RetryMaxBlockReachedLimit(limit: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
+  val baseErrorMessage = s"Retry max block failed '$limit' times"
+  override val causedBy = Some(errors)
 }

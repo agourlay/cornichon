@@ -109,21 +109,21 @@ object Resolver {
 }
 
 case class ResolverParsingError(input: String, error: Throwable) extends CornichonError {
-  val msg = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
+  val baseErrorMessage = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {
-  val msg = s"ambiguous definition of key '$key' - it is present in both session and extractors"
+  val baseErrorMessage = s"ambiguous definition of key '$key' - it is present in both session and extractors"
 }
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
-  val msg = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
+  val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
 }
 
 case class GeneratorEmptyError(placeholder: String) extends CornichonError {
-  val msg = s"generator mapped to placeholder '$placeholder' did not generate a value"
+  val baseErrorMessage = s"generator mapped to placeholder '$placeholder' did not generate a value"
 }
 
 case class GeneratorError(placeholder: String, e: Throwable) extends CornichonError {
-  val msg = s"generator mapped to placeholder '$placeholder' failed with:\n'${CornichonError.genStacktrace(e)}'"
+  val baseErrorMessage = s"generator mapped to placeholder '$placeholder' failed with:\n'${CornichonError.genStacktrace(e)}'"
 }

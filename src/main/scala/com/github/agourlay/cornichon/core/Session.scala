@@ -91,9 +91,9 @@ case class SessionKey(name: String, index: Option[Int] = None) {
 }
 
 case class EmptyKeyException(s: Session) extends CornichonError {
-  val msg = s"key value can not be empty - session is \n${s.prettyPrint}"
+  val baseErrorMessage = s"key value can not be empty - session is \n${s.prettyPrint}"
 }
 
 case class KeyNotFoundInSession(key: String, indice: Option[Int], s: Session) extends CornichonError {
-  val msg = s"key '$key'${indice.fold("")(i ⇒ s" at indice '$i'")} can not be found in session \n${s.prettyPrint}"
+  val baseErrorMessage = s"key '$key'${indice.fold("")(i ⇒ s" at indice '$i'")} can not be found in session \n${s.prettyPrint}"
 }

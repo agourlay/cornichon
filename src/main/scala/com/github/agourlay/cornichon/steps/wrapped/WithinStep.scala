@@ -29,7 +29,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
             if (executionTime.gt(maxDuration)) {
               val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", initialDepth, Some(executionTime))
               // The nested steps were successful but the did not finish in time, the last step is picked as failed step
-              val failedStep = FailedStep(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
+              val failedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
               (fullLogs, Left(failedStep))
             } else {
               val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", initialDepth, Some(executionTime))
@@ -48,5 +48,5 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
 }
 
 case class WithinBlockSucceedAfterMaxDuration(maxDuration: Duration, executionTime: FiniteDuration) extends CornichonError {
-  val msg = s"Within block succeeded after specified max duration $maxDuration in ${executionTime.toUnit(maxDuration.unit)}"
+  val baseErrorMessage = s"Within block succeeded after specified max duration $maxDuration in ${executionTime.toUnit(maxDuration.unit)} ${maxDuration.unit}"
 }

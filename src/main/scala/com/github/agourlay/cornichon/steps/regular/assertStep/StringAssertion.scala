@@ -12,6 +12,6 @@ case class StringContainsAssertion(input: String, expectedPart: String) extends 
 }
 
 case class StringContainsAssertionError(input: String, expectedPart: String) extends CornichonError {
-  val msg = s"""expected string '$expectedPart' to be contained but it is not the case with value :
+  val baseErrorMessage = s"""expected string '$expectedPart' to be contained but it is not the case with value :
                 |$input""".stripMargin
 }

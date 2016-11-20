@@ -42,7 +42,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
                 Future.successful(retriesNumber, state, rightDone)
               } else {
                 // Run was a success but the time is up.
-                val failedStep = FailedStep(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
+                val failedStep = FailedStep.fromSingle(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
                 Future.successful(retriesNumber, state, Left(failedStep))
               }
           }
@@ -87,5 +87,5 @@ object EventuallyConf {
 }
 
 case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
-  val msg = "Eventually block succeeded after 'maxDuration'"
+  val baseErrorMessage = "Eventually block succeeded after 'maxDuration'"
 }

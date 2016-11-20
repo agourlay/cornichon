@@ -14,7 +14,7 @@ case class LessThanAssertion[A: Show: Order](left: A, right: A) extends OrderAss
 }
 
 case class LessThanAssertionError[A: Show](left: A, right: A) extends CornichonError {
-  val msg = s"expected '${left.show}' to be less than '${right.show}'"
+  val baseErrorMessage = s"expected '${left.show}' to be less than '${right.show}'"
 }
 
 case class GreaterThanAssertion[A: Show: Order](left: A, right: A) extends OrderAssertion[A] {
@@ -23,7 +23,7 @@ case class GreaterThanAssertion[A: Show: Order](left: A, right: A) extends Order
 }
 
 case class GreaterThanAssertionError[A: Show](left: A, right: A) extends CornichonError {
-  val msg = s"expected '${left.show}' to be greater than '${right.show}'"
+  val baseErrorMessage = s"expected '${left.show}' to be greater than '${right.show}'"
 }
 
 case class BetweenAssertion[A: Show: Order](low: A, inspected: A, high: A) extends OrderAssertion[A] {

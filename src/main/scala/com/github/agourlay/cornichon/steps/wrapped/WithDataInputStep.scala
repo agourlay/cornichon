@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.Engine._
@@ -40,7 +41,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
     }
 
     Either.catchNonFatal(CornichonJson.parseDataTable(where)).fold(
-      t ⇒ Future.successful(exceptionToFailureStep(this, initialRunState, CornichonError.fromThrowable(t))),
+      t ⇒ Future.successful(exceptionToFailureStep(this, initialRunState, NonEmptyList.of(CornichonError.fromThrowable(t)))),
       parsedTable ⇒ {
         val inputs = parsedTable.map { line ⇒
           line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
@@ -60,7 +61,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
                 (fullLogs, rightDone)
               case Left((failedInputs, failedStep)) ⇒
                 val fullLogs = failedTitleLog(initialDepth) +: inputsState.logs :+ FailureLogInstruction(s"With data input failed for one input", initialDepth, Some(executionTime))
-                val artificialFailedStep = FailedStep(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.error))
+                val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
                 (fullLogs, Left(artificialFailedStep))
             }
 
@@ -71,6 +72,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
   }
 }
 
-case class WithDataInputBlockFailedStep(failedInputs: List[(String, String)], error: CornichonError) extends CornichonError {
-  val msg = s"WithDataInput block failed for inputs ${Instances.displayStringPairs(failedInputs)} times with error:\n${error.msg}"
+case class WithDataInputBlockFailedStep(failedInputs: List[(String, String)], errors: NonEmptyList[CornichonError]) extends CornichonError {
+  val baseErrorMessage = s"WithDataInput block failed for inputs ${Instances.displayStringPairs(failedInputs)} times"
+  override val causedBy = Some(errors)
 }

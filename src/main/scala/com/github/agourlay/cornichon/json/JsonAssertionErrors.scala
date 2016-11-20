@@ -17,11 +17,11 @@ object JsonAssertionErrors {
   }
 
   case object InvalidIgnoringConfigError extends CornichonError {
-    val msg = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
+    val baseErrorMessage = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
   }
 
   case object UseIgnoringEach extends CornichonError {
-    val msg = "use 'ignoringEach' when asserting on an array"
+    val baseErrorMessage = "use 'ignoringEach' when asserting on an array"
   }
 
   def arraySizeError(expected: Int, sourceArray: String): Int ⇒ String = actual ⇒ {

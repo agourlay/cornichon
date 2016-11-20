@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.Timer
 
 import cats.Show
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing.withDuration
@@ -53,7 +54,7 @@ case class RepeatWithStep[A: Show](nested: List[Step], elements: Seq[A], element
             (fullLogs, rightDone)
           case Left((failedElement, failedStep)) ⇒
             val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"RepeatWith block with elements $printElements failed at element '${failedElement.show}'", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement, failedStep.error))
+            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement, failedStep.errors))
             (fullLogs, Left(artificialFailedStep))
         }
 
@@ -62,6 +63,7 @@ case class RepeatWithStep[A: Show](nested: List[Step], elements: Seq[A], element
   }
 }
 
-case class RepeatWithBlockContainFailedSteps[A: Show](element: A, error: CornichonError) extends CornichonError {
-  val msg = s"RepeatWith block failed for element '${element.show}' with error:\n${error.msg}"
+case class RepeatWithBlockContainFailedSteps[A: Show](element: A, errors: NonEmptyList[CornichonError]) extends CornichonError {
+  val baseErrorMessage = s"RepeatWith block failed for element '${element.show}'"
+  override val causedBy = Some(errors)
 }

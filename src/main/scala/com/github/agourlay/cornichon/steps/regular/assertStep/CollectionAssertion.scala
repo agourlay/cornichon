@@ -17,7 +17,7 @@ case class CollectionNotEmptyAssertion[A: Show](collection: Iterable[A], name: S
 }
 
 case class CollectionNotEmptyAssertionError[A: Show](collection: Iterable[A], name: String) extends CornichonError {
-  val msg = s"'$name' expected to be non empty"
+  val baseErrorMessage = s"'$name' expected to be non empty"
 }
 
 case class CollectionEmptyAssertion[A: Show](collection: Iterable[A], name: String = "collection") extends CollectionAssertion[A] {
@@ -28,7 +28,7 @@ case class CollectionEmptyAssertion[A: Show](collection: Iterable[A], name: Stri
 }
 
 case class CollectionEmptyAssertionError[A: Show](collection: Iterable[A], name: String) extends CornichonError {
-  val msg = s"expected '$name' to be empty but it contains:\n${collection.show}"
+  val baseErrorMessage = s"expected '$name' to be empty but it contains:\n${collection.show}"
 }
 
 case class CollectionSizeAssertion[A: Show](collection: Iterable[A], size: Int, name: String = "collection") extends CollectionAssertion[A] {
@@ -39,7 +39,7 @@ case class CollectionSizeAssertion[A: Show](collection: Iterable[A], size: Int, 
 }
 
 case class CollectionSizeAssertionError[A: Show](collection: Iterable[A], size: Int, name: String) extends CornichonError {
-  val msg = s"expected '$name' to have size '$size' but it actually contains '${collection.size} elements':\n${collection.show}"
+  val baseErrorMessage = s"expected '$name' to have size '$size' but it actually contains '${collection.size} elements':\n${collection.show}"
 }
 
 case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) extends CollectionAssertion[A] {
@@ -54,8 +54,8 @@ case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) 
 }
 
 case class CollectionsContainSameElementsAssertionError[A: Show](added: Seq[A], deleted: Seq[A]) extends CornichonError {
-  val msg = s"""|Non ordered diff. between actual result and expected result is :
-                |${if (added.isEmpty) "" else "added elements:\n" + added.show}
-                |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
+  val baseErrorMessage = s"""|Non ordered diff. between actual result and expected result is :
+                             |${if (added.isEmpty) "" else "added elements:\n" + added.show}
+                             |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
       """.stripMargin.trim
 }

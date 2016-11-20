@@ -36,7 +36,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with Instances {
             res match {
               case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
               case f: FailureScenarioReport ⇒
-                f.failedSteps.head.error.msg should be(
+                f.failedSteps.head.errors.head.renderedMessage should be(
                   """
                   |expected result was:
                   |'4'

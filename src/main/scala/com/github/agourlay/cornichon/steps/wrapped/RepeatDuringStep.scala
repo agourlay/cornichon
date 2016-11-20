@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.Timer
 import java.util.concurrent.TimeUnit
 
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -57,13 +58,14 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
             (withSession.appendLogs(fullLogs), rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(initialDepth) +: repeatedRunState.logs :+ FailureLogInstruction(s"Repeat block during '$duration' failed after being retried '$retries' times", initialDepth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RepeatDuringBlockContainFailedSteps(duration, failedStep.error))
+            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatDuringBlockContainFailedSteps(duration, failedStep.errors))
             (withSession.appendLogs(fullLogs), Left(artificialFailedStep))
         }
     }
   }
 }
 
-case class RepeatDuringBlockContainFailedSteps(duration: FiniteDuration, error: CornichonError) extends CornichonError {
-  val msg = s"RepeatDuring block failed before '$duration' with error:\n${error.msg}"
+case class RepeatDuringBlockContainFailedSteps(duration: FiniteDuration, errors: NonEmptyList[CornichonError]) extends CornichonError {
+  val baseErrorMessage = s"RepeatDuring block failed before '$duration'"
+  override val causedBy = Some(errors)
 }

@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -50,7 +51,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
             (fullLogs, rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurence", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.error))
+            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.errors))
             (fullLogs, Left(artificialFailedStep))
         }
 
@@ -59,6 +60,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
   }
 }
 
-case class RepeatBlockContainFailedSteps(failedOccurence: Long, error: CornichonError) extends CornichonError {
-  val msg = s"Repeat block failed at occurence $failedOccurence with error:\n${error.msg}"
+case class RepeatBlockContainFailedSteps(failedOccurence: Long, errors: NonEmptyList[CornichonError]) extends CornichonError {
+  val baseErrorMessage = s"Repeat block failed at occurence $failedOccurence"
+  override val causedBy = Some(errors)
 }

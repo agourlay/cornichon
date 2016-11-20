@@ -29,7 +29,7 @@ trait ScalatestIntegration extends AsyncWordSpecLike with BeforeAndAfterAll with
       "Cornichon" should {
         "bootstrap" in {
           val msg = e match {
-            case c: CornichonError ⇒ c.msg
+            case c: CornichonError ⇒ c.renderedMessage
             case e: Throwable      ⇒ e.getMessage
           }
           fail(

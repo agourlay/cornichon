@@ -19,15 +19,15 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     val session = initialRunState.session
     val (res, duration) = Timing.withDuration {
-      Either.catchNonFatal(action(session))
-        .leftMap(CornichonError.fromThrowable)
+      Either
+        .catchNonFatal(action(session))
+        .leftMap(e ⇒ NonEmptyList.of(CornichonError.fromThrowable(e)))
         .flatMap(runStepPredicate)
     }
     Future.successful(xorToStepReport(this, res.map(done ⇒ session), initialRunState, show, Some(duration)))
   }
 
-  //TODO propage all errors
-  def runStepPredicate(assertion: Assertion): Either[CornichonError, Done] = assertion.validated.toEither.leftMap(_.head)
+  def runStepPredicate(assertion: Assertion) = assertion.validated.toEither
 }
 
 trait Assertion { self ⇒
