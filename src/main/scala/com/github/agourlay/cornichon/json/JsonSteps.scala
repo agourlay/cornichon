@@ -146,7 +146,7 @@ object JsonSteps {
 
     def inOrder = copy(ordered = true)
 
-    def ignoringEach(ignoringEach: String*): JsonArrayStepBuilder = copy(ignoredEachKeys = ignoringEach)
+    def ignoringEach(ignoringEach: String*) = copy(ignoredEachKeys = ignoringEach)
 
     def isNotEmpty = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty",
