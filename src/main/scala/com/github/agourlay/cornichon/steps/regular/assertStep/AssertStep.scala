@@ -50,5 +50,6 @@ object Assertion {
 
   val alwaysValid: Assertion = new Assertion { val validated = valid(Done) }
 
-  def all(assertions: List[Assertion]): Assertion = assertions.foldLeft(alwaysValid)((acc, assertion) ⇒ acc.and(assertion))
+  def all(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.and(assertion))
+  def any(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.or(assertion))
 }
