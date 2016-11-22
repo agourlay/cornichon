@@ -96,8 +96,8 @@ object JsonSteps {
       )
     }
 
-    def regExpMatch(expectedRegex: Regex) = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target mathes '$expectedRegex'" else s"$target's field '$jsonPath' matches '$expectedRegex'"
+    def matchesRegex(expectedRegex: Regex) = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target matches '$expectedRegex'" else s"$target's field '$jsonPath' matches '$expectedRegex'"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
         action = s ⇒ {
