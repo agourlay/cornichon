@@ -12,6 +12,8 @@ import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 
+import scala.util.matching.Regex
+
 object JsonSteps {
 
   case class JsonValuesStepBuilder(
@@ -90,6 +92,18 @@ object JsonSteps {
           val sessionValue = s.get(sessionKey)
           val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(s)
           StringContainsAssertion(subJson.show, expectedPart)
+        }
+      )
+    }
+
+    def regExpMatch(expectedRegex: Regex) = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target mathes '$expectedRegex'" else s"$target's field '$jsonPath' matches '$expectedRegex'"
+      AssertStep(
+        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        action = s ⇒ {
+          val sessionValue = s.get(sessionKey)
+          val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(s)
+          RegexAssertion(subJson.show, expectedRegex)
         }
       )
     }
