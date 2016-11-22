@@ -82,6 +82,10 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.path("city").containsString("Gotham")
 
+        Then assert body.path("city").matchesRegex(".*ham.*ty".r)
+
+        Then assert body.path("name").matchesRegex(".*man".r)
+
         Then assert body.path("country").isAbsent
 
         Then assert body.path("hasSuperpowers").is(false)
@@ -560,6 +564,8 @@ class SuperHeroesScenario extends CornichonFeature {
         Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+
+          Then assert body.path("name").matchesRegex(".*man".r)
 
           Then assert body.ignoring("hasSuperpowers", "publisher").is(
             """
