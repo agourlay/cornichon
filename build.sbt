@@ -37,18 +37,18 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "3.0.1"
-  val akkaV = "2.4.13"
-  val akkaHttpV = "10.0.0-RC2"
+  val akkaV = "2.4.14"
+  val akkaHttpV = "10.0.0"
   val catsV = "0.8.1"
   val logbackV = "1.1.7"
   val parboiledV = "2.1.3"
-  val akkaSseV = "2.0.0-M4"
+  val akkaSseV = "2.0.0-M5"
   val scalaCheckV = "1.13.4"
   val sangriaCirceV = "0.6.1"
   val circeVersion = "0.6.1"
   val sangriaV = "1.0.0-RC4"
   val fansiV = "0.2.3"
-  val akkaHttpCirce = "1.11.0-M4"
+  val akkaHttpCirce = "1.11.0"
   val catsScalaTest = "2.1.1"
   val ficusV = "1.3.4"
   Seq(
