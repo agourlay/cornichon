@@ -36,3 +36,7 @@ object CornichonError {
 case class StepExecutionError[A](e: Throwable) extends CornichonError {
   val baseErrorMessage = s"exception thrown '${CornichonError.genStacktrace(e)}'"
 }
+
+case class BasicError(error: String) extends CornichonError {
+  val baseErrorMessage = error
+}
