@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.dsl
 
+import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{ FeatureDef, Session, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
@@ -8,6 +9,7 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
 import com.github.agourlay.cornichon.util.Instances._
 
+import scala.annotation.unchecked.uncheckedVariance
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
@@ -52,10 +54,9 @@ trait Dsl extends Instances {
       RepeatStep(steps, times, Some(indice))
     }
 
-  //FIXME using Show here does not compile
-  def RepeatWith(elements: Seq[String], indice: String) =
+  def RepeatWith(indice: String)(elements: ContainerType[Any, Show]*) =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements, indice)
+      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element)), indice)
     }
 
   def RetryMax(limit: Int) =
@@ -143,3 +144,7 @@ object Dsl {
   }
 }
 
+case class ContainerType[+T, B[_]](element: T, tci: B[T @uncheckedVariance])
+object ContainerType {
+  implicit def showConv[T](a: T)(implicit tc: Show[T]): ContainerType[T, Show] = ContainerType(a, tc)
+}
