@@ -19,11 +19,21 @@ object StatusSteps {
       )
     )
 
-    //TODO
-    // isSuccess
-    // isRedirection
-    // isClientError
-    // isServerError
+    protected def isByKind(kind: Int, label: String) = AssertStep(
+      title = s"status is $label '${kind}xx'",
+      action = s ⇒
+      CustomMessageEqualityAssertion(
+        expected = kind,
+        actual = s.get(lastResponseStatusKey).toInt / 100,
+        customMessage = statusError(kind, s.get(lastResponseBodyKey))
+      )
+    )
+
+    def isSuccess = isByKind(2, "success")
+    def isRedirect = isByKind(3, "redirection")
+    def isClientError = isByKind(4, "client error")
+    def isServerError = isByKind(5, "server error")
+
   }
 
   // TODO do not assume that body is JSON - use content-type
