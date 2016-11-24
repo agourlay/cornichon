@@ -602,7 +602,7 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Repeat for each element
-        RepeatWith("superhero-name")("Superman", "Superman", "GreenLantern", "Spiderman") {
+        RepeatWith("Superman", "Superman", "GreenLantern", "Spiderman")("superhero-name") {
 
           When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
 

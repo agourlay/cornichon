@@ -54,7 +54,7 @@ trait Dsl extends Instances {
       RepeatStep(steps, times, Some(indice))
     }
 
-  def RepeatWith(indice: String)(elements: ContainerType[Any, Show]*) =
+  def RepeatWith(elements: ContainerType[Any, Show]*)(indice: String) =
     BodyElementCollector[Step, Step] { steps ⇒
       RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element)), indice)
     }
