@@ -20,7 +20,7 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 6. [Placeholders](#placeholders)
 7. [Custom steps](#custom-steps)
   1. [EffectStep](#effectStep)
-  2. [EffectStep using the HTTP service(#effectStep-using-the-http-service)
+  2. [EffectStep using the HTTP service](#effectStep-using-the-http-service)
   3. [AssertStep](#assertstep)
 8. [Feature options](#feature-options)
   1. [Before and after hooks](#before-and-after-hooks)
@@ -845,7 +845,7 @@ The built-in HTTP steps available on the DSL are actually built on top of the ``
 
 An ```AssertStep``` can be understood as the following function ```Sesssion => Assertion```. Its goal is to describe an expectation.
 
-The test engine is responsible to test the validity of the provided ```Assertion``` which can be one of the 4 following family:
+The test engine is responsible to test the validity of the provided ```Assertion``` which can be one of the following:
 
 * Equality assertions : test the equality of two objects using the cats ```Equals``` typeclass.
   * GenericEqualityAssertion to leave all the details to Cornichon
@@ -876,7 +876,7 @@ The test engine is responsible to test the validity of the provided ```Assertion
   * RegexAssertion
 
 
-Here is a longer example showing how to integration an assertion.
+Below is a longer example showing how to integration an assertion into scenario.
 
 ```scala
 When I EffectStep(
