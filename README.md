@@ -19,8 +19,9 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 5. [DSL composition](#dsl-composition)
 6. [Placeholders](#placeholders)
 7. [Custom steps](#custom-steps)
-  1. [Effects and Assertions](#effects-and-assertions)
-  2. [HTTP service](#http-service)
+  1. [EffectStep](#effectStep)
+  2. [EffectStep using the HTTP service(#effectStep-using-the-http-service)
+  3. [AssertStep](#assertstep)
 8. [Feature options](#feature-options)
   1. [Before and after hooks](#before-and-after-hooks)
   2. [Base URL](#base-url)
@@ -348,6 +349,8 @@ body.asArray.inOrder.ignoringEach("publisher").is(
  """)  
   
 body.asArray.hasSize(2)
+
+body.asArray.isNotEmpty
   
 body.asArray.contains(
   """
@@ -434,7 +437,6 @@ And assert body.ignoring("city", "publisher").is(
 ```
 
 
-
 ### Session steps
 
 - setting a value in ```session```
@@ -497,7 +499,7 @@ RepeatDuring(300.millis) {
 - repeat a series of ```steps``` for each input element
 
 ```scala
-RepeatWith("Superman", "Superman", "GreenLantern", "Spiderman")("superhero-name") {
+RepeatWith("Superman", "GreenLantern", "Spiderman")("superhero-name") {
 
   When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
 
@@ -763,58 +765,41 @@ It becomes then possible to retrieve past values :
 
 ## Custom steps
 
-### Effects and Assertions
+### EffectStep
 
-There are two kind of ```step``` :
-- EffectStep ```Session => Future[Session]``` : Runs a side effect and populates the ```Session``` with values.
-- AssertStep ```Sesssion => Assertion``` : Describes the expectation of the test.
+An ```EffectStep``` can be understood as the following function ```Session => Future[Session]```.
 
- 
+This means that an ```EffectStep``` runs a side effect and populates the ```Session``` with potential result values.
+
 A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders) and save the result computations for later assertions.
 
-The test engine is responsible to test the validity of the provided ```Assertion``` which can be one of the following concrete implementations.
-
-- ```GenericEqualityAssertion```:  simply a container for 2 values, the expected value and the actual result, the engine will try its best to provide a meaningful error message.
- 
-```scala
-When I AssertStep("always true!", s => GenericEqualityAssertion(true, true))
-```
-
-- ```CustomMessageEqualityAssertion```: similar to the above but with a specific error message.
+Here is the most simple ```EffectStep```:
 
 ```scala
- CustomMessageAssertion[A](expected: A, result: A, customMessage: A ⇒ String)
+When I EffectStep(title = "do nothing", action = s => Future.successful(s))
+
 ```
 
-The engine will feed the actual result to the ```customMessage``` function.
-
-- ```LessThanAssertion```, ```GreaterThanAssertion``` and ```BetweenAssertion```: provide validation of ordering.
-
+or using a factory helper when dealing with non Future based computation
 
 ```scala
-When I EffectStep(
-  title = "estimate PI",
-  action = s => s.add("result", piComputation())
-)
+When I EffectStep.fromSync(title = "do nothing", action = s => s)
 
-Then assert AssertStep(
-  title = "check estimate",
-  action = s => BetweenAssertion(3.1, s.get("result"), 3.2)
-)
 ```
 
-```Assertions``` can also be composed using ```and``` and ```or```, for instance ```BetweenAssertion``` is the result of ```LessThanAssertion``` and ```GreaterThanAssertion```.
+Let's try so save a value into the ```Session```
 
-This is rather low level therefore you not should write your steps like that directly inside the DSL but hide them behind functions with appropriate names.
+```scala
+When I EffectStep.fromSync(title = "estimate PI", action = s => s.add("result", piComputation())
 
-Fortunately a bunch of built-in steps and primitive building blocs are already available for you.
+```
 
-Note for advance users: it is also possible to write custom wrapper steps by implementing ```WrapperStep```.
+The test engine is responsible for controling the execution of the side effect function and to report any error.
 
 
-### HTTP service
+### EffectStep using the HTTP service
 
-Sometimes you still want to perform HTTP calls inside of custom effect steps, this is where the ```http``` service comes in handy. 
+Sometimes you want to perform HTTP calls inside of of an ```EffectStep```, this is where the ```http``` service comes in handy.
 
 In order to illustrate its usage let's take the following example, you would like to write a custom step like:
 
@@ -855,6 +840,63 @@ The built-in HTTP steps available on the DSL are actually built on top of the ``
 - resolve placeholders in URL, query params, body and headers.
 - automatically populate the session with the results of the call such as response body, status and headers (it is also possible to pass a custom extractor).
 - handle common errors such as timeout and malformed requests.
+
+### AssertStep
+
+An ```AssertStep``` can be understood as the following function ```Sesssion => Assertion```. Its goal is to describe an expectation.
+
+The test engine is responsible to test the validity of the provided ```Assertion``` which can be one of the 4 following family:
+
+* Equality assertions : test the equality of two objects using the cats ```Equals``` typeclass.
+  * GenericEqualityAssertion to leave all the details to Cornichon
+
+    ```scala
+    When I AssertStep("always true!", s => GenericEqualityAssertion(true, true))
+    ```
+
+  * CustomMessageEqualityAssertion to provide a custom error message
+
+    ```scala
+    CustomMessageAssertion[A](expected: A, result: A, customMessage: A ⇒ String)
+    ```
+
+* Ordering assertions : compare two objects using the cats ```Order``` typeclass.
+  * GreaterThanAssertion
+  * LessThanAssertion
+  * BetweenAssertion
+
+* Collection assertions : test the state of a collection of elements
+  * CollectionEmptyAssertion
+  * CollectionNotEmptyAssertion
+  * CollectionSizeAssertion
+  * CollectionContainsAssertion
+
+* String assertion : assert the content of a given String value
+  * StringContainsAssertion
+  * RegexAssertion
+
+
+Here is a longer example showing how to integration an assertion.
+
+```scala
+When I EffectStep(
+  title = "estimate PI",
+  action = s => s.add("result", piComputation())
+)
+
+Then assert AssertStep(
+  title = "check estimate",
+  action = s => BetweenAssertion(3.1, s.get("result"), 3.2)
+)
+```
+
+```Assertions``` can also be composed using ```and``` and ```or```, for instance ```BetweenAssertion``` is the result of ```LessThanAssertion``` and ```GreaterThanAssertion```.
+
+This is rather low level therefore you not should write your steps like that directly inside the DSL but hide them behind functions with appropriate names.
+
+Fortunately a bunch of built-in steps and primitive building blocs are already available for you.
+
+Note for advance users: it is also possible to write custom wrapper steps by implementing ```WrapperStep```.
 
 
 ## Feature options
