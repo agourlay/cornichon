@@ -494,6 +494,20 @@ RepeatDuring(300.millis) {
 }
 ```
 
+- repeat a series of ```steps``` for each input element
+
+```scala
+RepeatWith("Superman", "Superman", "GreenLantern", "Spiderman")("superhero-name") {
+
+  When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+
+  Then assert status.is(200)
+
+  Then assert body.path("hasSuperpowers").is(true)
+}
+
+```
+
 - retry a series of ```steps``` until it succeeds or reaches the limit
 
 ```scala
