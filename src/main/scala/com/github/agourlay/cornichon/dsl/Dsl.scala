@@ -1,14 +1,15 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.{ Eq, Show }
+import cats.Show
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.{ FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.core.{ FeatureDef, Session, Step, Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.steps.regular._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageAssertion, Diff, GenericAssertion }
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
 import com.github.agourlay.cornichon.util.Instances._
 
+import scala.annotation.unchecked.uncheckedVariance
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
@@ -45,7 +46,17 @@ trait Dsl extends Instances {
 
   def Repeat(times: Int) =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatStep(steps, times)
+      RepeatStep(steps, times, None)
+    }
+
+  def Repeat(times: Int, indice: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      RepeatStep(steps, times, Some(indice))
+    }
+
+  def RepeatWith(elements: ContainerType[Any, Show]*)(indice: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element)), indice)
     }
 
   def RetryMax(limit: Int) =
@@ -105,7 +116,7 @@ trait Dsl extends Instances {
     effect = s ⇒ s.removeKey(key)
   )
 
-  def session_value(key: String) = SessionAssertion(resolver, key)
+  def session_value(key: String) = SessionStepBuilder(resolver, key)
 
   def show_session = DebugStep(s ⇒ s"Session content is\n${s.prettyPrint}")
 
@@ -131,27 +142,9 @@ object Dsl {
       }
     )
   }
-
-  def from_session_step[A: Show: Diff: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ A, title: String) =
-    AssertStep(
-      title,
-      s ⇒ GenericAssertion(
-        expected = expected(s),
-        actual = mapValue(s, s.get(key))
-      )
-    )
-
-  def from_session_detail_step[A: Eq](key: SessionKey, expected: Session ⇒ A, mapValue: (Session, String) ⇒ (A, A ⇒ String), title: String) =
-    AssertStep(
-      title,
-      s ⇒ {
-        val (res, details) = mapValue(s, s.get(key))
-        CustomMessageAssertion(
-          expected = expected(s),
-          actual = res,
-          customMessage = details
-        )
-      }
-    )
 }
 
+case class ContainerType[+T, B[_]](element: T, tci: B[T @uncheckedVariance])
+object ContainerType {
+  implicit def showConv[T](a: T)(implicit tc: Show[T]): ContainerType[T, Show] = ContainerType(a, tc)
+}

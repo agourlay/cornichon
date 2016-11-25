@@ -8,7 +8,9 @@ description := "Scala DSL for testing HTTP JSON API"
 licenses := Seq("Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 homepage := Some(url("https://github.com/agourlay/cornichon"))
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.0"
+crossScalaVersions := Seq("2.11.8", "2.12.0")
+
 scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
@@ -34,21 +36,21 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(RewriteArrowSymbols, true)
 
 libraryDependencies ++= {
-  val scalaTestV = "3.0.0"
-  val akkaV = "2.4.12"
-  val akkaHttpV = "3.0.0-RC1"
-  val catsV = "0.7.2"
+  val scalaTestV = "3.0.1"
+  val akkaV = "2.4.14"
+  val akkaHttpV = "10.0.0"
+  val catsV = "0.8.1"
   val logbackV = "1.1.7"
   val parboiledV = "2.1.3"
-  val akkaSseV = "1.11.0"
+  val akkaSseV = "2.0.0-M5"
   val scalaCheckV = "1.13.4"
-  val sangriaCirceV = "0.5.3"
-  val circeVersion = "0.5.4"
-  val sangriaV = "1.0.0-RC3"
+  val sangriaCirceV = "0.6.1"
+  val circeVersion = "0.6.1"
+  val sangriaV = "1.0.0-RC4"
   val fansiV = "0.2.3"
-  val akkaHttpCirce = "1.10.1"
-  val catsScalaTest = "2.0.0"
-  val ficusV = "1.1.2"
+  val akkaHttpCirce = "1.11.0"
+  val catsScalaTest = "2.1.1"
+  val ficusV = "1.3.4"
   Seq(
      "com.typesafe.akka"   %% "akka-actor"      % akkaV
     ,"com.typesafe.akka"   %% "akka-http-core"  % akkaHttpV
@@ -57,7 +59,7 @@ libraryDependencies ++= {
     ,"org.typelevel"       %% "cats-macros"     % catsV
     ,"org.typelevel"       %% "cats-core"       % catsV
     ,"org.scalatest"       %% "scalatest"       % scalaTestV
-    ,"net.ceedubs"         %% "ficus"           % ficusV
+    ,"com.iheart"          %% "ficus"           % ficusV
     ,"ch.qos.logback"      %  "logback-classic" % logbackV
     ,"org.parboiled"       %% "parboiled"       % parboiledV
     ,"org.scalacheck"      %% "scalacheck"      % scalaCheckV

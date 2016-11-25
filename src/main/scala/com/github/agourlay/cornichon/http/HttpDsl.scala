@@ -5,23 +5,24 @@ import java.util.Base64
 
 import cats.Show
 import cats.syntax.show._
-
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
-import com.github.agourlay.cornichon.http.HttpAssertions._
+import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonAssertions.JsonAssertion
+import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
-
+import com.github.agourlay.cornichon.http.steps.StatusSteps._
+import com.github.agourlay.cornichon.http.steps.HttpListenSteps._
+import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
@@ -70,14 +71,14 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
 
-  def status = StatusAssertion
+  def status = StatusStepBuilder
 
-  def headers = HeadersAssertion(ordered = false)
+  def headers = HeadersStepBuilder(ordered = false)
 
   //FIXME the body is expected to always contains JSON currently
-  def body = JsonAssertion(resolver, SessionKey(lastResponseBodyKey), Some("response body"))
+  def body = JsonStepBuilder(resolver, SessionKey(lastResponseBodyKey), Some("response body"))
 
-  def httpListen(label: String) = HttpListen(label, resolver)
+  def httpListen(label: String) = HttpListenStepBuilder(label, resolver)
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
@@ -98,13 +99,26 @@ trait HttpDsl extends HttpRequestsDsl {
     save_from_session(inputs)
   }
 
+  def show_last_response = DebugStep(s ⇒
+    s"""Show last response
+       |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
+       |status : ${s.get(lastResponseStatusKey)}
+       |body   : ${s.get(lastResponseBodyKey)}
+     """.stripMargin)
+
+  def show_last_response_json = DebugStep(s ⇒
+    s"""Show last response
+       |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
+       |status : ${s.get(lastResponseStatusKey)}
+       |body   : ${parseJson(s.get(lastResponseBodyKey)).fold(e ⇒ throw e, _.show)}
+     """.stripMargin)
+
   def show_last_status = show_session(lastResponseStatusKey)
 
-  def show_last_response_body = show_session(lastResponseBodyKey)
+  def show_last_body = show_session(lastResponseBodyKey)
+  def show_last_body_json = show_key_as_json(lastResponseBodyKey)
 
-  def show_last_response_body_as_json = show_key_as_json(lastResponseBodyKey)
-
-  def show_last_response_headers = show_session(lastResponseHeadersKey)
+  def show_last_headers = show_session(lastResponseHeadersKey)
 
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))

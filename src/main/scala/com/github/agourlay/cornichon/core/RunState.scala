@@ -20,6 +20,7 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValues(tuples))
+  def addToSession(key: String, value: String) = withSession(session.addValue(key, value))
   def mergeSessions(other: Session) = copy(session = session.merge(other))
 
   def withLogs(logs: Vector[LogInstruction]) = copy(logs = logs)

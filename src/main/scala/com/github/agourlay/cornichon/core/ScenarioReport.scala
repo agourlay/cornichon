@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.{ NonEmptyList, ValidatedNel, Xor }
+import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.kernel.Semigroup
 
 sealed trait ScenarioReport {
@@ -32,24 +32,26 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList
 
 sealed abstract class Done
 case object Done extends Done {
-  val rightDone = Xor.right(Done)
+  val rightDone = Right(Done)
   implicit val semigroup = new Semigroup[Done] {
     def combine(x: Done, y: Done): Done = x
   }
 }
 
-case class FailedStep(step: Step, error: CornichonError) {
+case class FailedStep(step: Step, errors: NonEmptyList[CornichonError]) {
   val messageForFailedStep =
     s"""
        |at step:
        |${step.title}
        |
-       |with error:
-       |${error.msg}
+       |with error(s):
+       |${errors.map(_.renderedMessage).toList.mkString("\nand\n")}
        |""".stripMargin
 
 }
 
 object FailedStep {
-  def fromThrowable(step: Step, error: Throwable) = FailedStep(step, CornichonError.fromThrowable(error))
+  def fromThrowable(step: Step, error: Throwable) = FailedStep(step, NonEmptyList.of(CornichonError.fromThrowable(error)))
+  def fromThrowables(step: Step, errors: NonEmptyList[Throwable]) = FailedStep(step, errors.map(CornichonError.fromThrowable))
+  def fromSingle(step: Step, error: CornichonError) = FailedStep(step, NonEmptyList.of(error))
 }

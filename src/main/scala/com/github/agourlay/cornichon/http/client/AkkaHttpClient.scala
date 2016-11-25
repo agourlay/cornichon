@@ -13,8 +13,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
 
-import cats.data.Xor
-import cats.data.Xor.{ left, right }
+import cats.syntax.either._
 import cats.syntax.show._
 
 import com.github.agourlay.cornichon.http._
@@ -23,7 +22,7 @@ import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.core.CornichonError
 
-import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
+import de.heikoseeberger.akkasse.client.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
 
 import java.security.SecureRandom
@@ -67,15 +66,15 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     case PUT     ⇒ Put
   }
 
-  def parseHttpHeaders(headers: Seq[(String, String)]): Xor[MalformedHeadersError, Seq[HttpHeader]] = {
+  def parseHttpHeaders(headers: Seq[(String, String)]): Either[MalformedHeadersError, Seq[HttpHeader]] = {
     @tailrec
-    def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Xor[MalformedHeadersError, Seq[HttpHeader]] =
-      if (headers.isEmpty) right(acc)
+    def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Either[MalformedHeadersError, Seq[HttpHeader]] =
+      if (headers.isEmpty) Right(acc)
       else {
         val (name, value) = headers.head
         HttpHeader.parse(name, value) match {
           case ParsingResult.Ok(h, _) ⇒ loop(headers.tail, acc :+ h)
-          case ParsingResult.Error(e) ⇒ left(MalformedHeadersError(e.formatPretty))
+          case ParsingResult.Error(e) ⇒ Left(MalformedHeadersError(e.formatPretty))
         }
       }
 
@@ -88,10 +87,10 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     payload: Option[Json],
     params: Seq[(String, String)],
     headers: Seq[(String, String)]
-  ): Future[Xor[CornichonError, CornichonHttpResponse]] = {
+  ): Future[Either[CornichonError, CornichonHttpResponse]] = {
     val requestBuilder = httpMethodMapper(method)
     parseHttpHeaders(headers).fold(
-      mh ⇒ Future.successful(left(mh)),
+      mh ⇒ Future.successful(Left(mh)),
       akkaHeaders ⇒ {
         val request = requestBuilder(uriBuilder(url, params), payload).withHeaders(collection.immutable.Seq(akkaHeaders: _*))
         Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
@@ -106,7 +105,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
 
   override def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], takeWithin: FiniteDuration) = {
     parseHttpHeaders(headers).fold(
-      mh ⇒ Future.successful(left(mh)),
+      mh ⇒ Future.successful(Left(mh)),
       akkaHeaders ⇒ {
         stream match {
           case SSE ⇒ openSSE(url, params, akkaHeaders, takeWithin)
@@ -139,7 +138,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
   }
 
   // TODO implement WS support
-  def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Future[Xor[HttpError, CornichonHttpResponse]] = {
+  def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Future[Either[HttpError, CornichonHttpResponse]] = {
     /*val uri = uriBuilder(url, params)
     val req = WebSocketRequest(uri).copy(extraHeaders = collection.immutable.Seq(headers: _*))
 
@@ -175,16 +174,16 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     ???
   }
 
-  private def expectSSE(httpResponse: HttpResponse): Future[Xor[HttpError, Source[ServerSentEvent, Any]]] =
+  private def expectSSE(httpResponse: HttpResponse): Future[Either[HttpError, Source[ServerSentEvent, Any]]] =
     Unmarshal(Gzip.decode(httpResponse)).to[Source[ServerSentEvent, Any]].map { sse ⇒
-      right(sse)
+      Right(sse)
     }.recover {
-      case e: Exception ⇒ left(SseError(e))
+      case e: Exception ⇒ Left(SseError(e))
     }
 
-  private def toCornichonResponse(httpResponse: HttpResponse): Future[Xor[CornichonError, CornichonHttpResponse]] =
+  private def toCornichonResponse(httpResponse: HttpResponse): Future[Either[CornichonError, CornichonHttpResponse]] =
     Unmarshal(Gzip.decode(httpResponse)).to[String].map { body: String ⇒
-      right(
+      Right(
         CornichonHttpResponse(
           status = httpResponse.status.intValue(),
           headers = httpResponse.headers.map(h ⇒ (h.name, h.value)),
@@ -193,7 +192,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
       )
     }.recover {
       case e: Exception ⇒
-        left(UnmarshallingResponseError(e, httpResponse.toString()))
+        Left(UnmarshallingResponseError(e, httpResponse.toString()))
     }
 
   override def shutdown() = Http().shutdownAllConnectionPools().map(_ ⇒ mat.shutdown())

@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ Matchers, AsyncWordSpec }
 
 class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
@@ -15,7 +15,7 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "always fails",
         s ⇒ {
           uglyCounter = uglyCounter + 1
-          GenericAssertion(true, false)
+          GenericEqualityAssertion(true, false)
         }
       ) :: Nil
       val retryMaxStep = RetryMaxStep(nested, loop)
@@ -34,7 +34,7 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "always fails",
         s ⇒ {
           uglyCounter = uglyCounter + 1
-          GenericAssertion(true, uglyCounter == max - 2)
+          GenericEqualityAssertion(true, uglyCounter == max - 2)
         }
       ) :: Nil
       val retryMaxStep = RetryMaxStep(nested, max)

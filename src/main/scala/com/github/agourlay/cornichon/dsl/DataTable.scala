@@ -95,7 +95,7 @@ trait StringHeaderParserSupport extends StringBuilding {
 }
 
 case class DataTableError(error: Throwable, input: String) extends CornichonError {
-  val msg = s"error thrown '${error.getMessage}' while parsing data table $input"
+  val baseErrorMessage = s"error thrown '${error.getMessage}' while parsing data table $input"
 }
 
-case class DataTableParseError(msg: String) extends CornichonError
+case class DataTableParseError(baseErrorMessage: String) extends CornichonError

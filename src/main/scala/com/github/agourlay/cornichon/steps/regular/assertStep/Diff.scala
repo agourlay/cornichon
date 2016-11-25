@@ -30,7 +30,7 @@ object Diff {
   }
 
   def orderedCollectionDiff[A: Show](left: Seq[A], right: Seq[A]) = {
-    val added = left.diff(right)
+    val added = right.diff(left)
     val (deletedTuple, stillPresent) = left.map(e ⇒ (e, right.indexWhere(_ == e))).partition(_._2 == -1)
     val deleted = deletedTuple.map(_._1)
     val moved = stillPresent.map { case (elem, newIndice) ⇒ MovedElement(elem, newIndice, left.indexWhere(_ == elem)) }.filter(_.changed)
@@ -61,7 +61,7 @@ object Diff {
     def diff(left: Set[A], right: Set[A]): Option[String] = Some {
       val added = left.diff(right)
       val deleted = right.diff(left)
-      s"""|Non ordered collection diff. between actual result and expected result is :
+      s"""|Set diff. between actual result and expected result is :
           |${if (added.isEmpty) "" else "added elements:\n" + added.show}
           |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
       """.stripMargin.trim

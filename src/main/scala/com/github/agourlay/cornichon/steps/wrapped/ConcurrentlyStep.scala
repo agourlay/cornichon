@@ -5,8 +5,6 @@ import java.util.Timer
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timeouts
-import cats.data.Xor._
-import cats.data.Xor
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
@@ -28,10 +26,10 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
 
     Timeouts.failAfter(maxTime)(f)(ConcurrentlyTimeout).flatMap { results ⇒
       // Only the first error report found is used in the logs.
-      val failedStepRun = results.collectFirst { case (s, r @ Xor.Left(_)) ⇒ (s, r) }
-      failedStepRun.fold[Future[(RunState, Xor[FailedStep, Done.type])]] {
+      val failedStepRun = results.collectFirst { case (s, r @ Left(_)) ⇒ (s, r) }
+      failedStepRun.fold[Future[(RunState, Either[FailedStep, Done])]] {
         val executionTime = Duration.fromNanos(System.nanoTime - start)
-        val successStepsRun = results.collect { case (s, r @ Xor.Right(_)) ⇒ (s, r) }
+        val successStepsRun = results.collect { case (s, r @ Right(_)) ⇒ (s, r) }
         // all runs were successfull, we pick the first one
         val resultState = successStepsRun.head._1
         //TODO all sessions should be merged?
@@ -45,13 +43,13 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
           Future.successful(initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor)
       }.recover {
         case NonFatal(e) ⇒
-          val failedStep = FailedStep(this, ConcurrentlyTimeout)
-          (nestedRunState.appendLog(failedTitleLog(initialDepth)), left(failedStep))
+          val failedStep = FailedStep.fromSingle(this, ConcurrentlyTimeout)
+          (nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep))
       }
     }
   }
 }
 
 case object ConcurrentlyTimeout extends CornichonError {
-  val msg = "concurrent block did not reach completion in 'maxTime'"
+  val baseErrorMessage = "Concurrently block did not reach completion in 'maxTime'"
 }

@@ -2,76 +2,56 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import java.util.Timer
 
-import cats.{ Eq, Show }
-import cats.data.Xor
-import cats.data.Xor._
-import cats.syntax.show._
+import cats.data.Validated._
+import cats.data._
+import cats.syntax.cartesian._
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class AssertStep[A](title: String, action: Session ⇒ Assertion[A], show: Boolean = true) extends Step {
+case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends Step {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     val session = initialRunState.session
     val (res, duration) = Timing.withDuration {
-      Xor.catchNonFatal(action(session))
-        .leftMap(CornichonError.fromThrowable)
-        .flatMap(runStepPredicate(session))
+      Either
+        .catchNonFatal(action(session))
+        .leftMap(e ⇒ NonEmptyList.of(CornichonError.fromThrowable(e)))
+        .flatMap(runStepPredicate)
     }
-    Future.successful(xorToStepReport(this, res, initialRunState, show, Some(duration)))
+    Future.successful(xorToStepReport(this, res.map(done ⇒ session), initialRunState, show, Some(duration)))
   }
 
-  def runStepPredicate(newSession: Session)(assertion: Assertion[A]): Xor[CornichonError, Session] =
-    if (assertion.isSuccessful)
-      right(newSession)
-    else
-      left(assertion.assertionError)
-
+  def runStepPredicate(assertion: Assertion) = assertion.validated.toEither
 }
 
-abstract class Assertion[A: Eq] {
-  val expected: A
-  val actual: A
-  val expectedEqualsActual = Eq[A].eqv(expected, actual)
-  val isSuccessful = {
-    val succeedAsExpected = expectedEqualsActual && !negate
-    val failedAsExpected = !expectedEqualsActual && negate
+trait Assertion { self ⇒
+  def validated: ValidatedNel[CornichonError, Done]
 
-    succeedAsExpected || failedAsExpected
+  def and(other: Assertion): Assertion = new Assertion {
+    def validated = self.validated *> other.validated
   }
-  val negate: Boolean
-  def assertionError: CornichonError
-}
 
-case class GenericAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends Assertion[A] {
-  lazy val assertionError = GenericAssertionError(expected, actual, negate)
-}
-
-case class GenericAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
-  private val baseMsg =
-    s"""|expected result was${if (negate) " different than:" else ":"}
-        |'${expected.show}'
-        |but actual result is:
-        |'${actual.show}'
-        |""".stripMargin.trim
-
-  val msg = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg ⇒
-    s"""|$baseMsg
-        |
-        |$diffMsg
-      """.stripMargin.trim
+  def or(other: Assertion): Assertion = new Assertion {
+    def validated =
+      if (self.validated.isValid || other.validated.isValid)
+        valid(Done)
+      else
+        self.validated *> other.validated
   }
 }
 
-case class CustomMessageAssertion[A: Eq](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends Assertion[A] {
-  lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
-}
+object Assertion {
 
-case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
-  val msg = detailedAssertion(result)
+  val alwaysValid: Assertion = new Assertion { val validated = valid(Done) }
+  def failWith(error: Throwable) = new Assertion { val validated: ValidatedNel[CornichonError, Done] = invalidNel(StepExecutionError(error)) }
+  def failWith(error: String) = new Assertion { val validated: ValidatedNel[CornichonError, Done] = invalidNel(BasicError(error)) }
+
+  def all(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.and(assertion))
+  def any(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.or(assertion))
 }

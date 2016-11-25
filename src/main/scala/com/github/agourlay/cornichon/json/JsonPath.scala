@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.Json
-import cats.data.Xor
+import cats.syntax.either._
 
 case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
@@ -13,7 +13,7 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
   val isRoot = operations.isEmpty
 
   def run(superSet: Json): Json = cursor(superSet).fold(Json.Null)(c ⇒ c.focus)
-  def run(json: String): Xor[CornichonError, Json] = parseJson(json).map(run)
+  def run(json: String): Either[CornichonError, Json] = parseJson(json).map(run)
 
   def cursor(input: Json) = operations.foldLeft(Option(input.cursor)) { (oc, op) ⇒
     op match {

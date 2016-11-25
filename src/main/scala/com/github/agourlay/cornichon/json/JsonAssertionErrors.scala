@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core.CornichonError
+import io.circe.Json
+import cats.syntax.show._
 
 object JsonAssertionErrors {
 
@@ -14,17 +16,12 @@ object JsonAssertionErrors {
         |$source""".stripMargin
   }
 
-  def notContainedError(expectedPart: String, source: String): Boolean ⇒ String = resFalse ⇒ {
-    s"""expected string '$expectedPart' to be contained but it is not the case with value :
-        |$source""".stripMargin
-  }
-
   case object InvalidIgnoringConfigError extends CornichonError {
-    val msg = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
+    val baseErrorMessage = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
   }
 
   case object UseIgnoringEach extends CornichonError {
-    val msg = "use 'ignoringEach' when asserting on a body as an array"
+    val baseErrorMessage = "use 'ignoringEach' when asserting on an array"
   }
 
   def arraySizeError(expected: Int, sourceArray: String): Int ⇒ String = actual ⇒ {
@@ -33,6 +30,11 @@ object JsonAssertionErrors {
       base + s""" with array:
                  |$sourceArray""".stripMargin
     else base
+  }
+
+  def jsonArrayNotEmptyError(jsonArray: Json): Boolean ⇒ String = actual ⇒ {
+    s"""expected JSON array to be empty but it is not the case with array:
+       |${jsonArray.show}""".stripMargin
   }
 
   def arrayContainsError(expected: Seq[String], sourceArray: String, contains: Boolean): Boolean ⇒ String = resFalse ⇒ {

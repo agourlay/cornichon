@@ -2,8 +2,7 @@ package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
 
-import cats.data.Xor
-import cats.data.Xor.{ left, right }
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import org.parboiled2._
@@ -16,21 +15,21 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   val r = new scala.util.Random()
 
-  def findPlaceholders(input: String): Xor[CornichonError, List[Placeholder]] =
+  def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
     new PlaceholderParser(input).placeholdersRule.run() match {
-      case Failure(e: ParseError) ⇒ right(List.empty)
-      case Failure(e: Throwable)  ⇒ left(ResolverParsingError(input, e))
-      case Success(dt)            ⇒ right(dt.toList)
+      case Failure(e: ParseError) ⇒ Right(List.empty)
+      case Failure(e: Throwable)  ⇒ Left(ResolverParsingError(input, e))
+      case Success(dt)            ⇒ Right(dt.toList)
     }
 
-  def resolvePlaceholder(ph: Placeholder)(session: Session): Xor[CornichonError, String] =
-    builtInPlaceholders.lift(ph.key).map(right).getOrElse {
+  def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
+    builtInPlaceholders.lift(ph.key).map(Right(_)).getOrElse {
       val otherKeyName = ph.key
       val otherKeyIndice = ph.index
       (session.getOpt(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
-        case (Some(_), Some(_))           ⇒ left(AmbiguousKeyDefinition(otherKeyName))
-        case (None, None)                 ⇒ left(KeyNotFoundInSession(otherKeyName, otherKeyIndice, session))
-        case (Some(valueInSession), None) ⇒ right(valueInSession)
+        case (Some(_), Some(_))           ⇒ Left(AmbiguousKeyDefinition(otherKeyName))
+        case (None, None)                 ⇒ Left(KeyNotFoundInSession(otherKeyName, otherKeyIndice, session))
+        case (Some(valueInSession), None) ⇒ Right(valueInSession)
         case (None, Some(mapper))         ⇒ applyMapper(mapper, session, ph)
       }
     }
@@ -39,18 +38,19 @@ class Resolver(extractors: Map[String, Mapper]) {
     case "random-uuid"             ⇒ UUID.randomUUID().toString
     case "random-positive-integer" ⇒ r.nextInt(10000).toString
     case "random-string"           ⇒ r.nextString(5)
+    case "random-alphanum-string"  ⇒ r.alphanumeric.take(5).mkString("")
     case "random-boolean"          ⇒ r.nextBoolean().toString
     case "timestamp"               ⇒ (System.currentTimeMillis / 1000).toString
   }
 
-  def applyMapper(m: Mapper, session: Session, ph: Placeholder): Xor[CornichonError, String] = m match {
+  def applyMapper(m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) ⇒
-      Xor.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
+      Either.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
     case GenMapper(gen) ⇒
-      Xor.catchNonFatal(gen.apply(Parameters.default, Seed.random())) match {
-        case Xor.Left(e)                ⇒ left(GeneratorError(ph.fullKey, e))
-        case Xor.Right(Some(generated)) ⇒ right(generated)
-        case Xor.Right(None)            ⇒ left(GeneratorEmptyError(ph.fullKey))
+      Either.catchNonFatal(gen.apply(Parameters.default, Seed.random())) match {
+        case Left(e)                ⇒ Left(GeneratorError(ph.fullKey, e))
+        case Right(Some(generated)) ⇒ Right(generated)
+        case Right(None)            ⇒ Left(GeneratorEmptyError(ph.fullKey))
       }
     case TextMapper(key, transform) ⇒
       session.getXor(key, ph.index).map(transform)
@@ -63,7 +63,7 @@ class Resolver(extractors: Map[String, Mapper]) {
       }
   }
 
-  def fillPlaceholders[A: Resolvable](input: A)(session: Session): Xor[CornichonError, A] = {
+  def fillPlaceholders[A: Resolvable](input: A)(session: Session): Either[CornichonError, A] = {
     val ri = Resolvable[A]
     val resolvableForm = ri.toResolvableForm(input)
     fillPlaceholders(resolvableForm)(session).map { resolved ⇒
@@ -75,8 +75,8 @@ class Resolver(extractors: Map[String, Mapper]) {
   }
 
   def fillPlaceholders(input: String)(session: Session) = {
-    def loop(placeholders: List[Placeholder], acc: String): Xor[CornichonError, String] =
-      placeholders.headOption.fold[Xor[CornichonError, String]](right(acc)) { ph ⇒
+    def loop(placeholders: List[Placeholder], acc: String): Either[CornichonError, String] =
+      placeholders.headOption.fold[Either[CornichonError, String]](Right(acc)) { ph ⇒
         for {
           resolvedValue ← resolvePlaceholder(ph)(session)
           res ← loop(placeholders.tail, acc.replace(ph.fullKey, resolvedValue))
@@ -89,9 +89,9 @@ class Resolver(extractors: Map[String, Mapper]) {
   def fillPlaceholdersUnsafe(input: String)(session: Session): String =
     fillPlaceholders(input)(session).fold(e ⇒ throw e, identity)
 
-  def fillPlaceholders(params: Seq[(String, String)])(session: Session): Xor[CornichonError, Seq[(String, String)]] = {
-    def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Xor[CornichonError, Seq[(String, String)]] =
-      params.headOption.fold[Xor[CornichonError, Seq[(String, String)]]](right(acc)) {
+  def fillPlaceholders(params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
+    def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Either[CornichonError, Seq[(String, String)]] =
+      params.headOption.fold[Either[CornichonError, Seq[(String, String)]]](Right(acc)) {
         case (name, value) ⇒
           for {
             resolvedName ← fillPlaceholders(name)(session)
@@ -109,21 +109,21 @@ object Resolver {
 }
 
 case class ResolverParsingError(input: String, error: Throwable) extends CornichonError {
-  val msg = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
+  val baseErrorMessage = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {
-  val msg = s"ambiguous definition of key '$key' - it is present in both session and extractors"
+  val baseErrorMessage = s"ambiguous definition of key '$key' - it is present in both session and extractors"
 }
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
-  val msg = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
+  val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
 }
 
 case class GeneratorEmptyError(placeholder: String) extends CornichonError {
-  val msg = s"generator mapped to placeholder '$placeholder' did not generate a value"
+  val baseErrorMessage = s"generator mapped to placeholder '$placeholder' did not generate a value"
 }
 
 case class GeneratorError(placeholder: String, e: Throwable) extends CornichonError {
-  val msg = s"generator mapped to placeholder '$placeholder' failed with:\n'${CornichonError.genStacktrace(e)}'"
+  val baseErrorMessage = s"generator mapped to placeholder '$placeholder' failed with:\n'${CornichonError.genStacktrace(e)}'"
 }

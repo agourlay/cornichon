@@ -2,7 +2,8 @@ package com.github.agourlay.cornichon.steps.regular
 
 import java.util.Timer
 
-import cats.data.Xor
+import cats.data.NonEmptyList
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.util.Timing._
@@ -16,12 +17,13 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Session], show: 
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
     withDuration {
-      Xor.catchNonFatal {
-        effect(initialRunState.session)
-      }.fold(
-        t ⇒ Future.successful(Xor.Left(CornichonError.fromThrowable(t))),
-        fs ⇒ fs.map(s ⇒ Xor.Right(s)).recover { case NonFatal(t) ⇒ Xor.Left(CornichonError.fromThrowable(t)) }
-      )
+      Either
+        .catchNonFatal(effect(initialRunState.session))
+        .leftMap(e ⇒ NonEmptyList.of(CornichonError.fromThrowable(e)))
+        .fold(
+          errors ⇒ Future.successful(Left(errors)),
+          fs ⇒ fs.map(Right(_)).recover { case NonFatal(t) ⇒ Left(NonEmptyList.of(CornichonError.fromThrowable(t))) }
+        )
     }.map {
       case (xor, executionTime) ⇒ xorToStepReport(this, xor, initialRunState, show, Some(executionTime))
     }

@@ -5,15 +5,15 @@ import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ Matchers, AsyncWordSpec }
 
-class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
-  "RepeatStep" must {
+  "RepeatWithStep" must {
     "fail if 'repeat' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
         s ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
-      val repeatStep = RepeatStep(nested, 5, None)
+      val repeatStep = RepeatWithStep(nested, Seq("1", "2", "3"), "indice")
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
@@ -28,7 +28,7 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val repeatStep = RepeatStep(nested, loop, None)
+      val repeatStep = RepeatWithStep(nested, Seq("1", "2", "3", "4", "5"), "indice")
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
@@ -47,7 +47,7 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
           GenericEqualityAssertion(s.get(indiceKeyName), uglyCounter.toString)
         }
       ) :: Nil
-      val repeatStep = RepeatStep(nested, loop, Some(indiceKeyName))
+      val repeatStep = RepeatWithStep(nested, Seq("1", "2", "3", "4", "5"), indiceKeyName)
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)

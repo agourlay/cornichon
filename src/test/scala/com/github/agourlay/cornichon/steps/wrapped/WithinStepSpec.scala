@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ Matchers, AsyncWordSpec }
 
 import scala.concurrent.duration._
@@ -17,7 +17,7 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "possible random value step",
         s ⇒ {
           Thread.sleep(100)
-          GenericAssertion(true, true)
+          GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val withinStep = WithinStep(nested, d)
@@ -32,7 +32,7 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "possible random value step",
         s ⇒ {
           Thread.sleep(250)
-          GenericAssertion(true, true)
+          GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val withinStep = WithinStep(nested, d)

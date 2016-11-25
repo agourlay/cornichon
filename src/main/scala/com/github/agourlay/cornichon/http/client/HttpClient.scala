@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.http.client
 
-import cats.data.Xor
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpMethod, HttpStream }
 import io.circe.Json
@@ -16,7 +15,7 @@ trait HttpClient {
     payload: Option[Json],
     params: Seq[(String, String)],
     headers: Seq[(String, String)]
-  ): Future[Xor[CornichonError, CornichonHttpResponse]]
+  ): Future[Either[CornichonError, CornichonHttpResponse]]
 
   def openStream(
     stream: HttpStream,
@@ -24,7 +23,7 @@ trait HttpClient {
     params: Seq[(String, String)],
     headers: Seq[(String, String)],
     takeWithin: FiniteDuration
-  ): Future[Xor[CornichonError, CornichonHttpResponse]]
+  ): Future[Either[CornichonError, CornichonHttpResponse]]
 
   def shutdown(): Future[Unit]
 

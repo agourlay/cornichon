@@ -2,12 +2,21 @@ package com.github.agourlay.cornichon.core
 
 import java.io.{ PrintWriter, StringWriter }
 
+import cats.data.NonEmptyList
+
 import scala.util.control.NoStackTrace
 
 trait CornichonError extends Exception with NoStackTrace {
-  def msg: String
+  def baseErrorMessage: String
+  val causedBy: Option[NonEmptyList[CornichonError]] = None
 
-  override def getMessage = msg
+  lazy val renderedMessage: String = causedBy.fold(baseErrorMessage) { causes ⇒
+    s"""$baseErrorMessage
+       |caused by:
+       |${causes.toList.map(c ⇒ c.renderedMessage).mkString("\nand\n")}
+     """.stripMargin
+  }
+  override def getMessage = renderedMessage
 }
 
 object CornichonError {
@@ -25,5 +34,9 @@ object CornichonError {
 }
 
 case class StepExecutionError[A](e: Throwable) extends CornichonError {
-  val msg = s"exception thrown '${CornichonError.genStacktrace(e)}'"
+  val baseErrorMessage = s"exception thrown '${CornichonError.genStacktrace(e)}'"
+}
+
+case class BasicError(error: String) extends CornichonError {
+  val baseErrorMessage = error
 }

@@ -7,8 +7,7 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.Duration
-import cats.data.Xor._
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 case class WithinStep(nested: List[Step], maxDuration: Duration) extends WrapperStep {
 
@@ -30,8 +29,8 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
             if (executionTime.gt(maxDuration)) {
               val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", initialDepth, Some(executionTime))
               // The nested steps were successful but the did not finish in time, the last step is picked as failed step
-              val failedStep = FailedStep(nested.last, WithinBlockSucceedAfterMaxDuration)
-              (fullLogs, left(failedStep))
+              val failedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
+              (fullLogs, Left(failedStep))
             } else {
               val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", initialDepth, Some(executionTime))
               (fullLogs, rightDone)
@@ -39,7 +38,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
           case Left(failedStep) ⇒
             // Failure of the nested steps have a higher priority
             val fullLogs = failedTitleLog(initialDepth) +: withinState.logs
-            (fullLogs, left(failedStep))
+            (fullLogs, Left(failedStep))
         }
 
         (initialRunState.withSession(withinState.session).appendLogs(fullLogs), xor)
@@ -48,6 +47,6 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
   }
 }
 
-case object WithinBlockSucceedAfterMaxDuration extends CornichonError {
-  val msg = "within block succeeded after 'maxDuration'"
+case class WithinBlockSucceedAfterMaxDuration(maxDuration: Duration, executionTime: FiniteDuration) extends CornichonError {
+  val baseErrorMessage = s"Within block succeeded after specified max duration $maxDuration in ${executionTime.toUnit(maxDuration.unit)} ${maxDuration.unit}"
 }

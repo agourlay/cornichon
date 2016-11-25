@@ -2,10 +2,14 @@ package com.github.agourlay.cornichon.json
 
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
-import cats.data.Xor._
+import cats.scalatest.{ EitherMatchers, EitherValues }
 import io.circe.Json
 
-class JsonPathSpec extends WordSpec with Matchers with PropertyChecks {
+class JsonPathSpec extends WordSpec
+    with Matchers
+    with PropertyChecks
+    with EitherValues
+    with EitherMatchers {
 
   "JsonPath" must {
 
@@ -19,7 +23,7 @@ class JsonPathSpec extends WordSpec with Matchers with PropertyChecks {
           |}
         """.stripMargin
 
-      JsonPath.parse("Name").run(input) should be(right(Json.fromString("John")))
+      JsonPath.parse("Name").run(input) should beRight(Json.fromString("John"))
     }
 
     "select properly Int based on single field" in {
@@ -32,7 +36,7 @@ class JsonPathSpec extends WordSpec with Matchers with PropertyChecks {
           |}
         """.stripMargin
 
-      JsonPath.parse("Age").run(input) should be(right(Json.fromInt(50)))
+      JsonPath.parse("Age").run(input) should beRight(Json.fromInt(50))
     }
 
     "select properly nested field in Object" in {
@@ -49,7 +53,7 @@ class JsonPathSpec extends WordSpec with Matchers with PropertyChecks {
           |}
         """.stripMargin
 
-      JsonPath.parse("brother.Age").run(input) should be(right(Json.fromInt(50)))
+      JsonPath.parse("brother.Age").run(input) should beRight(Json.fromInt(50))
     }
 
     "select properly nested field in Array" in {
@@ -72,7 +76,7 @@ class JsonPathSpec extends WordSpec with Matchers with PropertyChecks {
           |}
         """.stripMargin
 
-      JsonPath.parse("brothers[1].Age").run(input) should be(right(Json.fromInt(30)))
+      JsonPath.parse("brothers[1].Age").run(input) should beRight(Json.fromInt(30))
     }
 
     "select properly element of a root Array" in {
@@ -95,7 +99,7 @@ class JsonPathSpec extends WordSpec with Matchers with PropertyChecks {
           |}]
         """.stripMargin
 
-      JsonPath.parse("$[0].brothers[1].Age").run(input) should be(right(Json.fromInt(30)))
+      JsonPath.parse("$[0].brothers[1].Age").run(input) should beRight(Json.fromInt(30))
     }
   }
 }

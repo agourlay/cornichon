@@ -4,8 +4,8 @@ import java.util.Timer
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import cats.data.Xor.right
-import cats.scalatest.XorValues
+
+import cats.scalatest.{ EitherValues, EitherMatchers }
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
 import com.github.agourlay.cornichon.resolver.Resolver
@@ -14,7 +14,7 @@ import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with XorValues {
+class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with EitherValues with EitherMatchers {
 
   implicit val system = ActorSystem("akka-http-client")
   implicit val mat = ActorMaterializer()
@@ -72,7 +72,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
         val s = Session.newEmpty
           .addValues(Seq("hero" → "batman", "color" → "blue"))
         val url = "http://yada.com?hero=<hero>&color=<color>"
-        service.resolveParams(url, params = Seq.empty)(s) should be(right(Seq("hero" → "batman", "color" → "blue")))
+        service.resolveParams(url, params = Seq.empty)(s) should beRight(Seq("hero" → "batman", "color" → "blue"))
       }
 
       "detect non resolvable params" in {
@@ -85,7 +85,7 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
       "handle URL without param" in {
         val s = Session.newEmpty
         val url = "http://yada.com"
-        service.resolveParams(url, params = Seq.empty)(s) should be(right(Seq.empty))
+        service.resolveParams(url, params = Seq.empty)(s) should beRight(Seq.empty[(String, String)])
       }
     }
 

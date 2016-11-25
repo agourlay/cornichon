@@ -2,8 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import cats.Show
 import cats.syntax.show._
-import cats.data.Xor
-import cats.data.Xor.{ left, right }
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
@@ -20,17 +19,17 @@ import scala.util.{ Failure, Success }
 
 trait CornichonJson {
 
-  def parseJson[A: Encoder: Show](input: A): Xor[CornichonError, Json] = input match {
+  def parseJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
     case s: String if s.trim.headOption.contains('|') ⇒
-      right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject))) // table
+      Right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject))) // table
     case s: String if s.trim.headOption.contains('{') ⇒
       parseString(s) // parse object
     case s: String if s.trim.headOption.contains('[') ⇒
       parseString(s) // parse array
     case s: String ⇒
-      right(Json.fromString(s))
+      Right(Json.fromString(s))
     case _ ⇒
-      Xor.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
+      Either.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
   }
 
   def parseJsonUnsafe[A: Encoder: Show](input: A): Json =
@@ -43,28 +42,28 @@ trait CornichonJson {
     DataTableParser.parseDataTable(table).objectList
 
   def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
-    case Success(value) ⇒ right(value.convertMarshaled[Json])
-    case Failure(e)     ⇒ left(MalformedGraphQLJsonError(input, e))
+    case Success(value) ⇒ Right(value.convertMarshaled[Json])
+    case Failure(e)     ⇒ Left(MalformedGraphQLJsonError(input, e))
   }
 
   def parseGraphQLJsonUnsafe(input: String) =
     parseGraphQLJson(input).fold(e ⇒ throw e, identity)
 
-  def parseArray(input: String): Xor[CornichonError, List[Json]] =
+  def parseArray(input: String): Either[CornichonError, List[Json]] =
     parseJson(input).flatMap { json ⇒
       json.arrayOrObject(
-        left(NotAnArrayError(input)),
-        values ⇒ right(values),
-        obj ⇒ left(NotAnArrayError(input))
+        Left(NotAnArrayError(input)),
+        values ⇒ Right(values),
+        obj ⇒ Left(NotAnArrayError(input))
       )
     }
 
-  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Xor[CornichonError, List[Json]] = {
+  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, List[Json]] = {
     path.run(sessionValue).flatMap { json ⇒
       json.arrayOrObject(
-        left(NotAnArrayError(json)),
-        values ⇒ right(values),
-        obj ⇒ left(NotAnArrayError(json))
+        Left(NotAnArrayError(json)),
+        values ⇒ Right(values),
+        obj ⇒ Left(NotAnArrayError(json))
       )
     }
   }

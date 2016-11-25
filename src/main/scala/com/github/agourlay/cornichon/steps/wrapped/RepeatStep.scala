@@ -2,15 +2,14 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
-import cats.data.Xor
-import cats.data.Xor._
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
+case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[String]) extends WrapperStep {
 
   require(occurrence > 0, "repeat block must contain a positive number of occurence")
 
@@ -18,9 +17,11 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
-    def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Xor[FailedStep, Done])] =
+    def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
-      engine.runSteps(runState.resetLogs).flatMap {
+      val rs = runState.resetLogs
+      val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
+      engine.runSteps(runStateWithIndex).flatMap {
         case (onceMoreRunState, stepResult) ⇒
           stepResult match {
             case Right(_) ⇒
@@ -30,9 +31,10 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
               else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session))
             case Left(failed) ⇒
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Future.successful(retriesNumber, onceMoreRunState, left(failed))
+              Future.successful(retriesNumber, onceMoreRunState, Left(failed))
           }
       }
+    }
 
     withDuration {
       val bootstrapRepeatState = initialRunState.forNestedSteps(nested)
@@ -49,8 +51,8 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
             (fullLogs, rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurence", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RepeatBlockContainFailedSteps)
-            (fullLogs, left(artificialFailedStep))
+            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.errors))
+            (fullLogs, Left(artificialFailedStep))
         }
 
         (initialRunState.withSession(repeatedState.session).appendLogs(fullLogs), xor)
@@ -58,6 +60,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int) extends WrapperStep {
   }
 }
 
-case object RepeatBlockContainFailedSteps extends CornichonError {
-  val msg = "repeat block contains failed step(s)"
+case class RepeatBlockContainFailedSteps(failedOccurence: Long, errors: NonEmptyList[CornichonError]) extends CornichonError {
+  val baseErrorMessage = s"Repeat block failed at occurence $failedOccurence"
+  override val causedBy = Some(errors)
 }

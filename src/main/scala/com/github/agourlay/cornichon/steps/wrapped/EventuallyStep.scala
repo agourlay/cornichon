@@ -2,8 +2,6 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
-import cats.data.Xor
-import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timeouts
@@ -17,7 +15,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
         val retryRunState = runState.resetLogs
@@ -34,7 +32,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
                 }
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Future.successful(retriesNumber, newRunState, left(failedStep))
+                Future.successful(retriesNumber, newRunState, Left(failedStep))
               }
 
             case Right(_) ⇒
@@ -44,8 +42,8 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
                 Future.successful(retriesNumber, state, rightDone)
               } else {
                 // Run was a success but the time is up.
-                val failedStep = FailedStep(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
-                Future.successful(retriesNumber, state, left(failedStep))
+                val failedStep = FailedStep.fromSingle(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
+                Future.successful(retriesNumber, state, Left(failedStep))
               }
           }
       }
@@ -63,7 +61,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
         val (fullLogs, xor) = report.fold(
           failedStep ⇒ {
             val fullLogs = failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
-            (fullLogs, left(failedStep))
+            (fullLogs, Left(failedStep))
           },
           done ⇒ {
             val fullLogs = successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
@@ -89,5 +87,5 @@ object EventuallyConf {
 }
 
 case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
-  val msg = "eventually block succeeded after 'maxDuration'"
+  val baseErrorMessage = "Eventually block succeeded after 'maxDuration'"
 }

@@ -2,9 +2,10 @@ package com.github.agourlay.cornichon.steps.regular
 
 import java.util.Timer
 
+import cats.data.NonEmptyList
+
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success, Try }
-import cats.data.Xor._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
@@ -21,9 +22,10 @@ case class DebugStep(message: Session ⇒ String, title: String = "Debug step") 
         val runLogs = Vector(DebugLogInstruction(debugMessage, initialRunState.depth))
         (runLogs, rightDone)
       case Failure(e) ⇒
-        val debugErrorLogs = errorLogs(title, e, initialRunState.depth)
-        val failedStep = FailedStep.fromThrowable(this, e)
-        (debugErrorLogs, left(failedStep))
+        val errors = NonEmptyList.of(CornichonError.fromThrowable(e))
+        val debugErrorLogs = errorLogs(title, errors, initialRunState.depth)
+        val failedStep = FailedStep(this, errors)
+        (debugErrorLogs, Left(failedStep))
     }
     Future.successful(initialRunState.appendLogs(fullLogs), xor)
   }

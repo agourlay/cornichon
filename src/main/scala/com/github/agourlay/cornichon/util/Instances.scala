@@ -14,6 +14,11 @@ trait Instances extends AllInstances {
       fa.toIterator.map(_.show).mkString("Seq(", ", ", ")")
   }
 
+  implicit def showIterable[A: Show]: Show[Iterable[A]] = new Show[Iterable[A]] {
+    def show(fa: Iterable[A]): String =
+      fa.toIterator.map(_.show).mkString("(", ", ", ")")
+  }
+
   implicit def showIndexedSeq[A: Show]: Show[IndexedSeq[A]] = new Show[IndexedSeq[A]] {
     def show(fa: IndexedSeq[A]): String =
       fa.toIterator.map(_.show).mkString("IndexedSeq(", ", ", ")")

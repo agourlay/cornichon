@@ -13,14 +13,15 @@ An extensible Scala DSL for testing JSON HTTP APIs.
   2. [HTTP assertions](#http-assertions)
   3. [HTTP streams](#http-streams)
   4. [GraphQL support](#graphql-support)
-  4. [Session steps](#session-steps)
-  5. [Wrapper steps](#wrapper-steps)
-  6. [Debug steps](#debug-steps)
+  5. [Session steps](#session-steps)
+  6. [Wrapper steps](#wrapper-steps)
+  7. [Debug steps](#debug-steps)
 5. [DSL composition](#dsl-composition)
 6. [Placeholders](#placeholders)
 7. [Custom steps](#custom-steps)
-  1. [Effects and Assertions](#effects-and-assertions)
-  2. [HTTP service](#http-service)
+  1. [EffectStep](#effectStep)
+  2. [EffectStep using the HTTP service](#effectStep-using-the-http-service)
+  3. [AssertStep](#assertstep)
 8. [Feature options](#feature-options)
   1. [Before and after hooks](#before-and-after-hooks)
   2. [Base URL](#base-url)
@@ -38,7 +39,7 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 Add the library dependency
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.10.1" % "test"
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.10.2" % "test"
 ```
 
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
@@ -348,6 +349,8 @@ body.asArray.inOrder.ignoringEach("publisher").is(
  """)  
   
 body.asArray.hasSize(2)
+
+body.asArray.isNotEmpty
   
 body.asArray.contains(
   """
@@ -434,7 +437,6 @@ And assert body.ignoring("city", "publisher").is(
 ```
 
 
-
 ### Session steps
 
 - setting a value in ```session```
@@ -492,6 +494,20 @@ RepeatDuring(300.millis) {
 
   Then assert status.is(200)
 }
+```
+
+- repeat a series of ```steps``` for each input element
+
+```scala
+RepeatWith("Superman", "GreenLantern", "Spiderman")("superhero-name") {
+
+  When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+
+  Then assert status.is(200)
+
+  Then assert body.path("hasSuperpowers").is(true)
+}
+
 ```
 
 - retry a series of ```steps``` until it succeeds or reaches the limit
@@ -563,7 +579,7 @@ WithDataInputs(
 }
 
 def a_plus_b_equals_c =
-  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
+  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
 ```
 
 - WithHeaders automatically sets headers for several steps useful for authenticated scenario.
@@ -626,11 +642,13 @@ LogDuration(label = "my experiment") {
 ```scala
  And I show_session
 
+ And I show_last_response
+
  And I show_last_status
 
- And I show_last_response_body
+ And I show_last_body
 
- And I show_last_response_headers
+ And I show_last_headers
 ```
 
 
@@ -724,6 +742,7 @@ It is also possible to inject random values inside placeholders using:
 - ```<random-uuid>``` for a random UUID
 - ```<random-positive-integer>``` for a random Integer between 0-10000
 - ```<random-string>``` for a random String of length 5
+- ```<random-alphanum-string>``` for a random alphanumeric String of length 5
 - ```<random-boolean>``` for a random Boolean string
 - ```<timestamp>``` for the current timestamp
 
@@ -746,70 +765,41 @@ It becomes then possible to retrieve past values :
 
 ## Custom steps
 
-### Effects and Assertions
+### EffectStep
 
-There are two kind of ```step``` :
-- EffectStep ```Session => Future[Session]``` : Runs a side effect and populates the ```Session``` with values.
-- AssertStep ```Sesssion => Assertion[A]``` : Describes the expectation of the test.
+An ```EffectStep``` can be understood as the following function ```Session => Future[Session]```.
 
- 
-A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders)
+This means that an ```EffectStep``` runs a side effect and populates the ```Session``` with potential result values.
 
-The test engine is responsible to test the equality of the ```Assertion``` values which has two concrete implementations.
+A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders) and save the result computations for later assertions.
 
-The ```GenericAssertion``` is simply a container for 2 values, the expected value and the actual result, when used, the engine will try its best to provide a meaningful error message.
- 
-If a specific error message is prefered, it is also possible to provide a custom error message using the ```CustomMessageAssertion```.
+Here is the most simple ```EffectStep```:
 
 ```scala
- CustomMessageAssertion[A](expected: A, result: A, customMessage: A ⇒ String)
+When I EffectStep(title = "do nothing", action = s => Future.successful(s))
+
 ```
 
-The engine will feed the actual result to the ```customMessage``` function.
-
-In practice the simplest runnable statement in the DSL is
+or using a factory helper when dealing with non Future based computation
 
 ```scala
-When I AssertStep("do nothing", s => GenericAssertion(true, true))
+When I EffectStep.fromSync(title = "do nothing", action = s => s)
+
 ```
 
-Let's try to assert the result of a computation
+Let's try so save a value into the ```Session```
 
 ```scala
-When I AssertStep("calculate", s => GenericAssertion(2 + 2, 4))
+When I EffectStep.fromSync(title = "estimate PI", action = s => s.add("result", piComputation())
+
 ```
 
-The ```session``` is used to store the result of a computation in order to reuse it or to apply more advanced assertions on it later.
+The test engine is responsible for controling the execution of the side effect function and to report any error.
 
 
-```scala
-When I EffectStep(
-  title = "run crazy computation",
-  action = s => {
-    val pi = piComputation()
-    s.add("result", res)
-  }
-)
+### EffectStep using the HTTP service
 
-Then assert AssertStep(
-  title = "check computation info",
-  action = s => {
-    val pi = s.get("result")
-    GenericAssertion(pi, 3.14)
-  }
-)
-```
-
-This is rather low level and you not should write your steps like that directly inside the DSL.
-
-Fortunately a bunch of built-in steps and primitive building blocs are already available for you.
-
-Note for advance users: it is also possible to write custom wrapper steps by implementing ```WrapperStep```.
-
-
-### HTTP service
-
-Sometimes you still want to perform HTTP calls inside of custom effect steps, this is where the ```http``` service comes in handy. 
+Sometimes you want to perform HTTP calls inside of of an ```EffectStep```, this is where the ```http``` service comes in handy.
 
 In order to illustrate its usage let's take the following example, you would like to write a custom step like:
 
@@ -850,6 +840,63 @@ The built-in HTTP steps available on the DSL are actually built on top of the ``
 - resolve placeholders in URL, query params, body and headers.
 - automatically populate the session with the results of the call such as response body, status and headers (it is also possible to pass a custom extractor).
 - handle common errors such as timeout and malformed requests.
+
+### AssertStep
+
+An ```AssertStep``` can be understood as the following function ```Sesssion => Assertion```. Its goal is to describe an expectation.
+
+The test engine is responsible to test the validity of the provided ```Assertion``` which can be one of the following:
+
+* Equality assertions : test the equality of two objects using the cats ```Equals``` typeclass.
+  * GenericEqualityAssertion to leave all the details to Cornichon
+
+    ```scala
+    When I AssertStep("always true!", s => GenericEqualityAssertion(true, true))
+    ```
+
+  * CustomMessageEqualityAssertion to provide a custom error message
+
+    ```scala
+    CustomMessageAssertion[A](expected: A, result: A, customMessage: A ⇒ String)
+    ```
+
+* Ordering assertions : compare two objects using the cats ```Order``` typeclass.
+  * GreaterThanAssertion
+  * LessThanAssertion
+  * BetweenAssertion
+
+* Collection assertions : test the state of a collection of elements
+  * CollectionEmptyAssertion
+  * CollectionNotEmptyAssertion
+  * CollectionSizeAssertion
+  * CollectionContainsAssertion
+
+* String assertion : assert the content of a given String value
+  * StringContainsAssertion
+  * RegexAssertion
+
+
+Below is a longer example showing how to integration an assertion into scenario.
+
+```scala
+When I EffectStep(
+  title = "estimate PI",
+  action = s => s.add("result", piComputation())
+)
+
+Then assert AssertStep(
+  title = "check estimate",
+  action = s => BetweenAssertion(3.1, s.get("result"), 3.2)
+)
+```
+
+```Assertions``` can also be composed using ```and``` and ```or```, for instance ```BetweenAssertion``` is the result of ```LessThanAssertion``` and ```GreaterThanAssertion```.
+
+This is rather low level therefore you not should write your steps like that directly inside the DSL but hide them behind functions with appropriate names.
+
+Fortunately a bunch of built-in steps and primitive building blocs are already available for you.
+
+Note for advance users: it is also possible to write custom wrapper steps by implementing ```WrapperStep```.
 
 
 ## Feature options

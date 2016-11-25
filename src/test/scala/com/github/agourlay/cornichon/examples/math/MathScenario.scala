@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 
 import scala.concurrent.duration._
 
@@ -27,7 +27,7 @@ class MathScenario extends CornichonFeature with MathSteps {
 
         When I generate_random_int("random-2")
 
-        Then assert session_value("random-1").isEqualToSessionValue("random-2")
+        Then assert session_value("random-1").is("<random-2>")
 
       }
     }
@@ -62,7 +62,7 @@ class MathScenario extends CornichonFeature with MathSteps {
           | 1 | -1 | 0  |
         """
       ) {
-          Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericAssertion(s.get("c").toInt, s.get("a").toInt + s.get("b").toInt))
+          Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.get("c").toInt, s.get("a").toInt + s.get("b").toInt))
         }
     }
   }

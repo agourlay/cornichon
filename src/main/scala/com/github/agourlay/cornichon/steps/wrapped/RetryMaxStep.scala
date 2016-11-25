@@ -2,8 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.Timer
 
-import cats.data.Xor
-import cats.data.Xor._
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -18,7 +17,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
 
-    def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Future[(Long, RunState, Xor[FailedStep, Done])] =
+    def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] =
       engine.runSteps(runState.resetLogs).flatMap {
         case (retriedState, stepsResult) ⇒
           stepsResult match {
@@ -31,7 +30,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
                 retryMaxSteps(runState.appendLogs(retriedState.logs), limit - 1, retriesNumber + 1)
               else
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Future.successful(retriesNumber, retriedState, left(failedStep))
+                Future.successful(retriesNumber, retriedState, Left(failedStep))
           }
       }
 
@@ -49,8 +48,8 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
             (fullLogs, rightDone)
           case Left(failedStep) ⇒
             val fullLogs = failedTitleLog(depth) +: retriedState.logs :+ FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep(failedStep.step, RetryMaxBlockReachedLimit)
-            (fullLogs, left(artificialFailedStep))
+            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RetryMaxBlockReachedLimit(limit, failedStep.errors))
+            (fullLogs, Left(artificialFailedStep))
         }
 
         (initialRunState.withSession(retriedState.session).appendLogs(fullLogs), xor)
@@ -58,6 +57,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
   }
 }
 
-case object RetryMaxBlockReachedLimit extends CornichonError {
-  val msg = "retry max block reached the limit"
+case class RetryMaxBlockReachedLimit(limit: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
+  val baseErrorMessage = s"Retry max block failed '$limit' times"
+  override val causedBy = Some(errors)
 }

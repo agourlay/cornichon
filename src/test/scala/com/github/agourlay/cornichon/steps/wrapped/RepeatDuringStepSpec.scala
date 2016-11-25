@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ Matchers, AsyncWordSpec }
 
 import scala.concurrent.duration._
@@ -13,7 +13,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "fail if 'repeatDuring' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericAssertion(true, false)
+        s ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatDuring = RepeatDuringStep(nested, 5.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuring :: Nil)
@@ -25,7 +25,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         "always valid",
         s ⇒ {
           Thread.sleep(1)
-          GenericAssertion(true, true)
+          GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val repeatDurinStep = RepeatDuringStep(nested, 50.millis)
@@ -47,7 +47,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         "always valid",
         s ⇒ {
           Thread.sleep(500)
-          GenericAssertion(true, true)
+          GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)

@@ -2,8 +2,8 @@ package com.github.agourlay.cornichon.core
 
 import java.util.Timer
 
-import cats.data.Xor
-import cats.data.Xor._
+import cats.data.NonEmptyList
+import cats.syntax.either._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.Duration
@@ -37,20 +37,20 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
     }
   }
 
-  def runSteps(runState: RunState): Future[(RunState, FailedStep Xor Done)] =
+  def runSteps(runState: RunState): Future[(RunState, FailedStep Either Done)] =
     runState.remainingSteps.headOption.map { currentStep ⇒
-      val preparedStep = stepPreparers.foldLeft[CornichonError Xor Step](right(currentStep)) {
+      val preparedStep = stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
         (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(runState.session))
       }
       preparedStep.fold(
-        ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, ce)),
+        ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, NonEmptyList.of(ce))),
         ps ⇒ ps.run(this)(runState).flatMap {
           case (newState, stepResult) ⇒
             stepResult.fold(
-              failedStep ⇒ Future.successful(newState, left(failedStep)),
+              failedStep ⇒ Future.successful(newState, Left(failedStep)),
               _ ⇒ runSteps(newState.consumCurrentStep)
             )
-        }.recover { case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, CornichonError.fromThrowable(t)) }
+        }.recover { case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, NonEmptyList.of(CornichonError.fromThrowable(t))) }
       )
     }.getOrElse(Future.successful(runState, rightDone))
 }
@@ -65,11 +65,11 @@ object Engine {
 
   def xorToStepReport(
     currentStep: Step,
-    res: Xor[CornichonError, Session],
+    res: Either[NonEmptyList[CornichonError], Session],
     runState: RunState,
     show: Boolean,
     duration: Option[Duration] = None
-  ): (RunState, FailedStep Xor Done) =
+  ): (RunState, FailedStep Either Done) =
     res.fold(
       e ⇒ exceptionToFailureStep(currentStep, runState, e),
       newSession ⇒ {
@@ -78,18 +78,17 @@ object Engine {
       }
     )
 
-  def exceptionToFailureStep(currentStep: Step, runState: RunState, e: CornichonError): (RunState, FailedStep Xor Done) = {
-    val runLogs = errorLogs(currentStep.title, e, runState.depth)
-    val failedStep = FailedStep(currentStep, e)
-    (runState.appendLogs(runLogs), left(failedStep))
+  def exceptionToFailureStep(currentStep: Step, runState: RunState, errors: NonEmptyList[CornichonError]): (RunState, FailedStep Either Done) = {
+    val runLogs = errorLogs(currentStep.title, errors, runState.depth)
+    val failedStep = FailedStep(currentStep, errors)
+    (runState.appendLogs(runLogs), Left(failedStep))
   }
 
-  def errorLogs(title: String, e: Throwable, depth: Int) = {
+  def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int) = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)
-    val error = CornichonError.fromThrowable(e)
-    failureLog +: error.msg.split('\n').toVector.map { m ⇒
+    val logs = failureLog +: errors.toList.flatMap(_.renderedMessage.split('\n').toList.map { m ⇒
       FailureLogInstruction(m, depth)
-    }
+    })
+    logs.toVector
   }
-
 }

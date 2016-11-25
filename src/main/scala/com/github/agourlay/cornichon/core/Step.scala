@@ -2,14 +2,12 @@ package com.github.agourlay.cornichon.core
 
 import java.util.Timer
 
-import cats.data.Xor
-
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait Step {
   def title: String
   def setTitle(newTitle: String): Step
-  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer): Future[(RunState, FailedStep Xor Done)]
+  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer): Future[(RunState, FailedStep Either Done)]
 }
 
 trait WrapperStep extends Step {

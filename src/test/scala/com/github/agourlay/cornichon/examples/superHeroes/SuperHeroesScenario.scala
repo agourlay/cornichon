@@ -82,6 +82,10 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.path("city").containsString("Gotham")
 
+        Then assert body.path("city").matchesRegex(".*ham.*ty".r)
+
+        Then assert body.path("name").matchesRegex(".*man".r)
+
         Then assert body.path("country").isAbsent
 
         Then assert body.path("hasSuperpowers").is(false)
@@ -243,6 +247,8 @@ class SuperHeroesScenario extends CornichonFeature {
       Scenario("demonstrate collection features") {
 
         When I get("/superheroes").withParams("sessionId" → "<session-id>")
+
+        Then assert body.asArray.isNotEmpty
 
         Then assert body.asArray.ignoringEach("publisher").is(
           """
@@ -408,7 +414,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert session_value("batman-city").is("Gotham city")
 
-        And I show_last_response_body_as_json
+        And I show_last_body_json
 
         Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
@@ -421,16 +427,17 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         Then assert headers.name("Server").isPresent
-        Then assert headers.contain("Server" → "akka-http/2.4.12")
+        Then assert headers.contain("Server" → "akka-http/10.0.0")
         Then assert headers.name("server").isAbsent
         And I save_header_value("Server" → "my-server-version")
-        Then assert session_value("my-server-version").is("akka-http/2.4.12")
+        Then assert session_value("my-server-version").is("akka-http/10.0.0")
+        Then assert headers.hasSize(2)
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
         And I show_last_status
-        And I show_last_response_body
-        And I show_last_response_headers
+        And I show_last_body
+        And I show_last_headers
       }
 
       Scenario("demonstrate GraphQL support") {
@@ -558,6 +565,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
+          Then assert body.path("name").matchesRegex(".*man".r)
+
           Then assert body.ignoring("hasSuperpowers", "publisher").is(
             """
             {
@@ -582,14 +591,24 @@ class SuperHeroesScenario extends CornichonFeature {
 
             Then assert body.ignoring("hasSuperpowers", "publisher").is(
               """
-            {
-              "name": "Batman",
-              "realName": "Bruce Wayne",
-              "city": "Gotham city"
-            }
+              {
+                "name": "Batman",
+                "realName": "Bruce Wayne",
+                "city": "Gotham city"
+              }
               """
             )
           }
+        }
+
+        // Repeat for each element
+        RepeatWith("Superman", "GreenLantern", "Spiderman")("superhero-name") {
+
+          When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+
+          Then assert status.is(200)
+
+          Then assert body.path("hasSuperpowers").is(true)
         }
 
         // Retry series of Steps with a limit
