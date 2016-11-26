@@ -8,6 +8,24 @@ import com.github.agourlay.cornichon.util.Instances._
 
 object StatusSteps {
 
+  case object StatusKind {
+
+    protected val statusKind = Map(
+      1 → "informational",
+      2 → "success",
+      3 → "redirection",
+      4 → "client error",
+      5 → "server error"
+    )
+
+    def computeKind(status: Int) = status / 100
+
+    def kindDisplay(status: Int) = s"'${status}xx'"
+
+    def kindLabel(status: Int) = statusKind.getOrElse(status, "unknown")
+
+  }
+
   case object StatusStepBuilder {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
@@ -19,24 +37,22 @@ object StatusSteps {
       )
     )
 
-    protected def isByKind(kind: Int, label: String) = AssertStep(
-      title = s"status is $label ${kindDisplay(kind)}",
+    protected def isByKind(kind: Int) = AssertStep(
+      title = s"status is ${StatusKind.kindLabel(kind)} ${StatusKind.kindDisplay(kind)}",
       action = s ⇒
       CustomMessageEqualityAssertion(
         expected = kind,
-        actual = s.get(lastResponseStatusKey).toInt / 100,
-        customMessage = statusKindError(kindDisplay(kind), label, s.get(lastResponseBodyKey))
+        actual = StatusKind.computeKind(s.get(lastResponseStatusKey).toInt),
+        customMessage = statusKindError(kind, s.get(lastResponseStatusKey).toInt, s.get(lastResponseBodyKey))
       )
     )
 
-    def isSuccess = isByKind(2, "success")
-    def isRedirect = isByKind(3, "redirection")
-    def isClientError = isByKind(4, "client error")
-    def isServerError = isByKind(5, "server error")
+    def isSuccess = isByKind(2)
+    def isRedirect = isByKind(3)
+    def isClientError = isByKind(4)
+    def isServerError = isByKind(5)
 
   }
-
-  def kindDisplay(status: Int) = s"'${status}xx'"
 
   // TODO do not assume that body is JSON - use content-type
   def withResponseBody(body: String) = s""" with response body:
@@ -46,8 +62,11 @@ object StatusSteps {
     s"expected status '$expected' but actual is '$actual' ${withResponseBody(body)}"
   }
 
-  def statusKindError(kind: String, label: String, body: String): Int ⇒ String = actual ⇒ {
-    s"expected a $label $kind status but actual is ${kindDisplay(actual)} ${withResponseBody(body)}"
+  def statusKindError(expectedKind: Int, actualStatus: Int, body: String): Int ⇒ String = actual ⇒ {
+    val kindShow = StatusKind.kindDisplay(expectedKind)
+    val label = StatusKind.kindLabel(expectedKind)
+    val actualLabel = StatusKind.kindLabel(actual)
+    s"expected a $label $kindShow status but actual is $actualLabel '$actualStatus' ${withResponseBody(body)}"
   }
 
 }
