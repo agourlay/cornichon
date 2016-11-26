@@ -20,12 +20,12 @@ object StatusSteps {
     )
 
     protected def isByKind(kind: Int, label: String) = AssertStep(
-      title = s"status is $label '${kind}xx'",
+      title = s"status is $label ${kindDisplay(kind)}",
       action = s ⇒
       CustomMessageEqualityAssertion(
         expected = kind,
         actual = s.get(lastResponseStatusKey).toInt / 100,
-        customMessage = statusError(kind, s.get(lastResponseBodyKey))
+        customMessage = statusKindError(kindDisplay(kind), label, s.get(lastResponseBodyKey))
       )
     )
 
@@ -36,10 +36,18 @@ object StatusSteps {
 
   }
 
+  def kindDisplay(status: Int) = s"'${status}xx'"
+
   // TODO do not assume that body is JSON - use content-type
-  def statusError(expected: Int, body: String): Int ⇒ String = actual ⇒ {
-    s"""expected '$expected' but actual is '$actual' with response body:
+  def withResponseBody(body: String) = s""" with response body:
        |${parseJsonUnsafe(body).show}""".stripMargin
+
+  def statusError(expected: Int, body: String): Int ⇒ String = actual ⇒ {
+    s"expected status '$expected' but actual is '$actual' ${withResponseBody(body)}"
+  }
+
+  def statusKindError(kind: String, label: String, body: String): Int ⇒ String = actual ⇒ {
+    s"expected a $label $kind status but actual is ${kindDisplay(actual)} ${withResponseBody(body)}"
   }
 
 }

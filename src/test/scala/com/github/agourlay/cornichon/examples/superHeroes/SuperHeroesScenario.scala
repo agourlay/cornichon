@@ -165,6 +165,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert status.is(201)
 
+        Then assert status.isSuccess
+
         When I get("/superheroes/Scalaman").withParams("sessionId" → "<session-id>")
 
         Then assert body.ignoring("publisher", "hasSuperpowers", "city").is(
