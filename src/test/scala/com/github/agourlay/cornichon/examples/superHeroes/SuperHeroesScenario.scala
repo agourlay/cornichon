@@ -165,6 +165,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert status.is(201)
 
+        Then assert status.isSuccess
+
         When I get("/superheroes/Scalaman").withParams("sessionId" → "<session-id>")
 
         Then assert body.ignoring("publisher", "hasSuperpowers", "city").is(
@@ -235,11 +237,15 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert status.is(200)
 
+        Then assert status.isSuccess
+
         When I delete("/superheroes/GreenLantern").withParams("sessionId" → "<session-id>")
 
         When I get("/superheroes/GreenLantern").withParams("sessionId" → "<session-id>")
 
         Then assert status.is(404)
+
+        Then assert status.isClientError
 
         And I show_last_status
       }
