@@ -50,7 +50,7 @@ libraryDependencies ++= {
   val fansiV = "0.2.3"
   val akkaHttpCirce = "1.11.0"
   val catsScalaTest = "2.1.1"
-  val ficusV = "1.3.4"
+  val ficusV = "1.3.5"
   Seq(
      "com.typesafe.akka"   %% "akka-actor"      % akkaV
     ,"com.typesafe.akka"   %% "akka-http-core"  % akkaHttpV
