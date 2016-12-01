@@ -80,6 +80,8 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def httpListen(label: String) = HttpListenStepBuilder(label, resolver)
 
+  def save_body(target: String) = save_body_path(JsonPath.root → target)
+
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
       case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, (session, s) ⇒ {
