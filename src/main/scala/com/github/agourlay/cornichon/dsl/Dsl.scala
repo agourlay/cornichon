@@ -59,6 +59,11 @@ trait Dsl extends Instances {
       RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element)), indice)
     }
 
+  def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(indice: String) =
+    BodyElementCollector[Step, Step] { steps ⇒
+      RepeatWithStep(steps, elements.toSeq.map(c ⇒ c.tci.show(c.element)), indice)
+    }
+
   def RetryMax(limit: Int) =
     BodyElementCollector[Step, Step] { steps ⇒
       RetryMaxStep(steps, limit)
@@ -147,4 +152,5 @@ object Dsl {
 case class ContainerType[+T, B[_]](element: T, tci: B[T @uncheckedVariance])
 object ContainerType {
   implicit def showConv[T](a: T)(implicit tc: Show[T]): ContainerType[T, Show] = ContainerType(a, tc)
+  implicit def showIterConv[T](a: Iterable[T])(implicit tc: Show[T]): Iterable[ContainerType[T, Show]] = a.map(ContainerType(_, tc))
 }

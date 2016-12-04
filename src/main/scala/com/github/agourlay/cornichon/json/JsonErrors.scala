@@ -32,16 +32,22 @@ case class JsonPathError(input: String, error: Throwable) extends JsonError {
   val baseErrorMessage = s"error thrown during JsonPath parsing for input '$input' : ${error.getMessage}"
 }
 
-case class WhitelistingError(elementNotDefined: String, source: String) extends JsonError {
+case class WhitelistingError(missingFields: Iterable[String], source: Json) extends JsonError {
   val baseErrorMessage =
-    s"""whitelisting error
-       |$elementNotDefined
-       |is not defined in object
-       |$source""".stripMargin
+    s"""whitelisting error because the following field(s)
+       |${missingFields.mkString("\n")}
+       |can not be found in JSON object
+       |${source.show}""".stripMargin
 }
 
 case class NotStringFieldError(input: Json, field: String) extends JsonError {
   val baseErrorMessage =
     s"""field '$field' is not of type String in JSON
+       |${input.show}""".stripMargin
+}
+
+case class PathSelectsNothing(path: String, input: Json) extends JsonError {
+  val baseErrorMessage =
+    s"""JSON path '$path' is not defined in object
        |${input.show}""".stripMargin
 }

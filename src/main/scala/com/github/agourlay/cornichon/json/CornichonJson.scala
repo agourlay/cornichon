@@ -5,9 +5,9 @@ import cats.syntax.show._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
-import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.util.Instances._
+import gnieh.diffson.circe._
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
@@ -89,16 +89,14 @@ trait CornichonJson {
 
   def prettyPrint(json: Json) = json.spaces2
 
-  def diff(first: Json, second: Json): JsonDiff = JsonDiffer.diff(first, second)
+  def diffPatch(first: Json, second: Json): JsonPatch = JsonDiff.diff(first, second, remember = true)
 
-  def prettyDiff(first: Json, second: Json) = {
-    val JsonDiff(changed, added, deleted) = diff(first, second)
-
-    s"""
-    |${if (changed == Json.Null) "" else "changed = " + jsonStringValue(changed)}
-    |${if (added == Json.Null) "" else "added = " + jsonStringValue(added)}
-    |${if (deleted == Json.Null) "" else "deleted = " + jsonStringValue(deleted)}
-      """.stripMargin
+  def whitelistingValue(first: Json, second: Json): Either[WhitelistingError, Json] = {
+    val diff = diffPatch(first, second)
+    val forbiddenPatchOps = diff.ops.collect { case r: Remove ⇒ r }
+    val addOps = diff.ops.collect { case r: Add ⇒ r }
+    if (forbiddenPatchOps.isEmpty) Right(JsonPatch(addOps)(first))
+    else Left(WhitelistingError(forbiddenPatchOps.map(_.path.toString), second))
   }
 }
 

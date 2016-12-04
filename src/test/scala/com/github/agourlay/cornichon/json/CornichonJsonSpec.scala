@@ -349,9 +349,129 @@ class CornichonJsonSpec extends WordSpec
         """
 
         val out = parseGraphQLJson(in)
-
         out should beRight(refParser(expected))
+      }
+    }
 
+    "whitelistingValue" must {
+      "detect correct whitelisting on simple object" in {
+        val actual =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |}
+          """.stripMargin
+        val actualJson = parseJsonUnsafe(actual)
+
+        val input =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Age": 50
+            |}
+          """.stripMargin
+        val inputJson = parseJsonUnsafe(input)
+
+        whitelistingValue(inputJson, actualJson).value shouldBe actualJson
+      }
+
+      "detect incorrect whitelisting on simple object" in {
+        val actual =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |}
+          """.stripMargin
+        val actualJson = parseJsonUnsafe(actual)
+
+        val input =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Ag": 50
+            |}
+          """.stripMargin
+        val inputJson = parseJsonUnsafe(input)
+
+        whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/Ag"), actualJson))
+      }
+
+      "detect correct whitelisting on root array" in {
+
+        val actual =
+          """
+            |[
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |},
+            |{
+            |"2LettersName" : true,
+            | "Age": 11,
+            | "Name": "Bob"
+            |}
+            |]
+          """.stripMargin
+        val actualJson = parseJsonUnsafe(actual)
+
+        val input =
+          """
+            |[
+            |{
+            |"2LettersName" : false,
+            | "Name": "John"
+            |},
+            |{
+            |"2LettersName" : true,
+            | "Name": "Bob"
+            |}
+            |]
+          """.stripMargin
+        val inputJson = parseJsonUnsafe(input)
+
+        whitelistingValue(inputJson, actualJson).value shouldBe actualJson
+      }
+
+      "detect incorrect whitelisting on root array" in {
+
+        val actual =
+          """
+            |[
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |},
+            |{
+            |"2LettersName" : true,
+            | "Age": 11,
+            | "Name": "Bob"
+            |}
+            |]
+          """.stripMargin
+        val actualJson = parseJsonUnsafe(actual)
+
+        val input =
+          """
+            |[
+            |{
+            |"2LettersName" : false,
+            | "Nam": "John"
+            |},
+            |{
+            |"2LettersName" : true,
+            | "Name": "Bob"
+            |}
+            |]
+          """.stripMargin
+        val inputJson = parseJsonUnsafe(input)
+
+        whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/0/Nam"), actualJson))
       }
     }
   }

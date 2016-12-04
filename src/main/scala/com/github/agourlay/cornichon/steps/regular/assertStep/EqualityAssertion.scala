@@ -28,13 +28,6 @@ case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, n
   lazy val assertionError = GenericEqualityAssertionError(expected, actual, negate)
 }
 
-object GenericEqualityAssertion {
-  def fromSession[A: Show: Diff: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ (A, A)) = {
-    val (expected, actual) = transformSessionValue(s, s.get(key))
-    GenericEqualityAssertion(expected, actual)
-  }
-}
-
 case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
   private val baseMsg =
     s"""|expected result was${if (negate) " different than:" else ":"}

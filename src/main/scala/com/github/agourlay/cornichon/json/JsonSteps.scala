@@ -5,7 +5,6 @@ import cats.syntax.show._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
-import com.github.agourlay.cornichon.json.JsonDiffer.JsonDiff
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
@@ -60,26 +59,26 @@ object JsonSteps {
         val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expected" else s"$target's field '$jsonPath' is $expected"
         AssertStep(
           title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-          action = s ⇒
-            GenericEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
-              val actualValue = {
-                if (whitelist) {
-                  val expectedJson = resolveParseJson(expected, session, resolver)
-                  val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-                  val JsonDiff(changed, _, deleted) = diff(expectedJson, sessionValueJson)
-                  if (deleted != Json.Null) throw WhitelistingError(elementNotDefined = deleted.show, source = sessionValueJson.show)
-                  if (changed != Json.Null) changed else expectedJson
-                } else {
-                  val subJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-                  if (ignoredKeys.isEmpty) subJson
-                  else {
-                    val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
-                    removeFieldsByPath(subJson, ignoredPaths)
-                  }
+          action = session ⇒ {
+            val expectedJson = resolveParseJson(expected, session, resolver)
+            val sessionValue = session.get(sessionKey)
+            val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+            if (sessionValueJson.isNull) {
+              throw PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue))
+            } else {
+              if (whitelist) {
+                val expectedWhitelistedValue = whitelistingValue(expectedJson, sessionValueJson).fold(e ⇒ throw e, identity)
+                GenericEqualityAssertion(expectedWhitelistedValue, sessionValueJson)
+              } else {
+                val actualValue = if (ignoredKeys.isEmpty) sessionValueJson
+                else {
+                  val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
+                  removeFieldsByPath(sessionValueJson, ignoredPaths)
                 }
+                GenericEqualityAssertion(expectedJson, actualValue)
               }
-              (resolveParseJson(expected, session, resolver), actualValue)
             }
+          }
         )
       }
     }

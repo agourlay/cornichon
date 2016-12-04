@@ -46,6 +46,7 @@ libraryDependencies ++= {
   val scalaCheckV = "1.13.4"
   val sangriaCirceV = "0.6.1"
   val circeVersion = "0.6.1"
+  val diffJsonVersion = "2.1.0"
   val sangriaV = "1.0.0-RC5"
   val fansiV = "0.2.3"
   val akkaHttpCirce = "1.11.0"
@@ -69,6 +70,7 @@ libraryDependencies ++= {
     ,"io.circe"            %% "circe-core"      % circeVersion
     ,"io.circe"            %% "circe-generic"   % circeVersion
     ,"io.circe"            %% "circe-parser"    % circeVersion
+    ,"org.gnieh"           %% "diffson-circe"   % diffJsonVersion
     ,"de.heikoseeberger"   %% "akka-http-circe" % akkaHttpCirce   % "test"
     ,"com.ironcorelabs"    %% "cats-scalatest"  % catsScalaTest   % "test"
   )

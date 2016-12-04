@@ -617,6 +617,16 @@ class SuperHeroesScenario extends CornichonFeature {
           Then assert body.path("hasSuperpowers").is(true)
         }
 
+        // Repeat for each element
+        RepeatFrom(Vector("Superman", "GreenLantern", "Spiderman"))("superhero-name") {
+
+          When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+
+          Then assert status.is(200)
+
+          Then assert body.path("hasSuperpowers").is(true)
+        }
+
         // Retry series of Steps with a limit
         RetryMax(300) {
 

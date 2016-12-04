@@ -13,12 +13,12 @@ object HeadersSteps {
   case class HeadersStepBuilder(private val ordered: Boolean) {
     def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${displayStringPairs(expected)}",
-      action = s ⇒
-      GenericEqualityAssertion.fromSession(s, headersSessionKey) { (session, sessionHeaders) ⇒
-        val actualValue = sessionHeaders.split(",").toList
-        val expectedValue = expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }
-        (expectedValue, actualValue)
-      }
+      action = s ⇒ {
+      val sessionHeaders = s.get(headersSessionKey)
+      val actualValue = sessionHeaders.split(",").toList
+      val expectedValue = expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }
+      GenericEqualityAssertion(expectedValue, actualValue)
+    }
     )
 
     def hasSize(expectedSize: Int) = AssertStep(
