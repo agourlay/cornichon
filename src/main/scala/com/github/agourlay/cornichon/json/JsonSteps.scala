@@ -63,9 +63,8 @@ object JsonSteps {
             val expectedJson = resolveParseJson(expected, session, resolver)
             val sessionValue = session.get(sessionKey)
             val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-            if (sessionValueJson.isNull) {
-              throw PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue))
-            } else {
+            if (sessionValueJson.isNull) Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
+            else {
               if (whitelist) {
                 val expectedWhitelistedValue = whitelistingValue(expectedJson, sessionValueJson).fold(e ⇒ throw e, identity)
                 GenericEqualityAssertion(expectedWhitelistedValue, sessionValueJson)
@@ -219,17 +218,16 @@ object JsonSteps {
       AssertStep(
         title = assertionTitle,
         action = s ⇒ {
-        val arrayFromSession = applyPathAndFindArray(jsonPath, resolver)(s, s.get(sessionKey))
-        val actualValue = removeIgnoredPathFromElements(s, arrayFromSession)
-        val expectedArray = resolveParseJson(expected, s, resolver).arrayOrObject(
-          throw NotAnArrayError(expected),
-          values ⇒ values,
-          _ ⇒ throw NotAnArrayError(expected)
-        )
-        if (ordered)
-          GenericEqualityAssertion(expectedArray, actualValue)
-        else
-          CollectionsContainSameElements(expectedArray, actualValue)
+        resolveParseJson(expected, s, resolver)
+          .asArray
+          .fold[Assertion](Assertion.failWith(NotAnArrayError(expected))) { expectedArray ⇒
+            val arrayFromSession = applyPathAndFindArray(jsonPath, resolver)(s, s.get(sessionKey))
+            val actualValue = removeIgnoredPathFromElements(s, arrayFromSession)
+            if (ordered)
+              GenericEqualityAssertion(expectedArray, actualValue)
+            else
+              CollectionsContainSameElements(expectedArray, actualValue)
+          }
       }
       )
     }
