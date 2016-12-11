@@ -9,18 +9,27 @@ import org.parboiled2._
 import org.scalacheck.Gen.Parameters
 import org.scalacheck.rng.Seed
 
+import scala.collection.concurrent.TrieMap
 import scala.util.{ Failure, Success }
 
 class Resolver(extractors: Map[String, Mapper]) {
 
   val r = new scala.util.Random()
 
-  def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
-    new PlaceholderParser(input).placeholdersRule.run() match {
-      case Failure(e: ParseError) ⇒ Right(List.empty)
-      case Failure(e: Throwable)  ⇒ Left(ResolverParsingError(input, e))
-      case Success(dt)            ⇒ Right(dt.toList)
-    }
+  // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for placeholders.
+  // There is one resolver per Feature so the cache is not living too long.
+  private val placeholdersCache = TrieMap.empty[String, Either[CornichonError, List[Placeholder]]]
+
+  def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] = {
+    placeholdersCache.getOrElseUpdate(
+      input,
+      new PlaceholderParser(input).placeholdersRule.run() match {
+        case Failure(e: ParseError) ⇒ Right(List.empty)
+        case Failure(e: Throwable)  ⇒ Left(ResolverParsingError(input, e))
+        case Success(dt)            ⇒ Right(dt.toList)
+      }
+    )
+  }
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
     builtInPlaceholders.lift(ph.key).map(Right(_)).getOrElse {
