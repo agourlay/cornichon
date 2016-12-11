@@ -158,7 +158,7 @@ class HttpAPI() extends EventStreamMarshalling {
               parameters('sessionId) { sessionId: String ⇒
                 onSuccess(testData.allSuperheroes(sessionId)) { superheroes: Seq[SuperHero] ⇒
                   complete {
-                    if (justName) Source(superheroes.toVector.map(sh ⇒ ServerSentEvent(eventType = "superhero name", data = sh.name)))
+                    if (justName) Source(superheroes.toVector.map(sh ⇒ ServerSentEvent(`type` = "superhero name", data = sh.name)))
                     else Source(superheroes.toVector.map(toServerSentEvent))
                   }
                 }

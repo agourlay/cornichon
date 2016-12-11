@@ -22,7 +22,7 @@ import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.core.CornichonError
 
-import de.heikoseeberger.akkasse.client.EventStreamUnmarshalling._
+import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
 
 import java.security.SecureRandom

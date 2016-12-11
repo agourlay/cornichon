@@ -65,6 +65,6 @@ case class HttpError(error: String)
 
 object JsonSupport {
   implicit def toServerSentEvent(sh: SuperHero): ServerSentEvent = {
-    ServerSentEvent(eventType = "superhero", data = sh.asJson.noSpaces)
+    ServerSentEvent(`type` = "superhero", data = sh.asJson.noSpaces)
   }
 }
