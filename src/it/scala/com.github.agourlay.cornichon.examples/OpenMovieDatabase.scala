@@ -137,7 +137,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "Baelor",
                 "Released": "2011-06-12",
                 "Episode": "9",
-                "imdbRating": "9.5",
+                "imdbRating": "9.6",
                 "imdbID": "tt1851398"
               },
               {
@@ -164,7 +164,7 @@ class OpenMovieDatabase extends CornichonFeature {
             | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "9.1"   | "tt1837862" |
             | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "9.2"   | "tt1837863" |
             | "The Pointy End"                        | "2011-06-05" |   "8"   |    "9.0"   | "tt1837864" |
-            | "Baelor"                                | "2011-06-12" |   "9"   |    "9.5"   | "tt1851398" |
+            | "Baelor"                                | "2011-06-12" |   "9"   |    "9.6"   | "tt1851398" |
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
