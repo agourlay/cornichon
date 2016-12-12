@@ -49,9 +49,10 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
 object JsonPath {
   val root = "$"
+  val emptyJsonPath = JsonPath()
 
   def parse(path: String) = {
-    if (path == root) JsonPath()
+    if (path == root) emptyJsonPath
     else {
       val segments = JsonPathParser.parseJsonPath(path)
       fromSegments(segments)
