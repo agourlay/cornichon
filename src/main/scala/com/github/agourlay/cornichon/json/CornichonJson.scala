@@ -20,14 +20,15 @@ import scala.util.{ Failure, Success }
 trait CornichonJson {
 
   def parseJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
-    case s: String if s.trim.headOption.contains('|') ⇒
-      Right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject))) // table
-    case s: String if s.trim.headOption.contains('{') ⇒
-      parseString(s) // parse object
-    case s: String if s.trim.headOption.contains('[') ⇒
-      parseString(s) // parse array
     case s: String ⇒
-      Right(Json.fromString(s))
+      s.trim.headOption.fold(Either.right[CornichonError, Json](Json.fromString(s))) { firstChar ⇒
+        if (firstChar == '{' || firstChar == '[')
+          parseString(s) // parse object or array
+        else if (firstChar == '|')
+          Right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject))) // table
+        else
+          Right(Json.fromString(s)) // treated as a String
+      }
     case _ ⇒
       Either.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
   }
