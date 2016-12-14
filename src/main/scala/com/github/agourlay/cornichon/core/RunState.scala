@@ -6,7 +6,7 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
 
   lazy val resetLogs = copy(logs = Vector.empty)
 
-  lazy val consumCurrentStep = copy(remainingSteps = remainingSteps.tail)
+  lazy val consumCurrentStep = copy(remainingSteps = remainingSteps.drop(1))
 
   def combine(other: RunState) = this.copy(
     remainingSteps = remainingSteps ++ other.remainingSteps,
