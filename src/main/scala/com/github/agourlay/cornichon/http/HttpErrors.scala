@@ -7,9 +7,8 @@ import com.github.agourlay.cornichon.json.CornichonJson.parseJsonUnsafe
 import com.github.agourlay.cornichon.util.Instances._
 
 import scala.concurrent.duration.FiniteDuration
-import scala.util.control.NoStackTrace
 
-sealed trait HttpError extends CornichonError with NoStackTrace
+sealed trait HttpError extends CornichonError
 
 case class TimeoutErrorAfter[A: Show](request: A, after: FiniteDuration) extends HttpError {
   val baseErrorMessage =
