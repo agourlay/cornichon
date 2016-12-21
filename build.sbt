@@ -37,7 +37,7 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= {
   val scalaTestV = "3.0.1"
-  val akkaV = "2.4.14"
+  val akkaV = "2.4.16"
   val akkaHttpV = "10.0.0"
   val catsV = "0.8.1"
   val logbackV = "1.1.8"
