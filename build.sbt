@@ -40,7 +40,6 @@ libraryDependencies ++= {
   val akkaV = "2.4.16"
   val akkaHttpV = "10.0.0"
   val catsV = "0.8.1"
-  val logbackV = "1.1.8"
   val parboiledV = "2.1.3"
   val akkaSseV = "2.0.0-RC3"
   val scalaCheckV = "1.13.4"
@@ -61,7 +60,6 @@ libraryDependencies ++= {
     ,"org.typelevel"       %% "cats-core"       % catsV
     ,"org.scalatest"       %% "scalatest"       % scalaTestV
     ,"com.iheart"          %% "ficus"           % ficusV
-    ,"ch.qos.logback"      %  "logback-classic" % logbackV
     ,"org.parboiled"       %% "parboiled"       % parboiledV
     ,"org.scalacheck"      %% "scalacheck"      % scalaCheckV
     ,"com.lihaoyi"         %% "fansi"           % fansiV
