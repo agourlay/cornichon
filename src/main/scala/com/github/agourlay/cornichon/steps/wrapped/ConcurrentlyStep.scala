@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
@@ -16,7 +16,7 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
 
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
     val nestedRunState = initialRunState.forNestedSteps(nested)
     val initialDepth = initialRunState.depth
     val start = System.nanoTime

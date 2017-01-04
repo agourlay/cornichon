@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
@@ -13,7 +13,7 @@ case class AttachAsStep(title: String, nested: List[Step]) extends WrapperStep {
 
   override def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) =
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) =
     withDuration {
       val nestedRunState = initialRunState.forNestedSteps(nested)
       engine.runSteps(nestedRunState)

@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core._
@@ -12,7 +12,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
 
   val title = resource.openingTitle
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
 
     for {
       resourceHandle ← resource.startResource()

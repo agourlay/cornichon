@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core.Done.rightDone
@@ -16,7 +16,7 @@ case class RepeatWithStep(nested: List[Step], elements: Seq[String], elementName
   val printElements = s"[${elements.mkString(", ")}]"
   val title = s"RepeatWith block with elements $printElements"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
 
     def repeatSuccessSteps(remainingElements: Seq[String], runState: RunState): Future[(RunState, Either[(String, FailedStep), Done])] = {
       remainingElements.headOption.fold[Future[(RunState, Either[(String, FailedStep), Done])]](Future.successful(runState, rightDone)) { element ⇒

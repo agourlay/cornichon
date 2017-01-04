@@ -10,6 +10,7 @@ import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
 import com.github.agourlay.cornichon.util.Instances._
 
 import scala.annotation.unchecked.uncheckedVariance
+import scala.concurrent.Future
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
@@ -102,7 +103,7 @@ trait Dsl extends Instances {
 
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ Timeouts.timeout(duration)(s)
+    effect = s ⇒ Timeouts.timeout(duration)(Future.successful(s))
   )
 
   def save(input: (String, String)) = {

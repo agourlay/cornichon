@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
@@ -13,7 +13,7 @@ import com.github.agourlay.cornichon.resolver.Resolver
 
 import scala.util.control.NonFatal
 
-class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext)(implicit timer: Timer) {
+class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext)(implicit timer: ScheduledExecutorService) {
 
   private implicit val ec = executionContext
 
@@ -57,7 +57,7 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
 
 object Engine {
 
-  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext)(implicit timer: Timer) =
+  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext)(implicit timer: ScheduledExecutorService) =
     new Engine(
       stepPreparers = StepPreparerTitleResolver(resolver) :: Nil,
       executionContext = executionContext

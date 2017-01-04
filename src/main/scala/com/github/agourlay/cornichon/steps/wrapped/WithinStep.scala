@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
@@ -13,7 +13,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
 
   val title = s"Within block with max duration '$maxDuration'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
 
     val initialDepth = initialRunState.depth
 

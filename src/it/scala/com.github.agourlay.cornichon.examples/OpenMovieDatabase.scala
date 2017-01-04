@@ -88,7 +88,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "The Kingsroad",
                 "Released": "2011-04-24",
                 "Episode": "2",
-                "imdbRating": "8.7",
+                "imdbRating": "8.8",
                 "imdbID": "tt1668746"
               },
               {
@@ -109,7 +109,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "The Wolf and the Lion",
                 "Released": "2011-05-15",
                 "Episode": "5",
-                "imdbRating": "9.0",
+                "imdbRating": "9.1",
                 "imdbID": "tt1829964"
               },
               {
@@ -157,10 +157,10 @@ class OpenMovieDatabase extends CornichonFeature {
           """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "9.0"   | "tt1480055" |
-            | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "8.7"   | "tt1668746" |
+            | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "8.8"   | "tt1668746" |
             | "Lord Snow"                             | "2011-05-01" |   "3"   |    "8.6"   | "tt1829962" |
             | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "8.7"   | "tt1829963" |
-            | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "9.0"   | "tt1829964" |
+            | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "9.1"   | "tt1829964" |
             | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "9.1"   | "tt1837862" |
             | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "9.2"   | "tt1837863" |
             | "The Pointy End"                        | "2011-06-05" |   "8"   |    "9.0"   | "tt1837864" |

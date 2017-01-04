@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon
 
-import java.util.Timer
 import java.util.concurrent.{ Executors, ThreadFactory }
 
 import akka.stream.ActorMaterializer
@@ -79,7 +78,16 @@ private object CornichonFeature {
   implicit private lazy val system = ActorSystem("cornichon-actor-system")
   implicit private lazy val mat = ActorMaterializer()
 
-  implicit private lazy val timer = new Timer("cornichon-timer")
+  implicit private lazy val timer = Executors.newScheduledThreadPool(
+    2,
+    new ThreadFactory {
+      val count = new AtomicInteger(0)
+      override def newThread(r: Runnable) = {
+        new Thread(r, "cornichon-timer" + count.incrementAndGet)
+      }
+    }
+  )
+
   implicit private lazy val ec = ExecutionContext.fromExecutorService(
     Executors.newFixedThreadPool(
       Runtime.getRuntime.availableProcessors() + 1,
@@ -103,11 +111,10 @@ private object CornichonFeature {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 2) {
-        client.shutdown().map { _ ⇒
-          timer.cancel()
-          timer.purge()
-          ec.shutdown()
+        timer.shutdownNow()
+        client.shutdown().flatMap { _ ⇒
           mat.shutdown()
+          ec.shutdown()
           system.terminate()
         }
       }

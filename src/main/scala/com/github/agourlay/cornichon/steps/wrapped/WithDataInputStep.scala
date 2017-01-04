@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
@@ -18,7 +18,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
 
   val title = s"With data input block $where"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
 
     def runInputs(inputs: List[List[(String, String)]], runState: RunState): Future[(RunState, Either[(List[(String, String)], FailedStep), Done])] = {
       if (inputs.isEmpty) Future.successful(runState, rightDone)

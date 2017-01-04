@@ -1,13 +1,13 @@
 package com.github.agourlay.cornichon.core
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait Step {
   def title: String
   def setTitle(newTitle: String): Step
-  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer): Future[(RunState, FailedStep Either Done)]
+  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService): Future[(RunState, FailedStep Either Done)]
 }
 
 trait WrapperStep extends Step {

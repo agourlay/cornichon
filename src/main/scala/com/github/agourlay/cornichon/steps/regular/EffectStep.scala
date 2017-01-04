@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
@@ -15,7 +15,7 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Session], show: 
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
     withDuration {
       Either
         .catchNonFatal(effect(initialRunState.session))

@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import cats.data.NonEmptyList
 
@@ -14,7 +14,7 @@ case class DebugStep(message: Session ⇒ String, title: String = "Debug step") 
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
     val (fullLogs, xor) = Try {
       message(initialRunState.session)
     } match {

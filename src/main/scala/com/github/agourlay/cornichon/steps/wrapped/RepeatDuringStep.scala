@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ ScheduledExecutorService, TimeUnit }
 
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
@@ -14,7 +13,7 @@ import scala.concurrent.duration.FiniteDuration
 case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extends WrapperStep {
   val title = s"Repeat block during '$duration'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
 
     val initialDepth = initialRunState.depth
 

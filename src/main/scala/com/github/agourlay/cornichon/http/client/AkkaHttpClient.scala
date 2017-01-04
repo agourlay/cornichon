@@ -12,19 +12,17 @@ import akka.http.scaladsl.ConnectionContext
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
+import akka.NotUsed
 
 import cats.syntax.either._
 import cats.syntax.show._
-
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.core.CornichonError
-
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
-
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl._
@@ -174,8 +172,8 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     ???
   }
 
-  private def expectSSE(httpResponse: HttpResponse): Future[Either[HttpError, Source[ServerSentEvent, Any]]] =
-    Unmarshal(Gzip.decode(httpResponse)).to[Source[ServerSentEvent, Any]].map { sse ⇒
+  private def expectSSE(httpResponse: HttpResponse): Future[Either[HttpError, Source[ServerSentEvent, NotUsed]]] =
+    Unmarshal(Gzip.decode(httpResponse)).to[Source[ServerSentEvent, NotUsed]].map { sse ⇒
       Right(sse)
     }.recover {
       case e: Exception ⇒ Left(SseError(e))

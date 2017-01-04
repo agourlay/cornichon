@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.scalatest.{ ValidatedMatchers, ValidatedValues }
-import com.github.agourlay.cornichon.util.Instances._
 import org.scalatest.{ Matchers, WordSpec }
 
 class StringAssertionSpec extends WordSpec

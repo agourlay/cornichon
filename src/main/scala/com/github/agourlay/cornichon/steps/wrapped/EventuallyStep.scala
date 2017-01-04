@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.Timer
+import java.util.concurrent.ScheduledExecutorService
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
@@ -13,7 +13,7 @@ import scala.concurrent.duration.{ Duration, FiniteDuration }
 case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: Timer) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
@@ -27,7 +27,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
           res match {
             case Left(failedStep) ⇒
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-                Timeouts.timeoutF(conf.interval) {
+                Timeouts.timeout(conf.interval) {
                   retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime + conf.interval), retriesNumber + 1)
                 }
               } else {

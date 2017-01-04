@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import com.github.agourlay.cornichon.core.{ Scenario, Session, Step }
+import com.github.agourlay.cornichon.core.{ Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 class AttachStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
