@@ -42,8 +42,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       paramsResolved ← resolveParams(url, params)(s)
-      headersResolved ← resolver.fillPlaceholders(headers)(s)
-    } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved ++ extractWithHeadersSession(s))
+      headersResolved ← resolver.fillPlaceholders(headers ++ extractWithHeadersSession(s))(s)
+    } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved)
   }
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
