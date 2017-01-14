@@ -50,39 +50,32 @@ trait CornichonJson {
   def parseGraphQLJsonUnsafe(input: String) =
     parseGraphQLJson(input).fold(e ⇒ throw e, identity)
 
+  def jsonArrayValues(json: Json): Either[CornichonError, List[Json]] =
+    json.arrayOrObject(
+      Left(NotAnArrayError(json)),
+      values ⇒ Right(values),
+      _ ⇒ Left(NotAnArrayError(json))
+    )
+
   def parseArray(input: String): Either[CornichonError, List[Json]] =
-    parseJson(input).flatMap { json ⇒
-      json.arrayOrObject(
-        Left(NotAnArrayError(input)),
-        values ⇒ Right(values),
-        obj ⇒ Left(NotAnArrayError(input))
-      )
-    }
+    parseJson(input).flatMap(jsonArrayValues)
 
-  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, List[Json]] = {
-    path.run(sessionValue).flatMap { json ⇒
-      json.arrayOrObject(
-        Left(NotAnArrayError(json)),
-        values ⇒ Right(values),
-        obj ⇒ Left(NotAnArrayError(json))
-      )
-    }
-  }
+  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, List[Json]] =
+    path.run(sessionValue).flatMap(jsonArrayValues)
 
-  def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) = {
+  def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) =
     paths.foldLeft(input) { (json, path) ⇒
       path.removeFromJson(json)
     }
-  }
 
   def jsonStringValue(j: Json): String =
     j.fold(
       jsonNull = "",
-      jsonBoolean = b ⇒ j.show,
-      jsonNumber = b ⇒ j.show,
+      jsonBoolean = _ ⇒ j.show,
+      jsonNumber = _ ⇒ j.show,
       jsonString = s ⇒ s,
-      jsonArray = b ⇒ j.show,
-      jsonObject = b ⇒ j.show
+      jsonArray = _ ⇒ j.show,
+      jsonObject = _ ⇒ j.show
     )
 
   def extract(json: Json, path: String) =
@@ -103,7 +96,7 @@ trait CornichonJson {
 
 object CornichonJson extends CornichonJson {
 
-  case class GqlString(input: String)
+  case class GqlString(input: String) extends AnyVal
 
   object GqlString {
 
@@ -112,13 +105,11 @@ object CornichonJson extends CornichonJson {
       def fromResolvableForm(s: String) = GqlString(s)
     }
 
-    implicit val gqlShow = new Show[GqlString] {
-      def show(g: GqlString) = s"GraphQl JSON ${g.input}"
-    }
+    implicit val gqlShow =
+      Show.show[GqlString](g ⇒ s"GraphQl JSON ${g.input}")
 
-    implicit val gqlEncode: Encoder[GqlString] = new Encoder[GqlString] {
-      final def apply(g: GqlString): Json = parseGraphQLJsonUnsafe(g.input)
-    }
+    implicit val gqlEncode =
+      Encoder.instance[GqlString](g ⇒ parseGraphQLJsonUnsafe(g.input))
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {

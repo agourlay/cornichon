@@ -90,10 +90,9 @@ private case class MovedElement[A: Show](element: A, newIndice: Int, oldIndice: 
 }
 
 private object MovedElement {
-  implicit def showMoved[A: Show]: Show[MovedElement[A]] = new Show[MovedElement[A]] {
-    def show(ma: MovedElement[A]): String = {
+  implicit def showMoved[A: Show]: Show[MovedElement[A]] =
+    Show.show { ma ⇒
       s"""from indice ${ma.oldIndice} to indice ${ma.newIndice}
          |${ma.element.show}"""
     }
-  }
 }

@@ -101,18 +101,15 @@ trait HttpDsl extends HttpRequestsDsl {
     save_from_session(inputs)
   }
 
-  def show_last_response = DebugStep(s ⇒
-    s"""Show last response
-       |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
-       |status : ${s.get(lastResponseStatusKey)}
-       |body   : ${s.get(lastResponseBodyKey)}
-     """.stripMargin)
+  def show_last_response = showLastResponse()
 
-  def show_last_response_json = DebugStep(s ⇒
+  def show_last_response_json = showLastResponse(v ⇒ parseJson(v).fold(e ⇒ throw e, _.show))
+
+  private def showLastResponse(map: String ⇒ String = identity) = DebugStep(s ⇒
     s"""Show last response
        |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
        |status : ${s.get(lastResponseStatusKey)}
-       |body   : ${parseJson(s.get(lastResponseBodyKey)).fold(e ⇒ throw e, _.show)}
+       |body   : ${map(s.get(lastResponseBodyKey))}
      """.stripMargin)
 
   def show_last_status = show_session(lastResponseStatusKey)
@@ -130,6 +127,7 @@ trait HttpDsl extends HttpRequestsDsl {
     s.addValue("with-headers", s"$currentHeader${encodeSessionHeader(name, value)}")
   }
 
+  //FIXME do not destroy the content of 'withHeadersKey' afterwards but restore it to its first value
   def WithHeaders(headers: (String, String)*) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
       val saveStep = save((withHeadersKey, headers.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }.mkString(","))).copy(show = false)
