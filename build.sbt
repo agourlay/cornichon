@@ -64,7 +64,6 @@ libraryDependencies ++= {
     ,"org.scalatest"       %% "scalatest"       % scalaTestV
     ,"com.iheart"          %% "ficus"           % ficusV
     ,"org.parboiled"       %% "parboiled"       % parboiledV
-    ,"org.scalacheck"      %% "scalacheck"      % scalaCheckV
     ,"com.lihaoyi"         %% "fansi"           % fansiV
     ,"org.sangria-graphql" %% "sangria"         % sangriaV
     ,"org.sangria-graphql" %% "sangria-circe"   % sangriaCirceV
@@ -72,6 +71,7 @@ libraryDependencies ++= {
     ,"io.circe"            %% "circe-generic"   % circeVersion
     ,"io.circe"            %% "circe-parser"    % circeVersion
     ,"org.gnieh"           %% "diffson-circe"   % diffJsonVersion
+    ,"org.scalacheck"      %% "scalacheck"      % scalaCheckV     % Test
     ,"de.heikoseeberger"   %% "akka-http-circe" % akkaHttpCirce   % Test
     ,"com.ironcorelabs"    %% "cats-scalatest"  % catsScalaTest   % Test
   )

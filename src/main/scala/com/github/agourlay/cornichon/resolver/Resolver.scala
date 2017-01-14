@@ -6,8 +6,6 @@ import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import org.parboiled2._
-import org.scalacheck.Gen.Parameters
-import org.scalacheck.rng.Seed
 
 import scala.collection.concurrent.TrieMap
 import scala.util.{ Failure, Success }
@@ -55,12 +53,6 @@ class Resolver(extractors: Map[String, Mapper]) {
   def applyMapper(m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) ⇒
       Either.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
-    case GenMapper(gen) ⇒
-      Either.catchNonFatal(gen.apply(Parameters.default, Seed.random())) match {
-        case Left(e)                ⇒ Left(GeneratorError(ph.fullKey, e))
-        case Right(Some(generated)) ⇒ Right(generated)
-        case Right(None)            ⇒ Left(GeneratorEmptyError(ph.fullKey))
-      }
     case TextMapper(key, transform) ⇒
       session.getXor(key, ph.index).map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
@@ -127,12 +119,4 @@ case class AmbiguousKeyDefinition(key: String) extends CornichonError {
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
   val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
-}
-
-case class GeneratorEmptyError(placeholder: String) extends CornichonError {
-  val baseErrorMessage = s"generator mapped to placeholder '$placeholder' did not generate a value"
-}
-
-case class GeneratorError(placeholder: String, e: Throwable) extends CornichonError {
-  val baseErrorMessage = s"generator mapped to placeholder '$placeholder' failed with:\n'${CornichonError.genStacktrace(e)}'"
 }

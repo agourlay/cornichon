@@ -137,20 +137,6 @@ class ResolverSpec extends WordSpec
         }
       }
 
-      "get value from GenMapper" in {
-        val mapper = Map("letter-from-gen" → GenMapper(Gen.oneOf(List("a"))))
-        val res = new Resolver(mapper)
-        val content = s"<letter-from-gen>"
-        res.fillPlaceholders(content)(Session.newEmpty).value should be("a")
-      }
-
-      "fail if GenMapper does not return a value" in {
-        val mapper = Map("letter-from-gen" → GenMapper(Gen.fail[String]))
-        val res = new Resolver(mapper)
-        val content = s"<letter-from-gen>"
-        res.fillPlaceholders(content)(Session.newEmpty).leftValue should be(GeneratorEmptyError("<letter-from-gen>"))
-      }
-
       "fail with clear error message if key is defined in both Session and Extractors" in {
         val extractor = JsonMapper("customer", "id")
         val resolverWithExt = new Resolver(Map("customer-id" → extractor))
