@@ -10,6 +10,7 @@ import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
 import com.github.agourlay.cornichon.CornichonFeature._
+import com.github.agourlay.cornichon.scalatest.ScalatestFeature
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -17,7 +18,7 @@ import com.typesafe.config.ConfigFactory
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
-trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestIntegration {
+trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestFeature {
 
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
   protected var afterFeature: Seq[() ⇒ Unit] = Nil
