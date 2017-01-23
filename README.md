@@ -32,7 +32,8 @@ An extensible Scala DSL for testing JSON HTTP APIs.
 11. [Custom HTTP body type](#custom-http-body-type)
 12. [ScalaTest integration](#scalatest-integration)
 13. [SSL configuration](#ssl-configuration)
-14. [License](#license)
+14. [Packaging features](#packaging-features)
+15. [License](#license)
 
 ## Quick start
 
@@ -1088,6 +1089,61 @@ akka {
   }
 }
 ```
+
+## Packaging features
+
+When integrating cornichon features in a build pipeline, it can be interesting to package those features in a runnable forms to avoid the cost of recompilation.
+
+You can find below an example of Docker packaging done using ```sbt-assembly```, ```sbt-native-packager``` and a built-in Teamcity reporter.
+
+This should hopefully inspire you to setup your own solution or contribute to improve this one.
+
+ ```
+ enablePlugins(DockerPlugin)
+
+ // Enable assembly for Test
+ Project.inConfig(Test)(baseAssemblySettings)
+
+ // Disable tests on assembly
+ test in (Test, assembly) := {}
+
+ // Permanent name for dependency jar
+ assemblyJarName in (Test, assemblyPackageDependency) := s"${name.value}-test-dep.jar"
+
+ // Permanent name for test jar
+ assemblyJarName in (Test, assembly) := s"${name.value}-test.jar"
+ // Remove dependency and scala lib from test jar
+ assemblyOption in (Test, assembly) := (assemblyOption in (Test, assembly)).value.copy(includeScala = false, includeDependency = false)
+
+ // Remove reference.conf from assemblyPackageDependency
+ assemblyMergeStrategy in (Test, assembly) := {
+   case "reference.conf" => MergeStrategy.discard
+   case x => val oldStrategy = (assemblyMergeStrategy in (Test, assembly)).value
+               oldStrategy(x)
+ }
+
+ // Docker settings
+ dockerBaseImage := "develar/java"
+ dockerEntrypoint := Seq("/bin/sh")
+ dockerCmd := Seq("-c", s"/jre/bin/java -cp lib/${name.value}-test-dep.jar org.scalatest.tools.Runner -C com.github.agourlay.cornichon.scalatest.TeamcityReporter -R bin/${name.value}-test.jar")
+
+ // removes all jar mappings in universal and appends artifacts
+ mappings in Universal := {
+     // universalMappings: Seq[(File,String)]
+     val universalMappings = (mappings in Universal).value
+
+     val fatJar = (assemblyPackageDependency in Test ).value
+     val testJar = (assembly in Test ).value
+     // removing means filtering
+     val filtered = universalMappings filter {
+         case (file, name) =>  ! name.endsWith(".jar")
+     }
+     // add the fat and test jar to mappings
+     filtered :+ (testJar -> ("bin/" + testJar.getName)) :+ (fatJar -> ("lib/" + fatJar.getName))
+ }
+ ```
+
+Kudos to @iMelnik for the work on this configuration.
 
 ## License
 
