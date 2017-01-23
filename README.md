@@ -1098,7 +1098,7 @@ You can find below an example of Docker packaging done using ```sbt-assembly```,
 
 This should hopefully inspire you to setup your own solution or contribute to improve this one.
 
- ```
+ ```scala
  enablePlugins(DockerPlugin)
 
  // Enable assembly for Test
@@ -1143,7 +1143,7 @@ This should hopefully inspire you to setup your own solution or contribute to im
  }
  ```
 
-Kudos to @iMelnik for the work on this configuration.
+Kudos to [iMelnik](https://github.com/iMelnik) for the work on this configuration.
 
 ## License
 
