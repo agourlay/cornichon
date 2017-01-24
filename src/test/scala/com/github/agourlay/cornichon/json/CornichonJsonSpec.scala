@@ -474,5 +474,83 @@ class CornichonJsonSpec extends WordSpec
         whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/0/Nam"), actualJson))
       }
     }
+
+    "findAllContainingValue" must {
+
+      "find root key" in {
+
+        val input =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |}
+          """.stripMargin
+
+        findAllContainingValue(List("John"), parseJsonUnsafe(input)) should be(List(("$.Name", Json.fromString("John"))))
+
+      }
+
+      "find nested key" in {
+
+        val input =
+          """
+            |{
+            | "2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John",
+            | "Brother": {
+            |   "Name" : "Paul",
+            |   "Age": 50
+            | }
+            |}
+          """.stripMargin
+
+        findAllContainingValue(List("Paul"), parseJsonUnsafe(input)) should be(List(("$.Brother.Name", Json.fromString("Paul"))))
+
+      }
+
+      "find key in array" in {
+
+        val input =
+          """
+            |{
+            | "2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John",
+            | "Brothers": [
+            |   {
+            |     "Name" : "Paul",
+            |     "Age": 50
+            |   },
+            |   {
+            |     "Name": "Bob",
+            |     "Age" : 30
+            |   }
+            | ]
+            |}
+          """.stripMargin
+
+        findAllContainingValue(List("Bob"), parseJsonUnsafe(input)) should be(List(("$.Brothers[1].Name", Json.fromString("Bob"))))
+
+      }
+
+      "find key in array of strings" in {
+
+        val input =
+          """
+            |{
+            | "2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John",
+            | "Hobbies": [ "Basketball", "Climbing", "Coding"]
+            |}
+          """.stripMargin
+
+        findAllContainingValue(List("Coding"), parseJsonUnsafe(input)) should be(List(("$.Hobbies[2]", Json.fromString("Coding"))))
+
+      }
+    }
   }
 }
