@@ -59,5 +59,5 @@ case class MatcherResolverParsingError(input: String, error: Throwable) extends 
 }
 
 case class MatcherUndefined(name: String) extends CornichonError {
-  val baseErrorMessage = s"error " // Todo
+  val baseErrorMessage = s"error: there is no matcher named '$name' defined."
 }
