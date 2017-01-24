@@ -14,7 +14,7 @@ class MatcherParser(val input: ParserInput) extends Parser {
 
   def MatcherTXT = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInKey)))
 
-  def Ignore = rule { zeroOrMore(!'<' ~ ANY) }
+  def Ignore = rule { zeroOrMore(!"<<" ~ ANY) }
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
