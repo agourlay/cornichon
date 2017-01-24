@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.matchers
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import io.circe.Json
+import cats.syntax.either._
 
 object MatcherService {
 
