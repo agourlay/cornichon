@@ -17,31 +17,31 @@ class MatcherResolverSpec extends WordSpec
     "findMatchers" must {
       "find matcher in content solely containing a matcher without index" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatchers(s"<<$key>>").value should be(List(Matcher(key)))
+          resolver.findMatcherKeys(s"<<$key>>").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content starting with whitespace and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatchers(s" <<$key>>").value should be(List(Matcher(key)))
+          resolver.findMatcherKeys(s" <<$key>>").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content starting with 2 whitespaces and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatchers(s"  <<$key>>").value should be(List(Matcher(key)))
+          resolver.findMatcherKeys(s"  <<$key>>").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content finishing with whitespace and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatchers(s"<<$key>> ").value should be(List(Matcher(key)))
+          resolver.findMatcherKeys(s"<<$key>> ").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content finishing with 2 whitespaces and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatchers(s"<<$key>>  ").value should be(List(Matcher(key)))
+          resolver.findMatcherKeys(s"<<$key>>  ").value should be(List(MatcherKey(key)))
         }
       }
     }

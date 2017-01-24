@@ -8,7 +8,7 @@ class MatcherParser(val input: ParserInput) extends Parser {
     Ignore ~ zeroOrMore(MatcherRule).separatedBy(Ignore) ~ Ignore ~ EOI
   }
 
-  def MatcherRule = rule("<<" ~ MatcherTXT ~ ">>" ~> Matcher)
+  def MatcherRule = rule("<<" ~ MatcherTXT ~ ">>" ~> MatcherKey)
 
   val notAllowedInKey = "\r\n<>[] "
 
@@ -21,6 +21,6 @@ class MatcherParser(val input: ParserInput) extends Parser {
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
 }
 
-case class Matcher(key: String) {
+case class MatcherKey(key: String) {
   val fullKey = s"<<$key>>"
 }
