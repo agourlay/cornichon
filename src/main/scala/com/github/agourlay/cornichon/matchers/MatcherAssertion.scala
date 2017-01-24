@@ -1,8 +1,31 @@
 package com.github.agourlay.cornichon.matchers
 
-/**
- * Created by agourlay on 24/01/2017.
- */
-trait MatcherAssertion {
+import cats.data.Validated.{ invalidNel, valid }
+import cats.data.ValidatedNel
+import com.github.agourlay.cornichon.steps.regular.assertStep.Assertion
+import cats.syntax.either._
+import com.github.agourlay.cornichon.core.{ CornichonError, Done }
 
+trait MatcherAssertion extends Assertion {
+  def title: String
+  def input: String
+  def assertionPredicate(input: String): Boolean
+
+  override def validated = {
+    Either.catchNonFatal(assertionPredicate(input))
+      .leftMap(e ⇒ MatcherAssertionEvaluationError(title, input, e))
+      .fold[ValidatedNel[CornichonError, Done]](
+        errors ⇒ invalidNel(errors),
+        booleanResult ⇒ if (booleanResult) valid(Done) else invalidNel(MatcherAssertionError(title, input))
+      )
+  }
 }
+
+case class MatcherAssertionEvaluationError(matcherTitle: String, input: String, error: Throwable) extends CornichonError {
+  val baseErrorMessage = s"error '${error.getMessage}' thrown during matcher evaluation for input $input"
+}
+
+case class MatcherAssertionError(matcherTitle: String, input: String) extends CornichonError {
+  val baseErrorMessage = s"matcher $matcherTitle did not validate input $input"
+}
+
