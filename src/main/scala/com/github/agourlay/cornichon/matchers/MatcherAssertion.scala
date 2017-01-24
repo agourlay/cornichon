@@ -5,7 +5,7 @@ import cats.data.ValidatedNel
 import com.github.agourlay.cornichon.steps.regular.assertStep.Assertion
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
-import com.github.agourlay.cornichon.json.JsonPath
+import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import io.circe.Json
 
 trait MatcherAssertion extends Assertion {
@@ -34,7 +34,7 @@ case class MatcherAssertionError(matcherTitle: String, input: String) extends Co
 object MatcherAssertion {
   def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher) = {
     new MatcherAssertion {
-      def input = jsonPath.run(json).noSpaces
+      def input = CornichonJson.jsonStringValue(jsonPath.run(json))
 
       def assertionPredicate(input: String) = matcher.predicate(input)
 
