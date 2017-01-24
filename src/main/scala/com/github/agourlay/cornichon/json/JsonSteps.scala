@@ -83,9 +83,6 @@ object JsonSteps {
               val (expectedWithoutMatchers, inputWithoutMatchers, matcherAssertions) =
                 MatcherService.prepareMatchers(expectedJson, sessionValueJson)
 
-              println(expectedWithoutMatchers.noSpaces)
-              println(inputWithoutMatchers.noSpaces)
-
               ignoringAndWhiteListing(session, expectedWithoutMatchers, inputWithoutMatchers) andAll matcherAssertions
             }
           }
