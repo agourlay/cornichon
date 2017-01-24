@@ -38,15 +38,7 @@ object MatcherAssertion {
 
       def assertionPredicate(input: String) = matcher.predicate(input)
 
-      def title = matcher.title
+      def title = matcher.key
     }
   }
 }
-
-trait Matcher{
-  def title: String
-  def predicate: String => Boolean
-}
-
-case class AnyIntMatcher(title: String, predicate: String => Boolean)
-

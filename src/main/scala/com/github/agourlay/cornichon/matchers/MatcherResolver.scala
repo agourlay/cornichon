@@ -9,8 +9,6 @@ import scala.util.{ Failure, Success, Try }
 
 class MatcherResolver() {
 
-  type MatcherFunc = String ⇒ Boolean
-
   def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] = {
     new MatcherParser(input).matchersRule.run() match {
       case Failure(e: ParseError) ⇒ Right(List.empty)
@@ -19,12 +17,12 @@ class MatcherResolver() {
     }
   }
 
-  def resolveMatcherKeys(m: MatcherKey): Either[CornichonError, MatcherFunc] =
+  def resolveMatcherKeys(m: MatcherKey): Either[CornichonError, Matcher] =
     builtInMatchers.lift(m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
 
-  def builtInMatchers: PartialFunction[String, MatcherFunc] = {
+  def builtInMatchers: PartialFunction[String, Matcher] = {
     //    case "any-uuid"             ⇒ ""
-    case "any-integer" ⇒ (x: String) ⇒ Try(Integer.parseInt(x)).isSuccess
+    case "any-integer" ⇒ AnyIntMatcher("<<any-integer>>", (x: String) ⇒ Try(Integer.parseInt(x)).isSuccess)
     //    case "any-positive-integer" ⇒ ""
     //    case "any-string"           ⇒ ""
     //    case "any-alphanum-string"  ⇒ ""
@@ -34,9 +32,16 @@ class MatcherResolver() {
     //    case "any-date-time"        ⇒ ""
   }
 
-  def findAllMatchers(input: String): Either[CornichonError, List[MatcherFunc]] =
+  def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
     findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
 }
+
+trait Matcher {
+  def key: String
+  def predicate: String ⇒ Boolean
+}
+
+case class AnyIntMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
 
 object MatcherResolver {
   def apply(): MatcherResolver = new MatcherResolver()
