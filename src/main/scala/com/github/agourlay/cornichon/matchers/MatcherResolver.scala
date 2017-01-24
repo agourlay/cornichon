@@ -23,6 +23,7 @@ class MatcherResolver() {
   def builtInMatchers: PartialFunction[String, Matcher] = {
     //    case "any-uuid"             ⇒ ""
     case "any-integer" ⇒ AnyIntMatcher("<<any-integer>>", (x: String) ⇒ Try(Integer.parseInt(x)).isSuccess)
+    case "any-string"  ⇒ AnyStringMatcher("<<>any-string>", (x: String) ⇒ true)
     //    case "any-positive-integer" ⇒ ""
     //    case "any-string"           ⇒ ""
     //    case "any-alphanum-string"  ⇒ ""
@@ -42,6 +43,7 @@ trait Matcher {
 }
 
 case class AnyIntMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
+case class AnyStringMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
 
 object MatcherResolver {
   def apply(): MatcherResolver = new MatcherResolver()
