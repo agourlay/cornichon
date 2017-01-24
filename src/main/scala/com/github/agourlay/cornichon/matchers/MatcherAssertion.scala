@@ -5,6 +5,8 @@ import cats.data.ValidatedNel
 import com.github.agourlay.cornichon.steps.regular.assertStep.Assertion
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
+import com.github.agourlay.cornichon.json.JsonPath
+import io.circe.Json
 
 trait MatcherAssertion extends Assertion {
   def title: String
@@ -28,4 +30,23 @@ case class MatcherAssertionEvaluationError(matcherTitle: String, input: String, 
 case class MatcherAssertionError(matcherTitle: String, input: String) extends CornichonError {
   val baseErrorMessage = s"matcher $matcherTitle did not validate input $input"
 }
+
+object MatcherAssertion {
+  def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher) = {
+    new MatcherAssertion {
+      def input = jsonPath.run(json).noSpaces
+
+      def assertionPredicate(input: String) = matcher.predicate(input)
+
+      def title = matcher.title
+    }
+  }
+}
+
+trait Matcher{
+  def title: String
+  def predicate: String => Boolean
+}
+
+case class AnyIntMatcher(title: String, predicate: String => Boolean)
 
