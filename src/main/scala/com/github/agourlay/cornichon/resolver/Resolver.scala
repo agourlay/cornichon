@@ -18,6 +18,15 @@ class Resolver(extractors: Map[String, Mapper]) {
   // There is one resolver per Feature so the cache is not living too long.
   private val placeholdersCache = TrieMap.empty[String, Either[CornichonError, List[Placeholder]]]
 
+  import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherParser }
+  def findMatcher(input: String): Either[CornichonError, List[Matcher]] = {
+    new MatcherParser(input).matchersRule.run() match {
+      case Failure(e: ParseError) ⇒ Right(List.empty)
+      case Failure(e: Throwable)  ⇒ Left(ResolverParsingError(input, e))
+      case Success(dt)            ⇒ Right(dt.toList)
+    }
+  }
+
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] = {
     placeholdersCache.getOrElseUpdate(
       input,

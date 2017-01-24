@@ -19,7 +19,7 @@ class ResolverSpec extends WordSpec
     with EitherValues
     with EitherMatchers {
 
-  val resolver = Resolver.withoutExtractor()
+  private val resolver = Resolver.withoutExtractor()
 
   "Resolver" when {
     "findPlaceholders" must {
