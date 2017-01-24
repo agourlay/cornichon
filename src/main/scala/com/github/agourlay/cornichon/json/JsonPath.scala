@@ -17,6 +17,8 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
   def cursor(input: Json) = operations.foldLeft(Option(input.cursor)) { (oc, op) ⇒
     op match {
+      case RootSelection ⇒
+        oc
       case FieldSelection(field) ⇒
         for {
           c ← oc
@@ -65,6 +67,7 @@ object JsonPath {
 
   def fromSegments(segments: List[JsonSegment]) = {
     val operations = segments.map {
+      case JsonSegment("$", None)                  ⇒ RootSelection
       case JsonSegment(field, None)                ⇒ FieldSelection(field)
       case JsonSegment(JsonPath.root, Some(index)) ⇒ RootArrayElementSelection(index)
       case JsonSegment(field, Some(index))         ⇒ ArrayFieldSelection(field, index)
@@ -77,6 +80,11 @@ object JsonPath {
 sealed trait JsonPathOperation {
   def field: String
   def pretty: String
+}
+
+case object RootSelection extends JsonPathOperation {
+  val field = JsonPath.root
+  val pretty = field
 }
 
 case class FieldSelection(field: String) extends JsonPathOperation {

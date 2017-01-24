@@ -1,10 +1,13 @@
 package com.github.agourlay.cornichon.matchers
 
+import java.util.UUID
+
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
 import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2.ParseError
+
 import scala.util.{ Failure, Success, Try }
 
 class MatcherResolver() {
@@ -21,13 +24,13 @@ class MatcherResolver() {
     builtInMatchers.lift(m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
 
   def builtInMatchers: PartialFunction[String, Matcher] = {
-    //    case "any-uuid"             ⇒ ""
+    case "any-string"  ⇒ AnyStringMatcher("<<any-string>>", (x: String) ⇒ true)
     case "any-integer" ⇒ AnyIntMatcher("<<any-integer>>", (x: String) ⇒ Try(Integer.parseInt(x)).isSuccess)
-    case "any-string"  ⇒ AnyStringMatcher("<<>any-string>", (x: String) ⇒ true)
+    case "any-uuid"    ⇒ AnyUUIDMatcher("<<any-uuid>>", (x: String) ⇒ Try(UUID.fromString(x)).isSuccess)
+    case "any-boolean" ⇒ AnyBooleanMatcher("<<any-boolean>>", (x: String) ⇒ x == "true" || x == "false")
     //    case "any-positive-integer" ⇒ ""
     //    case "any-string"           ⇒ ""
     //    case "any-alphanum-string"  ⇒ ""
-    //    case "any-boolean"          ⇒ ""
     //    case "any-date"             ⇒ ""
     //    case "any-time"             ⇒ ""
     //    case "any-date-time"        ⇒ ""
@@ -44,6 +47,8 @@ trait Matcher {
 
 case class AnyIntMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
 case class AnyStringMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
+case class AnyUUIDMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
+case class AnyBooleanMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
 
 object MatcherResolver {
   def apply(): MatcherResolver = new MatcherResolver()
