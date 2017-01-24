@@ -34,8 +34,6 @@ class MatcherResolver() {
     //    case "any-date-time"        ⇒ ""
   }
 
-
-
   def findAllMatchers(input: String): Either[CornichonError, List[MatcherFunc]] =
     findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
 }
