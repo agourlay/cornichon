@@ -704,6 +704,26 @@ class SuperHeroesScenario extends CornichonFeature {
 
         And I show_last_status
       }
+
+      Scenario("demonstrate matchers features") {
+
+        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+
+        Then assert status.is(200)
+
+        And assert body.ignoring("city", "realName", "publisher.location").is(
+          """
+          {
+            "name": "<<is-present>>",
+            "hasSuperpowers": "<<any-boolean>>",
+            "publisher": {
+              "name":"<<is-present>>",
+              "foundationYear":"<<any-integer>>"
+            }
+          }
+          """
+        )
+      }
     }
 
   def superhero_exists(name: String) =

@@ -8,6 +8,7 @@ import cats.instances.either._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2.ParseError
+import com.github.agourlay.cornichon.matchers.Matchers._
 
 import scala.util.{ Failure, Success, Try }
 
@@ -25,12 +26,11 @@ class MatcherResolver() {
     builtInMatchers.lift(m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
 
   def builtInMatchers: PartialFunction[String, Matcher] = {
-    case "any-string"  ⇒ AnyStringMatcher("<<any-string>>", (x: String) ⇒ true)
-    case "any-integer" ⇒ AnyIntMatcher("<<any-integer>>", (x: String) ⇒ Try(Integer.parseInt(x)).isSuccess)
-    case "any-uuid"    ⇒ AnyUUIDMatcher("<<any-uuid>>", (x: String) ⇒ Try(UUID.fromString(x)).isSuccess)
-    case "any-boolean" ⇒ AnyBooleanMatcher("<<any-boolean>>", (x: String) ⇒ x == "true" || x == "false")
+    case isPresentMatcher.key  ⇒ isPresentMatcher
+    case anyIntMatcher.key     ⇒ anyIntMatcher
+    case anyUUIDMatcher.key    ⇒ anyUUIDMatcher
+    case anyBooleanMatcher.key ⇒ anyBooleanMatcher
     //    case "any-positive-integer" ⇒ ""
-    //    case "any-string"           ⇒ ""
     //    case "any-alphanum-string"  ⇒ ""
     //    case "any-date"             ⇒ ""
     //    case "any-time"             ⇒ ""
@@ -41,15 +41,16 @@ class MatcherResolver() {
     findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
 }
 
-trait Matcher {
-  def key: String
-  def predicate: String ⇒ Boolean
+case class Matcher(key: String, predicate: String ⇒ Boolean) {
+  val fullKey = s"<<$key>>"
 }
 
-case class AnyIntMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
-case class AnyStringMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
-case class AnyUUIDMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
-case class AnyBooleanMatcher(key: String, predicate: String ⇒ Boolean) extends Matcher
+object Matchers {
+  val isPresentMatcher = Matcher("is-present", (x: String) ⇒ x.nonEmpty)
+  val anyIntMatcher = Matcher("any-integer", (x: String) ⇒ Try(Integer.parseInt(x)).isSuccess)
+  val anyUUIDMatcher = Matcher("any-uuid", (x: String) ⇒ Try(UUID.fromString(x)).isSuccess)
+  val anyBooleanMatcher = Matcher("any-boolean", (x: String) ⇒ x == "true" || x == "false")
+}
 
 object MatcherResolver {
   def apply(): MatcherResolver = new MatcherResolver()
@@ -60,5 +61,5 @@ case class MatcherResolverParsingError(input: String, error: Throwable) extends 
 }
 
 case class MatcherUndefined(name: String) extends CornichonError {
-  val baseErrorMessage = s"error: there is no matcher named '$name' defined."
+  val baseErrorMessage = s"there is no matcher named '$name' defined."
 }

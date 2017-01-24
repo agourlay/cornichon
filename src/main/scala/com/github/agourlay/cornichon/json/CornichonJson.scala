@@ -93,7 +93,7 @@ trait CornichonJson {
     else Left(WhitelistingError(forbiddenPatchOps.map(_.path.toString), second))
   }
 
-  def findAllContainingValue(values: List[String], json: Json): List[(String, Json)] = {
+  def findAllJsonWithValue(values: List[String], json: Json): List[(String, Json)] = {
     def keyValues(currentPath: String, json: Json): List[(String, Json)] =
       json.fold(
         jsonNull = Nil,
@@ -107,9 +107,11 @@ trait CornichonJson {
     def keyValuesHelper(key: String, value: Json): List[(String, Json)] =
       (key, value) :: keyValues(key, value)
 
-    keyValues(JsonPath.root, json).collect {
-      case (k, v) if values.exists(v.asString.contains) ⇒ (k, v)
-    }
+    // Do not traverse the JSON if there are no values to find
+    if (values.nonEmpty) {
+      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ (k, v) }
+    } else
+      List.empty
   }
 }
 
