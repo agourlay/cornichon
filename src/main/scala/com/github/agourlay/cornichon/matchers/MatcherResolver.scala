@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.matchers
 
-import java.util.UUID
-
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
 import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2.ParseError
-
 import scala.util.{ Failure, Success, Try }
 
 class MatcherResolver() {
@@ -34,10 +34,10 @@ class MatcherResolver() {
     //    case "any-date-time"        ⇒ ""
   }
 
-  def findAllMatchers(input: String): Either[CornichonError, List[MatcherFunc]] = ???
-//  {
-//    findMatcherKeys(input).flatMap(_.map(resolveMatcherKeys))
-//  }
+
+
+  def findAllMatchers(input: String): Either[CornichonError, List[MatcherFunc]] =
+    findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
 }
 
 object MatcherResolver {
