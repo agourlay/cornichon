@@ -26,11 +26,12 @@ class MatcherResolver() {
     builtInMatchers.lift(m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
 
   def builtInMatchers: PartialFunction[String, Matcher] = {
-    case isPresentMatcher.key  ⇒ isPresentMatcher
-    case anyIntMatcher.key     ⇒ anyIntMatcher
-    case anyUUIDMatcher.key    ⇒ anyUUIDMatcher
-    case anyBooleanMatcher.key ⇒ anyBooleanMatcher
-    //    case "any-positive-integer" ⇒ ""
+    case isPresentMatcher.key      ⇒ isPresentMatcher
+    case anyIntMatcher.key         ⇒ anyIntMatcher
+    case anyNegativeIntMatcher.key ⇒ anyNegativeIntMatcher
+    case anyPositiveIntMatcher.key ⇒ anyPositiveIntMatcher
+    case anyUUIDMatcher.key        ⇒ anyUUIDMatcher
+    case anyBooleanMatcher.key     ⇒ anyBooleanMatcher
     //    case "any-alphanum-string"  ⇒ ""
     //    case "any-date"             ⇒ ""
     //    case "any-time"             ⇒ ""
@@ -46,10 +47,12 @@ case class Matcher(key: String, predicate: String ⇒ Boolean) {
 }
 
 object Matchers {
-  val isPresentMatcher = Matcher("is-present", (x: String) ⇒ x.nonEmpty)
-  val anyIntMatcher = Matcher("any-integer", (x: String) ⇒ Try(Integer.parseInt(x)).isSuccess)
-  val anyUUIDMatcher = Matcher("any-uuid", (x: String) ⇒ Try(UUID.fromString(x)).isSuccess)
-  val anyBooleanMatcher = Matcher("any-boolean", (x: String) ⇒ x == "true" || x == "false")
+  val isPresentMatcher = Matcher("is-present", x ⇒ x.nonEmpty)
+  val anyIntMatcher = Matcher("any-integer", x ⇒ Try(Integer.parseInt(x)).isSuccess)
+  val anyPositiveIntMatcher = Matcher("any-positive-integer", x ⇒ Integer.parseInt(x) > 0)
+  val anyNegativeIntMatcher = Matcher("any-negative-integer", x ⇒ Integer.parseInt(x) < 0)
+  val anyUUIDMatcher = Matcher("any-uuid", x ⇒ Try(UUID.fromString(x)).isSuccess)
+  val anyBooleanMatcher = Matcher("any-boolean", x ⇒ x == "true" || x == "false")
 }
 
 object MatcherResolver {

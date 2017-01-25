@@ -108,10 +108,10 @@ trait CornichonJson {
       (key, value) :: keyValues(key, value)
 
     // Do not traverse the JSON if there are no values to find
-    if (values.nonEmpty) {
+    if (values.nonEmpty)
       keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ (k, v) }
-    } else
-      List.empty
+    else
+      Nil
   }
 }
 

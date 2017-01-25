@@ -21,13 +21,13 @@ object MatcherService {
         (jsonPath, MatcherAssertion.atJsonPath(jsonPath, expectedJson, matcher))
     }
 
-  def prepareMatchers(expectedJson: Json, input: Json): (Json, Json, Seq[MatcherAssertion]) = {
-    val pathAssertions = resolveAllMatchers(expectedJson).map(buildJsonMatcherAssertions(_, input)).fold(e ⇒ throw e, identity)
+  def prepareMatchers(expected: Json, actual: Json): (Json, Json, Seq[MatcherAssertion]) = {
+    val pathAssertions = resolveAllMatchers(expected).map(buildJsonMatcherAssertions(_, actual)).fold(e ⇒ throw e, identity)
 
     val jsonPathToIgnore = pathAssertions.map(_._1)
-    val newExpected = CornichonJson.removeFieldsByPath(expectedJson, jsonPathToIgnore)
-    val newInput = CornichonJson.removeFieldsByPath(input, jsonPathToIgnore)
+    val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
+    val newActual = CornichonJson.removeFieldsByPath(actual, jsonPathToIgnore)
 
-    (newExpected, newInput, pathAssertions.map(_._2))
+    (newExpected, newActual, pathAssertions.map(_._2))
   }
 }

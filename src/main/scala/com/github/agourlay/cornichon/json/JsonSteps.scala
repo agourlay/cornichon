@@ -54,20 +54,6 @@ object JsonSteps {
     def whitelisting = copy(whitelist = true)
 
     def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
-      def ignoringAndWhiteListing(session: Session, expectedJson: Json, sessionValueJson: Json): GenericEqualityAssertion[Json] = {
-        if (whitelist) {
-          val expectedWhitelistedValue = whitelistingValue(expectedJson, sessionValueJson).fold(e ⇒ throw e, identity)
-          GenericEqualityAssertion(expectedWhitelistedValue, sessionValueJson)
-        } else {
-          val actualValue = if (ignoredKeys.isEmpty) sessionValueJson
-          else {
-            val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
-            removeFieldsByPath(sessionValueJson, ignoredPaths)
-          }
-          GenericEqualityAssertion(expectedJson, actualValue)
-        }
-      }
-
       if (whitelist && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
@@ -75,15 +61,29 @@ object JsonSteps {
         AssertStep(
           title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
           action = session ⇒ {
-            val expectedJson = resolveParseJson(expected, session, resolver)
             val sessionValue = session.get(sessionKey)
-            val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-            if (sessionValueJson.isNull) Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
-            else {
-              val (expectedWithoutMatchers, inputWithoutMatchers, matcherAssertions) =
-                MatcherService.prepareMatchers(expectedJson, sessionValueJson)
+            val sessionValueWithFocusJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
 
-              ignoringAndWhiteListing(session, expectedWithoutMatchers, inputWithoutMatchers) andAll matcherAssertions
+            if (sessionValueWithFocusJson.isNull)
+              Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
+            else {
+
+              val expectedJson = resolveParseJson(expected, session, resolver)
+              val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = MatcherService.prepareMatchers(expectedJson, sessionValueWithFocusJson)
+              val (expectedPrepared, actualPrepared) =
+                if (whitelist) {
+                  // add missing fields in the expected result
+                  val expectedWhitelistedValue = whitelistingValue(expectedWithoutMatchers, actualWithoutMatchers).fold(e ⇒ throw e, identity)
+                  (expectedWhitelistedValue, actualWithoutMatchers)
+                } else if (ignoredKeys.nonEmpty) {
+                  // remove ignore fields from the actual result
+                  val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
+                  (expectedWithoutMatchers, removeFieldsByPath(actualWithoutMatchers, ignoredPaths))
+                } else {
+                  (expectedWithoutMatchers, actualWithoutMatchers)
+                }
+
+              GenericEqualityAssertion(expectedPrepared, actualPrepared) andAll matcherAssertions
             }
           }
         )

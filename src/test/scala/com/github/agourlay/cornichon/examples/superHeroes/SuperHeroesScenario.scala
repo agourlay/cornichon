@@ -718,7 +718,7 @@ class SuperHeroesScenario extends CornichonFeature {
             "hasSuperpowers": "<<any-boolean>>",
             "publisher": {
               "name":"<<is-present>>",
-              "foundationYear":"<<any-integer>>"
+              "foundationYear":"<<any-positive-integer>>"
             }
           }
           """
