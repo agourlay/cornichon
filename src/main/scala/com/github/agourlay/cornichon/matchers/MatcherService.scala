@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.matchers
 
-import com.github.agourlay.cornichon.core.CornichonError
-import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.json.CornichonJson
 import io.circe.Json
 import cats.syntax.either._
 
@@ -9,25 +8,21 @@ object MatcherService {
 
   private val resolver = MatcherResolver()
 
-  private def resolveAllMatchers(json: Json): Either[CornichonError, List[((String, Json), Matcher)]] =
-    resolver.findAllMatchers(json.noSpaces).map { matchers ⇒
-      CornichonJson.findAllJsonWithValue(matchers.map(_.fullKey), json).zip(matchers)
-    }
+  def prepareMatchers(expected: Json, actual: Json): (Json, Json, Seq[MatcherAssertion]) =
+    resolver.findAllMatchers(expected.noSpaces).map { matchers ⇒
+      if (matchers.isEmpty)
+        (expected, actual, Nil)
+      else {
+        val pathAssertions = CornichonJson.findAllJsonWithValue(matchers.map(_.fullKey), expected)
+          .zip(matchers)
+          .map {
+            case (jsonPath, matcher) ⇒ (jsonPath, MatcherAssertion.atJsonPath(jsonPath, actual, matcher))
+          }
 
-  private def buildJsonMatcherAssertions(in: List[((String, Json), Matcher)], expectedJson: Json): List[(JsonPath, MatcherAssertion)] =
-    in.map {
-      case ((path, _), matcher) ⇒
-        val jsonPath = JsonPath.parse(path)
-        (jsonPath, MatcherAssertion.atJsonPath(jsonPath, expectedJson, matcher))
-    }
-
-  def prepareMatchers(expected: Json, actual: Json): (Json, Json, Seq[MatcherAssertion]) = {
-    val pathAssertions = resolveAllMatchers(expected).map(buildJsonMatcherAssertions(_, actual)).fold(e ⇒ throw e, identity)
-
-    val jsonPathToIgnore = pathAssertions.map(_._1)
-    val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
-    val newActual = CornichonJson.removeFieldsByPath(actual, jsonPathToIgnore)
-
-    (newExpected, newActual, pathAssertions.map(_._2))
-  }
+        val jsonPathToIgnore = pathAssertions.map(_._1)
+        val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
+        val newActual = CornichonJson.removeFieldsByPath(actual, jsonPathToIgnore)
+        (newExpected, newActual, pathAssertions.map(_._2))
+      }
+    }.fold(e ⇒ throw e, identity)
 }
