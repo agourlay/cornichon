@@ -15,9 +15,7 @@ object MatcherService {
       else {
         val pathAssertions = CornichonJson.findAllJsonWithValue(matchers.map(_.fullKey), expected)
           .zip(matchers)
-          .map {
-            case (jsonPath, matcher) ⇒ (jsonPath, MatcherAssertion.atJsonPath(jsonPath, actual, matcher))
-          }
+          .map { case (jsonPath, matcher) ⇒ (jsonPath, MatcherAssertion.atJsonPath(jsonPath, actual, matcher)) }
 
         val jsonPathToIgnore = pathAssertions.map(_._1)
         val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)

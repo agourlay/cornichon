@@ -714,11 +714,11 @@ class SuperHeroesScenario extends CornichonFeature {
         And assert body.ignoring("city", "realName", "publisher.location").is(
           """
           {
-            "name": "<<is-present>>",
+            "name": "<<any-alphanum-string>>",
             "hasSuperpowers": "<<any-boolean>>",
             "publisher": {
-              "name":"<<is-present>>",
-              "foundationYear":"<<any-positive-integer>>"
+              "name": "<<any-alphanum-string>>",
+              "foundationYear": "<<any-positive-integer>>"
             }
           }
           """

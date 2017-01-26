@@ -67,7 +67,6 @@ object JsonSteps {
             if (sessionValueWithFocusJson.isNull)
               Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
             else {
-
               val expectedJson = resolveParseJson(expected, session, resolver)
               val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = MatcherService.prepareMatchers(expectedJson, sessionValueWithFocusJson)
               val (expectedPrepared, actualPrepared) =

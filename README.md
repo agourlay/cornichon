@@ -745,7 +745,8 @@ It is also possible to inject random values inside placeholders using:
 - ```<random-string>``` for a random String of length 5
 - ```<random-alphanum-string>``` for a random alphanumeric String of length 5
 - ```<random-boolean>``` for a random Boolean string
-- ```<timestamp>``` for the current timestamp
+- ```<random-timestamp>``` for a random timestamp
+- ```<current-timestamp>``` for the current timestamp
 
 ```scala
 post("http://url.io/somethingWithAnId").withBody(
