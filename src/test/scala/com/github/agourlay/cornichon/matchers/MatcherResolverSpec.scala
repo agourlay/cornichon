@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.matchers
 
 import cats.scalatest.EitherValues
 import com.github.agourlay.cornichon.core.SessionSpec._
-import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 

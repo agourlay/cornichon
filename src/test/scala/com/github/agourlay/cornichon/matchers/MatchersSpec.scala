@@ -5,6 +5,7 @@ import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 import com.github.agourlay.cornichon.matchers.Matchers._
+import io.circe.Json
 
 class MatchersSpec extends WordSpec
     with Matchers
@@ -15,13 +16,13 @@ class MatchersSpec extends WordSpec
     "any-integer" must {
       "correct for any int" in {
         forAll(Gen.size) { int ⇒
-          anyInteger.predicate(int.toString) should be(true)
+          anyInteger.predicate(Json.fromInt(int)) should be(true)
         }
       }
 
       "incorrect for any alphanum string" in {
-        forAll(Gen.alphaNumStr) { int ⇒
-          anyInteger.predicate(int.toString) should be(false)
+        forAll(Gen.alphaNumStr) { alphanum ⇒
+          anyInteger.predicate(Json.fromString(alphanum)) should be(false)
         }
       }
     }

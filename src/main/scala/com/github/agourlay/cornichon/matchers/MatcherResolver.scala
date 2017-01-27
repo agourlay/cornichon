@@ -14,6 +14,8 @@ class MatcherResolver() {
 
   val builtInMatchers =
     isPresent ::
+      anyArray ::
+      anyObject ::
       anyInteger ::
       anyPositiveInteger ::
       anyNegativeIntger ::
