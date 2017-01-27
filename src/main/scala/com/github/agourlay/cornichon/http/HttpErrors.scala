@@ -49,3 +49,8 @@ case class MalformedHeadersError(error: String) extends CornichonError {
   val baseErrorMessage = s"""parsing headers generated error:
                |$error""".trim.stripMargin
 }
+
+case class BadSessionHeadersEncoding(header: String) extends CornichonError {
+  val baseErrorMessage = s"""header '$header' does not respect the session encoding convention.
+                            |Hint: use HttpService.encodeSessionHeaders to properly encode your headers in the Session.""".trim.stripMargin
+}

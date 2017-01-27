@@ -176,6 +176,9 @@ object HttpService {
   def decodeSessionHeaders(headers: String): Seq[(String, String)] =
     headers.split(interHeadersValueDelim).toSeq.map { header ⇒
       val elms = header.split(headersKeyValueDelim)
-      (elms.head, elms.tail.head)
+      if (elms.length != 2)
+        throw BadSessionHeadersEncoding(header)
+      else
+        (elms(0), elms(1))
     }
 }

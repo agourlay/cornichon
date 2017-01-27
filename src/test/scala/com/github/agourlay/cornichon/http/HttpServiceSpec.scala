@@ -13,7 +13,11 @@ import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with EitherValues with EitherMatchers {
+class HttpServiceSpec extends WordSpec
+    with Matchers
+    with BeforeAndAfterAll
+    with EitherValues
+    with EitherMatchers {
 
   implicit val system = ActorSystem("akka-http-client")
   implicit val mat = ActorMaterializer()
@@ -88,5 +92,12 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
       }
     }
 
+    "decodeSessionHeaders" must {
+      "fail if wrong format" in {
+        assertThrows[BadSessionHeadersEncoding] {
+          HttpService.decodeSessionHeaders("headerkey-headervalue")
+        }
+      }
+    }
   }
 }
