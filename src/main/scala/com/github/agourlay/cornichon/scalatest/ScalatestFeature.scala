@@ -49,12 +49,12 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
           else
             s.name in {
               runScenario(s).map {
-                case SuccessScenarioReport(_, _, logs) ⇒
+                case s: SuccessScenarioReport ⇒
                   // In case of success, logs are only shown if the scenario contains DebugLogInstruction
-                  if (logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty) printLogs(logs)
+                  if (s.logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty) printLogs(s.logs)
                   assert(true)
-                case f @ FailureScenarioReport(_, _, _, logs) ⇒
-                  printLogs(logs)
+                case f: FailureScenarioReport ⇒
+                  printLogs(f.logs)
                   fail(
                     s"""|${f.msg}
                         |${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}

@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.concurrent.ScheduledExecutorService
-
+import akka.actor.Scheduler
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
@@ -15,7 +14,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
 
   val title = s"Repeat block with occurrence '$occurrence'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
 
     def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case

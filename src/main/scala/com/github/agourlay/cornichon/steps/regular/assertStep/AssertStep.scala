@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import java.util.concurrent.ScheduledExecutorService
-
+import akka.actor.Scheduler
 import cats.data.Validated._
 import cats.data._
 import cats.syntax.cartesian._
@@ -16,7 +15,7 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
     val session = initialRunState.session
     val (res, duration) = Timing.withDuration {
       Either

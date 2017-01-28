@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.http
 
-import java.util.concurrent.Executors
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.scalatest.{ EitherMatchers, EitherValues }
@@ -20,8 +18,8 @@ class HttpServiceSpec extends WordSpec
     with EitherMatchers {
 
   implicit val system = ActorSystem("akka-http-client")
+  implicit val scheduler = system.scheduler
   implicit val mat = ActorMaterializer()
-  implicit val timer = Executors.newSingleThreadScheduledExecutor()
 
   val client = new AkkaHttpClient()
   val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor())

@@ -35,9 +35,7 @@ import scala.annotation.tailrec
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
-class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionContext) extends HttpClient {
-
-  implicit private lazy val mat = ActorMaterializer()
+class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionContext, mat: ActorMaterializer) extends HttpClient {
 
   // Disable JDK built-in checks
   // https://groups.google.com/forum/#!topic/akka-user/ziI1fPBtxV8
@@ -193,7 +191,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
         Left(UnmarshallingResponseError(e, httpResponse.toString()))
     }
 
-  override def shutdown() = Http().shutdownAllConnectionPools().map(_ ⇒ mat.shutdown())
+  override def shutdown() = Http().shutdownAllConnectionPools()
 
   override def paramsFromUrl(url: String): Seq[(String, String)] = Query(url)
 
