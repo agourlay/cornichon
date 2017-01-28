@@ -25,17 +25,17 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {
-      resolvedRequestParts ← resolveRequestParts(r.url, r.body, r.params, r.headers)(s)
-      (url, jsonBody, params, headers) = resolvedRequestParts
-    } yield HttpRequest(r.method, url, jsonBody, params, headers)
+      resolvedRequestParts ← resolveRequestParts(r.url, r.body, r.params, r.headers, r.formData)(s)
+      (url, jsonBody, params, headers, formData) = resolvedRequestParts
+    } yield HttpRequest(r.method, url, jsonBody, params, headers, formData)
 
   private def resolveStreamedRequest[A: Show: Resolvable: Encoder](r: HttpStreamedRequest)(s: Session) =
     for {
-      resolvedRequestParts ← resolveRequestParts(r.url, None, r.params, r.headers)(s)
-      (url, _, params, headers) = resolvedRequestParts
-    } yield HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
+      resolvedRequestParts ← resolveRequestParts(r.url, None, r.params, r.headers, r.formData)(s)
+      (url, _, params, headers, formData) = resolvedRequestParts
+    } yield HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers, formData)
 
-  private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
+  private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)], formData: Seq[(String, String)])(s: Session) = {
     for {
       bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(Right(None))
       jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(Right(None))
@@ -43,14 +43,15 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       paramsResolved ← resolveParams(url, params)(s)
       headersResolved ← resolver.fillPlaceholders(headers ++ extractWithHeadersSession(s))(s)
-    } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved)
+      formDataResolved ← resolver.fillPlaceholders(formData)(s)
+    } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved, formDataResolved)
   }
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       resolvedRequest ← EitherT(Future.successful(resolveRequest(r)(s)))
       resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
-        client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers)
+        client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers, resolvedRequest.formData)
       }
       newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
@@ -59,7 +60,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     for {
       resolvedRequest ← EitherT(Future.successful(resolveStreamedRequest[String](r)(s)))
       resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
-        client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin)
+        client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, resolvedRequest.formData, r.takeWithin)
       }
       newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
@@ -134,15 +135,15 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Future[Session] =
     s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
 
-  def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
+  def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], formData: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
-    val req = HttpStreamedRequest(SSE, url, takeWithin, params, headers)
+    val req = HttpStreamedRequest(SSE, url, takeWithin, params, headers, formData)
     streamEffect(req, expectedStatus, extractor)
   }
 
-  def openWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
+  def openWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], formData: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
-    val req = HttpStreamedRequest(WS, url, takeWithin, params, headers)
+    val req = HttpStreamedRequest(WS, url, takeWithin, params, headers, formData)
     streamEffect(req, expectedStatus, extractor)
   }
 }

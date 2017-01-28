@@ -103,7 +103,8 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
         url = akkaReq.uri.path.toString(),
         body = Some(decodedBody),
         params = akkaReq.uri.query().map(p ⇒ (p._1, p._2)),
-        headers = akkaReq.headers.map(h ⇒ (h.name(), h.value()))
+        headers = akkaReq.headers.map(h ⇒ (h.name(), h.value())),
+        formData = Seq.empty // TODO: need a real implementation, of course
       )
       (requestReceivedRepo ? RegisterRequest(req)).mapTo[RequestRegistered]
     }

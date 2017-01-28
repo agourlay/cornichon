@@ -28,14 +28,16 @@ trait BaseRequest {
   def url: String
   def params: Seq[(String, String)]
   def headers: Seq[(String, String)]
+  def formData: Seq[(String, String)]
 
   def compactDescription: String
 
   def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${displayStringPairs(params)}"
   def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayStringPairs(headers)}"
+  def formDataTitle = if (formData.isEmpty) "" else s" with form data ${displayStringPairs(formData)}"
 }
 
-case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
+case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)], formData: Seq[(String, String)])
     extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
@@ -44,12 +46,15 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
+  def withFormData(formData: (String, String)*) = copy(formData = formData)
+  def addFormData(formData: (String, String)*) = copy(formData = this.formData ++ formData)
+
   def withBody[B: Show: Resolvable: Encoder](body: B) = copy(body = Some(body))
 
   def compactDescription: String = {
     val base = s"${method.name} $url"
     val payloadTitle = body.fold("")(p ⇒ s" with body ${p.show}")
-    base + payloadTitle + paramsTitle + headersTitle
+    base + payloadTitle + formDataTitle + paramsTitle + headersTitle
   }
 }
 
@@ -57,13 +62,13 @@ trait HttpRequestsDsl {
   import com.github.agourlay.cornichon.http.HttpMethods._
   import com.github.agourlay.cornichon.util.Instances._
 
-  def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty)
-  def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty)
-  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Seq.empty, Seq.empty)
-  def delete(url: String) = HttpRequest[String](DELETE, url, None, Seq.empty, Seq.empty)
-  def post(url: String) = HttpRequest[String](POST, url, None, Seq.empty, Seq.empty)
-  def put(url: String) = HttpRequest[String](PUT, url, None, Seq.empty, Seq.empty)
-  def patch(url: String) = HttpRequest[String](PATCH, url, None, Seq.empty, Seq.empty)
+  def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty, Seq.empty)
+  def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty, Seq.empty)
+  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Seq.empty, Seq.empty, Seq.empty)
+  def delete(url: String) = HttpRequest[String](DELETE, url, None, Seq.empty, Seq.empty, Seq.empty)
+  def post(url: String) = HttpRequest[String](POST, url, None, Seq.empty, Seq.empty, Seq.empty)
+  def put(url: String) = HttpRequest[String](PUT, url, None, Seq.empty, Seq.empty, Seq.empty)
+  def patch(url: String) = HttpRequest[String](PATCH, url, None, Seq.empty, Seq.empty, Seq.empty)
 }
 
 object HttpRequest extends HttpRequestsDsl {
@@ -72,10 +77,12 @@ object HttpRequest extends HttpRequestsDsl {
     def show(r: HttpRequest[A]): String = {
       val body = r.body.fold("without body")(b ⇒ s"with body\n${b.show}")
       val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${displayStringPairs(r.params)}"
+      val formData = if (r.formData.isEmpty) "without form data" else s"with form data ${displayStringPairs(r.formData)}"
       val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${displayStringPairs(r.headers)}"
 
       s"""|HTTP ${r.method.name} request to ${r.url}
           |$params
+          |$formData
           |$headers
           |$body""".stripMargin
     }
@@ -90,7 +97,7 @@ object HttpStreams {
   val WS = HttpStream("WebSocket")
 }
 
-case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])
+case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)], formData: Seq[(String, String)])
     extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
@@ -98,6 +105,9 @@ case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: Fini
 
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
+
+  def withFormData(formData: (String, String)*) = copy(formData = formData)
+  def addFormData(formData: (String, String)*) = copy(formData = this.formData ++ formData)
 
   def compactDescription: String = {
     val base = s"open ${stream.name} to $url"
