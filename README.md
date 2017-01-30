@@ -18,22 +18,23 @@ An extensible Scala DSL for testing JSON HTTP APIs.
   7. [Debug steps](#debug-steps)
 5. [DSL composition](#dsl-composition)
 6. [Placeholders](#placeholders)
-7. [Custom steps](#custom-steps)
+7. [JSON matchers](#json-matchers)
+8. [Custom steps](#custom-steps)
   1. [EffectStep](#effectstep)
   2. [EffectStep using the HTTP service](#effectstep-using-the-http-service)
   3. [AssertStep](#assertstep)
-8. [Feature options](#feature-options)
+9. [Feature options](#feature-options)
   1. [Before and after hooks](#before-and-after-hooks)
   2. [Base URL](#base-url)
   3. [Request timeout](#request-timeout)
   4. [Register custom extractors](#register-custom-extractors)
-9. [Execution model](#execution-model)
-10. [Ignoring features or scenarios](#ignoring-features-or-scenarios)
-11. [Custom HTTP body type](#custom-http-body-type)
-12. [ScalaTest integration](#scalatest-integration)
-13. [SSL configuration](#ssl-configuration)
-14. [Packaging features](#packaging-features)
-15. [License](#license)
+10. [Execution model](#execution-model)
+11. [Ignoring features or scenarios](#ignoring-features-or-scenarios)
+12. [Custom HTTP body type](#custom-http-body-type)
+13. [ScalaTest integration](#scalatest-integration)
+14. [SSL configuration](#ssl-configuration)
+15. [Packaging features](#packaging-features)
+16. [License](#license)
 
 ## Quick start
 
@@ -764,6 +765,51 @@ It becomes then possible to retrieve past values :
 - ```<name>``` always uses the latest value taken by the key.
 - ```<name[0]>``` uses the first value taken by the key
 - ```<name[1]>``` uses the second element taken by the key
+
+## JSON matchers
+
+The built-in JSON DSL makes it possible to express detailed assertions regarding the values of JSON fields.
+
+If a field is unstable you can also decide to ignore it completely but what if you do not care about the precise value but still want to make sure it has a certain property.
+
+JSON matchers are designed for this use case, they work more or less like placeholders in practice.
+
+```scala
+And assert body.ignoring("city", "realName", "publisher.location").is(
+  """
+  {
+    "name": "<<any-alphanum-string>>",
+    "hasSuperpowers": "<<any-boolean>>",
+    "publisher": {
+      "name": "<<any-alphanum-string>>",
+      "foundationYear": "<<any-positive-integer>>"
+    }
+  }
+  """
+)
+
+```
+
+You just need to replace the value of the field by one of the built-in JSON matchers.
+
+There is a caveat though, unlike placeholders, the JSON matchers must be surrounded by quotes in all circumstances even if they are replacing JSON numbers or boolean.
+
+Here are the available matchers:
+
+- ```<<is-present>>``` : checks if the field is defined
+- ```<<any-array>>``` : checks if the field is an Array
+- ```<<any-object>>``` : checks if the field is an Object
+- ```<<any-integer>>``` : checks if the field is an integer
+- ```<<<any-positive-integer>>>``` : checks if the field is a positive integer
+- ```<<any-negative-integer>>``` : checks if the field is a negative integer
+- ```<<any-uuid>>``` : checks if the field is a valid UUID
+- ```<<any-boolean>>``` : checks if the field is a boolean
+- ```<<any-alphanum-string>> : checks if the field is an alpha-numeric string
+- ```<<any-date>>``` : checks if the field is a 'yyyy-MM-dd' date
+- ```<<any-date-time>>``` : checks if the field is a 'yyyy-MM-dd HH:mm:ss.SSS' datetime
+- ```<<any-time>>``` : checks if the field is a 'HH:mm:ss.SSS' time"
+
+It is not yet possible to register custom JSON matchers, it might be allowed once the feature stabilised.
 
 ## Custom steps
 
