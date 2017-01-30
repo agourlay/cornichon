@@ -13,7 +13,6 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.NotUsed
-
 import cats.syntax.either._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.http._
@@ -23,10 +22,12 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.core.CornichonError
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
+import de.heikoseeberger.akkasse.MediaTypes.`text/event-stream`
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl._
 
+import akka.http.scaladsl.model.headers.Accept
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -112,7 +113,10 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
   }
 
   def openSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
-    val request = Get(uriBuilder(url, params)).withHeaders(collection.immutable.Seq(headers: _*))
+    val request = Get(uriBuilder(url, params))
+      .withHeaders(collection.immutable.Seq(headers: _*))
+      .addHeader(Accept(`text/event-stream`))
+
     Http().singleRequest(request, sslContext)
       .flatMap(expectSSE)
       .map { sse ⇒
