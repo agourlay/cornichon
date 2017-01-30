@@ -18,7 +18,7 @@ class MatcherResolver() {
       anyObject ::
       anyInteger ::
       anyPositiveInteger ::
-      anyNegativeIntger ::
+      anyNegativeInteger ::
       anyUUID ::
       anyBoolean ::
       anyAlphaNum ::

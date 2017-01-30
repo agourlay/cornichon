@@ -45,7 +45,7 @@ object Matchers {
     predicate = _.asNumber.flatMap(_.toInt).exists(_ > 0)
   )
 
-  val anyNegativeIntger = Matcher(
+  val anyNegativeInteger = Matcher(
     key = "any-negative-integer",
     description = "checks if the field is a negative integer",
     predicate = _.asNumber.flatMap(_.toInt).exists(_ < 0)
