@@ -804,7 +804,7 @@ Here are the available matchers:
 - ```<<any-negative-integer>>``` : checks if the field is a negative integer
 - ```<<any-uuid>>``` : checks if the field is a valid UUID
 - ```<<any-boolean>>``` : checks if the field is a boolean
-- ```<<any-alphanum-string>> : checks if the field is an alpha-numeric string
+- ```<<any-alphanum-string>>``` : checks if the field is an alpha-numeric string
 - ```<<any-date>>``` : checks if the field is a 'yyyy-MM-dd' date
 - ```<<any-date-time>>``` : checks if the field is a 'yyyy-MM-dd HH:mm:ss.SSS' datetime
 - ```<<any-time>>``` : checks if the field is a 'HH:mm:ss.SSS' time"
