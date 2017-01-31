@@ -768,21 +768,19 @@ It becomes then possible to retrieve past values :
 
 ## JSON matchers
 
-The built-in JSON DSL makes it possible to express detailed assertions regarding the values of JSON fields.
+If the exact value of a field is unknown, you can use JSON matchers to make sure it has a certain property or shape.
 
-If a field is unstable you can also decide to ignore it completely but what if you do not care about the precise value but still want to make sure it has a certain property.
-
-JSON matchers are designed for this use case, they work more or less like placeholders in practice.
+JSON matchers work more or less like placeholders in practice.
 
 ```scala
 And assert body.ignoring("city", "realName", "publisher.location").is(
   """
   {
-    "name": "<<any-alphanum-string>>",
-    "hasSuperpowers": "<<any-boolean>>",
+    "name": "<favorite-superhero>",
+    "hasSuperpowers": *any-boolean*,
     "publisher": {
-      "name": "<<any-alphanum-string>>",
-      "foundationYear": "<<any-positive-integer>>"
+      "name": *any-string*,
+      "foundationYear": *any-positive-integer*
     }
   }
   """
@@ -790,26 +788,27 @@ And assert body.ignoring("city", "realName", "publisher.location").is(
 
 ```
 
-You just need to replace the value of the field by one of the built-in JSON matchers.
-
-There is a caveat though, unlike placeholders, the JSON matchers must be surrounded by quotes in all circumstances even if they are replacing JSON numbers or boolean.
+You just need to replace the value of the field by one of the built-in JSON matchers *without* quotes.
 
 Here are the available matchers:
 
-- ```<<is-present>>``` : checks if the field is defined
-- ```<<any-array>>``` : checks if the field is an Array
-- ```<<any-object>>``` : checks if the field is an Object
-- ```<<any-integer>>``` : checks if the field is an integer
-- ```<<<any-positive-integer>>>``` : checks if the field is a positive integer
-- ```<<any-negative-integer>>``` : checks if the field is a negative integer
-- ```<<any-uuid>>``` : checks if the field is a valid UUID
-- ```<<any-boolean>>``` : checks if the field is a boolean
-- ```<<any-alphanum-string>>``` : checks if the field is an alpha-numeric string
-- ```<<any-date>>``` : checks if the field is a 'yyyy-MM-dd' date
-- ```<<any-date-time>>``` : checks if the field is a 'yyyy-MM-dd HH:mm:ss.SSS' datetime
-- ```<<any-time>>``` : checks if the field is a 'HH:mm:ss.SSS' time"
+- ```*is-present*``` : checks if the field is defined
+- ```*any-string*``` : checks if the field is a String
+- ```*any-array*``` : checks if the field is an Array
+- ```*any-object*``` : checks if the field is an Object
+- ```*any-integer*``` : checks if the field is an Integer
+- ```*any-positive-integer*``` : checks if the field is a positive Integer
+- ```*any-negative-integer*``` : checks if the field is a negative Integer
+- ```*any-uuid*``` : checks if the field is a valid UUID
+- ```*any-boolean*``` : checks if the field is a boolean
+- ```*any-alphanum-string*``` : checks if the field is an alpha-numeric String
+- ```*any-date*``` : checks if the field is a 'yyyy-MM-dd' date
+- ```*any-date-time*``` : checks if the field is a 'yyyy-MM-dd HH:mm:ss.SSS' datetime
+- ```*any-time*``` : checks if the field is a 'HH:mm:ss.SSS' time"
 
-It is not yet possible to register custom JSON matchers, it might be allowed once the feature stabilised.
+This feature is still fresh and under experimentation therefore it comes with a couple of limitations:
+- it is not yet possible to register custom JSON matchers
+- matchers are not supported for JSON arrays assertions
 
 ## Custom steps
 

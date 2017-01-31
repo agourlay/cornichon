@@ -13,6 +13,10 @@ trait Resolvable[A] {
 
   def toResolvableForm(r: A): String
   def fromResolvableForm(r: String): A
+
+  def transformResolvableForm(r: A)(transf: String ⇒ String) =
+    fromResolvableForm(transf(toResolvableForm(r)))
+
 }
 
 object Resolvable {

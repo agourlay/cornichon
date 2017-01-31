@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.matchers
 
+import java.util.regex.Pattern
+
 import com.github.agourlay.cornichon.json.CornichonJson
 import io.circe.Json
 import cats.syntax.either._
@@ -23,4 +25,9 @@ object MatcherService {
         (newExpected, newActual, pathAssertions.map(_._2))
       }
     }.fold(e ⇒ throw e, identity)
+
+  def quoteMatchers(input: String) =
+    resolver.builtInMatchers.foldLeft(input) {
+      case (i, m) ⇒ i.replaceAll(Pattern.quote(m.fullKey), '"' + m.fullKey + '"')
+    }
 }

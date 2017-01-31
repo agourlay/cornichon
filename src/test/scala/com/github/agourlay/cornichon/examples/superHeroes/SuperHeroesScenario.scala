@@ -707,18 +707,20 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate matchers features") {
 
-        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+        And I save("favorite-superhero" → "Batman")
+
+        When I get("/superheroes/<favorite-superhero>").withParams("sessionId" → "<session-id>")
 
         Then assert status.is(200)
 
         And assert body.ignoring("city", "realName", "publisher.location").is(
           """
           {
-            "name": "<<any-alphanum-string>>",
-            "hasSuperpowers": "<<any-boolean>>",
+            "name": "<favorite-superhero>",
+            "hasSuperpowers": *any-boolean*,
             "publisher": {
-              "name": "<<any-alphanum-string>>",
-              "foundationYear": "<<any-positive-integer>>"
+              "name": *any-string*,
+              "foundationYear": *any-positive-integer*
             }
           }
           """

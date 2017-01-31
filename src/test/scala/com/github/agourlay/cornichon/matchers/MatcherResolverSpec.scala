@@ -12,36 +12,35 @@ class MatcherResolverSpec extends WordSpec
 
   private val resolver = MatcherResolver()
 
-  // Todo: add cases for interference of matchers and placeholders
   "MatcherResolver" when {
     "findMatchers" must {
-      "find matcher in content solely containing a matcher without index" in {
+      "find matcher in content solely containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatcherKeys(s"<<$key>>").value should be(List(MatcherKey(key)))
+          resolver.findMatcherKeys(s"*$key*").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content starting with whitespace and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatcherKeys(s" <<$key>>").value should be(List(MatcherKey(key)))
+          resolver.findMatcherKeys(s" *$key*").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content starting with 2 whitespaces and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatcherKeys(s"  <<$key>>").value should be(List(MatcherKey(key)))
+          resolver.findMatcherKeys(s"  *$key*").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content finishing with whitespace and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatcherKeys(s"<<$key>> ").value should be(List(MatcherKey(key)))
+          resolver.findMatcherKeys(s"*$key* ").value should be(List(MatcherKey(key)))
         }
       }
 
       "find matcher in content finishing with 2 whitespaces and containing a matcher" in {
         forAll(keyGen) { key ⇒
-          resolver.findMatcherKeys(s"<<$key>>  ").value should be(List(MatcherKey(key)))
+          resolver.findMatcherKeys(s"*$key*  ").value should be(List(MatcherKey(key)))
         }
       }
     }

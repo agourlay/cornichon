@@ -516,7 +516,7 @@ class CornichonJsonSpec extends WordSpec
         val input =
           """
             |{
-            | "2LettersName" : false,
+            | "2LettersName": false,
             | "Age": 50,
             | "Name": "John",
             | "Brothers": [

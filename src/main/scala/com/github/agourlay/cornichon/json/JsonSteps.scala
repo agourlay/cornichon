@@ -67,7 +67,8 @@ object JsonSteps {
             if (sessionValueWithFocusJson.isNull)
               Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
             else {
-              val expectedJson = resolveParseJson(expected, session, resolver)
+              val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
+              val expectedJson = resolveParseJson(withQuotedMatchers, session, resolver)
               val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = MatcherService.prepareMatchers(expectedJson, sessionValueWithFocusJson)
               val (expectedPrepared, actualPrepared) =
                 if (whitelist) {

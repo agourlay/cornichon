@@ -7,18 +7,24 @@ import io.circe.Json
 import scala.util.Try
 
 case class Matcher(key: String, description: String, predicate: Json ⇒ Boolean) {
-  val fullKey = s"<<$key>>"
+  val fullKey = s"*$key*"
 }
 
 object Matchers {
   private val sdfDate = new java.text.SimpleDateFormat("yyyy-MM-dd")
-  private val sdfDateTime = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+  private val sdfDateTime = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
   private val sdfTime = new java.text.SimpleDateFormat("HH:mm:ss.SSS")
 
   val isPresent = Matcher(
     key = "is-present",
     description = "checks if the field is defined",
     predicate = !_.isNull
+  )
+
+  val anyString = Matcher(
+    key = "any-string",
+    description = "checks if the field is a String",
+    predicate = _.isString
   )
 
   val anyArray = Matcher(
@@ -77,7 +83,7 @@ object Matchers {
 
   val anyDateTime = Matcher(
     key = "any-date-time",
-    description = "checks if the field is a 'yyyy-MM-dd HH:mm:ss.SSS' datetime",
+    description = """checks if the field is a "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" datetime""",
     predicate = _.asString.exists(s ⇒ Try(sdfDateTime.parse(s)).isSuccess)
   )
 
