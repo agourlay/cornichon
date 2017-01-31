@@ -800,7 +800,7 @@ Here are the available matchers:
 - ```<<any-array>>``` : checks if the field is an Array
 - ```<<any-object>>``` : checks if the field is an Object
 - ```<<any-integer>>``` : checks if the field is an integer
-- ```<<<any-positive-integer>>>``` : checks if the field is a positive integer
+- ```<<any-positive-integer>>``` : checks if the field is a positive integer
 - ```<<any-negative-integer>>``` : checks if the field is a negative integer
 - ```<<any-uuid>>``` : checks if the field is a valid UUID
 - ```<<any-boolean>>``` : checks if the field is a boolean
