@@ -53,7 +53,7 @@ object JsonSteps {
 
     def whitelisting = copy(whitelist = true)
 
-    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
+    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep =
       if (whitelist && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
@@ -67,8 +67,7 @@ object JsonSteps {
             if (sessionValueWithFocusJson.isNull)
               Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
             else {
-              val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
-              val expectedJson = resolveParseJson(withQuotedMatchers, session, resolver)
+              val expectedJson = prepareAndParseJson(expected, session, resolver)
               val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = MatcherService.prepareMatchers(expectedJson, sessionValueWithFocusJson)
               val (expectedPrepared, actualPrepared) =
                 if (whitelist) {
@@ -88,7 +87,6 @@ object JsonSteps {
           }
         )
       }
-    }
 
     def containsString(expectedPart: String) = {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target contains '$expectedPart'" else s"$target's field '$jsonPath' contains '$expectedPart'"
@@ -226,7 +224,7 @@ object JsonSteps {
       AssertStep(
         title = assertionTitle,
         action = s ⇒ {
-        resolveParseJson(expected, s, resolver)
+        prepareAndParseJson(expected, s, resolver)
           .asArray
           .fold[Assertion](Assertion.failWith(NotAnArrayError(expected))) { expectedArray ⇒
             val arrayFromSession = applyPathAndFindArray(jsonPath, resolver)(s, s.get(sessionKey))
@@ -258,7 +256,7 @@ object JsonSteps {
         action = s ⇒
         CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
           val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-          val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
+          val resolvedJson = elements.map(prepareAndParseJson(_, s, resolver))
           val containsAll = resolvedJson.forall(jArr.contains)
           (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
         }
@@ -280,9 +278,10 @@ object JsonSteps {
     else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }
 
-  private def resolveParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
+  private def prepareAndParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
     val xorJson = for {
-      resolved ← resolver.fillPlaceholders(input)(session)
+      quotedMatchers ← Right(Resolvable[A].transformResolvableForm(input)(MatcherService.quoteMatchers))
+      resolved ← resolver.fillPlaceholders(quotedMatchers)(session)
       json ← parseJson(resolved)
     } yield json
 

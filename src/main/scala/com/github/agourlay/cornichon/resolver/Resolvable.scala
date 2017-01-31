@@ -14,8 +14,14 @@ trait Resolvable[A] {
   def toResolvableForm(r: A): String
   def fromResolvableForm(r: String): A
 
-  def transformResolvableForm(r: A)(transf: String ⇒ String) =
-    fromResolvableForm(transf(toResolvableForm(r)))
+  def transformResolvableForm(r: A)(transf: String ⇒ String) = {
+    val rf = toResolvableForm(r)
+    val updated = transf(rf)
+    // If the transformation function had no effect
+    // we can return the original value directly
+    // and avoid an extra transformation from the resolved form
+    if (updated == rf) r else fromResolvableForm(updated)
+  }
 
 }
 
