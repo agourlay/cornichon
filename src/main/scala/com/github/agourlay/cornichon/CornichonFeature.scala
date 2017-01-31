@@ -1,22 +1,24 @@
 package com.github.agourlay.cornichon
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ Executors, ThreadFactory }
 
+import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.github.agourlay.cornichon.CornichonFeature._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
-import com.github.agourlay.cornichon.http.client.HttpClient
+import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, HttpClient }
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
-import com.github.agourlay.cornichon.CornichonFeature._
 import com.github.agourlay.cornichon.scalatest.ScalatestFeature
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.FiniteDuration
 import com.typesafe.config.ConfigFactory
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+
+import scala.concurrent.duration._
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestFeature {
 
@@ -26,7 +28,7 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestFeatu
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  implicit lazy val (globalClient, ec, _, _, timer) = globalRuntime
+  implicit lazy val (globalClient, ec, _, _, scheduler) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
 
   private lazy val config = ConfigFactory.load().as[Config]("cornichon")
@@ -71,27 +73,13 @@ trait CornichonFeature extends HttpDsl with JsonDsl with Dsl with ScalatestFeatu
 // Protect and free resources
 private object CornichonFeature {
 
-  import akka.actor.ActorSystem
-  import scala.concurrent.duration._
-  import java.util.concurrent.atomic.AtomicInteger
-  import com.github.agourlay.cornichon.http.client.AkkaHttpClient
-
   implicit private lazy val system = ActorSystem("cornichon-actor-system")
   implicit private lazy val mat = ActorMaterializer()
-
-  implicit private lazy val timer = Executors.newScheduledThreadPool(
-    2,
-    new ThreadFactory {
-      val count = new AtomicInteger(0)
-      override def newThread(r: Runnable) = {
-        new Thread(r, "cornichon-timer" + count.incrementAndGet)
-      }
-    }
-  )
+  implicit private lazy val scheduler = system.scheduler
 
   implicit private lazy val ec = ExecutionContext.fromExecutorService(
     Executors.newFixedThreadPool(
-      Runtime.getRuntime.availableProcessors() + 1,
+      2,
       new ThreadFactory {
         val count = new AtomicInteger(0)
         override def newThread(r: Runnable) = {
@@ -111,18 +99,17 @@ private object CornichonFeature {
   system.scheduler.schedule(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
-      if (safePassInRow.get() == 2) {
-        timer.shutdownNow()
-        client.shutdown().flatMap { _ ⇒
-          mat.shutdown()
-          ec.shutdown()
-          system.terminate()
-        }
-      }
-    } else if (safePassInRow.get() > 0) safePassInRow.decrementAndGet()
+      if (safePassInRow.get() == 2)
+        for {
+          _ ← client.shutdown()
+          _ ← Future.successful(mat.shutdown())
+          _ ← system.terminate()
+        } yield ec.shutdown()
+    } else if (safePassInRow.get() > 0)
+      safePassInRow.decrementAndGet()
   }
 
-  lazy val globalRuntime = (client, ec, system, mat, timer)
+  lazy val globalRuntime = (client, ec, system, mat, scheduler)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
   def releaseGlobalRuntime(): Unit = registeredUsage.decrementAndGet()
 }

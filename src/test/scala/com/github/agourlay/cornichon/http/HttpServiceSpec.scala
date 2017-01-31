@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.http
 
-import java.util.concurrent.Executors
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.scalatest.{ EitherMatchers, EitherValues }
@@ -13,11 +11,15 @@ import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with EitherValues with EitherMatchers {
+class HttpServiceSpec extends WordSpec
+    with Matchers
+    with BeforeAndAfterAll
+    with EitherValues
+    with EitherMatchers {
 
   implicit val system = ActorSystem("akka-http-client")
+  implicit val scheduler = system.scheduler
   implicit val mat = ActorMaterializer()
-  implicit val timer = Executors.newSingleThreadScheduledExecutor()
 
   val client = new AkkaHttpClient()
   val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor())
@@ -88,5 +90,12 @@ class HttpServiceSpec extends WordSpec with Matchers with BeforeAndAfterAll with
       }
     }
 
+    "decodeSessionHeaders" must {
+      "fail if wrong format" in {
+        assertThrows[BadSessionHeadersEncoding] {
+          HttpService.decodeSessionHeaders("headerkey-headervalue")
+        }
+      }
+    }
   }
 }

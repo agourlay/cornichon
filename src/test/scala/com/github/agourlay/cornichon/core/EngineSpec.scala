@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import java.util.concurrent.Executors
-
+import akka.actor.ActorSystem
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.util.Instances
@@ -11,7 +10,7 @@ import scala.concurrent.ExecutionContext
 
 class EngineSpec extends AsyncWordSpec with Matchers with Instances {
 
-  implicit val timer = Executors.newSingleThreadScheduledExecutor()
+  implicit val scheduler = ActorSystem("cornichon-actor-system").scheduler
   val resolver = Resolver.withoutExtractor()
   val engine = Engine.withStepTitleResolver(resolver, ExecutionContext.global)
 

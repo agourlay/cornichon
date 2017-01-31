@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.concurrent.ScheduledExecutorService
-
+import akka.actor.Scheduler
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -13,7 +12,7 @@ case class AttachAsStep(title: String, nested: List[Step]) extends WrapperStep {
 
   override def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) =
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) =
     withDuration {
       val nestedRunState = initialRunState.forNestedSteps(nested)
       engine.runSteps(nestedRunState)

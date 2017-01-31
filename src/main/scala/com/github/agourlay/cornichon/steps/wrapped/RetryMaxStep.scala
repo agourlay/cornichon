@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import java.util.concurrent.ScheduledExecutorService
-
+import akka.actor.Scheduler
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
@@ -15,7 +14,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   val title = s"RetryMax block with limit '$limit'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
 
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] =
       engine.runSteps(runState.resetLogs).flatMap {

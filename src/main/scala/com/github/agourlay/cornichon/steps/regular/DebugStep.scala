@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import java.util.concurrent.ScheduledExecutorService
-
+import akka.actor.Scheduler
 import cats.data.NonEmptyList
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -14,7 +13,7 @@ case class DebugStep(message: Session ⇒ String, title: String = "Debug step") 
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
     val (fullLogs, xor) = Try {
       message(initialRunState.session)
     } match {

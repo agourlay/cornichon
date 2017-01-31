@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.http
 
-import java.util.concurrent.ScheduledExecutorService
-
+import akka.actor.Scheduler
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
@@ -21,7 +20,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext, timer: ScheduledExecutorService) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext, scheduler: Scheduler) {
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {
@@ -176,6 +175,9 @@ object HttpService {
   def decodeSessionHeaders(headers: String): Seq[(String, String)] =
     headers.split(interHeadersValueDelim).toSeq.map { header ⇒
       val elms = header.split(headersKeyValueDelim)
-      (elms.head, elms.tail.head)
+      if (elms.length != 2)
+        throw BadSessionHeadersEncoding(header)
+      else
+        (elms(0), elms(1))
     }
 }
