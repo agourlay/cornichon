@@ -803,7 +803,7 @@ Here are the available matchers:
 - ```*any-boolean*``` : checks if the field is a boolean
 - ```*any-alphanum-string*``` : checks if the field is an alpha-numeric String
 - ```*any-date*``` : checks if the field is a 'yyyy-MM-dd' date
-- ```*any-date-time*``` : checks if the field is a 'yyyy-MM-dd HH:mm:ss.SSS' datetime
+- ```*any-date-time*``` : checks if the field is a 'yyyy-MM-dd'T'HH:mm:ss.SSS'Z'' datetime
 - ```*any-time*``` : checks if the field is a 'HH:mm:ss.SSS' time"
 
 This feature is still fresh and under experimentation therefore it comes with a couple of limitations:
