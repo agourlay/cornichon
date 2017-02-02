@@ -72,10 +72,10 @@ object JsonSteps {
               val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = {
                 if (matchers.nonEmpty) {
                   val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
-                  val expectedJson = prepareAndParseJson(withQuotedMatchers, session, resolver)
+                  val expectedJson = resolveAndParseJson(withQuotedMatchers, session, resolver)
                   MatcherService.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson)
                 } else {
-                  val expectedJson = prepareAndParseJson(expected, session, resolver)
+                  val expectedJson = resolveAndParseJson(expected, session, resolver)
                   (expectedJson, sessionValueWithFocusJson, Nil)
                 }
               }
@@ -236,7 +236,7 @@ object JsonSteps {
       AssertStep(
         title = assertionTitle,
         action = s ⇒ {
-        prepareAndParseJson(expected, s, resolver)
+        resolveAndParseJson(expected, s, resolver)
           .asArray
           .fold[Assertion](Assertion.failWith(NotAnArrayError(expected))) { expectedArray ⇒
             val arrayFromSession = applyPathAndFindArray(jsonPath, resolver)(s, s.get(sessionKey))
@@ -268,7 +268,7 @@ object JsonSteps {
         action = s ⇒
         CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
           val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-          val resolvedJson = elements.map(prepareAndParseJson(_, s, resolver))
+          val resolvedJson = elements.map(resolveAndParseJson(_, s, resolver))
           val containsAll = resolvedJson.forall(jArr.contains)
           (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
         }
@@ -290,7 +290,7 @@ object JsonSteps {
     else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }
 
-  private def prepareAndParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
+  private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
     val xorJson = for {
       resolved ← resolver.fillPlaceholders(input)(session)
       json ← parseJson(resolved)

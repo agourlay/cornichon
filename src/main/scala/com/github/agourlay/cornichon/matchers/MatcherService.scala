@@ -9,10 +9,11 @@ object MatcherService {
 
   private val resolver = MatcherResolver()
 
-  // Throws if it find an unregistered matcher
+  // Throws if it finds an unregistered matcher
   def findAllMatchers(input: String): List[Matcher] =
     resolver.findAllMatchers(input).fold(e ⇒ throw e, identity)
 
+  // Removes JSON fields targetted by matchers and builds corresponding matchers assertions
   def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json): (Json, Json, Seq[MatcherAssertion]) =
     if (matchers.isEmpty)
       (expected, actual, Nil)
@@ -27,6 +28,7 @@ object MatcherService {
       (newExpected, newActual, pathAssertions.map(_._2))
     }
 
+  // Add quotes around known matchers
   def quoteMatchers(input: String) =
     resolver.builtInMatchers.foldLeft(input) {
       case (i, m) ⇒ i.replaceAll(Pattern.quote(m.fullKey), '"' + m.fullKey + '"')
