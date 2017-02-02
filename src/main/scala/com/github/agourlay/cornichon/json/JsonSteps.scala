@@ -68,7 +68,7 @@ object JsonSteps {
               Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
             else {
               // detect invalid matchers to fail-fast and avoid quoting an unknown matcher
-              val matchers = MatcherService.findAllMatchers(expected.toString)
+              val matchers = MatcherService.findAllMatchers(expected.show)
               val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = {
                 if (matchers.nonEmpty) {
                   val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
