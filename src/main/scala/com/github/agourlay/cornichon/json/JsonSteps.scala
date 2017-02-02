@@ -67,8 +67,19 @@ object JsonSteps {
             if (sessionValueWithFocusJson.isNull)
               Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
             else {
-              val expectedJson = prepareAndParseJson(expected, session, resolver)
-              val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = MatcherService.prepareMatchers(expectedJson, sessionValueWithFocusJson)
+              // detect invalid matchers to fail-fast and avoid quoting an unknown matcher
+              val matchers = MatcherService.findAllMatchers(expected.toString)
+              val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = {
+                if (matchers.nonEmpty) {
+                  val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
+                  val expectedJson = prepareAndParseJson(withQuotedMatchers, session, resolver)
+                  MatcherService.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson)
+                } else {
+                  val expectedJson = prepareAndParseJson(expected, session, resolver)
+                  (expectedJson, sessionValueWithFocusJson, Nil)
+                }
+              }
+
               val (expectedPrepared, actualPrepared) =
                 if (whitelist) {
                   // add missing fields in the expected result
@@ -79,6 +90,7 @@ object JsonSteps {
                   val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
                   (expectedWithoutMatchers, removeFieldsByPath(actualWithoutMatchers, ignoredPaths))
                 } else {
+                  // nothing to prepare
                   (expectedWithoutMatchers, actualWithoutMatchers)
                 }
 
@@ -280,8 +292,7 @@ object JsonSteps {
 
   private def prepareAndParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
     val xorJson = for {
-      quotedMatchers ← Right(Resolvable[A].transformResolvableForm(input)(MatcherService.quoteMatchers))
-      resolved ← resolver.fillPlaceholders(quotedMatchers)(session)
+      resolved ← resolver.fillPlaceholders(input)(session)
       json ← parseJson(resolved)
     } yield json
 
