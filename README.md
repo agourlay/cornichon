@@ -1094,48 +1094,50 @@ akka {
 
 When integrating cornichon features in a build pipeline, it can be interesting to package those features in a runnable forms to avoid the cost of recompilation.
 
-You can find below an example of Docker packaging done using ```sbt-native-packager``` and a built-in Teamcity reporter.
+You can find below an example of Docker packaging done using `sbt-native-packager` and a built-in Teamcity reporter. You can place these settings in a `docker.sbt` in the root of your project.
 
 This should hopefully inspire you to setup your own solution or contribute to improve this one.
 
- ```scala
- import com.typesafe.sbt.packager.docker.Cmd
- import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{Docker => NPDocker}
+```scala
+import com.typesafe.sbt.packager.docker.Cmd
+import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{Docker => NPDocker}
+import NativePackagerHelper._
 
- enablePlugins(JavaAppPackaging, DockerPlugin)
+enablePlugins(JavaAppPackaging, DockerPlugin)
 
- dockerBaseImage := "develar/java"
- dockerUpdateLatest := true
- version in NPDocker := ("git rev-parse HEAD" !!).trim
- mainClass in Compile := Some("org.scalatest.tools.Runner")
+dockerBaseImage := "develar/java"
+dockerUpdateLatest := true
+version in NPDocker := ("git rev-parse HEAD" !!).trim
+mainClass in Compile := Some("org.scalatest.tools.Runner")
 
- dockerCmd := Seq(
-   "-C",
-   "com.github.agourlay.cornichon.scalatest.TeamcityReporter",
-   "-R",
-   s"lib/${(artifactPath in (Test, packageBin)).value.getName}")
+dockerCmd := Seq(
+  "-C",
+  "com.github.agourlay.cornichon.scalatest.TeamcityReporter",
+  "-R",
+  s"lib/${(artifactPath in (Test, packageBin)).value.getName}")
 
- // Install bash to be able to start the application
+// Install `bash` to be able to start the application
 
- dockerCommands := Seq(
-   dockerCommands.value.head,
-   Cmd("RUN apk add --update bash && rm -rf /var/cache/apk/*")
- ) ++ dockerCommands.value.tail
+dockerCommands := Seq(
+  dockerCommands.value.head,
+  Cmd("RUN apk add --update bash && rm -rf /var/cache/apk/*")
+) ++ dockerCommands.value.tail
 
- // test classpath setup
+// Include `Test` classpath
 
- (dependencyClasspath in Runtime) :=
-   (dependencyClasspath in Runtime).value ++
-     (dependencyClasspath in Test).value
+scriptClasspath ++=
+  fromClasspath((managedClasspath in Test).value, ".", _ ⇒ true).map(_._2) :+
+    (sbt.Keys.`package` in Test).value.getName
 
- scriptClasspath += (sbt.Keys.`package` in Test).value.getName
+mappings in Universal ++= {
+  val testJar = (sbt.Keys.`package` in Test).value
 
- mappings in Universal += {
-   val jar = (sbt.Keys.`package` in Test).value
+  fromClasspath((managedClasspath in Test).value, "lib", _ ⇒ true) :+
+    (testJar → s"lib/${testJar.getName}")
+}
+```
 
-   jar → s"lib/${jar.getName}"
- }
- ```
+After you created the `docker.sbt`, just run `docker:publishLocal` in order to create a docker image locally.
 
 Kudos to [iMelnik](https://github.com/iMelnik) for the work on this configuration.
 
