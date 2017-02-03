@@ -47,7 +47,8 @@ class Resolver(extractors: Map[String, Mapper]) {
     case "random-string"           ⇒ r.nextString(5)
     case "random-alphanum-string"  ⇒ r.alphanumeric.take(5).mkString("")
     case "random-boolean"          ⇒ r.nextBoolean().toString
-    case "timestamp"               ⇒ (System.currentTimeMillis / 1000).toString
+    case "random-timestamp"        ⇒ (Math.abs(System.currentTimeMillis - r.nextLong()) / 1000).toString
+    case "current-timestamp"       ⇒ (System.currentTimeMillis / 1000).toString
   }
 
   def applyMapper(m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {

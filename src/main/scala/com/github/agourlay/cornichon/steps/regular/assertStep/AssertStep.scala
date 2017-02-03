@@ -36,6 +36,10 @@ trait Assertion { self ⇒
     def validated = self.validated *> other.validated
   }
 
+  def andAll(others: Seq[Assertion]): Assertion = new Assertion {
+    def validated = others.fold(self)(_ and _).validated
+  }
+
   def or(other: Assertion): Assertion = new Assertion {
     def validated =
       if (self.validated.isValid || other.validated.isValid)

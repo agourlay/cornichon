@@ -21,7 +21,7 @@ trait MathSteps {
     )
   }
 
-  def generate_random_int(target: String, max: Int = 100) =
+  def generate_random_int(target: String, max: Int = 10) =
     EffectStep.fromSync(
       title = s"generate random Int into '$target' (max=$max)",
       effect = s ⇒ s.addValue(target, Random.nextInt(max).toString)

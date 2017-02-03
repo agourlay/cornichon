@@ -8,7 +8,7 @@ import cats.syntax.either._
 
 case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
-  val pretty = operations.foldLeft("$")((acc, op) ⇒ s"$acc.${op.pretty}")
+  val pretty = operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
 
   val isRoot = operations.isEmpty
 
@@ -17,6 +17,8 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
   def cursor(input: Json): ACursor = operations.foldLeft[ACursor](input.hcursor) { (oc, op) ⇒
     op match {
+      case RootSelection ⇒
+        oc
       case FieldSelection(field) ⇒
         oc.downField(field)
 
@@ -51,8 +53,9 @@ object JsonPath {
 
   def fromSegments(segments: List[JsonSegment]) = {
     val operations = segments.map {
-      case JsonSegment(field, None)                ⇒ FieldSelection(field)
+      case JsonSegment(JsonPath.root, None)        ⇒ RootSelection
       case JsonSegment(JsonPath.root, Some(index)) ⇒ RootArrayElementSelection(index)
+      case JsonSegment(field, None)                ⇒ FieldSelection(field)
       case JsonSegment(field, Some(index))         ⇒ ArrayFieldSelection(field, index)
     }
     JsonPath(operations)
@@ -63,6 +66,11 @@ object JsonPath {
 sealed trait JsonPathOperation {
   def field: String
   def pretty: String
+}
+
+case object RootSelection extends JsonPathOperation {
+  val field = JsonPath.root
+  val pretty = field
 }
 
 case class FieldSelection(field: String) extends JsonPathOperation {

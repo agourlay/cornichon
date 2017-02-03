@@ -474,5 +474,83 @@ class CornichonJsonSpec extends WordSpec
         whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/0/Nam"), actualJson))
       }
     }
+
+    "findAllContainingValue" must {
+
+      "find root key" in {
+
+        val input =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |}
+          """.stripMargin
+
+        findAllJsonWithValue(List("John"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Name")))
+
+      }
+
+      "find nested key" in {
+
+        val input =
+          """
+            |{
+            | "2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John",
+            | "Brother": {
+            |   "Name" : "Paul",
+            |   "Age": 50
+            | }
+            |}
+          """.stripMargin
+
+        findAllJsonWithValue(List("Paul"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Brother.Name")))
+
+      }
+
+      "find key in array" in {
+
+        val input =
+          """
+            |{
+            | "2LettersName": false,
+            | "Age": 50,
+            | "Name": "John",
+            | "Brothers": [
+            |   {
+            |     "Name" : "Paul",
+            |     "Age": 50
+            |   },
+            |   {
+            |     "Name": "Bob",
+            |     "Age" : 30
+            |   }
+            | ]
+            |}
+          """.stripMargin
+
+        findAllJsonWithValue(List("Bob"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Brothers[1].Name")))
+
+      }
+
+      "find key in array of strings" in {
+
+        val input =
+          """
+            |{
+            | "2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John",
+            | "Hobbies": [ "Basketball", "Climbing", "Coding"]
+            |}
+          """.stripMargin
+
+        findAllJsonWithValue(List("Coding"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Hobbies[2]")))
+
+      }
+    }
   }
 }

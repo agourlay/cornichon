@@ -92,6 +92,27 @@ trait CornichonJson {
     if (forbiddenPatchOps.isEmpty) Right(JsonPatch(addOps)(first))
     else Left(WhitelistingError(forbiddenPatchOps.map(_.path.toString), second))
   }
+
+  def findAllJsonWithValue(values: List[String], json: Json): Vector[JsonPath] = {
+    def keyValues(currentPath: String, json: Json): Vector[(String, Json)] =
+      json.fold(
+        jsonNull = Vector.empty,
+        jsonBoolean = _ ⇒ Vector.empty,
+        jsonNumber = _ ⇒ Vector.empty,
+        jsonString = _ ⇒ Vector.empty,
+        jsonArray = elems ⇒ elems.zipWithIndex.flatMap { case (e, indice) ⇒ keyValuesHelper(s"$currentPath[$indice]", e) },
+        jsonObject = elems ⇒ elems.toVector.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v) }
+      )
+
+    def keyValuesHelper(key: String, value: Json): Vector[(String, Json)] =
+      (key, value) +: keyValues(key, value)
+
+    // Do not traverse the JSON if there are no values to find
+    if (values.nonEmpty)
+      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k) }
+    else
+      Vector.empty
+  }
 }
 
 object CornichonJson extends CornichonJson {
