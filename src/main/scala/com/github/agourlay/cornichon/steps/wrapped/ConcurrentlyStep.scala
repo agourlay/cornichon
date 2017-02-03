@@ -19,9 +19,7 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
     val nestedRunState = initialRunState.forNestedSteps(nested)
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
-    val f = Future.traverse(List.fill(factor)(nested)) { steps ⇒
-      engine.runSteps(nestedRunState)
-    }
+    val f = Future.sequence(List.fill(factor)(engine.runSteps(nestedRunState)))
 
     Timeouts.failAfter(maxTime)(f)(ConcurrentlyTimeout).flatMap { results ⇒
       // Only the first error report found is used in the logs.

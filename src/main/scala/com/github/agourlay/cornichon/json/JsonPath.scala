@@ -17,16 +17,10 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
   def cursor(input: Json): ACursor = operations.foldLeft[ACursor](input.hcursor) { (oc, op) ⇒
     op match {
-      case RootSelection ⇒
-        oc
-      case FieldSelection(field) ⇒
-        oc.downField(field)
-
-      case RootArrayElementSelection(indice) ⇒
-        oc.downArray.rightN(indice)
-
-      case ArrayFieldSelection(field, indice) ⇒
-        oc.downField(field).downArray.rightN(indice)
+      case RootSelection                      ⇒ oc
+      case FieldSelection(field)              ⇒ oc.downField(field)
+      case RootArrayElementSelection(indice)  ⇒ oc.downArray.rightN(indice)
+      case ArrayFieldSelection(field, indice) ⇒ oc.downField(field).downArray.rightN(indice)
     }
   }
 

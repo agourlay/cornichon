@@ -23,7 +23,7 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
         .leftMap(e ⇒ NonEmptyList.of(CornichonError.fromThrowable(e)))
         .flatMap(runStepPredicate)
     }
-    Future.successful(xorToStepReport(this, res.map(done ⇒ session), initialRunState, show, Some(duration)))
+    Future.successful(xorToStepReport(this, res.map(_ ⇒ session), initialRunState, show, Some(duration)))
   }
 
   def runStepPredicate(assertion: Assertion) = assertion.validated.toEither
