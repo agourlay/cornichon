@@ -95,7 +95,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "Lord Snow",
                 "Released": "2011-05-01",
                 "Episode": "3",
-                "imdbRating": "8.6",
+                "imdbRating": "8.7",
                 "imdbID": "tt1829962"
               },
               {
@@ -116,7 +116,7 @@ class OpenMovieDatabase extends CornichonFeature {
                 "Title": "A Golden Crown",
                 "Released": "2011-05-22",
                 "Episode": "6",
-                "imdbRating": "9.1",
+                "imdbRating": "9.2",
                 "imdbID": "tt1837862"
               },
               {
@@ -158,10 +158,10 @@ class OpenMovieDatabase extends CornichonFeature {
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "9.0"   | "tt1480055" |
             | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "8.8"   | "tt1668746" |
-            | "Lord Snow"                             | "2011-05-01" |   "3"   |    "8.6"   | "tt1829962" |
+            | "Lord Snow"                             | "2011-05-01" |   "3"   |    "8.7"   | "tt1829962" |
             | "Cripples, Bastards, and Broken Things" | "2011-05-08" |   "4"   |    "8.7"   | "tt1829963" |
             | "The Wolf and the Lion"                 | "2011-05-15" |   "5"   |    "9.1"   | "tt1829964" |
-            | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "9.1"   | "tt1837862" |
+            | "A Golden Crown"                        | "2011-05-22" |   "6"   |    "9.2"   | "tt1837862" |
             | "You Win or You Die"                    | "2011-05-29" |   "7"   |    "9.2"   | "tt1837863" |
             | "The Pointy End"                        | "2011-06-05" |   "8"   |    "9.0"   | "tt1837864" |
             | "Baelor"                                | "2011-06-12" |   "9"   |    "9.6"   | "tt1851398" |
