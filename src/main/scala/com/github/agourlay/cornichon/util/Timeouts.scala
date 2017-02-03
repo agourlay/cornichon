@@ -9,14 +9,7 @@ object Timeouts {
 
   def timeout[A](waitFor: FiniteDuration)(what: ⇒ Future[A])(implicit ec: ExecutionContext, scheduler: Scheduler): Future[A] = {
     val promise = Promise[A]()
-    scheduler.scheduleOnce(
-      waitFor,
-      new Runnable() {
-        override def run() = Future {
-          promise.completeWith(what)
-        }
-      }
-    )
+    scheduler.scheduleOnce(waitFor)(promise.completeWith(what))
     promise.future
   }
 

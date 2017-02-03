@@ -12,7 +12,7 @@ import com.github.agourlay.cornichon.util.Instances._
 import scala.annotation.unchecked.uncheckedVariance
 import scala.concurrent.Future
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
-import scala.language.dynamics
+import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
 
 trait Dsl extends Instances {
