@@ -1139,7 +1139,7 @@ mappings in Universal ++= {
 
 After you created the `docker.sbt`, just run `sbt docker:publishLocal` in order to create a docker image locally.
 
-Kudos to [iMelnik](https://github.com/iMelnik) for the work on this configuration.
+Kudos to [iMelnik](https://github.com/iMelnik) & [OlegIlyenko](https://github.com/OlegIlyenko) for the work on this configuration.
 
 ## License
 
