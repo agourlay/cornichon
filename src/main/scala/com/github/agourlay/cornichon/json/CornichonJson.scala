@@ -50,17 +50,17 @@ trait CornichonJson {
   def parseGraphQLJsonUnsafe(input: String) =
     parseGraphQLJson(input).fold(e ⇒ throw e, identity)
 
-  def jsonArrayValues(json: Json): Either[CornichonError, List[Json]] =
+  def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
     json.arrayOrObject(
       Left(NotAnArrayError(json)),
       values ⇒ Right(values),
       _ ⇒ Left(NotAnArrayError(json))
     )
 
-  def parseArray(input: String): Either[CornichonError, List[Json]] =
+  def parseArray(input: String): Either[CornichonError, Vector[Json]] =
     parseJson(input).flatMap(jsonArrayValues)
 
-  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, List[Json]] =
+  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, Vector[Json]] =
     path.run(sessionValue).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) =

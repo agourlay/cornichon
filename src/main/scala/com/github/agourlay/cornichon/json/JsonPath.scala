@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.json
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.Instances._
-import io.circe.Json
+import io.circe.{ ACursor, Json }
 import cats.syntax.either._
 
 case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
@@ -12,40 +12,26 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
   val isRoot = operations.isEmpty
 
-  def run(superSet: Json): Json = cursor(superSet).fold(Json.Null)(c ⇒ c.focus)
+  def run(superSet: Json): Json = cursor(superSet).focus.getOrElse(Json.Null)
   def run(json: String): Either[CornichonError, Json] = parseJson(json).map(run)
 
-  def cursor(input: Json) = operations.foldLeft(Option(input.cursor)) { (oc, op) ⇒
+  def cursor(input: Json): ACursor = operations.foldLeft[ACursor](input.hcursor) { (oc, op) ⇒
     op match {
       case RootSelection ⇒
         oc
       case FieldSelection(field) ⇒
-        for {
-          c ← oc
-          downC ← c.downField(field)
-        } yield downC
+        oc.downField(field)
 
       case RootArrayElementSelection(indice) ⇒
-        for {
-          c ← oc
-          arrayC ← c.downArray
-          indexC ← arrayC.rightN(indice)
-        } yield indexC
+        oc.downArray.rightN(indice)
 
       case ArrayFieldSelection(field, indice) ⇒
-        for {
-          c ← oc
-          downC ← c.downField(field)
-          arrayC ← downC.downArray
-          indexC ← arrayC.rightN(indice)
-        } yield indexC
+        oc.downField(field).downArray.rightN(indice)
     }
   }
 
   def removeFromJson(input: Json): Json =
-    cursor(input).fold(input) { c ⇒
-      c.delete.fold(input)(_.top)
-    }
+    cursor(input).delete.top.getOrElse(input)
 
 }
 

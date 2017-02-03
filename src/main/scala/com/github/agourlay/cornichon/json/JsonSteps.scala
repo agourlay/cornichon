@@ -228,7 +228,7 @@ object JsonSteps {
         jsonAssertionTitleBuilder(titleString, ignoredEachKeys)
       }
 
-      def removeIgnoredPathFromElements(s: Session, jArray: List[Json]) = {
+      def removeIgnoredPathFromElements(s: Session, jArray: Vector[Json]) = {
         val ignoredPaths = ignoredEachKeys.map(resolveParseJsonPath(_, resolver)(s))
         jArray.map(removeFieldsByPath(_, ignoredPaths))
       }
@@ -275,7 +275,7 @@ object JsonSteps {
       )
   }
 
-  private def applyPathAndFindArray(path: String, resolver: Resolver)(s: Session, sessionValue: String): List[Json] = {
+  private def applyPathAndFindArray(path: String, resolver: Resolver)(s: Session, sessionValue: String): Vector[Json] = {
     val jArr = if (path == JsonPath.root) parseArray(sessionValue)
     else {
       val parsedPath = resolveParseJsonPath(path, resolver)(s)
