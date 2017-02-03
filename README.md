@@ -1094,54 +1094,50 @@ akka {
 
 When integrating cornichon features in a build pipeline, it can be interesting to package those features in a runnable forms to avoid the cost of recompilation.
 
-You can find below an example of Docker packaging done using ```sbt-assembly```, ```sbt-native-packager``` and a built-in Teamcity reporter.
+You can find below an example of Docker packaging done using `sbt-native-packager` and a built-in Teamcity reporter. You can place these settings in a `docker.sbt` in the root of your project.
 
 This should hopefully inspire you to setup your own solution or contribute to improve this one.
 
- ```scala
- enablePlugins(DockerPlugin)
+```scala
+import com.typesafe.sbt.packager.docker.Cmd
+import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{Docker => NPDocker}
+import NativePackagerHelper._
 
- // Enable assembly for Test
- Project.inConfig(Test)(baseAssemblySettings)
+enablePlugins(JavaAppPackaging, DockerPlugin)
 
- // Disable tests on assembly
- test in (Test, assembly) := {}
+dockerBaseImage := "develar/java"
+dockerUpdateLatest := true
+version in NPDocker := ("git rev-parse HEAD" !!).trim
+mainClass in Compile := Some("org.scalatest.tools.Runner")
 
- // Permanent name for dependency jar
- assemblyJarName in (Test, assemblyPackageDependency) := s"${name.value}-test-dep.jar"
+dockerCmd := Seq(
+  "-C",
+  "com.github.agourlay.cornichon.scalatest.TeamcityReporter",
+  "-R",
+  s"lib/${(artifactPath in (Test, packageBin)).value.getName}")
 
- // Permanent name for test jar
- assemblyJarName in (Test, assembly) := s"${name.value}-test.jar"
- // Remove dependency and scala lib from test jar
- assemblyOption in (Test, assembly) := (assemblyOption in (Test, assembly)).value.copy(includeScala = false, includeDependency = false)
+// Install `bash` to be able to start the application
 
- // Remove reference.conf from assemblyPackageDependency
- assemblyMergeStrategy in (Test, assembly) := {
-   case "reference.conf" => MergeStrategy.discard
-   case x => val oldStrategy = (assemblyMergeStrategy in (Test, assembly)).value
-               oldStrategy(x)
- }
+dockerCommands := Seq(
+  dockerCommands.value.head,
+  Cmd("RUN apk add --update bash && rm -rf /var/cache/apk/*")
+) ++ dockerCommands.value.tail
 
- // Docker settings
- dockerBaseImage := "develar/java"
- dockerEntrypoint := Seq("/bin/sh")
- dockerCmd := Seq("-c", s"/jre/bin/java -cp lib/${name.value}-test-dep.jar org.scalatest.tools.Runner -C com.github.agourlay.cornichon.scalatest.TeamcityReporter -R bin/${name.value}-test.jar")
+// Include `Test` classpath
 
- // removes all jar mappings in universal and appends artifacts
- mappings in Universal := {
-     // universalMappings: Seq[(File,String)]
-     val universalMappings = (mappings in Universal).value
+scriptClasspath ++=
+  fromClasspath((managedClasspath in Test).value, ".", _ ⇒ true).map(_._2) :+
+    (sbt.Keys.`package` in Test).value.getName
 
-     val fatJar = (assemblyPackageDependency in Test ).value
-     val testJar = (assembly in Test ).value
-     // removing means filtering
-     val filtered = universalMappings filter {
-         case (file, name) =>  ! name.endsWith(".jar")
-     }
-     // add the fat and test jar to mappings
-     filtered :+ (testJar -> ("bin/" + testJar.getName)) :+ (fatJar -> ("lib/" + fatJar.getName))
- }
- ```
+mappings in Universal ++= {
+  val testJar = (sbt.Keys.`package` in Test).value
+
+  fromClasspath((managedClasspath in Test).value, "lib", _ ⇒ true) :+
+    (testJar → s"lib/${testJar.getName}")
+}
+```
+
+After you created the `docker.sbt`, just run `sbt docker:publishLocal` in order to create a docker image locally.
 
 Kudos to [iMelnik](https://github.com/iMelnik) for the work on this configuration.
 
