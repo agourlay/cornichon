@@ -69,7 +69,7 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def query_gql(url: String) = QueryGQL(url, Document(List.empty))
 
-  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
+  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty, Seq.empty)
 
   def status = StatusStepBuilder
 

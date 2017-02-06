@@ -83,13 +83,20 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     url: String,
     payload: Option[Json],
     params: Seq[(String, String)],
-    headers: Seq[(String, String)]
+    headers: Seq[(String, String)],
+    formData: Seq[(String, String)]
   ): Future[Either[CornichonError, CornichonHttpResponse]] = {
     val requestBuilder = httpMethodMapper(method)
     parseHttpHeaders(headers).fold(
       mh ⇒ Future.successful(Left(mh)),
       akkaHeaders ⇒ {
-        val request = requestBuilder(uriBuilder(url, params), payload).withHeaders(collection.immutable.Seq(akkaHeaders: _*))
+        val request = payload match {
+          case Some(json) ⇒ requestBuilder(uriBuilder(url, params), payload)
+            .withHeaders(collection.immutable.Seq(akkaHeaders: _*))
+          case _ ⇒ requestBuilder(uriBuilder(url, params), FormData(formData: _*))
+            .withHeaders(collection.immutable.Seq(akkaHeaders: _*))
+        }
+
         Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
       }
     )
@@ -100,7 +107,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
-  override def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], takeWithin: FiniteDuration) = {
+  override def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], formData: Seq[(String, String)], takeWithin: FiniteDuration) = {
     parseHttpHeaders(headers).fold(
       mh ⇒ Future.successful(Left(mh)),
       akkaHeaders ⇒ {

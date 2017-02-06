@@ -14,7 +14,8 @@ trait HttpClient {
     url: String,
     payload: Option[Json],
     params: Seq[(String, String)],
-    headers: Seq[(String, String)]
+    headers: Seq[(String, String)],
+    formData: Seq[(String, String)]
   ): Future[Either[CornichonError, CornichonHttpResponse]]
 
   def openStream(
@@ -22,6 +23,7 @@ trait HttpClient {
     url: String,
     params: Seq[(String, String)],
     headers: Seq[(String, String)],
+    formData: Seq[(String, String)],
     takeWithin: FiniteDuration
   ): Future[Either[CornichonError, CornichonHttpResponse]]
 
