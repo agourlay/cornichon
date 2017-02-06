@@ -134,6 +134,8 @@ For more examples see the following files which are part of the test pipeline:
 
 - [Math Operations](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/math/MathScenario.scala).
 
+And if you enjoy slides, you might like [this presentation](https://speakerdeck.com/agourlay/cornichon-a-scala-dsl-for-testing-http-json-api) given at the [Berlin Scala User Group](https://www.meetup.com/Scala-Berlin-Brandenburg/events/235779912/) which gives more context regarding the creation and usage of this library.
+
 ## Structure
 
 A Cornichon test is the definition of a so-called ```feature```. 
