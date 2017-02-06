@@ -51,7 +51,7 @@ libraryDependencies ++= {
   val diffJsonVersion = "2.1.2"
   val sangriaV = "1.0.0"
   val fansiV = "0.2.3"
-  val akkaHttpCirce = "1.11.0"
+  val akkaHttpCirce = "1.12.0"
   val catsScalaTest = "2.2.0"
   val ficusV = "1.4.0"
   Seq(
