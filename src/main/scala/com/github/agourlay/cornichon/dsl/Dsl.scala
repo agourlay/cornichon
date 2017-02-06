@@ -6,7 +6,7 @@ import com.github.agourlay.cornichon.core.{ FeatureDef, Session, Step, Scenario 
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
-import com.github.agourlay.cornichon.util.{ Instances, Timeouts }
+import com.github.agourlay.cornichon.util.{ Instances, Futures }
 import com.github.agourlay.cornichon.util.Instances._
 
 import scala.annotation.unchecked.uncheckedVariance
@@ -103,7 +103,7 @@ trait Dsl extends Instances {
 
   def wait(duration: FiniteDuration) = EffectStep(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ Timeouts.timeout(duration)(Future.successful(s))
+    effect = s ⇒ Futures.evalAfter(duration)(Future.successful(s))
   )
 
   def save(input: (String, String)) = {

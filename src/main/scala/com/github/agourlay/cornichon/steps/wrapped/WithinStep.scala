@@ -19,11 +19,14 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
     withDuration {
       engine.runSteps(initialRunState.forNestedSteps(nested))
     }.map {
-      case (run, executionTime) ⇒
-
-        val (withinState, res) = run
-        val (fullLogs, xor) = res match {
-          case Right(_) ⇒
+      case ((withinState, res), executionTime) ⇒
+        val (fullLogs, xor) = res.fold(
+          failedStep ⇒ {
+            // Failure of the nested steps have a higher priority
+            val fullLogs = failedTitleLog(initialDepth) +: withinState.logs
+            (fullLogs, Left(failedStep))
+          },
+          _ ⇒ {
             val successLogs = successTitleLog(initialDepth) +: withinState.logs
             if (executionTime.gt(maxDuration)) {
               val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", initialDepth, Some(executionTime))
@@ -34,12 +37,8 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
               val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", initialDepth, Some(executionTime))
               (fullLogs, rightDone)
             }
-          case Left(failedStep) ⇒
-            // Failure of the nested steps have a higher priority
-            val fullLogs = failedTitleLog(initialDepth) +: withinState.logs
-            (fullLogs, Left(failedStep))
-        }
-
+          }
+        )
         (initialRunState.withSession(withinState.session).appendLogs(fullLogs), xor)
 
     }

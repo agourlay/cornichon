@@ -22,16 +22,18 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
       val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
       engine.runSteps(runStateWithIndex).flatMap {
         case (onceMoreRunState, stepResult) ⇒
-          stepResult match {
-            case Right(_) ⇒
+          stepResult.fold(
+            failed ⇒ {
+              // In case of failure only the logs of the last run are shown to avoid giant traces.
+              Future.successful(retriesNumber, onceMoreRunState, Left(failed))
+            },
+            _ ⇒ {
               val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
               // only show last successful run to avoid giant traces.
               if (retriesNumber == occurrence - 1) Future.successful(retriesNumber, successState, rightDone)
               else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session))
-            case Left(failed) ⇒
-              // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Future.successful(retriesNumber, onceMoreRunState, Left(failed))
-          }
+            }
+          )
       }
     }
 
@@ -40,20 +42,19 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
       repeatSuccessSteps(0, bootstrapRepeatState)
     }.map {
       case (run, executionTime) ⇒
-
         val (retries, repeatedState, report) = run
         val depth = initialRunState.depth
-
-        val (fullLogs, xor) = report match {
-          case Right(_) ⇒
-            val fullLogs = successTitleLog(depth) +: repeatedState.logs :+ SuccessLogInstruction(s"Repeat block with occurrence '$occurrence' succeeded", depth, Some(executionTime))
-            (fullLogs, rightDone)
-          case Left(failedStep) ⇒
+        val (fullLogs, xor) = report.fold(
+          failedStep ⇒ {
             val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurence", depth, Some(executionTime))
             val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.errors))
             (fullLogs, Left(artificialFailedStep))
-        }
-
+          },
+          _ ⇒ {
+            val fullLogs = successTitleLog(depth) +: repeatedState.logs :+ SuccessLogInstruction(s"Repeat block with occurrence '$occurrence' succeeded", depth, Some(executionTime))
+            (fullLogs, rightDone)
+          }
+        )
         (initialRunState.withSession(repeatedState.session).appendLogs(fullLogs), xor)
     }
   }

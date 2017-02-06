@@ -17,34 +17,32 @@ case class RepeatWithStep(nested: List[Step], elements: Seq[String], elementName
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
 
-    def repeatSuccessSteps(remainingElements: Seq[String], runState: RunState): Future[(RunState, Either[(String, FailedStep), Done])] = {
+    def repeatSuccessSteps(remainingElements: Seq[String], runState: RunState): Future[(RunState, Either[(String, FailedStep), Done])] =
       remainingElements.headOption.fold[Future[(RunState, Either[(String, FailedStep), Done])]](Future.successful(runState, rightDone)) { element ⇒
         // reset logs at each loop to have the possibility to not aggregate in failure case
         val rs = runState.resetLogs
         val runStateWithIndex = rs.addToSession(elementName, element)
         engine.runSteps(runStateWithIndex).flatMap {
           case (onceMoreRunState, stepResult) ⇒
-            stepResult match {
-              case Right(_) ⇒
-                val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
-                repeatSuccessSteps(remainingElements.tail, successState)
-              case Left(failed) ⇒
+            stepResult.fold(
+              failed ⇒ {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
                 Future.successful((onceMoreRunState, Left((element, failed))))
-            }
+              },
+              _ ⇒ {
+                val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
+                repeatSuccessSteps(remainingElements.tail, successState)
+              }
+            )
         }
       }
-    }
 
     withDuration {
       val bootstrapRepeatState = initialRunState.forNestedSteps(nested)
       repeatSuccessSteps(elements, bootstrapRepeatState)
     }.map {
-      case (run, executionTime) ⇒
-
-        val (repeatedState, report) = run
+      case ((repeatedState, report), executionTime) ⇒
         val depth = initialRunState.depth
-
         val (fullLogs, xor) = report match {
           case Right(_) ⇒
             val fullLogs = successTitleLog(depth) +: repeatedState.logs :+ SuccessLogInstruction(s"RepeatWith block with elements $printElements succeeded", depth, Some(executionTime))
@@ -54,7 +52,6 @@ case class RepeatWithStep(nested: List[Step], elements: Seq[String], elementName
             val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement, failedStep.errors))
             (fullLogs, Left(artificialFailedStep))
         }
-
         (initialRunState.withSession(repeatedState.session).appendLogs(fullLogs), xor)
     }
   }

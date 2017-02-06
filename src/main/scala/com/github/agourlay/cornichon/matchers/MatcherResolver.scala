@@ -30,7 +30,7 @@ class MatcherResolver() {
 
   def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] = {
     new MatcherParser(input).matchersRule.run() match {
-      case Failure(e: ParseError) ⇒ Right(List.empty)
+      case Failure(_: ParseError) ⇒ Right(Nil)
       case Failure(e: Throwable)  ⇒ Left(MatcherResolverParsingError(input, e))
       case Success(dt)            ⇒ Right(dt.toList)
     }

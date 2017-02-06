@@ -22,7 +22,7 @@ class Resolver(extractors: Map[String, Mapper]) {
     placeholdersCache.getOrElseUpdate(
       input,
       new PlaceholderParser(input).placeholdersRule.run() match {
-        case Failure(e: ParseError) ⇒ Right(List.empty)
+        case Failure(_: ParseError) ⇒ Right(Nil)
         case Failure(e: Throwable)  ⇒ Left(ResolverParsingError(input, e))
         case Success(dt)            ⇒ Right(dt.toList)
       }

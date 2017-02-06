@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import akka.actor.Scheduler
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.util.Timeouts
+import com.github.agourlay.cornichon.util.Futures
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
@@ -21,7 +21,7 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
     val start = System.nanoTime
     val f = Future.sequence(List.fill(factor)(engine.runSteps(nestedRunState)))
 
-    Timeouts.failAfter(maxTime)(f)(ConcurrentlyTimeout).flatMap { results ⇒
+    Futures.failAfter(maxTime)(f)(ConcurrentlyTimeout).flatMap { results ⇒
       // Only the first error report found is used in the logs.
       val failedStepRun = results.collectFirst { case (s, r @ Left(_)) ⇒ (s, r) }
       failedStepRun.fold[Future[(RunState, Either[FailedStep, Done])]] {

@@ -28,7 +28,7 @@ case class AttachAsStep(title: String, nested: List[Step]) extends WrapperStep {
             val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(s"$title - Failed", initialDepth)
             (failureLogs, Left(failedStep))
           },
-          done ⇒ {
+          _ ⇒ {
             val successLogs = successTitleLog(initialDepth) +: nestedLogs :+ SuccessLogInstruction(s"$title - Succeeded", initialDepth, Some(executionTime))
             (successLogs, rightDone)
           }

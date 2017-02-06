@@ -12,7 +12,7 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
-import com.github.agourlay.cornichon.util.Timeouts
+import com.github.agourlay.cornichon.util.Futures
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.Encoder
 
@@ -117,7 +117,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     else baseUrl + input
 
   private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Either[CornichonError, CornichonHttpResponse]]): EitherT[Future, CornichonError, CornichonHttpResponse] = {
-    val failedAfter = Timeouts.failAfter(t)(f)(TimeoutErrorAfter(request, t))
+    val failedAfter = Futures.failAfter(t)(f)(TimeoutErrorAfter(request, t))
       .recover {
         case NonFatal(failure) ⇒ failure match {
           case t @ TimeoutErrorAfter(_, _) ⇒ Left(t)
