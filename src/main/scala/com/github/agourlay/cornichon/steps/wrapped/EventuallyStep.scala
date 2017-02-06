@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import akka.actor.Scheduler
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.util.Timeouts
+import com.github.agourlay.cornichon.util.Futures
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -20,21 +20,20 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
         val retryRunState = runState.resetLogs
         engine.runSteps(retryRunState)
       }.flatMap {
-        case (run, executionTime) ⇒
-          val (newRunState, res) = run
+        case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime
-          res match {
-            case Left(failedStep) ⇒
+          res.fold(
+            failedStep ⇒ {
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-                Timeouts.timeout(conf.interval) {
+                Futures.evalAfter(conf.interval) {
                   retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime + conf.interval), retriesNumber + 1)
                 }
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
                 Future.successful(retriesNumber, newRunState, Left(failedStep))
               }
-
-            case Right(_) ⇒
+            },
+            _ ⇒ {
               val state = runState.withSession(newRunState.session).appendLogsFrom(newRunState)
               if (remainingTime.gt(Duration.Zero)) {
                 // In case of success all logs are returned but they are not printed by default.
@@ -44,7 +43,8 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
                 val failedStep = FailedStep.fromSingle(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
                 Future.successful(retriesNumber, state, Left(failedStep))
               }
-          }
+            }
+          )
       }
     }
 
@@ -53,21 +53,18 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
       retryEventuallySteps(initialRetryState, conf, 0)
     }.map {
       case (run, executionTime) ⇒
-
         val (retries, retriedRunState, report) = run
         val initialDepth = initialRunState.depth
-
         val (fullLogs, xor) = report.fold(
           failedStep ⇒ {
             val fullLogs = failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
             (fullLogs, Left(failedStep))
           },
-          done ⇒ {
+          _ ⇒ {
             val fullLogs = successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
             (fullLogs, rightDone)
           }
         )
-
         (initialRunState.withSession(retriedRunState.session).appendLogs(fullLogs), xor)
     }
   }

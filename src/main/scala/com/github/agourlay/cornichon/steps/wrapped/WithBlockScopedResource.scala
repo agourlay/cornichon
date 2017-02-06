@@ -20,13 +20,12 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
       (fullLogs, xor) = {
         val nestedLogs = resourcedState.logs
         val initialDepth = initialRunState.depth
-
         resourcedRes.fold(
           failedStep ⇒ {
             val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(resource.closingTitle, initialDepth)
             (failureLogs, Left(failedStep))
           },
-          done ⇒ {
+          _ ⇒ {
             val successLogs = successTitleLog(initialDepth) +: nestedLogs :+ SuccessLogInstruction(resource.closingTitle, initialDepth, None)
             (successLogs, rightDone)
           }

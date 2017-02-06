@@ -7,6 +7,7 @@ import com.github.agourlay.cornichon.core.{ Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.matchers.MatcherService
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Instances._
 import io.circe.{ Encoder, Json }
@@ -52,7 +53,7 @@ object JsonSteps {
 
     def whitelisting = copy(whitelist = true)
 
-    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
+    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep =
       if (whitelist && ignoredKeys.nonEmpty)
         throw InvalidIgnoringConfigError
       else {
@@ -60,27 +61,44 @@ object JsonSteps {
         AssertStep(
           title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
           action = session ⇒ {
-            val expectedJson = resolveParseJson(expected, session, resolver)
             val sessionValue = session.get(sessionKey)
-            val sessionValueJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
-            if (sessionValueJson.isNull) Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
+            val sessionValueWithFocusJson = resolveRunJsonPath(jsonPath, sessionValue, resolver)(session)
+
+            if (sessionValueWithFocusJson.isNull)
+              Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
             else {
-              if (whitelist) {
-                val expectedWhitelistedValue = whitelistingValue(expectedJson, sessionValueJson).fold(e ⇒ throw e, identity)
-                GenericEqualityAssertion(expectedWhitelistedValue, sessionValueJson)
-              } else {
-                val actualValue = if (ignoredKeys.isEmpty) sessionValueJson
-                else {
-                  val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
-                  removeFieldsByPath(sessionValueJson, ignoredPaths)
+              // detect invalid matchers to fail-fast and avoid quoting an unknown matcher
+              val matchers = MatcherService.findAllMatchers(expected.show)
+              val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = {
+                if (matchers.nonEmpty) {
+                  val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
+                  val expectedJson = resolveAndParseJson(withQuotedMatchers, session, resolver)
+                  MatcherService.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson)
+                } else {
+                  val expectedJson = resolveAndParseJson(expected, session, resolver)
+                  (expectedJson, sessionValueWithFocusJson, Nil)
                 }
-                GenericEqualityAssertion(expectedJson, actualValue)
               }
+
+              val (expectedPrepared, actualPrepared) =
+                if (whitelist) {
+                  // add missing fields in the expected result
+                  val expectedWhitelistedValue = whitelistingValue(expectedWithoutMatchers, actualWithoutMatchers).fold(e ⇒ throw e, identity)
+                  (expectedWhitelistedValue, actualWithoutMatchers)
+                } else if (ignoredKeys.nonEmpty) {
+                  // remove ignore fields from the actual result
+                  val ignoredPaths = ignoredKeys.map(resolveParseJsonPath(_, resolver)(session))
+                  (expectedWithoutMatchers, removeFieldsByPath(actualWithoutMatchers, ignoredPaths))
+                } else {
+                  // nothing to prepare
+                  (expectedWithoutMatchers, actualWithoutMatchers)
+                }
+
+              GenericEqualityAssertion(expectedPrepared, actualPrepared) andAll matcherAssertions
             }
           }
         )
       }
-    }
 
     def containsString(expectedPart: String) = {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target contains '$expectedPart'" else s"$target's field '$jsonPath' contains '$expectedPart'"
@@ -210,7 +228,7 @@ object JsonSteps {
         jsonAssertionTitleBuilder(titleString, ignoredEachKeys)
       }
 
-      def removeIgnoredPathFromElements(s: Session, jArray: List[Json]) = {
+      def removeIgnoredPathFromElements(s: Session, jArray: Vector[Json]) = {
         val ignoredPaths = ignoredEachKeys.map(resolveParseJsonPath(_, resolver)(s))
         jArray.map(removeFieldsByPath(_, ignoredPaths))
       }
@@ -218,7 +236,7 @@ object JsonSteps {
       AssertStep(
         title = assertionTitle,
         action = s ⇒ {
-        resolveParseJson(expected, s, resolver)
+        resolveAndParseJson(expected, s, resolver)
           .asArray
           .fold[Assertion](Assertion.failWith(NotAnArrayError(expected))) { expectedArray ⇒
             val arrayFromSession = applyPathAndFindArray(jsonPath, resolver)(s, s.get(sessionKey))
@@ -250,14 +268,14 @@ object JsonSteps {
         action = s ⇒
         CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
           val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-          val resolvedJson = elements.map(resolveParseJson(_, s, resolver))
+          val resolvedJson = elements.map(resolveAndParseJson(_, s, resolver))
           val containsAll = resolvedJson.forall(jArr.contains)
           (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
         }
       )
   }
 
-  private def applyPathAndFindArray(path: String, resolver: Resolver)(s: Session, sessionValue: String): List[Json] = {
+  private def applyPathAndFindArray(path: String, resolver: Resolver)(s: Session, sessionValue: String): Vector[Json] = {
     val jArr = if (path == JsonPath.root) parseArray(sessionValue)
     else {
       val parsedPath = resolveParseJsonPath(path, resolver)(s)
@@ -272,7 +290,7 @@ object JsonSteps {
     else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }
 
-  private def resolveParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
+  private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver): Json = {
     val xorJson = for {
       resolved ← resolver.fillPlaceholders(input)(session)
       json ← parseJson(resolved)

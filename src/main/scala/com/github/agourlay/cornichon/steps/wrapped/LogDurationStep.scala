@@ -15,9 +15,7 @@ case class LogDurationStep(nested: List[Step], label: String) extends WrapperSte
       val logRunState = initialRunState.forNestedSteps(nested)
       engine.runSteps(logRunState)
     }.map {
-      case (run, executionTime) ⇒
-
-        val (logState, repeatRes) = run
+      case ((logState, repeatRes), executionTime) ⇒
         val titleLog = DebugLogInstruction(title, initialRunState.depth)
         val fullLogs = titleLog +: logState.logs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", initialRunState.depth, Some(executionTime))
         (initialRunState.withSession(logState.session).appendLogs(fullLogs), repeatRes)

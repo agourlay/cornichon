@@ -30,6 +30,8 @@ class MathScenario extends CornichonFeature with MathSteps {
         Then assert session_value("random-1").is("<random-2>")
 
       }
+
+      And I print_step("found same values!")
     }
 
     Scenario("MonteCarlo approximation of PI") {
@@ -64,6 +66,8 @@ class MathScenario extends CornichonFeature with MathSteps {
       ) {
           Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.get("c").toInt, s.get("a").toInt + s.get("b").toInt))
         }
+
+      And I print_step("calculation correct!")
     }
   }
 }

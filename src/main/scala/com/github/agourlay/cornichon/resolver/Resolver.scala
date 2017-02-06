@@ -22,7 +22,7 @@ class Resolver(extractors: Map[String, Mapper]) {
     placeholdersCache.getOrElseUpdate(
       input,
       new PlaceholderParser(input).placeholdersRule.run() match {
-        case Failure(e: ParseError) ⇒ Right(List.empty)
+        case Failure(_: ParseError) ⇒ Right(Nil)
         case Failure(e: Throwable)  ⇒ Left(ResolverParsingError(input, e))
         case Success(dt)            ⇒ Right(dt.toList)
       }
@@ -47,7 +47,8 @@ class Resolver(extractors: Map[String, Mapper]) {
     case "random-string"           ⇒ r.nextString(5)
     case "random-alphanum-string"  ⇒ r.alphanumeric.take(5).mkString("")
     case "random-boolean"          ⇒ r.nextBoolean().toString
-    case "timestamp"               ⇒ (System.currentTimeMillis / 1000).toString
+    case "random-timestamp"        ⇒ (Math.abs(System.currentTimeMillis - r.nextLong()) / 1000).toString
+    case "current-timestamp"       ⇒ (System.currentTimeMillis / 1000).toString
   }
 
   def applyMapper(m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {

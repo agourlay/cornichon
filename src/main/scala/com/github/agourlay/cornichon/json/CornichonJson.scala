@@ -50,17 +50,17 @@ trait CornichonJson {
   def parseGraphQLJsonUnsafe(input: String) =
     parseGraphQLJson(input).fold(e ⇒ throw e, identity)
 
-  def jsonArrayValues(json: Json): Either[CornichonError, List[Json]] =
+  def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
     json.arrayOrObject(
       Left(NotAnArrayError(json)),
       values ⇒ Right(values),
       _ ⇒ Left(NotAnArrayError(json))
     )
 
-  def parseArray(input: String): Either[CornichonError, List[Json]] =
+  def parseArray(input: String): Either[CornichonError, Vector[Json]] =
     parseJson(input).flatMap(jsonArrayValues)
 
-  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, List[Json]] =
+  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, Vector[Json]] =
     path.run(sessionValue).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) =
@@ -91,6 +91,27 @@ trait CornichonJson {
     val addOps = diff.ops.collect { case r: Add ⇒ r }
     if (forbiddenPatchOps.isEmpty) Right(JsonPatch(addOps)(first))
     else Left(WhitelistingError(forbiddenPatchOps.map(_.path.toString), second))
+  }
+
+  def findAllJsonWithValue(values: List[String], json: Json): Vector[JsonPath] = {
+    def keyValues(currentPath: String, json: Json): Vector[(String, Json)] =
+      json.fold(
+        jsonNull = Vector.empty,
+        jsonBoolean = _ ⇒ Vector.empty,
+        jsonNumber = _ ⇒ Vector.empty,
+        jsonString = _ ⇒ Vector.empty,
+        jsonArray = elems ⇒ elems.zipWithIndex.flatMap { case (e, indice) ⇒ keyValuesHelper(s"$currentPath[$indice]", e) },
+        jsonObject = elems ⇒ elems.toVector.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v) }
+      )
+
+    def keyValuesHelper(key: String, value: Json): Vector[(String, Json)] =
+      (key, value) +: keyValues(key, value)
+
+    // Do not traverse the JSON if there are no values to find
+    if (values.nonEmpty)
+      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k) }
+    else
+      Vector.empty
   }
 }
 

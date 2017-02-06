@@ -27,14 +27,16 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
         val boostrapFilledInput = runState.withSteps(nested).addToSession(currentInputs).withLog(runInfo).goDeeper
         engine.runSteps(boostrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒
-            stepsResult match {
-              case Right(_) ⇒
-                // Logs are propogated but not the session
-                runInputs(inputs.tail, runState.appendLogsFrom(filledState))
-              case Left(failedStep) ⇒
+            stepsResult.fold(
+              failedStep ⇒ {
                 // Prepend previous logs
                 Future.successful((runState.withSession(filledState.session).appendLogsFrom(filledState), Left((currentInputs, failedStep))))
-            }
+              },
+              _ ⇒ {
+                // Logs are propogated but not the session
+                runInputs(inputs.tail, runState.appendLogsFrom(filledState))
+              }
+            )
         }
       }
     }
@@ -49,11 +51,8 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
         withDuration {
           runInputs(inputs, initialRunState.forNestedSteps(nested))
         }.map {
-          case (run, executionTime) ⇒
-
-            val (inputsState, inputsRes) = run
+          case ((inputsState, inputsRes), executionTime) ⇒
             val initialDepth = initialRunState.depth
-
             val (fullLogs, xor) = inputsRes match {
               case Right(_) ⇒
                 val fullLogs = successTitleLog(initialDepth) +: inputsState.logs :+ SuccessLogInstruction(s"With data input succeeded for all inputs", initialDepth, Some(executionTime))
@@ -63,7 +62,6 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
                 val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
                 (fullLogs, Left(artificialFailedStep))
             }
-
             (initialRunState.withSession(inputsState.session).appendLogs(fullLogs), xor)
         }
       }
