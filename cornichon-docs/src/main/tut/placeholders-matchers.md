@@ -1,6 +1,6 @@
 ---
 layout: docs
-title:  "Placeholders and JSON matchers"
+title:  "Placeholders & matchers"
 position: 2
 ---
 

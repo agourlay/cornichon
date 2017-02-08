@@ -18,21 +18,18 @@ Here is the most simple ```EffectStep```:
 
 ```scala
 When I EffectStep(title = "do nothing", action = s => Future.successful(s))
-
 ```
 
 or using a factory helper when dealing with non Future based computation
 
 ```scala
 When I EffectStep.fromSync(title = "do nothing", action = s => s)
-
 ```
 
 Let's try so save a value into the ```Session```
 
 ```scala
 When I EffectStep.fromSync(title = "estimate PI", action = s => s.add("result", piComputation())
-
 ```
 
 The test engine is responsible for controling the execution of the side effect function and to report any error.
@@ -73,7 +70,6 @@ trait MySteps {
     )
   )
 }
-
 ```
 
 The built-in HTTP steps available on the DSL are actually built on top of the ```httpService``` which means that you benefit from all the existing infrastructure to:
