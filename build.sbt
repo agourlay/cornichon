@@ -1,5 +1,7 @@
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
+import sbtunidoc.Plugin.UnidocKeys._
 import sbt.Developer
 import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
@@ -19,7 +21,7 @@ lazy val compilerOptions = Seq(
 
 lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
-  description := "Scala DSL for testing HTTP JSON API",
+  description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
   scalaVersion := "2.12.1",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
@@ -50,15 +52,20 @@ lazy val publishingSettings = Seq(
       "releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 )
 
+lazy val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
 
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core)
+    .aggregate(core, docs)
+    .settings(noPublishSettings)
     .settings(
       unmanagedSourceDirectories.in(Compile) := Seq.empty,
-      unmanagedSourceDirectories.in(Test) := Seq.empty,
-      publishArtifact := false
+      unmanagedSourceDirectories.in(Test) := Seq.empty
     )
 
 lazy val core =
@@ -67,7 +74,9 @@ lazy val core =
     .enablePlugins(SbtScalariform)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings : _*)
-    .settings(standardSettings ++ publishingSettings ++ scalariformSettings)
+    .settings(standardSettings)
+    .settings(publishingSettings)
+    .settings(scalariformSettings)
     .settings(
       name := "cornichon",
       libraryDependencies ++= Seq(
@@ -93,6 +102,47 @@ lazy val core =
         library.catsScalatest % Test
       )
     )
+
+lazy val docs =
+  project
+    .in(file("./cornichon-docs"))
+    .settings(
+      name := "cornichon-docs"
+    )
+    .dependsOn(core)
+    .enablePlugins(MicrositesPlugin)
+    .settings(standardSettings)
+    .settings(docSettings)
+    .settings(unidocSettings)
+    .settings(ghpages.settings)
+    .settings(noPublishSettings)
+
+lazy val docSettings = Seq(
+  micrositeName := "Cornichon",
+  micrositeDescription := "An extensible Scala DSL for testing JSON HTTP APIs.",
+  micrositeAuthor := "Arnaud Gourlay",
+  micrositeHighlightTheme := "atom-one-light",
+  micrositeHomepage := "http://agourlay.github.io/cornichon/",
+  micrositeBaseUrl := "cornichon",
+  micrositeGithubOwner := "agourlay",
+  micrositeGithubRepo := "cornichon",
+  micrositePalette := Map(
+    "brand-primary" -> "#9BC585",
+    "brand-secondary" -> "#4b7933",
+    "brand-tertiary" -> "#4b7933",
+    "gray-dark" -> "#49494B",
+    "gray" -> "#7B7B7E",
+    "gray-light" -> "#E5E5E6",
+    "gray-lighter" -> "#F4F3F4",
+    "white-color" -> "#FFFFFF"),
+  autoAPIMappings := true,
+  micrositeDocumentationUrl := "api",
+  addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), micrositeDocumentationUrl),
+  ghpagesNoJekyll := false,
+  fork in tut := true,
+  git.remoteRepo := "git@github.com:agourlay/cornichon.git",
+  includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
+)
 
 lazy val scalariformSettings = SbtScalariform.scalariformSettings ++ Seq(
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
