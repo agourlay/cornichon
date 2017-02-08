@@ -6,7 +6,7 @@ options:
   - title: Custom steps
     url: custom-steps.html
 
-  - title: Placeholders and JSON Matchers
+  - title: Placeholders & matchers
     url: placeholders-matchers.html
 
   - title: Feature options
