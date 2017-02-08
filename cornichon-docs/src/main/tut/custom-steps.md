@@ -35,7 +35,7 @@ When I EffectStep.fromSync(title = "estimate PI", action = s => s.add("result", 
 The test engine is responsible for controling the execution of the side effect function and to report any error.
 
 
-### EffectStep using the HTTP service
+## EffectStep using the HTTP service
 
 Sometimes you want to perform HTTP calls inside of of an ```EffectStep```, this is where the ```http``` service comes in handy.
 

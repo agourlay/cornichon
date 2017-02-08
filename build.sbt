@@ -1,6 +1,7 @@
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
+import sbtunidoc.Plugin.UnidocKeys._
 import sbt.Developer
 import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
@@ -112,6 +113,7 @@ lazy val docs =
     .enablePlugins(MicrositesPlugin)
     .settings(standardSettings)
     .settings(docSettings)
+    .settings(unidocSettings)
     .settings(ghpages.settings)
     .settings(noPublishSettings)
 
@@ -134,6 +136,8 @@ lazy val docSettings = Seq(
     "gray-lighter" -> "#F4F3F4",
     "white-color" -> "#FFFFFF"),
   autoAPIMappings := true,
+  micrositeDocumentationUrl := "api",
+  addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), micrositeDocumentationUrl),
   ghpagesNoJekyll := false,
   fork in tut := true,
   git.remoteRepo := "git@github.com:agourlay/cornichon.git",
