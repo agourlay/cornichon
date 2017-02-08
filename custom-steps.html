@@ -11,21 +11,18 @@
 <p>Here is the most simple <code class="highlighter-rouge">EffectStep</code>:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">.</span><span class="n">successful</span><span class="o">(</span><span class="n">s</span><span class="o">))</span>
-
 </code></pre>
 </div>
 
 <p>or using a factory helper when dealing with non Future based computation</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">)</span>
-
 </code></pre>
 </div>
 
 <p>Let’s try so save a value into the <code class="highlighter-rouge">Session</code></p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="n">piComputation</span><span class="o">())</span>
-
 </code></pre>
 </div>
 
@@ -65,7 +62,6 @@
     <span class="o">)</span>
   <span class="o">)</span>
 <span class="o">}</span>
-
 </code></pre>
 </div>
 
