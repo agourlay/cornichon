@@ -10,9 +10,9 @@ import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.{ HttpRequest, _ }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
+import cats.instances.string._
 import com.github.agourlay.cornichon.core.Done
 import com.github.agourlay.cornichon.http.{ HttpMethod ⇒ CornichonHttpMethod, HttpMethods ⇒ CornichonHttpMethods, HttpRequest ⇒ CornichonHttpRequest }
-import com.github.agourlay.cornichon.util.Instances._
 import com.github.agourlay.cornichon.http.server.MockServerResultsHolder._
 import com.github.agourlay.cornichon.json.CornichonJson
 import io.circe.Json

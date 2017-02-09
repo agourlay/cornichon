@@ -22,7 +22,7 @@ import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.http.steps.HttpListenSteps._
-import com.github.agourlay.cornichon.util.Instances._
+import com.github.agourlay.cornichon.util.Instances
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
@@ -107,7 +107,7 @@ trait HttpDsl extends HttpRequestsDsl {
 
   private def showLastResponse(map: String ⇒ String = identity) = DebugStep(s ⇒
     s"""Show last response
-       |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
+       |headers: ${Instances.displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
        |status : ${s.get(lastResponseStatusKey)}
        |body   : ${map(s.get(lastResponseBodyKey))}
      """.stripMargin)

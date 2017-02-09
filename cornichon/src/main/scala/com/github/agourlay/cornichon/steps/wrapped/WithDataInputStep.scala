@@ -7,7 +7,6 @@ import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
-import com.github.agourlay.cornichon.util.Instances._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.util.Instances
 
@@ -23,7 +22,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
       if (inputs.isEmpty) Future.successful(runState, rightDone)
       else {
         val currentInputs = inputs.head
-        val runInfo = InfoLogInstruction(s"Run with inputs ${displayStringPairs(currentInputs)}", runState.depth)
+        val runInfo = InfoLogInstruction(s"Run with inputs ${Instances.displayStringPairs(currentInputs)}", runState.depth)
         val boostrapFilledInput = runState.withSteps(nested).addToSession(currentInputs).withLog(runInfo).goDeeper
         engine.runSteps(boostrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒

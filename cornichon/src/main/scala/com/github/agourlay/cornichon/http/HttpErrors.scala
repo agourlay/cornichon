@@ -2,9 +2,9 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.syntax.show._
+import cats.instances.string._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson.parseJsonUnsafe
-import com.github.agourlay.cornichon.util.Instances._
 
 import scala.concurrent.duration.FiniteDuration
 

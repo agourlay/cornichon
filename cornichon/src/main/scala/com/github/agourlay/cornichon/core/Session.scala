@@ -2,10 +2,10 @@ package com.github.agourlay.cornichon.core
 
 import cats.Show
 import cats.syntax.show._
+import cats.instances.string._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.util.Instances._
 import io.circe.Json
 
 import scala.collection.immutable.HashMap

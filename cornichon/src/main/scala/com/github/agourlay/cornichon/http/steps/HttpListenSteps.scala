@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.http.steps
 
+import cats.instances.int._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.Instances._
 
 object HttpListenSteps {
 

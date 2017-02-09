@@ -4,6 +4,7 @@ import akka.actor.Scheduler
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
+import cats.instances.future._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
@@ -13,7 +14,6 @@ import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.util.Futures
-import com.github.agourlay.cornichon.util.Instances._
 import io.circe.Encoder
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -54,7 +54,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
 
-  def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
+  def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) = {
+    import cats.instances.string._
     for {
       resolvedRequest ← EitherT(Future.successful(resolveStreamedRequest[String](r)(s)))
       resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
@@ -62,6 +63,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       }
       newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
     } yield (resp, newSession)
+  }
 
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Either[CornichonError, CornichonHttpResponse] =
     expected.map { expectedStatus ⇒

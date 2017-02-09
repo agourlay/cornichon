@@ -3,10 +3,10 @@ package com.github.agourlay.cornichon.json
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
+import cats.instances.string._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.util.Instances._
 import gnieh.diffson.circe._
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.syntax._

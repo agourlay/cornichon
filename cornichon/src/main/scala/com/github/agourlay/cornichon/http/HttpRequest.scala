@@ -5,7 +5,7 @@ import cats.syntax.show._
 
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.util.Instances._
+import com.github.agourlay.cornichon.util.Instances
 
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
@@ -31,8 +31,8 @@ trait BaseRequest {
 
   def compactDescription: String
 
-  def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${displayStringPairs(params)}"
-  def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayStringPairs(headers)}"
+  def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${Instances.displayStringPairs(params)}"
+  def headersTitle = if (headers.isEmpty) "" else s" with headers ${Instances.displayStringPairs(headers)}"
 }
 
 case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
@@ -55,7 +55,7 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
 trait HttpRequestsDsl {
   import com.github.agourlay.cornichon.http.HttpMethods._
-  import com.github.agourlay.cornichon.util.Instances._
+  import cats.instances.string._
 
   def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty)
   def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty)
@@ -71,8 +71,8 @@ object HttpRequest extends HttpRequestsDsl {
   implicit def showRequest[A: Show] = new Show[HttpRequest[A]] {
     def show(r: HttpRequest[A]): String = {
       val body = r.body.fold("without body")(b ⇒ s"with body\n${b.show}")
-      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${displayStringPairs(r.params)}"
-      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${displayStringPairs(r.headers)}"
+      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${Instances.displayStringPairs(r.params)}"
+      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${Instances.displayStringPairs(r.headers)}"
 
       s"""|HTTP ${r.method.name} request to ${r.url}
           |$params
@@ -109,8 +109,8 @@ object HttpStreamedRequest {
 
   implicit val showStreamedRequest = new Show[HttpStreamedRequest] {
     def show(r: HttpStreamedRequest): String = {
-      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${displayStringPairs(r.params)}"
-      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${displayStringPairs(r.headers)}"
+      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${Instances.displayStringPairs(r.params)}"
+      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${Instances.displayStringPairs(r.headers)}"
 
       s"""|${r.stream.name} request to ${r.url}
           |$params

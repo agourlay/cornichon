@@ -7,7 +7,6 @@ import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.{ Instances, Futures }
-import com.github.agourlay.cornichon.util.Instances._
 
 import scala.annotation.unchecked.uncheckedVariance
 import scala.concurrent.Future
@@ -141,7 +140,7 @@ object Dsl {
     val extractors = args.map(_.trans)
     val targets = args.map(_.target)
     EffectStep.fromSync(
-      s"save parts from session '${displayStringPairs(keys.zip(targets))}'",
+      s"save parts from session '${Instances.displayStringPairs(keys.zip(targets))}'",
       session ⇒ {
         val extracted = session.getList(keys).zip(extractors).map { case (value, extractor) ⇒ extractor(session, value) }
         targets.zip(extracted).foldLeft(session)((s, tuple) ⇒ s.addValue(tuple._1, tuple._2))
