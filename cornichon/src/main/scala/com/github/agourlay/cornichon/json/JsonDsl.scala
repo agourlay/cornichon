@@ -1,14 +1,13 @@
 package com.github.agourlay.cornichon.json
 
 import cats.syntax.show._
-
-import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.dsl.Dsl
+import com.github.agourlay.cornichon.feature.CornichonBaseFeature
 import com.github.agourlay.cornichon.json.JsonSteps._
 import com.github.agourlay.cornichon.json.CornichonJson._
 
 trait JsonDsl {
-  this: CornichonFeature with Dsl ⇒
+  this: CornichonBaseFeature with Dsl ⇒
 
   val root = JsonPath.root
 

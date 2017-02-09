@@ -5,10 +5,10 @@ import java.util.Base64
 
 import cats.Show
 import cats.syntax.show._
-import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
+import com.github.agourlay.cornichon.feature.CornichonBaseFeature
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource
@@ -30,7 +30,7 @@ import sangria.renderer.QueryRenderer
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpRequestsDsl {
-  this: CornichonFeature with Dsl ⇒
+  this: CornichonBaseFeature with Dsl ⇒
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
     EffectStep(

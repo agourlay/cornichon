@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.dsl
 
 import cats.Show
-import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{ FeatureDef, Session, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
+import com.github.agourlay.cornichon.feature.CornichonBaseFeature
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
 import com.github.agourlay.cornichon.util.Futures
@@ -16,7 +16,7 @@ import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
 
 trait Dsl extends ProvidedInstances {
-  this: CornichonFeature ⇒
+  this: CornichonBaseFeature ⇒
 
   def Feature(name: String, ignored: Boolean = false) =
     BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
