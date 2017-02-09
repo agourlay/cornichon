@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.matchers.MatcherService
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-import com.github.agourlay.cornichon.util.Instances._
+import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import io.circe.{ Encoder, Json }
 
 import scala.util.matching.Regex

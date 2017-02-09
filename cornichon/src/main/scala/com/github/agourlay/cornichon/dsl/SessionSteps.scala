@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.Instances._
+import ProvidedInstances._
 
 object SessionSteps {
 

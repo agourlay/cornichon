@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.Show
-import com.github.agourlay.cornichon.util.Instances._
+import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import cats.syntax.show._
 import io.circe.Json
 

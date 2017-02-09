@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.util
+package com.github.agourlay.cornichon.dsl
 
 import cats.Show
 import cats.instances._
@@ -7,7 +7,7 @@ import cats.syntax.show._
 import scala.collection.immutable.IndexedSeq
 
 // Importing Cats instances for Show and Eq to make it easier for potential non dev-users.
-trait Instances extends StringInstances
+trait ProvidedInstances extends StringInstances
     with ListInstances
     with OptionInstances
     with SetInstances
@@ -40,7 +40,4 @@ trait Instances extends StringInstances
   }
 }
 
-object Instances extends Instances {
-  def displayStringPairs(params: Seq[(String, String)]): String =
-    params.map { case (name, value) ⇒ s"'$name' -> '$value'" }.mkString(", ")
-}
+object ProvidedInstances extends ProvidedInstances

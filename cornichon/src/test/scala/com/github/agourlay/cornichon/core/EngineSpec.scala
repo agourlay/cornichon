@@ -1,14 +1,14 @@
 package com.github.agourlay.cornichon.core
 
 import akka.actor.ActorSystem
+import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.Instances
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.ExecutionContext
 
-class EngineSpec extends AsyncWordSpec with Matchers with Instances {
+class EngineSpec extends AsyncWordSpec with Matchers {
 
   implicit val scheduler = ActorSystem("cornichon-actor-system").scheduler
   val resolver = Resolver.withoutExtractor()

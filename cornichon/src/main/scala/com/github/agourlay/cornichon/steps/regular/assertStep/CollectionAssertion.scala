@@ -5,7 +5,7 @@ import cats.data.Validated._
 import cats.data._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
-import com.github.agourlay.cornichon.util.Instances._
+import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 
 abstract class CollectionAssertion[A: Show] extends Assertion
 
