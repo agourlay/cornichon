@@ -79,7 +79,7 @@ lazy val core =
     .settings(
       name := "cornichon",
       libraryDependencies ++= Seq(
-        library.akka,
+        library.akkaActor,
         library.akkaHttp,
         library.akkaHttpCore,
         library.akkaSse,
@@ -155,7 +155,7 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.0.1"
-      val akka          = "2.4.16"
+      val akkaActor     = "2.4.17"
       val akkaHttp      = "10.0.3"
       val cats          = "0.9.0"
       val parboiled     = "2.1.4"
@@ -170,7 +170,7 @@ lazy val library =
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.0"
     }
-    val akka          = "com.typesafe.akka"   %% "akka-actor"      % Version.akka
+    val akkaActor     = "com.typesafe.akka"   %% "akka-actor"      % Version.akkaActor
     val akkaHttp      = "com.typesafe.akka"   %% "akka-http-core"  % Version.akkaHttp
     val akkaHttpCore  = "com.typesafe.akka"   %% "akka-http"       % Version.akkaHttp
     val akkHttpCirce  = "de.heikoseeberger"   %% "akka-http-circe" % Version.akkaHttpCirce
