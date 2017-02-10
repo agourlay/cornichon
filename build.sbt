@@ -91,7 +91,6 @@ lazy val core =
         library.fansi,
         library.sangria,
         library.sangriaCirce,
-        library.sangriaCirce,
         library.circeCore,
         library.circeGeneric,
         library.circeParser,
