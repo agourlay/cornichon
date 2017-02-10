@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http.server
 
-import com.github.agourlay.cornichon.feature.CornichonBaseFeature
+import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
@@ -11,10 +11,10 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
   val openingTitle: String = s"Starting HTTP mock server '$label'"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
-  implicit val (_, ec, system, mat, _) = CornichonBaseFeature.globalRuntime
+  implicit val (_, ec, system, mat, _) = BaseFeature.globalRuntime
 
   def startResource() = {
-    CornichonBaseFeature.reserveGlobalRuntime()
+    BaseFeature.reserveGlobalRuntime()
     val mockRequestHandler = MockServerRequestHandler(label)
     val akkaServer = new AkkaHttpServer(interface, portRange, mockRequestHandler.requestHandler)
     akkaServer.startServer().map { serverCloseHandler ⇒
@@ -25,7 +25,7 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
 
         def stopResource() = serverCloseHandler._2.stopResource().map { _ ⇒
           mockRequestHandler.shutdown()
-          CornichonBaseFeature.releaseGlobalRuntime()
+          BaseFeature.releaseGlobalRuntime()
         }
       }
     }

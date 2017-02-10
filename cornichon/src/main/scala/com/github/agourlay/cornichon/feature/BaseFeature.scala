@@ -11,7 +11,7 @@ import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, HttpClient }
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
-import com.github.agourlay.cornichon.feature.CornichonBaseFeature._
+import com.github.agourlay.cornichon.feature.BaseFeature._
 import com.typesafe.config.ConfigFactory
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
@@ -19,7 +19,7 @@ import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 
-trait CornichonBaseFeature extends HttpDsl with JsonDsl with Dsl {
+trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 
   protected var beforeFeature: Seq[() ⇒ Unit] = Nil
   protected var afterFeature: Seq[() ⇒ Unit] = Nil
@@ -70,7 +70,7 @@ trait CornichonBaseFeature extends HttpDsl with JsonDsl with Dsl {
 }
 
 // Protect and free resources
-object CornichonBaseFeature {
+object BaseFeature {
 
   implicit private lazy val system = ActorSystem("cornichon-actor-system")
   implicit private lazy val mat = ActorMaterializer()
