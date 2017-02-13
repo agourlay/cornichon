@@ -15,7 +15,7 @@ import scala.language.experimental.{ macros ⇒ `scalac, please just let me do i
 import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
 
-trait Dsl extends ProvidedInstances {
+trait Dsl {
   this: BaseFeature ⇒
 
   def Feature(name: String, ignored: Boolean = false) =

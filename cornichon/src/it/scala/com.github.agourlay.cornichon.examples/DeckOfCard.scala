@@ -1,5 +1,8 @@
 package com.github.agourlay.cornichon.examples
 
+import cats.instances.boolean._
+import cats.instances.int._
+import cats.instances.string._
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 

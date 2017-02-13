@@ -1,11 +1,14 @@
 package com.github.agourlay.cornichon.http.steps
 
+import cats.instances.boolean._
+import cats.instances.list._
+import cats.instances.string._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-import com.github.agourlay.cornichon.dsl.ProvidedInstances._
+import com.github.agourlay.cornichon.dsl.Instances._
 import com.github.agourlay.cornichon.util.Printing._
 
 object HeadersSteps {

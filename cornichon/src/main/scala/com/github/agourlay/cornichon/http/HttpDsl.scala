@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import cats.Show
+import cats.instances.string._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
@@ -45,6 +46,7 @@ trait HttpDsl extends HttpRequestsDsl {
     )
 
   implicit def queryGqlToStep(queryGQL: QueryGQL): EffectStep = {
+    import Instances._
     import io.circe.generic.auto._
     import io.circe.syntax._
 

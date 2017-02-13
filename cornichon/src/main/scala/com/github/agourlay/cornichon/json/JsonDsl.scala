@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.json
 
+import cats.instances.string._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.feature.BaseFeature

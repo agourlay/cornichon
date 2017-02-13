@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.core
 
 import akka.actor.ActorSystem
-import com.github.agourlay.cornichon.dsl.ProvidedInstances._
+import cats.instances.boolean._
+import cats.instances.int._
+import com.github.agourlay.cornichon.dsl.Instances._
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalatest.{ AsyncWordSpec, Matchers }

@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.examples.math
 
+import cats.instances.int._
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 
