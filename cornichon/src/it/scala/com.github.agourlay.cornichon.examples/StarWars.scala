@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.examples
 
+import cats.instances.string._
 import com.github.agourlay.cornichon.CornichonFeature
 
 // see https://swapi.co/

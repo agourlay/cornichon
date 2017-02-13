@@ -6,22 +6,7 @@ import cats.syntax.show._
 
 import scala.collection.immutable.IndexedSeq
 
-// Importing Cats instances for Show and Eq to make it easier for potential non dev-users.
-trait ProvidedInstances extends StringInstances
-    with ListInstances
-    with OptionInstances
-    with SetInstances
-    with VectorInstances
-    with IntInstances
-    with CharInstances
-    with LongInstances
-    with ShortInstances
-    with FloatInstances
-    with DoubleInstances
-    with BooleanInstances
-    with BigIntInstances
-    with BigDecimalInstances
-    with UUIDInstances {
+trait Instances {
 
   implicit def showSeq[A: Show]: Show[Seq[A]] = Show.show { fa ⇒
     fa.toIterator.map(_.show).mkString("Seq(", ", ", ")")
@@ -40,4 +25,4 @@ trait ProvidedInstances extends StringInstances
   }
 }
 
-object ProvidedInstances extends ProvidedInstances
+object Instances extends Instances

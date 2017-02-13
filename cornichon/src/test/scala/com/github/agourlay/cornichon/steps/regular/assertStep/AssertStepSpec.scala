@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
+import cats.instances.int._
 import cats.scalatest.EitherValues
 import com.github.agourlay.cornichon.core.{ Done, Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec

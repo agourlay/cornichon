@@ -1,10 +1,16 @@
 package com.github.agourlay.cornichon.json
 
+import cats.instances.boolean._
+import cats.instances.double._
+import cats.instances.int._
+import cats.instances.long._
+import cats.instances.bigDecimal._
+import cats.instances.string._
 import io.circe.{ Json, JsonObject }
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 import cats.scalatest.{ EitherMatchers, EitherValues }
-import com.github.agourlay.cornichon.dsl.ProvidedInstances._
+import com.github.agourlay.cornichon.dsl.Instances._
 
 class CornichonJsonSpec extends WordSpec
     with Matchers
