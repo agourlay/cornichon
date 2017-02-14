@@ -60,7 +60,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, docs)
+    .aggregate(core, docs, benchmarks)
     .settings(noPublishSettings)
     .settings(
       unmanagedSourceDirectories.in(Compile) := Seq.empty,
@@ -100,6 +100,14 @@ lazy val core =
         library.catsScalatest % Test
       )
     )
+
+lazy val benchmarks =
+  project
+    .in(file("./benchmarks"))
+    .settings(standardSettings)
+    .dependsOn(core)
+    .settings(noPublishSettings)
+    .enablePlugins(JmhPlugin)
 
 lazy val docs =
   project
