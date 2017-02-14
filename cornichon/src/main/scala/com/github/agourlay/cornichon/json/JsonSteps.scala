@@ -3,13 +3,18 @@ package com.github.agourlay.cornichon.json
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
+import cats.instances.boolean._
+import cats.instances.int._
+import cats.instances.string._
+import cats.instances.vector._
+
 import com.github.agourlay.cornichon.core.{ Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.matchers.MatcherService
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-import com.github.agourlay.cornichon.dsl.ProvidedInstances._
+
 import io.circe.{ Encoder, Json }
 
 import scala.util.matching.Regex

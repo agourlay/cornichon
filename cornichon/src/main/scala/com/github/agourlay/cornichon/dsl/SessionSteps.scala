@@ -1,10 +1,12 @@
 package com.github.agourlay.cornichon.dsl
 
+import cats.instances.option._
+import cats.instances.string._
+import cats.instances.boolean._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, GenericEqualityAssertion }
-import ProvidedInstances._
 
 object SessionSteps {
 
