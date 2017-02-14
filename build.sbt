@@ -60,7 +60,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, docs, benchmarks)
+    .aggregate(core, scalatest, docs, benchmarks)
     .settings(noPublishSettings)
     .settings(
       unmanagedSourceDirectories.in(Compile) := Seq.empty,
@@ -69,15 +69,13 @@ lazy val cornichon =
 
 lazy val core =
   project
-    .in(file("./cornichon"))
+    .in(file("./cornichon-core"))
     .enablePlugins(SbtScalariform)
-    .configs(IntegrationTest)
-    .settings(Defaults.itSettings : _*)
     .settings(standardSettings)
     .settings(publishingSettings)
     .settings(scalariformSettings)
     .settings(
-      name := "cornichon",
+      name := "cornichon-core",
       libraryDependencies ++= Seq(
         library.akkaActor,
         library.akkaHttp,
@@ -85,7 +83,6 @@ lazy val core =
         library.akkaSse,
         library.catsCore,
         library.catsMacro,
-        library.scalatest,
         library.ficus,
         library.parboiled,
         library.fansi,
@@ -95,15 +92,33 @@ lazy val core =
         library.circeGeneric,
         library.circeParser,
         library.diffsonCirce,
+        library.scalatest % Test,
         library.scalacheck % Test,
-        library.akkHttpCirce % Test,
         library.catsScalatest % Test
+      )
+    )
+
+lazy val scalatest =
+  project
+    .in(file("./cornichon-scalatest"))
+    .dependsOn(core)
+    .enablePlugins(SbtScalariform)
+    .configs(IntegrationTest)
+    .settings(Defaults.itSettings : _*)
+    .settings(standardSettings)
+    .settings(publishingSettings)
+    .settings(scalariformSettings)
+    .settings(
+      name := "cornichon",
+      libraryDependencies ++= Seq(
+        library.scalatest,
+        library.akkHttpCirce % Test
       )
     )
 
 lazy val benchmarks =
   project
-    .in(file("./benchmarks"))
+    .in(file("./cornichon-benchmarks"))
     .settings(standardSettings)
     .dependsOn(core)
     .settings(noPublishSettings)
@@ -115,7 +130,7 @@ lazy val docs =
     .settings(
       name := "cornichon-docs"
     )
-    .dependsOn(core)
+    .dependsOn(core, scalatest)
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(ScalaUnidocPlugin)
     .settings(standardSettings)

@@ -1,15 +1,15 @@
 package com.github.agourlay.cornichon.scalatest
 
-import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.LogInstruction._
 import com.github.agourlay.cornichon.core.{ CornichonError, DebugLogInstruction, FailureScenarioReport, SuccessScenarioReport }
+import com.github.agourlay.cornichon.feature.BaseFeature
 import org.scalatest._
 
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
 trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
-  this: CornichonFeature ⇒
+  this: BaseFeature ⇒
 
   override def beforeAll() = {
     registerFeature()

@@ -7,11 +7,11 @@ class MacroErrorSpec extends WordSpec with Matchers {
   "Macro" should {
     "compile valid feature definitions" in {
       """
-        import com.github.agourlay.cornichon.CornichonFeature
+        import com.github.agourlay.cornichon.feature.BaseFeature
         import com.github.agourlay.cornichon.steps.regular.EffectStep
         import scala.concurrent.Future
 
-        class Foo extends CornichonFeature {
+        class Foo extends BaseFeature {
           val feature =
             Feature("foo") {
               Scenario("aaa") {
@@ -28,10 +28,10 @@ class MacroErrorSpec extends WordSpec with Matchers {
 
     "not compile if feature definition contains invalid expressions" in {
       """
-        import com.github.agourlay.cornichon.CornichonFeature
+        import com.github.agourlay.cornichon.feature.BaseFeature
         import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-        class Foo extends CornichonFeature {
+        class Foo extends BaseFeature {
           val feature =
             Feature("foo") {
               Scenario("aaa") {
