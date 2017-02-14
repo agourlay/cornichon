@@ -7,7 +7,7 @@ class OpenMovieDatabase extends CornichonFeature {
   override lazy val baseUrl = "http://www.omdbapi.com"
 
   def feature =
-    Feature("OpenMovieDatabase API") {
+    Feature("OpenMovieDatabase API", ignored = true) {
 
       Scenario("search for GOT") {
 
