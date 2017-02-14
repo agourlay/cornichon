@@ -6,6 +6,10 @@
   background-image: none;
 }
 
+#site-header .navbar-wrapper .brand .icon-wrapper {
+  background-size: cover;
+}
+
 .sidebar-nav > .sidebar-brand a .brand-wrapper {
   background-size: 36px 36px !important;
 }
