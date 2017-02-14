@@ -109,9 +109,9 @@ lazy val docs =
     )
     .dependsOn(core)
     .enablePlugins(MicrositesPlugin)
+    .enablePlugins(ScalaUnidocPlugin)
     .settings(standardSettings)
     .settings(docSettings)
-    .settings(unidocSettings)
     .settings(ghpages.settings)
     .settings(noPublishSettings)
 
