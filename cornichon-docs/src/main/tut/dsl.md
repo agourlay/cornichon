@@ -275,7 +275,7 @@ And assert body.ignoring("city", "publisher").is(
 save("favorite-superhero" → "Batman")
 ```
 
-- saving value to ```session``
+- saving value to ```session```
 
 ```scala
 save_body_path("city" -> "batman-city")
