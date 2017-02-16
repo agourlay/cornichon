@@ -51,6 +51,8 @@ lazy val publishingSettings = Seq(
       "releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 )
 
+lazy val commonSettings = standardSettings ++ publishingSettings
+
 lazy val noPublishSettings = Seq(
   publish := (),
   publishLocal := (),
@@ -61,6 +63,7 @@ lazy val cornichon =
   project
     .in(file("."))
     .aggregate(core, scalatest, docs, benchmarks)
+    .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
       unmanagedSourceDirectories.in(Compile) := Seq.empty,
@@ -71,7 +74,7 @@ lazy val core =
   project
     .in(file("./cornichon-core"))
     .enablePlugins(SbtScalariform)
-    .settings(standardSettings)
+    .settings(commonSettings)
     .settings(publishingSettings)
     .settings(scalariformSettings)
     .settings(
@@ -105,8 +108,7 @@ lazy val scalatest =
     .enablePlugins(SbtScalariform)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings : _*)
-    .settings(standardSettings)
-    .settings(publishingSettings)
+    .settings(commonSettings)
     .settings(scalariformSettings)
     .settings(
       name := "cornichon",
@@ -119,7 +121,7 @@ lazy val scalatest =
 lazy val benchmarks =
   project
     .in(file("./cornichon-benchmarks"))
-    .settings(standardSettings)
+    .settings(commonSettings)
     .dependsOn(core)
     .settings(noPublishSettings)
     .enablePlugins(JmhPlugin)
@@ -134,7 +136,7 @@ lazy val docs =
     .dependsOn(core, scalatest)
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(ScalaUnidocPlugin)
-    .settings(standardSettings)
+    .settings(commonSettings)
     .settings(docSettings)
     .settings(ghpages.settings)
     .settings(noPublishSettings)
