@@ -29,12 +29,12 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
           _ ⇒ {
             val successLogs = successTitleLog(initialDepth) +: withinState.logs
             if (executionTime.gt(maxDuration)) {
-              val fullLogs = successLogs :+ FailureLogInstruction(s"Within block did not complete in time", initialDepth, Some(executionTime))
+              val fullLogs = successLogs :+ FailureLogInstruction("Within block did not complete in time", initialDepth, Some(executionTime))
               // The nested steps were successful but the did not finish in time, the last step is picked as failed step
               val failedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
               (fullLogs, Left(failedStep))
             } else {
-              val fullLogs = successLogs :+ SuccessLogInstruction(s"Within block succeeded", initialDepth, Some(executionTime))
+              val fullLogs = successLogs :+ SuccessLogInstruction("Within block succeeded", initialDepth, Some(executionTime))
               (fullLogs, rightDone)
             }
           }

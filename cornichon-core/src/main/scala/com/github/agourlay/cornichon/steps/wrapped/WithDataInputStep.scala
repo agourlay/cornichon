@@ -54,10 +54,10 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
             val initialDepth = initialRunState.depth
             val (fullLogs, xor) = inputsRes match {
               case Right(_) ⇒
-                val fullLogs = successTitleLog(initialDepth) +: inputsState.logs :+ SuccessLogInstruction(s"With data input succeeded for all inputs", initialDepth, Some(executionTime))
+                val fullLogs = successTitleLog(initialDepth) +: inputsState.logs :+ SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime))
                 (fullLogs, rightDone)
               case Left((failedInputs, failedStep)) ⇒
-                val fullLogs = failedTitleLog(initialDepth) +: inputsState.logs :+ FailureLogInstruction(s"With data input failed for one input", initialDepth, Some(executionTime))
+                val fullLogs = failedTitleLog(initialDepth) +: inputsState.logs :+ FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime))
                 val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
                 (fullLogs, Left(artificialFailedStep))
             }

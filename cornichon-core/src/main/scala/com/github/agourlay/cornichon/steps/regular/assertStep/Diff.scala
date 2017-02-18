@@ -86,7 +86,7 @@ object Diff {
 
 }
 
-private case class MovedElement[A: Show](element: A, newIndice: Int, oldIndice: Int) {
+private case class MovedElement[A](element: A, newIndice: Int, oldIndice: Int) {
   val changed = newIndice != oldIndice
 }
 

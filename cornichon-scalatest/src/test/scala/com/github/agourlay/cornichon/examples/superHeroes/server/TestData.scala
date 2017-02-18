@@ -10,7 +10,7 @@ class TestData(implicit executionContext: ExecutionContext) {
   val superheroesBySession = new mutable.HashMap[String, mutable.Set[SuperHero]] with mutable.MultiMap[String, SuperHero]
 
   def createSession(): Future[String] = Future {
-    val newSessionId = Random.alphanumeric.take(6).mkString
+    val newSessionId = Random.alphanumeric.take(8).mkString
     initialPublishers.foreach(publishersBySession.addBinding(newSessionId, _))
     initialSuperheroes.foreach(superheroesBySession.addBinding(newSessionId, _))
     newSessionId

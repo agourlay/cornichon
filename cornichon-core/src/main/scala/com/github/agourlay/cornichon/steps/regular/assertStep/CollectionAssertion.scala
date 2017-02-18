@@ -7,7 +7,7 @@ import cats.syntax.show._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
 import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 
-abstract class CollectionAssertion[A: Show] extends Assertion
+abstract class CollectionAssertion[A] extends Assertion
 
 case class CollectionNotEmptyAssertion[A: Show](collection: Iterable[A], name: String = "collection") extends CollectionAssertion[A] {
   def withName(collectionName: String) = copy(name = collectionName)
@@ -16,7 +16,7 @@ case class CollectionNotEmptyAssertion[A: Show](collection: Iterable[A], name: S
     if (collection.nonEmpty) valid(Done) else invalidNel(CollectionNotEmptyAssertionError(collection, name))
 }
 
-case class CollectionNotEmptyAssertionError[A: Show](collection: Iterable[A], name: String) extends CornichonError {
+case class CollectionNotEmptyAssertionError[A](collection: Iterable[A], name: String) extends CornichonError {
   val baseErrorMessage = s"'$name' expected to be non empty"
 }
 

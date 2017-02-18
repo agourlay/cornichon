@@ -129,7 +129,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
               CornichonHttpResponse(
                 status = StatusCodes.OK.intValue,
                 headers = Seq.empty,
-                body = Json.fromValues(events.map(_.asJson).toList).show
+                body = Json.fromValues(events.map(_.asJson)).show
               )
             }
           Await.result(r, takeWithin)

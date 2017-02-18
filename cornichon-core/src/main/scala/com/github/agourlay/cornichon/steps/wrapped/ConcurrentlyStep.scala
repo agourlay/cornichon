@@ -36,7 +36,7 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
         Future.successful(initialRunState.withSession(updatedSession).appendLogs(updatedLogs), rightDone)
       } {
         case (s, failedXor) ⇒
-          val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Concurrently block failed", initialDepth)
+          val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction("Concurrently block failed", initialDepth)
           Future.successful(initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor)
       }.recover {
         case NonFatal(e) ⇒

@@ -6,7 +6,7 @@ import cats.data.Validated._
 import cats.data._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
 
-abstract class OrderAssertion[A: Show: Order] extends Assertion
+abstract class OrderAssertion[A] extends Assertion
 
 case class LessThanAssertion[A: Show: Order](left: A, right: A) extends OrderAssertion[A] {
   val validated: ValidatedNel[CornichonError, Done] =

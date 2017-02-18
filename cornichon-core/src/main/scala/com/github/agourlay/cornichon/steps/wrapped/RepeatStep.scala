@@ -16,7 +16,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
 
-    def repeatSuccessSteps(retriesNumber: Long, runState: RunState): Future[(Long, RunState, Either[FailedStep, Done])] = {
+    def repeatSuccessSteps(retriesNumber: Int, runState: RunState): Future[(Int, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
       val rs = runState.resetLogs
       val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
@@ -60,7 +60,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
   }
 }
 
-case class RepeatBlockContainFailedSteps(failedOccurence: Long, errors: NonEmptyList[CornichonError]) extends CornichonError {
+case class RepeatBlockContainFailedSteps(failedOccurence: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
   val baseErrorMessage = s"Repeat block failed at occurence $failedOccurence"
   override val causedBy = Some(errors)
 }

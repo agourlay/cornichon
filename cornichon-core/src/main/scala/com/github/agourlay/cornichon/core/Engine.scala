@@ -16,7 +16,7 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
 
   private implicit val ec = executionContext
 
-  def runScenario(session: Session, finallySteps: List[Step] = List.empty)(scenario: Scenario): Future[ScenarioReport] = {
+  def runScenario(session: Session, finallySteps: List[Step] = Nil)(scenario: Scenario): Future[ScenarioReport] = {
     val initMargin = 1
     val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
     val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
@@ -39,7 +39,7 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
   def runSteps(runState: RunState): Future[(RunState, FailedStep Either Done)] =
     runState.remainingSteps.headOption.map { currentStep ⇒
       val preparedStep = stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
-        (xorStep, stepPrepared) ⇒ xorStep.flatMap(stepPrepared.run(runState.session))
+        (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
       }
       preparedStep.fold(
         ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, NonEmptyList.of(ce))),
