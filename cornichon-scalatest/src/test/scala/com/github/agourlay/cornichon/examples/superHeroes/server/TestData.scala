@@ -10,17 +10,13 @@ class TestData(implicit executionContext: ExecutionContext) {
   val superheroesBySession = new TrieMap[String, Set[SuperHero]]
 
   private def addBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]) =
-    map.get(id).fold(map += ((id, Set(a)))) { set ⇒
-      // almost atomic...
-      map -= id
-      map += ((id, set + a))
+    map.get(id).fold[Unit](map += ((id, Set(a)))) { set ⇒
+      map.update(id, set + a)
     }
 
   private def removeBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]) =
-    map.get(id).map { set ⇒
-      // almost atomic...
-      map -= id
-      map += ((id, set - a))
+    map.get(id).foreach[Unit] { set ⇒
+      map.update(id, set - a)
     }
 
   def createSession(): Future[String] = Future {
