@@ -7,7 +7,7 @@ import scala.concurrent.duration._
 
 class MathScenario extends CornichonFeature with MathSteps {
 
-  lazy val feature = Feature("Cornichon feature math examples") {
+  def feature = Feature("Cornichon feature math examples") {
 
     Scenario("Simple addition") {
 

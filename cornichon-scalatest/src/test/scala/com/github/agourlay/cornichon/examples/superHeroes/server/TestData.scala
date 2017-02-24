@@ -1,18 +1,32 @@
 package com.github.agourlay.cornichon.examples.superHeroes.server
 
-import scala.collection.mutable
+import scala.collection.concurrent.TrieMap
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Random
 
 class TestData(implicit executionContext: ExecutionContext) {
 
-  val publishersBySession = new mutable.HashMap[String, mutable.Set[Publisher]] with mutable.MultiMap[String, Publisher]
-  val superheroesBySession = new mutable.HashMap[String, mutable.Set[SuperHero]] with mutable.MultiMap[String, SuperHero]
+  val publishersBySession = new TrieMap[String, Set[Publisher]]
+  val superheroesBySession = new TrieMap[String, Set[SuperHero]]
+
+  private def addBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]) =
+    map.get(id).fold(map += ((id, Set(a)))) { set ⇒
+      // almost atomic...
+      map -= id
+      map += ((id, set + a))
+    }
+
+  private def removeBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]) =
+    map.get(id).map { set ⇒
+      // almost atomic...
+      map -= id
+      map += ((id, set - a))
+    }
 
   def createSession(): Future[String] = Future {
     val newSessionId = Random.alphanumeric.take(8).mkString
-    initialPublishers.foreach(publishersBySession.addBinding(newSessionId, _))
-    initialSuperheroes.foreach(superheroesBySession.addBinding(newSessionId, _))
+    initialPublishers.foreach(addBinding(newSessionId, _, publishersBySession))
+    initialSuperheroes.foreach(addBinding(newSessionId, _, superheroesBySession))
     newSessionId
   }
 
@@ -27,7 +41,7 @@ class TestData(implicit executionContext: ExecutionContext) {
   def addPublisher(sessionId: String, p: Publisher) = Future {
     if (publishersBySessionUnsafe(sessionId).exists(_.name == p.name)) throw PublisherAlreadyExists(p.name)
     else {
-      publishersBySession.addBinding(sessionId, p)
+      addBinding(sessionId, p, publishersBySession)
       p
     }
   }
@@ -44,14 +58,14 @@ class TestData(implicit executionContext: ExecutionContext) {
     publisherByName(sessionId, s.publisher.name).map { _ ⇒
       if (superheroesBySessionUnsafe(sessionId).exists(_.name == s.name)) throw SuperHeroAlreadyExists(s.name)
       else {
-        superheroesBySession.addBinding(sessionId, s)
+        addBinding(sessionId, s, superheroesBySession)
         s
       }
     }
 
   def deleteSuperhero(sessionId: String, name: String) =
     superheroByName(sessionId, name).map { sh ⇒
-      superheroesBySession.removeBinding(sessionId, sh)
+      removeBinding(sessionId, sh, superheroesBySession)
       sh
     }
 

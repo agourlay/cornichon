@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 
 class SuperHeroesScenario extends CornichonFeature {
 
-  lazy val feature =
+  def feature =
     Feature("Cornichon feature example") {
 
       Scenario("demonstrate CRUD features") {
