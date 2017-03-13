@@ -31,8 +31,7 @@ class EngineBench {
     println("Creating ActorSystem...")
     actorSystem = ActorSystem("cornichon-actor-system")
     scheduler = actorSystem.scheduler
-    println(actorSystem.name)
-    println("Creating engine...")
+    println("Creating Engine...")
     val resolver = Resolver.withoutExtractor()
     ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
     engine = Engine.withStepTitleResolver(resolver, ec)(scheduler)
@@ -41,14 +40,14 @@ class EngineBench {
   @TearDown(Level.Trial)
   final def afterAll: Unit = {
     println("")
-    println(s"Shutting down actor system ${actorSystem.name}...")
-    actorSystem.terminate()
-    println("Shutting down executionContext")
+    println(s"Shutting down ActorSystem...")
+    Await.result(actorSystem.terminate(), Duration.Inf)
+    println("Shutting down ExecutionContext...")
     ec.shutdown()
   }
 
-  // [info] Benchmark                 Mode  Cnt  Score   Error  Units
-  // [info] EngineBench.lotsOfSteps  thrpt   20  3.411 ± 0.122  ops/s
+//  [info] Benchmark                 Mode  Cnt    Score   Error  Units
+//  [info] EngineBench.lotsOfSteps  thrpt   20  360.970 ± 4.298  ops/s
   @Benchmark
   def lotsOfSteps = {
     val f = engine.runScenario(session)(scenario)
@@ -60,6 +59,6 @@ class EngineBench {
 object EngineBench {
   val session = Session.newEmpty
   val step = AssertStep("addition step", s ⇒ GenericEqualityAssertion(2 + 1, 3))
-  val tenThousandSteps = List.fill(100000)(step)
-  val scenario = Scenario("test", tenThousandSteps)
+  val steps = List.fill(1000)(step)
+  val scenario = Scenario("test", steps)
 }
