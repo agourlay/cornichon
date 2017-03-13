@@ -134,7 +134,7 @@ object CornichonJson extends CornichonJson {
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {
-    def gql(args: Any*): GqlString = {
+    def gqljson(args: Any*): GqlString = {
       val input = sc.s(args: _*)
       GqlString(input)
     }

@@ -67,7 +67,7 @@ trait HttpDsl extends HttpRequestsDsl {
 
   private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, Json]])
 
-  def query_gql(url: String) = QueryGQL(url, Document(List.empty))
+  def query_gql(url: String) = QueryGQL(url, Document(Vector.empty))
 
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
 

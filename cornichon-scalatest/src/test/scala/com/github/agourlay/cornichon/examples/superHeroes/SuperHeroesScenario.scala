@@ -127,7 +127,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         When I post("/superheroes").withParams(
           "sessionId" → "<session-id>"
-        ).withBody(gql"""
+        ).withBody(gqljson"""
           {
             name: "Scalaman"
             realName: "Oleg Ilyenko"
@@ -473,7 +473,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Support for GraphQL JSON input for lightweight definition
         // Requires the import of com.github.agourlay.cornichon.json.CornichonJson._
         Then assert body.path("data.superheroByName").is(
-          gql"""
+          gqljson"""
           {
             name : "Batman"
             city : "Gotham city"
