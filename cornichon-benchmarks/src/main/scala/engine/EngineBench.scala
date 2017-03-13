@@ -2,7 +2,7 @@ package engine
 
 import java.util.concurrent.Executors
 
-import akka.actor.{ ActorSystem, Scheduler }
+import akka.actor.ActorSystem
 import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
 import com.github.agourlay.cornichon.resolver.Resolver
@@ -10,7 +10,7 @@ import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Gene
 import org.openjdk.jmh.annotations._
 import engine.EngineBench._
 
-import scala.concurrent.{ ExecutionContext, _ }
+import scala.concurrent._
 import scala.concurrent.duration._
 
 @State(Scope.Benchmark)
@@ -21,20 +21,20 @@ import scala.concurrent.duration._
 class EngineBench {
 
   var actorSystem: ActorSystem = _
-  var scheduler: Scheduler = _
   var ec: ExecutionContextExecutorService = _
   var engine: Engine = _
+  @Param(Array("10", "100", "1000"))
+  var stepsNumber: String = _
 
   @Setup(Level.Trial)
   final def beforeAll: Unit = {
     println("")
     println("Creating ActorSystem...")
-    actorSystem = ActorSystem("cornichon-actor-system")
-    scheduler = actorSystem.scheduler
+    actorSystem = ActorSystem()
     println("Creating Engine...")
     val resolver = Resolver.withoutExtractor()
     ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
-    engine = Engine.withStepTitleResolver(resolver, ec)(scheduler)
+    engine = Engine.withStepTitleResolver(resolver, ec)(actorSystem.scheduler)
   }
 
   @TearDown(Level.Trial)
@@ -46,10 +46,14 @@ class EngineBench {
     ec.shutdown()
   }
 
-//  [info] Benchmark                 Mode  Cnt    Score   Error  Units
-//  [info] EngineBench.lotsOfSteps  thrpt   20  360.970 ± 4.298  ops/s
+// [info] Benchmark                (stepsNumber)   Mode  Cnt      Score     Error  Units
+// [info] EngineBench.lotsOfSteps             10  thrpt   20  26756.661 ± 397.431  ops/s
+// [info] EngineBench.lotsOfSteps            100  thrpt   20   3243.976 ±  96.268  ops/s
+// [info] EngineBench.lotsOfSteps           1000  thrpt   20    370.277 ±   4.988  ops/s
   @Benchmark
   def lotsOfSteps = {
+    val steps = List.fill(stepsNumber.toInt)(step)
+    val scenario = Scenario("test scenario", steps)
     val f = engine.runScenario(session)(scenario)
     val res = Await.result(f, Duration.Inf)
     assert(res.isSuccess)
@@ -59,6 +63,4 @@ class EngineBench {
 object EngineBench {
   val session = Session.newEmpty
   val step = AssertStep("addition step", s ⇒ GenericEqualityAssertion(2 + 1, 3))
-  val steps = List.fill(1000)(step)
-  val scenario = Scenario("test", steps)
 }
