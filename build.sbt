@@ -191,7 +191,7 @@ lazy val library =
       val diffson       = "2.1.2"
       val sangria       = "1.1.0"
       val fansi         = "0.2.3"
-      val akkaHttpCirce = "1.12.0"
+      val akkaHttpCirce = "1.13.0"
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.0"
     }
