@@ -125,8 +125,8 @@ case class QueryGQL(url: String, query: Document, operationName: Option[String] 
   def withOperationName(operationName: String) = copy(operationName = Some(operationName))
 
   def withVariables[A: Encoder: Show](newVariables: (String, A)*) = {
-    val toJsonTuples = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }
-    copy(variables = variables.fold(Some(toJsonTuples.toMap))(v ⇒ Some(v ++ toJsonTuples)))
+    val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }(scala.collection.breakOut)
+    copy(variables = variables.fold(Some(vars))(v ⇒ Some(v ++ vars)))
   }
 }
 
