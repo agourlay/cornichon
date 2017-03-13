@@ -20,7 +20,7 @@ class OpenMovieDatabase extends CornichonFeature {
           {
             "Title": "Game of Thrones",
             "Year": "2011–",
-            "Rated": "TV-MA",
+            "Rated": "R",
             "Released": "17 Apr 2011",
             "Runtime": "56 min",
             "Genre": "Adventure, Drama, Fantasy",
@@ -44,7 +44,7 @@ class OpenMovieDatabase extends CornichonFeature {
           {
             "Title": "Game of Thrones",
             "Year": "2011–",
-            "Rated": "TV-MA",
+            "Rated": "R",
             "Released": "17 Apr 2011"
           }
           """)
