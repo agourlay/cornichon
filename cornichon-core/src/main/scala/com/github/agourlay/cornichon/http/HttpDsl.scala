@@ -25,7 +25,6 @@ import com.github.agourlay.cornichon.http.steps.HttpListenSteps._
 import com.github.agourlay.cornichon.util.Printing._
 import io.circe.Encoder
 import sangria.ast.Document
-import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration._
 
@@ -46,7 +45,7 @@ trait HttpDsl extends HttpRequestsDsl {
 
   implicit def queryGqlToStep(queryGQL: QueryGQL): EffectStep = {
     // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
-    val prettyPayload = queryGQL.query.source.getOrElse(QueryRenderer.render(queryGQL.query, QueryRenderer.Pretty))
+    val prettyPayload = queryGQL.querySource
 
     val prettyVar = queryGQL.variables.fold("") { variables ⇒
       " and with variables " + variables.show
@@ -56,7 +55,7 @@ trait HttpDsl extends HttpRequestsDsl {
 
     EffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
-      effect = http.requestEffect(post(queryGQL.url).withBody(queryGQL.payload))
+      effect = http.requestEffect(queryGQL)
     )
   }
 

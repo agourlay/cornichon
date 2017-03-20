@@ -130,11 +130,12 @@ case class QueryGQL(url: String, query: Document, operationName: Option[String] 
     copy(variables = variables.fold(Some(vars))(v ⇒ Some(v ++ vars)))
   }
 
+  lazy val querySource = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
+
   lazy val payload: String = {
     import io.circe.generic.auto._
     import io.circe.syntax._
 
-    val querySource = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Compact))
     GqlPayload(querySource, operationName, variables).asJson.show
   }
 
