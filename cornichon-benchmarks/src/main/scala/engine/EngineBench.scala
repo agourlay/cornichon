@@ -46,10 +46,10 @@ class EngineBench {
     ec.shutdown()
   }
 
-// [info] Benchmark                (stepsNumber)   Mode  Cnt      Score     Error  Units
-// [info] EngineBench.lotsOfSteps             10  thrpt   20  26756.661 ± 397.431  ops/s
-// [info] EngineBench.lotsOfSteps            100  thrpt   20   3243.976 ±  96.268  ops/s
-// [info] EngineBench.lotsOfSteps           1000  thrpt   20    370.277 ±   4.988  ops/s
+  // [info] Benchmark                (stepsNumber)   Mode  Cnt      Score     Error  Units
+  // [info] EngineBench.lotsOfSteps             10  thrpt   20  26756.661 ± 397.431  ops/s
+  // [info] EngineBench.lotsOfSteps            100  thrpt   20   3243.976 ±  96.268  ops/s
+  // [info] EngineBench.lotsOfSteps           1000  thrpt   20    370.277 ±   4.988  ops/s
   @Benchmark
   def lotsOfSteps = {
     val steps = List.fill(stepsNumber.toInt)(step)
