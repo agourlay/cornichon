@@ -7,6 +7,7 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.Resolvable
 import io.circe.{ Encoder, Json }
 import sangria.ast.Document
+import sangria.renderer.QueryRenderer
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -128,5 +129,16 @@ case class QueryGQL(url: String, query: Document, operationName: Option[String] 
     val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }(scala.collection.breakOut)
     copy(variables = variables.fold(Some(vars))(v ⇒ Some(v ++ vars)))
   }
+
+  lazy val payload: String = {
+    import io.circe.generic.auto._
+    import io.circe.syntax._
+
+    val querySource = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Compact))
+    GqlPayload(querySource, operationName, variables).asJson.show
+  }
+
+  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, Json]])
+
 }
 

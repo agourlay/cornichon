@@ -23,7 +23,7 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.http.steps.HttpListenSteps._
 import com.github.agourlay.cornichon.util.Printing._
-import io.circe.{ Encoder, Json }
+import io.circe.Encoder
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
@@ -45,13 +45,8 @@ trait HttpDsl extends HttpRequestsDsl {
     )
 
   implicit def queryGqlToStep(queryGQL: QueryGQL): EffectStep = {
-    import io.circe.generic.auto._
-    import io.circe.syntax._
-
     // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
-    val payload = queryGQL.query.source.getOrElse(QueryRenderer.render(queryGQL.query, QueryRenderer.Pretty))
-
-    val fullPayload = GqlPayload(payload, queryGQL.operationName, queryGQL.variables).asJson.show
+    val prettyPayload = queryGQL.query.source.getOrElse(QueryRenderer.render(queryGQL.query, QueryRenderer.Pretty))
 
     val prettyVar = queryGQL.variables.fold("") { variables ⇒
       " and with variables " + variables.show
@@ -60,12 +55,13 @@ trait HttpDsl extends HttpRequestsDsl {
     val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")
 
     EffectStep(
-      title = s"query GraphQL endpoint ${queryGQL.url} with query $payload$prettyVar$prettyOp",
-      effect = http.requestEffect(post(queryGQL.url).withBody(fullPayload))
+      title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
+      effect = http.requestEffect(post(queryGQL.url).withBody(queryGQL.payload))
     )
   }
 
-  private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, Json]])
+  implicit def queryGqlToHttpRequest(queryGQL: QueryGQL): HttpRequest[String] =
+    post(queryGQL.url).withBody(queryGQL.payload)
 
   def query_gql(url: String) = QueryGQL(url, Document(Vector.empty))
 
