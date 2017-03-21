@@ -251,13 +251,13 @@ import sangria.macros._
 
 - GraphQL JSON
 
-all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gql``` StringContext.
+all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gqljson``` StringContext.
 
 ```scala
 import com.github.agourlay.cornichon.json.CornichonJson._
 
 And assert body.ignoring("city", "publisher").is(
-  gql"""
+  gqljson"""
   {
     name: "Batman",
     realName: "Bruce Wayne",
