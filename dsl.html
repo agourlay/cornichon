@@ -251,12 +251,12 @@
   <li>GraphQL JSON</li>
 </ul>
 
-<p>all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the <code class="highlighter-rouge">gql</code> StringContext.</p>
+<p>all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the <code class="highlighter-rouge">gqljson</code> StringContext.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.json.CornichonJson._</span>
 
 <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">ignoring</span><span class="o">(</span><span class="s">"city"</span><span class="o">,</span> <span class="s">"publisher"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
-  <span class="n">gql</span><span class="s">"""
+  <span class="n">gqljson</span><span class="s">"""
   {
     name: "Batman",
     realName: "Bruce Wayne",
