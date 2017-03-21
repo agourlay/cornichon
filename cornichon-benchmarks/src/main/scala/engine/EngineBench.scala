@@ -17,7 +17,12 @@ import scala.concurrent.duration._
 @BenchmarkMode(Array(Mode.Throughput))
 @Warmup(iterations = 20)
 @Measurement(iterations = 20)
-@Fork(value = 1)
+@Fork(value = 1) //@Fork(value = 1, jvmArgsAppend = Array(
+//  "-XX:+UnlockCommercialFeatures",
+//  "-XX:+FlightRecorder",
+//  "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
+//  "-XX:FlightRecorderOptions=settings=./openjdk/jdk1.8.0/jre/lib/jfr/profile.jfc,samplethreads=true"
+//))
 class EngineBench {
 
   var actorSystem: ActorSystem = _
