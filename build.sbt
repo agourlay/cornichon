@@ -179,7 +179,7 @@ lazy val scalariformSettings = SbtScalariform.scalariformSettings ++ Seq(
 lazy val library =
   new {
     object Version {
-      val scalaTest     = "3.0.1"
+      val scalaTest     = "3.0.3"
       val akkaActor     = "2.4.17"
       val akkaHttp      = "10.0.5"
       val cats          = "0.9.0"
