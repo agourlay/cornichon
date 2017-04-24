@@ -27,9 +27,9 @@ class StarWars extends CornichonFeature {
             "gender": "male",
             "homeworld": "http://swapi.co/api/planets/1/",
             "films": [
+              "http://swapi.co/api/films/2/",
               "http://swapi.co/api/films/6/",
               "http://swapi.co/api/films/3/",
-              "http://swapi.co/api/films/2/",
               "http://swapi.co/api/films/1/",
               "http://swapi.co/api/films/7/"
             ],
