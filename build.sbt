@@ -1,6 +1,5 @@
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
 import sbt.Developer
 import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
@@ -136,9 +135,9 @@ lazy val docs =
     .dependsOn(core, scalatest)
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(ScalaUnidocPlugin)
+    .enablePlugins(GhpagesPlugin)
     .settings(commonSettings)
     .settings(docSettings)
-    .settings(ghpages.settings)
     .settings(noPublishSettings)
 
 lazy val docSettings = Seq(
