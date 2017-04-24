@@ -33,8 +33,8 @@ object StatusSteps {
       action = s ⇒
       CustomMessageEqualityAssertion(
         expected = expected,
-        actual = s.get(lastResponseStatusKey).toInt,
-        customMessage = statusError(expected, s.get(lastResponseBodyKey))
+        actual = s.getUnsafe(lastResponseStatusKey).toInt,
+        customMessage = statusError(expected, s.getUnsafe(lastResponseBodyKey))
       )
     )
 
@@ -43,8 +43,8 @@ object StatusSteps {
       action = s ⇒
       CustomMessageEqualityAssertion(
         expected = kind,
-        actual = StatusKind.computeKind(s.get(lastResponseStatusKey).toInt),
-        customMessage = statusKindError(kind, s.get(lastResponseStatusKey).toInt, s.get(lastResponseBodyKey))
+        actual = StatusKind.computeKind(s.getUnsafe(lastResponseStatusKey).toInt),
+        customMessage = statusKindError(kind, s.getUnsafe(lastResponseStatusKey).toInt, s.getUnsafe(lastResponseBodyKey))
       )
     )
 

@@ -44,7 +44,7 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "increment captured counter",
         s ⇒ {
           uglyCounter = uglyCounter + 1
-          GenericEqualityAssertion(s.get(indiceKeyName), uglyCounter.toString)
+          GenericEqualityAssertion(s.getUnsafe(indiceKeyName), uglyCounter.toString)
         }
       ) :: Nil
       val repeatStep = RepeatStep(nested, loop, Some(indiceKeyName))

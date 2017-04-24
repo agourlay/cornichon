@@ -34,16 +34,23 @@ object JsonPath {
   val emptyJsonPath = JsonPath()
 
   def parse(path: String) = {
-    if (path == root) emptyJsonPath
+    if (path == root) Right(emptyJsonPath)
     else {
       val segments = JsonPathParser.parseJsonPath(path)
-      fromSegments(segments)
+      segments.map(fromSegments)
     }
   }
 
-  def run(path: String, json: Json) = JsonPath.parse(path).run(json)
+  def parseUnsafe(path: String) =
+    parse(path).fold(e ⇒ throw e.toException, identity)
 
-  def run(path: String, json: String) = parseJson(json).map(JsonPath.parse(path).run)
+  def run(path: String, json: Json) = JsonPath.parse(path).map(_.run(json))
+
+  def run(path: String, json: String) =
+    for {
+      json ← parseJson(json)
+      jsonPath ← JsonPath.parse(path)
+    } yield jsonPath.run(json)
 
   def fromSegments(segments: List[JsonSegment]) = {
     val operations = segments.map {

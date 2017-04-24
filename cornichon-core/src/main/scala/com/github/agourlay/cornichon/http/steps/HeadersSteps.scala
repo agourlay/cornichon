@@ -17,7 +17,7 @@ object HeadersSteps {
     def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${displayStringPairs(expected)}",
       action = s ⇒ {
-      val sessionHeaders = s.get(headersSessionKey)
+      val sessionHeaders = s.getUnsafe(headersSessionKey)
       val actualValue = sessionHeaders.split(",").toList
       val expectedValue = expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }
       GenericEqualityAssertion(expectedValue, actualValue)
@@ -26,7 +26,7 @@ object HeadersSteps {
 
     def hasSize(expectedSize: Int) = AssertStep(
       title = s"headers size is '$expectedSize'",
-      action = s ⇒ CollectionSizeAssertion(s.get(headersSessionKey).split(","), expectedSize).withName("headers")
+      action = s ⇒ CollectionSizeAssertion(s.getUnsafe(headersSessionKey).split(","), expectedSize).withName("headers")
     )
 
     def contain(elements: (String, String)*) = AssertStep(
@@ -35,7 +35,7 @@ object HeadersSteps {
       CustomMessageEqualityAssertion.fromSession(s, headersSessionKey) { (session, sessionHeaders) ⇒
         val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
         val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
-        (true, predicate, headersDoesNotContainError(displayStringPairs(elements), sessionHeaders))
+        Right((true, predicate, headersDoesNotContainError(displayStringPairs(elements), sessionHeaders)))
       }
     )
 
@@ -49,9 +49,10 @@ object HeadersSteps {
       title = s"headers contain field with name '$name'",
       action = s ⇒
       CustomMessageEqualityAssertion.fromSession(s, headersSessionKey) { (session, sessionHeaders) ⇒
-        val sessionHeadersValue = HttpService.decodeSessionHeaders(sessionHeaders)
-        val predicate = sessionHeadersValue.exists { case (hname, _) ⇒ hname == name }
-        (true, predicate, headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
+        for {
+          sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
+          predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
+        } yield (true, predicate, headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
       }
     )
 
@@ -59,15 +60,16 @@ object HeadersSteps {
       title = s"headers do not contain field with name '$name'",
       action = s ⇒
       CustomMessageEqualityAssertion.fromSession(s, headersSessionKey) { (session, sessionHeaders) ⇒
-        val sessionHeadersValue = HttpService.decodeSessionHeaders(sessionHeaders)
-        val predicate = !sessionHeadersValue.exists { case (hname, _) ⇒ hname == name }
-        (true, predicate, headersContainFieldWithNameError(name, sessionHeadersValue))
+        HttpService.decodeSessionHeaders(sessionHeaders).map { sessionHeadersValue ⇒
+          val predicate = !sessionHeadersValue.exists { case (hname, _) ⇒ hname == name }
+          (true, predicate, headersContainFieldWithNameError(name, sessionHeadersValue))
+        }
       }
     )
   }
 
   def headersDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
-    val prettyHeaders = displayStringPairs(decodeSessionHeaders(sourceArray))
+    val prettyHeaders = displayStringPairs(decodeSessionHeaders(sourceArray).fold(e ⇒ throw e.toException, _.toSeq))
     s"""expected headers to contain '$expected' but it is not the case with headers:
        |$prettyHeaders""".stripMargin
   }

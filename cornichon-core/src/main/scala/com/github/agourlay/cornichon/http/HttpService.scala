@@ -4,7 +4,11 @@ import akka.actor.Scheduler
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
 import cats.instances.future._
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
@@ -41,7 +45,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       paramsResolved ← resolveParams(url, params)(s)
-      headersResolved ← resolver.fillPlaceholders(headers ++ extractWithHeadersSession(s))(s)
+      extractedWithHeaders ← extractWithHeadersSession(s)
+      headersResolved ← resolver.fillPlaceholders(headers ++ extractedWithHeaders)(s)
     } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved)
   }
 
@@ -85,7 +90,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       newSession ← fillInSessionWithResponse(session, resExpected, extractor)
     } yield newSession
 
-  private def commonSessionExtraction(session: Session, response: CornichonHttpResponse): Session =
+  private def commonSessionExtraction(session: Session, response: CornichonHttpResponse) =
     session.addValues(Seq(
       lastResponseStatusKey → response.status.intValue().toString,
       lastResponseBodyKey → response.body,
@@ -107,9 +112,10 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
           }
     }
 
-  private def extractWithHeadersSession(session: Session): Seq[(String, String)] =
-    session.getOpt(withHeadersKey).fold(Seq.empty[(String, String)]) { headers ⇒
-      decodeSessionHeaders(headers)
+  private def extractWithHeadersSession(session: Session): Either[CornichonError, Seq[(String, String)]] =
+    session.getOpt(withHeadersKey) match {
+      case Some(h) ⇒ decodeSessionHeaders(h)
+      case None    ⇒ Right(Seq.empty)
     }
 
   private def withBaseUrl(input: String) =
@@ -119,21 +125,18 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     else baseUrl + input
 
   private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Either[CornichonError, CornichonHttpResponse]]): EitherT[Future, CornichonError, CornichonHttpResponse] = {
-    val failedAfter = Futures.failAfter(t)(f)(TimeoutErrorAfter(request, t))
-      .recover {
-        case NonFatal(failure) ⇒ failure match {
-          case t @ TimeoutErrorAfter(_, _) ⇒ Left(t)
-          case t: Throwable                ⇒ Left(RequestError(request, t))
-        }
-      }
+    val failedAfter = Futures
+      .failAfter(t)(f)(TimeoutErrorAfter(request, t).toException)
+      .recover { case NonFatal(failure) ⇒ Left(RequestError(request, failure)) }
+
     EitherT(failedAfter)
   }
 
-  def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Session] =
-    s ⇒ runRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
+  def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Either[CornichonError, Session]] =
+    s ⇒ runRequest(request, expectedStatus, extractor)(s).map(_._2).value
 
-  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Future[Session] =
-    s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).fold(e ⇒ throw e, _._2)
+  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Future[Either[CornichonError, Session]] =
+    s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).map(_._2).value
 
   def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
@@ -174,12 +177,12 @@ object HttpService {
       case (name, value) ⇒ encodeSessionHeader(name, value)
     }.mkString(interHeadersValueDelim.toString)
 
-  def decodeSessionHeaders(headers: String): Seq[(String, String)] =
-    headers.split(interHeadersValueDelim).toSeq.map { header ⇒
+  def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
+    headers.split(interHeadersValueDelim).toList.traverseU { header ⇒
       val elms = header.split(headersKeyValueDelim)
       if (elms.length != 2)
-        throw BadSessionHeadersEncoding(header)
+        Left(BadSessionHeadersEncoding(header))
       else
-        (elms(0), elms(1))
+        Right((elms(0), elms(1)))
     }
 }

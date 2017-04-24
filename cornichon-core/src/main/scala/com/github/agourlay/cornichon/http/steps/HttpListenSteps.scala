@@ -12,7 +12,7 @@ object HttpListenSteps {
   case class HttpListenStepBuilder(name: String, resolver: Resolver) {
     def received_calls(count: Int) = AssertStep(
       title = s"HTTP mock server '$name' received '$count' calls",
-      action = s ⇒ GenericEqualityAssertion(count, s.get(s"$name$nbReceivedCallsSuffix").toInt)
+      action = s ⇒ GenericEqualityAssertion(count, s.getUnsafe(s"$name$nbReceivedCallsSuffix").toInt)
     )
 
     def received_requests =

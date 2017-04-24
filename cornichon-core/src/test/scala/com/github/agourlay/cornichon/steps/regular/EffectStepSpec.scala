@@ -14,7 +14,7 @@ class EffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         val session = Session.newEmpty
         val step = EffectStep(title = "buggy effect", s ⇒ Future {
           6 / 0
-          s
+          Right(s)
         })
         val s = Scenario("scenario with broken effect step", step :: Nil)
         engine.runScenario(session)(s).map(_.isSuccess should be(false))

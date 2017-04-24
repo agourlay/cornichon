@@ -20,7 +20,7 @@ object SessionSteps {
 
     def is(expected: String) = AssertStep(
       title = s"session key '$key' is '$expected'",
-      action = s ⇒ GenericEqualityAssertion(resolver.fillPlaceholdersUnsafe(expected)(s), s.get(key, indice))
+      action = s ⇒ GenericEqualityAssertion(resolver.fillPlaceholdersUnsafe(expected)(s), s.getUnsafe(key, indice))
     )
 
     def isPresent = AssertStep(

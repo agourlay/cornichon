@@ -8,14 +8,15 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
-  def parseDataTable(input: String) = {
+  def parseDataTable(input: String): Either[CornichonError, DataTable] = {
     val p = new DataTableParser(input)
     p.dataTableRule.run() match {
       case Failure(e: ParseError) ⇒
-        throw DataTableParseError(p.formatError(e, new ErrorFormatter(showTraces = true)))
+        Left(DataTableParseError(p.formatError(e, new ErrorFormatter(showTraces = true))))
       case Failure(e: Throwable) ⇒
-        throw DataTableError(e, input)
-      case Success(dt) ⇒ dt
+        Left(DataTableError(e, input))
+      case Success(dt) ⇒
+        Right(dt)
     }
   }
 }
@@ -29,7 +30,7 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
   def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
 
-  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseString(_).fold(e ⇒ throw e, identity)))) }
+  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseStringUnsafe(_)))) }
 
   val delims = CharPredicate(delimeter, '\r', '\n')
 

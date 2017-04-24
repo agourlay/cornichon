@@ -40,8 +40,8 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
       }
     }
 
-    Either.catchNonFatal(CornichonJson.parseDataTable(where)).fold(
-      t ⇒ Future.successful(exceptionToFailureStep(this, initialRunState, NonEmptyList.of(CornichonError.fromThrowable(t)))),
+    CornichonJson.parseDataTable(where).fold(
+      t ⇒ Future.successful(exceptionToFailureStep(this, initialRunState, NonEmptyList.of(t))),
       parsedTable ⇒ {
         val inputs = parsedTable.map { line ⇒
           line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }

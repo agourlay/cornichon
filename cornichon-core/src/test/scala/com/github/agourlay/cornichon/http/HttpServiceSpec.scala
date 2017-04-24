@@ -34,17 +34,17 @@ class HttpServiceSpec extends WordSpec
         val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, NoOpExtraction)
-        filledSession.value.get("last-response-status") should be("200")
-        filledSession.value.get("last-response-body") should be("hello world")
+        filledSession.value.getUnsafe("last-response-status") should be("200")
+        filledSession.value.getUnsafe("last-response-body") should be("hello world")
       }
 
       "extract content with RootResponseExtraction" in {
         val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil, "hello world")
         val filledSession = service.fillInSessionWithResponse(s, resp, RootExtractor("copy-body"))
-        filledSession.value.get("last-response-status") should be("200")
-        filledSession.value.get("last-response-body") should be("hello world")
-        filledSession.value.get("copy-body") should be("hello world")
+        filledSession.value.getUnsafe("last-response-status") should be("200")
+        filledSession.value.getUnsafe("last-response-body") should be("hello world")
+        filledSession.value.getUnsafe("copy-body") should be("hello world")
       }
 
       "extract content with PathResponseExtraction" in {
@@ -56,15 +56,15 @@ class HttpServiceSpec extends WordSpec
             }
           """)
         val filledSession = service.fillInSessionWithResponse(s, resp, PathExtractor("name", "part-of-body"))
-        filledSession.value.get("last-response-status") should be("200")
-        filledSession.value.get("last-response-body") should be(
+        filledSession.value.getUnsafe("last-response-status") should be("200")
+        filledSession.value.getUnsafe("last-response-body") should be(
           """
             {
               "name" : "batman"
             }
           """
         )
-        filledSession.value.get("part-of-body") should be("batman")
+        filledSession.value.getUnsafe("part-of-body") should be("batman")
       }
     }
 
@@ -92,9 +92,7 @@ class HttpServiceSpec extends WordSpec
 
     "decodeSessionHeaders" must {
       "fail if wrong format" in {
-        assertThrows[BadSessionHeadersEncoding] {
-          HttpService.decodeSessionHeaders("headerkey-headervalue")
-        }
+        HttpService.decodeSessionHeaders("headerkey-headervalue") should be(left)
       }
     }
   }

@@ -11,7 +11,7 @@ object MatcherService {
 
   // Throws if it finds an unregistered matcher
   def findAllMatchers(input: String): List[Matcher] =
-    resolver.findAllMatchers(input).fold(e ⇒ throw e, identity)
+    resolver.findAllMatchers(input).fold(e ⇒ throw e.toException, identity)
 
   // Removes JSON fields targetted by matchers and builds corresponding matchers assertions
   def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json): (Json, Json, Seq[MatcherAssertion]) =

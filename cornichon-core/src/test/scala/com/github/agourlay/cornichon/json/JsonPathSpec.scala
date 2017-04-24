@@ -23,7 +23,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.parse("Name").run(input) should beRight(Json.fromString("John"))
+      JsonPath.run("Name", input) should beRight(Json.fromString("John"))
     }
 
     "select properly Int based on single field" in {
@@ -36,7 +36,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.parse("Age").run(input) should beRight(Json.fromInt(50))
+      JsonPath.run("Age", input) should beRight(Json.fromInt(50))
     }
 
     "select properly nested field in Object" in {
@@ -53,7 +53,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.parse("brother.Age").run(input) should beRight(Json.fromInt(50))
+      JsonPath.run("brother.Age", input) should beRight(Json.fromInt(50))
     }
 
     "select properly nested field in Array" in {
@@ -76,7 +76,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.parse("brothers[1].Age").run(input) should beRight(Json.fromInt(30))
+      JsonPath.run("brothers[1].Age", input) should beRight(Json.fromInt(30))
     }
 
     "select properly element of a root Array" in {
@@ -99,7 +99,7 @@ class JsonPathSpec extends WordSpec
           |}]
         """.stripMargin
 
-      JsonPath.parse("$[0].brothers[1].Age").run(input) should beRight(Json.fromInt(30))
+      JsonPath.run("$[0].brothers[1].Age", input) should beRight(Json.fromInt(30))
     }
   }
 }

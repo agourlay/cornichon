@@ -49,9 +49,14 @@ case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customM
 }
 
 object CustomMessageEqualityAssertion {
-  def fromSession[A: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ (A, A, A ⇒ String)) = {
-    val (expected, actual, details) = transformSessionValue(s, s.get(key))
-    CustomMessageEqualityAssertion(expected, actual, details)
+  def fromSession[A: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ Either[CornichonError, (A, A, A ⇒ String)]) = {
+    s.get(key).flatMap(transformSessionValue(s, _)).fold(
+      e ⇒ Assertion.failWith(e),
+      r ⇒ {
+        val (expected, actual, details) = r
+        CustomMessageEqualityAssertion(expected, actual, details)
+      }
+    )
   }
 }
 

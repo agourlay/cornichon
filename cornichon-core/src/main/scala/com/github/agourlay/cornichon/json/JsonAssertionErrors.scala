@@ -16,11 +16,11 @@ object JsonAssertionErrors {
         |$source""".stripMargin
   }
 
-  case object InvalidIgnoringConfigError extends CornichonError {
+  object InvalidIgnoringConfigError extends CornichonError {
     val baseErrorMessage = "usage of 'ignoring' and 'whiteListing' is mutually exclusive"
   }
 
-  case object UseIgnoringEach extends CornichonError {
+  object UseIgnoringEach extends CornichonError {
     val baseErrorMessage = "use 'ignoringEach' when asserting on an array"
   }
 

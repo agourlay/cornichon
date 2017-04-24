@@ -124,7 +124,7 @@ class CornichonJsonSpec extends WordSpec
           | "Age": 50
           |}
         """.stripMargin
-        val paths = Seq("2LettersName", "Name").map(JsonPath.parse)
+        val paths = Seq("2LettersName", "Name").map(JsonPath.parseUnsafe)
         removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
       }
 
@@ -153,7 +153,7 @@ class CornichonJsonSpec extends WordSpec
            |]
            |} """.stripMargin
 
-        val paths = Seq("name").map(JsonPath.parse)
+        val paths = Seq("name").map(JsonPath.parseUnsafe)
         removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
       }
 
@@ -191,7 +191,7 @@ class CornichonJsonSpec extends WordSpec
           |]
           |} """.stripMargin
 
-        val paths = Seq("brothers[0].name").map(JsonPath.parse)
+        val paths = Seq("brothers[0].name").map(JsonPath.parseUnsafe)
         removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
       }
 
@@ -231,7 +231,7 @@ class CornichonJsonSpec extends WordSpec
             |]
           """.stripMargin
 
-        val paths = Seq("age").map(JsonPath.parse)
+        val paths = Seq("age").map(JsonPath.parseUnsafe)
         removeFieldsByPath(refParser(input), paths) should be(Right(refParser(expected)))
       }
 
@@ -275,7 +275,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        val paths = Seq("people[*].age").map(JsonPath.parse)
+        val paths = Seq("people[*].age").map(JsonPath.parseUnsafe)
         removeFieldsByPath(refParser(input), paths) should be(Right(refParser(expected)))
       }
 
@@ -320,7 +320,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        val paths = Seq("brother[0].name").map(JsonPath.parse)
+        val paths = Seq("brother[0].name").map(JsonPath.parseUnsafe)
 
         removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
       }
@@ -493,7 +493,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("John"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Name")))
+        findAllJsonWithValue(List("John"), parseJsonUnsafe(input)) should be(List(JsonPath.parseUnsafe("$.Name")))
 
       }
 
@@ -512,7 +512,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("Paul"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Brother.Name")))
+        findAllJsonWithValue(List("Paul"), parseJsonUnsafe(input)) should be(List(JsonPath.parseUnsafe("$.Brother.Name")))
 
       }
 
@@ -537,7 +537,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("Bob"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Brothers[1].Name")))
+        findAllJsonWithValue(List("Bob"), parseJsonUnsafe(input)) should be(List(JsonPath.parseUnsafe("$.Brothers[1].Name")))
 
       }
 
@@ -553,7 +553,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("Coding"), parseJsonUnsafe(input)) should be(List(JsonPath.parse("$.Hobbies[2]")))
+        findAllJsonWithValue(List("Coding"), parseJsonUnsafe(input)) should be(List(JsonPath.parseUnsafe("$.Hobbies[2]")))
 
       }
     }

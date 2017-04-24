@@ -14,8 +14,8 @@ trait MathSteps {
     def equals(res: Int) = AssertStep(
       title = s"value of $arg1 + $arg2 should be $res",
       action = s ⇒ {
-      val v1 = s.get(arg1).toInt
-      val v2 = s.get(arg2).toInt
+      val v1 = s.getUnsafe(arg1).toInt
+      val v2 = s.getUnsafe(arg2).toInt
       GenericEqualityAssertion(res, v1 + v2)
     }
     )
@@ -37,22 +37,22 @@ trait MathSteps {
     def isBetween(low: Double, high: Double) =
       AssertStep(
         title = s"double value of '$source' is between '$low' and '$high'",
-        action = s ⇒ BetweenAssertion(low, s.get(source).toDouble, high)
+        action = s ⇒ BetweenAssertion(low, s.getUnsafe(source).toDouble, high)
       )
   }
 
-  def calculate_point_in_circle(target: String) = EffectStep(
+  def calculate_point_in_circle(target: String) = EffectStep.fromAsync(
     title = s"calculate points inside circle",
     effect = s ⇒ Future {
-    val x = s.get("x").toDouble
-    val y = s.get("y").toDouble
+    val x = s.getUnsafe("x").toDouble
+    val y = s.getUnsafe("y").toDouble
     val inside = Math.sqrt(x * x + y * y) <= 1
     s.addValue(target, if (inside) "1" else "0")
   }
   )
 
   def estimate_pi_from_ratio(inside: String, target: String) =
-    EffectStep(
+    EffectStep.fromAsync(
       title = s"estimate PI from ratio into key '$target'",
       effect = s ⇒ Future {
       val insides = s.getHistory(inside)
