@@ -80,6 +80,7 @@ lazy val core =
       name := "cornichon-core",
       libraryDependencies ++= Seq(
         library.akkaActor,
+        library.akkaStream,
         library.akkaHttp,
         library.akkaHttpCore,
         library.akkaSse,
@@ -195,8 +196,9 @@ lazy val library =
       val ficus         = "1.4.0"
     }
     val akkaActor     = "com.typesafe.akka"   %% "akka-actor"      % Version.akkaActor
-    val akkaHttp      = "com.typesafe.akka"   %% "akka-http-core"  % Version.akkaHttp
-    val akkaHttpCore  = "com.typesafe.akka"   %% "akka-http"       % Version.akkaHttp
+    val akkaStream    = "com.typesafe.akka"   %% "akka-stream"     % Version.akkaActor
+    val akkaHttpCore  = "com.typesafe.akka"   %% "akka-http-core"  % Version.akkaHttp
+    val akkaHttp      = "com.typesafe.akka"   %% "akka-http"       % Version.akkaHttp
     val akkHttpCirce  = "de.heikoseeberger"   %% "akka-http-circe" % Version.akkaHttpCirce
     val akkaSse       = "de.heikoseeberger"   %% "akka-sse"        % Version.akkaSse
     val catsMacro     = "org.typelevel"       %% "cats-macros"     % Version.cats
