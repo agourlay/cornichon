@@ -113,12 +113,9 @@ trait Dsl extends ProvidedInstances {
 
   def save(input: (String, String)) = {
     val (key, value) = input
-    EffectStep.fromSync(
+    EffectStep.fromSyncE(
       s"add value '$value' to session under key '$key' ",
-      s ⇒ {
-        val resolved = resolver.fillPlaceholdersUnsafe(value)(s)
-        s.addValue(key, resolved)
-      }
+      s ⇒ resolver.fillPlaceholders(value)(s).map(s.addValue(key, _))
     )
   }
 

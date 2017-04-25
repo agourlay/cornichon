@@ -42,13 +42,14 @@ case class Session(private val content: Map[String, Vector[String]]) {
   def getJsonUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
     getJson(key, stackingIndice, path).fold(ce ⇒ throw ce.toException, identity)
 
-  def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) = {
-    val res = for {
+  def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    for {
       json ← getJson(key, stackingIndice, path)
       field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
     } yield field
-    res.fold(ce ⇒ throw ce.toException, identity)
-  }
+
+  def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    getJsonStringField(key, stackingIndice, path).fold(ce ⇒ throw ce.toException, identity)
 
   def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] = getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
 

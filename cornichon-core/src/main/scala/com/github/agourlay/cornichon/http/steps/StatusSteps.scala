@@ -30,22 +30,30 @@ object StatusSteps {
   case object StatusStepBuilder {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = s ⇒
-      CustomMessageEqualityAssertion(
+      action = s ⇒ Assertion.either {
+      for {
+        lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
+        lastBody ← s.get(lastResponseBodyKey)
+      } yield CustomMessageEqualityAssertion(
         expected = expected,
-        actual = s.getUnsafe(lastResponseStatusKey).toInt,
-        customMessage = statusError(expected, s.getUnsafe(lastResponseBodyKey))
+        actual = lastResponseStatus,
+        customMessage = statusError(expected, lastBody)
       )
+    }
     )
 
     protected def isByKind(kind: Int) = AssertStep(
       title = s"status is ${StatusKind.kindLabel(kind)} ${StatusKind.kindDisplay(kind)}",
-      action = s ⇒
-      CustomMessageEqualityAssertion(
+      action = s ⇒ Assertion.either {
+      for {
+        lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
+        lastBody ← s.get(lastResponseBodyKey)
+      } yield CustomMessageEqualityAssertion(
         expected = kind,
-        actual = StatusKind.computeKind(s.getUnsafe(lastResponseStatusKey).toInt),
-        customMessage = statusKindError(kind, s.getUnsafe(lastResponseStatusKey).toInt, s.getUnsafe(lastResponseBodyKey))
+        actual = StatusKind.computeKind(lastResponseStatus),
+        customMessage = statusKindError(kind, lastResponseStatus, lastBody)
       )
+    }
     )
 
     def isSuccess = isByKind(2)

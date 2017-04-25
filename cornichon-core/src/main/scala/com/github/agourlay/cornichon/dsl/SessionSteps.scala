@@ -6,7 +6,7 @@ import cats.instances.boolean._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.resolver.Resolver
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, CustomMessageEqualityAssertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, CustomMessageEqualityAssertion, GenericEqualityAssertion }
 
 object SessionSteps {
 
@@ -20,7 +20,12 @@ object SessionSteps {
 
     def is(expected: String) = AssertStep(
       title = s"session key '$key' is '$expected'",
-      action = s ⇒ GenericEqualityAssertion(resolver.fillPlaceholdersUnsafe(expected)(s), s.getUnsafe(key, indice))
+      action = s ⇒ Assertion.either {
+      for {
+        filledPlaceholders ← resolver.fillPlaceholders(expected)(s)
+        keyValue ← s.get(key, indice)
+      } yield GenericEqualityAssertion(filledPlaceholders, keyValue)
+    }
     )
 
     def isPresent = AssertStep(

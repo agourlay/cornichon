@@ -5,6 +5,7 @@ import java.util.Base64
 
 import cats.Show
 import cats.syntax.show._
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
@@ -23,7 +24,7 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.http.steps.HttpListenSteps._
 import com.github.agourlay.cornichon.util.Printing._
-import io.circe.Encoder
+import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 
 import scala.concurrent.duration._
@@ -99,35 +100,23 @@ trait HttpDsl extends HttpRequestsDsl {
     save_from_session(inputs)
   }
 
-  def show_last_response = DebugStep(s ⇒
+  private def showLastReponse[A: Show](parse: String ⇒ Either[CornichonError, A]) = DebugStep(s ⇒
     for {
       headers ← s.get(lastResponseHeadersKey)
       decodedHeaders ← decodeSessionHeaders(headers)
       status ← s.get(lastResponseStatusKey)
       body ← s.get(lastResponseBodyKey)
+      bodyParsed ← parse(body)
     } yield {
       s"""Show last response
          |headers: ${displayStringPairs(decodedHeaders)}
          |status : $status
-         |body   : $body
+         |body   : ${bodyParsed.show}
      """.stripMargin
     })
 
-  def show_last_response_json = DebugStep(s ⇒
-    for {
-      headers ← s.get(lastResponseHeadersKey)
-      decodedHeaders ← decodeSessionHeaders(headers)
-      status ← s.get(lastResponseStatusKey)
-      body ← s.get(lastResponseBodyKey)
-      bodyJson ← parseJson(body)
-    } yield {
-      s"""Show last response
-         |headers: ${displayStringPairs(decodedHeaders)}
-         |status : $status
-         |body   : ${bodyJson.show}
-     """.stripMargin
-    })
-
+  def show_last_response = showLastReponse(b ⇒ Right(b))
+  def show_last_response_json = showLastReponse[Json](parseJson)
   def show_last_status = show_session(lastResponseStatusKey)
 
   def show_last_body = show_session(lastResponseBodyKey)

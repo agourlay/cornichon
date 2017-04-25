@@ -7,14 +7,12 @@ import cats.instances.boolean._
 import cats.instances.int._
 import cats.instances.string._
 import cats.instances.vector._
-
-import com.github.agourlay.cornichon.core.{ Session, SessionKey }
+import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.matchers.MatcherService
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-
 import io.circe.{ Encoder, Json }
 
 import scala.util.matching.Regex
@@ -235,17 +233,16 @@ object JsonSteps {
 
       AssertStep(
         title = assertionTitle,
-        action = s ⇒ {
-        resolveAndParseJson(expected, s, resolver)
-          .asArray
-          .fold[Assertion](Assertion.failWith(NotAnArrayError(expected))) { expectedArray ⇒
-            val arrayFromSession = applyPathAndFindArray(jsonPath, resolver)(s, s.getUnsafe(sessionKey))
+        action = s ⇒ Assertion.either {
+        resolveAndParseJson(expected, s, resolver).asArray.map { expectedArray ⇒
+          applyPathAndFindArray(jsonPath, resolver)(s, s.getUnsafe(sessionKey)).map { arrayFromSession ⇒
             val actualValue = removeIgnoredPathFromElements(s, arrayFromSession)
             if (ordered)
               GenericEqualityAssertion(expectedArray, actualValue)
             else
               CollectionsContainSameElements(expectedArray, actualValue)
           }
+        }.getOrElse(Left(NotAnArrayError(expected)))
       }
       )
     }
@@ -267,22 +264,22 @@ object JsonSteps {
         title = title,
         action = s ⇒
         CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-          val jArr = applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-          val resolvedJson = elements.map(resolveAndParseJson(_, s, resolver))
-          val containsAll = resolvedJson.forall(jArr.contains)
-          Right(expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
+          applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).map { jArr ⇒
+            val resolvedJson = elements.map(resolveAndParseJson(_, s, resolver))
+            val containsAll = resolvedJson.forall(jArr.contains)
+            (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
+          }
         }
       )
   }
 
-  private def applyPathAndFindArray(path: String, resolver: Resolver)(s: Session, sessionValue: String): Vector[Json] = {
-    val jArr = if (path == JsonPath.root) parseArray(sessionValue)
+  private def applyPathAndFindArray(path: String, resolver: Resolver)(s: Session, sessionValue: String): Either[CornichonError, Vector[Json]] =
+    if (path == JsonPath.root)
+      parseArray(sessionValue)
     else {
       val parsedPath = resolveParseJsonPath(path, resolver)(s)
       selectArrayJsonPath(parsedPath, sessionValue)
     }
-    jArr.fold(e ⇒ throw e.toException, identity)
-  }
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
