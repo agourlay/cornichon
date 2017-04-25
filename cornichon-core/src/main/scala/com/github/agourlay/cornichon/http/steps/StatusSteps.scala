@@ -1,8 +1,10 @@
 package com.github.agourlay.cornichon.http.steps
 
 import cats.syntax.show._
+import cats.syntax.either._
 import cats.instances.int._
 import cats.instances.string._
+
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
