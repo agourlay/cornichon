@@ -62,8 +62,8 @@ trait CornichonJson {
   def parseArray(input: String): Either[CornichonError, Vector[Json]] =
     parseJson(input).flatMap(jsonArrayValues)
 
-  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, Vector[Json]] =
-    path.run(sessionValue).flatMap(jsonArrayValues)
+  def selectArrayJsonPath(path: JsonPath, json: String): Either[CornichonError, Vector[Json]] =
+    path.run(json).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) =
     paths.foldLeft(input) { (json, path) ⇒

@@ -178,7 +178,7 @@ object HttpService {
     }.mkString(interHeadersValueDelim.toString)
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
-    headers.split(interHeadersValueDelim).toList.traverseU { header ⇒
+    headers.split(interHeadersValueDelim).toList.traverseU[Either[CornichonError, (String, String)]] { header ⇒
       val elms = header.split(headersKeyValueDelim)
       if (elms.length != 2)
         Left(BadSessionHeadersEncoding(header))

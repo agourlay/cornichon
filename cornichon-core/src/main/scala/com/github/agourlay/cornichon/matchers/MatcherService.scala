@@ -9,9 +9,7 @@ object MatcherService {
 
   private val resolver = MatcherResolver()
 
-  // Throws if it finds an unregistered matcher
-  def findAllMatchers(input: String): List[Matcher] =
-    resolver.findAllMatchers(input).fold(e ⇒ throw e.toException, identity)
+  def findAllMatchers(input: String) = resolver.findAllMatchers(input)
 
   // Removes JSON fields targetted by matchers and builds corresponding matchers assertions
   def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json): (Json, Json, Seq[MatcherAssertion]) =

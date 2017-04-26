@@ -36,11 +36,7 @@ object StatusSteps {
       for {
         lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
         lastBody ← s.get(lastResponseBodyKey)
-      } yield CustomMessageEqualityAssertion(
-        expected = expected,
-        actual = lastResponseStatus,
-        customMessage = statusError(expected, lastBody)
-      )
+      } yield CustomMessageEqualityAssertion(expected, lastResponseStatus, statusError(expected, lastBody))
     }
     )
 

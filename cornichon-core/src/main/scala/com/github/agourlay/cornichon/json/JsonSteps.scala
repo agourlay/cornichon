@@ -14,7 +14,7 @@ import cats.instances.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
-import com.github.agourlay.cornichon.json.CornichonJson.{ removeFieldsByPath, _ }
+import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.matchers.MatcherService
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 
@@ -37,7 +37,7 @@ object JsonSteps {
       title = jsonAssertionTitleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoredKeys),
       action = s ⇒ Assertion.either {
         for {
-          ignoredPaths ← ignoredKeys.toList.traverseU(resolveParseJsonPath(_, resolver)(s))
+          ignoredPaths ← ignoredKeys.toList.traverseU(resolveAndParseJsonPath(_, resolver)(s))
           v1 ← s.getJson(k1).map(removeFieldsByPath(_, ignoredPaths))
           v2 ← s.getJson(k2).map(removeFieldsByPath(_, ignoredPaths))
         } yield GenericEqualityAssertion(v1, v2)
@@ -64,48 +64,46 @@ object JsonSteps {
 
     def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expected" else s"$target's field '$jsonPath' is $expected"
+
+      def handleMatchers(session: Session, sessionValueWithFocusJson: Json) =
+        MatcherService.findAllMatchers(expected.show).flatMap { matchers ⇒
+          if (matchers.nonEmpty) {
+            val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
+            resolveAndParseJson(withQuotedMatchers, session, resolver)
+              .map(expectedJson ⇒ MatcherService.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson))
+          } else
+            resolveAndParseJson(expected, session, resolver).map(expectedJson ⇒ (expectedJson, sessionValueWithFocusJson, Nil))
+        }
+
+      def handleIgnoredFields(s: Session, expected: Json, actual: Json) =
+        if (whitelist)
+          // add missing fields in the expected result
+          whitelistingValue(expected, actual).map(expectedWhitelistedValue ⇒ (expectedWhitelistedValue, actual))
+        else if (ignoredKeys.nonEmpty)
+          // remove ignore fields from the actual result
+          ignoredKeys.toList.traverseU(resolveAndParseJsonPath(_, resolver)(s)).map { ignoredPaths ⇒
+            (expected, removeFieldsByPath(actual, ignoredPaths))
+          }
+        else
+          // nothing to prepare
+          Right((expected, actual))
+
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = session ⇒ {
+        action = s ⇒ Assertion.either {
           if (whitelist && ignoredKeys.nonEmpty)
-            Assertion.failWith(InvalidIgnoringConfigError)
-          else {
-            val sessionValue = session.getUnsafe(sessionKey)
-            val sessionValueWithFocusJson = resolveRunJsonPathUnsafe(jsonPath, sessionValue, resolver)(session)
-
-            if (sessionValueWithFocusJson.isNull)
-              Assertion.failWith(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)))
-            else {
-              // detect invalid matchers to fail-fast and avoid quoting an unknown matcher
-              val matchers = MatcherService.findAllMatchers(expected.show)
-              val (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = {
-                if (matchers.nonEmpty) {
-                  val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
-                  val expectedJson = resolveAndParseJsonUnsafe(withQuotedMatchers, session, resolver)
-                  MatcherService.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson)
-                } else {
-                  val expectedJson = resolveAndParseJsonUnsafe(expected, session, resolver)
-                  (expectedJson, sessionValueWithFocusJson, Nil)
-                }
-              }
-
-              val (expectedPrepared, actualPrepared) =
-                if (whitelist) {
-                  // add missing fields in the expected result
-                  val expectedWhitelistedValue = whitelistingValue(expectedWithoutMatchers, actualWithoutMatchers).fold(e ⇒ throw e.toException, identity)
-                  (expectedWhitelistedValue, actualWithoutMatchers)
-                } else if (ignoredKeys.nonEmpty) {
-                  // remove ignore fields from the actual result
-                  val ignoredPaths = ignoredKeys.map(resolveParseJsonPathUnsafe(_, resolver)(session))
-                  (expectedWithoutMatchers, removeFieldsByPath(actualWithoutMatchers, ignoredPaths))
-                } else {
-                  // nothing to prepare
-                  (expectedWithoutMatchers, actualWithoutMatchers)
-                }
-
-              GenericEqualityAssertion(expectedPrepared, actualPrepared) andAll matcherAssertions
-            }
-          }
+            Left(InvalidIgnoringConfigError)
+          else
+            for {
+              sessionValue ← s.get(sessionKey)
+              sessionValueWithFocusJson ← resolveRunJsonPath(jsonPath, sessionValue, resolver)(s)
+              _ ← if (sessionValueWithFocusJson.isNull) Left(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue))) else Right(())
+              _ ← if (whitelist && ignoredKeys.nonEmpty) Left(InvalidIgnoringConfigError) else Right(())
+              withMatchers ← handleMatchers(s, sessionValueWithFocusJson)
+              (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = withMatchers
+              withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
+              (expectedPrepared, actualPrepared) = withIgnoredFields
+            } yield GenericEqualityAssertion(expectedPrepared, actualPrepared) andAll matcherAssertions
         }
       )
     }
@@ -140,16 +138,15 @@ object JsonSteps {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is absent" else s"$target's field '$jsonPath' is absent"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒
-          CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
-            resolveRunJsonPath(jsonPath, sessionValue, resolver)(session).map { subJson ⇒
-              val predicate = subJson match {
-                case Json.Null ⇒ true
-                case _         ⇒ false
-              }
-              (true, predicate, keyIsPresentError(jsonPath, subJson.show))
+        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
+          resolveRunJsonPath(jsonPath, sessionValue, resolver)(session).map { subJson ⇒
+            val predicate = subJson match {
+              case Json.Null ⇒ true
+              case _         ⇒ false
             }
+            (true, predicate, keyIsPresentError(jsonPath, subJson.show))
           }
+        }
       )
     }
 
@@ -157,16 +154,15 @@ object JsonSteps {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is present" else s"$target's field '$jsonPath' is present"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒
-          CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
-            resolveRunJsonPath(jsonPath, sessionValue, resolver)(session).map { subJson ⇒
-              val predicate = subJson match {
-                case Json.Null ⇒ false
-                case _         ⇒ true
-              }
-              (true, predicate, keyIsAbsentError(jsonPath, parseJsonUnsafe(sessionValue).show))
+        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
+          resolveRunJsonPath(jsonPath, sessionValue, resolver)(session).map { subJson ⇒
+            val predicate = subJson match {
+              case Json.Null ⇒ false
+              case _         ⇒ true
             }
+            (true, predicate, keyIsAbsentError(jsonPath, parseJsonUnsafe(sessionValue).show))
           }
+        }
       )
     }
 
@@ -174,7 +170,7 @@ object JsonSteps {
       if (ignoredKeys.nonEmpty)
         throw UseIgnoringEach.toException
       else
-        JsonArrayStepBuilder(sessionKey, jsonPath, ordered = false, ignoredKeys, resolver, prettySessionKeyTitle)
+        JsonArrayStepBuilder(sessionKey, jsonPath, ordered = false, ignoredEachKeys = Seq.empty, resolver, prettySessionKeyTitle)
   }
 
   case class JsonArrayStepBuilder(
@@ -194,32 +190,30 @@ object JsonSteps {
 
     def isNotEmpty = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty",
-      action = s ⇒
-      CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-        val jArray = {
-          if (jsonPath == JsonPath.root)
-            parseArray(sessionValue)
-          else
-            resolveParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
-        }
-        jArray.map(l ⇒ (true, l.nonEmpty, jsonArrayNotEmptyError(Json.fromValues(l))))
+      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
+      val jArray = {
+        if (jsonPath == JsonPath.root)
+          parseArray(sessionValue)
+        else
+          resolveAndParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
       }
+      jArray.map(l ⇒ (true, l.nonEmpty, jsonArrayNotEmptyError(Json.fromValues(l))))
+    }
     )
 
     def isEmpty = hasSize(0)
 
     def hasSize(size: Int) = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is '$size'" else s"$target's array '$jsonPath' size is '$size'",
-      action = s ⇒
-      CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-        val jArray = {
-          if (jsonPath == JsonPath.root)
-            parseArray(sessionValue)
-          else
-            resolveParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
-        }
-        jArray.map(l ⇒ (size, l.size, arraySizeError(size, Json.fromValues(l).show)))
+      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
+      val jArray = {
+        if (jsonPath == JsonPath.root)
+          parseArray(sessionValue)
+        else
+          resolveAndParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
       }
+      jArray.map(l ⇒ (size, l.size, arraySizeError(size, Json.fromValues(l).show)))
+    }
     )
 
     def is[A: Show: Resolvable: Encoder](expected: A) = {
@@ -234,7 +228,7 @@ object JsonSteps {
 
       def removeIgnoredPathFromElements(s: Session, jArray: Vector[Json]) =
         ignoredEachKeys.toList
-          .traverseU(resolveParseJsonPath(_, resolver)(s))
+          .traverseU(resolveAndParseJsonPath(_, resolver)(s))
           .map(ignoredPaths ⇒ jArray.map(removeFieldsByPath(_, ignoredPaths)))
 
       AssertStep(
@@ -271,15 +265,14 @@ object JsonSteps {
     private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, elements: Seq[A], expected: Boolean) =
       AssertStep(
         title = title,
-        action = s ⇒
-        CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-          applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).flatMap { jArr ⇒
-            elements.toList.traverseU(resolveAndParseJson(_, s, resolver)).map { resolvedJson ⇒
-              val containsAll = resolvedJson.forall(jArr.contains)
-              (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
-            }
+        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
+        applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).flatMap { jArr ⇒
+          elements.toList.traverseU(resolveAndParseJson(_, s, resolver)).map { resolvedJson ⇒
+            val containsAll = resolvedJson.forall(jArr.contains)
+            (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
           }
         }
+      }
       )
   }
 
@@ -287,7 +280,7 @@ object JsonSteps {
     if (path == JsonPath.root)
       parseArray(sessionValue)
     else
-      resolveParseJsonPath(path, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
+      resolveAndParseJsonPath(path, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
@@ -295,25 +288,22 @@ object JsonSteps {
     else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
   }
 
-  private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver) =
+  private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, s: Session, resolver: Resolver) =
     for {
-      resolved ← resolver.fillPlaceholders(input)(session)
+      resolved ← resolver.fillPlaceholders(input)(s)
       json ← parseJson(resolved)
     } yield json
 
-  private def resolveAndParseJsonUnsafe[A: Show: Encoder: Resolvable](input: A, session: Session, resolver: Resolver) =
-    resolveAndParseJson(input, session, resolver).fold(e ⇒ throw e.toException, identity)
-
-  private def resolveParseJsonPath(path: String, resolver: Resolver)(s: Session) =
-    resolver.fillPlaceholders(path)(s).flatMap(JsonPath.parse)
-
-  private def resolveParseJsonPathUnsafe(path: String, resolver: Resolver)(s: Session) =
-    resolveParseJsonPath(path, resolver)(s).fold(e ⇒ throw e.toException, identity)
+  private def resolveAndParseJsonPath(path: String, resolver: Resolver)(s: Session) =
+    for {
+      resolvedPath ← resolver.fillPlaceholders(path)(s)
+      jsonPath ← JsonPath.parse(resolvedPath)
+    } yield jsonPath
 
   private def resolveRunJsonPath(path: String, source: String, resolver: Resolver)(s: Session) =
-    resolver.fillPlaceholders(path)(s).flatMap(JsonPath.run(_, source))
-
-  private def resolveRunJsonPathUnsafe(path: String, source: String, resolver: Resolver)(s: Session) =
-    resolveRunJsonPath(path, source, resolver)(s).fold(e ⇒ throw e.toException, identity)
-
+    for {
+      resolvedPath ← resolver.fillPlaceholders(path)(s)
+      jsonPath ← JsonPath.parse(resolvedPath)
+      zoomedIn ← jsonPath.run(source)
+    } yield zoomedIn
 }
