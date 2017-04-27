@@ -44,6 +44,9 @@ trait CornichonJson {
   def parseDataTable(table: String) =
     DataTableParser.parseDataTable(table).map(_.objectList)
 
+  def parseDataTableUnsafe(table: String) =
+    parseDataTable(table).fold(e ⇒ throw e.toException, identity)
+
   def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
     case Success(value) ⇒ Right(value.convertMarshaled[Json])
     case Failure(e)     ⇒ Left(MalformedGraphQLJsonError(input, e))

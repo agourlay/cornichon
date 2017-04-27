@@ -1,8 +1,12 @@
 package com.github.agourlay.cornichon.steps.regular
 
 import akka.actor.Scheduler
-import cats.data.NonEmptyList
+
+import cats.instances.future._
+import cats.instances.either._
+import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.util.Timing._
@@ -17,6 +21,18 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
     withDuration(effect(initialRunState.session)).map {
       case (xor, executionTime) ⇒ xorToStepReport(this, xor.leftMap(e ⇒ NonEmptyList.of(e)), initialRunState, show, Some(executionTime))
     }
+
+  def chain(chainedEffect: Session ⇒ Future[Either[CornichonError, Session]])(implicit ec: ExecutionContext) = {
+    copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT(chainedEffect(s2))).value)
+  }
+
+  def chainSyncE(chainedEffect: Session ⇒ Either[CornichonError, Session])(implicit ec: ExecutionContext) = {
+    copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT.fromEither(chainedEffect(s2))).value)
+  }
+
+  def chainSync(chainedEffect: Session ⇒ Session)(implicit ec: ExecutionContext) = {
+    copy(effect = s ⇒ EitherT(effect(s)).map(chainedEffect).value)
+  }
 }
 
 object EffectStep {

@@ -132,6 +132,9 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     EitherT(failedAfter)
   }
 
+  def requestEffectT[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ EitherT[Future, CornichonError, Session] =
+    s ⇒ runRequest(request, expectedStatus, extractor)(s).map(_._2)
+
   def requestEffect[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ Future[Either[CornichonError, Session]] =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).map(_._2).value
 
