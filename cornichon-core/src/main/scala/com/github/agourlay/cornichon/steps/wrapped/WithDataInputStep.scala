@@ -69,6 +69,6 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
 }
 
 case class WithDataInputBlockFailedStep(failedInputs: List[(String, String)], errors: NonEmptyList[CornichonError]) extends CornichonError {
-  val baseErrorMessage = s"WithDataInput block failed for inputs ${displayStringPairs(failedInputs)} times"
+  val baseErrorMessage = s"WithDataInput block failed for inputs ${displayStringPairs(failedInputs)}"
   override val causedBy = Some(errors)
 }
