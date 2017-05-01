@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.examples.math
 
+import cats.syntax.either._
+
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
