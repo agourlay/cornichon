@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.http
 
 import akka.actor.Scheduler
+
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
@@ -17,12 +18,11 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
-import com.github.agourlay.cornichon.util.Futures
+
 import io.circe.Encoder
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
-import scala.util.control.NonFatal
 
 class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext, scheduler: Scheduler) {
 
@@ -52,21 +52,17 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequest ← EitherT(Future.successful(resolveRequest(r)(s)))
-      resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
-        client.runRequest(resolvedRequest.method, resolvedRequest.url, resolvedRequest.body, resolvedRequest.params, resolvedRequest.headers)
-      }
-      newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
+      resolvedRequest ← EitherT.fromEither[Future](resolveRequest(r)(s))
+      resp ← client.runRequest(resolvedRequest, requestTimeout)
+      newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
     } yield (resp, newSession)
 
   def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) = {
     import cats.instances.string._
     for {
-      resolvedRequest ← EitherT(Future.successful(resolveStreamedRequest[String](r)(s)))
-      resp ← handleRequestFuture(resolvedRequest, requestTimeout) {
-        client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin)
-      }
-      newSession ← EitherT(Future.successful(handleResponse(resp, expectedStatus, extractor)(s)))
+      resolvedRequest ← EitherT.fromEither[Future](resolveStreamedRequest[String](r)(s))
+      resp ← EitherT(client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin, requestTimeout))
+      newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
     } yield (resp, newSession)
   }
 
@@ -123,14 +119,6 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     // the base URL is not applied if the input URL already starts with the protocol
     else if (input.startsWith("https://") || input.startsWith("http://")) input
     else baseUrl + input
-
-  private def handleRequestFuture[A: Show](request: A, t: FiniteDuration)(f: Future[Either[CornichonError, CornichonHttpResponse]]): EitherT[Future, CornichonError, CornichonHttpResponse] = {
-    val failedAfter = Futures
-      .failAfter(t)(f)(TimeoutErrorAfter(request, t).toException)
-      .recover { case NonFatal(failure) ⇒ Left(RequestError(request, failure)) }
-
-    EitherT(failedAfter)
-  }
 
   def requestEffectT[A: Show: Resolvable: Encoder](request: HttpRequest[A], extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None): Session ⇒ EitherT[Future, CornichonError, Session] =
     s ⇒ runRequest(request, expectedStatus, extractor)(s).map(_._2)

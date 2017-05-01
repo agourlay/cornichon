@@ -5,36 +5,44 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
-import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.Accept
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.ConnectionContext
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.NotUsed
+
 import cats.syntax.either._
 import cats.syntax.show._
+import cats.instances.future._
+import cats.data.EitherT
+
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest, HttpStream }
+
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
 import de.heikoseeberger.akkasse.MediaTypes.`text/event-stream`
+
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl._
 
-import akka.http.scaladsl.model.headers.Accept
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
+import scala.util.{ Failure, Success }
 
 class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionContext, mat: ActorMaterializer) extends HttpClient {
 
@@ -78,29 +86,52 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     loop(headers, Seq.empty[HttpHeader])
   }
 
-  override def runRequest(
-    method: HttpMethod,
-    url: String,
-    payload: Option[Json],
-    params: Seq[(String, String)],
-    headers: Seq[(String, String)]
-  ): Future[Either[CornichonError, CornichonHttpResponse]] = {
-    val requestBuilder = httpMethodMapper(method)
-    parseHttpHeaders(headers).fold(
-      mh ⇒ Future.successful(Left(mh)),
+  override def runRequest(req: HttpRequest[Json], t: FiniteDuration): EitherT[Future, CornichonError, CornichonHttpResponse] =
+    parseHttpHeaders(req.headers).fold(
+      mh ⇒ EitherT.fromEither[Future](mh.asInstanceOf[CornichonError].asLeft[CornichonHttpResponse]),
       akkaHeaders ⇒ {
-        val request = requestBuilder(uriBuilder(url, params), payload).withHeaders(collection.immutable.Seq(akkaHeaders: _*))
-        Http().singleRequest(request, sslContext).flatMap(toCornichonResponse)
+        val requestBuilder = httpMethodMapper(req.method)
+        val uri = uriBuilder(req.url, req.params)
+        val request = requestBuilder(uri, req.body).withHeaders(collection.immutable.Seq(akkaHeaders: _*))
+        val response = Http().singleRequest(request, sslContext)
+        for {
+          resp ← EitherT(handleRequest(t, req)(response))
+          cornichonResp ← EitherT(toCornichonResponse(resp))
+        } yield cornichonResp
       }
     )
-  }
 
   implicit def JsonMarshaller: ToEntityMarshaller[Json] =
     Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(j ⇒ j.noSpaces)
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
-  override def openStream(stream: HttpStream, url: String, params: Seq[(String, String)], headers: Seq[(String, String)], takeWithin: FiniteDuration) = {
+  private def handleRequest(t: FiniteDuration, request: HttpRequest[Json])(resp: Future[HttpResponse]): Future[Either[CornichonError, HttpResponse]] = {
+    val p = Promise[Either[CornichonError, HttpResponse]]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(t)(p.trySuccess(Left(TimeoutErrorAfter(request, t))))
+
+    resp.onComplete {
+      case Success(res) ⇒
+        timeoutCancellable.cancel()
+        try p.success(res.asRight[CornichonError]) catch {
+          case _: Throwable ⇒ res.discardEntityBytes() // we discard the databytes explicitly, to avoid stalling the connection
+        }
+      case Failure(failure) ⇒
+        timeoutCancellable.cancel()
+        p.trySuccess(RequestError(request, failure).asLeft)
+    }
+
+    p.future
+  }
+
+  override def openStream(
+    stream: HttpStream,
+    url: String,
+    params: Seq[(String, String)],
+    headers: Seq[(String, String)],
+    takeWithin: FiniteDuration,
+    t: FiniteDuration
+  ) = {
     parseHttpHeaders(headers).fold(
       mh ⇒ Future.successful(Left(mh)),
       akkaHeaders ⇒ {
