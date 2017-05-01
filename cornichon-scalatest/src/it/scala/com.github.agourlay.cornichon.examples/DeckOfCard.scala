@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
 
 import scala.concurrent.duration._
 
@@ -138,12 +138,23 @@ trait DeckSteps {
 
   def verify_hand_score = AssertStep(
     title = "value of 'c1' with 'c2' is 'score'",
-    action = s ⇒ GenericEqualityAssertion(s.getUnsafe("score").toInt, scoreBlackjackHand(s.getUnsafe("c1"), s.getUnsafe("c2")))
+    action = s ⇒ Assertion.either{
+      for {
+        score <- s.get("score").map(_.toInt)
+        c1 <- s.get("c1")
+        c2 <- s.get("c2")
+      } yield GenericEqualityAssertion(score, scoreBlackjackHand(c1, c2))
+    }
   )
 
   def is_blackjack = AssertStep(
     title = s"current hand is Blackjack!",
-    action = s ⇒ GenericEqualityAssertion(21, scoreBlackjackHand(s.getUnsafe("c1"), s.getUnsafe("c2")))
+    action = s ⇒ Assertion.either{
+      for {
+        c1 <- s.get("c1")
+        c2 <- s.get("c2")
+      } yield GenericEqualityAssertion(21, scoreBlackjackHand(c1, c2))
+    }
   )
 
   def scoreBlackjackHand(c1: String, c2: String): Int = scoreCards(c1) + scoreCards(c2)

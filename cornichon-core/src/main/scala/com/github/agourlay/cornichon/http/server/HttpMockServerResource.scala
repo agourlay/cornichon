@@ -1,17 +1,26 @@
 package com.github.agourlay.cornichon.http.server
 
+import akka.actor.ActorSystem
+import akka.stream.Materializer
+
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
+
 import io.circe.Json
 
-case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range]) extends BlockScopedResource {
+import scala.concurrent.ExecutionContext
+
+case class HttpMockServerResource(
+    interface: Option[String],
+    label: String,
+    portRange: Option[Range]
+)(implicit ec: ExecutionContext, as: ActorSystem, mat: Materializer) extends BlockScopedResource {
+
   val sessionTarget: String = label
   val openingTitle: String = s"Starting HTTP mock server '$label'"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
-
-  implicit val (_, ec, system, mat, _) = BaseFeature.globalRuntime
 
   def startResource() = {
     BaseFeature.reserveGlobalRuntime()

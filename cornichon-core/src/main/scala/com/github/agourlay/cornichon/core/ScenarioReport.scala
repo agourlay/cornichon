@@ -51,7 +51,5 @@ case class FailedStep(step: Step, errors: NonEmptyList[CornichonError]) {
 }
 
 object FailedStep {
-  def fromThrowable(step: Step, error: Throwable) = FailedStep(step, NonEmptyList.of(CornichonError.fromThrowable(error)))
-  def fromThrowables(step: Step, errors: NonEmptyList[Throwable]) = FailedStep(step, errors.map(CornichonError.fromThrowable))
   def fromSingle(step: Step, error: CornichonError) = FailedStep(step, NonEmptyList.of(error))
 }

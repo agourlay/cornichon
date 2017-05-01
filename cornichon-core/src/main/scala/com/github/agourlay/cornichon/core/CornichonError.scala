@@ -28,10 +28,8 @@ object CornichonError {
     sw.toString
   }
 
-  def fromThrowable(exception: Throwable): CornichonError = exception match {
-    case ce: CornichonError ⇒ ce
-    case _                  ⇒ StepExecutionError(exception)
-  }
+  def fromThrowable(exception: Throwable): CornichonError =
+    StepExecutionError(exception)
 }
 
 case class StepExecutionError[A](e: Throwable) extends CornichonError {

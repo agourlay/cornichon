@@ -30,7 +30,7 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
   def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
 
-  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseStringUnsafe(_)))) }
+  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseStringUnsafe))) }
 
   val delims = CharPredicate(delimeter, '\r', '\n')
 
