@@ -3,7 +3,7 @@
 cornichon is cross-built for Scala 2.11, and 2.12 so you can just add the following to your build:
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.11.2" % Test
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.12.0" % Test
 ```
 
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
