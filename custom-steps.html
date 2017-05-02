@@ -2,21 +2,23 @@
 
 <h2 id="effectstep">EffectStep</h2>
 
-<p>An <code class="highlighter-rouge">EffectStep</code> can be understood as the following function <code class="highlighter-rouge">Session =&gt; Future[Session]</code>.</p>
+<p>An <code class="highlighter-rouge">EffectStep</code> can be understood as the following function <code class="highlighter-rouge">Session =&gt; Future[Either[CornichonError, Session]]</code>.</p>
 
-<p>This means that an <code class="highlighter-rouge">EffectStep</code> runs a side effect and populates the <code class="highlighter-rouge">Session</code> with potential result values.</p>
+<p>This means that an <code class="highlighter-rouge">EffectStep</code> runs a side effect and populates the <code class="highlighter-rouge">Session</code> with potential result values or returns an error.</p>
 
 <p>A <code class="highlighter-rouge">session</code> is a Map-like object used to propagate state throughout a <code class="highlighter-rouge">scenario</code>. It is used to resolve <a href="#placeholders">placeholders</a> and save the result computations for later assertions.</p>
 
 <p>Here is the most simple <code class="highlighter-rouge">EffectStep</code>:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">.</span><span class="n">successful</span><span class="o">(</span><span class="n">s</span><span class="o">))</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">.</span><span class="n">successful</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">s</span><span class="o">)))</span>
 </code></pre>
 </div>
 
-<p>or using a factory helper when dealing with non Future based computation</p>
+<p>or using a factory helper when dealing with computations that do not fit the <code class="highlighter-rouge">EffectStep</code> type.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">)</span>
+<span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="n">s</span><span class="o">))</span>
+<span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromAsync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">(</span><span class="n">s</span><span class="o">))</span>
 </code></pre>
 </div>
 
@@ -123,14 +125,16 @@
 
 <p>Below is a longer example showing how to integration an assertion into scenario.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span>
   <span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span>
   <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="n">piComputation</span><span class="o">())</span>
 <span class="o">)</span>
 
 <span class="nc">Then</span> <span class="n">assert</span> <span class="nc">AssertStep</span><span class="o">(</span>
   <span class="n">title</span> <span class="k">=</span> <span class="s">"check estimate"</span><span class="o">,</span>
-  <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">BetweenAssertion</span><span class="o">(</span><span class="mf">3.1</span><span class="o">,</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"result"</span><span class="o">),</span> <span class="mf">3.2</span><span class="o">)</span>
+  <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Assertion</span><span class="o">.</span><span class="n">either</span><span class="o">{</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"result"</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">BetweenAssertion</span><span class="o">(</span><span class="mf">3.1</span><span class="o">,</span> <span class="n">r</span><span class="o">.</span><span class="n">toDouble</span><span class="o">,</span> <span class="mf">3.2</span><span class="o">))</span>
+  <span class="o">}</span>
 <span class="o">)</span>
 </code></pre>
 </div>

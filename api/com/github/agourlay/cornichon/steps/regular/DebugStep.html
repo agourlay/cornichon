@@ -232,7 +232,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">DebugStep</span><span class="params">(<span name="message">message: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;Debug step&quot;</span></span>)</span><span class="result"> extends <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">DebugStep</span><span class="params">(<span name="message">message: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;Debug step&quot;</span></span>)</span><span class="result"> extends <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       </h4>
 
@@ -288,9 +288,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(message:com.github.agourlay.cornichon.core.Session=&gt;String,title:String):com.github.agourlay.cornichon.steps.regular.DebugStep"></a><a id="&lt;init&gt;:DebugStep"></a>
+      <a id="&lt;init&gt;(message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String],title:String):com.github.agourlay.cornichon.steps.regular.DebugStep"></a><a id="&lt;init&gt;:DebugStep"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#&lt;init&gt;(message:com.github.agourlay.cornichon.core.Session=&gt;String,title:String):com.github.agourlay.cornichon.steps.regular.DebugStep" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#&lt;init&gt;(message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String],title:String):com.github.agourlay.cornichon.steps.regular.DebugStep" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -299,7 +299,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">DebugStep</span><span class="params">(<span name="message">message: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;Debug step&quot;</span></span>)</span>
+        <span class="name">DebugStep</span><span class="params">(<span name="message">message: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;Debug step&quot;</span></span>)</span>
       </span>
       
       
@@ -470,9 +470,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#message" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="message:com.github.agourlay.cornichon.core.Session=&gt;String"></a><a id="message:(Session)⇒String"></a>
+      <a id="message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String]"></a><a id="message:(Session)⇒Either[CornichonError,String]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#message:com.github.agourlay.cornichon.core.Session=&gt;String" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -481,7 +481,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">message</span><span class="result">: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">message</span><span class="result">: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       
       
@@ -545,7 +545,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">run</span><span class="params">(<span name="engine">engine: <a href="../../core/Engine.html" class="extype" name="com.github.agourlay.cornichon.core.Engine">Engine</a></span>)</span><span class="params">(<span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>, <span name="scheduler">scheduler: <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.Scheduler" class="extype" target="_top">Scheduler</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[(<a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>, <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.util.Either" class="extype" target="_top">Either</a>[<a href="../../core/FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>, <a href="../../core/Done$.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>.type])]</span>
+        <span class="name">run</span><span class="params">(<span name="engine">engine: <a href="../../core/Engine.html" class="extype" name="com.github.agourlay.cornichon.core.Engine">Engine</a></span>)</span><span class="params">(<span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>, <span name="scheduler">scheduler: <a href="http://doc.akka.io/api/akka/2.4.18/index.html#akka.actor.Scheduler" class="extype" target="_top">Scheduler</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[(<a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>, <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.util.Either" class="extype" target="_top">Either</a>[<a href="../../core/FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>, <a href="../../core/Done$.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>.type])]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.DebugStep">DebugStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>

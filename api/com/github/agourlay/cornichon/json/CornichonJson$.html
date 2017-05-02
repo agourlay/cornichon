@@ -548,9 +548,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.json.CornichonJson#extract" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="extract(json:io.circe.Json,path:String):io.circe.Json"></a><a id="extract(Json,String):Json"></a>
+      <a id="extract(json:io.circe.Json,path:String):scala.util.Either[com.github.agourlay.cornichon.core.CornichonError,io.circe.Json]"></a><a id="extract(Json,String):Either[CornichonError,Json]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#extract(json:io.circe.Json,path:String):io.circe.Json" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#extract(json:io.circe.Json,path:String):scala.util.Either[com.github.agourlay.cornichon.core.CornichonError,io.circe.Json]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -559,7 +559,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">extract</span><span class="params">(<span name="json">json: <a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a></span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a></span>
+        <span class="name">extract</span><span class="params">(<span name="json">json: <a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a></span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.util.Either" class="extype" target="_top">Either</a>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>
@@ -746,9 +746,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.json.CornichonJson#parseDataTable" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="parseDataTable(table:String):List[io.circe.JsonObject]"></a><a id="parseDataTable(String):List[JsonObject]"></a>
+      <a id="parseDataTable(table:String):scala.util.Either[com.github.agourlay.cornichon.core.CornichonError,List[io.circe.JsonObject]]"></a><a id="parseDataTable(String):Either[CornichonError,List[JsonObject]]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#parseDataTable(table:String):List[io.circe.JsonObject]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#parseDataTable(table:String):scala.util.Either[com.github.agourlay.cornichon.core.CornichonError,List[io.circe.JsonObject]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -757,7 +757,23 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseDataTable</span><span class="params">(<span name="table">table: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="https://circe.github.io/circe/api/index.html#io.circe.JsonObject" class="extype" target="_top">JsonObject</a>]</span>
+        <span class="name">parseDataTable</span><span class="params">(<span name="table">table: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.util.Either" class="extype" target="_top">Either</a>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.List">List</span>[<a href="https://circe.github.io/circe/api/index.html#io.circe.JsonObject" class="extype" target="_top">JsonObject</a>]]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.json.CornichonJson#parseDataTableUnsafe" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parseDataTableUnsafe(table:String):List[io.circe.JsonObject]"></a><a id="parseDataTableUnsafe(String):List[JsonObject]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#parseDataTableUnsafe(table:String):List[io.circe.JsonObject]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseDataTableUnsafe</span><span class="params">(<span name="table">table: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="https://circe.github.io/circe/api/index.html#io.circe.JsonObject" class="extype" target="_top">JsonObject</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>
@@ -841,6 +857,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.json.CornichonJson#parseStringUnsafe" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parseStringUnsafe(s:String):io.circe.Json"></a><a id="parseStringUnsafe(String):Json"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#parseStringUnsafe(s:String):io.circe.Json" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseStringUnsafe</span><span class="params">(<span name="s">s: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.json.CornichonJson#prettyPrint" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="prettyPrint(json:io.circe.Json):String"></a><a id="prettyPrint(Json):String"></a>
       <span class="permalink">
@@ -874,9 +906,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.json.CornichonJson#selectArrayJsonPath" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="selectArrayJsonPath(path:com.github.agourlay.cornichon.json.JsonPath,sessionValue:String):Either[com.github.agourlay.cornichon.core.CornichonError,Vector[io.circe.Json]]"></a><a id="selectArrayJsonPath(JsonPath,String):Either[CornichonError,Vector[Json]]"></a>
+      <a id="selectArrayJsonPath(path:com.github.agourlay.cornichon.json.JsonPath,json:String):Either[com.github.agourlay.cornichon.core.CornichonError,Vector[io.circe.Json]]"></a><a id="selectArrayJsonPath(JsonPath,String):Either[CornichonError,Vector[Json]]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#selectArrayJsonPath(path:com.github.agourlay.cornichon.json.JsonPath,sessionValue:String):Either[com.github.agourlay.cornichon.core.CornichonError,Vector[io.circe.Json]]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/CornichonJson$.html#selectArrayJsonPath(path:com.github.agourlay.cornichon.json.JsonPath,json:String):Either[com.github.agourlay.cornichon.core.CornichonError,Vector[io.circe.Json]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -885,7 +917,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">selectArrayJsonPath</span><span class="params">(<span name="path">path: <a href="JsonPath.html" class="extype" name="com.github.agourlay.cornichon.json.JsonPath">JsonPath</a></span>, <span name="sessionValue">sessionValue: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Vector">Vector</span>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]]</span>
+        <span class="name">selectArrayJsonPath</span><span class="params">(<span name="path">path: <a href="JsonPath.html" class="extype" name="com.github.agourlay.cornichon.json.JsonPath">JsonPath</a></span>, <span name="json">json: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Vector">Vector</span>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CornichonJson.html" class="extype" name="com.github.agourlay.cornichon.json.CornichonJson">CornichonJson</a></dd></dl></div>

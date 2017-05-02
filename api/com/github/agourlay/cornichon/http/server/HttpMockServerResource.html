@@ -234,7 +234,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">HttpMockServerResource</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="label">label: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="portRange">portRange: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>)</span><span class="result"> extends <a href="../../dsl/BlockScopedResource.html" class="extype" name="com.github.agourlay.cornichon.dsl.BlockScopedResource">BlockScopedResource</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">HttpMockServerResource</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="label">label: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="portRange">portRange: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>, <span name="as">as: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <a href="http://doc.akka.io/api/akka/2.4.18/index.html#akka.stream.Materializer" class="extype" target="_top">Materializer</a></span>)</span><span class="result"> extends <a href="../../dsl/BlockScopedResource.html" class="extype" name="com.github.agourlay.cornichon.dsl.BlockScopedResource">BlockScopedResource</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       </h4>
 
@@ -290,9 +290,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(interface:Option[String],label:String,portRange:Option[Range]):com.github.agourlay.cornichon.http.server.HttpMockServerResource"></a><a id="&lt;init&gt;:HttpMockServerResource"></a>
+      <a id="&lt;init&gt;(interface:Option[String],label:String,portRange:Option[Range])(implicitec:scala.concurrent.ExecutionContext,implicitas:akka.actor.ActorSystem,implicitmat:akka.stream.Materializer):com.github.agourlay.cornichon.http.server.HttpMockServerResource"></a><a id="&lt;init&gt;:HttpMockServerResource"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#&lt;init&gt;(interface:Option[String],label:String,portRange:Option[Range]):com.github.agourlay.cornichon.http.server.HttpMockServerResource" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#&lt;init&gt;(interface:Option[String],label:String,portRange:Option[Range])(implicitec:scala.concurrent.ExecutionContext,implicitas:akka.actor.ActorSystem,implicitmat:akka.stream.Materializer):com.github.agourlay.cornichon.http.server.HttpMockServerResource" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -301,7 +301,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">HttpMockServerResource</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="label">label: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="portRange">portRange: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>)</span>
+        <span class="name">HttpMockServerResource</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="label">label: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="portRange">portRange: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>, <span name="as">as: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <a href="http://doc.akka.io/api/akka/2.4.18/index.html#akka.stream.Materializer" class="extype" target="_top">Materializer</a></span>)</span>
       </span>
       
       
@@ -417,22 +417,6 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.server.HttpMockServerResource">HttpMockServerResource</a> → <a href="../../dsl/BlockScopedResource.html" class="extype" name="com.github.agourlay.cornichon.dsl.BlockScopedResource">BlockScopedResource</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#ec" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ec:scala.concurrent.ExecutionContextExecutorService"></a><a id="ec:ExecutionContextExecutorService"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#ec:scala.concurrent.ExecutionContextExecutorService" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">ec</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContextExecutorService" class="extype" target="_top">ExecutionContextExecutorService</a></span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
@@ -532,22 +516,6 @@
       </span>
       <span class="symbol">
         <span class="name">label</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#mat" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="mat:akka.stream.ActorMaterializer"></a><a id="mat:ActorMaterializer"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#mat:akka.stream.ActorMaterializer" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">mat</span><span class="result">: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>
       </span>
       
       
@@ -695,22 +663,6 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#system" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="system:akka.actor.ActorSystem"></a><a id="system:ActorSystem"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#system:akka.actor.ActorSystem" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">system</span><span class="result">: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
