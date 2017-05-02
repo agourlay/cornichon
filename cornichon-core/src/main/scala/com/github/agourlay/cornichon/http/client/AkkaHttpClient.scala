@@ -6,30 +6,30 @@ import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.ConnectionContext
+import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
-import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.NotUsed
 
 import cats.syntax.either._
 import cats.syntax.show._
 import cats.instances.future._
 import cats.data.EitherT
+import cats.Show
+import cats.instances.string._
 
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.core.CornichonError
-import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest, HttpStream }
+import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException }
+import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest }
 
 import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
 import de.heikoseeberger.akkasse.ServerSentEvent
-import de.heikoseeberger.akkasse.MediaTypes.`text/event-stream`
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
@@ -69,6 +69,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     case PATCH   ⇒ Patch
     case POST    ⇒ Post
     case PUT     ⇒ Put
+    case other   ⇒ throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
   def parseHttpHeaders(headers: Seq[(String, String)]): Either[MalformedHeadersError, Seq[HttpHeader]] = {
@@ -83,12 +84,15 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
         }
       }
 
-    loop(headers, Seq.empty[HttpHeader])
+    loop(headers, Nil)
   }
 
   override def runRequest(req: HttpRequest[Json], t: FiniteDuration): EitherT[Future, CornichonError, CornichonHttpResponse] =
+    runSingleRequest(req, t)(toCornichonResponse)
+
+  private def runSingleRequest[A: Show: ToEntityMarshaller, B](req: HttpRequest[A], t: FiniteDuration)(unmarshaller: HttpResponse ⇒ Future[Either[CornichonError, B]]): EitherT[Future, CornichonError, B] =
     parseHttpHeaders(req.headers).fold(
-      mh ⇒ EitherT.fromEither[Future](mh.asInstanceOf[CornichonError].asLeft[CornichonHttpResponse]),
+      mh ⇒ EitherT.fromEither[Future](mh.asInstanceOf[CornichonError].asLeft[B]),
       akkaHeaders ⇒ {
         val requestBuilder = httpMethodMapper(req.method)
         val uri = uriBuilder(req.url, req.params)
@@ -96,7 +100,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
         val response = Http().singleRequest(request, sslContext)
         for {
           resp ← EitherT(handleRequest(t, req)(response))
-          cornichonResp ← EitherT(toCornichonResponse(resp))
+          cornichonResp ← EitherT(unmarshaller(resp))
         } yield cornichonResp
       }
     )
@@ -106,7 +110,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
 
   private def uriBuilder(url: String, params: Seq[(String, String)]): Uri = Uri(url).withQuery(Query(params: _*))
 
-  private def handleRequest(t: FiniteDuration, request: HttpRequest[Json])(resp: Future[HttpResponse]): Future[Either[CornichonError, HttpResponse]] = {
+  private def handleRequest[A: Show](t: FiniteDuration, request: HttpRequest[A])(resp: Future[HttpResponse]): Future[Either[CornichonError, HttpResponse]] = {
     val p = Promise[Either[CornichonError, HttpResponse]]()
     val timeoutCancellable = system.scheduler.scheduleOnce(t)(p.trySuccess(Left(TimeoutErrorAfter(request, t))))
 
@@ -124,85 +128,30 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
     p.future
   }
 
-  override def openStream(
-    stream: HttpStream,
-    url: String,
-    params: Seq[(String, String)],
-    headers: Seq[(String, String)],
-    takeWithin: FiniteDuration,
-    t: FiniteDuration
-  ) = {
-    parseHttpHeaders(headers).fold(
-      mh ⇒ Future.successful(Left(mh)),
-      akkaHeaders ⇒ {
-        stream match {
-          case SSE ⇒ openSSE(url, params, akkaHeaders, takeWithin)
-          case WS  ⇒ openWS(url, params, akkaHeaders, takeWithin)
-        }
-      }
-    )
-  }
-
-  def openSSE(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration) = {
-    val request = Get(uriBuilder(url, params))
-      .withHeaders(collection.immutable.Seq(headers: _*))
-      .addHeader(Accept(`text/event-stream`))
-
-    Http().singleRequest(request, sslContext)
-      .flatMap(expectSSE)
-      .map { sse ⇒
-        sse.map { source ⇒
-          val r = source
-            .takeWithin(takeWithin)
-            .filter(_.data.nonEmpty)
-            .runFold(Vector.empty[ServerSentEvent])(_ :+ _)
-            .map { events ⇒
-              CornichonHttpResponse(
-                status = StatusCodes.OK.intValue,
-                headers = Seq.empty,
-                body = Json.fromValues(events.map(_.asJson)).show
-              )
-            }
-          Await.result(r, takeWithin)
-        }
-      }
-  }
-
-  // TODO implement WS support
-  def openWS(url: String, params: Seq[(String, String)], headers: Seq[HttpHeader], takeWithin: FiniteDuration): Future[Either[HttpError, CornichonHttpResponse]] = {
-    /*val uri = uriBuilder(url, params)
-    val req = WebSocketRequest(uri).copy(extraHeaders = collection.immutable.Seq(headers: _*))
-
-    val received = ListBuffer.empty[String]
-
-    val incoming: Sink[Message, Future[Done]] =
-      Sink.foreach {
-        case message: TextMessage.Strict ⇒
-          received += message.text
-        case _ ⇒ ()
-      }
-
-    val flow = Flow.fromSinkAndSourceMat(incoming, Source.empty[Message])(Keep.left)
-
-    val (upgradeResponse, closed) = Http().singleWebSocketRequest(req, flow, sslContext)
-
-    val responses = upgradeResponse.map { upgrade ⇒
-      if (upgrade.response.status == StatusCodes.OK) right(StatusCodes.OK)
-      else left(WsUpgradeError(upgrade.response.status.intValue()))
+  override def openStream(req: HttpStreamedRequest, t: FiniteDuration) =
+    req.stream match {
+      case SSE ⇒ openSSE(req, t).value
+      case WS  ⇒ ??? // TODO implement WS support
     }
 
-    Thread.sleep(takeWithin.toMillis)
-    responses.value.fold(throw TimeoutError("Websocket connection did not complete in time", url)) {
-      case Failure(e) ⇒ throw e
-      case Success(s) ⇒ s.map { _ ⇒
-        CornichonHttpResponse(
-          status = StatusCodes.OK,
-          headers = collection.immutable.Seq.empty[HttpHeader],
-          body = prettyPrint(Json.fromValues(received.map(_.asJson).toList))
-        )
-      }
-    }*/
-    ???
+  def openSSE(req: HttpStreamedRequest, connectionTimeout: FiniteDuration) = {
+
+    val request = HttpRequest[String](GET, req.url, None, req.params, req.headers).addHeaders("text" → "event-stream")
+
+    runSingleRequest[String, Source[ServerSentEvent, NotUsed]](request, connectionTimeout)(expectSSE).map { source ⇒
+      val r = source
+        .takeWithin(req.takeWithin)
+        .filter(_.data.nonEmpty)
+        .runFold(Vector.empty[ServerSentEvent])(_ :+ _)
+        .map { events ⇒
+          CornichonHttpResponse(
+            status = StatusCodes.OK.intValue,
+            headers = Seq.empty,
+            body = Json.fromValues(events.map(_.asJson)).show
+          )
+        }
+      Await.result(r, req.takeWithin)
+    }
   }
 
   private def expectSSE(httpResponse: HttpResponse): Future[Either[HttpError, Source[ServerSentEvent, NotUsed]]] =

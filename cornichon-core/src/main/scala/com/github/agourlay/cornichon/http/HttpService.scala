@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.http
 
-import akka.actor.Scheduler
-
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
@@ -24,7 +22,7 @@ import io.circe.Encoder
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext, scheduler: Scheduler) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext) {
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {
@@ -61,7 +59,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     import cats.instances.string._
     for {
       resolvedRequest ← EitherT.fromEither[Future](resolveStreamedRequest[String](r)(s))
-      resp ← EitherT(client.openStream(r.stream, resolvedRequest.url, resolvedRequest.params, resolvedRequest.headers, r.takeWithin, requestTimeout))
+      resp ← EitherT(client.openStream(resolvedRequest, requestTimeout))
       newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
     } yield (resp, newSession)
   }

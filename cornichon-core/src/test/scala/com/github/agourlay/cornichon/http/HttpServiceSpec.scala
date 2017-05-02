@@ -18,7 +18,6 @@ class HttpServiceSpec extends WordSpec
     with EitherMatchers {
 
   implicit val system = ActorSystem("akka-http-client")
-  implicit val scheduler = system.scheduler
   implicit val mat = ActorMaterializer()
 
   val client = new AkkaHttpClient()
