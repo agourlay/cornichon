@@ -4,24 +4,22 @@ import akka.actor.Scheduler
 import cats.data.NonEmptyList
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success, Try }
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
 
-case class DebugStep(message: Session ⇒ String, title: String = "Debug step") extends Step {
+case class DebugStep(message: Session ⇒ Either[CornichonError, String], title: String = "Debug step") extends Step {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
-    val (fullLogs, xor) = Try {
-      message(initialRunState.session)
-    } match {
-      case Success(debugMessage) ⇒
+    val (fullLogs, xor) = message(initialRunState.session) match {
+      case Right(debugMessage) ⇒
         val runLogs = Vector(DebugLogInstruction(debugMessage, initialRunState.depth))
         (runLogs, rightDone)
-      case Failure(e) ⇒
-        val errors = NonEmptyList.of(CornichonError.fromThrowable(e))
+      case Left(e) ⇒
+        val errors = NonEmptyList.of(e)
         val debugErrorLogs = errorLogs(title, errors, initialRunState.depth)
         val failedStep = FailedStep(this, errors)
         (debugErrorLogs, Left(failedStep))

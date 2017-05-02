@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.resolver.Resolvable
 import gnieh.diffson.circe._
-import io.circe.{ Encoder, Json, JsonObject }
+import io.circe.{ Encoder, Json }
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
@@ -25,7 +25,7 @@ trait CornichonJson {
         if (firstChar == '{' || firstChar == '[')
           parseString(s) // parse object or array
         else if (firstChar == '|')
-          Right(Json.fromValues(parseDataTable(s).map(Json.fromJsonObject))) // table
+          parseDataTable(s).map(list ⇒ Json.fromValues(list.map(Json.fromJsonObject))) // table
         else
           Right(Json.fromString(s)) // treated as a String
       }
@@ -34,13 +34,18 @@ trait CornichonJson {
   }
 
   def parseJsonUnsafe[A: Encoder: Show](input: A): Json =
-    parseJson(input).fold(e ⇒ throw e, identity)
+    parseJson(input).fold(e ⇒ throw e.toException, identity)
 
   def parseString(s: String) =
     io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
 
-  def parseDataTable(table: String): List[JsonObject] =
-    DataTableParser.parseDataTable(table).objectList
+  def parseStringUnsafe(s: String): Json = parseString(s).fold(e ⇒ throw e.toException, identity)
+
+  def parseDataTable(table: String) =
+    DataTableParser.parseDataTable(table).map(_.objectList)
+
+  def parseDataTableUnsafe(table: String) =
+    parseDataTable(table).fold(e ⇒ throw e.toException, identity)
 
   def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
     case Success(value) ⇒ Right(value.convertMarshaled[Json])
@@ -48,7 +53,7 @@ trait CornichonJson {
   }
 
   def parseGraphQLJsonUnsafe(input: String) =
-    parseGraphQLJson(input).fold(e ⇒ throw e, identity)
+    parseGraphQLJson(input).fold(e ⇒ throw e.toException, identity)
 
   def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
     json.arrayOrObject(
@@ -60,8 +65,8 @@ trait CornichonJson {
   def parseArray(input: String): Either[CornichonError, Vector[Json]] =
     parseJson(input).flatMap(jsonArrayValues)
 
-  def selectArrayJsonPath(path: JsonPath, sessionValue: String): Either[CornichonError, Vector[Json]] =
-    path.run(sessionValue).flatMap(jsonArrayValues)
+  def selectArrayJsonPath(path: JsonPath, json: String): Either[CornichonError, Vector[Json]] =
+    path.run(json).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) =
     paths.foldLeft(input) { (json, path) ⇒
@@ -109,7 +114,7 @@ trait CornichonJson {
 
     // Do not traverse the JSON if there are no values to find
     if (values.nonEmpty)
-      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k) }
+      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k).fold(e ⇒ throw e.toException, identity) }
     else
       Vector.empty
   }

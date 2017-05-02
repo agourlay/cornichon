@@ -2,10 +2,13 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.syntax.show._
+
 import com.github.agourlay.cornichon.util.Printing._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.Resolvable
+
 import io.circe.{ Encoder, Json }
+
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 

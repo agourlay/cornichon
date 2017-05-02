@@ -76,8 +76,8 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
       val nested = AssertStep(
         "sum of 'a' + 'b' = 'c'",
         s ⇒ {
-          val sum = s.get("a").toInt + s.get("b").toInt
-          GenericEqualityAssertion(sum, s.get("c").toInt)
+          val sum = s.getUnsafe("a").toInt + s.getUnsafe("b").toInt
+          GenericEqualityAssertion(sum, s.getUnsafe("c").toInt)
         }
       ) :: Nil
       val inputs =

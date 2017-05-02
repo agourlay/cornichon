@@ -64,7 +64,7 @@ class MathScenario extends CornichonFeature with MathSteps {
           | 1 | -1 | 0  |
         """
       ) {
-          Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.get("c").toInt, s.get("a").toInt + s.get("b").toInt))
+          Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.getUnsafe("c").toInt, s.getUnsafe("a").toInt + s.getUnsafe("b").toInt))
         }
 
       And I print_step("calculation correct!")

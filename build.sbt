@@ -80,6 +80,7 @@ lazy val core =
       name := "cornichon-core",
       libraryDependencies ++= Seq(
         library.akkaActor,
+        library.akkaStream,
         library.akkaHttp,
         library.akkaHttpCore,
         library.akkaSse,
@@ -179,7 +180,7 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.0.3"
-      val akkaActor     = "2.4.17"
+      val akkaActor     = "2.4.18"
       val akkaHttp      = "10.0.5"
       val cats          = "0.9.0"
       val parboiled     = "2.1.4"
@@ -188,15 +189,16 @@ lazy val library =
       val sangriaCirce  = "1.0.1"
       val circe         = "0.7.1"
       val diffson       = "2.1.2"
-      val sangria       = "1.1.0"
+      val sangria       = "1.2.0"
       val fansi         = "0.2.3"
       val akkaHttpCirce = "1.15.0"
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.0"
     }
     val akkaActor     = "com.typesafe.akka"   %% "akka-actor"      % Version.akkaActor
-    val akkaHttp      = "com.typesafe.akka"   %% "akka-http-core"  % Version.akkaHttp
-    val akkaHttpCore  = "com.typesafe.akka"   %% "akka-http"       % Version.akkaHttp
+    val akkaStream    = "com.typesafe.akka"   %% "akka-stream"     % Version.akkaActor
+    val akkaHttpCore  = "com.typesafe.akka"   %% "akka-http-core"  % Version.akkaHttp
+    val akkaHttp      = "com.typesafe.akka"   %% "akka-http"       % Version.akkaHttp
     val akkHttpCirce  = "de.heikoseeberger"   %% "akka-http-circe" % Version.akkaHttpCirce
     val akkaSse       = "de.heikoseeberger"   %% "akka-sse"        % Version.akkaSse
     val catsMacro     = "org.typelevel"       %% "cats-macros"     % Version.cats

@@ -4,6 +4,10 @@ import cats.Show
 import cats.syntax.show._
 import cats.instances.string._
 import cats.syntax.either._
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
+
 import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import io.circe.Json
@@ -12,54 +16,50 @@ import scala.collection.immutable.HashMap
 
 case class Session(private val content: Map[String, Vector[String]]) {
 
-  def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] = {
-
-    def valueExtractor(stackingIndice: Option[Int], values: Vector[String]) =
-      stackingIndice.fold(values.lastOption) { indice ⇒
-        values.lift(indice)
-      }
-
+  def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] =
     for {
       values ← content.get(key)
-      value ← valueExtractor(stackingIndice, values)
+      value ← stackingIndice.fold(values.lastOption) { indice ⇒ values.lift(indice) }
     } yield value
 
-  }
+  def getUnsafe(key: String, stackingIndice: Option[Int] = None): String =
+    get(key, stackingIndice).fold(ce ⇒ throw ce.toException, identity)
 
-  def get(key: String, stackingIndice: Option[Int] = None): String =
-    getOpt(key, stackingIndice).getOrElse(throw KeyNotFoundInSession(key, stackingIndice, this))
+  def getUnsafe(sessionKey: SessionKey): String = getUnsafe(sessionKey.name, sessionKey.index)
 
-  def get(sessionKey: SessionKey): String = get(sessionKey.name, sessionKey.index)
-
-  def getXor(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
+  def get(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
     Either.fromOption(getOpt(key, stackingIndice), KeyNotFoundInSession(key, stackingIndice, this))
 
-  def getJsonXor(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
+  def get(sessionKey: SessionKey): Either[CornichonError, String] = get(sessionKey.name, sessionKey.index)
+
+  def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
     for {
-      sessionValue ← getXor(key, stackingIndice)
+      sessionValue ← get(key, stackingIndice)
       jsonValue ← parseJson(sessionValue)
-      extracted ← Either.catchNonFatal(JsonPath.run(path, jsonValue)).leftMap(CornichonError.fromThrowable)
+      extracted ← JsonPath.run(path, jsonValue)
     } yield extracted
 
-  def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
-    getJsonXor(key, stackingIndice, path).fold(e ⇒ throw e, identity)
+  def getJsonUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    getJson(key, stackingIndice, path).fold(ce ⇒ throw ce.toException, identity)
 
-  def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) = {
-    val res = for {
-      json ← getJsonXor(key, stackingIndice, path)
+  def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    for {
+      json ← getJson(key, stackingIndice, path)
       field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
     } yield field
-    res.fold(e ⇒ throw e, identity)
-  }
+
+  def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    getJsonStringField(key, stackingIndice, path).fold(ce ⇒ throw ce.toException, identity)
 
   def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] = getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
 
-  def getList(keys: Seq[String]) = keys.map(v ⇒ get(v))
+  def getList(keys: Seq[String]): Either[CornichonError, List[String]] = keys.toList.traverseU(v ⇒ get(v))
 
   def getHistory(key: String): Vector[String] = content.getOrElse(key, Vector.empty)
 
   def addValue(key: String, value: String) =
-    if (key.trim.isEmpty) throw EmptyKeyException(this)
+    //FIXME turning this into a proper CornichonError creates a lot of work to handle the Either
+    if (key.trim.isEmpty) throw EmptyKeyException(this).toException
     else
       content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
         Session((content - key) + (key → values.:+(value)))

@@ -9,7 +9,7 @@ import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.{ HttpRequest, _ }
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import cats.instances.string._
 import com.github.agourlay.cornichon.core.Done
 import com.github.agourlay.cornichon.http.{ HttpMethod ⇒ CornichonHttpMethod, HttpMethods ⇒ CornichonHttpMethods, HttpRequest ⇒ CornichonHttpRequest }
@@ -20,7 +20,7 @@ import io.circe.Json
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 
-case class MockServerRequestHandler(serverName: String)(implicit system: ActorSystem, am: ActorMaterializer, executionContext: ExecutionContext) {
+case class MockServerRequestHandler(serverName: String)(implicit system: ActorSystem, mat: Materializer, executionContext: ExecutionContext) {
 
   val requestReceivedRepo = system.actorOf(MockServerResultsHolder.props(), s"MockServerResultsHolder-$serverName-${UUID.randomUUID()}")
 

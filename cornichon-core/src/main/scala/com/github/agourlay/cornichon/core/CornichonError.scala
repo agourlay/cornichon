@@ -6,7 +6,7 @@ import cats.data.NonEmptyList
 
 import scala.util.control.NoStackTrace
 
-trait CornichonError extends Exception with NoStackTrace {
+trait CornichonError {
   def baseErrorMessage: String
   val causedBy: Option[NonEmptyList[CornichonError]] = None
 
@@ -16,7 +16,8 @@ trait CornichonError extends Exception with NoStackTrace {
        |${causes.toList.map(c ⇒ c.renderedMessage).mkString("\nand\n")}
      """.stripMargin
   }
-  override def getMessage = renderedMessage
+
+  def toException = CornichonException(renderedMessage)
 }
 
 object CornichonError {
@@ -27,10 +28,8 @@ object CornichonError {
     sw.toString
   }
 
-  def fromThrowable(exception: Throwable): CornichonError = exception match {
-    case ce: CornichonError ⇒ ce
-    case _                  ⇒ StepExecutionError(exception)
-  }
+  def fromThrowable(exception: Throwable): CornichonError =
+    StepExecutionError(exception)
 }
 
 case class StepExecutionError[A](e: Throwable) extends CornichonError {
@@ -39,4 +38,8 @@ case class StepExecutionError[A](e: Throwable) extends CornichonError {
 
 case class BasicError(error: String) extends CornichonError {
   val baseErrorMessage = error
+}
+
+case class CornichonException(m: String) extends Exception with NoStackTrace {
+  override def getMessage = m
 }

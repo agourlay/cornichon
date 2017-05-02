@@ -52,9 +52,10 @@ trait Assertion { self ⇒
 object Assertion {
 
   val alwaysValid: Assertion = new Assertion { val validated = valid(Done) }
-  def failWith(error: Throwable) = new Assertion { val validated: ValidatedNel[CornichonError, Done] = invalidNel(StepExecutionError(error)) }
   def failWith(error: String) = new Assertion { val validated: ValidatedNel[CornichonError, Done] = invalidNel(BasicError(error)) }
   def failWith(error: CornichonError) = new Assertion { val validated: ValidatedNel[CornichonError, Done] = invalidNel(error) }
+
+  def either(v: Either[CornichonError, Assertion]) = v.fold(e ⇒ failWith(e), identity)
 
   def all(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.and(assertion))
   def any(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.or(assertion))

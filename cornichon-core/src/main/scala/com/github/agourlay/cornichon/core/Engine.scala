@@ -43,13 +43,18 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
       }
       preparedStep.fold(
         ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, NonEmptyList.of(ce))),
-        ps ⇒ ps.run(this)(runState).flatMap {
-          case (newState, stepResult) ⇒
-            stepResult.fold(
-              failedStep ⇒ Future.successful(newState, Left(failedStep)),
-              _ ⇒ runSteps(newState.consumCurrentStep)
+        ps ⇒
+          Either
+            .catchNonFatal(ps.run(this)(runState))
+            .fold(
+              e ⇒ Future.successful(exceptionToFailureStep(currentStep, runState, e)),
+              future ⇒
+                future.flatMap {
+                  case (newState, stepResult) ⇒ stepResult.fold(failedStep ⇒ Future.successful(newState, Left(failedStep)), _ ⇒ runSteps(newState.consumCurrentStep))
+                }.recover {
+                  case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, t)
+                }
             )
-        }.recover { case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, NonEmptyList.of(CornichonError.fromThrowable(t))) }
       )
     }.getOrElse(Future.successful(runState, rightDone))
 }
@@ -82,6 +87,9 @@ object Engine {
     val failedStep = FailedStep(currentStep, errors)
     (runState.appendLogs(runLogs), Left(failedStep))
   }
+
+  def exceptionToFailureStep(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) =
+    exceptionToFailureStep(currentStep, runState, NonEmptyList.of(CornichonError.fromThrowable(error)))
 
   def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int) = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)

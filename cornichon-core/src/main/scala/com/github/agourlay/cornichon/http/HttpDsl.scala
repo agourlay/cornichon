@@ -5,6 +5,7 @@ import java.util.Base64
 
 import cats.Show
 import cats.syntax.show._
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
@@ -23,7 +24,7 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.http.steps.HttpListenSteps._
 import com.github.agourlay.cornichon.util.Printing._
-import io.circe.Encoder
+import io.circe.{ Encoder, Json }
 import sangria.ast.Document
 
 import scala.concurrent.duration._
@@ -80,8 +81,11 @@ trait HttpDsl extends HttpRequestsDsl {
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
       case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, (session, s) ⇒ {
-        val resolvedPath = resolver.fillPlaceholdersUnsafe(path)(session)
-        JsonPath.parse(resolvedPath).run(s).fold(e ⇒ throw e, json ⇒ jsonStringValue(json))
+        for {
+          resolvedPath ← resolver.fillPlaceholders(path)(session)
+          jsonPath ← JsonPath.parse(resolvedPath)
+          json ← jsonPath.run(s)
+        } yield jsonStringValue(json)
       }, target)
     }
     save_from_session(inputs)
@@ -90,23 +94,29 @@ trait HttpDsl extends HttpRequestsDsl {
   def save_header_value(args: (String, String)*) = {
     val inputs = args.map {
       case (headerFieldname, target) ⇒ FromSessionSetter(lastResponseHeadersKey, (session, s) ⇒ {
-        decodeSessionHeaders(s).find(_._1 == headerFieldname).map(h ⇒ h._2).getOrElse("")
+        decodeSessionHeaders(s).map(_.find(_._1 == headerFieldname).map(h ⇒ h._2).getOrElse(""))
       }, target)
     }
     save_from_session(inputs)
   }
 
-  def show_last_response = showLastResponse()
+  private def showLastReponse[A: Show](parse: String ⇒ Either[CornichonError, A]) = DebugStep(s ⇒
+    for {
+      headers ← s.get(lastResponseHeadersKey)
+      decodedHeaders ← decodeSessionHeaders(headers)
+      status ← s.get(lastResponseStatusKey)
+      body ← s.get(lastResponseBodyKey)
+      bodyParsed ← parse(body)
+    } yield {
+      s"""Show last response
+         |headers: ${displayStringPairs(decodedHeaders)}
+         |status : $status
+         |body   : ${bodyParsed.show}
+     """.stripMargin
+    })
 
-  def show_last_response_json = showLastResponse(v ⇒ parseJson(v).fold(e ⇒ throw e, _.show))
-
-  private def showLastResponse(map: String ⇒ String = identity) = DebugStep(s ⇒
-    s"""Show last response
-       |headers: ${displayStringPairs(decodeSessionHeaders(s.get(lastResponseHeadersKey)))}
-       |status : ${s.get(lastResponseStatusKey)}
-       |body   : ${map(s.get(lastResponseBodyKey))}
-     """.stripMargin)
-
+  def show_last_response = showLastReponse(b ⇒ Right(b))
+  def show_last_response_json = showLastReponse[Json](parseJson)
   def show_last_status = show_session(lastResponseStatusKey)
 
   def show_last_body = show_session(lastResponseBodyKey)

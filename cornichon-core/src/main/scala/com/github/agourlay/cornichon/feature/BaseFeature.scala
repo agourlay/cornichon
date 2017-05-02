@@ -27,7 +27,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  implicit lazy val (globalClient, ec, _, _, scheduler) = globalRuntime
+  implicit lazy val (globalClient, ec, as, mat, scheduler) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
 
   private lazy val config = ConfigFactory.load().as[Config]("cornichon")

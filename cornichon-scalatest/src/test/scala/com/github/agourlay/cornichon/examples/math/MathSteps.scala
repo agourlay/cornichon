@@ -1,10 +1,11 @@
 package com.github.agourlay.cornichon.examples.math
 
+import cats.syntax.either._
+
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-import scala.concurrent.Future
 import scala.util.Random
 
 trait MathSteps {
@@ -13,10 +14,11 @@ trait MathSteps {
   case class adding_values(arg1: String, arg2: String) {
     def equals(res: Int) = AssertStep(
       title = s"value of $arg1 + $arg2 should be $res",
-      action = s ⇒ {
-      val v1 = s.get(arg1).toInt
-      val v2 = s.get(arg2).toInt
-      GenericEqualityAssertion(res, v1 + v2)
+      action = s ⇒ Assertion.either {
+      for {
+        v1 ← s.get(arg1).map(_.toInt)
+        v2 ← s.get(arg2).map(_.toInt)
+      } yield GenericEqualityAssertion(res, v1 + v2)
     }
     )
   }
@@ -37,24 +39,27 @@ trait MathSteps {
     def isBetween(low: Double, high: Double) =
       AssertStep(
         title = s"double value of '$source' is between '$low' and '$high'",
-        action = s ⇒ BetweenAssertion(low, s.get(source).toDouble, high)
+        action = s ⇒ Assertion.either {
+        s.get(source).map(v ⇒ BetweenAssertion(low, v.toDouble, high))
+      }
       )
   }
 
-  def calculate_point_in_circle(target: String) = EffectStep(
+  def calculate_point_in_circle(target: String) = EffectStep.fromSyncE(
     title = s"calculate points inside circle",
-    effect = s ⇒ Future {
-    val x = s.get("x").toDouble
-    val y = s.get("y").toDouble
-    val inside = Math.sqrt(x * x + y * y) <= 1
-    s.addValue(target, if (inside) "1" else "0")
+    effect = s ⇒ {
+    for {
+      x ← s.get("x").map(_.toDouble)
+      y ← s.get("y").map(_.toDouble)
+      inside = Math.sqrt(x * x + y * y) <= 1
+    } yield s.addValue(target, if (inside) "1" else "0")
   }
   )
 
   def estimate_pi_from_ratio(inside: String, target: String) =
-    EffectStep(
+    EffectStep.fromSync(
       title = s"estimate PI from ratio into key '$target'",
-      effect = s ⇒ Future {
+      effect = s ⇒ {
       val insides = s.getHistory(inside)
       val trial = insides.size
       val estimation = (insides.count(_ == "1").toDouble / trial) * 4

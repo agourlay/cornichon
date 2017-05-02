@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.json
 
+import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2._
-import scala.util.{ Success, Failure }
+
+import scala.util.{ Failure, Success }
 
 class JsonPathParser(val input: ParserInput) extends Parser {
 
@@ -25,15 +27,15 @@ class JsonPathParser(val input: ParserInput) extends Parser {
 }
 
 object JsonPathParser {
-  def parseJsonPath(input: String): List[JsonSegment] = {
+  def parseJsonPath(input: String): Either[CornichonError, List[JsonSegment]] = {
     val p = new JsonPathParser(input)
     p.placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒
-        throw JsonPathParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true)))
+        Left(JsonPathParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
       case Failure(e: Throwable) ⇒
-        throw JsonPathError(input, e)
+        Left(JsonPathError(input, e))
       case Success(dt) ⇒
-        dt.toList
+        Right(dt.toList)
     }
   }
 }

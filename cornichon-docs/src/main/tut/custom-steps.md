@@ -8,22 +8,24 @@ position: 3
 
 ## EffectStep
 
-An ```EffectStep``` can be understood as the following function ```Session => Future[Session]```.
+An ```EffectStep``` can be understood as the following function ```Session => Future[Either[CornichonError, Session]]```.
 
-This means that an ```EffectStep``` runs a side effect and populates the ```Session``` with potential result values.
+This means that an ```EffectStep``` runs a side effect and populates the ```Session``` with potential result values or returns an error.
 
 A ```session``` is a Map-like object used to propagate state throughout a ```scenario```. It is used to resolve [placeholders](#placeholders) and save the result computations for later assertions.
 
 Here is the most simple ```EffectStep```:
 
 ```scala
-When I EffectStep(title = "do nothing", action = s => Future.successful(s))
+When I EffectStep(title = "do nothing", action = s => Future.successful(Right(s)))
 ```
 
-or using a factory helper when dealing with non Future based computation
+or using a factory helper when dealing with computations that do not fit the ```EffectStep``` type.
 
 ```scala
 When I EffectStep.fromSync(title = "do nothing", action = s => s)
+When I EffectStep.fromSyncE(title = "do nothing", action = s => Right(s))
+When I EffectStep.fromAsync(title = "do nothing", action = s => Future(s))
 ```
 
 Let's try so save a value into the ```Session```
@@ -116,14 +118,16 @@ The test engine is responsible to test the validity of the provided ```Assertion
 Below is a longer example showing how to integration an assertion into scenario.
 
 ```scala
-When I EffectStep(
+When I EffectStep.fromSync(
   title = "estimate PI",
   action = s => s.add("result", piComputation())
 )
 
 Then assert AssertStep(
   title = "check estimate",
-  action = s => BetweenAssertion(3.1, s.get("result"), 3.2)
+  action = s => Assertion.either{
+    s.get("result").map(r => BetweenAssertion(3.1, r.toDouble, 3.2))
+  }
 )
 ```
 

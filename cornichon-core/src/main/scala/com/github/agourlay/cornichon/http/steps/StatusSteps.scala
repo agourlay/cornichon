@@ -1,8 +1,10 @@
 package com.github.agourlay.cornichon.http.steps
 
 import cats.syntax.show._
+import cats.syntax.either._
 import cats.instances.int._
 import cats.instances.string._
+
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
@@ -30,22 +32,26 @@ object StatusSteps {
   case object StatusStepBuilder {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = s ⇒
-      CustomMessageEqualityAssertion(
-        expected = expected,
-        actual = s.get(lastResponseStatusKey).toInt,
-        customMessage = statusError(expected, s.get(lastResponseBodyKey))
-      )
+      action = s ⇒ Assertion.either {
+      for {
+        lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
+        lastBody ← s.get(lastResponseBodyKey)
+      } yield CustomMessageEqualityAssertion(expected, lastResponseStatus, statusError(expected, lastBody))
+    }
     )
 
     protected def isByKind(kind: Int) = AssertStep(
       title = s"status is ${StatusKind.kindLabel(kind)} ${StatusKind.kindDisplay(kind)}",
-      action = s ⇒
-      CustomMessageEqualityAssertion(
+      action = s ⇒ Assertion.either {
+      for {
+        lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
+        lastBody ← s.get(lastResponseBodyKey)
+      } yield CustomMessageEqualityAssertion(
         expected = kind,
-        actual = StatusKind.computeKind(s.get(lastResponseStatusKey).toInt),
-        customMessage = statusKindError(kind, s.get(lastResponseStatusKey).toInt, s.get(lastResponseBodyKey))
+        actual = StatusKind.computeKind(lastResponseStatus),
+        customMessage = statusKindError(kind, lastResponseStatus, lastBody)
       )
+    }
     )
 
     def isSuccess = isByKind(2)

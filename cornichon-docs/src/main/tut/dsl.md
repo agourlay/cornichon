@@ -405,7 +405,7 @@ WithDataInputs(
 }
 
 def a_plus_b_equals_c =
-  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.get("a").toInt + s.get("b").toInt, s.get("c").toInt))
+  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.getUnsafe("a").toInt + s.getUnsafe("b").toInt, s.getUnsafe("c").toInt))
 ```
 
 - WithHeaders automatically sets headers for several steps useful for authenticated scenario.
