@@ -195,7 +195,7 @@ lazy val library =
       val akkaHttpCirce = "1.15.0"
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.0"
-      val monix         = "2.2.4"
+      val monix         = "2.3.0"
     }
     val akkaActor     = "com.typesafe.akka"   %% "akka-actor"      % Version.akkaActor
     val akkaStream    = "com.typesafe.akka"   %% "akka-stream"     % Version.akkaActor
