@@ -75,11 +75,11 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
   def parseHttpHeaders(headers: Seq[(String, String)]): Either[MalformedHeadersError, Seq[HttpHeader]] = {
     @tailrec
     def loop(headers: Seq[(String, String)], acc: Seq[HttpHeader]): Either[MalformedHeadersError, Seq[HttpHeader]] =
-      if (headers.isEmpty) Right(acc)
+      if (headers.isEmpty) Right(acc.reverse)
       else {
         val (name, value) = headers.head
         HttpHeader.parse(name, value) match {
-          case ParsingResult.Ok(h, _) ⇒ loop(headers.tail, acc :+ h)
+          case ParsingResult.Ok(h, _) ⇒ loop(headers.tail, h +: acc)
           case ParsingResult.Error(e) ⇒ Left(MalformedHeadersError(e.formatPretty))
         }
       }
