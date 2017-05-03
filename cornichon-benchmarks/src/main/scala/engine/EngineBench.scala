@@ -5,7 +5,8 @@ import java.util.concurrent.{ ExecutorService, Executors }
 import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
 import com.github.agourlay.cornichon.resolver.Resolver
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
 import engine.EngineBench._
 import monix.execution.Scheduler
@@ -47,21 +48,31 @@ class EngineBench {
     es.shutdown()
   }
 
-  //    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score      Error  Units
-  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  26419.744 ± 2486.295  ops/s
-  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   3361.397 ±  123.112  ops/s
-  //    [info] EngineBench.lotsOfSteps           1000  thrpt   20    330.479 ±    8.655  ops/s
+//    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score      Error  Units
+//    [info] EngineBench.lotsOfSteps             10  thrpt   20  16318.944 ± 1349.173  ops/s
+//    [info] EngineBench.lotsOfSteps            100  thrpt   20   2453.874 ±   14.008  ops/s
+//    [info] EngineBench.lotsOfSteps           1000  thrpt   20    247.688 ±   11.477  ops/s
   @Benchmark
   def lotsOfSteps = {
-    val steps = List.fill(stepsNumber.toInt)(step)
-    val scenario = Scenario("test scenario", steps)
-    val f = engine.runScenario(session)(scenario)
+    val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)
+    val effectSteps = List.fill(stepsNumber.toInt / 2)(effectStep)
+    val scenario = Scenario("test scenario", setupSession +: (assertSteps ++ effectSteps))
+    val f = engine.runScenario(Session.newEmpty)(scenario)
     val res = Await.result(f, Duration.Inf)
     assert(res.isSuccess)
   }
 }
 
 object EngineBench {
-  val session = Session.newEmpty
-  val step = AssertStep("addition step", s ⇒ GenericEqualityAssertion(2 + 1, 3))
+  val setupSession = EffectStep.fromSync("setup session", s => s.addValues(Seq("v1" -> "2", "v2" -> "1")))
+  val assertStep = AssertStep(
+    "addition step",
+    s ⇒ Assertion.either {
+      for {
+        two <- s.get("v1").map(_.toInt)
+        one <- s.get("v2").map(_.toInt)
+      } yield GenericEqualityAssertion(two + one, 3)
+    }
+  )
+  val effectStep = EffectStep.fromSync("identity", s => s)
 }
