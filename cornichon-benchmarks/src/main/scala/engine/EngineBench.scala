@@ -3,6 +3,7 @@ package engine
 import java.util.concurrent.{ ExecutorService, Executors }
 
 import cats.instances.int._
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.EffectStep
@@ -48,10 +49,10 @@ class EngineBench {
     es.shutdown()
   }
 
-//    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score      Error  Units
-//    [info] EngineBench.lotsOfSteps             10  thrpt   20  16318.944 ± 1349.173  ops/s
-//    [info] EngineBench.lotsOfSteps            100  thrpt   20   2453.874 ±   14.008  ops/s
-//    [info] EngineBench.lotsOfSteps           1000  thrpt   20    247.688 ±   11.477  ops/s
+  //    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score      Error  Units
+  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  16318.944 ± 1349.173  ops/s
+  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   2453.874 ±   14.008  ops/s
+  //    [info] EngineBench.lotsOfSteps           1000  thrpt   20    247.688 ±   11.477  ops/s
   @Benchmark
   def lotsOfSteps = {
     val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)
