@@ -97,7 +97,7 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
   }
 
   def saveRequest(akkaReq: HttpRequest) = {
-    Unmarshal(Gzip.decode(akkaReq)).to[String].flatMap { decodedBody: String ⇒
+    Unmarshal(Gzip.decodeMessage(akkaReq)).to[String].flatMap { decodedBody: String ⇒
       val req = CornichonHttpRequest[String](
         method = httpMethodMapper(akkaReq.method),
         url = akkaReq.uri.path.toString(),

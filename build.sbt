@@ -182,7 +182,7 @@ lazy val library =
     object Version {
       val scalaTest     = "3.0.3"
       val akkaActor     = "2.4.18"
-      val akkaHttp      = "10.0.5"
+      val akkaHttp      = "10.0.6"
       val cats          = "0.9.0"
       val parboiled     = "2.1.4"
       val akkaSse       = "2.0.0"

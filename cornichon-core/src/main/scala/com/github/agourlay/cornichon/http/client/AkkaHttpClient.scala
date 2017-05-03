@@ -155,14 +155,14 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
   }
 
   private def expectSSE(httpResponse: HttpResponse): Future[Either[HttpError, Source[ServerSentEvent, NotUsed]]] =
-    Unmarshal(Gzip.decode(httpResponse)).to[Source[ServerSentEvent, NotUsed]].map { sse ⇒
+    Unmarshal(Gzip.decodeMessage(httpResponse)).to[Source[ServerSentEvent, NotUsed]].map { sse ⇒
       Right(sse)
     }.recover {
       case e: Exception ⇒ Left(SseError(e))
     }
 
   private def toCornichonResponse(httpResponse: HttpResponse): Future[Either[CornichonError, CornichonHttpResponse]] =
-    Unmarshal(Gzip.decode(httpResponse)).to[String].map { body: String ⇒
+    Unmarshal(Gzip.decodeMessage(httpResponse)).to[String].map { body: String ⇒
       Right(
         CornichonHttpResponse(
           status = httpResponse.status.intValue(),
