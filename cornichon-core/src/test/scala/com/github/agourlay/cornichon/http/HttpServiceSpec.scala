@@ -30,31 +30,28 @@ class HttpServiceSpec extends WordSpec
   "HttpService" when {
     "fillInSessionWithResponse" must {
       "extract content with NoOpExtraction" in {
-        val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil, "hello world")
-        val filledSession = service.fillInSessionWithResponse(s, resp, NoOpExtraction)
+        val filledSession = service.fillInSessionWithResponse(Session.newEmpty, resp, NoOpExtraction)
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight("hello world")
       }
 
       "extract content with RootResponseExtraction" in {
-        val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil, "hello world")
-        val filledSession = service.fillInSessionWithResponse(s, resp, RootExtractor("copy-body"))
+        val filledSession = service.fillInSessionWithResponse(Session.newEmpty, resp, RootExtractor("copy-body"))
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight("hello world")
         filledSession.value.get("copy-body") should beRight("hello world")
       }
 
       "extract content with PathResponseExtraction" in {
-        val s = Session.newEmpty
         val resp = CornichonHttpResponse(200, Nil,
           """
             {
               "name" : "batman"
             }
           """)
-        val filledSession = service.fillInSessionWithResponse(s, resp, PathExtractor("name", "part-of-body"))
+        val filledSession = service.fillInSessionWithResponse(Session.newEmpty, resp, PathExtractor("name", "part-of-body"))
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight(
           """
@@ -83,9 +80,8 @@ class HttpServiceSpec extends WordSpec
       }
 
       "handle URL without param" in {
-        val s = Session.newEmpty
         val url = "http://yada.com"
-        service.resolveParams(url, params = Seq.empty)(s) should beRight(Seq.empty[(String, String)])
+        service.resolveParams(url, params = Seq.empty)(Session.newEmpty) should beRight(Seq.empty[(String, String)])
       }
     }
 

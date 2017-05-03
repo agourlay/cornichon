@@ -13,20 +13,18 @@ class AssertStepSpec extends AsyncWordSpec
   "AssertStep" must {
 
     "fail if instruction throws exception" in {
-      val session = Session.newEmpty
       val step = AssertStep("stupid step", s ⇒ {
         6 / 0
         GenericEqualityAssertion(2, 2)
       })
       val s = Scenario("scenario with stupid test", step :: Nil)
-      engine.runScenario(session)(s).map(_.isSuccess should be(false))
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
     "success if non equality was expected" in {
-      val session = Session.newEmpty
       val step = AssertStep("non equals step", s ⇒ GenericEqualityAssertion(1, 2, negate = true))
       val s = Scenario("scenario with unresolved", step :: Nil)
-      engine.runScenario(session)(s).map(_.isSuccess should be(true))
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
     }
   }
 

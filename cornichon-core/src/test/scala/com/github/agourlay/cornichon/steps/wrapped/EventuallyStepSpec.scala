@@ -11,7 +11,6 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "EventuallyStep" must {
     "replay eventually wrapped steps" in {
-      val session = Session.newEmpty
       val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
       val nested = AssertStep(
         "possible random value step",
@@ -20,18 +19,17 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
       val steps = EventuallyStep(nested, eventuallyConf) :: Nil
       val s = Scenario("scenario with eventually", steps)
-      engine.runScenario(session)(s).map(_.isSuccess should be(true))
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
     }
 
     "replay eventually wrapped steps until limit" in {
-      val session = Session.newEmpty
       val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
       val nested = AssertStep(
         "impossible random value step", s ⇒ GenericEqualityAssertion(11, scala.util.Random.nextInt(10))
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-      engine.runScenario(session)(s).map(_.isSuccess should be(false))
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
   }

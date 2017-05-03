@@ -18,23 +18,21 @@ class EngineSpec extends AsyncWordSpec with Matchers {
   "An engine" when {
     "runScenario" must {
       "executes all steps of a scenario" in {
-        val session = Session.newEmpty
         val steps = AssertStep("first step", s ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
         val s = Scenario("test", steps)
-        engine.runScenario(session)(s).map(_.isSuccess should be(true))
+        engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
       }
 
       "stops at first failed step" in {
-        val session = Session.newEmpty
         val step1 = AssertStep("first step", s ⇒ GenericEqualityAssertion(2, 2))
         val step2 = AssertStep("second step", s ⇒ GenericEqualityAssertion(4, 5))
         val step3 = AssertStep("third step", s ⇒ GenericEqualityAssertion(1, 1))
         val steps = step1 :: step2 :: step3 :: Nil
         val s = Scenario("test", steps)
-        engine.runScenario(session)(s).map { res ⇒
+        engine.runScenario(Session.newEmpty)(s).map { res ⇒
           withClue(s"logs were ${res.logs}") {
             res match {
-              case s: SuccessScenarioReport ⇒ fail("Should be a FailedScenarioReport")
+              case s: SuccessScenarioReport ⇒ fail(s"Should be a FailedScenarioReport and not success with\n${s.logs}")
               case f: FailureScenarioReport ⇒
                 f.failedSteps.head.errors.head.renderedMessage should be(
                   """
@@ -50,11 +48,10 @@ class EngineSpec extends AsyncWordSpec with Matchers {
       }
 
       "accumulates errors if 'main' and 'finally' fail" in {
-        val session = Session.newEmpty
         val mainStep = AssertStep("main step", s ⇒ GenericEqualityAssertion(true, false))
         val finallyStep = AssertStep("finally step", s ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
-        engine.runScenario(session, finallyStep :: Nil)(s).map {
+        engine.runScenario(Session.newEmpty, finallyStep :: Nil)(s).map {
           case s: SuccessScenarioReport ⇒ fail(s"Should be a FailedScenarioReport and not success with\n${s.logs}")
           case f: FailureScenarioReport ⇒
             withClue(f.msg) {

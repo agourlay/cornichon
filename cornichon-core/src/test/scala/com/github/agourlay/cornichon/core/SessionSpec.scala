@@ -17,9 +17,8 @@ class SessionSpec extends WordSpec
   "Session" when {
     "addValue" must {
       "throw if key is empty" in {
-        val s = Session.newEmpty
         intercept[CornichonException] {
-          s.addValue("", Random.nextString(5))
+          Session.newEmpty.addValue("", Random.nextString(5))
         }
       }
     }
@@ -27,8 +26,7 @@ class SessionSpec extends WordSpec
     "get" must {
       "return a written value" in {
         forAll(keyGen, valueGen) { (key, value) ⇒
-          val s1 = Session.newEmpty
-          val s2 = s1.addValue(key, value)
+          val s2 = Session.newEmpty.addValue(key, value)
           s2.get(key) should beRight(value)
         }
       }
@@ -72,9 +70,11 @@ class SessionSpec extends WordSpec
     "getList" must {
       "throw an error if one of the key does not exist" in {
         forAll(keyGen, keyGen, keyGen, valueGen, valueGen) { (firstKey, secondKey, thirdKey, firstValue, secondValue) ⇒
-          val s = Session.newEmpty
-          s.addValue(firstKey, firstValue).addValue(secondKey, secondValue)
-          s.getList(Seq(firstKey, thirdKey)) should be(left)
+          val s2 = Session
+            .newEmpty
+            .addValue(firstKey, firstValue)
+            .addValue(secondKey, secondValue)
+          s2.getList(Seq(firstKey, thirdKey)) should be(left)
         }
       }
     }
@@ -82,8 +82,7 @@ class SessionSpec extends WordSpec
     "getOps" must {
       "return None if key does not exist" in {
         forAll(keyGen) { key ⇒
-          val s = Session.newEmpty
-          s.getOpt(key) should be(None)
+          Session.newEmpty.getOpt(key) should be(None)
         }
       }
     }
@@ -99,8 +98,7 @@ class SessionSpec extends WordSpec
 
       "not throw error if key does not exist" in {
         forAll(keyGen) { key ⇒
-          val s = Session.newEmpty
-          s.removeKey(key)
+          Session.newEmpty.removeKey(key)
         }
       }
     }

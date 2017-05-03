@@ -11,7 +11,6 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "WithinStep" must {
     "control duration of 'within' wrapped steps" in {
-      val session = Session.newEmpty
       val d = 200.millis
       val nested = AssertStep(
         "possible random value step",
@@ -22,11 +21,10 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val withinStep = WithinStep(nested, d)
       val s = Scenario("scenario with Within", withinStep :: Nil)
-      engine.runScenario(session)(s).map(_.isSuccess should be(true))
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
     }
 
     "fail if duration of 'within' is exceeded" in {
-      val session = Session.newEmpty
       val d = 200.millis
       val nested = AssertStep(
         "possible random value step",
@@ -37,7 +35,7 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val withinStep = WithinStep(nested, d)
       val s = Scenario("scenario with Within", withinStep :: Nil)
-      engine.runScenario(session)(s).map(_.isSuccess should be(false))
+      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
   }
 
