@@ -1,9 +1,10 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import akka.actor.Scheduler
 import cats.data.NonEmptyList
 
-import scala.concurrent.{ ExecutionContext, Future }
+import monix.execution.Scheduler
+
+import scala.concurrent.Future
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
@@ -13,7 +14,7 @@ case class DebugStep(message: Session ⇒ Either[CornichonError, String], title:
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
     val (fullLogs, xor) = message(initialRunState.session) match {
       case Right(debugMessage) ⇒
         val runLogs = Vector(DebugLogInstruction(debugMessage, initialRunState.depth))

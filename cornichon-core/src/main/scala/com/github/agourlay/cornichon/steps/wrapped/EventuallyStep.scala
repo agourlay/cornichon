@@ -1,18 +1,19 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import akka.actor.Scheduler
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Futures
 import com.github.agourlay.cornichon.util.Timing._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import monix.execution.Scheduler
+
+import scala.concurrent.Future
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {

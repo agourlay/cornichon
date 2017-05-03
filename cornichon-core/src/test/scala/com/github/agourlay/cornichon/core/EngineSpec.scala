@@ -1,18 +1,19 @@
 package com.github.agourlay.cornichon.core
 
-import akka.actor.ActorSystem
 import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+
+import monix.execution.Scheduler
+
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.ExecutionContext
 
 class EngineSpec extends AsyncWordSpec with Matchers {
 
-  implicit val scheduler = ActorSystem("cornichon-actor-system").scheduler
-  val resolver = Resolver.withoutExtractor()
-  val engine = Engine.withStepTitleResolver(resolver, ExecutionContext.global)
+  implicit val scheduler = Scheduler(ExecutionContext.global)
+  val engine = Engine.withStepTitleResolver(Resolver.withoutExtractor())
 
   "An engine" when {
     "runScenario" must {

@@ -1,20 +1,20 @@
 package com.github.agourlay.cornichon.core
 
-import akka.actor.Scheduler
 import cats.data.NonEmptyList
 import cats.syntax.either._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import monix.execution.Scheduler
+
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.Resolver
 
 import scala.util.control.NonFatal
 
-class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionContext)(implicit scheduler: Scheduler) {
-
-  private implicit val ec = executionContext
+class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
   def runScenario(session: Session, finallySteps: List[Step] = Nil)(scenario: Scenario): Future[ScenarioReport] = {
     val initMargin = 1
@@ -61,11 +61,8 @@ class Engine(stepPreparers: List[StepPreparer], executionContext: ExecutionConte
 
 object Engine {
 
-  def withStepTitleResolver(resolver: Resolver, executionContext: ExecutionContext)(implicit scheduler: Scheduler) =
-    new Engine(
-      stepPreparers = StepPreparerTitleResolver(resolver) :: Nil,
-      executionContext = executionContext
-    )
+  def withStepTitleResolver(resolver: Resolver)(implicit scheduler: Scheduler) =
+    new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
   def xorToStepReport(
     currentStep: Step,

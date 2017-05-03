@@ -1,18 +1,17 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import akka.actor.Scheduler
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 
-import scala.concurrent.ExecutionContext
+import monix.execution.Scheduler
 
 // Steps are wrapped/indented with a specific title
 case class AttachAsStep(title: String, nested: List[Step]) extends WrapperStep {
 
   override def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) =
+  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) =
     withDuration {
       val nestedRunState = initialRunState.forNestedSteps(nested)
       engine.runSteps(nestedRunState)

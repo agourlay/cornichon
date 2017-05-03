@@ -1,16 +1,16 @@
 package engine
 
-import java.util.concurrent.Executors
+import java.util.concurrent.{ ExecutorService, Executors }
 
-import akka.actor.ActorSystem
 import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
 import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
 import engine.EngineBench._
+import monix.execution.Scheduler
 
-import scala.concurrent._
+import scala.concurrent.Await
 import scala.concurrent.duration._
 
 @State(Scope.Benchmark)
@@ -25,8 +25,7 @@ import scala.concurrent.duration._
 //))
 class EngineBench {
 
-  var actorSystem: ActorSystem = _
-  var ec: ExecutionContextExecutorService = _
+  var es: ExecutorService = _
   var engine: Engine = _
   @Param(Array("10", "100", "1000"))
   var stepsNumber: String = _
@@ -34,27 +33,24 @@ class EngineBench {
   @Setup(Level.Trial)
   final def beforeAll: Unit = {
     println("")
-    println("Creating ActorSystem...")
-    actorSystem = ActorSystem()
     println("Creating Engine...")
     val resolver = Resolver.withoutExtractor()
-    ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
-    engine = Engine.withStepTitleResolver(resolver, ec)(actorSystem.scheduler)
+    es = Executors.newFixedThreadPool(2)
+    val scheduler = Scheduler(es)
+    engine = Engine.withStepTitleResolver(resolver)(scheduler)
   }
 
   @TearDown(Level.Trial)
   final def afterAll: Unit = {
     println("")
-    println(s"Shutting down ActorSystem...")
-    Await.result(actorSystem.terminate(), Duration.Inf)
     println("Shutting down ExecutionContext...")
-    ec.shutdown()
+    es.shutdown()
   }
 
-  // [info] Benchmark                (stepsNumber)   Mode  Cnt      Score     Error  Units
-  // [info] EngineBench.lotsOfSteps             10  thrpt   20  26756.661 ± 397.431  ops/s
-  // [info] EngineBench.lotsOfSteps            100  thrpt   20   3243.976 ±  96.268  ops/s
-  // [info] EngineBench.lotsOfSteps           1000  thrpt   20    370.277 ±   4.988  ops/s
+  //    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score      Error  Units
+  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  26419.744 ± 2486.295  ops/s
+  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   3361.397 ±  123.112  ops/s
+  //    [info] EngineBench.lotsOfSteps           1000  thrpt   20    330.479 ±    8.655  ops/s
   @Benchmark
   def lotsOfSteps = {
     val steps = List.fill(stepsNumber.toInt)(step)

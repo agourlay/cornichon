@@ -95,6 +95,7 @@ lazy val core =
         library.circeGeneric,
         library.circeParser,
         library.diffsonCirce,
+        library.monixExec,
         library.scalatest % Test,
         library.scalacheck % Test,
         library.catsScalatest % Test
@@ -194,6 +195,7 @@ lazy val library =
       val akkaHttpCirce = "1.15.0"
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.0"
+      val monix         = "2.2.4"
     }
     val akkaActor     = "com.typesafe.akka"   %% "akka-actor"      % Version.akkaActor
     val akkaStream    = "com.typesafe.akka"   %% "akka-stream"     % Version.akkaActor
@@ -215,4 +217,5 @@ lazy val library =
     val diffsonCirce  = "org.gnieh"           %% "diffson-circe"   % Version.diffson
     val scalacheck    = "org.scalacheck"      %% "scalacheck"      % Version.scalaCheck
     val catsScalatest = "com.ironcorelabs"    %% "cats-scalatest"  % Version.catsScalaTest
+    val monixExec     = "io.monix"            %% "monix-execution" % Version.monix
   }

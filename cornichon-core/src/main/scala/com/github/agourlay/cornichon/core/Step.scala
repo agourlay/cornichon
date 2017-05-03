@@ -1,13 +1,13 @@
 package com.github.agourlay.cornichon.core
 
-import akka.actor.Scheduler
+import monix.execution.Scheduler
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 trait Step {
   def title: String
   def setTitle(newTitle: String): Step
-  def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler): Future[(RunState, FailedStep Either Done)]
+  def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler): Future[(RunState, FailedStep Either Done)]
 }
 
 trait WrapperStep extends Step {

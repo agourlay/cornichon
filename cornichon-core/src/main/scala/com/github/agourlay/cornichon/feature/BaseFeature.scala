@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
@@ -12,11 +13,15 @@ import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, HttpClient }
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
 import com.github.agourlay.cornichon.feature.BaseFeature._
+
 import com.typesafe.config.ConfigFactory
+
+import monix.execution.Scheduler
+
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
@@ -27,8 +32,8 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  implicit lazy val (globalClient, ec, as, mat, scheduler) = globalRuntime
-  private lazy val engine = Engine.withStepTitleResolver(resolver, ec)
+  implicit lazy val (globalClient, as, mat, scheduler) = globalRuntime
+  private lazy val engine = Engine.withStepTitleResolver(resolver)
 
   private lazy val config = ConfigFactory.load().as[Config]("cornichon")
   lazy val requestTimeout = config.requestTimeout
@@ -74,19 +79,18 @@ object BaseFeature {
 
   implicit private lazy val system = ActorSystem("cornichon-actor-system")
   implicit private lazy val mat = ActorMaterializer()
-  implicit private lazy val scheduler = system.scheduler
 
-  implicit private lazy val ec = ExecutionContext.fromExecutorService(
-    Executors.newFixedThreadPool(
-      2,
-      new ThreadFactory {
-        val count = new AtomicInteger(0)
-        override def newThread(r: Runnable) = {
-          new Thread(r, "cornichon-" + count.incrementAndGet)
-        }
+  private lazy val executorService = Executors.newScheduledThreadPool(
+    2,
+    new ThreadFactory {
+      val count = new AtomicInteger(0)
+      override def newThread(r: Runnable) = {
+        new Thread(r, "cornichon-" + count.incrementAndGet)
       }
-    )
+    }
   )
+
+  implicit private lazy val scheduler: Scheduler = Scheduler(executorService)
 
   private lazy val client: HttpClient = new AkkaHttpClient()
 
@@ -103,12 +107,12 @@ object BaseFeature {
           _ ← client.shutdown()
           _ ← Future.successful(mat.shutdown())
           _ ← system.terminate()
-        } yield ec.shutdown()
+        } yield executorService.shutdown()
     } else if (safePassInRow.get() > 0)
       safePassInRow.decrementAndGet()
   }
 
-  lazy val globalRuntime = (client, ec, system, mat, scheduler)
+  lazy val globalRuntime = (client, system, mat, scheduler)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
   def releaseGlobalRuntime(): Unit = registeredUsage.decrementAndGet()
 }

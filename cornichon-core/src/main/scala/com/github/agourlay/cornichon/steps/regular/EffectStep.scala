@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import akka.actor.Scheduler
-
 import cats.instances.future._
 import cats.instances.either._
 import cats.data.{ EitherT, NonEmptyList }
@@ -11,13 +9,15 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.util.Timing._
 
+import monix.execution.Scheduler
+
 import scala.concurrent.{ ExecutionContext, Future }
 
 case class EffectStep(title: String, effect: Session ⇒ Future[Either[CornichonError, Session]], show: Boolean = true) extends Step {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) =
+  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) =
     withDuration(effect(initialRunState.session)).map {
       case (xor, executionTime) ⇒ xorToStepReport(this, xor.leftMap(e ⇒ NonEmptyList.of(e)), initialRunState, show, Some(executionTime))
     }

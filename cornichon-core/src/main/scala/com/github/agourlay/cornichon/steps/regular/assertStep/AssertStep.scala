@@ -1,21 +1,23 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import akka.actor.Scheduler
 import cats.data.Validated._
 import cats.data._
 import cats.syntax.cartesian._
 import cats.syntax.either._
+
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing
 
-import scala.concurrent.{ ExecutionContext, Future }
+import monix.execution.Scheduler
+
+import scala.concurrent.Future
 
 case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends Step {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
     val session = initialRunState.session
     val (res, duration) = Timing.withDuration {
       Either

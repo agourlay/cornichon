@@ -1,16 +1,15 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import akka.actor.Scheduler
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing._
 
-import scala.concurrent.ExecutionContext
+import monix.execution.Scheduler
 
 case class LogDurationStep(nested: List[Step], label: String) extends WrapperStep {
 
   val title = s"Log duration block with label '$label' started"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit ec: ExecutionContext, scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
     withDuration {
       val logRunState = initialRunState.forNestedSteps(nested)
       engine.runSteps(logRunState)
