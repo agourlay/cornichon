@@ -47,7 +47,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 
   protected def unregisterFeature() = releaseGlobalRuntime()
 
-  protected def runScenario(s: Scenario) = {
+  def runScenario(s: Scenario) = {
     println(s"Starting scenario '${s.name}'")
     engine.runScenario(Session.newEmpty, afterEachScenario.toList) {
       s.copy(steps = beforeEachScenario.toList ++ s.steps)
@@ -81,7 +81,7 @@ object BaseFeature {
   implicit private lazy val mat = ActorMaterializer()
 
   private lazy val executorService = Executors.newScheduledThreadPool(
-    2,
+    Runtime.getRuntime.availableProcessors() + 1,
     new ThreadFactory {
       val count = new AtomicInteger(0)
       override def newThread(r: Runnable) = {
