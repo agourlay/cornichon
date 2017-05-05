@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.http.server
 import java.util.UUID
 
 import akka.pattern._
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, PoisonPill }
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
@@ -109,5 +109,5 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
     }
   }
 
-  def shutdown() = requestReceivedRepo ! ClearRegisteredRequest
+  def shutdown() = requestReceivedRepo ! PoisonPill
 }

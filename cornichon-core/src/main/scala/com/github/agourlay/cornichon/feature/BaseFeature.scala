@@ -43,10 +43,6 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
   lazy val resolver = new Resolver(registerExtractors)
 
-  protected def registerFeature() = reserveGlobalRuntime()
-
-  protected def unregisterFeature() = releaseGlobalRuntime()
-
   def runScenario(s: Scenario) = {
     println(s"Starting scenario '${s.name}'")
     engine.runScenario(Session.newEmpty, afterEachScenario.toList) {
@@ -102,15 +98,17 @@ object BaseFeature {
   system.scheduler.schedule(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
-      if (safePassInRow.get() == 2)
-        for {
-          _ ← client.shutdown()
-          _ ← Future.successful(mat.shutdown())
-          _ ← system.terminate()
-        } yield executorService.shutdown()
+      if (safePassInRow.get() == 2) shutDownGlobalResources()
     } else if (safePassInRow.get() > 0)
       safePassInRow.decrementAndGet()
   }
+
+  def shutDownGlobalResources(): Future[Unit] =
+    for {
+      _ ← client.shutdown()
+      _ ← Future.successful(mat.shutdown())
+      _ ← system.terminate()
+    } yield executorService.shutdown()
 
   lazy val globalRuntime = (client, system, mat, scheduler)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()

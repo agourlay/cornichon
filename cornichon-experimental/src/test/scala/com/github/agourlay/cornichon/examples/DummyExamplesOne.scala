@@ -29,7 +29,7 @@ trait DummyFeatureToTestInheritance extends CornichonFeature {
   )
 
   afterEachScenario(
-    print_step("before each scenario dummy one")
+    print_step("after each scenario dummy one")
   )
 
 }

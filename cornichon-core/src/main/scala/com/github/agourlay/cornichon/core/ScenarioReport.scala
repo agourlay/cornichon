@@ -5,6 +5,7 @@ import cats.kernel.Semigroup
 
 sealed trait ScenarioReport {
   def isSuccess: Boolean
+  def scenarioName: String
   def session: Session
   def logs: Vector[LogInstruction]
 }
@@ -18,6 +19,10 @@ object ScenarioReport {
 }
 
 case class SuccessScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
+  val isSuccess = true
+}
+
+case class IgnoreScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
   val isSuccess = true
 }
 

@@ -16,25 +16,28 @@ import scala.util.control.NonFatal
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
-  def runScenario(session: Session, finallySteps: List[Step] = Nil)(scenario: Scenario): Future[ScenarioReport] = {
-    val initMargin = 1
-    val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-    val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
-    runSteps(initialRunState).flatMap {
-      case (mainState, mainRunReport) ⇒
-        if (finallySteps.isEmpty)
-          Future.successful(ScenarioReport.build(scenario.name, mainState, mainRunReport.toValidatedNel))
-        else {
-          // Reuse mainline session
-          val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-          val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
-          runSteps(finallyRunState).map {
-            case (finallyState, finallyReport) ⇒
-              ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidatedNel))
+  def runScenario(session: Session, finallySteps: List[Step] = Nil)(scenario: Scenario): Future[ScenarioReport] =
+    if (scenario.ignored)
+      Future.successful(IgnoreScenarioReport(scenario.name, session, Vector.empty))
+    else {
+      val initMargin = 1
+      val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
+      val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
+      runSteps(initialRunState).flatMap {
+        case (mainState, mainRunReport) ⇒
+          if (finallySteps.isEmpty)
+            Future.successful(ScenarioReport.build(scenario.name, mainState, mainRunReport.toValidatedNel))
+          else {
+            // Reuse mainline session
+            val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+            val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
+            runSteps(finallyRunState).map {
+              case (finallyState, finallyReport) ⇒
+                ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidatedNel))
+            }
           }
-        }
+      }
     }
-  }
 
   def runSteps(runState: RunState): Future[(RunState, FailedStep Either Done)] =
     runState.remainingSteps.headOption.map { currentStep ⇒

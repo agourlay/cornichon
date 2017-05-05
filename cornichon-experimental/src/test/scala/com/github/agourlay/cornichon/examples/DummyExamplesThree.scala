@@ -27,7 +27,7 @@ class DummyExamplesThree extends CornichonFeature {
   )
 
   afterEachScenario(
-    print_step("before each scenario dummy three")
+    print_step("after each scenario dummy three")
   )
 
 }

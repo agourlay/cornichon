@@ -15,7 +15,7 @@ class DummyExamplesTwo extends CornichonFeature {
 
     }
 
-    Scenario("waiting step") {
+    Scenario("waiting step", ignored = true) {
 
       And I wait(1.second)
 
@@ -27,7 +27,7 @@ class DummyExamplesTwo extends CornichonFeature {
   )
 
   afterEachScenario(
-    print_step("before each scenario dummy two")
+    print_step("after each scenario dummy two")
   )
 
 }

@@ -7,7 +7,7 @@ import sbt.testing._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future, Promise }
 
-class SbtCornichonTask(task: TaskDef, cl: ClassLoader) extends Task {
+class SbtCornichonTask(task: TaskDef) extends Task {
 
   override def tags(): Array[String] = Array.empty
   def taskDef(): TaskDef = task
@@ -59,12 +59,16 @@ class SbtCornichonTask(task: TaskDef, cl: ClassLoader) extends Task {
       }
     case f: FailureScenarioReport ⇒
       LogInstruction.printLogs(f.logs)
+    case i: IgnoreScenarioReport ⇒
+      val msg = s"- **ignored** ${i.scenarioName} "
+      println(WarningLogInstruction(msg, 0).colorized)
   }
 
   def eventBuilder(sr: ScenarioReport, durationInMillis: Long) = new Event {
     val status = sr match {
       case _: SuccessScenarioReport ⇒ Status.Success
       case _: FailureScenarioReport ⇒ Status.Failure
+      case _: IgnoreScenarioReport  ⇒ Status.Ignored
     }
     val throwable = new OptionalThrowable()
     val fullyQualifiedName = task.fullyQualifiedName()

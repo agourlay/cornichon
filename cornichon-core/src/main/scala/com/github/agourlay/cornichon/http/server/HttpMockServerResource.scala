@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.http.server
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 
-import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
@@ -23,7 +22,6 @@ case class HttpMockServerResource(
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
   def startResource() = {
-    BaseFeature.reserveGlobalRuntime()
     val mockRequestHandler = MockServerRequestHandler(label)
     val akkaServer = new AkkaHttpServer(interface, portRange, mockRequestHandler.requestHandler)
     akkaServer.startServer().map { serverCloseHandler ⇒
@@ -34,7 +32,6 @@ case class HttpMockServerResource(
 
         def stopResource() = serverCloseHandler._2.stopResource().map { _ ⇒
           mockRequestHandler.shutdown()
-          BaseFeature.releaseGlobalRuntime()
         }
       }
     }
