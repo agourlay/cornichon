@@ -1,47 +1,27 @@
 package com.github.agourlay.cornichon.http.server
 
-import akka.actor.{ Actor, Props }
-import com.github.agourlay.cornichon.core.Done
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
+
 import com.github.agourlay.cornichon.http
-import com.github.agourlay.cornichon.http.HttpRequest
-import com.github.agourlay.cornichon.http.server.MockServerResultsHolder._
+import scala.collection.JavaConverters._
 
-class MockServerResultsHolder extends Actor {
+class MockServerResultsHolder {
 
-  private val receivedRequests = scala.collection.mutable.ArrayBuffer.empty[http.HttpRequest[String]]
-  private var errorMode = false
+  private val receivedRequests = new ConcurrentLinkedQueue[http.HttpRequest[String]]()
+  private val errorMode = new AtomicBoolean(false)
 
-  def receive = {
+  def getReceivedRequest = receivedRequests.asScala.toVector
 
-    case GetReceivedRequest ⇒
-      sender ! RegisteredRequests(receivedRequests.toVector)
+  def registerRequest(req: http.HttpRequest[String]) = receivedRequests.add(req)
 
-    case RegisterRequest(req) ⇒
-      receivedRequests.+=(req)
-      sender ! RequestRegistered(req)
+  def clearRegisteredRequest() = receivedRequests.clear()
 
-    case ClearRegisteredRequest ⇒
-      receivedRequests.clear()
-      sender ! Done
-
-    case ToggleErrorMode ⇒
-      errorMode = !errorMode
-      sender ! Done
-
-    case GetErrorMode ⇒
-      sender ! ErrorMode(errorMode)
+  def toggleErrorMode() = synchronized {
+    errorMode.set(!errorMode.get())
   }
-}
 
-object MockServerResultsHolder {
-  def props() = Props(classOf[MockServerResultsHolder])
-  case object ClearRegisteredRequest
-  case object GetReceivedRequest
-  case class RequestRegistered(request: HttpRequest[String])
-  case class RegisteredRequests(requests: Vector[HttpRequest[String]])
-  case class RegisterRequest(request: HttpRequest[String])
-  case object ToggleErrorMode
-  case object GetErrorMode
-  case class ErrorMode(errorMode: Boolean)
+  def getErrorMode = errorMode.get
+
 }
 

@@ -1,9 +1,5 @@
 package com.github.agourlay.cornichon.http.server
 
-import java.util.UUID
-
-import akka.pattern._
-import akka.actor.{ ActorSystem, PoisonPill }
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
@@ -11,34 +7,28 @@ import akka.http.scaladsl.model.{ HttpRequest, _ }
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import cats.instances.string._
-import com.github.agourlay.cornichon.core.Done
+import com.github.agourlay.cornichon.core.CornichonException
 import com.github.agourlay.cornichon.http.{ HttpMethod ⇒ CornichonHttpMethod, HttpMethods ⇒ CornichonHttpMethods, HttpRequest ⇒ CornichonHttpRequest }
-import com.github.agourlay.cornichon.http.server.MockServerResultsHolder._
 import com.github.agourlay.cornichon.json.CornichonJson
 import io.circe.Json
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.concurrent.duration._
 
-case class MockServerRequestHandler(serverName: String)(implicit system: ActorSystem, mat: Materializer, executionContext: ExecutionContext) {
+case class MockServerRequestHandler(serverName: String)(implicit mat: Materializer, executionContext: ExecutionContext) {
 
-  val requestReceivedRepo = system.actorOf(MockServerResultsHolder.props(), s"MockServerResultsHolder-$serverName-${UUID.randomUUID()}")
+  private val requestReceivedRepo = new MockServerResultsHolder()
 
-  implicit private val timeout = akka.util.Timeout(500.millis)
+  def fetchRecordedRequests() =
+    Future.successful(requestReceivedRepo.getReceivedRequest)
 
-  def fetchRecordedRequests(): Future[Vector[CornichonHttpRequest[String]]] =
-    (requestReceivedRepo ? GetReceivedRequest)
-      .mapTo[RegisteredRequests]
-      .map(_.requests)
+  def resetRecordedRequests() =
+    Future.successful(requestReceivedRepo.clearRegisteredRequest())
 
-  def resetRecordedRequests(): Future[Done] =
-    (requestReceivedRepo ? ClearRegisteredRequest).mapTo[Done]
-
-  def toggleErrorMode(): Future[Done] =
-    (requestReceivedRepo ? ToggleErrorMode).mapTo[Done]
+  def toggleErrorMode() =
+    Future.successful(requestReceivedRepo.toggleErrorMode())
 
   def fetchErrorMode(): Future[Boolean] =
-    (requestReceivedRepo ? GetErrorMode).mapTo[ErrorMode].map(_.errorMode)
+    Future.successful(requestReceivedRepo.getErrorMode)
 
   def fetchRecordedRequestsAsJson() = fetchRecordedRequests().map { requests ⇒
     requests.map { req ⇒
@@ -94,10 +84,11 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
     case Patch.method   ⇒ CornichonHttpMethods.PATCH
     case Post.method    ⇒ CornichonHttpMethods.POST
     case Put.method     ⇒ CornichonHttpMethods.PUT
+    case other          ⇒ throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  def saveRequest(akkaReq: HttpRequest) = {
-    Unmarshal(Gzip.decodeMessage(akkaReq)).to[String].flatMap { decodedBody: String ⇒
+  def saveRequest(akkaReq: HttpRequest) =
+    Unmarshal(Gzip.decodeMessage(akkaReq)).to[String].map { decodedBody: String ⇒
       val req = CornichonHttpRequest[String](
         method = httpMethodMapper(akkaReq.method),
         url = akkaReq.uri.path.toString(),
@@ -105,9 +96,6 @@ case class MockServerRequestHandler(serverName: String)(implicit system: ActorSy
         params = akkaReq.uri.query().map(p ⇒ (p._1, p._2)),
         headers = akkaReq.headers.map(h ⇒ (h.name(), h.value()))
       )
-      (requestReceivedRepo ? RegisterRequest(req)).mapTo[RequestRegistered]
+      requestReceivedRepo.registerRequest(req)
     }
-  }
-
-  def shutdown() = requestReceivedRepo ! PoisonPill
 }

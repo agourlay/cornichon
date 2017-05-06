@@ -30,9 +30,7 @@ case class HttpMockServerResource(
 
         val initialisedSession = Session.newEmpty.addValue(s"$label-url", serverCloseHandler._1)
 
-        def stopResource() = serverCloseHandler._2.stopResource().map { _ ⇒
-          mockRequestHandler.shutdown()
-        }
+        def stopResource() = serverCloseHandler._2.stopResource()
       }
     }
   }

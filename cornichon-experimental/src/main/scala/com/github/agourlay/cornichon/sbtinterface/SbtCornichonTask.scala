@@ -5,9 +5,9 @@ import com.github.agourlay.cornichon.feature.BaseFeature
 import sbt.testing._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, Future, Promise }
+import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
 
-class SbtCornichonTask(task: TaskDef) extends Task {
+class SbtCornichonTask(task: TaskDef)(implicit ec: ExecutionContext) extends Task {
 
   override def tags(): Array[String] = Array.empty
   def taskDef(): TaskDef = task
@@ -20,8 +20,6 @@ class SbtCornichonTask(task: TaskDef) extends Task {
   }
 
   def execute(eventHandler: EventHandler, loggers: Array[Logger], continuation: (Array[Task]) ⇒ Unit): Unit = {
-
-    implicit val ec = BaseFeature.globalRuntime._4
 
     val c = Class.forName(task.fullyQualifiedName())
     val cons = c.getConstructor()
