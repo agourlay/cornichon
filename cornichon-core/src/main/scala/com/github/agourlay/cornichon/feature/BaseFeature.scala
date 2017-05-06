@@ -45,7 +45,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 
   def runScenario(s: Scenario) = {
     println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newEmpty, afterEachScenario.toList) {
+    engine.runScenario(Session.newEmpty, afterEachScenario.toList, feature.ignored) {
       s.copy(steps = beforeEachScenario.toList ++ s.steps)
     }
   }
@@ -95,13 +95,16 @@ object BaseFeature {
 
   // Custom Reaper process for the time being
   // Will tear down stuff if no Feature registers during 10 secs
-  system.scheduler.schedule(5.seconds, 5.seconds) {
+  private val reaperProcess = system.scheduler.schedule(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 2) shutDownGlobalResources()
     } else if (safePassInRow.get() > 0)
       safePassInRow.decrementAndGet()
   }
+
+  def disableAutomaticResourceCleanup() =
+    reaperProcess.cancel()
 
   def shutDownGlobalResources(): Future[Unit] =
     for {

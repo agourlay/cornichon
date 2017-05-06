@@ -19,19 +19,18 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     Array.empty
   }
 
-  def execute(eventHandler: EventHandler, loggers: Array[Logger],
-    continuation: (Array[Task]) ⇒ Unit): Unit = {
+  def execute(eventHandler: EventHandler, loggers: Array[Logger], continuation: (Array[Task]) ⇒ Unit): Unit = {
 
     implicit val ec = BaseFeature.globalRuntime._4
 
     val c = Class.forName(task.fullyQualifiedName())
     val cons = c.getConstructor()
     val baseFeature = cons.newInstance().asInstanceOf[BaseFeature]
+    val featureDef = baseFeature.feature
 
-    val featureName = baseFeature.feature.name
-    println(SuccessLogInstruction(s"$featureName:", 0).colorized)
+    println(SuccessLogInstruction(s"${featureDef.name}:", 0).colorized)
 
-    val featRes = baseFeature.feature.scenarios.map { s ⇒
+    val featResults = featureDef.scenarios.map { s ⇒
       val startTS = System.currentTimeMillis()
       BaseFeature.reserveGlobalRuntime()
       baseFeature.runScenario(s).map { r ⇒
@@ -43,21 +42,19 @@ class SbtCornichonTask(task: TaskDef) extends Task {
       }
     }
 
-    Future.sequence(featRes)
-      .map(results ⇒ results.foreach(printResultLogs))
+    Future.sequence(featResults)
+      .map(_.foreach(printResultLogs))
       .onComplete(_ ⇒ continuation(Array.empty))
   }
 
   def printResultLogs(sr: ScenarioReport) = sr match {
     case s: SuccessScenarioReport ⇒
-      // In case of success, logs are only shown if the scenario contains DebugLogInstruction
-      if (s.logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty)
-        LogInstruction.printLogs(s.logs)
-      else {
-        val msg = s"- should ${s.scenarioName} "
-        println(SuccessLogInstruction(msg, 0).colorized)
-      }
+      val msg = s"- ${s.scenarioName} "
+      println(SuccessLogInstruction(msg, 0).colorized)
+      if (s.shouldShowLogs) LogInstruction.printLogs(s.logs)
     case f: FailureScenarioReport ⇒
+      val msg = s"- **failed** ${f.scenarioName} "
+      println(FailureLogInstruction(msg, 0).colorized)
       LogInstruction.printLogs(f.logs)
     case i: IgnoreScenarioReport ⇒
       val msg = s"- **ignored** ${i.scenarioName} "
@@ -70,7 +67,12 @@ class SbtCornichonTask(task: TaskDef) extends Task {
       case _: FailureScenarioReport ⇒ Status.Failure
       case _: IgnoreScenarioReport  ⇒ Status.Ignored
     }
-    val throwable = new OptionalThrowable()
+    val throwable = sr match {
+      case f: FailureScenarioReport ⇒
+        new OptionalThrowable(new RuntimeException(f.msg))
+      case _ ⇒
+        new OptionalThrowable()
+    }
     val fullyQualifiedName = task.fullyQualifiedName()
     val selector = task.selectors().head
     val fingerprint = task.fingerprint()

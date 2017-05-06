@@ -50,8 +50,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
             s.name in {
               runScenario(s).map {
                 case s: SuccessScenarioReport ⇒
-                  // In case of success, logs are only shown if the scenario contains DebugLogInstruction
-                  if (s.logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty) printLogs(s.logs)
+                  if (s.shouldShowLogs) printLogs(s.logs)
                   assert(true)
                 case f: FailureScenarioReport ⇒
                   printLogs(f.logs)

@@ -16,8 +16,8 @@ import scala.util.control.NonFatal
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
-  def runScenario(session: Session, finallySteps: List[Step] = Nil)(scenario: Scenario): Future[ScenarioReport] =
-    if (scenario.ignored)
+  def runScenario(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Future[ScenarioReport] =
+    if (featureIgnored || scenario.ignored)
       Future.successful(IgnoreScenarioReport(scenario.name, session, Vector.empty))
     else {
       val initMargin = 1
