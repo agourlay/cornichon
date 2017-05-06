@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.scalatest
 
 import com.github.agourlay.cornichon.core.LogInstruction._
-import com.github.agourlay.cornichon.core.{ CornichonError, DebugLogInstruction, FailureScenarioReport, SuccessScenarioReport }
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.feature.BaseFeature
 import org.scalatest._
 
@@ -12,13 +12,13 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
   this: BaseFeature ⇒
 
   override def beforeAll() = {
-    registerFeature()
+    BaseFeature.reserveGlobalRuntime()
     beforeFeature.foreach(f ⇒ f())
   }
 
   override def afterAll() = {
     afterFeature.foreach(f ⇒ f())
-    unregisterFeature()
+    BaseFeature.releaseGlobalRuntime()
   }
 
   override def run(testName: Option[String], args: Args) =
@@ -50,8 +50,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
             s.name in {
               runScenario(s).map {
                 case s: SuccessScenarioReport ⇒
-                  // In case of success, logs are only shown if the scenario contains DebugLogInstruction
-                  if (s.logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty) printLogs(s.logs)
+                  if (s.shouldShowLogs) printLogs(s.logs)
                   assert(true)
                 case f: FailureScenarioReport ⇒
                   printLogs(f.logs)
@@ -60,6 +59,8 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
                         |${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
                         |${scalaTestReplayCmd(feat.name, s.name)}""".stripMargin
                   )
+                case i: IgnoreScenarioReport ⇒
+                  throw new RuntimeException(s"Scalatest filters ignored scenario upstream, this should never happen\n$i")
               }
             }
         }

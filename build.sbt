@@ -61,7 +61,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks)
+    .aggregate(core, scalatest, docs, benchmarks, experimental)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -116,6 +116,21 @@ lazy val scalatest =
       libraryDependencies ++= Seq(
         library.scalatest,
         library.akkHttpCirce % Test
+      )
+    )
+
+lazy val experimental =
+  project
+    .in(file("./cornichon-experimental"))
+    .dependsOn(core)
+    .enablePlugins(SbtScalariform)
+    .settings(commonSettings)
+    .settings(scalariformSettings)
+    .settings(
+      name := "cornichon-experimental",
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.sbtinterface.CornichonFramework"),
+      libraryDependencies ++= Seq(
+        library.sbtTest
       )
     )
 
@@ -196,6 +211,7 @@ lazy val library =
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.0"
       val monix         = "2.3.0"
+      val sbtTest       = "1.0"
     }
     val akkaActor     = "com.typesafe.akka"   %% "akka-actor"      % Version.akkaActor
     val akkaStream    = "com.typesafe.akka"   %% "akka-stream"     % Version.akkaActor
@@ -218,4 +234,5 @@ lazy val library =
     val scalacheck    = "org.scalacheck"      %% "scalacheck"      % Version.scalaCheck
     val catsScalatest = "com.ironcorelabs"    %% "cats-scalatest"  % Version.catsScalaTest
     val monixExec     = "io.monix"            %% "monix-execution" % Version.monix
+    val sbtTest       = "org.scala-sbt"       %  "test-interface"  % Version.sbtTest
   }

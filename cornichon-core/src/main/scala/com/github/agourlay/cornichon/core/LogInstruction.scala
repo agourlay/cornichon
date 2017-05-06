@@ -42,6 +42,10 @@ case class SuccessLogInstruction(message: String, marginNb: Int, duration: Optio
   val colorized = fansi.Color.Green(completeMessage).render
 }
 
+case class WarningLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
+  val colorized = fansi.Color.Yellow(completeMessage).render
+}
+
 case class FailureLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
   val colorized = fansi.Color.Red(completeMessage).render
 }
