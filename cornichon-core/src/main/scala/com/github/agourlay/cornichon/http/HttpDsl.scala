@@ -6,25 +6,25 @@ import java.util.Base64
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
-import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
-import com.github.agourlay.cornichon.http.steps.HttpListenSteps._
 import com.github.agourlay.cornichon.util.Printing._
+
 import io.circe.{ Encoder, Json }
+
 import sangria.ast.Document
 
 import scala.concurrent.duration._
@@ -73,8 +73,6 @@ trait HttpDsl extends HttpRequestsDsl {
 
   //FIXME the body is expected to always contains JSON currently
   def body = JsonStepBuilder(resolver, SessionKey(lastResponseBodyKey), Some("response body"))
-
-  def httpListen(label: String) = HttpListenStepBuilder(label, resolver)
 
   def save_body(target: String) = save_body_path(JsonPath.root → target)
 
@@ -138,10 +136,5 @@ trait HttpDsl extends HttpRequestsDsl {
       val saveStep = save((withHeadersKey, headers.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }.mkString(","))).copy(show = false)
       val removeStep = remove(withHeadersKey).copy(show = false)
       saveStep +: steps :+ removeStep
-    }
-
-  def HttpListenTo(interface: Option[String], portRange: Option[Range])(label: String) =
-    BodyElementCollector[Step, Step] { steps ⇒
-      WithBlockScopedResource(nested = steps, resource = HttpMockServerResource(interface, label, portRange))
     }
 }

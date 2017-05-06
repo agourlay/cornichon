@@ -7,7 +7,7 @@ class CornichonFramework extends Framework {
   override def fingerprints(): Array[Fingerprint] = Array(CornichonFingerprint)
 
   def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): Runner =
-    new CornichonRunner(args, remoteArgs, testClassLoader)
+    new CornichonRunner(args, remoteArgs)
 
   override def name(): String = "cornichon"
 

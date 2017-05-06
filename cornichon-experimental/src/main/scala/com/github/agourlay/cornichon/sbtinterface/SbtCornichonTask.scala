@@ -14,12 +14,12 @@ class SbtCornichonTask(task: TaskDef)(implicit ec: ExecutionContext) extends Tas
 
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
     val p = Promise[Unit]()
-    execute(eventHandler, loggers, _ ⇒ p.success(()))
+    execute(eventHandler, _ ⇒ p.success(()))
     Await.result(p.future, Duration.Inf)
     Array.empty
   }
 
-  def execute(eventHandler: EventHandler, loggers: Array[Logger], continuation: (Array[Task]) ⇒ Unit): Unit = {
+  def execute(eventHandler: EventHandler, continuation: (Array[Task]) ⇒ Unit): Unit = {
 
     val c = Class.forName(task.fullyQualifiedName())
     val cons = c.getConstructor()

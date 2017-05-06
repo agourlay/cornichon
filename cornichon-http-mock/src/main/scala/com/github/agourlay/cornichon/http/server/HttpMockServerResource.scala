@@ -1,21 +1,20 @@
 package com.github.agourlay.cornichon.http.server
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
-
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
+import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 
 import io.circe.Json
 
 import scala.concurrent.ExecutionContext
 
-case class HttpMockServerResource(
-    interface: Option[String],
-    label: String,
-    portRange: Option[Range]
-)(implicit ec: ExecutionContext, as: ActorSystem, mat: Materializer) extends BlockScopedResource {
+case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range])(implicit ec: ExecutionContext)
+    extends BlockScopedResource {
+
+  //TODO replace akka-http by a library that does not need a global ActorSystem nor one per mock...
+  implicit val as = BaseFeature.globalRuntime._2
+  implicit val mat = BaseFeature.globalRuntime._3
 
   val sessionTarget: String = label
   val openingTitle: String = s"Starting HTTP mock server '$label'"
