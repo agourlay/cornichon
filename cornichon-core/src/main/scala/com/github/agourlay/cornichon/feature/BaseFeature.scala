@@ -32,7 +32,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  implicit lazy val (globalClient, as, mat, scheduler) = globalRuntime
+  implicit lazy val (globalClient, _, _, scheduler) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(resolver)
 
   private lazy val config = ConfigFactory.load().as[Config]("cornichon")
@@ -95,7 +95,7 @@ object BaseFeature {
 
   // Custom Reaper process for the time being
   // Will tear down stuff if no Feature registers during 10 secs
-  private val reaperProcess = system.scheduler.schedule(5.seconds, 5.seconds) {
+  private val reaperProcess = scheduler.scheduleWithFixedDelay(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 2) shutDownGlobalResources()
