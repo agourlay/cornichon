@@ -28,8 +28,8 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException }
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest }
 
-import de.heikoseeberger.akkasse.EventStreamUnmarshalling._
-import de.heikoseeberger.akkasse.ServerSentEvent
+import de.heikoseeberger.akkasse.scaladsl.unmarshalling.EventStreamUnmarshalling._
+import de.heikoseeberger.akkasse.scaladsl.model.ServerSentEvent
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate

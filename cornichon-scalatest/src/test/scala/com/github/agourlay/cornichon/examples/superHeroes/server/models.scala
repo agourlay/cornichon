@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.examples.superHeroes.server
 
-import de.heikoseeberger.akkasse.ServerSentEvent
+import de.heikoseeberger.akkasse.scaladsl.model.ServerSentEvent
 import sangria.macros.derive._
 import sangria.schema.Schema
 

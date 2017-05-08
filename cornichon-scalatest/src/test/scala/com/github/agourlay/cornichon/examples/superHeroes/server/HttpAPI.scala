@@ -11,7 +11,8 @@ import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
-import de.heikoseeberger.akkasse.{ EventStreamMarshalling, ServerSentEvent }
+import de.heikoseeberger.akkasse.scaladsl.marshalling.EventStreamMarshalling
+import de.heikoseeberger.akkasse.scaladsl.model.ServerSentEvent
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import sangria.execution._
 import sangria.parser.QueryParser
