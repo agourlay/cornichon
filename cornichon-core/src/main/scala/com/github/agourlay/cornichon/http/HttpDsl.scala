@@ -107,7 +107,7 @@ trait HttpDsl extends HttpRequestsDsl {
       bodyParsed ← parse(body)
     } yield {
       s"""Show last response
-         |headers: ${displayStringPairs(decodedHeaders)}
+         |headers: ${printArrowPairs(decodedHeaders)}
          |status : $status
          |body   : ${bodyParsed.show}
      """.stripMargin

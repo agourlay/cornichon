@@ -24,7 +24,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
       if (inputs.isEmpty) Future.successful(runState, rightDone)
       else {
         val currentInputs = inputs.head
-        val runInfo = InfoLogInstruction(s"Run with inputs ${displayStringPairs(currentInputs)}", runState.depth)
+        val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
         val boostrapFilledInput = runState.withSteps(nested).addToSession(currentInputs).withLog(runInfo).goDeeper
         engine.runSteps(boostrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒
@@ -71,6 +71,6 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
 }
 
 case class WithDataInputBlockFailedStep(failedInputs: List[(String, String)], errors: NonEmptyList[CornichonError]) extends CornichonError {
-  val baseErrorMessage = s"WithDataInput block failed for inputs ${displayStringPairs(failedInputs)}"
+  val baseErrorMessage = s"WithDataInput block failed for inputs ${printArrowPairs(failedInputs)}"
   override val causedBy = Some(errors)
 }

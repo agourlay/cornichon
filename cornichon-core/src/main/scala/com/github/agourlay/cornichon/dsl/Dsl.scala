@@ -146,7 +146,7 @@ object Dsl {
     val extractors = args.map(_.trans)
     val targets = args.map(_.target)
     EffectStep.fromSyncE(
-      s"save parts from session '${displayStringPairs(keys.zip(targets))}'",
+      s"save parts from session '${printArrowPairs(keys.zip(targets))}'",
       session ⇒ {
         for {
           allValues ← session.getList(keys)

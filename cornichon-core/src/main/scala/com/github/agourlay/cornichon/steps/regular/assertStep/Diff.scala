@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 import cats.Show
 import cats.syntax.show._
 import cats.instances.set._
-import com.github.agourlay.cornichon.dsl.ProvidedInstances._
+import com.github.agourlay.cornichon.util.Printing._
 import io.circe.Json
 
 trait Diff[A] {

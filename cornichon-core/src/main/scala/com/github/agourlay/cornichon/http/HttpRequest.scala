@@ -33,8 +33,8 @@ trait BaseRequest {
 
   def compactDescription: String
 
-  def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${displayStringPairs(params)}"
-  def headersTitle = if (headers.isEmpty) "" else s" with headers ${displayStringPairs(headers)}"
+  def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${printArrowPairs(params)}"
+  def headersTitle = if (headers.isEmpty) "" else s" with headers ${printArrowPairs(headers)}"
 }
 
 case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
@@ -73,8 +73,8 @@ object HttpRequest extends HttpRequestsDsl {
   implicit def showRequest[A: Show] = new Show[HttpRequest[A]] {
     def show(r: HttpRequest[A]): String = {
       val body = r.body.fold("without body")(b ⇒ s"with body\n${b.show}")
-      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${displayStringPairs(r.params)}"
-      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${displayStringPairs(r.headers)}"
+      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"
+      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${printArrowPairs(r.headers)}"
 
       s"""|HTTP ${r.method.name} request to ${r.url}
           |$params
@@ -111,8 +111,8 @@ object HttpStreamedRequest {
 
   implicit val showStreamedRequest = new Show[HttpStreamedRequest] {
     def show(r: HttpStreamedRequest): String = {
-      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${displayStringPairs(r.params)}"
-      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${displayStringPairs(r.headers)}"
+      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"
+      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${printArrowPairs(r.headers)}"
 
       s"""|${r.stream.name} request to ${r.url}
           |$params
