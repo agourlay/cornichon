@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.matchers
 import cats.scalatest.EitherValues
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest._
 import com.github.agourlay.cornichon.matchers.Matchers._
 import io.circe.Json
 

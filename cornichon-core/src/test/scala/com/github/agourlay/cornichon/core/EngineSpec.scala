@@ -32,16 +32,16 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         engine.runScenario(Session.newEmpty)(s).map { res ⇒
           withClue(s"logs were ${res.logs}") {
             res match {
-              case s: SuccessScenarioReport ⇒ fail(s"Should be a FailedScenarioReport and not success with\n${s.logs}")
               case f: FailureScenarioReport ⇒
                 f.failedSteps.head.errors.head.renderedMessage should be(
                   """
                   |expected result was:
                   |'4'
                   |but actual result is:
-                  |'5'""".
-                  stripMargin.trim
+                  |'5'"""
+                  .stripMargin.trim
                 )
+              case _ ⇒ fail(s"Should be a FailedScenarioReport but got \n${res.logs}")
             }
           }
         }
@@ -52,7 +52,6 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         val finallyStep = AssertStep("finally step", s ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
         engine.runScenario(Session.newEmpty, finallyStep :: Nil)(s).map {
-          case s: SuccessScenarioReport ⇒ fail(s"Should be a FailedScenarioReport and not success with\n${s.logs}")
           case f: FailureScenarioReport ⇒
             withClue(f.msg) {
               f.msg should be(
@@ -81,6 +80,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
                 stripMargin
               )
             }
+          case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
         }
       }
     }

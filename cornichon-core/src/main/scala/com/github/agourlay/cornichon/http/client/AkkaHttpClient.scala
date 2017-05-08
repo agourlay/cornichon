@@ -131,8 +131,7 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
   override def openStream(req: HttpStreamedRequest, t: FiniteDuration) =
     req.stream match {
       case SSE ⇒ openSSE(req, t).value
-      case WS  ⇒ ??? // TODO implement WS support
-      case _   ⇒ ???
+      case _   ⇒ ??? // TODO implement WS support
     }
 
   def openSSE(req: HttpStreamedRequest, connectionTimeout: FiniteDuration) = {
