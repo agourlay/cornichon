@@ -15,12 +15,12 @@ class OpenMovieDatabase extends CornichonFeature {
 
         Then assert status.is(200)
 
-        And assert body.ignoring("imdbRating", "imdbVotes", "Awards", "Poster", "Plot").is(
+        And assert body.ignoring("imdbRating", "imdbVotes", "Awards", "Poster", "Plot", "Ratings").is(
           """
           {
             "Title": "Game of Thrones",
             "Year": "2011–",
-            "Rated": "R",
+            "Rated": "TV-MA",
             "Released": "17 Apr 2011",
             "Runtime": "56 min",
             "Genre": "Adventure, Drama, Fantasy",
@@ -44,7 +44,7 @@ class OpenMovieDatabase extends CornichonFeature {
           {
             "Title": "Game of Thrones",
             "Year": "2011–",
-            "Rated": "R",
+            "Rated": "TV-MA",
             "Released": "17 Apr 2011"
           }
           """)
