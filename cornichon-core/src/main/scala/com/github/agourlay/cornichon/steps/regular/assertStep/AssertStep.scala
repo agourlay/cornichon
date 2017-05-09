@@ -4,11 +4,11 @@ import cats.data.Validated._
 import cats.data._
 import cats.syntax.cartesian._
 import cats.syntax.either._
-import cats.syntax.validated._
 
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing
+import com.github.agourlay.cornichon.core.Done._
 
 import monix.execution.Scheduler
 
@@ -21,10 +21,8 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
   override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
     val session = initialRunState.session
     val (res, duration) = Timing.withDuration {
-      Either
-        .catchNonFatal(action(session))
-        .leftMap(e ⇒ NonEmptyList.of(CornichonError.fromThrowable(e)))
-        .flatMap(runStepPredicate)
+      val assertion = action(session)
+      runStepPredicate(assertion)
     }
     Future.successful(xorToStepReport(this, res.map(_ ⇒ session), initialRunState, show, Some(duration)))
   }
@@ -46,7 +44,7 @@ trait Assertion { self ⇒
   def or(other: Assertion): Assertion = new Assertion {
     def validated =
       if (self.validated.isValid || other.validated.isValid)
-        Done.valid
+        validDone
       else
         self.validated *> other.validated
   }
