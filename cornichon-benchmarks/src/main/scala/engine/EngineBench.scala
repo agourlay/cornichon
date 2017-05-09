@@ -29,7 +29,7 @@ class EngineBench {
 
   var es: ExecutorService = _
   var engine: Engine = _
-  @Param(Array("10", "100", "1000"))
+  @Param(Array("10", "20", "50", "100", "200"))
   var stepsNumber: String = _
 
   @Setup(Level.Trial)
@@ -37,7 +37,7 @@ class EngineBench {
     println("")
     println("Creating Engine...")
     val resolver = Resolver.withoutExtractor()
-    es = Executors.newFixedThreadPool(2)
+    es = Executors.newFixedThreadPool(3)
     val scheduler = Scheduler(es)
     engine = Engine.withStepTitleResolver(resolver)(scheduler)
   }
@@ -49,10 +49,12 @@ class EngineBench {
     es.shutdown()
   }
 
-  //    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score      Error  Units
-  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  16318.944 ± 1349.173  ops/s
-  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   2453.874 ±   14.008  ops/s
-  //    [info] EngineBench.lotsOfSteps           1000  thrpt   20    247.688 ±   11.477  ops/s
+  //    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score     Error  Units
+  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  17998.883 ± 646.658  ops/s
+  //    [info] EngineBench.lotsOfSteps             20  thrpt   20   9335.755 ± 836.239  ops/s
+  //    [info] EngineBench.lotsOfSteps             50  thrpt   20   4418.694 ± 195.138  ops/s
+  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   2055.748 ±  87.242  ops/s
+  //    [info] EngineBench.lotsOfSteps            200  thrpt   20   1094.866 ±  55.151  ops/s
   @Benchmark
   def lotsOfSteps = {
     val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)
