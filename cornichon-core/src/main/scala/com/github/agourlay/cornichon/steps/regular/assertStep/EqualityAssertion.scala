@@ -3,9 +3,10 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 import cats.{ Eq, Show }
 import cats.syntax.show._
 import cats.syntax.either._
-import cats.data.Validated._
+import cats.syntax.validated._
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Done, Session, SessionKey }
+import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
+import com.github.agourlay.cornichon.core.Done._
 
 abstract class EqualityAssertion[A: Eq] extends Assertion {
   val expected: A
@@ -20,9 +21,9 @@ abstract class EqualityAssertion[A: Eq] extends Assertion {
     val failedAsExpected = !expectedEqualsActual && negate
 
     if (succeedAsExpected || failedAsExpected)
-      valid(Done)
+      validDone
     else
-      invalidNel(assertionError)
+      assertionError.invalidNel
   }
 }
 

@@ -1,8 +1,10 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.data.Validated._
+import cats.syntax.validated._
 import cats.data._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
+import com.github.agourlay.cornichon.core.Done._
 
 import scala.util.matching.Regex
 
@@ -10,7 +12,7 @@ abstract class StringAssertion extends Assertion
 
 case class StringContainsAssertion(input: String, expectedPart: String) extends StringAssertion {
   val validated: ValidatedNel[CornichonError, Done] =
-    if (input.contains(expectedPart)) valid(Done) else invalidNel(StringContainsAssertionError(input, expectedPart))
+    if (input.contains(expectedPart)) validDone else StringContainsAssertionError(input, expectedPart).invalidNel
 }
 
 case class StringContainsAssertionError(input: String, expectedPart: String) extends CornichonError {
@@ -21,7 +23,7 @@ case class StringContainsAssertionError(input: String, expectedPart: String) ext
 case class RegexAssertion(input: String, expectedRegex: Regex) extends StringAssertion {
   val validated: ValidatedNel[CornichonError, Done] = {
     val matching = expectedRegex.findFirstIn(input)
-    if (matching.isDefined) valid(Done) else invalidNel(RegexAssertionError(input, expectedRegex))
+    if (matching.isDefined) validDone else invalidNel(RegexAssertionError(input, expectedRegex))
   }
 }
 

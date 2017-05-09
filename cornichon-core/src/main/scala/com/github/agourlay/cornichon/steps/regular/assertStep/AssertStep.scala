@@ -4,6 +4,7 @@ import cats.data.Validated._
 import cats.data._
 import cats.syntax.cartesian._
 import cats.syntax.either._
+import cats.syntax.validated._
 
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
@@ -45,7 +46,7 @@ trait Assertion { self ⇒
   def or(other: Assertion): Assertion = new Assertion {
     def validated =
       if (self.validated.isValid || other.validated.isValid)
-        valid(Done)
+        Done.valid
       else
         self.validated *> other.validated
   }

@@ -1,10 +1,11 @@
 package com.github.agourlay.cornichon.matchers
 
-import cats.data.Validated.{ invalidNel, valid }
+import cats.syntax.validated._
 import cats.data.{ NonEmptyList, ValidatedNel }
 import com.github.agourlay.cornichon.steps.regular.assertStep.Assertion
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
+import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.json.JsonPath
 import io.circe.Json
 
@@ -16,8 +17,8 @@ trait MatcherAssertion extends Assertion {
     Either.catchNonFatal(m.predicate(input))
       .leftMap(e ⇒ MatcherAssertionEvaluationError(m, input, e))
       .fold[ValidatedNel[CornichonError, Done]](
-        errors ⇒ invalidNel(errors),
-        booleanResult ⇒ if (booleanResult) valid(Done) else invalidNel(MatcherAssertionError(m, input))
+        errors ⇒ errors.invalidNel,
+        booleanResult ⇒ if (booleanResult) validDone else MatcherAssertionError(m, input).invalidNel
       )
 }
 

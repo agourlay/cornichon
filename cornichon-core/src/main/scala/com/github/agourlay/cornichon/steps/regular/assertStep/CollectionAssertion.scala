@@ -1,11 +1,12 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.Show
-import cats.data.Validated._
 import cats.data._
 import cats.syntax.show._
+import cats.syntax.validated._
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Done }
+import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Printing._
 
 abstract class CollectionAssertion[A] extends Assertion
@@ -14,7 +15,7 @@ case class CollectionNotEmptyAssertion[A: Show](collection: Iterable[A], name: S
   def withName(collectionName: String) = copy(name = collectionName)
 
   val validated: ValidatedNel[CornichonError, Done] =
-    if (collection.nonEmpty) valid(Done) else invalidNel(CollectionNotEmptyAssertionError(collection, name))
+    if (collection.nonEmpty) validDone else CollectionNotEmptyAssertionError(collection, name).invalidNel
 }
 
 case class CollectionNotEmptyAssertionError[A](collection: Iterable[A], name: String) extends CornichonError {
@@ -25,7 +26,7 @@ case class CollectionEmptyAssertion[A: Show](collection: Iterable[A], name: Stri
   def withName(collectionName: String) = copy(name = collectionName)
 
   val validated: ValidatedNel[CornichonError, Done] =
-    if (collection.isEmpty) valid(Done) else invalidNel(CollectionEmptyAssertionError(collection, name))
+    if (collection.isEmpty) validDone else CollectionEmptyAssertionError(collection, name).invalidNel
 }
 
 case class CollectionEmptyAssertionError[A: Show](collection: Iterable[A], name: String) extends CornichonError {
@@ -36,7 +37,7 @@ case class CollectionSizeAssertion[A: Show](collection: Iterable[A], size: Int, 
   def withName(collectionName: String) = copy(name = collectionName)
 
   val validated: ValidatedNel[CornichonError, Done] =
-    if (collection.size == size) valid(Done) else invalidNel(CollectionSizeAssertionError(collection, size, name))
+    if (collection.size == size) validDone else CollectionSizeAssertionError(collection, size, name).invalidNel
 }
 
 case class CollectionSizeAssertionError[A: Show](collection: Iterable[A], size: Int, name: String) extends CornichonError {
@@ -48,9 +49,9 @@ case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) 
     val deleted = right.diff(left)
     val added = left.diff(right)
     if (added.isEmpty && deleted.isEmpty)
-      valid(Done)
+      validDone
     else
-      invalidNel(CollectionsContainSameElementsAssertionError(added, deleted))
+      CollectionsContainSameElementsAssertionError(added, deleted).invalidNel
   }
 }
 

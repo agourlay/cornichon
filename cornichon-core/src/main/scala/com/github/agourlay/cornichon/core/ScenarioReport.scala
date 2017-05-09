@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.core
 
+import cats.data.Validated.Valid
 import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.kernel.Semigroup
 
@@ -41,6 +42,7 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList
 sealed abstract class Done
 case object Done extends Done {
   val rightDone = Right(Done)
+  val validDone = Valid(Done)
   implicit val semigroup = new Semigroup[Done] {
     def combine(x: Done, y: Done): Done = x
   }
