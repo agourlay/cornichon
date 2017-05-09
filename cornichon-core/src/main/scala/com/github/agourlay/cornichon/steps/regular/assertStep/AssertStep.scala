@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 import cats.data.Validated._
 import cats.data._
 import cats.syntax.cartesian._
+import cats.syntax.validated._
 import cats.syntax.either._
 
 import com.github.agourlay.cornichon.core.Engine._
@@ -52,9 +53,9 @@ trait Assertion { self ⇒
 
 object Assertion {
 
-  val alwaysValid: Assertion = new Assertion { val validated = valid(Done) }
-  def failWith(error: String) = new Assertion { val validated: ValidatedNel[CornichonError, Done] = invalidNel(BasicError(error)) }
-  def failWith(error: CornichonError) = new Assertion { val validated: ValidatedNel[CornichonError, Done] = invalidNel(error) }
+  val alwaysValid: Assertion = new Assertion { val validated = validDone }
+  def failWith(error: String) = new Assertion { val validated = BasicError(error).invalidNel }
+  def failWith(error: CornichonError) = new Assertion { val validated = error.invalidNel }
 
   def either(v: Either[CornichonError, Assertion]) = v.fold(e ⇒ failWith(e), identity)
 
