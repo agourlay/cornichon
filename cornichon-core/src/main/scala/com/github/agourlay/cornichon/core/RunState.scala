@@ -28,7 +28,7 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
 
   // Vector concat. is not great, maybe change logs data structure
   def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
-  def appendLogsFrom(fromRun: RunState) = copy(logs = logs ++ fromRun.logs)
+  def appendLogsFrom(fromRun: RunState) = appendLogs(fromRun.logs)
   def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
 
   def prependSteps(prepend: List[Step]) = copy(remainingSteps = prepend ++ remainingSteps)

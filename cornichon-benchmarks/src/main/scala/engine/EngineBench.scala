@@ -19,12 +19,12 @@ import scala.concurrent.duration._
 @BenchmarkMode(Array(Mode.Throughput))
 @Warmup(iterations = 20)
 @Measurement(iterations = 20)
-@Fork(value = 1) //@Fork(value = 1, jvmArgsAppend = Array(
-//  "-XX:+UnlockCommercialFeatures",
-//  "-XX:+FlightRecorder",
-//  "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
-//  "-XX:FlightRecorderOptions=settings=./openjdk/jdk1.8.0/jre/lib/jfr/profile.jfc,samplethreads=true"
-//))
+@Fork(value = 1, jvmArgsAppend = Array(
+  "-XX:+UnlockCommercialFeatures",
+  "-XX:+FlightRecorder",
+  "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
+  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"
+))
 class EngineBench {
 
   var es: ExecutorService = _
@@ -37,7 +37,7 @@ class EngineBench {
     println("")
     println("Creating Engine...")
     val resolver = Resolver.withoutExtractor()
-    es = Executors.newFixedThreadPool(3)
+    es = Executors.newFixedThreadPool(1)
     val scheduler = Scheduler(es)
     engine = Engine.withStepTitleResolver(resolver)(scheduler)
   }
@@ -50,11 +50,11 @@ class EngineBench {
   }
 
   //    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score     Error  Units
-  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  17998.883 ± 646.658  ops/s
-  //    [info] EngineBench.lotsOfSteps             20  thrpt   20   9335.755 ± 836.239  ops/s
-  //    [info] EngineBench.lotsOfSteps             50  thrpt   20   4418.694 ± 195.138  ops/s
-  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   2055.748 ±  87.242  ops/s
-  //    [info] EngineBench.lotsOfSteps            200  thrpt   20   1094.866 ±  55.151  ops/s
+  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  44761.640 ± 1287.530  ops/s
+  //    [info] EngineBench.lotsOfSteps             20  thrpt   20  31747.442 ±  542.570  ops/s
+  //    [info] EngineBench.lotsOfSteps             50  thrpt   20  16393.387 ±  522.285  ops/s
+  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   9734.139 ±   77.690  ops/s
+  //    [info] EngineBench.lotsOfSteps            200  thrpt   20   4919.259 ±   21.295  ops/s
   @Benchmark
   def lotsOfSteps = {
     val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)
