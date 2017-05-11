@@ -111,7 +111,7 @@ object BaseFeature {
       _ ← client.shutdown()
       _ ← Future.successful(mat.shutdown())
       _ ← system.terminate()
-    } yield executorService.shutdown()
+    } yield executorService.shutdownNow()
 
   lazy val globalRuntime = (client, system, mat, scheduler)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
