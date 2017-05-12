@@ -204,7 +204,7 @@
                           MockServerRequestHandler
                         </a>
                       </li><li class="current-entities indented6">
-                        <a class="object" href="MockServerResultsHolder$.html" title=""></a>
+                        <span class="separator"></span>
                         <a class="class" href="MockServerResultsHolder.html" title=""></a>
                         <a href="MockServerResultsHolder.html" title="">
                           MockServerResultsHolder
@@ -232,7 +232,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">MockServerRequestHandler</span><span class="params">(<span name="serverName">serverName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <a href="http://doc.akka.io/api/akka/2.4.18/index.html#akka.stream.Materializer" class="extype" target="_top">Materializer</a></span>, <span name="executionContext">executionContext: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">MockServerRequestHandler</span><span class="params">(<span name="serverName">serverName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mat">mat: <span class="extype" name="akka.stream.Materializer">Materializer</span></span>, <span name="executionContext">executionContext: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       </h4>
 
@@ -288,9 +288,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(serverName:String)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.Materializer,implicitexecutionContext:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.server.MockServerRequestHandler"></a><a id="&lt;init&gt;:MockServerRequestHandler"></a>
+      <a id="&lt;init&gt;(serverName:String)(implicitmat:akka.stream.Materializer,implicitexecutionContext:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.server.MockServerRequestHandler"></a><a id="&lt;init&gt;:MockServerRequestHandler"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#&lt;init&gt;(serverName:String)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.Materializer,implicitexecutionContext:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.server.MockServerRequestHandler" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#&lt;init&gt;(serverName:String)(implicitmat:akka.stream.Materializer,implicitexecutionContext:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.server.MockServerRequestHandler" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -299,7 +299,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MockServerRequestHandler</span><span class="params">(<span name="serverName">serverName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <a href="http://doc.akka.io/api/akka/2.4.18/index.html#akka.stream.Materializer" class="extype" target="_top">Materializer</a></span>, <span name="executionContext">executionContext: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>)</span>
+        <span class="name">MockServerRequestHandler</span><span class="params">(<span name="serverName">serverName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mat">mat: <span class="extype" name="akka.stream.Materializer">Materializer</span></span>, <span name="executionContext">executionContext: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>)</span>
       </span>
       
       
@@ -613,26 +613,10 @@
       </span>
       
       
-    </li><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#requestReceivedRepo" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="requestReceivedRepo:akka.actor.ActorRef"></a><a id="requestReceivedRepo:ActorRef"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#requestReceivedRepo:akka.actor.ActorRef" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">requestReceivedRepo</span><span class="result">: <a href="http://doc.akka.io/api/akka/2.4.18/index.html#akka.actor.ActorRef" class="extype" target="_top">ActorRef</a></span>
-      </span>
-      
-      
     </li><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#resetRecordedRequests" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="resetRecordedRequests():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]"></a><a id="resetRecordedRequests():Future[Done]"></a>
+      <a id="resetRecordedRequests():scala.concurrent.Future[Unit]"></a><a id="resetRecordedRequests():Future[Unit]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#resetRecordedRequests():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#resetRecordedRequests():scala.concurrent.Future[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -641,14 +625,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">resetRecordedRequests</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>]</span>
+        <span class="name">resetRecordedRequests</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Unit" class="extype" target="_top">Unit</a>]</span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#saveRequest" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="saveRequest(akkaReq:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[com.github.agourlay.cornichon.http.server.MockServerResultsHolder.RequestRegistered]"></a><a id="saveRequest(akka.http.scaladsl.model.HttpRequest):Future[RequestRegistered]"></a>
+      <a id="saveRequest(akkaReq:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[Boolean]"></a><a id="saveRequest(akka.http.scaladsl.model.HttpRequest):Future[Boolean]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#saveRequest(akkaReq:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[com.github.agourlay.cornichon.http.server.MockServerResultsHolder.RequestRegistered]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#saveRequest(akkaReq:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[Boolean]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -657,7 +641,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">saveRequest</span><span class="params">(<span name="akkaReq">akkaReq: <span class="extype" name="akka.http.scaladsl.model.HttpRequest">akka.http.scaladsl.model.HttpRequest</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="MockServerResultsHolder$$RequestRegistered.html" class="extype" name="com.github.agourlay.cornichon.http.server.MockServerResultsHolder.RequestRegistered">RequestRegistered</a>]</span>
+        <span class="name">saveRequest</span><span class="params">(<span name="akkaReq">akkaReq: <span class="extype" name="akka.http.scaladsl.model.HttpRequest">akka.http.scaladsl.model.HttpRequest</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Boolean" class="extype" target="_top">Boolean</a>]</span>
       </span>
       
       
@@ -674,22 +658,6 @@
       </span>
       <span class="symbol">
         <span class="name">serverName</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#shutdown" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="shutdown():Unit"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#shutdown():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">shutdown</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
       
@@ -710,9 +678,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#toggleErrorMode" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="toggleErrorMode():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]"></a><a id="toggleErrorMode():Future[Done]"></a>
+      <a id="toggleErrorMode():scala.concurrent.Future[Unit]"></a><a id="toggleErrorMode():Future[Unit]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#toggleErrorMode():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#toggleErrorMode():scala.concurrent.Future[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -721,7 +689,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toggleErrorMode</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>]</span>
+        <span class="name">toggleErrorMode</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Unit" class="extype" target="_top">Unit</a>]</span>
       </span>
       
       
