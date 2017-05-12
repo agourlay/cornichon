@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.sbtinterface
+package com.github.agourlay.cornichon.experimental.sbtinterface
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.feature.BaseFeature

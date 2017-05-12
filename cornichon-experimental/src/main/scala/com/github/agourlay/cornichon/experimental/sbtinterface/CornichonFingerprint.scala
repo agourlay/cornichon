@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.sbtinterface
+package com.github.agourlay.cornichon.experimental.sbtinterface
 
 import sbt.testing.SubclassFingerprint
 

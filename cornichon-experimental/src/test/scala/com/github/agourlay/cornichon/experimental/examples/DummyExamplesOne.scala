@@ -1,6 +1,6 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon.experimental.examples
 
-import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.experimental.CornichonFeature
 
 class DummyExamplesOne extends DummyFeatureToTestInheritance {
 
