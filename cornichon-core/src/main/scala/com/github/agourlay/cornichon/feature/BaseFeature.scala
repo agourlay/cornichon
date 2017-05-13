@@ -63,11 +63,11 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   def afterFeature(after: ⇒ Unit): Unit =
     afterFeature = (() ⇒ after) +: afterFeature
 
-  def beforeEachScenario(steps: Step*): Unit =
-    beforeEachScenario = beforeEachScenario ++ steps
+  def beforeEachScenario(step: Step): Unit =
+    beforeEachScenario = beforeEachScenario :+ step
 
-  def afterEachScenario(steps: Step*): Unit =
-    afterEachScenario = steps ++ afterEachScenario
+  def afterEachScenario(step: Step): Unit =
+    afterEachScenario = step +: afterEachScenario
 }
 
 // Protect and free resources
