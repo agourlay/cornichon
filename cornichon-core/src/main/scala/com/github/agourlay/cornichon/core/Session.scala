@@ -57,13 +57,18 @@ case class Session(private val content: Map[String, Vector[String]]) {
 
   def getHistory(key: String): Vector[String] = content.getOrElse(key, Vector.empty)
 
-  def addValue(key: String, value: String) =
-    //FIXME turning this into a proper CornichonError creates a lot of work to handle the Either
-    if (key.trim.isEmpty) throw EmptyKeyException(this).toException
+  //FIXME turning this into a proper CornichonError creates a lot of work to handle the Either
+  def addValue(key: String, value: String) = {
+    val trimmedKey = key.trim
+    if (trimmedKey.isEmpty)
+      throw EmptyKeyException(this).toException
+    else if (Session.notAllowedInKey.exists(forbidden ⇒ trimmedKey.contains(forbidden)))
+      throw IllegalKeyException.toException
     else
       content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
         Session((content - key) + (key → values.:+(value)))
       }
+  }
 
   def addValues(tuples: Seq[(String, String)]) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
 
@@ -81,6 +86,7 @@ case class Session(private val content: Map[String, Vector[String]]) {
 
 object Session {
   val newEmpty = Session(HashMap.empty)
+  val notAllowedInKey = "\r\n<>/[] "
   implicit val showSession = new Show[Session] {
     def show(s: Session) = s.prettyPrint
   }
@@ -91,7 +97,11 @@ case class SessionKey(name: String, index: Option[Int] = None) {
 }
 
 case class EmptyKeyException(s: Session) extends CornichonError {
-  val baseErrorMessage = s"key value can not be empty - session is \n${s.prettyPrint}"
+  val baseErrorMessage = s"key can not be empty - session is \n${s.prettyPrint}"
+}
+
+object IllegalKeyException extends CornichonError {
+  val baseErrorMessage = s"key can not contain chars '${Session.notAllowedInKey}'"
 }
 
 case class KeyNotFoundInSession(key: String, indice: Option[Int], s: Session) extends CornichonError {

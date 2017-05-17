@@ -21,6 +21,14 @@ class SessionSpec extends WordSpec
           Session.newEmpty.addValue("", Random.nextString(5))
         }
       }
+
+      "throw if key contains illegal chars" in {
+        forAll(keyGen, Gen.oneOf(Session.notAllowedInKey.trim)) { (key, forbiddenChar) ⇒
+          intercept[CornichonException] {
+            Session.newEmpty.addValue(key + forbiddenChar, Random.nextString(5))
+          }
+        }
+      }
     }
 
     "get" must {
@@ -106,7 +114,9 @@ class SessionSpec extends WordSpec
 }
 
 object SessionSpec {
-  val keyGen = Gen.alphaStr.filter(_.trim.nonEmpty)
+  val keyGen = Gen.alphaStr
+    .filter(_.trim.nonEmpty)
+    .filter(k ⇒ !Session.notAllowedInKey.exists(forbidden ⇒ k.contains(forbidden)))
   def keysGen(n: Int) = Gen.listOfN(n, keyGen)
 
   val valueGen = Gen.alphaStr

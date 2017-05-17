@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.resolver
 
+import com.github.agourlay.cornichon.core.Session
 import org.parboiled2.{ CharPredicate, Parser, ParserInput }
 
 class PlaceholderParser(val input: ParserInput) extends Parser {
@@ -12,17 +13,13 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 
   def optIndex = rule(optional('[' ~ Number ~ ']'))
 
-  def PlaceholderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- PlaceholderParser.notAllowedInKey)))
+  def PlaceholderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- Session.notAllowedInKey)))
 
-  def Ignore = rule { zeroOrMore(!'<' ~ ANY) }
+  def Ignore = rule { zeroOrMore(!PlaceholderRule ~ ANY) }
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
-}
-
-object PlaceholderParser {
-  val notAllowedInKey = "\r\n<>[] "
 }
 
 case class Placeholder(key: String, index: Option[Int]) {

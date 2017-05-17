@@ -94,6 +94,12 @@ class ResolverSpec extends WordSpec
         resolver.fillPlaceholders(content)(session).value should be("3.15 > 3.14")
       }
 
+      "not be confused by markup langage" in {
+        val session = Session.newEmpty.addValue("pi", "3.14")
+        val content = "PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT <pi>"
+        resolver.fillPlaceholders(content)(session).value should be("PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT 3.14")
+      }
+
       "return ResolverError if placeholder not found" in {
         val session = Session.newEmpty.addValue("project-name", "cornichon")
         val content = "This project is named <project-new-name>"
