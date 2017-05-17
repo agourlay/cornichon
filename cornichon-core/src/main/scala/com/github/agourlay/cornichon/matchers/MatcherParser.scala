@@ -10,15 +10,17 @@ class MatcherParser(val input: ParserInput) extends Parser {
 
   def MatcherRule = rule("*" ~ MatcherTXT ~ "*" ~> MatcherKey)
 
-  val notAllowedInKey = "\r\n<>[]* "
-
-  def MatcherTXT = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInKey)))
+  def MatcherTXT = rule(capture(oneOrMore(CharPredicate.Visible -- MatcherParser.notAllowedInKey)))
 
   def Ignore = rule { zeroOrMore(!"*" ~ ANY) }
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
+}
+
+object MatcherParser {
+  val notAllowedInKey = "\r\n<>[]* "
 }
 
 case class MatcherKey(key: String) extends AnyVal

@@ -10,17 +10,19 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 
   def PlaceholderRule = rule('<' ~ PlaceholderTXT ~ optIndex ~ '>' ~> Placeholder)
 
-  val notAllowedInKey = "\r\n<>[] "
-
   def optIndex = rule(optional('[' ~ Number ~ ']'))
 
-  def PlaceholderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInKey)))
+  def PlaceholderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- PlaceholderParser.notAllowedInKey)))
 
   def Ignore = rule { zeroOrMore(!'<' ~ ANY) }
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
+}
+
+object PlaceholderParser {
+  val notAllowedInKey = "\r\n<>[] "
 }
 
 case class Placeholder(key: String, index: Option[Int]) {

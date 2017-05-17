@@ -13,13 +13,11 @@ class JsonPathParser(val input: ParserInput) extends Parser {
 
   def SegmentRule = rule(('`' ~ FieldWithDot ~ optIndex ~ '`' | Field ~ optIndex) ~> JsonSegment)
 
-  val notAllowedInField = "\r\n[]` "
-
   def optIndex = rule(optional('[' ~ Number ~ ']'))
 
-  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField -- '.')))
+  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField -- '.')))
 
-  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField)))
+  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField)))
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
@@ -27,6 +25,9 @@ class JsonPathParser(val input: ParserInput) extends Parser {
 }
 
 object JsonPathParser {
+
+  val notAllowedInField = "\r\n[]` "
+
   def parseJsonPath(input: String): Either[CornichonError, List[JsonSegment]] = {
     val p = new JsonPathParser(input)
     p.placeholdersRule.run() match {

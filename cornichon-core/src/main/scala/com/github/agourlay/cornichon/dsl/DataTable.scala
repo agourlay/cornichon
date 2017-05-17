@@ -8,6 +8,15 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
+
+  val WhiteSpace = CharPredicate("\u0009\u0020")
+
+  val delimeter = CharPredicate('|')
+
+  val delims = CharPredicate(delimeter, '\r', '\n')
+
+  val Backslash = CharPredicate('\\')
+
   def parseDataTable(input: String): Either[CornichonError, DataTable] = {
     val p = new DataTableParser(input)
     p.dataTableRule.run() match {
@@ -22,7 +31,6 @@ object DataTableParser {
 }
 
 class DataTableParser(val input: ParserInput) extends Parser with StringHeaderParserSupport {
-  val delimeter = CharPredicate('|')
 
   def dataTableRule = rule {
     zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> DataTable
@@ -32,19 +40,15 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
   def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseStringUnsafe))) }
 
-  val delims = CharPredicate(delimeter, '\r', '\n')
-
   def TXT = rule { capture(oneOrMore(ContentsChar)) }
 
-  def ContentsChar = rule { !delims ~ ANY }
+  def ContentsChar = rule { !DataTableParser.delims ~ ANY }
 
   def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
 
-  val WhiteSpace = CharPredicate("\u0009\u0020")
+  def Spaces = rule { quiet(zeroOrMore(DataTableParser.WhiteSpace)) }
 
-  def Spaces = rule { quiet(zeroOrMore(WhiteSpace)) }
-
-  def Separator = rule { Spaces ~ delimeter ~ Spaces }
+  def Separator = rule { Spaces ~ DataTableParser.delimeter ~ Spaces }
 
 }
 
@@ -69,20 +73,16 @@ case class Row(fields: Seq[Json])
 trait StringHeaderParserSupport extends StringBuilding {
   this: Parser ⇒
 
-  def delims: CharPredicate
-
   def HeaderValue = rule {
     atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.trim))
   }
 
   def Characters = rule { oneOrMore(NormalChar | '\\' ~ EscapedChar) }
 
-  val Backslash = CharPredicate('\\')
-
-  def NormalChar = rule { !(delims | Backslash) ~ ANY ~ appendSB() }
+  def NormalChar = rule { !(DataTableParser.delims | DataTableParser.Backslash) ~ ANY ~ appendSB() }
 
   def EscapedChar = rule {
-    Backslash ~ appendSB() |
+    DataTableParser.Backslash ~ appendSB() |
       'b' ~ appendSB('\b') |
       'f' ~ appendSB('\f') |
       'n' ~ appendSB('\n') |
