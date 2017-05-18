@@ -5,10 +5,8 @@ import java.util.UUID
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
-import org.parboiled2._
 
 import scala.collection.concurrent.TrieMap
-import scala.util.{ Failure, Success }
 
 class Resolver(extractors: Map[String, Mapper]) {
 
@@ -18,16 +16,8 @@ class Resolver(extractors: Map[String, Mapper]) {
   // There is one resolver per Feature so the cache is not living too long.
   private val placeholdersCache = TrieMap.empty[String, Either[CornichonError, List[Placeholder]]]
 
-  def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] = {
-    placeholdersCache.getOrElseUpdate(
-      input,
-      new PlaceholderParser(input).placeholdersRule.run() match {
-        case Failure(_: ParseError) ⇒ Right(Nil)
-        case Failure(e: Throwable)  ⇒ Left(ResolverParsingError(input, e))
-        case Success(dt)            ⇒ Right(dt.toList)
-      }
-    )
-  }
+  def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
+    placeholdersCache.getOrElseUpdate(input, PlaceholderParser.parse(input))
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
     builtInPlaceholders.lift(ph.key).map(Right(_)).getOrElse {
@@ -108,10 +98,6 @@ class Resolver(extractors: Map[String, Mapper]) {
 
 object Resolver {
   def withoutExtractor(): Resolver = new Resolver(Map.empty[String, Mapper])
-}
-
-case class ResolverParsingError(input: String, error: Throwable) extends CornichonError {
-  val baseErrorMessage = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {

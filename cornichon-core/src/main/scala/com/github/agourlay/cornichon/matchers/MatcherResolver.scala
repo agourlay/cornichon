@@ -5,10 +5,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.CornichonError
-import org.parboiled2.ParseError
 import com.github.agourlay.cornichon.matchers.Matchers._
-
-import scala.util.{ Failure, Success }
 
 class MatcherResolver() {
 
@@ -28,13 +25,8 @@ class MatcherResolver() {
       anyTime ::
       Nil
 
-  def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] = {
-    new MatcherParser(input).matchersRule.run() match {
-      case Failure(_: ParseError) ⇒ Right(Nil)
-      case Failure(e: Throwable)  ⇒ Left(MatcherResolverParsingError(input, e))
-      case Success(dt)            ⇒ Right(dt.toList)
-    }
-  }
+  def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] =
+    MatcherParser.parse(input)
 
   def resolveMatcherKeys(m: MatcherKey): Either[CornichonError, Matcher] =
     builtInMatchers.find(_.key == m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
@@ -45,10 +37,6 @@ class MatcherResolver() {
 
 object MatcherResolver {
   def apply(): MatcherResolver = new MatcherResolver()
-}
-
-case class MatcherResolverParsingError(input: String, error: Throwable) extends CornichonError {
-  val baseErrorMessage = s"error '${error.getMessage}' thrown during matcher parsing for input $input"
 }
 
 case class MatcherUndefined(name: String) extends CornichonError {

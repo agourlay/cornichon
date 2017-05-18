@@ -1,6 +1,9 @@
 package com.github.agourlay.cornichon.matchers
 
-import org.parboiled2.{ CharPredicate, Parser, ParserInput }
+import com.github.agourlay.cornichon.core.CornichonError
+import org.parboiled2._
+
+import scala.util.{ Failure, Success }
 
 class MatcherParser(val input: ParserInput) extends Parser {
 
@@ -10,9 +13,9 @@ class MatcherParser(val input: ParserInput) extends Parser {
 
   def MatcherRule = rule("*" ~ MatcherTXT ~ "*" ~> MatcherKey)
 
-  def MatcherTXT = rule(capture(oneOrMore(CharPredicate.Visible -- MatcherParser.notAllowedInKey)))
+  def MatcherTXT = rule(capture(oneOrMore(CharPredicate.Visible -- MatcherParser.notAllowedInMatchers)))
 
-  def Ignore = rule { zeroOrMore(!"*" ~ ANY) }
+  def Ignore = rule { zeroOrMore(!MatcherRule ~ ANY) }
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
@@ -20,7 +23,27 @@ class MatcherParser(val input: ParserInput) extends Parser {
 }
 
 object MatcherParser {
-  val notAllowedInKey = "\r\n<>[]* "
+  val notAllowedInMatchers = "\r\n<>* "
+
+  def parse(input: String): Either[CornichonError, List[MatcherKey]] = {
+    val p = new MatcherParser(input)
+    p.matchersRule.run() match {
+      case Failure(e: ParseError) ⇒
+        Left(MatcherParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
+      case Failure(e: Throwable) ⇒
+        Left(MatcherError(input, e))
+      case Success(dt) ⇒
+        Right(dt.toList)
+    }
+  }
+}
+
+case class MatcherError(input: String, error: Throwable) extends CornichonError {
+  val baseErrorMessage = s"error '${error.getMessage}' thrown during matcher parsing for input $input"
+}
+
+case class MatcherParsingError(input: String, error: String) extends CornichonError {
+  val baseErrorMessage = s"error '$error' thrown during matcher parsing for input $input"
 }
 
 case class MatcherKey(key: String) extends AnyVal

@@ -17,7 +17,7 @@ object DataTableParser {
 
   val Backslash = CharPredicate('\\')
 
-  def parseDataTable(input: String): Either[CornichonError, DataTable] = {
+  def parse(input: String): Either[CornichonError, DataTable] = {
     val p = new DataTableParser(input)
     p.dataTableRule.run() match {
       case Failure(e: ParseError) ⇒

@@ -42,7 +42,7 @@ trait CornichonJson {
   def parseStringUnsafe(s: String): Json = parseString(s).fold(e ⇒ throw e.toException, identity)
 
   def parseDataTable(table: String) =
-    DataTableParser.parseDataTable(table).map(_.objectList)
+    DataTableParser.parse(table).map(_.objectList)
 
   def parseDataTableUnsafe(table: String) =
     parseDataTable(table).fold(e ⇒ throw e.toException, identity)

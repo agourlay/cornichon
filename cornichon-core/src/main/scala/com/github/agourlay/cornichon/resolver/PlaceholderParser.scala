@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.resolver
 
-import com.github.agourlay.cornichon.core.Session
-import org.parboiled2.{ CharPredicate, Parser, ParserInput }
+import com.github.agourlay.cornichon.core.{ CornichonError, Session }
+import org.parboiled2._
+
+import scala.util.{ Failure, Success }
 
 class PlaceholderParser(val input: ParserInput) extends Parser {
 
@@ -22,6 +24,29 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
 }
 
+object PlaceholderParser {
+
+  def parse(input: String): Either[CornichonError, List[Placeholder]] = {
+    val p = new PlaceholderParser(input)
+    p.placeholdersRule.run() match {
+      case Failure(e: ParseError) ⇒
+        Left(PlaceholderParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
+      case Failure(e: Throwable) ⇒
+        Left(PlaceholderError(input, e))
+      case Success(dt) ⇒
+        Right(dt.toList)
+    }
+  }
+}
+
 case class Placeholder(key: String, index: Option[Int]) {
   val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
+}
+
+case class PlaceholderError(input: String, error: Throwable) extends CornichonError {
+  val baseErrorMessage = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
+}
+
+case class PlaceholderParsingError(input: String, error: String) extends CornichonError {
+  val baseErrorMessage = s"error '$error' during placeholder parsing for input $input"
 }
