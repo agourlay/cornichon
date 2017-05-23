@@ -6,8 +6,10 @@ class OpenMovieDatabase extends CornichonFeature {
 
   override lazy val baseUrl = "http://www.omdbapi.com"
 
+  //OMDB is not public anymore, an API key is necessary now...
+  //Find another provided or remove those tests :(
   def feature =
-    Feature("OpenMovieDatabase API") {
+    Feature("OpenMovieDatabase API", ignored = true) {
 
       Scenario("search for GOT") {
 
