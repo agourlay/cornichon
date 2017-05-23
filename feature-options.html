@@ -16,12 +16,21 @@
 </span></code></pre>
 </div>
 
-<p>Taking <code class="highlighter-rouge">Step*</code> expression.</p>
+<p>Taking a <code class="highlighter-rouge">Step</code> expression similar to the main DSL. You can either pass a single regular <code class="highlighter-rouge">Step</code> or a <code class="highlighter-rouge">WrapperStep</code> like <code class="highlighter-rouge">Attach</code>.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">beforeEachScenario</span> <span class="o">(</span> <span class="c1">// feed Step* )
-</span>
-<span class="n">afterEachScenario</span> <span class="o">(</span> <span class="c1">// feed Step* )
-</span></code></pre>
+<p>Here is an examples with fictious steps.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">beforeEachScenario</span><span class="o">{</span>
+  <span class="nc">Attach</span> <span class="o">{</span>
+    <span class="nc">Given</span> <span class="n">I</span> <span class="n">setup_server</span>
+    <span class="nc">Then</span> <span class="n">assert</span> <span class="n">setup_successful</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="n">afterEachScenario</span><span class="o">{</span>
+  <span class="nc">Then</span> <span class="n">I</span> <span class="n">cleanup_resources</span>
+<span class="o">}</span>
+</code></pre>
 </div>
 
 <h2 id="base-url">Base URL</h2>
