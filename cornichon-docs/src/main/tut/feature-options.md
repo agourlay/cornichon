@@ -22,12 +22,21 @@ beforeFeature { // do side effect here }
 afterFeature {  // do side effect here }
 ```
 
-Taking ```Step*``` expression.
+Taking a ```Step``` expression similar to the main DSL. You can either pass a single regular ```Step``` or a ```WrapperStep``` like ```Attach```.
+
+Here is an examples with fictious steps.
 
 ```scala
-beforeEachScenario ( // feed Step* )
+beforeEachScenario{
+  Attach {
+    Given I setup_server
+    Then assert setup_successful
+  }
+}
 
-afterEachScenario ( // feed Step* )
+afterEachScenario{
+  Then I cleanup_resources
+}
 ```
 
 ## Base URL
