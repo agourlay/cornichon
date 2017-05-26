@@ -207,7 +207,7 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.0.3"
-      val akkaActor     = "2.5.1"
+      val akkaActor     = "2.5.2"
       val akkaHttp      = "10.0.6"
       val cats          = "0.9.0"
       val parboiled     = "2.1.4"
