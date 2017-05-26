@@ -24,7 +24,7 @@ afterFeature {  // do side effect here }
 
 Taking a ```Step``` expression similar to the main DSL. You can either pass a single regular ```Step``` or a ```WrapperStep``` like ```Attach```.
 
-Here is an examples with fictious steps.
+Here is an examples with fictitious steps.
 
 ```scala
 beforeEachScenario{
