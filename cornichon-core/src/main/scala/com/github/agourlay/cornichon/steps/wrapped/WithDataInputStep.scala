@@ -2,19 +2,18 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.util.Timing._
 import com.github.agourlay.cornichon.util.Printing._
-
 import monix.execution.Scheduler
 
 import scala.concurrent.Future
 
-case class WithDataInputStep(nested: List[Step], where: String) extends WrapperStep {
+case class WithDataInputStep(nested: List[Step], where: String, r: Resolver) extends WrapperStep {
 
   val title = s"With data input block $where"
 
@@ -42,31 +41,33 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
       }
     }
 
-    CornichonJson.parseDataTable(where).fold(
-      t ⇒ Future.successful(exceptionToFailureStep(this, initialRunState, NonEmptyList.of(t))),
-      parsedTable ⇒ {
-        val inputs = parsedTable.map { line ⇒
-          line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
-        }
+    r.fillPlaceholders(where)(initialRunState.session)
+      .flatMap(CornichonJson.parseDataTable)
+      .fold(
+        t ⇒ Future.successful(exceptionToFailureStep(this, initialRunState, NonEmptyList.of(t))),
+        parsedTable ⇒ {
+          val inputs = parsedTable.map { line ⇒
+            line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
+          }
 
-        withDuration {
-          runInputs(inputs, initialRunState.forNestedSteps(nested))
-        }.map {
-          case ((inputsState, inputsRes), executionTime) ⇒
-            val initialDepth = initialRunState.depth
-            val (fullLogs, xor) = inputsRes match {
-              case Right(_) ⇒
-                val fullLogs = successTitleLog(initialDepth) +: inputsState.logs :+ SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime))
-                (fullLogs, rightDone)
-              case Left((failedInputs, failedStep)) ⇒
-                val fullLogs = failedTitleLog(initialDepth) +: inputsState.logs :+ FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime))
-                val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
-                (fullLogs, Left(artificialFailedStep))
-            }
-            (initialRunState.withSession(inputsState.session).appendLogs(fullLogs), xor)
+          withDuration {
+            runInputs(inputs, initialRunState.forNestedSteps(nested))
+          }.map {
+            case ((inputsState, inputsRes), executionTime) ⇒
+              val initialDepth = initialRunState.depth
+              val (fullLogs, xor) = inputsRes match {
+                case Right(_) ⇒
+                  val fullLogs = successTitleLog(initialDepth) +: inputsState.logs :+ SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime))
+                  (fullLogs, rightDone)
+                case Left((failedInputs, failedStep)) ⇒
+                  val fullLogs = failedTitleLog(initialDepth) +: inputsState.logs :+ FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime))
+                  val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
+                  (fullLogs, Left(artificialFailedStep))
+              }
+              (initialRunState.withSession(inputsState.session).appendLogs(fullLogs), xor)
+          }
         }
-      }
-    )
+      )
   }
 }
 

@@ -103,7 +103,7 @@ trait Dsl extends ProvidedInstances {
 
   def WithDataInputs(where: String) =
     BodyElementCollector[Step, Step] { steps ⇒
-      WithDataInputStep(steps, where)
+      WithDataInputStep(steps, where, resolver)
     }
 
   def wait(duration: FiniteDuration) = EffectStep.fromAsync(

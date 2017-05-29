@@ -1,9 +1,10 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.resolver.Resolver
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import org.scalatest.{ Matchers, AsyncWordSpec }
+import org.scalatest.{ AsyncWordSpec, Matchers }
 
 class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
@@ -22,7 +23,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
           | 0  0 | 0 |
         """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs)
+      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
       val res = engine.runScenario(Session.newEmpty)(s)
       res.map(_.isSuccess should be(false))
@@ -41,7 +42,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
           | 0 | 0 | 0 |
         """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs)
+      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
@@ -63,7 +64,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
         | 0 | 0 | 0 |
       """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs)
+      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
       val res = engine.runScenario(Session.newEmpty)(s)
       res.map { res ⇒
@@ -88,9 +89,30 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
           | 1 | -1 | 0  |
         """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs)
+      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
       val res = engine.runScenario(Session.newEmpty)(s)
+      res.map(_.isSuccess should be(true))
+    }
+
+    "resolve placeholder" in {
+      val nested = AssertStep(
+        "building URL",
+        s ⇒ {
+          val url = s.getUnsafe("endpoint") + "/" + s.getUnsafe("resource")
+          GenericEqualityAssertion(url, s.getUnsafe("url"))
+        }
+      ) :: Nil
+      val inputs =
+        """
+          | endpoint | resource   | url             |
+          | "api"    | "products" | "api/products"  |
+          | "api"    | "<other>"  | "api/customers" |
+        """
+
+      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
+      val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
+      val res = engine.runScenario(Session.newEmpty.addValue("other", "customers"))(s)
       res.map(_.isSuccess should be(true))
     }
   }
