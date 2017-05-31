@@ -469,9 +469,13 @@ LogDuration(label = "my experiment") {
 
  And I show_last_response
 
+  And I show_last_response_json (pretty print the json body)
+
  And I show_last_status
 
  And I show_last_body
+
+  And I show_last_body_json (pretty print the json body)
 
  And I show_last_headers
 ```
