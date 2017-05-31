@@ -40,26 +40,29 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     }
 
   def runSteps(runState: RunState): Future[(RunState, FailedStep Either Done)] =
-    runState.remainingSteps.headOption.map { currentStep ⇒
-      val preparedStep = stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+    if (runState.remainingSteps.isEmpty)
+      Future.successful(runState, rightDone)
+    else {
+      val currentStep = runState.remainingSteps.head
+      stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
         (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
-      }
-      preparedStep.fold(
+      }.fold(
         ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, NonEmptyList.of(ce))),
-        ps ⇒
-          Either
-            .catchNonFatal(ps.run(this)(runState))
-            .fold(
-              e ⇒ Future.successful(exceptionToFailureStep(currentStep, runState, e)),
-              future ⇒
-                future.flatMap {
-                  case (newState, stepResult) ⇒ stepResult.fold(failedStep ⇒ Future.successful(newState, Left(failedStep)), _ ⇒ runSteps(newState.consumCurrentStep))
-                }.recover {
-                  case NonFatal(t) ⇒ exceptionToFailureStep(currentStep, runState, t)
-                }
-            )
+        ps ⇒ runStep(runState, ps)
       )
-    }.getOrElse(Future.successful(runState, rightDone))
+    }
+
+  private def runStep(runState: RunState, ps: Step) =
+    Either
+      .catchNonFatal(ps.run(this)(runState))
+      .fold(
+        e ⇒ Future.successful(exceptionToFailureStep(ps, runState, e)),
+        _.flatMap {
+          case (newState, stepResult) ⇒ stepResult.fold(failedStep ⇒ Future.successful(newState, Left(failedStep)), _ ⇒ runSteps(newState.consumCurrentStep))
+        }.recover {
+          case NonFatal(t) ⇒ exceptionToFailureStep(ps, runState, t)
+        }
+      )
 }
 
 object Engine {
