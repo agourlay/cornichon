@@ -328,7 +328,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">WithDataInputStep</span><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="where">where: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">WithDataInputStep</span><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="where">where: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="r">r: <a href="../../resolver/Resolver.html" class="extype" name="com.github.agourlay.cornichon.resolver.Resolver">Resolver</a></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       </h4>
 
@@ -384,9 +384,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.steps.wrapped.WithDataInputStep#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(nested:List[com.github.agourlay.cornichon.core.Step],where:String):com.github.agourlay.cornichon.steps.wrapped.WithDataInputStep"></a><a id="&lt;init&gt;:WithDataInputStep"></a>
+      <a id="&lt;init&gt;(nested:List[com.github.agourlay.cornichon.core.Step],where:String,r:com.github.agourlay.cornichon.resolver.Resolver):com.github.agourlay.cornichon.steps.wrapped.WithDataInputStep"></a><a id="&lt;init&gt;:WithDataInputStep"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/WithDataInputStep.html#&lt;init&gt;(nested:List[com.github.agourlay.cornichon.core.Step],where:String):com.github.agourlay.cornichon.steps.wrapped.WithDataInputStep" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/WithDataInputStep.html#&lt;init&gt;(nested:List[com.github.agourlay.cornichon.core.Step],where:String,r:com.github.agourlay.cornichon.resolver.Resolver):com.github.agourlay.cornichon.steps.wrapped.WithDataInputStep" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -395,7 +395,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">WithDataInputStep</span><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="where">where: <span class="extype" name="scala.Predef.String">String</span></span>)</span>
+        <span class="name">WithDataInputStep</span><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="where">where: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="r">r: <a href="../../resolver/Resolver.html" class="extype" name="com.github.agourlay.cornichon.resolver.Resolver">Resolver</a></span>)</span>
       </span>
       
       
@@ -645,6 +645,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.WithDataInputStep#r" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="r:com.github.agourlay.cornichon.resolver.Resolver"></a><a id="r:Resolver"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/WithDataInputStep.html#r:com.github.agourlay.cornichon.resolver.Resolver" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">r</span><span class="result">: <a href="../../resolver/Resolver.html" class="extype" name="com.github.agourlay.cornichon.resolver.Resolver">Resolver</a></span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.steps.wrapped.WithDataInputStep#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="run(engine:com.github.agourlay.cornichon.core.Engine)(initialRunState:com.github.agourlay.cornichon.core.RunState)(implicitscheduler:monix.execution.Scheduler):scala.concurrent.Future[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]"></a><a id="run(Engine)(RunState)(Scheduler):Future[(RunState,Either[FailedStep,Done])]"></a>
       <span class="permalink">
