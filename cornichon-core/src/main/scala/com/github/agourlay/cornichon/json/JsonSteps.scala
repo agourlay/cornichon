@@ -12,6 +12,7 @@ import cats.instances.list._
 import cats.instances.either._
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
+import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -97,8 +98,7 @@ object JsonSteps {
             for {
               sessionValue ← s.get(sessionKey)
               sessionValueWithFocusJson ← resolveRunJsonPath(jsonPath, sessionValue, resolver)(s)
-              _ ← if (sessionValueWithFocusJson.isNull) Left(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue))) else Right(())
-              _ ← if (whitelist && ignoredKeys.nonEmpty) Left(InvalidIgnoringConfigError) else Right(())
+              _ ← if (sessionValueWithFocusJson.isNull) Left(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue))) else rightDone
               withMatchers ← handleMatchers(s, sessionValueWithFocusJson)
               (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = withMatchers
               withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
@@ -140,11 +140,7 @@ object JsonSteps {
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
         action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
           resolveRunJsonPath(jsonPath, sessionValue, resolver)(session).map { subJson ⇒
-            val predicate = subJson match {
-              case Json.Null ⇒ true
-              case _         ⇒ false
-            }
-            (true, predicate, keyIsPresentError(jsonPath, subJson.show))
+            (true, subJson.isNull, keyIsPresentError(jsonPath, subJson.show))
           }
         }
       )
@@ -156,11 +152,7 @@ object JsonSteps {
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
         action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
           resolveRunJsonPath(jsonPath, sessionValue, resolver)(session).map { subJson ⇒
-            val predicate = subJson match {
-              case Json.Null ⇒ false
-              case _         ⇒ true
-            }
-            (true, predicate, keyIsAbsentError(jsonPath, parseJsonUnsafe(sessionValue).show))
+            (false, subJson.isNull, keyIsAbsentError(jsonPath, parseJsonUnsafe(sessionValue).show))
           }
         }
       )

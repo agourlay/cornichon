@@ -21,7 +21,11 @@ trait CornichonJson {
 
   def parseJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
     case s: String ⇒
-      s.trim.headOption.fold(Either.right[CornichonError, Json](Json.fromString(s))) { firstChar ⇒
+      val trimmed = s.trim
+      if (trimmed.isEmpty)
+        Right(Json.fromString(s))
+      else {
+        val firstChar = trimmed.head
         if (firstChar == '{' || firstChar == '[')
           parseString(s) // parse object or array
         else if (firstChar == '|')
@@ -93,9 +97,11 @@ trait CornichonJson {
   def whitelistingValue(first: Json, second: Json): Either[WhitelistingError, Json] = {
     val diff = diffPatch(first, second)
     val forbiddenPatchOps = diff.ops.collect { case r: Remove ⇒ r }
-    val addOps = diff.ops.collect { case r: Add ⇒ r }
-    if (forbiddenPatchOps.isEmpty) Right(JsonPatch(addOps)(first))
-    else Left(WhitelistingError(forbiddenPatchOps.map(_.path.toString), second))
+    if (forbiddenPatchOps.isEmpty) {
+      val addOps = diff.ops.collect { case r: Add ⇒ r }
+      Right(JsonPatch(addOps)(first))
+    } else
+      Left(WhitelistingError(forbiddenPatchOps.map(_.path.toString), second))
   }
 
   def findAllJsonWithValue(values: List[String], json: Json): Vector[JsonPath] = {

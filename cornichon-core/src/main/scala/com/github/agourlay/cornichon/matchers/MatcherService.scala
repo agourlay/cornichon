@@ -28,7 +28,7 @@ object MatcherService {
 
   // Add quotes around known matchers
   def quoteMatchers(input: String) =
-    resolver.builtInMatchers.foldLeft(input) {
+    resolver.matchers.foldLeft(input) {
       case (i, m) ⇒ i.replaceAll(Pattern.quote(m.fullKey), '"' + m.fullKey + '"')
     }
 }

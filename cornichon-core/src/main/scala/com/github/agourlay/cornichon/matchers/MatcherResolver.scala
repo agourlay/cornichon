@@ -9,6 +9,22 @@ import com.github.agourlay.cornichon.matchers.Matchers._
 
 class MatcherResolver() {
 
+  //Could be extended with custom matchers from users
+  val matchers = MatcherResolver.builtInMatchers
+
+  def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] =
+    MatcherParser.parse(input)
+
+  def resolveMatcherKeys(m: MatcherKey): Either[CornichonError, Matcher] =
+    matchers.find(_.key == m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
+
+  def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
+    findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
+}
+
+object MatcherResolver {
+  def apply(): MatcherResolver = new MatcherResolver()
+
   val builtInMatchers =
     isPresent ::
       anyString ::
@@ -24,19 +40,6 @@ class MatcherResolver() {
       anyDateTime ::
       anyTime ::
       Nil
-
-  def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] =
-    MatcherParser.parse(input)
-
-  def resolveMatcherKeys(m: MatcherKey): Either[CornichonError, Matcher] =
-    builtInMatchers.find(_.key == m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
-
-  def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
-    findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
-}
-
-object MatcherResolver {
-  def apply(): MatcherResolver = new MatcherResolver()
 }
 
 case class MatcherUndefined(name: String) extends CornichonError {

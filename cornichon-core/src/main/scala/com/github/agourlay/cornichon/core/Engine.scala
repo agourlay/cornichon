@@ -20,7 +20,6 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     if (featureIgnored || scenario.ignored)
       Future.successful(IgnoreScenarioReport(scenario.name, session, Vector.empty))
     else {
-      val initMargin = 1
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
       val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
       runSteps(initialRunState).flatMap {
@@ -66,6 +65,8 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 }
 
 object Engine {
+
+  val initMargin = 1
 
   def withStepTitleResolver(resolver: Resolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
