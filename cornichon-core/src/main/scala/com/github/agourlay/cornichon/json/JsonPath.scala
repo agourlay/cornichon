@@ -4,6 +4,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import io.circe.{ ACursor, Json }
 import cats.instances.string._
+import cats.syntax.either._
 
 case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
