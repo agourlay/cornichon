@@ -6,26 +6,47 @@ import io.circe.{ ACursor, Json }
 import cats.instances.string._
 import cats.syntax.either._
 
+import scala.collection.mutable.ListBuffer
+
 case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
   val pretty = operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
 
   val isRoot = operations.isEmpty
 
-  def run(superSet: Json): Json = cursor(superSet).focus.getOrElse(Json.Null)
+  def run(superSet: Json): Json = {
+    val focused = cursors(superSet).map(c ⇒ c.focus.getOrElse(Json.Null))
+    if (focused.length == 1)
+      focused.head
+    else
+      Json.fromValues(focused)
+  }
   def run(json: String): Either[CornichonError, Json] = parseJson(json).map(run)
 
-  def cursor(input: Json): ACursor = operations.foldLeft[ACursor](input.hcursor) { (oc, op) ⇒
+  def cursors(input: Json): List[ACursor] = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) ⇒
     op match {
       case RootSelection                      ⇒ oc
-      case FieldSelection(field)              ⇒ oc.downField(field)
-      case RootArrayElementSelection(indice)  ⇒ oc.downArray.rightN(indice)
-      case ArrayFieldSelection(field, indice) ⇒ oc.downField(field).downArray.rightN(indice)
+      case FieldSelection(field)              ⇒ oc.map(_.downField(field))
+      case RootArrayElementSelection(indice)  ⇒ oc.map(_.downArray.rightN(indice))
+      case ArrayFieldSelection(field, indice) ⇒ oc.map(_.downField(field).downArray.rightN(indice))
+      case ArrayFieldProjection(field) ⇒
+        oc.flatMap { o ⇒
+          val arrayFieldCursor = o.downField(field)
+          arrayFieldCursor.values.fold(arrayFieldCursor :: Nil) { values ⇒
+            val lb = ListBuffer.empty[ACursor]
+            var arrayElementsCursor = arrayFieldCursor.downArray
+            for (_ ← values.indices) {
+              lb += arrayElementsCursor
+              arrayElementsCursor = arrayElementsCursor.right
+            }
+            lb.toList
+          }
+        }
     }
   }
 
   def removeFromJson(input: Json): Json =
-    cursor(input).delete.top.getOrElse(input)
+    cursors(input).foldLeft(input) { (j, c) ⇒ c.delete.top.getOrElse(j) }
 
 }
 
@@ -53,12 +74,13 @@ object JsonPath {
       jsonPath ← JsonPath.parse(path)
     } yield jsonPath.run(json)
 
-  def fromSegments(segments: List[JsonSegment]) = {
+  def fromSegments(segments: List[JsonPathSegment]) = {
     val operations = segments.map {
-      case JsonSegment(JsonPath.root, None)        ⇒ RootSelection
-      case JsonSegment(JsonPath.root, Some(index)) ⇒ RootArrayElementSelection(index)
-      case JsonSegment(field, None)                ⇒ FieldSelection(field)
-      case JsonSegment(field, Some(index))         ⇒ ArrayFieldSelection(field, index)
+      case JsonFieldSegment(JsonPath.root)              ⇒ RootSelection
+      case JsonFieldSegment(field)                      ⇒ FieldSelection(field)
+      case JsonArrayIndiceSegment(JsonPath.root, index) ⇒ RootArrayElementSelection(index)
+      case JsonArrayIndiceSegment(field, index)         ⇒ ArrayFieldSelection(field, index)
+      case JsonArrayProjectionSegment(field)            ⇒ ArrayFieldProjection(field)
     }
     JsonPath(operations)
   }
@@ -86,4 +108,8 @@ case class RootArrayElementSelection(indice: Int) extends JsonPathOperation {
 
 case class ArrayFieldSelection(field: String, indice: Int) extends JsonPathOperation {
   val pretty = s"$field[$indice]"
+}
+
+case class ArrayFieldProjection(field: String) extends JsonPathOperation {
+  val pretty = s"$field[*]"
 }

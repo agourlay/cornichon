@@ -16,19 +16,19 @@ class JsonPathParserSpec extends WordSpec
     "parseJsonPath" must {
       "parse JsonPath containing a field without index" in {
         forAll(fieldGen) { field ⇒
-          JsonPathParser.parseJsonPath(field) should beRight(List(JsonSegment(field, None)))
+          JsonPathParser.parseJsonPath(field).right.value should be(List(JsonFieldSegment(field)))
         }
       }
 
       "parse JsonPath containing a field with index" in {
         forAll(fieldGen, indiceGen) { (field, indice) ⇒
-          JsonPathParser.parseJsonPath(s"$field[$indice]") should beRight(List(JsonSegment(field, Some(indice))))
+          JsonPathParser.parseJsonPath(s"$field[$indice]").right.value should be(List(JsonArrayIndiceSegment(field, indice)))
         }
       }
 
       "parse JsonPath containing two fields without index" in {
         forAll(fieldGen, fieldGen) { (field1, field2) ⇒
-          JsonPathParser.parseJsonPath(s"$field1.$field2") should beRight(List(JsonSegment(field1, None), JsonSegment(field2, None)))
+          JsonPathParser.parseJsonPath(s"$field1.$field2").right.value should be(List(JsonFieldSegment(field1), JsonFieldSegment(field2)))
         }
       }
 
@@ -37,7 +37,7 @@ class JsonPathParserSpec extends WordSpec
           val composedPath = s"$field1.$field2"
           val fullPath = s"`$composedPath`.$field3"
           withClue(s"fullPath was $fullPath") {
-            JsonPathParser.parseJsonPath(fullPath) should beRight(List(JsonSegment(composedPath, None), JsonSegment(field3, None)))
+            JsonPathParser.parseJsonPath(fullPath).right.value should be(List(JsonFieldSegment(composedPath), JsonFieldSegment(field3)))
           }
         }
       }

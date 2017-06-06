@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.json
 
-import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException }
 import org.parboiled2._
 
-import scala.util.{ Failure, Success }
+import scala.util.{ Failure, Success, Try }
 
 class JsonPathParser(val input: ParserInput) extends Parser {
 
@@ -11,24 +11,23 @@ class JsonPathParser(val input: ParserInput) extends Parser {
     oneOrMore(SegmentRule).separatedBy('.') ~ EOI
   }
 
-  def SegmentRule = rule(('`' ~ FieldWithDot ~ optIndex ~ '`' | Field ~ optIndex) ~> JsonSegment)
+  def SegmentRule = rule(('`' ~ FieldWithDot ~ optIndex ~ '`' | Field ~ optIndex) ~> ((x, i) ⇒ JsonPathSegment.build(x, i)))
 
-  def optIndex = rule(optional('[' ~ Number ~ ']'))
+  def optIndex = rule(optional('[' ~ Index ~ ']'))
 
   def Field = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField -- '.')))
 
   def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField)))
 
-  def Number = rule { capture(Digits) ~> (_.toInt) }
+  def Index = rule { capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField)) }
 
-  def Digits = rule { oneOrMore(CharPredicate.Digit) }
 }
 
 object JsonPathParser {
 
   val notAllowedInField = "\r\n[]` "
 
-  def parseJsonPath(input: String): Either[CornichonError, List[JsonSegment]] = {
+  def parseJsonPath(input: String): Either[CornichonError, List[JsonPathSegment]] = {
     val p = new JsonPathParser(input)
     p.placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒
@@ -41,6 +40,21 @@ object JsonPathParser {
   }
 }
 
-case class JsonSegment(field: String, index: Option[Int]) {
-  val fullKey = index.fold(s"$field") { index ⇒ s"$field[$index]" }
+trait JsonPathSegment
+
+object JsonPathSegment {
+  def build(field: String, index: Option[String]): JsonPathSegment =
+    index.fold[JsonPathSegment](JsonFieldSegment(field)) { indice ⇒
+      if (indice == "*")
+        JsonArrayProjectionSegment(field)
+      else
+        Try { Integer.parseInt(indice) } match {
+          case Success(i) ⇒ JsonArrayIndiceSegment(field, i)
+          case Failure(e) ⇒ throw CornichonException(e.getMessage)
+        }
+    }
 }
+
+case class JsonFieldSegment(field: String) extends JsonPathSegment
+case class JsonArrayIndiceSegment(field: String, index: Int) extends JsonPathSegment
+case class JsonArrayProjectionSegment(field: String) extends JsonPathSegment
