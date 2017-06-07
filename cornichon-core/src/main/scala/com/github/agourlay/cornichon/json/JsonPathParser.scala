@@ -1,9 +1,10 @@
 package com.github.agourlay.cornichon.json
 
-import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException }
+import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2._
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Success }
+import com.github.agourlay.cornichon.json.JsonPathParser._
 
 class JsonPathParser(val input: ParserInput) extends Parser {
 
@@ -11,15 +12,27 @@ class JsonPathParser(val input: ParserInput) extends Parser {
     oneOrMore(SegmentRule).separatedBy('.') ~ EOI
   }
 
-  def SegmentRule = rule(('`' ~ FieldWithDot ~ optIndex ~ '`' | Field ~ optIndex) ~> ((x, i) ⇒ JsonPathSegment.build(x, i)))
+  def SegmentRule = rule {
+    Field ~ optIndex ~> ((f, i) ⇒ buildSegment(f, i)) |
+      '`' ~ FieldWithDot ~ optIndex ~ '`' ~> ((f, i) ⇒ buildSegment(f, i))
+  }
 
-  def optIndex = rule(optional('[' ~ Index ~ ']'))
+  def optIndex = rule(optional('[' ~ (Number | capture('*')) ~ ']'))
 
-  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField -- '.')))
+  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField -- '.')))
 
-  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField)))
+  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField)))
 
-  def Index = rule { capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField)) }
+  def Number = rule { capture(Digits) ~> (_.toInt) }
+
+  def Digits = rule { oneOrMore(CharPredicate.Digit) }
+
+  // The values in the Option are constrainted in the parser itself (any Number or '*')
+  private def buildSegment(field: String, index: Option[Any]): JsonPathSegment = index match {
+    case Some(i: Int) ⇒ FieldSegment(field, Some(i))
+    case Some("*")    ⇒ ArrayProjectionSegment(field)
+    case _            ⇒ FieldSegment(field, None)
+  }
 
 }
 
@@ -41,20 +54,5 @@ object JsonPathParser {
 }
 
 trait JsonPathSegment
-
-object JsonPathSegment {
-  def build(field: String, index: Option[String]): JsonPathSegment =
-    index.fold[JsonPathSegment](JsonFieldSegment(field)) { indice ⇒
-      if (indice == "*")
-        JsonArrayProjectionSegment(field)
-      else
-        Try { Integer.parseInt(indice) } match {
-          case Success(i) ⇒ JsonArrayIndiceSegment(field, i)
-          case Failure(e) ⇒ throw CornichonException(e.getMessage)
-        }
-    }
-}
-
-case class JsonFieldSegment(field: String) extends JsonPathSegment
-case class JsonArrayIndiceSegment(field: String, index: Int) extends JsonPathSegment
-case class JsonArrayProjectionSegment(field: String) extends JsonPathSegment
+case class FieldSegment(field: String, index: Option[Int]) extends JsonPathSegment
+case class ArrayProjectionSegment(field: String) extends JsonPathSegment

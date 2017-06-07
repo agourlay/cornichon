@@ -352,6 +352,12 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
+        And assert body.path("$[*].name").is(
+          """
+            [ "Spiderman", "IronMan", "Superman", "GreenLantern", "Batman"]
+          """
+        )
+
         When I delete("/superheroes/IronMan").withParams("sessionId" → "<session-id>")
 
         Then assert status.is(200)

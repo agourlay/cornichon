@@ -29,21 +29,25 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
       case FieldSelection(field)              ⇒ oc.map(_.downField(field))
       case RootArrayElementSelection(indice)  ⇒ oc.map(_.downArray.rightN(indice))
       case ArrayFieldSelection(field, indice) ⇒ oc.map(_.downField(field).downArray.rightN(indice))
-      case ArrayFieldProjection(field) ⇒
-        oc.flatMap { o ⇒
-          val arrayFieldCursor = o.downField(field)
-          arrayFieldCursor.values.fold(arrayFieldCursor :: Nil) { values ⇒
-            val lb = ListBuffer.empty[ACursor]
-            var arrayElementsCursor = arrayFieldCursor.downArray
-            for (_ ← values.indices) {
-              lb += arrayElementsCursor
-              arrayElementsCursor = arrayElementsCursor.right
-            }
-            lb.toList
-          }
-        }
+      case RootArrayFieldProjection           ⇒ oc.flatMap(o ⇒ expandCursors(o))
+      case ArrayFieldProjection(field)        ⇒ oc.flatMap(o ⇒ expandCursors(o.downField(field)))
     }
   }
+
+  private def expandCursors(arrayFieldCursor: ACursor) =
+    arrayFieldCursor.values.fold(arrayFieldCursor :: Nil) { values ⇒
+      if (values.isEmpty)
+        arrayFieldCursor :: Nil
+      else {
+        val lb = ListBuffer.empty[ACursor]
+        var arrayElementsCursor = arrayFieldCursor.downArray
+        for (_ ← values.indices) {
+          lb += arrayElementsCursor
+          arrayElementsCursor = arrayElementsCursor.right
+        }
+        lb.toList
+      }
+    }
 
   def removeFromJson(input: Json): Json =
     cursors(input).foldLeft(input) { (j, c) ⇒ c.delete.top.getOrElse(j) }
@@ -74,16 +78,17 @@ object JsonPath {
       jsonPath ← JsonPath.parse(path)
     } yield jsonPath.run(json)
 
-  def fromSegments(segments: List[JsonPathSegment]) = {
-    val operations = segments.map {
-      case JsonFieldSegment(JsonPath.root)              ⇒ RootSelection
-      case JsonFieldSegment(field)                      ⇒ FieldSelection(field)
-      case JsonArrayIndiceSegment(JsonPath.root, index) ⇒ RootArrayElementSelection(index)
-      case JsonArrayIndiceSegment(field, index)         ⇒ ArrayFieldSelection(field, index)
-      case JsonArrayProjectionSegment(field)            ⇒ ArrayFieldProjection(field)
-    }
-    JsonPath(operations)
-  }
+  def fromSegments(segments: List[JsonPathSegment]) =
+    JsonPath(
+      segments.map {
+        case FieldSegment(JsonPath.root, None)        ⇒ RootSelection
+        case FieldSegment(JsonPath.root, Some(index)) ⇒ RootArrayElementSelection(index)
+        case FieldSegment(field, None)                ⇒ FieldSelection(field)
+        case FieldSegment(field, Some(index))         ⇒ ArrayFieldSelection(field, index)
+        case ArrayProjectionSegment(JsonPath.root)    ⇒ RootArrayFieldProjection
+        case ArrayProjectionSegment(field)            ⇒ ArrayFieldProjection(field)
+      }
+    )
 
 }
 
@@ -111,5 +116,10 @@ case class ArrayFieldSelection(field: String, indice: Int) extends JsonPathOpera
 }
 
 case class ArrayFieldProjection(field: String) extends JsonPathOperation {
+  val pretty = s"$field[*]"
+}
+
+case object RootArrayFieldProjection extends JsonPathOperation {
+  val field = JsonPath.root
   val pretty = s"$field[*]"
 }
