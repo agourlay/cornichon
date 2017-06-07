@@ -9,7 +9,7 @@
 
 <p>cornichon is cross-built for Scala 2.11, and 2.12 so you can just add the following to your build:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.github.agourlay"</span> <span class="o">%%</span> <span class="s">"cornichon"</span> <span class="o">%</span> <span class="s">"0.12.2"</span> <span class="o">%</span> <span class="nc">Test</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.github.agourlay"</span> <span class="o">%%</span> <span class="s">"cornichon"</span> <span class="o">%</span> <span class="s">"0.12.3"</span> <span class="o">%</span> <span class="nc">Test</span>
 </code></pre>
 </div>
 
@@ -73,6 +73,14 @@
         """</span><span class="o">)</span>
 
       <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"Episodes[0].Released"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="s">"2011-04-17"</span><span class="o">)</span>
+
+      <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"Episodes[*].Released"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
+        <span class="s">"""
+        [
+          "2011-04-17", "2011-04-24", "2011-05-01", "2011-05-08", "2011-05-15",
+          "2011-05-22", "2011-05-29", "2011-06-05", "2011-06-12", "2011-06-19"
+        ]
+        """</span><span class="o">)</span>
 
       <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"Episodes"</span><span class="o">).</span><span class="n">asArray</span><span class="o">.</span><span class="n">contains</span><span class="o">(</span>
         <span class="s">"""

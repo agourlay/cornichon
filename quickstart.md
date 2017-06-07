@@ -3,7 +3,7 @@
 cornichon is cross-built for Scala 2.11, and 2.12 so you can just add the following to your build:
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.12.2" % Test
+libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.12.3" % Test
 ```
 
 Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
@@ -67,6 +67,14 @@ class ReadmeExample extends CornichonFeature {
         """)
 
       And assert body.path("Episodes[0].Released").is("2011-04-17")
+
+      And assert body.path("Episodes[*].Released").is(
+        """
+        [
+          "2011-04-17", "2011-04-24", "2011-05-01", "2011-05-08", "2011-05-15",
+          "2011-05-22", "2011-05-29", "2011-06-05", "2011-06-12", "2011-06-19"
+        ]
+        """)
 
       And assert body.path("Episodes").asArray.contains(
         """

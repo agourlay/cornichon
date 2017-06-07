@@ -127,7 +127,14 @@
 </code></pre>
 </div>
 
-<p>Ignored keys and extractors are JsonPaths following the format “a.b.c[int].d”</p>
+<p>Ignored keys and extractors are JsonPaths following the format “a.b.c[index].d”.</p>
+
+<p>The <code class="highlighter-rouge">index</code> value is either:</p>
+
+<ul>
+  <li>an Integer addressing the array position.</li>
+  <li>a <code class="highlighter-rouge">*</code> to target all values, the result will be an array of the projected values.</li>
+</ul>
 
 <p>JsonPath can also be used to only assert part of the response</p>
 
@@ -138,6 +145,8 @@
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"publisher.name"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="s">"DC"</span><span class="o">)</span>
 
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"city"</span><span class="o">).</span><span class="n">containsString</span><span class="o">(</span><span class="s">"Gotham"</span><span class="o">)</span>
+
+<span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"superheroes[*].name"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="s">"[ "</span><span class="nc">Spiderman</span><span class="s">", "</span><span class="nc">IronMan</span><span class="s">", "</span><span class="nc">Superman</span><span class="s">", "</span><span class="nc">GreenLantern</span><span class="s">", "</span><span class="nc">Batman</span><span class="s">" ]"</span><span class="o">)</span>
 
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"publisher.foundationYear"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="mi">1934</span><span class="o">)</span>
 
