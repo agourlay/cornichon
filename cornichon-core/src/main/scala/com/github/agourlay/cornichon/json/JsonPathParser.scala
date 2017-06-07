@@ -4,6 +4,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2._
 
 import scala.util.{ Failure, Success }
+import com.github.agourlay.cornichon.json.JsonPathParser._
 
 class JsonPathParser(val input: ParserInput) extends Parser {
 
@@ -11,24 +12,35 @@ class JsonPathParser(val input: ParserInput) extends Parser {
     oneOrMore(SegmentRule).separatedBy('.') ~ EOI
   }
 
-  def SegmentRule = rule(('`' ~ FieldWithDot ~ optIndex ~ '`' | Field ~ optIndex) ~> JsonSegment)
+  def SegmentRule = rule {
+    Field ~ optIndex ~> ((f, i) ⇒ buildSegment(f, i)) |
+      '`' ~ FieldWithDot ~ optIndex ~ '`' ~> ((f, i) ⇒ buildSegment(f, i))
+  }
 
-  def optIndex = rule(optional('[' ~ Number ~ ']'))
+  def optIndex = rule(optional('[' ~ (Number | capture('*')) ~ ']'))
 
-  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField -- '.')))
+  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField -- '.')))
 
-  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- JsonPathParser.notAllowedInField)))
+  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField)))
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
+
+  // The values in the Option are constrainted in the parser itself (any Number or '*')
+  private def buildSegment(field: String, index: Option[Any]): JsonPathSegment = index match {
+    case Some(i: Int) ⇒ FieldSegment(field, Some(i))
+    case Some("*")    ⇒ ArrayProjectionSegment(field)
+    case _            ⇒ FieldSegment(field, None)
+  }
+
 }
 
 object JsonPathParser {
 
   val notAllowedInField = "\r\n[]` "
 
-  def parseJsonPath(input: String): Either[CornichonError, List[JsonSegment]] = {
+  def parseJsonPath(input: String): Either[CornichonError, List[JsonPathSegment]] = {
     val p = new JsonPathParser(input)
     p.placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒
@@ -41,6 +53,6 @@ object JsonPathParser {
   }
 }
 
-case class JsonSegment(field: String, index: Option[Int]) {
-  val fullKey = index.fold(s"$field") { index ⇒ s"$field[$index]" }
-}
+trait JsonPathSegment
+case class FieldSegment(field: String, index: Option[Int]) extends JsonPathSegment
+case class ArrayProjectionSegment(field: String) extends JsonPathSegment
