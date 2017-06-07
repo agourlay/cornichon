@@ -220,7 +220,7 @@ lazy val library =
       val fansi         = "0.2.4"
       val akkaHttpCirce = "1.16.1"
       val catsScalaTest = "2.2.0"
-      val ficus         = "1.4.0"
+      val ficus         = "1.4.1"
       val monix         = "2.3.0"
       val sbtTest       = "1.0"
     }
