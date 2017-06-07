@@ -130,7 +130,12 @@ body.whitelisting.is(
   """)
 ```
 
-Ignored keys and extractors are JsonPaths following the format "a.b.c[int].d"
+Ignored keys and extractors are JsonPaths following the format "a.b.c[index].d".
+
+The `index` value is either:
+
+- an Integer addressing the array position.
+- a `*` to target all values, the result will be an array of the projected values.
 
 JsonPath can also be used to only assert part of the response
 
@@ -142,6 +147,8 @@ body.path("hasSuperpowers").is(false)
 body.path("publisher.name").is("DC")
 
 body.path("city").containsString("Gotham")
+
+body.path("superheroes[*].name").is("[ "Spiderman", "IronMan", "Superman", "GreenLantern", "Batman" ]")
 
 body.path("publisher.foundationYear").is(1934)
 
