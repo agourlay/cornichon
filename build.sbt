@@ -96,6 +96,7 @@ lazy val core =
         library.circeParser,
         library.diffsonCirce,
         library.monixExec,
+        library.monixReactive,
         library.scalatest % Test,
         library.scalacheck % Test,
         library.catsScalatest % Test
@@ -245,5 +246,6 @@ lazy val library =
     val scalacheck    = "org.scalacheck"      %% "scalacheck"      % Version.scalaCheck
     val catsScalatest = "com.ironcorelabs"    %% "cats-scalatest"  % Version.catsScalaTest
     val monixExec     = "io.monix"            %% "monix-execution" % Version.monix
+    val monixReactive = "io.monix"            %% "monix-reactive"  % Version.monix
     val sbtTest       = "org.scala-sbt"       %  "test-interface"  % Version.sbtTest
   }

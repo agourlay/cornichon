@@ -19,7 +19,27 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 3, 200.millis) :: Nil
       val s = Scenario("scenario with Concurrently", steps)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      engine.runScenario(Session.newEmpty)(s).map {
+        case f: FailureScenarioReport ⇒
+          f.failedSteps.head.errors.head.renderedMessage should be("expected result was:\n'true'\nbut actual result is:\n'false'")
+        case _ ⇒ assert(false)
+      }
+    }
+
+    "fail if 'concurrently' block does not complete within 'maxDuraiton because of a single step duration" in {
+      val nested = AssertStep(
+        "always succeed after 1000 ms",
+        s ⇒ {
+          Thread.sleep(1000)
+          GenericEqualityAssertion(true, true)
+        }
+      ) :: Nil
+      val steps = ConcurrentlyStep(nested, 3, 200.millis) :: Nil
+      val s = Scenario("scenario with Concurrently", steps)
+      engine.runScenario(Session.newEmpty)(s).map {
+        case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Concurrently block did not reach completion in time: 0/3 finished")
+        case _                        ⇒ assert(false)
+      }
     }
 
     "run nested block 'n' times" in {
