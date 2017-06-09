@@ -68,7 +68,9 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   def fillPlaceholders(input: String)(session: Session) = {
     def loop(placeholders: List[Placeholder], acc: String): Either[CornichonError, String] =
-      placeholders.headOption.fold[Either[CornichonError, String]](Right(acc)) { ph ⇒
+      if (placeholders.isEmpty) Right(acc)
+      else {
+        val ph = placeholders.head
         for {
           resolvedValue ← resolvePlaceholder(ph)(session)
           res ← loop(placeholders.tail, acc.replace(ph.fullKey, resolvedValue))
@@ -83,16 +85,17 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   def fillPlaceholders(params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
     def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Either[CornichonError, Seq[(String, String)]] =
-      params.headOption.fold[Either[CornichonError, Seq[(String, String)]]](Right(acc)) {
-        case (name, value) ⇒
-          for {
-            resolvedName ← fillPlaceholders(name)(session)
-            resolvedValue ← fillPlaceholders(value)(session)
-            res ← loop(params.tail, session, acc :+ (resolvedName, resolvedValue))
-          } yield res
+      if (params.isEmpty) Right(acc.reverse)
+      else {
+        val (name, value) = params.head
+        for {
+          resolvedName ← fillPlaceholders(name)(session)
+          resolvedValue ← fillPlaceholders(value)(session)
+          res ← loop(params.tail, session, (resolvedName, resolvedValue) +: acc)
+        } yield res
       }
 
-    loop(params, session, Seq.empty[(String, String)])
+    loop(params, session, Nil)
   }
 }
 

@@ -36,17 +36,16 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       (url, _, params, headers) = resolvedRequestParts
     } yield HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
 
-  private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) = {
+  private def resolveRequestParts[A: Show: Resolvable: Encoder](url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])(s: Session) =
     for {
-      bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(Right(None))
-      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(Right(None))
+      bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(rightNone)
+      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(rightNone)
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       paramsResolved ← resolveParams(url, params)(s)
       extractedWithHeaders ← extractWithHeadersSession(s)
       headersResolved ← resolver.fillPlaceholders(headers ++ extractedWithHeaders)(s)
     } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved)
-  }
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
@@ -74,7 +73,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
 
   def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
     val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
-    val urlParams = if (urlsParamsPart.trim.isEmpty) Seq.empty else client.paramsFromUrl(urlsParamsPart)
+    val urlParams = if (urlsParamsPart.trim.isEmpty) Nil else client.paramsFromUrl(urlsParamsPart)
     resolver.fillPlaceholders(urlParams ++ params)(session)
   }
 
@@ -91,25 +90,25 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       lastResponseHeadersKey → encodeSessionHeaders(response)
     ))
 
-  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
+  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] = {
+    val filledSession = commonSessionExtraction(session, response)
     extractor match {
       case NoOpExtraction ⇒
-        Right(commonSessionExtraction(session, response))
+        Right(filledSession)
 
       case RootExtractor(targetKey) ⇒
-        Right(commonSessionExtraction(session, response).addValue(targetKey, response.body))
+        Right(filledSession.addValue(targetKey, response.body))
 
       case PathExtractor(path, targetKey) ⇒
         JsonPath.run(path, response.body)
-          .map { extractedJson ⇒
-            commonSessionExtraction(session, response).addValue(targetKey, jsonStringValue(extractedJson))
-          }
+          .map(extractedJson ⇒ filledSession.addValue(targetKey, jsonStringValue(extractedJson)))
     }
+  }
 
   private def extractWithHeadersSession(session: Session): Either[CornichonError, Seq[(String, String)]] =
     session.getOpt(withHeadersKey) match {
       case Some(h) ⇒ decodeSessionHeaders(h)
-      case None    ⇒ Right(Seq.empty)
+      case None    ⇒ rightNil
     }
 
   private def withBaseUrl(input: String) =
@@ -146,6 +145,8 @@ case class PathExtractor(path: String, targetKey: String) extends ResponseExtrac
 object NoOpExtraction extends ResponseExtractor
 
 object HttpService {
+  val rightNil = Right(Nil)
+  val rightNone = Right(None)
   object SessionKeys {
     val lastResponseBodyKey = "last-response-body"
     val lastResponseStatusKey = "last-response-status"
