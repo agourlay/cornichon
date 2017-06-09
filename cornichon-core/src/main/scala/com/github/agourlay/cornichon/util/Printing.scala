@@ -11,10 +11,6 @@ object Printing {
     fa.toIterator.map(_.show).mkString("(", ", ", ")")
   }
 
-  implicit def showSeq[A: Show]: Show[Seq[A]] = Show.show { fa ⇒
-    fa.toIterator.map(_.show).mkString("Seq(", ", ", ")")
-  }
-
   implicit def showMap[A: Show: Ordering, B: Show]: Show[Map[A, B]] = Show.show { ma ⇒
     ma.toSeq.sortBy(_._1).map(pair ⇒ pair._1.show + " -> " + pair._2.show).mkString("\n")
   }

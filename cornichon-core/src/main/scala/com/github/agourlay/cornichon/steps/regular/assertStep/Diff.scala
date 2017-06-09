@@ -2,8 +2,6 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.Show
 import cats.syntax.show._
-import cats.instances.set._
-import com.github.agourlay.cornichon.util.Printing._
 import io.circe.Json
 
 trait Diff[A] {
@@ -35,9 +33,18 @@ object Diff {
     val deleted = deletedTuple.map(_._1)
     val moved = stillPresent.map { case (elem, newIndice) ⇒ MovedElement(elem, newIndice, left.indexWhere(_ == elem)) }.filter(_.changed)
     s"""|Ordered collection diff. between actual result and expected result is :
-        |${if (added.isEmpty) "" else "added elements:\n" + added.show}
-        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
+        |${if (added.isEmpty) "" else "added elements:\n" + added.map(_.show).mkString("\n")}
+        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.map(_.show).mkString("\n")}
         |${if (moved.isEmpty) "" else "moved elements:\n" + moved.map(_.show).mkString("\n")}
+      """.stripMargin.trim
+  }
+
+  def notOrderedCollectionDiff[A: Show](left: Set[A], right: Set[A]) = {
+    val added = right.diff(left)
+    val deleted = left.diff(right)
+    s"""|Not ordered collection diff. between actual result and expected result is :
+        |${if (added.isEmpty) "" else "added elements:\n" + added.map(_.show).mkString("\n")}
+        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.map(_.show).mkString("\n")}
       """.stripMargin.trim
   }
 
@@ -58,14 +65,7 @@ object Diff {
   }
 
   implicit def immutableSetDiff[A: Show] = new Diff[Set[A]] {
-    def diff(left: Set[A], right: Set[A]): Option[String] = Some {
-      val added = left.diff(right)
-      val deleted = right.diff(left)
-      s"""|Set diff. between actual result and expected result is :
-          |${if (added.isEmpty) "" else "added elements:\n" + added.show}
-          |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.show}
-      """.stripMargin.trim
-    }
+    def diff(left: Set[A], right: Set[A]): Option[String] = Some(notOrderedCollectionDiff(left, right))
   }
 
   implicit val intDiff = new Diff[Int] {
