@@ -4,23 +4,26 @@ import cats.instances.future._
 import cats.instances.either._
 import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Engine._
-import com.github.agourlay.cornichon.util.Timing._
 
 import monix.execution.Scheduler
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class EffectStep(title: String, effect: Session ⇒ Future[Either[CornichonError, Session]], show: Boolean = true) extends Step {
+case class EffectStep(title: String, effect: Session ⇒ Future[Either[CornichonError, Session]], show: Boolean = true) extends ValueStep[Session] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) =
-    withDuration(effect(initialRunState.session)).map {
-      case (xor, executionTime) ⇒ xorToStepReport(this, xor.leftMap(e ⇒ NonEmptyList.of(e)), initialRunState, show, Some(executionTime))
-    }
+  override def run(initialRunState: RunState)(implicit scheduler: Scheduler) =
+    effect(initialRunState.session).map(_.leftMap(NonEmptyList.of(_)))
+
+  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =
+    errorsToFailureStep(this, initialRunState.depth, errors)
+
+  override def onSuccess(result: Session, initialRunState: RunState, executionTime: Duration) =
+    (successLogs(this, initialRunState.depth, show, executionTime), result)
 
   //Does not propagate the second step title
   def chain(secondEffect: EffectStep)(implicit ec: ExecutionContext) =

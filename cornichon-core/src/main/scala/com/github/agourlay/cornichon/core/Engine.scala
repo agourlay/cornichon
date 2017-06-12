@@ -46,20 +46,23 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
         (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
       }.fold(
-        ce ⇒ Future.successful(Engine.exceptionToFailureStep(currentStep, runState, NonEmptyList.of(ce))),
+        ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
         ps ⇒ runStep(runState, ps)
       )
     }
 
-  private def runStep(runState: RunState, ps: Step) =
+  private def runStep(runState: RunState, ps: Step): Future[(RunState, FailedStep Either Done)] =
     Either
       .catchNonFatal(ps.run(this)(runState))
       .fold(
-        e ⇒ Future.successful(exceptionToFailureStep(ps, runState, e)),
+        e ⇒ Future.successful(handleThrowable(ps, runState, e)),
         _.flatMap {
-          case (newState, stepResult) ⇒ stepResult.fold(failedStep ⇒ Future.successful(newState, Left(failedStep)), _ ⇒ runSteps(newState.consumCurrentStep))
+          case (newState, stepResult) ⇒ stepResult.fold(
+            failedStep ⇒ Future.successful(newState, Left(failedStep)),
+            _ ⇒ runSteps(newState.consumCurrentStep)
+          )
         }.recover {
-          case NonFatal(t) ⇒ exceptionToFailureStep(ps, runState, t)
+          case NonFatal(t) ⇒ handleThrowable(ps, runState, t)
         }
       )
 }
@@ -71,29 +74,27 @@ object Engine {
   def withStepTitleResolver(resolver: Resolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
-  def xorToStepReport(
-    currentStep: Step,
-    res: Either[NonEmptyList[CornichonError], Session],
-    runState: RunState,
-    show: Boolean,
-    duration: Option[Duration] = None
-  ): (RunState, FailedStep Either Done) =
-    res.fold(
-      e ⇒ exceptionToFailureStep(currentStep, runState, e),
-      newSession ⇒ {
-        val runLogs = if (show) Vector(SuccessLogInstruction(currentStep.title, runState.depth, duration)) else Vector.empty
-        (runState.withSession(newSession).appendLogs(runLogs), rightDone)
-      }
-    )
+  def successLogs(currentStep: Step, depth: Int, show: Boolean, duration: Duration) =
+    if (show)
+      Vector(SuccessLogInstruction(currentStep.title, depth, Some(duration)))
+    else
+      Vector.empty
 
-  def exceptionToFailureStep(currentStep: Step, runState: RunState, errors: NonEmptyList[CornichonError]): (RunState, FailedStep Either Done) = {
-    val runLogs = errorLogs(currentStep.title, errors, runState.depth)
+  def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (Vector[LogInstruction], FailedStep) = {
+    val runLogs = errorLogs(currentStep.title, errors, depth)
     val failedStep = FailedStep(currentStep, errors)
+    (runLogs, failedStep)
+  }
+
+  def handleErrors(currentStep: Step, runState: RunState, errors: NonEmptyList[CornichonError]): (RunState, FailedStep Either Done) = {
+    val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, errors)
     (runState.appendLogs(runLogs), Left(failedStep))
   }
 
-  def exceptionToFailureStep(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) =
-    exceptionToFailureStep(currentStep, runState, NonEmptyList.of(CornichonError.fromThrowable(error)))
+  def handleThrowable(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) = {
+    val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.of(CornichonError.fromThrowable(error)))
+    (runState.appendLogs(runLogs), Left(failedStep))
+  }
 
   def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int) = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)
