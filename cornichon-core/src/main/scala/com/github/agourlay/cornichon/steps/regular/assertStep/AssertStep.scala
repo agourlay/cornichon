@@ -5,28 +5,28 @@ import cats.data._
 import cats.syntax.cartesian._
 import cats.syntax.validated._
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.util.Timing
 import com.github.agourlay.cornichon.core.Done._
-
 import monix.execution.Scheduler
 
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 
-case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends Step {
+case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends ValueStep[Done] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
-    val session = initialRunState.session
-    val (res, duration) = Timing.withDuration {
-      val assertion = action(session)
-      runStepPredicate(assertion)
-    }
-    Future.successful(xorToStepReport(this, res.map(_ ⇒ session), initialRunState, show, Some(duration)))
+  override def run(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+    val assertion = action(initialRunState.session)
+    Future.successful(runStepPredicate(assertion))
   }
+
+  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =
+    errorsToFailureStep(this, initialRunState.depth, errors)
+
+  override def onSuccess(result: Done, initialRunState: RunState, executionTime: Duration) =
+    (successLogs(this, initialRunState.depth, show, executionTime), initialRunState.session)
 
   def runStepPredicate(assertion: Assertion) = assertion.validated.toEither
 }
