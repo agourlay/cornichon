@@ -13,7 +13,7 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "always fails",
         s ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
-      val repeatStep = RepeatWithStep(nested, Seq("1", "2", "3"), "indice")
+      val repeatStep = RepeatWithStep(nested, List("1", "2", "3"), "indice")
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
@@ -28,7 +28,7 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val repeatStep = RepeatWithStep(nested, Seq("1", "2", "3", "4", "5"), "indice")
+      val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), "indice")
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
@@ -47,7 +47,7 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
           GenericEqualityAssertion(s.getUnsafe(indiceKeyName), uglyCounter.toString)
         }
       ) :: Nil
-      val repeatStep = RepeatWithStep(nested, Seq("1", "2", "3", "4", "5"), indiceKeyName)
+      val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), indiceKeyName)
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)

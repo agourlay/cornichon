@@ -68,13 +68,13 @@ class Resolver(extractors: Map[String, Mapper]) {
 
   def fillPlaceholders(input: String)(session: Session) = {
     def loop(placeholders: List[Placeholder], acc: String): Either[CornichonError, String] =
-      if (placeholders.isEmpty) Right(acc)
-      else {
-        val ph = placeholders.head
-        for {
-          resolvedValue ← resolvePlaceholder(ph)(session)
-          res ← loop(placeholders.tail, acc.replace(ph.fullKey, resolvedValue))
-        } yield res
+      placeholders match {
+        case Nil ⇒ Right(acc)
+        case ph :: tail ⇒
+          for {
+            resolvedValue ← resolvePlaceholder(ph)(session)
+            res ← loop(tail, acc.replace(ph.fullKey, resolvedValue))
+          } yield res
       }
 
     findPlaceholders(input).flatMap(loop(_, input))
@@ -83,16 +83,17 @@ class Resolver(extractors: Map[String, Mapper]) {
   def fillPlaceholdersUnsafe(input: String)(session: Session): String =
     fillPlaceholders(input)(session).fold(ce ⇒ throw ce.toException, identity)
 
-  def fillPlaceholders(params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
-    def loop(params: Seq[(String, String)], session: Session, acc: Seq[(String, String)]): Either[CornichonError, Seq[(String, String)]] =
-      if (params.isEmpty) Right(acc.reverse)
-      else {
-        val (name, value) = params.head
-        for {
-          resolvedName ← fillPlaceholders(name)(session)
-          resolvedValue ← fillPlaceholders(value)(session)
-          res ← loop(params.tail, session, (resolvedName, resolvedValue) +: acc)
-        } yield res
+  def fillPlaceholders(params: List[(String, String)])(session: Session): Either[CornichonError, List[(String, String)]] = {
+    def loop(params: List[(String, String)], session: Session, acc: List[(String, String)]): Either[CornichonError, List[(String, String)]] =
+      params match {
+        case Nil ⇒ Right(acc.reverse)
+        case head :: tail ⇒
+          val (name, value) = head
+          for {
+            resolvedName ← fillPlaceholders(name)(session)
+            resolvedValue ← fillPlaceholders(value)(session)
+            res ← loop(tail, session, (resolvedName, resolvedValue) +: acc)
+          } yield res
       }
 
     loop(params, session, Nil)

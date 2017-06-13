@@ -10,7 +10,7 @@ import monix.execution.Scheduler
 
 import scala.concurrent.Future
 
-case class RepeatWithStep(nested: List[Step], elements: Seq[String], elementName: String) extends WrapperStep {
+case class RepeatWithStep(nested: List[Step], elements: List[String], elementName: String) extends WrapperStep {
 
   require(elements.nonEmpty, "repeatWith block must contain a non empty sequence of elements")
 
@@ -19,24 +19,27 @@ case class RepeatWithStep(nested: List[Step], elements: Seq[String], elementName
 
   override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
 
-    def repeatSuccessSteps(remainingElements: Seq[String], runState: RunState): Future[(RunState, Either[(String, FailedStep), Done])] =
-      remainingElements.headOption.fold[Future[(RunState, Either[(String, FailedStep), Done])]](Future.successful(runState, rightDone)) { element ⇒
-        // reset logs at each loop to have the possibility to not aggregate in failure case
-        val rs = runState.resetLogs
-        val runStateWithIndex = rs.addToSession(elementName, element)
-        engine.runSteps(runStateWithIndex).flatMap {
-          case (onceMoreRunState, stepResult) ⇒
-            stepResult.fold(
-              failed ⇒ {
-                // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Future.successful((onceMoreRunState, Left((element, failed))))
-              },
-              _ ⇒ {
-                val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
-                repeatSuccessSteps(remainingElements.tail, successState)
-              }
-            )
-        }
+    def repeatSuccessSteps(remainingElements: List[String], runState: RunState): Future[(RunState, Either[(String, FailedStep), Done])] =
+      remainingElements match {
+        case Nil ⇒
+          Future.successful(runState, rightDone)
+        case element :: tail ⇒
+          // reset logs at each loop to have the possibility to not aggregate in failure case
+          val rs = runState.resetLogs
+          val runStateWithIndex = rs.addToSession(elementName, element)
+          engine.runSteps(runStateWithIndex).flatMap {
+            case (onceMoreRunState, stepResult) ⇒
+              stepResult.fold(
+                failed ⇒ {
+                  // In case of failure only the logs of the last run are shown to avoid giant traces.
+                  Future.successful((onceMoreRunState, Left((element, failed))))
+                },
+                _ ⇒ {
+                  val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
+                  repeatSuccessSteps(tail, successState)
+                }
+              )
+          }
       }
 
     withDuration {

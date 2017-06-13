@@ -62,12 +62,12 @@ trait Dsl extends ProvidedInstances {
 
   def RepeatWith(elements: ContainerType[Any, Show]*)(indice: String) =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element)), indice)
+      RepeatWithStep(steps, elements.toList.map(c ⇒ c.tci.show(c.element)), indice)
     }
 
   def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(indice: String) =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.toSeq.map(c ⇒ c.tci.show(c.element)), indice)
+      RepeatWithStep(steps, elements.toList.map(c ⇒ c.tci.show(c.element)), indice)
     }
 
   def RetryMax(limit: Int) =

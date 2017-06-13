@@ -39,16 +39,20 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     }
 
   def runSteps(runState: RunState): Future[(RunState, FailedStep Either Done)] =
-    if (runState.remainingSteps.isEmpty)
-      Future.successful(runState, rightDone)
-    else {
-      val currentStep = runState.remainingSteps.head
-      stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
-        (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
-      }.fold(
-        ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
-        ps ⇒ runStep(runState, ps)
-      )
+    runState.remainingSteps match {
+      case Nil ⇒ Future.successful(runState, rightDone)
+      case currentStep :: tail ⇒
+        stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+          (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
+        }.fold(
+          ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+          ps ⇒ runStep(runState, ps).flatMap {
+            case (newState, stepResult) ⇒ stepResult.fold(
+              failedStep ⇒ Future.successful(newState, Left(failedStep)),
+              _ ⇒ runSteps(newState.withSteps(tail))
+            )
+          }
+        )
     }
 
   private def runStep(runState: RunState, ps: Step): Future[(RunState, FailedStep Either Done)] =
@@ -56,14 +60,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       .catchNonFatal(ps.run(this)(runState))
       .fold(
         e ⇒ Future.successful(handleThrowable(ps, runState, e)),
-        _.flatMap {
-          case (newState, stepResult) ⇒ stepResult.fold(
-            failedStep ⇒ Future.successful(newState, Left(failedStep)),
-            _ ⇒ runSteps(newState.consumCurrentStep)
-          )
-        }.recover {
-          case NonFatal(t) ⇒ handleThrowable(ps, runState, t)
-        }
+        _.recover { case NonFatal(t) ⇒ handleThrowable(ps, runState, t) }
       )
 }
 

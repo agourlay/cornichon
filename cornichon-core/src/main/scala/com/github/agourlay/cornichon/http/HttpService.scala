@@ -44,7 +44,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       paramsResolved ← resolveParams(url, params)(s)
       extractedWithHeaders ← extractWithHeadersSession(s)
-      headersResolved ← resolver.fillPlaceholders(headers ++ extractedWithHeaders)(s)
+      allHeaders = headers ++ extractedWithHeaders
+      headersResolved ← resolver.fillPlaceholders(allHeaders.toList)(s)
     } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved)
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
@@ -74,7 +75,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   def resolveParams(url: String, params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
     val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
     val urlParams = if (urlsParamsPart.trim.isEmpty) Nil else client.paramsFromUrl(urlsParamsPart)
-    resolver.fillPlaceholders(urlParams ++ params)(session)
+    val allParams = urlParams ++ params
+    resolver.fillPlaceholders(allParams.toList)(session)
   }
 
   private def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
