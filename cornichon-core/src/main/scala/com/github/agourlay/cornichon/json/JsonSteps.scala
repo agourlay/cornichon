@@ -116,7 +116,8 @@ object JsonSteps {
           for {
             sessionValue ← s.get(sessionKey)
             subJson ← resolveRunJsonPath(jsonPath, sessionValue, resolver)(s)
-          } yield StringContainsAssertion(subJson.show, expectedPart)
+            resolvedExpected ← resolver.fillPlaceholders(expectedPart)(s)
+          } yield StringContainsAssertion(subJson.show, resolvedExpected)
         }
       )
     }
