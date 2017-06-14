@@ -23,11 +23,11 @@ import scala.concurrent.duration.FiniteDuration
 trait Dsl extends ProvidedInstances {
   this: BaseFeature ⇒
 
-  def Feature(name: String, ignored: Boolean = false) =
-    BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignored))
+  def Feature(name: String, ignoredBecause: Option[String] = None) =
+    BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(name, scenarios, ignoredBecause))
 
-  def Scenario(name: String, ignored: Boolean = false) =
-    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(name, steps, ignored))
+  def Scenario(name: String, ignoredBecause: Option[String] = None) =
+    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(name, steps, ignoredBecause))
 
   sealed trait Starters extends Dynamic {
     def name: String

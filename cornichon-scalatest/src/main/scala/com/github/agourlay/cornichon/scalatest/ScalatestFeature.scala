@@ -44,7 +44,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
     case Success(feat) ⇒
       feat.name should {
         feat.scenarios.foreach { s ⇒
-          if (feat.ignored || s.ignored)
+          if (feat.ignoredBecause.nonEmpty || s.ignoredBecause.nonEmpty)
             s.name ignore { Future.successful(Succeeded) }
           else
             s.name in {

@@ -45,7 +45,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 
   def runScenario(s: Scenario) = {
     println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newEmpty, afterEachScenario.toList, feature.ignored) {
+    engine.runScenario(Session.newEmpty, afterEachScenario.toList, feature.ignoredBecause.nonEmpty) {
       s.copy(steps = beforeEachScenario.toList ++ s.steps)
     }
   }
