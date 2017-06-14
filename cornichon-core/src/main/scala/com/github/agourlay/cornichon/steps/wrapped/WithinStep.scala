@@ -6,7 +6,7 @@ import com.github.agourlay.cornichon.util.Timing._
 
 import monix.execution.Scheduler
 
-import scala.concurrent.duration.{ Duration, FiniteDuration }
+import scala.concurrent.duration.Duration
 
 case class WithinStep(nested: List[Step], maxDuration: Duration) extends WrapperStep {
 

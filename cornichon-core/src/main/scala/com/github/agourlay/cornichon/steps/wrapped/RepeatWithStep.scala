@@ -22,7 +22,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
     def repeatSuccessSteps(remainingElements: List[String], runState: RunState): Future[(RunState, Either[(String, FailedStep), Done])] =
       remainingElements match {
         case Nil ⇒
-          Future.successful(runState, rightDone)
+          Future.successful((runState, rightDone))
         case element :: tail ⇒
           // reset logs at each loop to have the possibility to not aggregate in failure case
           val rs = runState.resetLogs

@@ -20,7 +20,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: Resolver) ext
   override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
 
     def runInputs(inputs: List[List[(String, String)]], runState: RunState): Future[(RunState, Either[(List[(String, String)], FailedStep), Done])] = {
-      if (inputs.isEmpty) Future.successful(runState, rightDone)
+      if (inputs.isEmpty) Future.successful((runState, rightDone))
       else {
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)

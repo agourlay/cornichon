@@ -30,7 +30,7 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
       .flatMap { results ⇒
         if (results.size != factor) {
           val failedStep = FailedStep.fromSingle(this, ConcurrentlyTimeout(factor, results.size))
-          Future.successful(nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep))
+          Future.successful((nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep)))
         } else {
           val failedStepRun = results.collectFirst { case (s, r @ Left(_)) ⇒ (s, r) }
           failedStepRun.fold[Future[(RunState, Either[FailedStep, Done])]] {
@@ -42,11 +42,11 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
             val updatedSession = resultState.session
             //TODO all logs should be merged?
             val updatedLogs = successTitleLog(initialDepth) +: resultState.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
-            Future.successful(initialRunState.withSession(updatedSession).appendLogs(updatedLogs), rightDone)
+            Future.successful((initialRunState.withSession(updatedSession).appendLogs(updatedLogs), rightDone))
           } {
             case (s, failedXor) ⇒
               val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction("Concurrently block failed", initialDepth)
-              Future.successful(initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor)
+              Future.successful((initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor))
           }
         }
       }.recover {

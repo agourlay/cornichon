@@ -31,7 +31,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
           res.fold(
             failedStep ⇒ {
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Future.successful(retriesNumber, repeatedOnceMore, Left(failedStep))
+              Future.successful((retriesNumber, repeatedOnceMore, Left(failedStep)))
             },
             _ ⇒ {
               val successState = runState.withSession(repeatedOnceMore.session).appendLogsFrom(repeatedOnceMore)
@@ -39,7 +39,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
                 repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
               else
                 // In case of success all logs are returned but they are not printed by default.
-                Future.successful(retriesNumber, successState, rightDone)
+                Future.successful((retriesNumber, successState, rightDone))
             }
           )
       }

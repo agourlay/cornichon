@@ -7,7 +7,7 @@ import org.scalatest.events._
 // Can be used when running test without SBT to format progress for Teamcity
 class TeamcityReporter extends Reporter {
 
-  private def teamcityReport(messageName: String, attributes: (String, String)*) {
+  private def teamcityReport(messageName: String, attributes: (String, String)*): Unit = {
     val attributeString = attributes.map {
       case (k, v) ⇒ s"$k='${tidy(v)}'"
     }.mkString(" ")

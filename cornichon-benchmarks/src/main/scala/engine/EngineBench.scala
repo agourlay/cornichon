@@ -33,7 +33,7 @@ class EngineBench {
   var stepsNumber: String = _
 
   @Setup(Level.Trial)
-  final def beforeAll: Unit = {
+  final def beforeAll(): Unit = {
     println("")
     println("Creating Engine...")
     val resolver = Resolver.withoutExtractor()
@@ -43,7 +43,7 @@ class EngineBench {
   }
 
   @TearDown(Level.Trial)
-  final def afterAll: Unit = {
+  final def afterAll(): Unit = {
     println("")
     println("Shutting down ExecutionContext...")
     es.shutdown()
@@ -56,7 +56,7 @@ class EngineBench {
   //    [info] EngineBench.lotsOfSteps            100  thrpt   20   5914.846 ± 464.609  ops/s
   //    [info] EngineBench.lotsOfSteps            200  thrpt   20   3105.367 ±  92.357  ops/s
   @Benchmark
-  def lotsOfSteps = {
+  def lotsOfSteps() = {
     val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)
     val effectSteps = List.fill(stepsNumber.toInt / 2)(effectStep)
     val scenario = Scenario("test scenario", setupSession +: (assertSteps ++ effectSteps))

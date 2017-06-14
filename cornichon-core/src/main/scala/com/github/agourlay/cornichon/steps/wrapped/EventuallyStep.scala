@@ -31,18 +31,18 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
                 }
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Future.successful(retriesNumber, newRunState, Left(failedStep))
+                Future.successful((retriesNumber, newRunState, Left(failedStep)))
               }
             },
             _ ⇒ {
               val state = runState.withSession(newRunState.session).appendLogsFrom(newRunState)
               if (remainingTime.gt(Duration.Zero)) {
                 // In case of success all logs are returned but they are not printed by default.
-                Future.successful(retriesNumber, state, rightDone)
+                Future.successful((retriesNumber, state, rightDone))
               } else {
                 // Run was a success but the time is up.
                 val failedStep = FailedStep.fromSingle(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
-                Future.successful(retriesNumber, state, Left(failedStep))
+                Future.successful((retriesNumber, state, Left(failedStep)))
               }
             }
           )
