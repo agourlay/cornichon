@@ -15,9 +15,7 @@ class DummyExamplesTwo extends CornichonFeature {
 
     }
 
-    Scenario("waiting step",
-      ignoredBecause = Some("Ignored for a good reason.")
-    ) {
+    Scenario("waiting step").ignoredBecause("Ignored for a good reason") {
 
       And I wait(1.second)
 
