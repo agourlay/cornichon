@@ -128,10 +128,10 @@ import com.github.agourlay.cornichon.CornichonFeature
 class CornichonExamplesSpec extends CornichonFeature {
 
   // Ignore a complete feature
-  def feature = Feature("Checking google", ignored = true){
+  def feature = Feature("Checking google").ignoreBecause("Your reasons ..."){
 
     // Ignore a single scenario
-    Scenario("Google is up and running", ignored = true){
+    Scenario("Google is up and running").ignoreBecause("Your reasons ..."){
 
       When I get("http://google.com")
 
