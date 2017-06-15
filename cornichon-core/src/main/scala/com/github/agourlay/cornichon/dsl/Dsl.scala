@@ -25,21 +25,21 @@ trait Dsl extends ProvidedInstances {
 
   def Feature(name: String) = FeatureBuilder(name)
 
-  case class FeatureBuilder(name: String, _ignoredBecause: Option[String] = None) {
-    def ignoredBecause(reason: String) = copy(_ignoredBecause = Some(reason))
+  private[dsl] case class FeatureBuilder(name: String, ignored: Boolean = false) {
+    def ignoredBecause(reason: String) = copy(ignored = true)
   }
 
   implicit def featureBuilder(f: FeatureBuilder): BodyElementCollector[ScenarioDef, FeatureDef] =
-    BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(f.name, scenarios, f._ignoredBecause))
+    BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(f.name, scenarios, f.ignored))
 
   def Scenario(name: String) = ScenarioBuilder(name)
 
-  case class ScenarioBuilder(name: String, _ignoredBecause: Option[String] = None) {
-    def ignoredBecause(reason: String) = copy(_ignoredBecause = Some(reason))
+  private[dsl] case class ScenarioBuilder(name: String, ignored: Boolean = false) {
+    def ignoredBecause(reason: String) = copy(ignored = true)
   }
 
   implicit def scenarioBuilder(s: ScenarioBuilder): BodyElementCollector[Step, ScenarioDef] =
-    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(s.name, steps, s._ignoredBecause))
+    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(s.name, steps, s.ignored))
 
   sealed trait Starters extends Dynamic {
     def name: String
