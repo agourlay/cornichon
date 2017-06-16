@@ -752,6 +752,9 @@ class SuperHeroesScenario extends CornichonFeature {
   // Base url used for all HTTP steps
   override lazy val baseUrl = s"http://localhost:$port"
 
+  //Travis CI struggles by default
+  override lazy val requestTimeout = 5 second
+
   var server: ServerBinding = _
 
   // Starts up test server
