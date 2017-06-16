@@ -51,7 +51,7 @@ object JsonSteps {
       private val sessionKey: SessionKey,
       private val prettySessionKeyTitle: Option[String] = None,
       private val jsonPath: String = JsonPath.root,
-      private val ignoredKeys: Seq[String] = Seq.empty,
+      private val ignoredKeys: Seq[String] = Nil,
       private val whitelist: Boolean = false
   ) {
 
@@ -163,7 +163,7 @@ object JsonSteps {
       if (ignoredKeys.nonEmpty)
         throw UseIgnoringEach.toException
       else
-        JsonArrayStepBuilder(sessionKey, jsonPath, ordered = false, ignoredEachKeys = Seq.empty, resolver, prettySessionKeyTitle)
+        JsonArrayStepBuilder(sessionKey, jsonPath, ordered = false, ignoredEachKeys = Nil, resolver, prettySessionKeyTitle)
   }
 
   case class JsonArrayStepBuilder(

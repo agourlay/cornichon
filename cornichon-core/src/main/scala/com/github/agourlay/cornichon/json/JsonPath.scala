@@ -10,9 +10,9 @@ import scala.collection.mutable.ListBuffer
 
 case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
-  val pretty = operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
+  lazy val pretty = operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
 
-  val isRoot = operations.isEmpty
+  lazy val isRoot = operations.isEmpty
 
   def run(superSet: Json): Json = {
     val focused = cursors(superSet).map(c ⇒ c.focus.getOrElse(Json.Null))

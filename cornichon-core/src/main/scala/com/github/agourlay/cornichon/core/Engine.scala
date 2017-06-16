@@ -71,11 +71,11 @@ object Engine {
   def withStepTitleResolver(resolver: Resolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
-  def successLogs(currentStep: Step, depth: Int, show: Boolean, duration: Duration) =
+  def successLog(currentStep: Step, depth: Int, show: Boolean, duration: Duration) =
     if (show)
-      Vector(SuccessLogInstruction(currentStep.title, depth, Some(duration)))
+      Some(SuccessLogInstruction(currentStep.title, depth, Some(duration)))
     else
-      Vector.empty
+      None
 
   def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (Vector[LogInstruction], FailedStep) = {
     val runLogs = errorLogs(currentStep.title, errors, depth)

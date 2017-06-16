@@ -23,7 +23,7 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
     errorsToFailureStep(this, initialRunState.depth, errors)
 
   override def onSuccess(result: Session, initialRunState: RunState, executionTime: Duration) =
-    (successLogs(this, initialRunState.depth, show, executionTime), result)
+    (successLog(this, initialRunState.depth, show, executionTime), result)
 
   //Does not propagate the second step title
   def chain(secondEffect: EffectStep)(implicit ec: ExecutionContext) =

@@ -59,13 +59,13 @@ trait HttpRequestsDsl {
   import com.github.agourlay.cornichon.http.HttpMethods._
   import cats.instances.string._
 
-  def get(url: String) = HttpRequest[String](GET, url, None, Seq.empty, Seq.empty)
-  def head(url: String) = HttpRequest[String](HEAD, url, None, Seq.empty, Seq.empty)
-  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Seq.empty, Seq.empty)
-  def delete(url: String) = HttpRequest[String](DELETE, url, None, Seq.empty, Seq.empty)
-  def post(url: String) = HttpRequest[String](POST, url, None, Seq.empty, Seq.empty)
-  def put(url: String) = HttpRequest[String](PUT, url, None, Seq.empty, Seq.empty)
-  def patch(url: String) = HttpRequest[String](PATCH, url, None, Seq.empty, Seq.empty)
+  def get(url: String) = HttpRequest[String](GET, url, None, Nil, Nil)
+  def head(url: String) = HttpRequest[String](HEAD, url, None, Nil, Nil)
+  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Nil, Nil)
+  def delete(url: String) = HttpRequest[String](DELETE, url, None, Nil, Nil)
+  def post(url: String) = HttpRequest[String](POST, url, None, Nil, Nil)
+  def put(url: String) = HttpRequest[String](PUT, url, None, Nil, Nil)
+  def patch(url: String) = HttpRequest[String](PATCH, url, None, Nil, Nil)
 }
 
 object HttpRequest extends HttpRequestsDsl {

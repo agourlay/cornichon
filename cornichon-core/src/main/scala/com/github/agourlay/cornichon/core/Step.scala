@@ -21,7 +21,7 @@ trait ValueStep[A] extends Step {
 
   def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
 
-  def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (Vector[LogInstruction], Session)
+  def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (Option[LogInstruction], Session)
 
   def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
     val now = System.nanoTime
@@ -32,8 +32,9 @@ trait ValueStep[A] extends Step {
 
       case Right(value) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
-        val (logs, session) = onSuccess(value, initialRunState, executionTime)
-        (initialRunState.withSession(session).appendLogs(logs), rightDone)
+        val (log, session) = onSuccess(value, initialRunState, executionTime)
+        val resultState = log.map(initialRunState.appendLog).getOrElse(initialRunState).withSession(session)
+        (resultState, rightDone)
     }
   }
 }

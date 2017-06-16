@@ -77,7 +77,7 @@ case class Session(private val content: Map[String, Vector[String]]) {
   def merge(otherSession: Session) =
     copy(content = content ++ otherSession.content)
 
-  val prettyPrint =
+  lazy val prettyPrint =
     content.toSeq
       .sortBy(_._1)
       .map(pair ⇒ pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
