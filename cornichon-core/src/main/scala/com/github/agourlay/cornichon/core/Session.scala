@@ -2,14 +2,19 @@ package com.github.agourlay.cornichon.core
 
 import cats.Show
 import cats.syntax.show._
+import cats.syntax.monoid._
 import cats.instances.string._
+import cats.instances.map._
+import cats.instances.vector._
 import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
+import cats.kernel.Monoid
 
 import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
 import com.github.agourlay.cornichon.json.CornichonJson._
+
 import io.circe.Json
 
 import scala.collection.immutable.HashMap
@@ -73,15 +78,18 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
   def addValues(tuples: Seq[(String, String)]) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
 
   def removeKey(key: String) = Session(content - key)
-
-  def merge(otherSession: Session) =
-    copy(content = content ++ otherSession.content)
 }
 
 object Session {
   val newEmpty = Session(HashMap.empty)
 
   val notAllowedInKey = "\r\n<>/[] "
+
+  implicit val monoidSession = new Monoid[Session] {
+    def empty: Session = newEmpty
+    def combine(x: Session, y: Session): Session =
+      Session(x.content.combine(y.content))
+  }
 
   implicit val showSession = Show.show[Session] { s ⇒
     s.content.toSeq

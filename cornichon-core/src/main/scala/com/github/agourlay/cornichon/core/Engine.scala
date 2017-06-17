@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
+import cats.syntax.monoid._
 
 import monix.execution.Scheduler
 

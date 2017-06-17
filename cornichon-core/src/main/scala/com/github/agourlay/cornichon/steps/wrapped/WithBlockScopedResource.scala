@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.syntax.monoid._
+
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
@@ -33,7 +35,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
       results ← resourceHandle.resourceResults()
       _ ← resourceHandle.stopResource()
     } yield {
-      val completeSession = resourcedState.session.merge(results)
+      val completeSession = resourcedState.session.combine(results)
       (initialRunState.withSession(completeSession).appendLogs(fullLogs), xor)
     }
   }
