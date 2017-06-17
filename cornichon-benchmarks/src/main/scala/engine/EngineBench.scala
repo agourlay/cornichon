@@ -23,7 +23,7 @@ import scala.concurrent.duration._
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
   "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
-  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"
+  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"
 ))
 class EngineBench {
 
