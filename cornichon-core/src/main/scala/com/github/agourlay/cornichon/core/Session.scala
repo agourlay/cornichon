@@ -14,7 +14,7 @@ import io.circe.Json
 
 import scala.collection.immutable.HashMap
 
-case class Session(private val content: Map[String, Vector[String]]) {
+case class Session(private val content: Map[String, Vector[String]]) extends AnyVal {
 
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] =
     for {
@@ -76,19 +76,18 @@ case class Session(private val content: Map[String, Vector[String]]) {
 
   def merge(otherSession: Session) =
     copy(content = content ++ otherSession.content)
-
-  lazy val prettyPrint =
-    content.toSeq
-      .sortBy(_._1)
-      .map(pair ⇒ pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
-      .mkString("\n")
 }
 
 object Session {
   val newEmpty = Session(HashMap.empty)
+
   val notAllowedInKey = "\r\n<>/[] "
-  implicit val showSession = new Show[Session] {
-    def show(s: Session) = s.prettyPrint
+
+  implicit val showSession = Show.show[Session] { s ⇒
+    s.content.toSeq
+      .sortBy(_._1)
+      .map(pair ⇒ pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
+      .mkString("\n")
   }
 }
 
@@ -97,7 +96,7 @@ case class SessionKey(name: String, index: Option[Int] = None) {
 }
 
 case class EmptyKeyException(s: Session) extends CornichonError {
-  val baseErrorMessage = s"key can not be empty - session is \n${s.prettyPrint}"
+  val baseErrorMessage = s"key can not be empty - session is \n${s.show}"
 }
 
 object IllegalKeyException extends CornichonError {
@@ -105,5 +104,5 @@ object IllegalKeyException extends CornichonError {
 }
 
 case class KeyNotFoundInSession(key: String, indice: Option[Int], s: Session) extends CornichonError {
-  val baseErrorMessage = s"key '$key'${indice.fold("")(i ⇒ s" at indice '$i'")} can not be found in session \n${s.prettyPrint}"
+  val baseErrorMessage = s"key '$key'${indice.fold("")(i ⇒ s" at indice '$i'")} can not be found in session \n${s.show}"
 }

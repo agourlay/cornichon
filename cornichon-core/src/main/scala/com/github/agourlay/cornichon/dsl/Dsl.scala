@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.dsl
 
 import cats.Show
 import cats.syntax.either._
+import cats.syntax.show._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
@@ -134,12 +135,12 @@ trait Dsl extends ProvidedInstances {
 
   def remove(key: String) = EffectStep.fromSync(
     title = s"remove '$key' from session",
-    effect = s ⇒ s.removeKey(key)
+    effect = _.removeKey(key)
   )
 
   def session_value(key: String) = SessionStepBuilder(resolver, key)
 
-  def show_session = DebugStep(s ⇒ Right(s"Session content is\n${s.prettyPrint}"))
+  def show_session = DebugStep(s ⇒ s"Session content is\n${s.show}".asRight)
 
   def show_session(key: String, indice: Option[Int] = None, transform: String ⇒ String = identity) = DebugStep { s ⇒
     s.get(key, indice).map {
@@ -147,7 +148,7 @@ trait Dsl extends ProvidedInstances {
     }
   }
 
-  def print_step(message: String) = DebugStep(_ ⇒ Right(message))
+  def print_step(message: String) = DebugStep(_ ⇒ message.asRight)
 }
 
 object Dsl {

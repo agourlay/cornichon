@@ -4,6 +4,7 @@ import cats.instances.option._
 import cats.instances.string._
 import cats.instances.boolean._
 import cats.syntax.either._
+import cats.syntax.show._
 
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
@@ -34,7 +35,7 @@ object SessionSteps {
       title = s"session contains key '$key'",
       action = s ⇒ {
       val predicate = s.getOpt(key, indice).isDefined
-      CustomMessageEqualityAssertion(true, predicate, keyIsAbsentError(key, s.prettyPrint))
+      CustomMessageEqualityAssertion(true, predicate, keyIsAbsentError(key, s.show))
     }
     )
 

@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.json
 
+import cats.Show
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import io.circe.{ ACursor, Json }
@@ -8,11 +9,7 @@ import cats.syntax.either._
 
 import scala.collection.mutable.ListBuffer
 
-case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
-
-  lazy val pretty = operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
-
-  lazy val isRoot = operations.isEmpty
+case class JsonPath(operations: List[JsonPathOperation] = Nil) extends AnyVal {
 
   def run(superSet: Json): Json = {
     val focused = cursors(superSet).map(c ⇒ c.focus.getOrElse(Json.Null))
@@ -21,6 +18,7 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
     else
       Json.fromValues(focused)
   }
+
   def run(json: String): Either[CornichonError, Json] = parseJson(json).map(run)
 
   def cursors(input: Json): List[ACursor] = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) ⇒
@@ -56,16 +54,19 @@ case class JsonPath(operations: List[JsonPathOperation] = List.empty) {
 
 object JsonPath {
   val root = "$"
-  val emptyJsonPath = JsonPath()
-  private val rightEmptyJsonPath = Right(emptyJsonPath)
+  private val rightEmptyJsonPath = Right(JsonPath())
 
-  def parse(path: String) = {
-    if (path == root) rightEmptyJsonPath
+  implicit val showJsonPath = Show.show[JsonPath] { p ⇒
+    p.operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
+  }
+
+  def parse(path: String) =
+    if (path == root)
+      rightEmptyJsonPath
     else {
       val segments = JsonPathParser.parseJsonPath(path)
       segments.map(fromSegments)
     }
-  }
 
   def parseUnsafe(path: String) =
     parse(path).fold(e ⇒ throw e.toException, identity)

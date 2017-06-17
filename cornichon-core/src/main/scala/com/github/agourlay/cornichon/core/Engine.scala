@@ -73,9 +73,9 @@ object Engine {
   def withStepTitleResolver(resolver: Resolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
-  def successLog(currentStep: Step, depth: Int, show: Boolean, duration: Duration) =
+  def successLog(title: String, depth: Int, show: Boolean, duration: Duration) =
     if (show)
-      Some(SuccessLogInstruction(currentStep.title, depth, Some(duration)))
+      Some(SuccessLogInstruction(title, depth, Some(duration)))
     else
       None
 
