@@ -166,7 +166,7 @@ lazy val experimental =
     .settings(scalariformSettings)
     .settings(
       name := "cornichon-experimental",
-      testFrameworks += new TestFramework("com.github.agourlay.cornichon.sbtinterface.CornichonFramework"),
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.sbtTest
       )
