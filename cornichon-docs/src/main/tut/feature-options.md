@@ -58,7 +58,7 @@ and then only provide the missing part in the HTTP step definition
 
 You can still override the base URL of a single step by providing the complete URL starting with the HTTP protocol.
 
-### Request timeout
+## Request timeout
 
 The default value for the HTTP request timeout is ```2 seconds```. As always it can be overridden per scenario.
 
@@ -96,7 +96,7 @@ It works for all keys in ```Session```, let's say we also have objects registere
 ```
 
 
-# Execution model
+## Execution model
 
 By default the ```features``` are executed sequentially and the ```scenarios``` within are executed in parallel.
 
@@ -118,7 +118,7 @@ parallelExecution in Test := true
 
 or through the command line ```sbt test parallelExecution in Test := true```
 
-# Ignoring features or scenarios
+## Ignoring features or scenarios
 
 ```Feature``` or individual ```scenario``` can also be marked to be ignored.
 
@@ -140,3 +140,23 @@ class CornichonExamplesSpec extends CornichonFeature {
   }
 }
 ```
+
+## Pending scenario
+
+During development you want to remember that a `scenario` needs to be created, but you’re not ready to write it yet.
+
+```tut:silent
+import com.github.agourlay.cornichon.CornichonFeature
+
+class CornichonExamplesSpec extends CornichonFeature {
+
+  def feature = Feature("Some title"){
+
+    Scenario("this important use case") pending
+
+    Scenario("that important edge case") pending
+  }
+}
+```
+
+

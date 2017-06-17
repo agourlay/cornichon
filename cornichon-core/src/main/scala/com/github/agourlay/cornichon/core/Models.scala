@@ -7,4 +7,4 @@ case class FeatureDef(name: String, scenarios: List[Scenario], ignored: Boolean 
   )
 }
 
-case class Scenario(name: String, steps: List[Step], ignored: Boolean = false)
+case class Scenario(name: String, steps: List[Step], ignored: Boolean = false, pending: Boolean = false)

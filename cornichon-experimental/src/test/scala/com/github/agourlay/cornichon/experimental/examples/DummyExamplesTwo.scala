@@ -20,6 +20,9 @@ class DummyExamplesTwo extends CornichonFeature {
       And I wait(1.second)
 
     }
+
+    Scenario("TODO") pending
+
   }
 
   beforeEachScenario(

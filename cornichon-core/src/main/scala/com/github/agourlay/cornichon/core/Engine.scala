@@ -18,7 +18,9 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
   def runScenario(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Future[ScenarioReport] =
     if (featureIgnored || scenario.ignored)
-      Future.successful(IgnoreScenarioReport(scenario.name, session, Vector.empty))
+      Future.successful(IgnoreScenarioReport(scenario.name, session))
+    else if (scenario.pending)
+      Future.successful(PendingScenarioReport(scenario.name, session))
     else {
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
       val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)

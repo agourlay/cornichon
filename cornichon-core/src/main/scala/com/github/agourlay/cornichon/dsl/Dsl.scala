@@ -36,6 +36,7 @@ trait Dsl extends ProvidedInstances {
 
   private[dsl] case class ScenarioBuilder(name: String, ignored: Boolean = false) {
     def ignoredBecause(reason: String) = copy(ignored = true)
+    def pending = ScenarioDef(name, Nil, pending = true)
   }
 
   implicit def scenarioBuilder(s: ScenarioBuilder): BodyElementCollector[Step, ScenarioDef] =

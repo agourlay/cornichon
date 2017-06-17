@@ -26,12 +26,17 @@ case class SuccessScenarioReport(scenarioName: String, session: Session, logs: V
   val shouldShowLogs = logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty
 }
 
-case class IgnoreScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
+case class IgnoreScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
+  val logs = Vector.empty[LogInstruction]
+  val isSuccess = false
+}
+
+case class PendingScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
+  val logs = Vector.empty[LogInstruction]
   val isSuccess = false
 }
 
 case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
-
   val isSuccess = false
 
   val msg =

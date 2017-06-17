@@ -46,6 +46,8 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
         feat.scenarios.foreach { s ⇒
           if (feat.ignored || s.ignored)
             s.name ignore { Future.successful(Succeeded) }
+          else if (s.pending)
+            s.name in pending
           else
             s.name in {
               runScenario(s).map {
@@ -61,6 +63,8 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
                   )
                 case i: IgnoreScenarioReport ⇒
                   throw new RuntimeException(s"Scalatest filters ignored scenario upstream, this should never happen\n$i")
+                case p: PendingScenarioReport ⇒
+                  throw new RuntimeException(s"Scalatest filters pending scenario upstream, this should never happen\n$p")
               }
             }
         }

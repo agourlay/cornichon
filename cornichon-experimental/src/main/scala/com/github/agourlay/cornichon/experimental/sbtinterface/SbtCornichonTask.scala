@@ -57,6 +57,9 @@ class SbtCornichonTask(task: TaskDef)(implicit ec: ExecutionContext) extends Tas
     case i: IgnoreScenarioReport ⇒
       val msg = s"- **ignored** ${i.scenarioName} "
       println(WarningLogInstruction(msg, 0).colorized)
+    case p: PendingScenarioReport ⇒
+      val msg = s"- **pending** ${p.scenarioName} "
+      println(DebugLogInstruction(msg, 0).colorized)
   }
 
   def eventBuilder(sr: ScenarioReport, durationInMillis: Long) = new Event {
@@ -64,6 +67,7 @@ class SbtCornichonTask(task: TaskDef)(implicit ec: ExecutionContext) extends Tas
       case _: SuccessScenarioReport ⇒ Status.Success
       case _: FailureScenarioReport ⇒ Status.Failure
       case _: IgnoreScenarioReport  ⇒ Status.Ignored
+      case _: PendingScenarioReport ⇒ Status.Pending
     }
     val throwable = sr match {
       case f: FailureScenarioReport ⇒
