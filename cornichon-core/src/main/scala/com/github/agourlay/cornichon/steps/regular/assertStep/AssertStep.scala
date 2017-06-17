@@ -26,7 +26,7 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
     errorsToFailureStep(this, initialRunState.depth, errors)
 
   override def onSuccess(result: Done, initialRunState: RunState, executionTime: Duration) =
-    (successLog(this, initialRunState.depth, show, executionTime), initialRunState.session)
+    (successLog(this, initialRunState.depth, show, executionTime), None)
 
   def runStepPredicate(assertion: Assertion) = assertion.validated.toEither
 }
