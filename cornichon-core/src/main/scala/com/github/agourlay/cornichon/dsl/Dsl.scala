@@ -16,6 +16,7 @@ import com.github.agourlay.cornichon.util.Futures
 import com.github.agourlay.cornichon.util.Printing._
 
 import scala.annotation.unchecked.uncheckedVariance
+import scala.collection.breakOut
 import scala.concurrent.Future
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.{ dynamics, higherKinds }
@@ -76,12 +77,12 @@ trait Dsl extends ProvidedInstances {
 
   def RepeatWith(elements: ContainerType[Any, Show]*)(indice: String) =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.toList.map(c ⇒ c.tci.show(c.element)), indice)
+      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), indice)
     }
 
   def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(indice: String) =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.toList.map(c ⇒ c.tci.show(c.element)), indice)
+      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), indice)
     }
 
   def RetryMax(limit: Int) =
