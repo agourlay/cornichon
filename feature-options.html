@@ -52,7 +52,7 @@
 
 <p>You can still override the base URL of a single step by providing the complete URL starting with the HTTP protocol.</p>
 
-<h3 id="request-timeout">Request timeout</h3>
+<h2 id="request-timeout">Request timeout</h2>
 
 <p>The default value for the HTTP request timeout is <code class="highlighter-rouge">2 seconds</code>. As always it can be overridden per scenario.</p>
 
@@ -88,7 +88,7 @@
 </code></pre>
 </div>
 
-<h1 id="execution-model">Execution model</h1>
+<h2 id="execution-model">Execution model</h2>
 
 <p>By default the <code class="highlighter-rouge">features</code> are executed sequentially and the <code class="highlighter-rouge">scenarios</code> within are executed in parallel.</p>
 
@@ -110,7 +110,7 @@
 
 <p>or through the command line <code class="highlighter-rouge">sbt test parallelExecution in Test := true</code></p>
 
-<h1 id="ignoring-features-or-scenarios">Ignoring features or scenarios</h1>
+<h2 id="ignoring-features-or-scenarios">Ignoring features or scenarios</h2>
 
 <p><code class="highlighter-rouge">Feature</code> or individual <code class="highlighter-rouge">scenario</code> can also be marked to be ignored.</p>
 
@@ -119,10 +119,10 @@
 <span class="k">class</span> <span class="nc">CornichonExamplesSpec</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="o">{</span>
 
   <span class="c1">// Ignore a complete feature
-</span>  <span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Checking google"</span><span class="o">,</span> <span class="n">ignored</span> <span class="k">=</span> <span class="kc">true</span><span class="o">){</span>
+</span>  <span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Checking google"</span><span class="o">).</span><span class="n">ignoredBecause</span><span class="o">(</span><span class="s">"Your reasons ..."</span><span class="o">){</span>
 
     <span class="c1">// Ignore a single scenario
-</span>    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"Google is up and running"</span><span class="o">,</span> <span class="n">ignored</span> <span class="k">=</span> <span class="kc">true</span><span class="o">){</span>
+</span>    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"Google is up and running"</span><span class="o">).</span><span class="n">ignoredBecause</span><span class="o">(</span><span class="s">"Your reasons ..."</span><span class="o">){</span>
 
       <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://google.com"</span><span class="o">)</span>
 
@@ -132,6 +132,25 @@
 <span class="o">}</span>
 </code></pre>
 </div>
+
+<h2 id="pending-scenario">Pending scenario</h2>
+
+<p>During development you want to remember that a <code class="highlighter-rouge">scenario</code> needs to be created, but you’re not ready to write it yet.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+
+<span class="k">class</span> <span class="nc">CornichonExamplesSpec</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="o">{</span>
+
+  <span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Some title"</span><span class="o">){</span>
+
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"this important use case"</span><span class="o">)</span> <span class="n">pending</span>
+
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"that important edge case"</span><span class="o">)</span> <span class="n">pending</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });

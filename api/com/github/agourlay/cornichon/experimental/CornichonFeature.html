@@ -495,9 +495,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../dsl/Dsl.html" class="extype" name="com.github.agourlay.cornichon.dsl.Dsl">Dsl</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.dsl.Dsl#Feature" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="Feature(name:String,ignored:Boolean):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Scenario,com.github.agourlay.cornichon.core.FeatureDef]"></a><a id="Feature(String,Boolean):BodyElementCollector[Scenario,FeatureDef]"></a>
+      <a id="Feature(name:String):Dsl.this.FeatureBuilder"></a><a id="Feature(String):FeatureBuilder"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/experimental/CornichonFeature.html#Feature(name:String,ignored:Boolean):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Scenario,com.github.agourlay.cornichon.core.FeatureDef]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/experimental/CornichonFeature.html#Feature(name:String):Dsl.this.FeatureBuilder" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -506,7 +506,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">Feature</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="ignored">ignored: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result">: <a href="../dsl/BodyElementCollector.html" class="extype" name="com.github.agourlay.cornichon.dsl.BodyElementCollector">BodyElementCollector</a>[<a href="../core/Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a>, <a href="../core/FeatureDef.html" class="extype" name="com.github.agourlay.cornichon.core.FeatureDef">FeatureDef</a>]</span>
+        <span class="name">Feature</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="com.github.agourlay.cornichon.dsl.Dsl.FeatureBuilder">FeatureBuilder</span></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../dsl/Dsl.html" class="extype" name="com.github.agourlay.cornichon.dsl.Dsl">Dsl</a></dd></dl></div>
@@ -623,9 +623,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../dsl/Dsl.html" class="extype" name="com.github.agourlay.cornichon.dsl.Dsl">Dsl</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.dsl.Dsl#Scenario" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="Scenario(name:String,ignored:Boolean):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Step,com.github.agourlay.cornichon.core.Scenario]"></a><a id="Scenario(String,Boolean):BodyElementCollector[Step,Scenario]"></a>
+      <a id="Scenario(name:String):Dsl.this.ScenarioBuilder"></a><a id="Scenario(String):ScenarioBuilder"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/experimental/CornichonFeature.html#Scenario(name:String,ignored:Boolean):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Step,com.github.agourlay.cornichon.core.Scenario]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/experimental/CornichonFeature.html#Scenario(name:String):Dsl.this.ScenarioBuilder" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -634,7 +634,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">Scenario</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="ignored">ignored: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result">: <a href="../dsl/BodyElementCollector.html" class="extype" name="com.github.agourlay.cornichon.dsl.BodyElementCollector">BodyElementCollector</a>[<a href="../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>, <a href="../core/Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a>]</span>
+        <span class="name">Scenario</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="com.github.agourlay.cornichon.dsl.Dsl.ScenarioBuilder">ScenarioBuilder</span></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../dsl/Dsl.html" class="extype" name="com.github.agourlay.cornichon.dsl.Dsl">Dsl</a></dd></dl></div>
@@ -1284,6 +1284,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../feature/BaseFeature.html" class="extype" name="com.github.agourlay.cornichon.feature.BaseFeature">BaseFeature</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.dsl.Dsl#featureBuilder" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="featureBuilder(f:Dsl.this.FeatureBuilder):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Scenario,com.github.agourlay.cornichon.core.FeatureDef]"></a><a id="featureBuilder(FeatureBuilder):BodyElementCollector[Scenario,FeatureDef]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/experimental/CornichonFeature.html#featureBuilder(f:Dsl.this.FeatureBuilder):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Scenario,com.github.agourlay.cornichon.core.FeatureDef]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">featureBuilder</span><span class="params">(<span name="f">f: <span class="extype" name="com.github.agourlay.cornichon.dsl.Dsl.FeatureBuilder">FeatureBuilder</span></span>)</span><span class="result">: <a href="../dsl/BodyElementCollector.html" class="extype" name="com.github.agourlay.cornichon.dsl.BodyElementCollector">BodyElementCollector</a>[<a href="../core/Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a>, <a href="../core/FeatureDef.html" class="extype" name="com.github.agourlay.cornichon.core.FeatureDef">FeatureDef</a>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../dsl/Dsl.html" class="extype" name="com.github.agourlay.cornichon.dsl.Dsl">Dsl</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
@@ -1834,6 +1850,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../http/HttpDsl.html" class="extype" name="com.github.agourlay.cornichon.http.HttpDsl">HttpDsl</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.dsl.Dsl#scenarioBuilder" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="scenarioBuilder(s:Dsl.this.ScenarioBuilder):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Step,com.github.agourlay.cornichon.core.Scenario]"></a><a id="scenarioBuilder(ScenarioBuilder):BodyElementCollector[Step,Scenario]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/experimental/CornichonFeature.html#scenarioBuilder(s:Dsl.this.ScenarioBuilder):com.github.agourlay.cornichon.dsl.BodyElementCollector[com.github.agourlay.cornichon.core.Step,com.github.agourlay.cornichon.core.Scenario]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scenarioBuilder</span><span class="params">(<span name="s">s: <span class="extype" name="com.github.agourlay.cornichon.dsl.Dsl.ScenarioBuilder">ScenarioBuilder</span></span>)</span><span class="result">: <a href="../dsl/BodyElementCollector.html" class="extype" name="com.github.agourlay.cornichon.dsl.BodyElementCollector">BodyElementCollector</a>[<a href="../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>, <a href="../core/Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../dsl/Dsl.html" class="extype" name="com.github.agourlay.cornichon.dsl.Dsl">Dsl</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.feature.BaseFeature#scheduler" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="scheduler:monix.execution.Scheduler"></a><a id="scheduler:Scheduler"></a>
       <span class="permalink">

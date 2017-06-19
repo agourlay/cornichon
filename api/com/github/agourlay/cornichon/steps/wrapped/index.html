@@ -209,14 +209,20 @@
                         </a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
+                        <a class="class" href="ConcurrentlyError.html" title=""></a>
+                        <a href="ConcurrentlyError.html" title="">
+                          ConcurrentlyError
+                        </a>
+                      </li><li class="current-entities indented6">
+                        <span class="separator"></span>
                         <a class="class" href="ConcurrentlyStep.html" title=""></a>
                         <a href="ConcurrentlyStep.html" title="">
                           ConcurrentlyStep
                         </a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="object" href="ConcurrentlyTimeout$.html" title=""></a>
-                        <a href="ConcurrentlyTimeout$.html" title="">
+                        <a class="class" href="ConcurrentlyTimeout.html" title=""></a>
+                        <a href="ConcurrentlyTimeout.html" title="">
                           ConcurrentlyTimeout
                         </a>
                       </li><li class="current-entities indented6">
@@ -385,9 +391,9 @@
         <div id="types" class="types members">
               <h3>Type Members</h3>
               <ol><li name="com.github.agourlay.cornichon.steps.wrapped.AttachAsStep" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="AttachAsStepextendsWrapperStepwithProductwithSerializable"></a><a id="AttachAsStep:AttachAsStep"></a>
+      <a id="AttachAsStepextendsSimpleWrapperStepwithProductwithSerializable"></a><a id="AttachAsStep:AttachAsStep"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#AttachAsStepextendsWrapperStepwithProductwithSerializable" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#AttachAsStepextendsSimpleWrapperStepwithProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -398,7 +404,7 @@
       <span class="symbol">
         <a title="" href="AttachAsStep.html">
               <span class="name">AttachAsStep</span>
-            </a><span class="params">(<span name="title">title: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="title">title: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>)</span><span class="result"> extends <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
       
@@ -420,6 +426,24 @@
       </span>
       
       
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.ConcurrentlyError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ConcurrentlyErrorextendsCornichonErrorwithProductwithSerializable"></a><a id="ConcurrentlyError:ConcurrentlyError"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#ConcurrentlyErrorextendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="ConcurrentlyError.html">
+              <span class="name">ConcurrentlyError</span>
+            </a><span class="params">(<span name="cause">cause: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.steps.wrapped.ConcurrentlyStep" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ConcurrentlyStepextendsWrapperStepwithProductwithSerializable"></a><a id="ConcurrentlyStep:ConcurrentlyStep"></a>
       <span class="permalink">
@@ -435,6 +459,24 @@
         <a title="" href="ConcurrentlyStep.html">
               <span class="name">ConcurrentlyStep</span>
             </a><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="factor">factor: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="maxTime">maxTime: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.ConcurrentlyTimeout" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ConcurrentlyTimeoutextendsCornichonErrorwithProductwithSerializable"></a><a id="ConcurrentlyTimeout:ConcurrentlyTimeout"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#ConcurrentlyTimeoutextendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="ConcurrentlyTimeout.html">
+              <span class="name">ConcurrentlyTimeout</span>
+            </a><span class="params">(<span name="factor">factor: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="success">success: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Int" class="extype" target="_top">Int</a></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
       
@@ -475,9 +517,9 @@
       
       
     </li><li name="com.github.agourlay.cornichon.steps.wrapped.LogDurationStep" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="LogDurationStepextendsWrapperStepwithProductwithSerializable"></a><a id="LogDurationStep:LogDurationStep"></a>
+      <a id="LogDurationStepextendsSimpleWrapperStepwithProductwithSerializable"></a><a id="LogDurationStep:LogDurationStep"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#LogDurationStepextendsWrapperStepwithProductwithSerializable" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#LogDurationStepextendsSimpleWrapperStepwithProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -488,7 +530,7 @@
       <span class="symbol">
         <a title="" href="LogDurationStep.html">
               <span class="name">LogDurationStep</span>
-            </a><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="label">label: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="label">label: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
       
@@ -596,7 +638,7 @@
       <span class="symbol">
         <a title="" href="RepeatWithStep.html">
               <span class="name">RepeatWithStep</span>
-            </a><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="elements">elements: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="elementName">elementName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="elements">elements: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="elementName">elementName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
       
@@ -704,7 +746,7 @@
       <span class="symbol">
         <a title="" href="WithinBlockSucceedAfterMaxDuration.html">
               <span class="name">WithinBlockSucceedAfterMaxDuration</span>
-            </a><span class="params">(<span name="maxDuration">maxDuration: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.duration.Duration" class="extype" target="_top">Duration</a></span>, <span name="executionTime">executionTime: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="maxDuration">maxDuration: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.duration.Duration" class="extype" target="_top">Duration</a></span>, <span name="executionTime">executionTime: <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.concurrent.duration.Duration" class="extype" target="_top">Duration</a></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
       
@@ -734,25 +776,7 @@
         <div class="values members">
               <h3>Value Members</h3>
               <ol>
-                <li name="com.github.agourlay.cornichon.steps.wrapped.ConcurrentlyTimeout" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ConcurrentlyTimeout"></a><a id="ConcurrentlyTimeout:ConcurrentlyTimeout"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#ConcurrentlyTimeout" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="ConcurrentlyTimeout$.html">
-              <span class="name">ConcurrentlyTimeout</span>
-            </a><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.EventuallyBlockSucceedAfterMaxDuration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+                <li name="com.github.agourlay.cornichon.steps.wrapped.EventuallyBlockSucceedAfterMaxDuration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="EventuallyBlockSucceedAfterMaxDuration"></a><a id="EventuallyBlockSucceedAfterMaxDuration:EventuallyBlockSucceedAfterMaxDuration"></a>
       <span class="permalink">
       <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#EventuallyBlockSucceedAfterMaxDuration" title="Permalink">
