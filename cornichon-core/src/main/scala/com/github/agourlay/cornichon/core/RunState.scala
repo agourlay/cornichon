@@ -12,8 +12,6 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
 
   lazy val resetLogs = copy(logs = Vector.empty)
 
-  lazy val consumCurrentStep = copy(remainingSteps = remainingSteps.drop(1))
-
   def withSteps(steps: List[Step]) = copy(remainingSteps = steps)
   // Helper fct to set remaining steps, go deeper and reset logs
   def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)

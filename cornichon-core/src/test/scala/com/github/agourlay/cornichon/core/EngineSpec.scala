@@ -1,11 +1,12 @@
 package com.github.agourlay.cornichon.core
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-
 import monix.execution.Scheduler
-
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.ExecutionContext
@@ -81,6 +82,42 @@ class EngineSpec extends AsyncWordSpec with Matchers {
               )
             }
           case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
+        }
+      }
+
+      "run all valid effects" in {
+        val uglyCounter = new AtomicInteger(0)
+        val effectNumber = 5
+        val effect = EffectStep.fromSync(
+          "increment captured counter",
+          s ⇒ {
+            uglyCounter.incrementAndGet()
+            s
+          }
+        )
+
+        val s = Scenario("scenario with effects", List.fill(effectNumber)(effect))
+        engine.runScenario(Session.newEmpty)(s).map { res ⇒
+          res.isSuccess should be(true)
+          uglyCounter.get() should be(effectNumber)
+        }
+      }
+
+      "run all valid main effects and finally effects" in {
+        val uglyCounter = new AtomicInteger(0)
+        val effectNumber = 5
+        val effect = EffectStep.fromSync(
+          "increment captured counter",
+          s ⇒ {
+            uglyCounter.incrementAndGet()
+            s
+          }
+        )
+
+        val s = Scenario("scenario with effects", List.fill(effectNumber)(effect))
+        engine.runScenario(Session.newEmpty, List.fill(effectNumber)(effect))(s).map { res ⇒
+          res.isSuccess should be(true)
+          uglyCounter.get() should be(effectNumber * 2)
         }
       }
     }

@@ -9,6 +9,6 @@ case class AttachStep(title: String = "", nested: List[Step]) extends WrapperSte
 
   // remove AttachStep from remainingStep and prepend nested to remaining steps
   override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) =
-    engine.runSteps(initialRunState.consumCurrentStep.prependSteps(nested))
+    engine.runSteps(initialRunState.withSteps(nested).resetLogs)
 
 }
