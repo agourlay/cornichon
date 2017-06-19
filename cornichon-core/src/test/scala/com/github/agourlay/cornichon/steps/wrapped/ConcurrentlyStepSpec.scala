@@ -54,8 +54,10 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       ) :: Nil
       val concurrentlyStep = ConcurrentlyStep(nested, loop, 300.millis)
       val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
-      uglyCounter.intValue() should be(loop)
+      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+        res.isSuccess should be(true)
+        uglyCounter.intValue() should be(loop)
+      }
     }
   }
 
