@@ -8,8 +8,10 @@ import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.http.scaladsl.ConnectionContext
 import akka.http.scaladsl.model.HttpHeader.ParsingResult
+import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.NotUsed
@@ -27,9 +29,6 @@ import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException }
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest }
-
-import de.heikoseeberger.akkasse.scaladsl.unmarshalling.EventStreamUnmarshalling._
-import de.heikoseeberger.akkasse.scaladsl.model.ServerSentEvent
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate

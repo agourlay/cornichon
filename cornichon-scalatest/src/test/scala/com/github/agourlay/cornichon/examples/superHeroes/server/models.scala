@@ -1,9 +1,8 @@
 package com.github.agourlay.cornichon.examples.superHeroes.server
 
-import de.heikoseeberger.akkasse.scaladsl.model.ServerSentEvent
+import akka.http.scaladsl.model.sse.ServerSentEvent
 import sangria.macros.derive._
 import sangria.schema.Schema
-
 import io.circe.generic.auto._
 import io.circe.syntax._
 

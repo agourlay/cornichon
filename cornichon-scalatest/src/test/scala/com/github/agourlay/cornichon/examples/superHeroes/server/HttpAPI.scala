@@ -3,20 +3,23 @@ package com.github.agourlay.cornichon.examples.superHeroes.server
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling
 import akka.http.scaladsl.model.{ ContentTypes, HttpEntity }
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.PathMatchers.Remaining
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
-import de.heikoseeberger.akkasse.scaladsl.marshalling.EventStreamMarshalling
-import de.heikoseeberger.akkasse.scaladsl.model.ServerSentEvent
+
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
+
 import io.circe.{ Json, JsonObject }
 import io.circe.generic.auto._
 
