@@ -42,11 +42,13 @@ package object macros {
           singleExpressionList(app, elementType, typesTreesFn)
         case Typed(app: Apply, _) ⇒
           singleExpressionList(app, elementType, typesTreesFn)
+        case s @ Select(_, _) ⇒
+          singleExpressionList(s, elementType, typesTreesFn)
         case e ⇒
-          c.abort(e.pos, unsupportedMessage)
+          c.abort(e.pos, s"$unsupportedMessage\nfound '$e' of type '${e.tpe}'")
       }
 
-    private def singleExpressionList(app: Apply, elementType: Type, typesTreesFn: List[Tree] ⇒ Tree) =
+    private def singleExpressionList(app: Tree, elementType: Type, typesTreesFn: List[Tree] ⇒ Tree) =
       typecheck(app, elementType) match {
         case Right(checked)     ⇒ typesTreesFn(checked :: Nil)
         case Left((pos, error)) ⇒ c.abort(pos, error)
