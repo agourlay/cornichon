@@ -67,7 +67,7 @@ class EngineBench {
 }
 
 object EngineBench {
-  val setupSession = EffectStep.fromSync("setup session", s => s.addValues(Seq("v1" -> "2", "v2" -> "1")))
+  val setupSession = EffectStep.fromSync("setup session", s => s.addValues("v1" -> "2", "v2" -> "1"))
   val assertStep = AssertStep(
     "addition step",
     s ⇒ Assertion.either {

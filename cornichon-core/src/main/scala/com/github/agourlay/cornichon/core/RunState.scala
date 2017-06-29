@@ -17,7 +17,7 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
   def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)
 
   def withSession(s: Session) = copy(session = s)
-  def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValues(tuples))
+  def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValues(tuples: _*))
   def addToSession(key: String, value: String) = withSession(session.addValue(key, value))
   def mergeSessions(other: Session) = copy(session = session.combine(other))
 

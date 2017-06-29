@@ -107,13 +107,13 @@ class ResolverSpec extends WordSpec
       }
 
       "resolve two placeholders" in {
-        val session = Session.newEmpty.addValues(Seq("project-name" → "cornichon", "taste" → "tasty"))
+        val session = Session.newEmpty.addValues("project-name" → "cornichon", "taste" → "tasty")
         val content = "This project is named <project-name> and is super <taste>"
         resolver.fillPlaceholders(content)(session).value should be("This project is named cornichon and is super tasty")
       }
 
       "return ResolverError for the first placeholder not found" in {
-        val session = Session.newEmpty.addValues(Seq("project-name" → "cornichon", "taste" → "tasty"))
+        val session = Session.newEmpty.addValues("project-name" → "cornichon", "taste" → "tasty")
         val content = "This project is named <project-name> and is super <new-taste>"
         resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("new-taste", None, session))
       }

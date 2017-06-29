@@ -67,14 +67,14 @@ class HttpServiceSpec extends WordSpec
     "resolveParams" must {
       "resolve also params in URL" in {
         val s = Session.newEmpty
-          .addValues(Seq("hero" → "batman", "color" → "blue"))
+          .addValues("hero" → "batman", "color" → "blue")
         val url = "http://yada.com?hero=<hero>&color=<color>"
         service.resolveParams(url, params = Seq.empty)(s) should beRight(Seq("hero" → "batman", "color" → "blue"))
       }
 
       "detect non resolvable params" in {
         val s = Session.newEmpty
-          .addValues(Seq("hero" → "batman", "color" → "blue"))
+          .addValues("hero" → "batman", "color" → "blue")
         val url = "http://yada.com?hero=<hero>&color=<color2>"
         service.resolveParams(url, params = Seq.empty)(s).isLeft should be(true)
       }
