@@ -86,11 +86,11 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     } yield newSession
 
   private def commonSessionExtraction(session: Session, response: CornichonHttpResponse) =
-    session.addValues(Seq(
+    session.addValues(
       lastResponseStatusKey → response.status.intValue().toString,
       lastResponseBodyKey → response.body,
       lastResponseHeadersKey → encodeSessionHeaders(response)
-    ))
+    )
 
   def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] = {
     val filledSession = commonSessionExtraction(session, response)

@@ -75,7 +75,7 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
       }
   }
 
-  def addValues(tuples: Seq[(String, String)]) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
+  def addValues(tuples: (String, String)*) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
 
   def removeKey(key: String) = Session(content - key)
 }
