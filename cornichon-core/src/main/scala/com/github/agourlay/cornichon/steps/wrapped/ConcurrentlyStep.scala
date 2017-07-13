@@ -32,8 +32,8 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
           val failedStep = FailedStep.fromSingle(this, ConcurrentlyTimeout(factor, results.size))
           Future.successful((nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep)))
         } else {
-          val failedStepRun = results.collectFirst { case (s, r @ Left(_)) ⇒ (s, r) }
-          failedStepRun.fold[Future[(RunState, Either[FailedStep, Done])]] {
+          val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
+          failedStepRuns.headOption.fold[Future[(RunState, Either[FailedStep, Done])]] {
             val executionTime = Duration.fromNanos(System.nanoTime - start)
             val successStepsRun = results.collect { case (s, r @ Right(_)) ⇒ (s, r) }
             // all runs were successfull, we pick the first one
@@ -45,7 +45,8 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
             Future.successful((initialRunState.withSession(updatedSession).appendLogs(updatedLogs), rightDone))
           } {
             case (s, failedXor) ⇒
-              val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction("Concurrently block failed", initialDepth)
+              val ratio = s"'${failedStepRuns.size}/$factor' run(s)"
+              val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Concurrently block failed for $ratio", initialDepth)
               Future.successful((initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor))
           }
         }
