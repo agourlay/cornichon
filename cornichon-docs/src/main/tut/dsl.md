@@ -304,9 +304,15 @@ session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is(...)
 - asserting existence of value in ```session```
 
 ```scala
-  session_value("favorite-superhero").isPresent
-  session_value("favorite-superhero").isAbsent
+session_value("favorite-superhero").isPresent
+session_value("favorite-superhero").isAbsent
 ````
+
+- transforming a value in ```session```
+
+```scala
+transform_session("my-key")(_.toUpperCase)
+```
 
 ### Wrapper steps
 
