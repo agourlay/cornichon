@@ -313,8 +313,16 @@
   <li>asserting existence of value in <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code>  <span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">isPresent</span>
-  <span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">isAbsent</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">isPresent</span>
+<span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">isAbsent</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>transforming a value in <code class="highlighter-rouge">session</code></li>
+</ul>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">transform_session</span><span class="o">(</span><span class="s">"my-key"</span><span class="o">)(</span><span class="k">_</span><span class="o">.</span><span class="n">toUpperCase</span><span class="o">)</span>
 </code></pre>
 </div>
 
