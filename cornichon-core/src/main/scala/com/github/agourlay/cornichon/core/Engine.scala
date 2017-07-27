@@ -54,40 +54,32 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     }
 
   def runStepsWithoutShortCircuit(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
-    def nextStep(currentStep: Step, tail: List[Step], runState: RunState) = {
-      stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
-        (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
-      }.fold(
-        ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
-        ps ⇒ runStep(runState.withSteps(tail), ps)
-      ).toMonad
-    }
-
     import cats.syntax.cartesian._
     initialRunState.remainingSteps
       .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
       .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
         case (runStateF, (currentStep, _)) ⇒
-          (runStateF |@| nextStep(currentStep, Nil, initialRunState)).map((f, _) ⇒ f)
+          (runStateF |@| prepareAndRunStep(currentStep, Nil, initialRunState)).map((f, s) ⇒ s)
       }.unMonad
   }
 
   def runSteps(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
-    def nextStep(currentStep: Step, tail: List[Step], runState: RunState) = {
-      stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
-        (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
-      }.fold(
-        ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
-        ps ⇒ runStep(runState.withSteps(tail), ps)
-      ).toMonad
-    }
 
     initialRunState.remainingSteps
       .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
       .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
         case (runStateF, (currentStep, tail)) ⇒
-          runStateF.flatMap({ case (runState, _) ⇒ nextStep(currentStep, tail, runState) })
+          runStateF.flatMap({ case (runState, _) ⇒ prepareAndRunStep(currentStep, tail, runState) })
       }.unMonad
+  }
+
+  private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState) = {
+    stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+      (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
+    }.fold(
+      ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+      ps ⇒ runStep(runState.withSteps(tail), ps)
+    ).toMonad
   }
 
   private def runStep(runState: RunState, ps: Step): Future[(RunState, FailedStep Either Done)] =
