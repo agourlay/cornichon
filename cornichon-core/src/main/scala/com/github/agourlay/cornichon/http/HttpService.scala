@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.data.EitherT
-import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._

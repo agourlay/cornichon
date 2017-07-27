@@ -4,7 +4,6 @@ import cats.data.Validated._
 import cats.data._
 import cats.syntax.cartesian._
 import cats.syntax.validated._
-import cats.syntax.either._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._

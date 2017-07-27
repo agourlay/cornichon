@@ -5,7 +5,6 @@ import java.util.Base64
 
 import cats.Show
 import cats.syntax.show._
-import cats.syntax.either._
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._

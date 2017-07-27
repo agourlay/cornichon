@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.{ Eq, Show }
 import cats.syntax.show._
-import cats.syntax.either._
 import cats.syntax.validated._
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
