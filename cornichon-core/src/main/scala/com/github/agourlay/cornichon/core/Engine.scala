@@ -1,8 +1,11 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.NonEmptyList
+import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
 import cats.syntax.monoid._
+import cats.syntax.coflatMap._
+import cats.instances.future._
+import cats.instances.list._
 
 import monix.execution.Scheduler
 
@@ -14,6 +17,7 @@ import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
+import FutureEitherTHelpers._
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
@@ -41,22 +45,22 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       }
     }
 
-  def runSteps(runState: RunState): Future[(RunState, FailedStep Either Done)] =
-    runState.remainingSteps match {
-      case Nil ⇒ Future.successful((runState, rightDone))
-      case currentStep :: tail ⇒
-        stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
-          (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
-        }.fold(
-          ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
-          ps ⇒ runStep(runState, ps).flatMap {
-            case (newState, stepResult) ⇒ stepResult.fold(
-              failedStep ⇒ Future.successful((newState, Left(failedStep))),
-              _ ⇒ runSteps(newState.withSteps(tail))
-            )
-          }
-        )
-    }
+  def runSteps(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
+    initialRunState.remainingSteps
+      .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
+      .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
+        case (runStateF, (currentStep, tail)) ⇒
+          runStateF.flatMap({
+            case (runState, _) ⇒
+              stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+                (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
+              }.fold(
+                ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+                ps ⇒ runStep(runState.withSteps(tail), ps)
+              ).toMonad
+          })
+      }.unMonad
+  }
 
   private def runStep(runState: RunState, ps: Step): Future[(RunState, FailedStep Either Done)] =
     Either
@@ -102,5 +106,19 @@ object Engine {
       FailureLogInstruction(m, depth)
     })
     logs.toVector
+  }
+}
+
+object FutureEitherTHelpers {
+
+  implicit class ToMonad[A, B, C](fe: Future[(A, B Either C)]) {
+    def toMonad(implicit ec: scala.concurrent.ExecutionContext) = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
+  }
+
+  implicit class UnMonad[A, B, C](fe: EitherT[Future, (A, B), (A, C)]) {
+    def unMonad(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[B, C])] = fe.value.map(_.fold(
+      { case (a, b) ⇒ (a, Left(b)) },
+      { case (a, c) ⇒ (a, Right(c)) }
+    ))
   }
 }
