@@ -19,6 +19,19 @@ class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val s = Scenario("resource step scenario", resourceStep :: fail :: Nil)
       engine.runScenario(Session.newEmpty)(s).map(_ ⇒ queueResource should be('empty))
     }
+
+    "acquire multiple resources and release them all before the end of the run even if something blows up in the middle" in {
+      val createQueue1 = EffectStep("create the queue1", s ⇒ F(Right(s.addValue("the-queue-1", queueResource.create()))))
+      val deleteQueue1 = EffectStep("delete the queue1", s ⇒ F(Right { queueResource.delete(s.get("the-queue-1").right.get); s }))
+      val createQueue2 = EffectStep("create the queue2", s ⇒ F(Right(s.addValue("the-queue-2", queueResource.create()))))
+      val deleteQueue2 = EffectStep("delete the queue2", s ⇒ F(Right { queueResource.delete(s.get("the-queue-2").right.get); s }))
+      val resourceStep1 = ResourceStep("ensure queue exists", createQueue1, deleteQueue1)
+      val resourceStep2 = ResourceStep("ensure queue exists", createQueue2, deleteQueue2)
+      val fail1 = EffectStep("go boom", _ ⇒ F(Left(BasicError("sooo basic"))))
+      val fail2 = EffectStep("go boom", _ ⇒ F(Left(BasicError("i can't even"))))
+      val s = Scenario("resource step scenario", resourceStep1 :: fail1 :: resourceStep2 :: fail2 :: Nil)
+      engine.runScenario(Session.newEmpty)(s).map(_ ⇒ queueResource should be('empty))
+    }
   }
 
   private def F[T] = Future.successful[T] _
