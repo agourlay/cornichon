@@ -28,12 +28,12 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       Future.successful(PendingScenarioReport(scenario.name, session))
     else {
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-      val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
+      val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1, Nil)
       runSteps(initialRunState).flatMap {
         case (mainState, mainRunReport) ⇒
-          if (finallySteps.isEmpty)
+          if (finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
             Future.successful(ScenarioReport.build(scenario.name, mainState, mainRunReport.toValidatedNel))
-          else {
+          else if (finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
             // Reuse mainline session
             val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
             val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
@@ -41,24 +41,52 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
               case (finallyState, finallyReport) ⇒
                 ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidatedNel))
             }
+          } else {
+            // Reuse mainline session
+            val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+            val finallyRunState = mainState.withSteps(mainState.cleanupSteps).withLog(finallyLog)
+            runStepsWithoutShortCircuit(finallyRunState).map {
+              case (finallyState, finallyReport) ⇒
+                ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidatedNel))
+            }
           }
       }
     }
 
+  def runStepsWithoutShortCircuit(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
+    def nextStep(currentStep: Step, tail: List[Step], runState: RunState) = {
+      stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+        (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
+      }.fold(
+        ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+        ps ⇒ runStep(runState.withSteps(tail), ps)
+      ).toMonad
+    }
+
+    import cats.syntax.cartesian._
+    initialRunState.remainingSteps
+      .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
+      .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
+        case (runStateF, (currentStep, _)) ⇒
+          (runStateF |@| nextStep(currentStep, Nil, initialRunState)).map((f, _) ⇒ f)
+      }.unMonad
+  }
+
   def runSteps(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
+    def nextStep(currentStep: Step, tail: List[Step], runState: RunState) = {
+      stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+        (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
+      }.fold(
+        ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+        ps ⇒ runStep(runState.withSteps(tail), ps)
+      ).toMonad
+    }
+
     initialRunState.remainingSteps
       .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
       .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
         case (runStateF, (currentStep, tail)) ⇒
-          runStateF.flatMap({
-            case (runState, _) ⇒
-              stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
-                (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
-              }.fold(
-                ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
-                ps ⇒ runStep(runState.withSteps(tail), ps)
-              ).toMonad
-          })
+          runStateF.flatMap({ case (runState, _) ⇒ nextStep(currentStep, tail, runState) })
       }.unMonad
   }
 

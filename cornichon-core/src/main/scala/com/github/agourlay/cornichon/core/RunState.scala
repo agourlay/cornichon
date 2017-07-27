@@ -6,7 +6,13 @@ import cats.instances.vector._
 import cats.kernel.Monoid
 import cats.syntax.monoid._
 
-case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[LogInstruction], depth: Int) {
+case class RunState(
+    remainingSteps: List[Step],
+    session: Session,
+    logs: Vector[LogInstruction],
+    depth: Int,
+    cleanupSteps: List[Step]
+) {
 
   lazy val goDeeper = copy(depth = depth + 1)
 
@@ -36,7 +42,7 @@ case class RunState(remainingSteps: List[Step], session: Session, logs: Vector[L
 object RunState {
 
   implicit val monoidRunState = new Monoid[RunState] {
-    def empty: RunState = RunState(Nil, Session.newEmpty, Vector.empty, 1)
+    def empty: RunState = RunState(Nil, Session.newEmpty, Vector.empty, 1, Nil)
     def combine(x: RunState, y: RunState): RunState = x.copy(
       remainingSteps = x.remainingSteps.combine(y.remainingSteps),
       session = x.session.combine(y.session),
