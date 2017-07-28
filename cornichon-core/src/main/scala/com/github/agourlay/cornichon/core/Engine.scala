@@ -60,7 +60,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
         case (runStateF, (currentStep, _)) ⇒
           (runStateF |@| prepareAndRunStep(currentStep, Nil, initialRunState)).map((f, s) ⇒ s)
-      }.unMonad
+      }.runAndDeDup
   }
 
   def runSteps(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
@@ -70,7 +70,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
         case (runStateF, (currentStep, tail)) ⇒
           runStateF.flatMap({ case (runState, _) ⇒ prepareAndRunStep(currentStep, tail, runState) })
-      }.unMonad
+      }.runAndDeDup
   }
 
   private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState) = {
@@ -79,7 +79,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     }.fold(
       ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
       ps ⇒ runStep(runState.withSteps(tail), ps)
-    ).toMonad
+    ).toEitherT
   }
 
   private def runStep(runState: RunState, ps: Step): Future[(RunState, FailedStep Either Done)] =
@@ -132,11 +132,11 @@ object Engine {
 object FutureEitherTHelpers {
 
   implicit class ToMonad[A, B, C](fe: Future[(A, B Either C)]) {
-    def toMonad(implicit ec: scala.concurrent.ExecutionContext) = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
+    def toEitherT(implicit ec: scala.concurrent.ExecutionContext) = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
   }
 
   implicit class UnMonad[A, B, C](fe: EitherT[Future, (A, B), (A, C)]) {
-    def unMonad(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[B, C])] = fe.value.map(_.fold(
+    def runAndDeDup(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[B, C])] = fe.value.map(_.fold(
       { case (a, b) ⇒ (a, Left(b)) },
       { case (a, c) ⇒ (a, Right(c)) }
     ))
