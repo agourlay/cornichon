@@ -26,13 +26,13 @@ sealed trait LogInstruction {
 object LogInstruction {
   val physicalMargin = "   "
   def printLogs(logs: Seq[LogInstruction]): Unit = {
-    logs.foreach(l ⇒ println(l.colorized))
-    print('\n')
+    val acc = logs.foldLeft("")((acc, l) ⇒ acc + "\n" + l.colorized)
+    println(acc + "\n")
   }
 }
 
 case class ScenarioTitleLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  lazy val colorized = '\n' + fansi.Color.White(completeMessage).overlay(attrs = fansi.Underlined.On, start = (LogInstruction.physicalMargin * marginNb).length).render
+  lazy val colorized = fansi.Color.White(completeMessage).overlay(attrs = fansi.Underlined.On, start = (LogInstruction.physicalMargin * marginNb).length).render
 }
 
 case class InfoLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
