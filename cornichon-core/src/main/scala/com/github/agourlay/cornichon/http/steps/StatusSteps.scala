@@ -33,25 +33,25 @@ object StatusSteps {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
       action = s ⇒ Assertion.either {
-      for {
-        lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
-        lastBody ← s.get(lastResponseBodyKey)
-      } yield CustomMessageEqualityAssertion(expected, lastResponseStatus, statusError(expected, lastBody))
-    }
+        for {
+          lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
+          lastBody ← s.get(lastResponseBodyKey)
+        } yield CustomMessageEqualityAssertion(expected, lastResponseStatus, statusError(expected, lastBody))
+      }
     )
 
     protected def isByKind(kind: Int) = AssertStep(
       title = s"status is ${StatusKind.kindLabel(kind)} ${StatusKind.kindDisplay(kind)}",
       action = s ⇒ Assertion.either {
-      for {
-        lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
-        lastBody ← s.get(lastResponseBodyKey)
-      } yield CustomMessageEqualityAssertion(
-        expected = kind,
-        actual = StatusKind.computeKind(lastResponseStatus),
-        customMessage = statusKindError(kind, lastResponseStatus, lastBody)
-      )
-    }
+        for {
+          lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
+          lastBody ← s.get(lastResponseBodyKey)
+        } yield CustomMessageEqualityAssertion(
+          expected = kind,
+          actual = StatusKind.computeKind(lastResponseStatus),
+          customMessage = statusKindError(kind, lastResponseStatus, lastBody)
+        )
+      }
     )
 
     def isSuccess = isByKind(2)

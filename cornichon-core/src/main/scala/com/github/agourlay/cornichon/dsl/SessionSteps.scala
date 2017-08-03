@@ -24,19 +24,19 @@ object SessionSteps {
     def is(expected: String) = AssertStep(
       title = s"session key '$key' is '$expected'",
       action = s ⇒ Assertion.either {
-      for {
-        filledPlaceholders ← resolver.fillPlaceholders(expected)(s)
-        keyValue ← s.get(key, indice)
-      } yield GenericEqualityAssertion(filledPlaceholders, keyValue)
-    }
+        for {
+          filledPlaceholders ← resolver.fillPlaceholders(expected)(s)
+          keyValue ← s.get(key, indice)
+        } yield GenericEqualityAssertion(filledPlaceholders, keyValue)
+      }
     )
 
     def isPresent = AssertStep(
       title = s"session contains key '$key'",
       action = s ⇒ {
-      val predicate = s.getOpt(key, indice).isDefined
-      CustomMessageEqualityAssertion(true, predicate, keyIsAbsentError(key, s.show))
-    }
+        val predicate = s.getOpt(key, indice).isDefined
+        CustomMessageEqualityAssertion(true, predicate, keyIsAbsentError(key, s.show))
+      }
     )
 
     def isAbsent = AssertStep(

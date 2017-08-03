@@ -142,11 +142,11 @@ trait Dsl extends ProvidedInstances {
   def transform_session(key: String)(map: String ⇒ String) = EffectStep.fromSyncE(
     title = s"transform '$key' from session",
     effect = s ⇒ {
-    for {
-      v ← s.get(key)
-      tv ← Either.catchNonFatal(map(v)).leftMap(CornichonError.fromThrowable)
-    } yield s.addValue(key, tv)
-  }
+      for {
+        v ← s.get(key)
+        tv ← Either.catchNonFatal(map(v)).leftMap(CornichonError.fromThrowable)
+      } yield s.addValue(key, tv)
+    }
   )
 
   def session_value(key: String) = SessionStepBuilder(resolver, key)

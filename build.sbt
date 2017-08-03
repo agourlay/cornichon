@@ -236,8 +236,9 @@ lazy val scalariformSettings = SbtScalariform.scalariformSettings ++ Seq(
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
-    .setPreference(DoubleIndentClassDeclaration, true)
+    .setPreference(DoubleIndentConstructorArguments, true)
     .setPreference(RewriteArrowSymbols, true)
+    .setPreference(DanglingCloseParenthesis, Preserve)
 )
 
 lazy val library =

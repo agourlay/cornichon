@@ -19,32 +19,32 @@ object HeadersSteps {
     def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${printArrowPairs(expected)}",
       action = s ⇒ Assertion.either {
-      s.get(headersSessionKey).map { sessionHeaders ⇒
-        val actualValue = sessionHeaders.split(",").toList
-        val expectedValue = expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }
-        GenericEqualityAssertion(expectedValue, actualValue)
+        s.get(headersSessionKey).map { sessionHeaders ⇒
+          val actualValue = sessionHeaders.split(",").toList
+          val expectedValue = expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }
+          GenericEqualityAssertion(expectedValue, actualValue)
+        }
       }
-    }
     )
 
     def hasSize(expectedSize: Int) = AssertStep(
       title = s"headers size is '$expectedSize'",
       action = s ⇒ Assertion.either {
-      s.get(headersSessionKey).map { sessionHeaders ⇒
-        CollectionSizeAssertion(sessionHeaders.split(","), expectedSize).withName("headers")
+        s.get(headersSessionKey).map { sessionHeaders ⇒
+          CollectionSizeAssertion(sessionHeaders.split(","), expectedSize).withName("headers")
+        }
       }
-    }
     )
 
     def contain(elements: (String, String)*) = AssertStep(
       title = s"headers contain ${printArrowPairs(elements)}",
       action = s ⇒ Assertion.either {
-      s.get(headersSessionKey).map { sessionHeaders ⇒
-        val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
-        val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
-        CustomMessageEqualityAssertion(true, predicate, headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
+        s.get(headersSessionKey).map { sessionHeaders ⇒
+          val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
+          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
+          CustomMessageEqualityAssertion(true, predicate, headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
+        }
       }
-    }
     )
 
     def inOrder: HeadersStepBuilder = copy(ordered = true)
@@ -56,23 +56,23 @@ object HeadersSteps {
     def isPresent = AssertStep(
       title = s"headers contain field with name '$name'",
       action = s ⇒ Assertion.either {
-      for {
-        sessionHeaders ← s.get(headersSessionKey)
-        sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
-        predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
-      } yield CustomMessageEqualityAssertion(true, predicate, headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
-    }
+        for {
+          sessionHeaders ← s.get(headersSessionKey)
+          sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
+          predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
+        } yield CustomMessageEqualityAssertion(true, predicate, headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
+      }
     )
 
     def isAbsent = AssertStep(
       title = s"headers do not contain field with name '$name'",
       action = s ⇒ Assertion.either {
-      for {
-        sessionHeaders ← s.get(headersSessionKey)
-        sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
-        predicate ← Right(!sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
-      } yield CustomMessageEqualityAssertion(true, predicate, headersContainFieldWithNameError(name, sessionHeadersValue))
-    }
+        for {
+          sessionHeaders ← s.get(headersSessionKey)
+          sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
+          predicate ← Right(!sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
+        } yield CustomMessageEqualityAssertion(true, predicate, headersContainFieldWithNameError(name, sessionHeadersValue))
+      }
     )
   }
 

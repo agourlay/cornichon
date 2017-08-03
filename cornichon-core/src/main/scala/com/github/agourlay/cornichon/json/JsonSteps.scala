@@ -184,14 +184,14 @@ object JsonSteps {
     def isNotEmpty = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty",
       action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-      val jArray = {
-        if (jsonPath == JsonPath.root)
-          parseArray(sessionValue)
-        else
-          resolveAndParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
+        val jArray = {
+          if (jsonPath == JsonPath.root)
+            parseArray(sessionValue)
+          else
+            resolveAndParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
+        }
+        jArray.map(l ⇒ (true, l.nonEmpty, jsonArrayNotEmptyError(Json.fromValues(l))))
       }
-      jArray.map(l ⇒ (true, l.nonEmpty, jsonArrayNotEmptyError(Json.fromValues(l))))
-    }
     )
 
     def isEmpty = hasSize(0)
@@ -199,14 +199,14 @@ object JsonSteps {
     def hasSize(size: Int) = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is '$size'" else s"$target's array '$jsonPath' size is '$size'",
       action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-      val jArray = {
-        if (jsonPath == JsonPath.root)
-          parseArray(sessionValue)
-        else
-          resolveAndParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
+        val jArray = {
+          if (jsonPath == JsonPath.root)
+            parseArray(sessionValue)
+          else
+            resolveAndParseJsonPath(jsonPath, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
+        }
+        jArray.map(l ⇒ (size, l.size, arraySizeError(size, Json.fromValues(l).show)))
       }
-      jArray.map(l ⇒ (size, l.size, arraySizeError(size, Json.fromValues(l).show)))
-    }
     )
 
     def is[A: Show: Resolvable: Encoder](expected: A) = {
@@ -227,19 +227,19 @@ object JsonSteps {
       AssertStep(
         title = assertionTitle,
         action = s ⇒ Assertion.either {
-        for {
-          expectedArrayJson ← resolveAndParseJson(expected, s, resolver)
-          expectedArray ← Either.fromOption(expectedArrayJson.asArray, NotAnArrayError(expected))
-          sessionValue ← s.get(sessionKey)
-          arrayFromSession ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-          actualValue ← removeIgnoredPathFromElements(s, arrayFromSession)
-        } yield {
-          if (ordered)
-            GenericEqualityAssertion(expectedArray, actualValue)
-          else
-            CollectionsContainSameElements(expectedArray, actualValue)
+          for {
+            expectedArrayJson ← resolveAndParseJson(expected, s, resolver)
+            expectedArray ← Either.fromOption(expectedArrayJson.asArray, NotAnArrayError(expected))
+            sessionValue ← s.get(sessionKey)
+            arrayFromSession ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
+            actualValue ← removeIgnoredPathFromElements(s, arrayFromSession)
+          } yield {
+            if (ordered)
+              GenericEqualityAssertion(expectedArray, actualValue)
+            else
+              CollectionsContainSameElements(expectedArray, actualValue)
+          }
         }
-      }
       )
     }
 
@@ -259,13 +259,13 @@ object JsonSteps {
       AssertStep(
         title = title,
         action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-        applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).flatMap { jArr ⇒
-          elements.toList.traverseU(resolveAndParseJson(_, s, resolver)).map { resolvedJson ⇒
-            val containsAll = resolvedJson.forall(jArr.contains)
-            (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
+          applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).flatMap { jArr ⇒
+            elements.toList.traverseU(resolveAndParseJson(_, s, resolver)).map { resolvedJson ⇒
+              val containsAll = resolvedJson.forall(jArr.contains)
+              (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
+            }
           }
         }
-      }
       )
   }
 

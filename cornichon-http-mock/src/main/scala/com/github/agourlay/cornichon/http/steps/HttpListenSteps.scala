@@ -15,8 +15,8 @@ object HttpListenSteps {
     def received_calls(count: Int) = AssertStep(
       title = s"HTTP mock server '$name' received '$count' calls",
       action = s ⇒ Assertion.either {
-      s.get(s"$name$nbReceivedCallsSuffix").map(c ⇒ GenericEqualityAssertion(count, c.toInt))
-    }
+        s.get(s"$name$nbReceivedCallsSuffix").map(c ⇒ GenericEqualityAssertion(count, c.toInt))
+      }
     )
 
     def received_requests =

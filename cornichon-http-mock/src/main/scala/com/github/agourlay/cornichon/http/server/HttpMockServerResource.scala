@@ -10,7 +10,7 @@ import io.circe.Json
 import scala.concurrent.ExecutionContext
 
 case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range])(implicit ec: ExecutionContext)
-    extends BlockScopedResource {
+  extends BlockScopedResource {
 
   //TODO replace akka-http by a library that does not need a global ActorSystem nor one per mock...
   implicit val as = BaseFeature.globalRuntime._2

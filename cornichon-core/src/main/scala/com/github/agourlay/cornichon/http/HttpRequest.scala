@@ -38,7 +38,7 @@ trait BaseRequest {
 }
 
 case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
-    extends BaseRequest {
+  extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
   def addParams(params: (String, String)*) = copy(params = this.params ++ params)
@@ -93,7 +93,7 @@ object HttpStreams {
 }
 
 case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])
-    extends BaseRequest {
+  extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
   def addParams(params: (String, String)*) = copy(params = this.params ++ params)
