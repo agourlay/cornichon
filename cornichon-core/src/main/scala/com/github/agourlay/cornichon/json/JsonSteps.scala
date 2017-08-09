@@ -63,11 +63,20 @@ object JsonSteps {
 
     def whitelisting = copy(whitelist = true)
 
+    def is[A: Show: Resolvable: Encoder](expected: Either[CornichonError, A]): AssertStep = expected match {
+      case Left(e) ⇒
+        val baseTitle = if (jsonPath == JsonPath.root) s"$target " else s"$target's field '$jsonPath'"
+        AssertStep(jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist), s ⇒ Assertion.either(Left(e)))
+      case Right(a) ⇒
+        is(a)
+    }
+
     def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expected" else s"$target's field '$jsonPath' is $expected"
+      val expectedShow = expected.show
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expectedShow" else s"$target's field '$jsonPath' is $expectedShow"
 
       def handleMatchers(session: Session, sessionValueWithFocusJson: Json) =
-        MatcherService.findAllMatchers(expected.show).flatMap { matchers ⇒
+        MatcherService.findAllMatchers(expectedShow).flatMap { matchers ⇒
           if (matchers.nonEmpty) {
             val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(MatcherService.quoteMatchers)
             resolveAndParseJson(withQuotedMatchers, session, resolver)
