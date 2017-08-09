@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.core
 import java.io.{ PrintWriter, StringWriter }
 
 import cats.data.NonEmptyList
+import cats.syntax.either._
 
 import scala.util.control.NoStackTrace
 
@@ -30,6 +31,9 @@ object CornichonError {
 
   def fromThrowable(exception: Throwable): CornichonError =
     StepExecutionError(exception)
+
+  def catchThrowable[A](f: ⇒ A): Either[CornichonError, A] =
+    Either.catchNonFatal(f).leftMap(fromThrowable)
 }
 
 case class StepExecutionError[A](e: Throwable) extends CornichonError {
