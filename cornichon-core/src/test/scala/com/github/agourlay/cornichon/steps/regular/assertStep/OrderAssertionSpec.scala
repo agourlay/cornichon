@@ -5,9 +5,9 @@ import cats.instances.int._
 import org.scalatest.{ Matchers, WordSpec }
 
 class OrderAssertionSpec extends WordSpec
-    with Matchers
-    with ValidatedMatchers
-    with ValidatedValues {
+  with Matchers
+  with ValidatedMatchers
+  with ValidatedValues {
 
   "OrderAssertion" must {
 

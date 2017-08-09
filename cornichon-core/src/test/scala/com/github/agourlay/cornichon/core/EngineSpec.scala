@@ -40,7 +40,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
                   |'4'
                   |but actual result is:
                   |'5'"""
-                  .stripMargin.trim
+                    .stripMargin.trim
                 )
               case _ ⇒ fail(s"Should be a FailedScenarioReport but got \n${res.logs}")
             }
@@ -78,7 +78,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
                 |but actual result is:
                 |'false'
                 |""".
-                stripMargin
+                  stripMargin
               )
             }
           case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")

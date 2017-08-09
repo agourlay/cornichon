@@ -6,9 +6,9 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest._
 
 class MatcherResolverSpec extends WordSpec
-    with Matchers
-    with PropertyChecks
-    with EitherValues {
+  with Matchers
+  with PropertyChecks
+  with EitherValues {
 
   private val resolver = MatcherResolver()
 

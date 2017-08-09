@@ -11,11 +11,11 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 
 class ResolverSpec extends WordSpec
-    with Matchers
-    with OptionValues
-    with PropertyChecks
-    with EitherValues
-    with EitherMatchers {
+  with Matchers
+  with OptionValues
+  with PropertyChecks
+  with EitherValues
+  with EitherMatchers {
 
   private val resolver = Resolver.withoutExtractor()
 

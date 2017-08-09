@@ -6,9 +6,9 @@ import com.github.agourlay.cornichon.steps.StepUtilSpec
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 class AssertStepSpec extends AsyncWordSpec
-    with Matchers
-    with EitherValues
-    with StepUtilSpec {
+  with Matchers
+  with EitherValues
+  with StepUtilSpec {
 
   "AssertStep" must {
 

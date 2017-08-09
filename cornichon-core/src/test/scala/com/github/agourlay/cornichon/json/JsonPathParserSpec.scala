@@ -7,10 +7,10 @@ import org.scalatest.{ EitherValues, Matchers, WordSpec }
 import com.github.agourlay.cornichon.json.JsonPathParserSpec._
 
 class JsonPathParserSpec extends WordSpec
-    with Matchers
-    with PropertyChecks
-    with EitherValues
-    with EitherMatchers {
+  with Matchers
+  with PropertyChecks
+  with EitherValues
+  with EitherMatchers {
 
   "JsonPathParser" when {
     "parseJsonPath" must {

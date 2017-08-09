@@ -8,9 +8,9 @@ import com.github.agourlay.cornichon.matchers.Matchers._
 import io.circe.Json
 
 class MatchersSpec extends WordSpec
-    with Matchers
-    with PropertyChecks
-    with EitherValues {
+  with Matchers
+  with PropertyChecks
+  with EitherValues {
 
   "Matchers" when {
     "any-integer" must {

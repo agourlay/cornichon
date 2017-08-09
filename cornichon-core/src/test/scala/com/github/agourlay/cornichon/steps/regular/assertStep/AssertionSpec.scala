@@ -4,9 +4,9 @@ import cats.scalatest.{ ValidatedMatchers, ValidatedValues }
 import org.scalatest.{ Matchers, WordSpec }
 
 class AssertionSpec extends WordSpec
-    with Matchers
-    with ValidatedMatchers
-    with ValidatedValues {
+  with Matchers
+  with ValidatedMatchers
+  with ValidatedValues {
 
   "Assertion" when {
 

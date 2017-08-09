@@ -6,10 +6,10 @@ import cats.scalatest.{ EitherMatchers, EitherValues }
 import io.circe.Json
 
 class JsonPathSpec extends WordSpec
-    with Matchers
-    with PropertyChecks
-    with EitherValues
-    with EitherMatchers {
+  with Matchers
+  with PropertyChecks
+  with EitherValues
+  with EitherMatchers {
 
   "JsonPath" must {
 

@@ -9,10 +9,10 @@ import com.github.agourlay.cornichon.core.SessionSpec._
 import scala.util.Random
 
 class SessionSpec extends WordSpec
-    with Matchers
-    with PropertyChecks
-    with EitherValues
-    with EitherMatchers {
+  with Matchers
+  with PropertyChecks
+  with EitherValues
+  with EitherMatchers {
 
   "Session" when {
     "addValue" must {

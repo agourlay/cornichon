@@ -12,11 +12,11 @@ import cats.instances.bigDecimal._
 import cats.scalatest.{ EitherMatchers, EitherValues }
 
 class CornichonJsonSpec extends WordSpec
-    with Matchers
-    with PropertyChecks
-    with CornichonJson
-    with EitherValues
-    with EitherMatchers {
+  with Matchers
+  with PropertyChecks
+  with CornichonJson
+  with EitherValues
+  with EitherMatchers {
 
   def refParser(input: String) =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
