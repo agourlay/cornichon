@@ -3,6 +3,7 @@ package engine
 import java.util.concurrent.{ ExecutorService, Executors }
 
 import cats.instances.int._
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.EffectStep
