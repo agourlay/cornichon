@@ -1,8 +1,9 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import java.util.concurrent.ConcurrentSkipListSet
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.UnaryOperator
 
-import com.github.agourlay.cornichon.core.{ BasicError, Scenario, Session }
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
@@ -10,42 +11,99 @@ import scala.concurrent.Future
 import scala.util.Random
 
 class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+  def randomName = Random.alphanumeric.take(10).mkString
+  import QueueManager._
+
   "ResourceStep" must {
     "acquire a resource and release it before the end of the run even if something blows up in the middle" in {
-      val createQueue = EffectStep("create the queue", s ⇒ F(Right(s.addValue("the-queue", queueResource.create()))))
-      val deleteQueue = EffectStep("delete the queue", s ⇒ F(Right { queueResource.delete(s.get("the-queue").right.get); s }))
-      val resourceStep = ResourceStep("ensure queue exists", createQueue, deleteQueue)
-      val fail = EffectStep("go boom", _ ⇒ F(Left(BasicError("sooo basic"))))
-      val s = Scenario("resource step scenario", resourceStep :: fail :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_ ⇒ queueResource should be('empty))
+      implicit val queueResource = new QueueManager
+      val resourceStep = ResourceStep(
+        "ensure queue exists",
+        createAndStoreQueueInSession("the-queue"),
+        deleteQueue("the-queue")
+      )
+      val scenario = Scenario("", resourceStep :: fail :: Nil)
+
+      val run = engine.runScenario(Session.newEmpty)(scenario)
+
+      run.map { report ⇒
+        val qName = report.session.get("the-queue").right.get
+        queueResource.actionsFor(qName) should be(List(CreateQueue(qName), DeleteQueue(qName)))
+        report should not be 'success
+        report.logs should contain(InfoLogInstruction("cleanup steps", 2))
+        report.logs.find { case SuccessLogInstruction("delete the queue: the-queue", _, _) ⇒ true; case _ ⇒ false } should be('defined)
+      }
     }
 
-    "acquire multiple resources and release them all before the end of the run even if something blows up in the middle" in {
-      val createQueue1 = EffectStep("create the queue1", s ⇒ F(Right(s.addValue("the-queue-1", queueResource.create()))))
-      val deleteQueue1 = EffectStep("delete the queue1", s ⇒ F(Right { queueResource.delete(s.get("the-queue-1").right.get); s }))
-      val createQueue2 = EffectStep("create the queue2", s ⇒ F(Right(s.addValue("the-queue-2", queueResource.create()))))
-      val deleteQueue2 = EffectStep("delete the queue2", s ⇒ F(Right { queueResource.delete(s.get("the-queue-2").right.get); s }))
-      val resourceStep1 = ResourceStep("ensure queue exists", createQueue1, deleteQueue1)
-      val resourceStep2 = ResourceStep("ensure queue exists", createQueue2, deleteQueue2)
-      val fail1 = EffectStep("go boom", _ ⇒ F(Left(BasicError("sooo basic"))))
-      val fail2 = EffectStep("go boom", _ ⇒ F(Left(BasicError("i can't even"))))
-      val s = Scenario("resource step scenario", resourceStep1 :: fail1 :: resourceStep2 :: fail2 :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_ ⇒ queueResource should be('empty))
+    "not run a ResourceStep if a previous step failed but should still clean up the resource steps that did run" in {
+      implicit val queueResource = new QueueManager
+      val resourceStep1 = ResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
+      val resourceStep2 = ResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), deleteQueue("q2"))
+      val scenario = Scenario("resource step scenario", resourceStep1 :: fail :: resourceStep2 :: Nil)
+
+      val run = engine.runScenario(Session.newEmpty)(scenario)
+
+      run.map { rep ⇒
+        val q1 = rep.session.get("q1").right.get
+        queueResource.actionsFor(q1) should be(List(CreateQueue(q1), DeleteQueue(q1)))
+      }
+    }
+
+    "run all the clean up steps in order" in {
+      implicit val queueResource = new QueueManager
+      val resourceSteps = List.range(1, 10).map(i ⇒ ResourceStep(s"ensure q$i exists", createAndStoreQueueInSession(s"q$i"), deleteQueue(s"q$i")))
+      val scenario = Scenario("resource step scenario", resourceSteps)
+
+      val run = engine.runScenario(Session.newEmpty)(scenario)
+
+      run.map { rep ⇒
+        def q(i: Int) = rep.session.get(s"q$i").right.get
+        queueResource.allActions should be(List.range(1, 10).map(i ⇒ CreateQueue(q(i))) ++ List.range(1, 10).reverse.map(i ⇒ DeleteQueue(q(i))))
+      }
     }
   }
 
+  private def createAndStoreQueueInSession(key: String)(implicit queueResource: QueueManager) =
+    EffectStep(
+      s"create the queue: $key",
+      s ⇒ F {
+        val name = key + "-" + randomName
+        queueResource.create(name)
+        Right(s.addValue(key, name))
+      }
+    )
+
+  private def deleteQueue(key: String)(implicit queueResource: QueueManager) =
+    EffectStep(
+      s"delete the queue: $key",
+      s ⇒ Future {
+        Thread.sleep(Random.nextInt(1000))
+        queueResource.delete(s.get(key).right.get)
+        Right(s)
+      }
+    )
+
+  val fail = EffectStep("go boom", _ ⇒ F(Left(BasicError("sooo basic"))))
+
   private def F[T] = Future.successful[T] _
-  private val queueResource = new QueueManager
 
   class QueueManager {
-    private val state = new ConcurrentSkipListSet[String]()
-    def create(): String = {
-      val queueName = Random.alphanumeric.take(10).mkString
-      state.add(queueName)
-      queueName
+    private val state = new AtomicReference[List[Action]](Nil)
+    def create(name: String): Unit = state.getAndUpdate(CreateQueue(name) :: (_: List[Action]))
+    def delete(name: String): Unit = state.getAndUpdate(DeleteQueue(name) :: (_: List[Action]))
+    def actionsFor(name: String) = state.get().collect {
+      case a @ CreateQueue(`name`) ⇒ a
+      case a @ DeleteQueue(`name`) ⇒ a
+    }.reverse
+    def allActions = state.get().reverse
+  }
+  object QueueManager {
+    sealed trait Action
+    case class CreateQueue(name: String) extends Action
+    case class DeleteQueue(name: String) extends Action
+    implicit def fnToUnaryOp[A](f: A ⇒ A): UnaryOperator[A] = new UnaryOperator[A] {
+      def apply(t: A) = f(t)
     }
-    def delete(name: String): Unit = state.remove(name)
-    def isEmpty = state.isEmpty
   }
 
 }

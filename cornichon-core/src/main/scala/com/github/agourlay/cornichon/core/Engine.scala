@@ -43,24 +43,32 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
             }
           } else {
             // Reuse mainline session
-            val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+            val finallyLog = InfoLogInstruction("cleanup steps", initMargin + 1)
             val finallyRunState = mainState.withSteps(mainState.cleanupSteps).withLog(finallyLog)
             runStepsWithoutShortCircuit(finallyRunState).map {
               case (finallyState, finallyReport) ⇒
-                ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidatedNel))
+                ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidated))
             }
           }
       }
     }
 
-  def runStepsWithoutShortCircuit(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
+  def runStepsWithoutShortCircuit(initialRunState: RunState): Future[(RunState, NonEmptyList[FailedStep] Either Done)] = {
     import cats.syntax.cartesian._
     initialRunState.remainingSteps
       .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
-      .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
-        case (runStateF, (currentStep, _)) ⇒
-          (runStateF |@| prepareAndRunStep(currentStep, Nil, initialRunState)).map((f, s) ⇒ s)
-      }.runAndDeDup
+      .foldLeft(Future.successful[NonEmptyList[(RunState, FailedStep)] Either (RunState, Done)](Right((initialRunState, Done)))) {
+        case (runStateF: Future[Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]], (currentStep: Step, tail: Seq[Step])) ⇒
+          runStateF.flatMap {
+            failureOrDoneWithRunState ⇒
+              val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
+              val value = prepareAndRunStep(currentStep, tail, runState).value
+              value.recover({ case NonFatal(ex) ⇒ (runState, FailedStep.fromSingle(currentStep, StepExecutionError(ex))).asLeft[(RunState, Done)] }).map {
+                currentStepResult ⇒
+                  (currentStepResult.toValidatedNel |@| failureOrDoneWithRunState.toValidated).map({ case ((rs1, _), (rs2, _)) ⇒ (rs1 combine rs2, Done) }).toEither
+              }
+          }
+      }.deDup
   }
 
   def runSteps(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
@@ -73,7 +81,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       }.runAndDeDup
   }
 
-  private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState) = {
+  private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState): EitherT[Future, (RunState, FailedStep), (RunState, Done)] = {
     stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
       (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
     }.fold(
@@ -131,13 +139,20 @@ object Engine {
 
 object FutureEitherTHelpers {
 
-  implicit class ToMonad[A, B, C](fe: Future[(A, B Either C)]) {
+  implicit class ToEitherTOps[A, B, C](fe: Future[(A, B Either C)]) {
     def toEitherT(implicit ec: scala.concurrent.ExecutionContext) = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
   }
 
-  implicit class UnMonad[A, B, C](fe: EitherT[Future, (A, B), (A, C)]) {
+  implicit class FactorOutCommandAInEitherTOps[A, B, C](fe: EitherT[Future, (A, B), (A, C)]) {
     def runAndDeDup(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[B, C])] = fe.value.map(_.fold(
       { case (a, b) ⇒ (a, Left(b)) },
+      { case (a, c) ⇒ (a, Right(c)) }
+    ))
+  }
+
+  implicit class FactorOutCommonAOps[A, B, C](fe: Future[Either[NonEmptyList[(A, B)], (A, C)]]) {
+    def deDup(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[NonEmptyList[B], C])] = fe.map(_.fold(
+      { abs ⇒ (abs.head._1, Left(abs.map(_._2))) },
       { case (a, c) ⇒ (a, Right(c)) }
     ))
   }
