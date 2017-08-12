@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 
 import scala.collection.concurrent.TrieMap
 
-class Resolver(extractors: Map[String, Mapper]) {
+class PlaceholderResolver(extractors: Map[String, Mapper]) {
 
   val r = new scala.util.Random()
 
@@ -100,8 +100,8 @@ class Resolver(extractors: Map[String, Mapper]) {
   }
 }
 
-object Resolver {
-  def withoutExtractor(): Resolver = new Resolver(Map.empty[String, Mapper])
+object PlaceholderResolver {
+  def withoutExtractor(): PlaceholderResolver = new PlaceholderResolver(Map.empty[String, Mapper])
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {

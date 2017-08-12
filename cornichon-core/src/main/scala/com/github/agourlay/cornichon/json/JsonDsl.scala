@@ -13,6 +13,6 @@ trait JsonDsl {
 
   def show_key_as_json(key: String, indice: Option[Int] = None) = show_session(key, indice, v ⇒ parseJsonUnsafe(v).show)
 
-  def session_json_values(k1: String, k2: String) = JsonValuesStepBuilder(k1, k2, resolver)
+  def session_json_values(k1: String, k2: String) = JsonValuesStepBuilder(k1, k2, placeholderResolver)
 
 }

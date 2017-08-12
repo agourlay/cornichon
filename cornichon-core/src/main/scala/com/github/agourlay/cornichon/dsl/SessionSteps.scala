@@ -5,16 +5,17 @@ import cats.instances.string._
 import cats.instances.boolean._
 import cats.syntax.either._
 import cats.syntax.show._
-
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.matchers.MatcherResolver
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, CustomMessageEqualityAssertion, GenericEqualityAssertion }
 
 object SessionSteps {
 
   case class SessionStepBuilder(
-      private val resolver: Resolver,
+      private val placeholderResolver: PlaceholderResolver,
+      private val matcherResolver: MatcherResolver,
       private val key: String,
       private val indice: Option[Int] = None
   ) {
@@ -25,7 +26,7 @@ object SessionSteps {
       title = s"session key '$key' is '$expected'",
       action = s ⇒ Assertion.either {
         for {
-          filledPlaceholders ← resolver.fillPlaceholders(expected)(s)
+          filledPlaceholders ← placeholderResolver.fillPlaceholders(expected)(s)
           keyValue ← s.get(key, indice)
         } yield GenericEqualityAssertion(filledPlaceholders, keyValue)
       }
@@ -44,7 +45,7 @@ object SessionSteps {
       action = s ⇒ CustomMessageEqualityAssertion(None, s.getOpt(key, indice), keyIsPresentError(key))
     )
 
-    def asJson = JsonStepBuilder(resolver, SessionKey(key))
+    def asJson = JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(key))
 
   }
 

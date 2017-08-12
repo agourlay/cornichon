@@ -6,14 +6,14 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.util.Timing._
 import com.github.agourlay.cornichon.util.Printing._
 import monix.execution.Scheduler
 
 import scala.concurrent.Future
 
-case class WithDataInputStep(nested: List[Step], where: String, r: Resolver) extends WrapperStep {
+case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderResolver) extends WrapperStep {
 
   val title = s"With data input block $where"
 

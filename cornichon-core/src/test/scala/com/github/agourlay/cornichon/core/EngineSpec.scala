@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.dsl.ProvidedInstances._
-import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import monix.execution.Scheduler
@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext
 class EngineSpec extends AsyncWordSpec with Matchers {
 
   implicit val scheduler = Scheduler(ExecutionContext.global)
-  val engine = Engine.withStepTitleResolver(Resolver.withoutExtractor())
+  val engine = Engine.withStepTitleResolver(PlaceholderResolver.withoutExtractor())
 
   "An engine" when {
     "runScenario" must {

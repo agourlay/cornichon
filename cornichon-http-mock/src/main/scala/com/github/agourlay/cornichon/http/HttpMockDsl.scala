@@ -10,7 +10,7 @@ import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource
 trait HttpMockDsl {
   this: BaseFeature ⇒
 
-  def httpListen(label: String) = HttpListenStepBuilder(label, resolver)
+  def httpListen(label: String) = HttpListenStepBuilder(label, placeholderResolver, matcherResolver)
 
   def HttpListenTo(interface: Option[String], portRange: Option[Range])(label: String) =
     BodyElementCollector[Step, Step] { steps ⇒

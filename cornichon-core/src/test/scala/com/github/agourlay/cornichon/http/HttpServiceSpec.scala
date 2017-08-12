@@ -5,7 +5,7 @@ import akka.stream.ActorMaterializer
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.client.AkkaHttpClient
-import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
 import scala.concurrent.duration._
@@ -21,7 +21,7 @@ class HttpServiceSpec extends WordSpec
   implicit val mat = ActorMaterializer()
 
   val client = new AkkaHttpClient()
-  val service = new HttpService("", 2000 millis, client, Resolver.withoutExtractor())
+  val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor())
 
   override def afterAll() = {
     client.shutdown().map { _ ⇒ system.terminate() }

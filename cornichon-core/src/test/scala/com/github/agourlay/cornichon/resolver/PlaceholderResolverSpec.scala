@@ -10,14 +10,14 @@ import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 
-class ResolverSpec extends WordSpec
+class PlaceholderResolverSpec extends WordSpec
   with Matchers
   with OptionValues
   with PropertyChecks
   with EitherValues
   with EitherMatchers {
 
-  private val resolver = Resolver.withoutExtractor()
+  private val resolver = PlaceholderResolver.withoutExtractor()
 
   "Resolver" when {
     "findPlaceholders" must {
@@ -143,7 +143,7 @@ class ResolverSpec extends WordSpec
 
       "fail with clear error message if key is defined in both Session and Extractors" in {
         val extractor = JsonMapper("customer", "id")
-        val resolverWithExt = new Resolver(Map("customer-id" → extractor))
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
         val s = Session.newEmpty.addValue("customer-id", "12345")
         resolverWithExt.fillPlaceholders("<customer-id>")(s).leftValue should be(AmbiguousKeyDefinition("customer-id"))
       }

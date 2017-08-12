@@ -118,7 +118,7 @@ trait Dsl extends ProvidedInstances {
 
   def WithDataInputs(where: String) =
     BodyElementCollector[Step, Step] { steps ⇒
-      WithDataInputStep(steps, where, resolver)
+      WithDataInputStep(steps, where, placeholderResolver)
     }
 
   def wait(duration: FiniteDuration) = EffectStep.fromAsync(
@@ -130,7 +130,7 @@ trait Dsl extends ProvidedInstances {
     val (key, value) = input
     EffectStep.fromSyncE(
       s"add value '$value' to session under key '$key' ",
-      s ⇒ resolver.fillPlaceholders(value)(s).map(s.addValue(key, _))
+      s ⇒ placeholderResolver.fillPlaceholders(value)(s).map(s.addValue(key, _))
     )
   }
 
@@ -149,7 +149,7 @@ trait Dsl extends ProvidedInstances {
     }
   )
 
-  def session_value(key: String) = SessionStepBuilder(resolver, key)
+  def session_value(key: String) = SessionStepBuilder(placeholderResolver, matcherResolver, key)
 
   def show_session = DebugStep(s ⇒ s"Session content is\n${s.show}".asRight)
 

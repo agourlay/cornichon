@@ -11,7 +11,7 @@ import scala.concurrent.duration.Duration
 
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
-import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
 
@@ -71,7 +71,7 @@ object Engine {
 
   val initMargin = 1
 
-  def withStepTitleResolver(resolver: Resolver)(implicit scheduler: Scheduler) =
+  def withStepTitleResolver(resolver: PlaceholderResolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
   def successLog(title: String, depth: Int, show: Boolean, duration: Duration) =

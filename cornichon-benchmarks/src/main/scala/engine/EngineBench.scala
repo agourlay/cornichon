@@ -5,7 +5,7 @@ import java.util.concurrent.{ ExecutorService, Executors }
 import cats.instances.int._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
-import com.github.agourlay.cornichon.resolver.Resolver
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
@@ -35,7 +35,7 @@ class EngineBench {
   final def beforeAll(): Unit = {
     println("")
     println("Creating Engine...")
-    val resolver = Resolver.withoutExtractor()
+    val resolver = PlaceholderResolver.withoutExtractor()
     es = Executors.newFixedThreadPool(1)
     val scheduler = Scheduler(es)
     engine = Engine.withStepTitleResolver(resolver)(scheduler)

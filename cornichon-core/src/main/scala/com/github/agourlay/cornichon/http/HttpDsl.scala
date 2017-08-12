@@ -72,7 +72,7 @@ trait HttpDsl extends HttpRequestsDsl {
   def headers = HeadersStepBuilder(ordered = false)
 
   //FIXME the body is expected to always contains JSON currently
-  def body = JsonStepBuilder(resolver, SessionKey(lastResponseBodyKey), Some("response body"))
+  def body = JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(lastResponseBodyKey), Some("response body"))
 
   def save_body(target: String) = save_body_path(JsonPath.root → target)
 
@@ -80,7 +80,7 @@ trait HttpDsl extends HttpRequestsDsl {
     val inputs = args.map {
       case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, (session, s) ⇒ {
         for {
-          resolvedPath ← resolver.fillPlaceholders(path)(session)
+          resolvedPath ← placeholderResolver.fillPlaceholders(path)(session)
           jsonPath ← JsonPath.parse(resolvedPath)
           json ← jsonPath.run(s)
         } yield jsonStringValue(json)

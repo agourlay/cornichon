@@ -13,7 +13,7 @@ import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.resolver.{ Resolvable, Resolver }
+import com.github.agourlay.cornichon.resolver.{ Resolvable, PlaceholderResolver }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 
@@ -22,7 +22,7 @@ import io.circe.Encoder
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: Resolver)(implicit ec: ExecutionContext) {
+class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: PlaceholderResolver)(implicit ec: ExecutionContext) {
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {

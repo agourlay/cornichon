@@ -5,19 +5,16 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
 import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, HttpClient }
 import com.github.agourlay.cornichon.json.JsonDsl
-import com.github.agourlay.cornichon.resolver.{ Mapper, Resolver }
+import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.github.agourlay.cornichon.feature.BaseFeature._
-
+import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
 import com.typesafe.config.ConfigFactory
-
 import monix.execution.Scheduler
-
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
@@ -33,7 +30,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var afterEachScenario: Seq[Step] = Nil
 
   implicit lazy val (globalClient, _, _, scheduler) = globalRuntime
-  private lazy val engine = Engine.withStepTitleResolver(resolver)
+  private lazy val engine = Engine.withStepTitleResolver(placeholderResolver)
 
   private lazy val config = ConfigFactory.load().as[Config]("cornichon")
   lazy val requestTimeout = config.requestTimeout
@@ -41,7 +38,8 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   lazy val executeScenariosInParallel = config.executeScenariosInParallel
 
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
-  lazy val resolver = new Resolver(registerExtractors)
+  lazy val placeholderResolver = new PlaceholderResolver(registerExtractors)
+  lazy val matcherResolver = new MatcherResolver(registerMatcher)
 
   def runScenario(s: Scenario) = {
     println(s"Starting scenario '${s.name}'")
@@ -51,11 +49,13 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   }
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, globalClient, resolver)
+    new HttpService(baseUrl, timeout, globalClient, placeholderResolver)
 
   def feature: FeatureDef
 
   def registerExtractors: Map[String, Mapper] = Map.empty
+
+  def registerMatcher: List[Matcher] = Nil
 
   def beforeFeature(before: ⇒ Unit): Unit =
     beforeFeature = beforeFeature :+ (() ⇒ before)
