@@ -5,7 +5,8 @@ import java.util.UUID
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.SessionSpec._
-import com.github.agourlay.cornichon.core.{ KeyNotFoundInSession, Session }
+import com.github.agourlay.cornichon.core.Session
+import com.github.agourlay.cornichon.core.Session.KeyNotFoundInSession
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
@@ -103,7 +104,7 @@ class PlaceholderResolverSpec extends WordSpec
       "return ResolverError if placeholder not found" in {
         val session = Session.newEmpty.addValue("project-name", "cornichon")
         val content = "This project is named <project-new-name>"
-        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("project-new-name", None, session))
+        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("project-new-name", session))
       }
 
       "resolve two placeholders" in {
@@ -115,7 +116,7 @@ class PlaceholderResolverSpec extends WordSpec
       "return ResolverError for the first placeholder not found" in {
         val session = Session.newEmpty.addValues("project-name" → "cornichon", "taste" → "tasty")
         val content = "This project is named <project-name> and is super <new-taste>"
-        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("new-taste", None, session))
+        resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("new-taste", session))
       }
 
       "generate random uuid if <random-uuid>" in {

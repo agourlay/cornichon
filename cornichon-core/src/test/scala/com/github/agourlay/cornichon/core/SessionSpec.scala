@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import cats.scalatest.{ EitherMatchers, EitherValues }
+import com.github.agourlay.cornichon.core.Session.KeyNotFoundInSession
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Gen
 import org.scalatest.{ Matchers, WordSpec }
@@ -42,7 +43,7 @@ class SessionSpec extends WordSpec
       "throw an error if the key does not exist" in {
         forAll(keyGen) { key ⇒
           val s = Session.newEmpty
-          s.get(key) should beLeft[CornichonError](KeyNotFoundInSession(key, None, s))
+          s.get(key) should beLeft[CornichonError](KeyNotFoundInSession(key, s))
         }
       }
 
@@ -67,11 +68,18 @@ class SessionSpec extends WordSpec
         }
       }
 
-      "thrown an error if the indice is negative" in {
-        forAll(keyGen, valueGen) { (key, firstValue) ⇒
-          val s = Session.newEmpty.addValue(key, firstValue)
-          s.get(key, Some(-1)) should beLeft[CornichonError](KeyNotFoundInSession(key, Some(-1), s))
+      "thrown an error if the key exists but not the indice " in {
+        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+          val s = Session.newEmpty.addValue(key, firstValue).addValue(key, secondValue)
+          val error = IndiceNotFoundForKey(key, 3, Vector(firstValue, secondValue))
+          s.get(key, Some(3)) should beLeft[CornichonError](error)
+          error.renderedMessage should be(s"indice '3' not found for key '$key' with values \n0 -> $firstValue\n1 -> $secondValue")
         }
+      }
+
+      "propose similar keys in Session in case of a missing key" in {
+        val s = Session.newEmpty.addValues("my-key" -> "blah", "my_keys" -> "bloh", "not-my-key" -> "blih")
+        s.get("my_key").leftValue.renderedMessage should be("key 'my_key' can not be found in session maybe you meant 'my-key' or 'my_keys' \nmy-key -> Values(blah)\nmy_keys -> Values(bloh)\nnot-my-key -> Values(blih)")
       }
     }
 

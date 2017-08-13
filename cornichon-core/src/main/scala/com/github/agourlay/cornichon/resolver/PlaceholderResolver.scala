@@ -23,11 +23,10 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
     builtInPlaceholders.lift(ph.key).map(Right(_)).getOrElse {
       val otherKeyName = ph.key
       val otherKeyIndice = ph.index
-      (session.getOpt(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
-        case (Some(_), Some(_))           ⇒ Left(AmbiguousKeyDefinition(otherKeyName))
-        case (None, None)                 ⇒ Left(KeyNotFoundInSession(otherKeyName, otherKeyIndice, session))
-        case (Some(valueInSession), None) ⇒ Right(valueInSession)
-        case (None, Some(mapper))         ⇒ applyMapper(mapper, session, ph)
+      (session.get(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
+        case (v, None)               ⇒ v
+        case (Left(_), Some(mapper)) ⇒ applyMapper(mapper, session, ph)
+        case (Right(_), Some(_))     ⇒ Left(AmbiguousKeyDefinition(otherKeyName))
       }
     }
 
