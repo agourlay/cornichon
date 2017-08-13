@@ -14,12 +14,17 @@ import io.circe.Json
 case class MatcherResolver(matchers: List[Matcher] = Nil) {
 
   private val allMatchers = MatcherResolver.builtInMatchers ::: matchers
+  private val allMatchersByKey = allMatchers.groupBy(_.key)
 
   def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] =
     MatcherParser.parse(input)
 
-  def resolveMatcherKeys(m: MatcherKey): Either[CornichonError, Matcher] =
-    allMatchers.find(_.key == m.key).map(Right(_)).getOrElse(Left(MatcherUndefined(m.key)))
+  def resolveMatcherKeys(mk: MatcherKey): Either[CornichonError, Matcher] =
+    allMatchersByKey(mk.key) match {
+      case Nil         ⇒ Left(MatcherUndefined(mk.key))
+      case m :: Nil    ⇒ Right(m)
+      case m :: others ⇒ Left(DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)))
+    }
 
   def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
     findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
@@ -67,4 +72,9 @@ object MatcherResolver {
 
 case class MatcherUndefined(name: String) extends CornichonError {
   val baseErrorMessage = s"there is no matcher named '$name' defined."
+}
+
+case class DuplicateMatcherDefinition(name: String, descriptions: List[String]) extends CornichonError {
+  val baseErrorMessage = s"there are ${descriptions.size} matchers named '$name': " +
+    s"${descriptions.map(d ⇒ s"'$d'").mkString(" and ")}"
 }

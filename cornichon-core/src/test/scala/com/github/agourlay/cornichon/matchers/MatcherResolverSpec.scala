@@ -44,5 +44,12 @@ class MatcherResolverSpec extends WordSpec
         }
       }
     }
+
+    "resolveMatcherKeys" must {
+      "detect duplicate matchers" in {
+        val r = MatcherResolver(Matchers.anyString :: Nil)
+        r.resolveMatcherKeys(MatcherKey(Matchers.anyString.key)).leftValue.renderedMessage should be("there are 2 matchers named 'any-string': 'checks if the field is a String' and 'checks if the field is a String'")
+      }
+    }
   }
 }
