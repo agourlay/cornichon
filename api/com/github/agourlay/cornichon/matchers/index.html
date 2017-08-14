@@ -287,6 +287,12 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.github.agourlay.cornichon">cornichon</a></dd></dl></div>
     </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="class" href="DuplicateMatcherDefinition.html" title=""></a>
+                        <a href="DuplicateMatcherDefinition.html" title="">
+                          DuplicateMatcherDefinition
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="class" href="Matcher.html" title=""></a>
                         <a href="Matcher.html" title="">
                           Matcher
@@ -338,12 +344,6 @@
                         <a class="class" href="MatcherResolver.html" title=""></a>
                         <a href="MatcherResolver.html" title="">
                           MatcherResolver
-                        </a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="object" href="MatcherService$.html" title=""></a>
-                        <a href="MatcherService$.html" title="">
-                          MatcherService
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
@@ -492,7 +492,25 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="com.github.agourlay.cornichon.matchers.Matcher" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="com.github.agourlay.cornichon.matchers.DuplicateMatcherDefinition" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DuplicateMatcherDefinitionextendsCornichonErrorwithProductwithSerializable"></a><a id="DuplicateMatcherDefinition:DuplicateMatcherDefinition"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/matchers/index.html#DuplicateMatcherDefinitionextendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="DuplicateMatcherDefinition.html">
+              <span class="name">DuplicateMatcherDefinition</span>
+            </a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="descriptions">descriptions: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.matchers.Matcher" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MatcherextendsProductwithSerializable"></a><a id="Matcher:Matcher"></a>
       <span class="permalink">
       <a href="../../../../../com/github/agourlay/cornichon/matchers/index.html#MatcherextendsProductwithSerializable" title="Permalink">
@@ -506,7 +524,7 @@
       <span class="symbol">
         <a title="" href="Matcher.html">
               <span class="name">Matcher</span>
-            </a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="predicate">predicate: (<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>) ⇒ <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="predicate">predicate: (<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -542,7 +560,7 @@
       <span class="symbol">
         <a title="" href="MatcherAssertionError.html">
               <span class="name">MatcherAssertionError</span>
-            </a><span class="params">(<span name="m">m: <a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a></span>, <span name="input">input: <a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="m">m: <a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a></span>, <span name="input">input: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -560,7 +578,7 @@
       <span class="symbol">
         <a title="" href="MatcherAssertionEvaluationError.html">
               <span class="name">MatcherAssertionEvaluationError</span>
-            </a><span class="params">(<span name="m">m: <a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a></span>, <span name="input">input: <a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a></span>, <span name="error">error: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="m">m: <a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a></span>, <span name="input">input: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>, <span name="error">error: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -578,7 +596,7 @@
       <span class="symbol">
         <a title="" href="MatcherError.html">
               <span class="name">MatcherError</span>
-            </a><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="error">error: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="error">error: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -596,7 +614,7 @@
       <span class="symbol">
         <a title="" href="MatcherKey.html">
               <span class="name">MatcherKey</span>
-            </a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.AnyVal" class="extype" target="_top">AnyVal</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.3/scala/collection/immutable/List.html#scala.AnyVal" class="extype" name="scala.collection.immutable.List">AnyVal</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -632,25 +650,25 @@
       <span class="symbol">
         <a title="" href="MatcherParsingError.html">
               <span class="name">MatcherParsingError</span>
-            </a><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="error">error: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="error">error: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.matchers.MatcherResolver" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="MatcherResolverextendsAnyRef"></a><a id="MatcherResolver:MatcherResolver"></a>
+      <a id="MatcherResolverextendsProductwithSerializable"></a><a id="MatcherResolver:MatcherResolver"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/matchers/index.html#MatcherResolverextendsAnyRef" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/matchers/index.html#MatcherResolverextendsProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
         <a title="" href="MatcherResolver.html">
               <span class="name">MatcherResolver</span>
-            </a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+            </a><span class="params">(<span name="matchers">matchers: <span class="extype" name="scala.List">List</span>[<a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a>] = <span class="symbol">Nil</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -668,7 +686,7 @@
       <span class="symbol">
         <a title="" href="MatcherUndefined.html">
               <span class="name">MatcherUndefined</span>
-            </a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.2/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -730,25 +748,7 @@
       <span class="symbol">
         <a title="" href="MatcherResolver$.html">
               <span class="name">MatcherResolver</span>
-            </a>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.matchers.MatcherService" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="MatcherService"></a><a id="MatcherService:MatcherService"></a>
-      <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/matchers/index.html#MatcherService" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="MatcherService$.html">
-              <span class="name">MatcherService</span>
-            </a>
+            </a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
