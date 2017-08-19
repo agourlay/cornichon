@@ -5,7 +5,9 @@ import scala.concurrent.duration._
 
 class MockServerExample extends CornichonFeature with HttpMockDsl {
 
-  def HttpMock = HttpListenTo(interface = None, portRange = None)_
+  override lazy val requestTimeout = 3.seconds
+
+  def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 9000)))_
 
   def feature =
     Feature("Cornichon feature mock server examples") {
