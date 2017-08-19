@@ -15,7 +15,6 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
   override def tasks(taskDefs: Array[TaskDef]) = {
     BaseFeature.disableAutomaticResourceCleanup()
     gotTasks.set(true)
-    implicit val ec = BaseFeature.globalRuntime._4
     taskDefs.map(new SbtCornichonTask(_))
   }
 

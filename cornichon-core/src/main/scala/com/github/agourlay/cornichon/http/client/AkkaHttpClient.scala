@@ -15,21 +15,18 @@ import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.NotUsed
-
 import cats.syntax.either._
 import cats.syntax.show._
 import cats.instances.future._
 import cats.data.EitherT
 import cats.Show
 import cats.instances.string._
-
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException }
+import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest }
-
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl._
@@ -43,7 +40,10 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
 import scala.util.{ Failure, Success }
 
-class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionContext, mat: ActorMaterializer) extends HttpClient {
+class AkkaHttpClient(implicit executionContext: ExecutionContext) extends HttpClient {
+
+  implicit private lazy val system = ActorSystem("cornichon-actor-system")
+  implicit private lazy val mat = ActorMaterializer()
 
   // Disable JDK built-in checks
   // https://groups.google.com/forum/#!topic/akka-user/ziI1fPBtxV8
@@ -176,7 +176,11 @@ class AkkaHttpClient(implicit system: ActorSystem, executionContext: ExecutionCo
         Left(UnmarshallingResponseError(e, httpResponse.toString()))
     }
 
-  override def shutdown() = Http().shutdownAllConnectionPools()
+  override def shutdown() = for {
+    _ ← Http().shutdownAllConnectionPools()
+    _ ← Future.successful(mat.shutdown())
+    _ ← system.terminate()
+  } yield Done
 
   override def paramsFromUrl(url: String): Seq[(String, String)] = Query(url)
 

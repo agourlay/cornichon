@@ -3,8 +3,6 @@ package com.github.agourlay.cornichon.feature
 import java.util.concurrent.{ Executors, ThreadFactory }
 import java.util.concurrent.atomic.AtomicInteger
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
@@ -13,8 +11,11 @@ import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.github.agourlay.cornichon.feature.BaseFeature._
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
+
 import com.typesafe.config.ConfigFactory
+
 import monix.execution.Scheduler
+
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
@@ -29,7 +30,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  implicit lazy val (globalClient, _, _, scheduler) = globalRuntime
+  implicit lazy val (globalClient, scheduler) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(placeholderResolver)
 
   private lazy val config = ConfigFactory.load().as[Config]("cornichon")
@@ -73,9 +74,6 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 // Protect and free resources
 object BaseFeature {
 
-  implicit private lazy val system = ActorSystem("cornichon-actor-system")
-  implicit private lazy val mat = ActorMaterializer()
-
   private lazy val executorService = Executors.newScheduledThreadPool(
     Runtime.getRuntime.availableProcessors() + 1,
     new ThreadFactory {
@@ -109,11 +107,9 @@ object BaseFeature {
   def shutDownGlobalResources(): Future[Unit] =
     for {
       _ ← client.shutdown()
-      _ ← Future.successful(mat.shutdown())
-      _ ← system.terminate()
     } yield executorService.shutdownNow()
 
-  lazy val globalRuntime = (client, system, mat, scheduler)
+  lazy val globalRuntime = (client, scheduler)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
   def releaseGlobalRuntime(): Unit = registeredUsage.decrementAndGet()
 }
