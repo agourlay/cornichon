@@ -1,5 +1,5 @@
 import scalariform.formatter.preferences._
-import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import com.typesafe.sbt.SbtScalariform.autoImport
 import sbt.Developer
 import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
@@ -112,7 +112,7 @@ lazy val core =
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(publishingSettings)
-    .settings(scalariformSettings)
+    .settings(formattingSettings)
     .settings(
       name := "cornichon-core",
       libraryDependencies ++= Seq(
@@ -147,7 +147,7 @@ lazy val scalatest =
     .configs(IntegrationTest)
     .settings(Defaults.itSettings : _*)
     .settings(commonSettings)
-    .settings(scalariformSettings)
+    .settings(formattingSettings)
     .settings(
       name := "cornichon",
       libraryDependencies ++= Seq(
@@ -162,7 +162,7 @@ lazy val experimental =
     .dependsOn(core)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
-    .settings(scalariformSettings)
+    .settings(formattingSettings)
     .settings(
       name := "cornichon-experimental",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework"),
@@ -177,7 +177,7 @@ lazy val httpMock =
     .dependsOn(core, scalatest % Test)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
-    .settings(scalariformSettings)
+    .settings(formattingSettings)
     .settings(
       name := "cornichon-http-mock",
       libraryDependencies ++= Seq(
@@ -237,8 +237,8 @@ lazy val docSettings = Seq(
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )
 
-lazy val scalariformSettings = SbtScalariform.scalariformSettings ++ Seq(
-  ScalariformKeys.preferences := ScalariformKeys.preferences.value
+lazy val formattingSettings = scalariformSettings(autoformat = true) ++ Seq(
+  scalariformPreferences := scalariformPreferences.value
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
     .setPreference(DoubleIndentConstructorArguments, true)

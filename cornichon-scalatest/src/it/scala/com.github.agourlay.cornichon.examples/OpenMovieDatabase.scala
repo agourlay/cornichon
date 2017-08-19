@@ -11,14 +11,14 @@ class OpenMovieDatabase extends CornichonFeature {
       "OMDB is not public anymore, an API key is necessary now... " +
         "Find another provided or remove those tests :(") {
 
-      Scenario("search for GOT") {
+        Scenario("search for GOT") {
 
-        When I get("/").withParams("t" -> "Game of Thrones")
+          When I get("/").withParams("t" -> "Game of Thrones")
 
-        Then assert status.is(200)
+          Then assert status.is(200)
 
-        And assert body.ignoring("imdbRating", "imdbVotes", "Awards", "Poster", "Plot", "Ratings").is(
-          """
+          And assert body.ignoring("imdbRating", "imdbVotes", "Awards", "Poster", "Plot", "Ratings").is(
+            """
           {
             "Title": "Game of Thrones",
             "Year": "2011–",
@@ -39,10 +39,10 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body.path("imdbRating").is("9.5")
+          And assert body.path("imdbRating").is("9.5")
 
-        And assert body.whitelisting.is(
-          """
+          And assert body.whitelisting.is(
+            """
           {
             "Title": "Game of Thrones",
             "Year": "2011–",
@@ -51,20 +51,20 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert headers.contain("Server" -> "cloudflare-nginx")
+          And assert headers.contain("Server" -> "cloudflare-nginx")
 
-      }
+        }
 
-      Scenario("list GOT season 1 episodes") {
+        Scenario("list GOT season 1 episodes") {
 
-        When I get("/").withParams(
-          "t" -> "Game of Thrones",
-          "Season" -> "1"
-        )
+          When I get("/").withParams(
+            "t" -> "Game of Thrones",
+            "Season" -> "1"
+          )
 
-        Then assert status.is(200)
+          Then assert status.is(200)
 
-        And assert body.ignoring("Episodes", "Response").is("""
+          And assert body.ignoring("Episodes", "Response").is("""
           {
             "Title": "Game of Thrones",
             "Season": "1",
@@ -72,8 +72,8 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body.is(
-          """
+          And assert body.is(
+            """
           {
             "Title": "Game of Thrones",
             "Season": "1",
@@ -153,10 +153,10 @@ class OpenMovieDatabase extends CornichonFeature {
             "Response": "True"
           }
           """
-        )
+          )
 
-        And assert body.path("Episodes").is(
-          """
+          And assert body.path("Episodes").is(
+            """
             |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
             | "Winter Is Coming"                      | "2011-04-17" |   "1"   |    "9.0"   | "tt1480055" |
             | "The Kingsroad"                         | "2011-04-24" |   "2"   |    "8.8"   | "tt1668746" |
@@ -170,10 +170,10 @@ class OpenMovieDatabase extends CornichonFeature {
             | "Fire and Blood"                        | "2011-06-19" |  "10"   |    "9.4"   | "tt1851397" |
           """)
 
-        And assert body.path("Episodes").asArray.hasSize(10)
+          And assert body.path("Episodes").asArray.hasSize(10)
 
-        And assert body.path("Episodes[0]").is(
-          """
+          And assert body.path("Episodes[0]").is(
+            """
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",
@@ -183,9 +183,9 @@ class OpenMovieDatabase extends CornichonFeature {
           }
           """)
 
-        And assert body.path("Episodes[0].Released").is("2011-04-17")
+          And assert body.path("Episodes[0].Released").is("2011-04-17")
 
-        And assert body.path("Episodes").asArray.contains("""
+          And assert body.path("Episodes").asArray.contains("""
           {
             "Title": "Winter Is Coming",
             "Released": "2011-04-17",
@@ -194,6 +194,6 @@ class OpenMovieDatabase extends CornichonFeature {
             "imdbID": "tt1480055"
           }
           """)
+        }
       }
-    }
 }

@@ -47,7 +47,7 @@ class VectorBench {
   def appendConcat() = {
     val right = Vector.fill(vectorSize.toInt)(vectorSize)
     val left = Vector.fill(vectorSize.toInt)(vectorSize)
-    val res = left.foldLeft(right)((v, o) => v :+ o)
+    val res = left.foldLeft(right)((v, o) ⇒ v :+ o)
     assert(res.size == vectorSize.toInt * 2)
   }
 

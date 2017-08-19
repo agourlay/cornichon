@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.examples
 import cats.syntax.either._
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 
 import scala.concurrent.duration._
 
@@ -46,7 +46,7 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
         }
       }
 
-      Scenario("partial deck"){
+      Scenario("partial deck") {
 
         Given I get("/deck/new/shuffle/").withParams(
           "cards" -> "AS,2S,KS,AD,2D,KD,AC,2C,KC,AH,2H,KH"
@@ -82,7 +82,7 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
 
       }
 
-      Scenario("test simplified blackjack scoring"){
+      Scenario("test simplified blackjack scoring") {
 
         WithDataInputs(
           """
@@ -93,11 +93,11 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
             | "ACE"  | "KING"  |   21  |
           """
         ) {
-          Then assert verify_hand_score
-        }
+            Then assert verify_hand_score
+          }
       }
 
-      Scenario("draw simplified blackjack hand"){
+      Scenario("draw simplified blackjack hand") {
 
         Given I get("/deck/new/shuffle/").withParams(
           "deck_count" -> "8"
@@ -136,25 +136,25 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
 }
 
 trait DeckSteps {
-  this : CornichonFeature =>
+  this: CornichonFeature ⇒
 
   def verify_hand_score = AssertStep(
     title = "value of 'c1' with 'c2' is 'score'",
-    action = s ⇒ Assertion.either{
+    action = s ⇒ Assertion.either {
       for {
-        score <- s.get("score").map(_.toInt)
-        c1 <- s.get("c1")
-        c2 <- s.get("c2")
+        score ← s.get("score").map(_.toInt)
+        c1 ← s.get("c1")
+        c2 ← s.get("c2")
       } yield GenericEqualityAssertion(score, scoreBlackjackHand(c1, c2))
     }
   )
 
   def is_blackjack = AssertStep(
     title = s"current hand is Blackjack!",
-    action = s ⇒ Assertion.either{
+    action = s ⇒ Assertion.either {
       for {
-        c1 <- s.get("c1")
-        c2 <- s.get("c2")
+        c1 ← s.get("c1")
+        c2 ← s.get("c2")
       } yield GenericEqualityAssertion(21, scoreBlackjackHand(c1, c2))
     }
   )
@@ -162,20 +162,20 @@ trait DeckSteps {
   def scoreBlackjackHand(c1: String, c2: String): Int = scoreCards(c1) + scoreCards(c2)
 
   // Yes I know "ACE" is 11 or 1 but we are having a simplified example for fun :)
-  def scoreCards(c : String): Int = c match {
-    case "1" => 1
-    case "2" => 2
-    case "3" => 3
-    case "4" => 4
-    case "5" => 5
-    case "6" => 6
-    case "7" => 7
-    case "8" => 8
-    case "9" => 9
-    case "10" => 10
-    case "JACK" => 10
-    case "QUEEN" => 10
-    case "KING" => 10
-    case "ACE" => 11
+  def scoreCards(c: String): Int = c match {
+    case "1"     ⇒ 1
+    case "2"     ⇒ 2
+    case "3"     ⇒ 3
+    case "4"     ⇒ 4
+    case "5"     ⇒ 5
+    case "6"     ⇒ 6
+    case "7"     ⇒ 7
+    case "8"     ⇒ 8
+    case "9"     ⇒ 9
+    case "10"    ⇒ 10
+    case "JACK"  ⇒ 10
+    case "QUEEN" ⇒ 10
+    case "KING"  ⇒ 10
+    case "ACE"   ⇒ 11
   }
 }

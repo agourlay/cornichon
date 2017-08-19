@@ -66,14 +66,14 @@ class EngineBench {
 }
 
 object EngineBench {
-  val setupSession = EffectStep.fromSync("setup session", s => s.addValues("v1" -> "2", "v2" -> "1"))
+  val setupSession = EffectStep.fromSync("setup session", s ⇒ s.addValues("v1" -> "2", "v2" -> "1"))
   val assertStep = AssertStep(
     "addition step",
     s ⇒ Assertion.either {
       for {
-        two <- s.get("v1").map(_.toInt)
-        one <- s.get("v2").map(_.toInt)
+        two ← s.get("v1").map(_.toInt)
+        one ← s.get("v2").map(_.toInt)
       } yield GenericEqualityAssertion(two + one, 3)
     })
-  val effectStep = EffectStep.fromSync("identity", s => s)
+  val effectStep = EffectStep.fromSync("identity", s ⇒ s)
 }
