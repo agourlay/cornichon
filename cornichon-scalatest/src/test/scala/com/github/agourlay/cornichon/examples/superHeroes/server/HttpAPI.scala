@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.examples.superHeroes.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling
 import akka.http.scaladsl.model.{ ContentTypes, HttpEntity }
@@ -23,7 +24,7 @@ import sangria.marshalling.circe._
 import io.circe.{ Json, JsonObject }
 import io.circe.generic.auto._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 
 class HttpAPI() extends EventStreamMarshalling {
@@ -211,9 +212,21 @@ class HttpAPI() extends EventStreamMarshalling {
       }
   }
 
-  def start(httpPort: Int) = Http(system).bindAndHandle(route, "localhost", port = httpPort)
+  def start(httpPort: Int) =
+    Http(system)
+      .bindAndHandle(route, "localhost", port = httpPort)
+      .map(new HttpServer(_))
 
   def login: PartialFunction[Credentials, String] = {
     case u @ Credentials.Provided(username) if username == "admin" && u.verify("cornichon") ⇒ "admin"
   }
+}
+
+class HttpServer(server: ServerBinding)(implicit sys: ActorSystem, mat: ActorMaterializer, ec: ExecutionContext) {
+  def shutdown() =
+    for {
+      _ ← server.unbind()
+      _ ← Future.successful(mat.shutdown())
+      _ ← sys.terminate()
+    } yield ()
 }

@@ -5,7 +5,7 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http.ServerBinding
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.examples.superHeroes.server.HttpAPI
+import com.github.agourlay.cornichon.examples.superHeroes.server.{ HttpAPI, HttpServer }
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper
@@ -755,7 +755,7 @@ class SuperHeroesScenario extends CornichonFeature {
   //Travis CI struggles by default
   override lazy val requestTimeout = 5 second
 
-  var server: ServerBinding = _
+  var server: HttpServer = _
 
   // Starts up test server
   beforeFeature {
@@ -764,7 +764,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
   // Stops test server
   afterFeature {
-    Await.result(server.unbind(), 5 second)
+    Await.result(server.shutdown(), 5 second)
   }
 
   // List of Steps to be executed after each scenario
