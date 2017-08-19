@@ -8,10 +8,9 @@ import org.http4s.HttpService
 import org.http4s.server.blaze.BlazeBuilder
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Random
 
-class MockHttpServer(interface: Option[String], port: Option[Range], mockService: HttpService)(implicit executionContext: ExecutionContext) extends HttpServer {
+class MockHttpServer(interface: Option[String], port: Option[Range], mockService: HttpService) extends HttpServer {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
   // TODO handle case of random port from range taken, retry?
@@ -23,7 +22,7 @@ class MockHttpServer(interface: Option[String], port: Option[Range], mockService
       .mountService(mockService, "/")
       .start
       .map { serverBinding ⇒
-        val fullAddress = s"http://${serverBinding.address.getHostName}:${serverBinding.address.getPort}"
+        val fullAddress = s"http://$selectedInterface:${serverBinding.address.getPort}"
         val closeable = new CloseableResource {
           def stopResource() = serverBinding.shutdown.unsafeRunAsyncFuture()
         }
