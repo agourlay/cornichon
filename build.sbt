@@ -1,6 +1,5 @@
 import scalariform.formatter.preferences._
-import com.typesafe.sbt.SbtScalariform.autoImport
-import sbt.Developer
+import sbt.{Developer, file}
 import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
@@ -77,6 +76,10 @@ lazy val standardSettings = Seq(
 
 lazy val publishingSettings = Seq(
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  useGpg := true,
+  pgpSecretRing := file("/Users/agourlay/.pgpKeys/agourlay-privkey.gpg"),
+  pgpPublicRing := file("/Users/agourlay/.pgpKeys/agourlay-pubkey.gpg"),
+  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray),
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := (_ => false),
