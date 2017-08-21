@@ -119,6 +119,8 @@ lazy val core =
     .settings(
       name := "cornichon-core",
       libraryDependencies ++= Seq(
+        library.http4sClient,
+        library.http4sCirce,
         library.akkaActor,
         library.akkaStream,
         library.akkaHttp,
@@ -292,6 +294,7 @@ lazy val library =
     val monixExec     = "io.monix"            %% "monix-execution"     % Version.monix
     val monixReactive = "io.monix"            %% "monix-reactive"      % Version.monix
     val sbtTest       = "org.scala-sbt"       %  "test-interface"      % Version.sbtTest
+    val http4sClient  = "org.http4s"          %% "http4s-blaze-client" % Version.http4s
     val http4sServer  = "org.http4s"          %% "http4s-blaze-server" % Version.http4s
     val http4sCirce   = "org.http4s"          %% "http4s-circe"        % Version.http4s
     val http4sDsl     = "org.http4s"          %% "http4s-dsl"          % Version.http4s

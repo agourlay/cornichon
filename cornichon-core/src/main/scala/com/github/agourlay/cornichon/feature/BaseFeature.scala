@@ -11,11 +11,8 @@ import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.github.agourlay.cornichon.feature.BaseFeature._
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
-
 import com.typesafe.config.ConfigFactory
-
 import monix.execution.Scheduler
-
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
