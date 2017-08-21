@@ -17,10 +17,6 @@ import akka.stream.scaladsl.Source
 
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
-import sangria.execution._
-import sangria.parser.QueryParser
-import sangria.marshalling.circe._
-
 import io.circe.{ Json, JsonObject }
 import io.circe.generic.auto._
 
@@ -175,6 +171,12 @@ class HttpAPI() extends EventStreamMarshalling {
       path("graphql") {
         post {
           entity(as[Json]) { requestJson ⇒
+
+            //Scope import to avoid clash with akka-http 'ExceptionHandler'
+            import sangria.execution._
+            import sangria.parser.QueryParser
+            import sangria.marshalling.circe._
+
             val obj = requestJson.asObject
             val query = obj.flatMap(_("query")).flatMap(_.asString)
             val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
