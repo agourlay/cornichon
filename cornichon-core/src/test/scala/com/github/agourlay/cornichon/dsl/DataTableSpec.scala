@@ -2,11 +2,11 @@ package com.github.agourlay.cornichon.dsl
 
 import io.circe.Json
 import org.parboiled2.ParseError
-import org.scalatest.{ Matchers, OptionValues, TryValues, WordSpec }
+import org.scalatest.{Matchers, OptionValues, TryValues, WordSpec, EitherValues}
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
-class DataTableSpec extends WordSpec with Matchers with TryValues with OptionValues {
+class DataTableSpec extends WordSpec with Matchers with TryValues with OptionValues with EitherValues {
 
   def referenceParser(input: String) =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
@@ -126,7 +126,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         """
 
       val p = new DataTableParser(input)
-      val objects = parse(p).objectList
+      val objects = parse(p).objectList.right.value
       Json.fromValues(objects.map(Json.fromJsonObject)) should be(referenceParser(expected))
     }
   }

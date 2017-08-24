@@ -135,8 +135,8 @@ class CornichonJsonSpec extends WordSpec
             | Bob  |   11   |              |
           """
         ) should beRight(List(
-            Map("2LettersName" → "false"),
-            Map("Age" → "11", "Name" → "Bob")))
+          Map("2LettersName" → "false"),
+          Map("Age" → "11", "Name" → "Bob")))
       }
     }
 

@@ -5,6 +5,10 @@ import io.circe.{ Json, JsonObject }
 import org.parboiled2._
 import com.github.agourlay.cornichon.json.CornichonJson._
 
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
+
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
@@ -53,23 +57,18 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
 
-  private def asMap: Map[String, Seq[Option[String]]] =
-    headers.fields.zipWithIndex.map {
-      case (header, index) ⇒
-        header → rows.map(r ⇒ liftEmptyString(r.fields(index)))
-    }.groupBy(_._1).map { case (k, v) ⇒ (k, v.flatMap(_._2)) }
+  def objectList: Either[CornichonError, List[JsonObject]] = {
+    def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
+    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol) map JsonObject.fromIterable
 
-  private def liftEmptyString(s: String): Option[String] =
-    if (s.trim.nonEmpty) Some(s)
-    else None
-
-  def objectList: List[JsonObject] = {
-    val tmp = for (i ← rows.indices) yield asMap.flatMap { case (k, v) ⇒ v(i) map (sv ⇒ k → parseStringUnsafe(sv)) }
-    tmp.map(JsonObject.fromMap).toList
+    rawStringList traverseU parseRow
   }
 
   def rawStringList: List[Map[String, String]] =
-    (for (i ← rows.indices) yield asMap.flatMap { case (k, v) ⇒ v(i) map (sv ⇒ k → sv.trim) }).toList
+    rows.map(row ⇒
+      (headers.fields zip row.fields)
+        .collect {case (name, value) if value.trim.nonEmpty ⇒ name → value.trim}
+        .toMap).toList
 }
 
 case class Headers(fields: Seq[String])
