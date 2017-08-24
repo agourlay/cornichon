@@ -6,6 +6,7 @@ import org.parboiled2._
 import com.github.agourlay.cornichon.json.CornichonJson._
 
 import cats.syntax.traverse._
+import cats.syntax.either._
 import cats.instances.list._
 import cats.instances.either._
 
@@ -59,7 +60,7 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
 
   def objectList: Either[CornichonError, List[JsonObject]] = {
     def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
-    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol).right map JsonObject.fromIterable
+    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol) map JsonObject.fromIterable
 
     rawStringList traverseU parseRow
   }
