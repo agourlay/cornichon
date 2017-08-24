@@ -114,17 +114,29 @@ class CornichonJsonSpec extends WordSpec
             | "Bob"  |   11   |              |
           """
         ) should beRight(List(
-            """
+          """
             {
               "2LettersName" : false
             }
           """,
-            """
+          """
             {
               "Age": 11,
               "Name": "Bob"
             }
           """) map (refParser(_).asObject.value))
+      }
+
+      "parse data table as a map of raw string values" in {
+        parseDataTableRaw(
+          """
+            | Name |   Age  | 2LettersName |
+            |      |        |    false     |
+            | Bob  |   11   |              |
+          """
+        ) should beRight(List(
+            Map("2LettersName" → "false"),
+            Map("Age" → "11", "Name" → "Bob")))
       }
     }
 

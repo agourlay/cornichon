@@ -53,20 +53,23 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
 
-  private def asMap: Map[String, Seq[Option[Json]]] =
+  private def asMap: Map[String, Seq[Option[String]]] =
     headers.fields.zipWithIndex.map {
       case (header, index) ⇒
-        header → rows.map(r ⇒ parseCellJson(r.fields(index)))
+        header → rows.map(r ⇒ liftEmptyString(r.fields(index)))
     }.groupBy(_._1).map { case (k, v) ⇒ (k, v.flatMap(_._2)) }
 
-  private def parseCellJson(s: String): Option[Json] =
-    if (s.trim.nonEmpty) Some(parseStringUnsafe(s))
+  private def liftEmptyString(s: String): Option[String] =
+    if (s.trim.nonEmpty) Some(s)
     else None
 
   def objectList: List[JsonObject] = {
-    val tmp = for (i ← rows.indices) yield asMap.flatMap { case (k, v) ⇒ v(i) map (k → _) }
+    val tmp = for (i ← rows.indices) yield asMap.flatMap { case (k, v) ⇒ v(i) map (sv ⇒ k → parseStringUnsafe(sv)) }
     tmp.map(JsonObject.fromMap).toList
   }
+
+  def rawStringList: List[Map[String, String]] =
+    (for (i ← rows.indices) yield asMap.flatMap { case (k, v) ⇒ v(i) map (sv ⇒ k → sv.trim) }).toList
 }
 
 case class Headers(fields: Seq[String])

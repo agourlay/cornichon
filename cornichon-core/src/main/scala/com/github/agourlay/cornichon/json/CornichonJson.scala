@@ -48,6 +48,9 @@ trait CornichonJson {
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] =
     DataTableParser.parse(table).map(_.objectList)
 
+  def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
+    DataTableParser.parse(table).map(_.rawStringList)
+
   def parseDataTableUnsafe(table: String): List[JsonObject] =
     parseDataTable(table).fold(e ⇒ throw e.toException, identity)
 
