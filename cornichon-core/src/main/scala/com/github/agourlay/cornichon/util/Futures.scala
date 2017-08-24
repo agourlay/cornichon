@@ -12,10 +12,4 @@ object Futures {
     scheduler.scheduleOnce(waitFor)(promise.completeWith(what))
     promise.future
   }
-
-  def failAfter[A](after: FiniteDuration)(what: ⇒ Future[A])(error: Exception)(implicit scheduler: Scheduler): Future[A] = {
-    val timeoutValue = evalAfter(after)(Future.failed(error))
-    Future.firstCompletedOf(Seq(timeoutValue, what))
-  }
-
 }
