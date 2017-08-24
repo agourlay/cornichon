@@ -59,7 +59,7 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
 
   def objectList: Either[CornichonError, List[JsonObject]] = {
     def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
-    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol) map JsonObject.fromIterable
+    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol).right map JsonObject.fromIterable
 
     rawStringList traverseU parseRow
   }

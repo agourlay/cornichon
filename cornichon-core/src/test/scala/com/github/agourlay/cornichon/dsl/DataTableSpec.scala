@@ -26,7 +26,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
                   """
 
       val p = new DataTableParser(input)
-      p.dataTableRule.run().map(_.objectList).isFailure should be(true)
+      p.dataTableRule.run().map(_.objectList.right.value).isFailure should be(true)
     }
 
     "process a single line with 1 value without new line on first" in {
@@ -34,7 +34,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
                       |  "John"  |
                   """
 
-      parse(new DataTableParser(input)).objectList should be(
+      parse(new DataTableParser(input)).objectList.right.value should be(
         List(Json.obj("Name" → Json.fromString("John")).asObject.value))
     }
 
@@ -44,7 +44,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         |  "John"  |
         """
 
-      parse(new DataTableParser(input)).objectList should be(
+      parse(new DataTableParser(input)).objectList.right.value should be(
         List(Json.obj("Name" → Json.fromString("John")).asObject.value))
     }
 
@@ -54,7 +54,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         |  "John" |   50    |
       """
 
-      parse(new DataTableParser(input)).objectList should be(
+      parse(new DataTableParser(input)).objectList.right.value should be(
         List(Json.obj(
           "Name" → Json.fromString("John"),
           "Age" → Json.fromInt(50)
@@ -68,7 +68,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
           | "öÖß \u00DF \" test " |   50                     |
         """
 
-      parse(new DataTableParser(input)).objectList should be(
+      parse(new DataTableParser(input)).objectList.right.value should be(
         List(Json.obj(
           "Name" → Json.fromString("öÖß \u00DF \" test "),
           "Größe \u00DF \" | test" → Json.fromInt(50)
@@ -82,7 +82,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         | "Bob"  |   11   |
       """
 
-      parse(new DataTableParser(input)).objectList should be(
+      parse(new DataTableParser(input)).objectList.right.value should be(
         List(
           Json.obj(
             "Name" → Json.fromString("John"),
