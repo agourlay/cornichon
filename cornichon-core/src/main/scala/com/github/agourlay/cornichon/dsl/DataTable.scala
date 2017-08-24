@@ -8,7 +8,6 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
-
   val WhiteSpace = CharPredicate("\u0009\u0020")
 
   val delimeter = CharPredicate('|')
@@ -31,16 +30,15 @@ object DataTableParser {
 }
 
 class DataTableParser(val input: ParserInput) extends Parser with StringHeaderParserSupport {
-
   def dataTableRule = rule {
     zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> DataTable
   }
 
   def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
 
-  def RowRule = rule { Separator ~ oneOrMore(TXT).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x.map(parseStringUnsafe))) }
+  def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x)) }
 
-  def TXT = rule { capture(oneOrMore(ContentsChar)) }
+  def CellContent = rule { !NL ~ capture(zeroOrMore(ContentsChar)) }
 
   def ContentsChar = rule { !DataTableParser.delims ~ ANY }
 
@@ -55,20 +53,24 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
 
-  def asMap: Map[String, Seq[Json]] =
+  private def asMap: Map[String, Seq[Option[Json]]] =
     headers.fields.zipWithIndex.map {
       case (header, index) ⇒
-        header → rows.map(r ⇒ r.fields(index))
+        header → rows.map(r ⇒ parseCellJson(r.fields(index)))
     }.groupBy(_._1).map { case (k, v) ⇒ (k, v.flatMap(_._2)) }
 
+  private def parseCellJson(s: String): Option[Json] =
+    if (s.trim.nonEmpty) Some(parseStringUnsafe(s))
+    else None
+
   def objectList: List[JsonObject] = {
-    val tmp = for (i ← rows.indices) yield asMap.map { case (k, v) ⇒ k → v(i) }
+    val tmp = for (i ← rows.indices) yield asMap.flatMap { case (k, v) ⇒ v(i) map (k → _) }
     tmp.map(JsonObject.fromMap).toList
   }
 }
 
 case class Headers(fields: Seq[String])
-case class Row(fields: Seq[Json])
+case class Row(fields: Seq[String])
 
 trait StringHeaderParserSupport extends StringBuilding {
   this: Parser ⇒
