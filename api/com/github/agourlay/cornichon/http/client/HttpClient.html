@@ -187,6 +187,12 @@
                         </a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
+                        <a class="class" href="Http4sClient.html" title=""></a>
+                        <a href="Http4sClient.html" title="">
+                          Http4sClient
+                        </a>
+                      </li><li class="current-entities indented6">
+                        <span class="separator"></span>
                         <a class="trait" href="" title=""></a>
                         <a href="" title="">
                           HttpClient
@@ -228,7 +234,7 @@
             <span class="toggle">
               Known Subclasses
             </span>
-            <div class="subClasses hiddenContent"><a href="AkkaHttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.AkkaHttpClient">AkkaHttpClient</a></div>
+            <div class="subClasses hiddenContent"><a href="AkkaHttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.AkkaHttpClient">AkkaHttpClient</a>, <a href="Http4sClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a></div>
           </div></div>
         
 
@@ -322,14 +328,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runRequest</span><span class="params">(<span name="req">req: <a href="../HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <span class="extype" name="cats.data.EitherT">EitherT</span>[<a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>, <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]</span>
+        <span class="name">runRequest</span><span class="params">(<span name="req">req: <a href="../HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <a href="http://typelevel.org/cats/api/cats/data/EitherT.html#cats.data.EitherT" class="extype" name="cats.data.EitherT">EitherT</a>[<a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>, <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]</span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.http.client.HttpClient#shutdown" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="shutdown():scala.concurrent.Future[Unit]"></a><a id="shutdown():Future[Unit]"></a>
+      <a id="shutdown():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]"></a><a id="shutdown():Future[Done]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#shutdown():scala.concurrent.Future[Unit]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#shutdown():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -338,7 +344,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">shutdown</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a>]</span>
+        <span class="name">shutdown</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>]</span>
       </span>
       
       

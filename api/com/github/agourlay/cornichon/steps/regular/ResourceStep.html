@@ -199,8 +199,8 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="com.github.agourlay.cornichon.steps.regular">regular</a></dd></dl></div>
     </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">
+                        <a class="class" href="DebugStep.html" title=""></a>
+                        <a href="DebugStep.html" title="">
                           DebugStep
                         </a>
                       </li><li class="current-entities indented6">
@@ -211,8 +211,8 @@
                         </a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="class" href="ResourceStep.html" title=""></a>
-                        <a href="ResourceStep.html" title="">
+                        <a class="class" href="" title=""></a>
+                        <a href="" title="">
                           ResourceStep
                         </a>
                       </li>
@@ -224,8 +224,8 @@
       <div id="definition">
         <div class="big-circle class">c</div>
         <p id="owner"><a href="../../../../../index.html" class="extype" name="com">com</a>.<a href="../../../../index.html" class="extype" name="com.github">github</a>.<a href="../../../index.html" class="extype" name="com.github.agourlay">agourlay</a>.<a href="../../index.html" class="extype" name="com.github.agourlay.cornichon">cornichon</a>.<a href="../index.html" class="extype" name="com.github.agourlay.cornichon.steps">steps</a>.<a href="index.html" class="extype" name="com.github.agourlay.cornichon.steps.regular">regular</a></p>
-        <h1>DebugStep<span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html" title="Permalink">
+        <h1>ResourceStep<span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
@@ -238,7 +238,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">DebugStep</span><span class="params">(<span name="message">message: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;Debug step&quot;</span></span>)</span><span class="result"> extends <a href="../../core/ValueStep.html" class="extype" name="com.github.agourlay.cornichon.core.ValueStep">ValueStep</a>[<span class="extype" name="scala.Predef.String">String</span>] with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <span class="name">ResourceStep</span><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="title">title: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="acquire">acquire: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="release">release: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>)</span><span class="result"> extends <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       </h4>
 
@@ -247,7 +247,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.3/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="../../core/ValueStep.html" class="extype" name="com.github.agourlay.cornichon.core.ValueStep">ValueStep</a>[<span class="extype" name="scala.Predef.String">String</span>], <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>, <a href="http://www.scala-lang.org/api/2.12.3/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.3/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.3/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a>, <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>, <a href="http://www.scala-lang.org/api/2.12.3/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.3/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></div>
         </div></div>
         
 
@@ -273,7 +273,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="com.github.agourlay.cornichon.steps.regular.DebugStep"><span>DebugStep</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.core.ValueStep"><span>ValueStep</span></li><li class="in" name="com.github.agourlay.cornichon.core.Step"><span>Step</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="com.github.agourlay.cornichon.steps.regular.ResourceStep"><span>ResourceStep</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.core.SimpleWrapperStep"><span>SimpleWrapperStep</span></li><li class="in" name="com.github.agourlay.cornichon.core.Step"><span>Step</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -293,10 +293,10 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String],title:String):com.github.agourlay.cornichon.steps.regular.DebugStep"></a><a id="&lt;init&gt;:DebugStep"></a>
+              <ol><li name="com.github.agourlay.cornichon.steps.regular.ResourceStep#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(title:String,acquire:com.github.agourlay.cornichon.core.Step,release:com.github.agourlay.cornichon.core.Step):com.github.agourlay.cornichon.steps.regular.ResourceStep[R]"></a><a id="&lt;init&gt;:ResourceStep[R]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#&lt;init&gt;(message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String],title:String):com.github.agourlay.cornichon.steps.regular.DebugStep" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#&lt;init&gt;(title:String,acquire:com.github.agourlay.cornichon.core.Step,release:com.github.agourlay.cornichon.core.Step):com.github.agourlay.cornichon.steps.regular.ResourceStep[R]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -305,7 +305,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">DebugStep</span><span class="params">(<span name="message">message: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;Debug step&quot;</span></span>)</span>
+        <span class="name">ResourceStep</span><span class="params">(<span name="title">title: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="acquire">acquire: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="release">release: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>)</span>
       </span>
       
       
@@ -322,7 +322,7 @@
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -338,7 +338,7 @@
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html###():Int" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -354,7 +354,7 @@
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -367,10 +367,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.steps.regular.ResourceStep#acquire" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="acquire:com.github.agourlay.cornichon.core.Step"></a><a id="acquire:Step"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#acquire:com.github.agourlay.cornichon.core.Step" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">acquire</span><span class="result">: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
+      </span>
+      
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -386,7 +402,7 @@
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#clone():Object" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -408,7 +424,7 @@
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -421,10 +437,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.core.SimpleWrapperStep#failedTitleLog" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="failedTitleLog(depth:Int):com.github.agourlay.cornichon.core.FailureLogInstruction"></a><a id="failedTitleLog(Int):FailureLogInstruction"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#failedTitleLog(depth:Int):com.github.agourlay.cornichon.core.FailureLogInstruction" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">failedTitleLog</span><span class="params">(<span name="depth">depth: <a href="http://www.scala-lang.org/api/2.12.3/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="../../core/FailureLogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.FailureLogInstruction">FailureLogInstruction</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#finalize():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -446,7 +478,7 @@
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#getClass():Class[_]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -462,7 +494,7 @@
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -475,26 +507,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#message" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String]"></a><a id="message:(Session)⇒Either[CornichonError,String]"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#message:com.github.agourlay.cornichon.core.Session=&gt;Either[com.github.agourlay.cornichon.core.CornichonError,String]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">message</span><span class="result">: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -507,10 +523,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.steps.regular.ResourceStep#nestedToRun" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="nestedToRun:List[com.github.agourlay.cornichon.core.Step]"></a><a id="nestedToRun:List[Step]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#nestedToRun:List[com.github.agourlay.cornichon.core.Step]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nestedToRun</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.ResourceStep">ResourceStep</a> → <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a></dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#notify():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -526,7 +558,7 @@
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#notifyAll():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -539,10 +571,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#onError" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="onError(errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError],initialRunState:com.github.agourlay.cornichon.core.RunState):(Vector[com.github.agourlay.cornichon.core.FailureLogInstruction],com.github.agourlay.cornichon.core.FailedStep)"></a><a id="onError(NonEmptyList[CornichonError],RunState):(Vector[FailureLogInstruction],FailedStep)"></a>
+    </li><li name="com.github.agourlay.cornichon.steps.regular.ResourceStep#onNestedError" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="onNestedError(failedStep:com.github.agourlay.cornichon.core.FailedStep,resultRunState:com.github.agourlay.cornichon.core.RunState,initialRunState:com.github.agourlay.cornichon.core.RunState,executionTime:scala.concurrent.duration.Duration):(com.github.agourlay.cornichon.core.RunState,com.github.agourlay.cornichon.core.FailedStep)"></a><a id="onNestedError(FailedStep,RunState,RunState,Duration):(RunState,FailedStep)"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#onError(errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError],initialRunState:com.github.agourlay.cornichon.core.RunState):(Vector[com.github.agourlay.cornichon.core.FailureLogInstruction],com.github.agourlay.cornichon.core.FailedStep)" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#onNestedError(failedStep:com.github.agourlay.cornichon.core.FailedStep,resultRunState:com.github.agourlay.cornichon.core.RunState,initialRunState:com.github.agourlay.cornichon.core.RunState,executionTime:scala.concurrent.duration.Duration):(com.github.agourlay.cornichon.core.RunState,com.github.agourlay.cornichon.core.FailedStep)" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -551,14 +583,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">onError</span><span class="params">(<span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>, <span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="result">: (<span class="extype" name="scala.Vector">Vector</span>[<a href="../../core/FailureLogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.FailureLogInstruction">FailureLogInstruction</a>], <a href="../../core/FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>)</span>
+        <span class="name">onNestedError</span><span class="params">(<span name="failedStep">failedStep: <a href="../../core/FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a></span>, <span name="resultRunState">resultRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>, <span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>, <span name="executionTime">executionTime: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a></span>)</span><span class="result">: (<a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>, <a href="../../core/FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>)</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.DebugStep">DebugStep</a> → <a href="../../core/ValueStep.html" class="extype" name="com.github.agourlay.cornichon.core.ValueStep">ValueStep</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#onSuccess" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="onSuccess(result:String,initialRunState:com.github.agourlay.cornichon.core.RunState,executionTime:scala.concurrent.duration.Duration):(Some[com.github.agourlay.cornichon.core.DebugLogInstruction],None.type)"></a><a id="onSuccess(String,RunState,Duration):(Some[DebugLogInstruction],None.type)"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.ResourceStep">ResourceStep</a> → <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.steps.regular.ResourceStep#onNestedSuccess" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="onNestedSuccess(resultRunState:com.github.agourlay.cornichon.core.RunState,initialRunState:com.github.agourlay.cornichon.core.RunState,executionTime:scala.concurrent.duration.Duration):com.github.agourlay.cornichon.core.RunState"></a><a id="onNestedSuccess(RunState,RunState,Duration):RunState"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#onSuccess(result:String,initialRunState:com.github.agourlay.cornichon.core.RunState,executionTime:scala.concurrent.duration.Duration):(Some[com.github.agourlay.cornichon.core.DebugLogInstruction],None.type)" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#onNestedSuccess(resultRunState:com.github.agourlay.cornichon.core.RunState,initialRunState:com.github.agourlay.cornichon.core.RunState,executionTime:scala.concurrent.duration.Duration):com.github.agourlay.cornichon.core.RunState" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -567,30 +599,30 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">onSuccess</span><span class="params">(<span name="result">result: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>, <span name="executionTime">executionTime: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a></span>)</span><span class="result">: (<span class="extype" name="scala.Some">Some</span>[<a href="../../core/DebugLogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.DebugLogInstruction">DebugLogInstruction</a>], <a href="http://www.scala-lang.org/api/2.12.3/scala/None$.html#scala.None" class="extype" name="scala.None">None</a>.type)</span>
+        <span class="name">onNestedSuccess</span><span class="params">(<span name="resultRunState">resultRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>, <span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>, <span name="executionTime">executionTime: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a></span>)</span><span class="result">: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.DebugStep">DebugStep</a> → <a href="../../core/ValueStep.html" class="extype" name="com.github.agourlay.cornichon.core.ValueStep">ValueStep</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="run(initialRunState:com.github.agourlay.cornichon.core.RunState)(implicitscheduler:monix.execution.Scheduler):scala.concurrent.Future[Either[cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError],String]]"></a><a id="run(RunState)(Scheduler):Future[Either[NonEmptyList[CornichonError],String]]"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.ResourceStep">ResourceStep</a> → <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.steps.regular.ResourceStep#release" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="release:com.github.agourlay.cornichon.core.Step"></a><a id="release:Step"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#run(initialRunState:com.github.agourlay.cornichon.core.RunState)(implicitscheduler:monix.execution.Scheduler):scala.concurrent.Future[Either[cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError],String]]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#release:com.github.agourlay.cornichon.core.Step" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">def</span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">run</span><span class="params">(<span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="scheduler">scheduler: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<span class="extype" name="scala.Either">Either</span>[<a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>], <span class="extype" name="scala.Predef.String">String</span>]]</span>
+        <span class="name">release</span><span class="result">: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.DebugStep">DebugStep</a> → <a href="../../core/ValueStep.html" class="extype" name="com.github.agourlay.cornichon.core.ValueStep">ValueStep</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.core.ValueStep#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      
+    </li><li name="com.github.agourlay.cornichon.core.SimpleWrapperStep#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="run(engine:com.github.agourlay.cornichon.core.Engine)(initialRunState:com.github.agourlay.cornichon.core.RunState)(implicitscheduler:monix.execution.Scheduler):scala.concurrent.Future[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]"></a><a id="run(Engine)(RunState)(Scheduler):Future[(RunState,Either[FailedStep,Done])]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#run(engine:com.github.agourlay.cornichon.core.Engine)(initialRunState:com.github.agourlay.cornichon.core.RunState)(implicitscheduler:monix.execution.Scheduler):scala.concurrent.Future[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#run(engine:com.github.agourlay.cornichon.core.Engine)(initialRunState:com.github.agourlay.cornichon.core.RunState)(implicitscheduler:monix.execution.Scheduler):scala.concurrent.Future[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -602,11 +634,11 @@
         <span class="name">run</span><span class="params">(<span name="engine">engine: <a href="../../core/Engine.html" class="extype" name="com.github.agourlay.cornichon.core.Engine">Engine</a></span>)</span><span class="params">(<span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="scheduler">scheduler: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[(<a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>, <span class="extype" name="scala.Either">Either</span>[<a href="../../core/FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>, <a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>])]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/ValueStep.html" class="extype" name="com.github.agourlay.cornichon.core.ValueStep">ValueStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#setTitle" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="setTitle(newTitle:String):com.github.agourlay.cornichon.steps.regular.DebugStep"></a><a id="setTitle(String):DebugStep"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.core.SimpleWrapperStep#setTitle" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setTitle(newTitle:String):com.github.agourlay.cornichon.core.SimpleWrapperStep"></a><a id="setTitle(String):SimpleWrapperStep"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#setTitle(newTitle:String):com.github.agourlay.cornichon.steps.regular.DebugStep" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#setTitle(newTitle:String):com.github.agourlay.cornichon.core.SimpleWrapperStep" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -615,14 +647,30 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">setTitle</span><span class="params">(<span name="newTitle">newTitle: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.DebugStep">DebugStep</a></span>
+        <span class="name">setTitle</span><span class="params">(<span name="newTitle">newTitle: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.DebugStep">DebugStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.core.SimpleWrapperStep#successTitleLog" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="successTitleLog(depth:Int):com.github.agourlay.cornichon.core.SuccessLogInstruction"></a><a id="successTitleLog(Int):SuccessLogInstruction"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#successTitleLog(depth:Int):com.github.agourlay.cornichon.core.SuccessLogInstruction" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">successTitleLog</span><span class="params">(<span name="depth">depth: <a href="http://www.scala-lang.org/api/2.12.3/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="../../core/SuccessLogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.SuccessLogInstruction">SuccessLogInstruction</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -635,10 +683,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.regular.DebugStep#title" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.github.agourlay.cornichon.steps.regular.ResourceStep#title" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="title:String"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#title:String" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#title:String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -650,11 +698,11 @@
         <span class="name">title</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.DebugStep">DebugStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.ResourceStep">ResourceStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#wait():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -676,7 +724,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -698,7 +746,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/DebugStep.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/regular/ResourceStep.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -735,8 +783,8 @@
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a></h3>
             </div><div class="parent" name="scala.Equals">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.3/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a></h3>
-            </div><div class="parent" name="com.github.agourlay.cornichon.core.ValueStep">
-              <h3>Inherited from <a href="../../core/ValueStep.html" class="extype" name="com.github.agourlay.cornichon.core.ValueStep">ValueStep</a>[<span class="extype" name="scala.Predef.String">String</span>]</h3>
+            </div><div class="parent" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">
+              <h3>Inherited from <a href="../../core/SimpleWrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.SimpleWrapperStep">SimpleWrapperStep</a></h3>
             </div><div class="parent" name="com.github.agourlay.cornichon.core.Step">
               <h3>Inherited from <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></h3>
             </div><div class="parent" name="scala.AnyRef">
