@@ -7,7 +7,7 @@ import cats.instances.double._
 import cats.instances.boolean._
 import cats.instances.int._
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import cats.instances.bigDecimal._
 import cats.scalatest.{ EitherMatchers, EitherValues }
 
@@ -16,7 +16,8 @@ class CornichonJsonSpec extends WordSpec
   with PropertyChecks
   with CornichonJson
   with EitherValues
-  with EitherMatchers {
+  with EitherMatchers
+  with OptionValues {
 
   def refParser(input: String) =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
@@ -82,7 +83,6 @@ class CornichonJsonSpec extends WordSpec
       }
 
       "parse data table" in {
-
         val expected =
           """
             |[
@@ -104,6 +104,39 @@ class CornichonJsonSpec extends WordSpec
            | "John" |   50   |    false     |
            | "Bob"  |   11   |    true      |
          """) should beRight(refParser(expected))
+      }
+
+      "parse data table with empty cell values" in {
+        parseDataTable(
+          """
+            |  Name  |   Age  | 2LettersName |
+            |        |        |    false     |
+            | "Bob"  |   11   |              |
+          """
+        ) should beRight(List(
+          """
+            {
+              "2LettersName" : false
+            }
+          """,
+          """
+            {
+              "Age": 11,
+              "Name": "Bob"
+            }
+          """) map (refParser(_).asObject.value))
+      }
+
+      "parse data table as a map of raw string values" in {
+        parseDataTableRaw(
+          """
+            | Name |   Age  | 2LettersName |
+            |      |        |    false     |
+            | Bob  |   11   |              |
+          """
+        ) should beRight(List(
+          Map("2LettersName" → "false"),
+          Map("Age" → "11", "Name" → "Bob")))
       }
     }
 

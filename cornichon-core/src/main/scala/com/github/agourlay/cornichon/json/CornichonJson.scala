@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.resolver.Resolvable
 import gnieh.diffson.circe._
-import io.circe.{ Encoder, Json }
+import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
@@ -45,10 +45,13 @@ trait CornichonJson {
 
   def parseStringUnsafe(s: String): Json = parseString(s).fold(e ⇒ throw e.toException, identity)
 
-  def parseDataTable(table: String) =
-    DataTableParser.parse(table).map(_.objectList)
+  def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] =
+    DataTableParser.parse(table).flatMap(_.objectList)
 
-  def parseDataTableUnsafe(table: String) =
+  def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
+    DataTableParser.parse(table).map(_.rawStringList)
+
+  def parseDataTableUnsafe(table: String): List[JsonObject] =
     parseDataTable(table).fold(e ⇒ throw e.toException, identity)
 
   def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
