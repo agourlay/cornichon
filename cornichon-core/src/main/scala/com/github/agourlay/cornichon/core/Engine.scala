@@ -1,19 +1,24 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.NonEmptyList
+import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
 import cats.syntax.monoid._
-
+import cats.syntax.cartesian._
+import cats.syntax.coflatMap._
+import cats.instances.future._
+import cats.instances.list._
+import cats.instances.tuple._
 import monix.execution.Scheduler
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
+import FutureEitherTHelpers._
+import cats.data.Validated.Valid
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
@@ -24,39 +29,81 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       Future.successful(PendingScenarioReport(scenario.name, session))
     else {
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-      val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1)
+      val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1, Nil)
       runSteps(initialRunState).flatMap {
         case (mainState, mainRunReport) ⇒
-          if (finallySteps.isEmpty)
-            Future.successful(ScenarioReport.build(scenario.name, mainState, mainRunReport.toValidatedNel))
-          else {
+          val stateAndReporAfterEndSteps = if (finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
+            Future.successful((mainState, Valid(Done)))
+          else if (finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
             // Reuse mainline session
             val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
             val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
             runSteps(finallyRunState).map {
               case (finallyState, finallyReport) ⇒
-                ScenarioReport.build(scenario.name, mainState.combine(finallyState), mainRunReport.toValidatedNel.combine(finallyReport.toValidatedNel))
+                (finallyState, finallyReport.toValidatedNel)
+            }
+          } else {
+            // Reuse mainline session
+            val finallyLog = InfoLogInstruction("cleanup steps", initMargin + 1)
+            val finallyRunState = mainState.withSteps(mainState.cleanupSteps).withLog(finallyLog)
+            runStepsDontShortCircuit(finallyRunState).map {
+              case (finallyState, finallyReport) ⇒
+                (mainState.combine(finallyState), finallyReport.toValidated)
             }
           }
+          stateAndReporAfterEndSteps.map {
+            case (state, report) ⇒
+              ScenarioReport.build(scenario.name, mainState combine state, mainRunReport.toValidatedNel.combine(report))
+          }
+
       }
     }
 
-  def runSteps(runState: RunState): Future[(RunState, FailedStep Either Done)] =
-    runState.remainingSteps match {
-      case Nil ⇒ Future.successful((runState, rightDone))
-      case currentStep :: tail ⇒
-        stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
-          (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
-        }.fold(
-          ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
-          ps ⇒ runStep(runState, ps).flatMap {
-            case (newState, stepResult) ⇒ stepResult.fold(
-              failedStep ⇒ Future.successful((newState, Left(failedStep))),
-              _ ⇒ runSteps(newState.withSteps(tail))
-            )
-          }
-        )
-    }
+  private def runStepsDontShortCircuit(initialRunState: RunState): Future[(RunState, NonEmptyList[FailedStep] Either Done)] = {
+    initialRunState.remainingSteps
+      .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
+      .foldLeft(Future.successful((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
+        case (runStateF, (currentStep, tail)) ⇒
+          runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, tail, _) }
+      }.deDup
+  }
+
+  def runSteps(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
+
+    initialRunState.remainingSteps
+      .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
+      .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
+        case (runStateF, (currentStep, tail)) ⇒
+          runStateF.flatMap { case (runState, _) ⇒ prepareAndRunStep(currentStep, tail, runState) }
+      }.runAndDeDup
+  }
+
+  private def prepareAndRunStepsAccumulatingErrors(currentStep: Step, tail: List[Step], failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
+    val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
+    val stepResult = prepareAndRunStep(currentStep, tail, runState).value
+    stepResult
+      .recover(fromExceptionsWithFailedSteps(runState, currentStep))
+      .map {
+        currentStepResult ⇒
+          (currentStepResult.toValidatedNel |@| failureOrDoneWithRunState.toValidated).map {
+            case (r1, r2) ⇒ r1 combine r2
+          }.toEither
+      }
+  }
+
+  private def fromExceptionsWithFailedSteps(runState: RunState, step: Step): PartialFunction[Throwable, (RunState, FailedStep) Either (RunState, Done)] = {
+    case NonFatal(ex) ⇒
+      (runState, FailedStep.fromSingle(step, StepExecutionError(ex))).asLeft[(RunState, Done)]
+  }
+
+  private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState): EitherT[Future, (RunState, FailedStep), (RunState, Done)] = {
+    stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+      (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
+    }.fold(
+      ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+      ps ⇒ runStep(runState.withSteps(tail), ps)
+    ).toEitherT
+  }
 
   private def runStep(runState: RunState, ps: Step): Future[(RunState, FailedStep Either Done)] =
     Either
@@ -102,5 +149,26 @@ object Engine {
       FailureLogInstruction(m, depth)
     })
     logs.toVector
+  }
+}
+
+object FutureEitherTHelpers {
+
+  implicit class ToEitherTOps[A, B, C](fe: Future[(A, B Either C)]) {
+    def toEitherT(implicit ec: scala.concurrent.ExecutionContext) = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
+  }
+
+  implicit class FactorOutCommandAInEitherTOps[A, B, C](fe: EitherT[Future, (A, B), (A, C)]) {
+    def runAndDeDup(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[B, C])] = fe.value.map(_.fold(
+      { case (a, b) ⇒ (a, Left(b)) },
+      { case (a, c) ⇒ (a, Right(c)) }
+    ))
+  }
+
+  implicit class FactorOutCommonAOps[A, B, C](fe: Future[Either[NonEmptyList[(A, B)], (A, C)]]) {
+    def deDup(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[NonEmptyList[B], C])] = fe.map(_.fold(
+      { abs ⇒ (abs.head._1, Left(abs.map(_._2))) },
+      { case (a, c) ⇒ (a, Right(c)) }
+    ))
   }
 }
