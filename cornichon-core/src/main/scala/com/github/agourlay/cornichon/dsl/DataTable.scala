@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.CornichonError
-import io.circe.{ Json, JsonObject }
+import io.circe.JsonObject
 import org.parboiled2._
 import com.github.agourlay.cornichon.json.CornichonJson._
 
@@ -41,7 +41,7 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
   def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
 
-  def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> (x ⇒ Row(x)) }
+  def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> Row }
 
   def CellContent = rule { !NL ~ capture(zeroOrMore(ContentsChar)) }
 
@@ -68,7 +68,7 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
   def rawStringList: List[Map[String, String]] =
     rows.map(row ⇒
       (headers.fields zip row.fields)
-        .collect {case (name, value) if value.trim.nonEmpty ⇒ name → value.trim}
+        .collect { case (name, value) if value.trim.nonEmpty ⇒ name → value.trim }
         .toMap).toList
 }
 

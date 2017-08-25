@@ -2,9 +2,9 @@ package com.github.agourlay.cornichon.dsl
 
 import io.circe.Json
 import org.parboiled2.ParseError
-import org.scalatest.{Matchers, OptionValues, TryValues, WordSpec, EitherValues}
+import org.scalatest.{ Matchers, OptionValues, TryValues, WordSpec, EitherValues }
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class DataTableSpec extends WordSpec with Matchers with TryValues with OptionValues with EitherValues {
 

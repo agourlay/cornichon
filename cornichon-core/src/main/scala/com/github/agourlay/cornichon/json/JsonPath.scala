@@ -68,9 +68,6 @@ object JsonPath {
       segments.map(fromSegments)
     }
 
-  def parseUnsafe(path: String) =
-    parse(path).fold(e ⇒ throw e.toException, identity)
-
   def run(path: String, json: Json) = JsonPath.parse(path).map(_.run(json))
 
   def run(path: String, json: String) =

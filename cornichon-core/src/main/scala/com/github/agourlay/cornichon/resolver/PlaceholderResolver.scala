@@ -79,9 +79,6 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
     findPlaceholders(input).flatMap(loop(_, input))
   }
 
-  def fillPlaceholdersUnsafe(input: String)(session: Session): String =
-    fillPlaceholders(input)(session).fold(ce ⇒ throw ce.toException, identity)
-
   def fillPlaceholders(params: List[(String, String)])(session: Session): Either[CornichonError, List[(String, String)]] = {
     def loop(params: List[(String, String)], session: Session, acc: List[(String, String)]): Either[CornichonError, List[(String, String)]] =
       params match {

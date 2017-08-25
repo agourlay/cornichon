@@ -43,8 +43,6 @@ trait CornichonJson {
   def parseString(s: String) =
     io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
 
-  def parseStringUnsafe(s: String): Json = parseString(s).fold(e ⇒ throw e.toException, identity)
-
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] =
     DataTableParser.parse(table).flatMap(_.objectList)
 
@@ -58,9 +56,6 @@ trait CornichonJson {
     case Success(value) ⇒ Right(value.convertMarshaled[Json])
     case Failure(e)     ⇒ Left(MalformedGraphQLJsonError(input, e))
   }
-
-  def parseGraphQLJsonUnsafe(input: String) =
-    parseGraphQLJson(input).fold(e ⇒ throw e.toException, identity)
 
   def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
     json.arrayOrObject(
@@ -144,7 +139,7 @@ object CornichonJson extends CornichonJson {
       Show.show[GqlString](g ⇒ s"GraphQl JSON ${g.input}")
 
     implicit val gqlEncode =
-      Encoder.instance[GqlString](g ⇒ parseGraphQLJsonUnsafe(g.input))
+      Encoder.instance[GqlString](g ⇒ parseGraphQLJson(g.input).fold(e ⇒ throw e.toException, identity))
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {

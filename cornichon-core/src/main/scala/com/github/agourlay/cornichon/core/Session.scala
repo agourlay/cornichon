@@ -27,8 +27,6 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
   def getUnsafe(key: String, stackingIndice: Option[Int] = None): String =
     get(key, stackingIndice).fold(ce ⇒ throw ce.toException, identity)
 
-  def getUnsafe(sessionKey: SessionKey): String = getUnsafe(sessionKey.name, sessionKey.index)
-
   def get(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
     for {
       values ← content.get(key).toRight(KeyNotFoundInSession(key, this))
@@ -44,9 +42,6 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
       jsonValue ← parseJson(sessionValue)
       extracted ← JsonPath.run(path, jsonValue)
     } yield extracted
-
-  def getJsonUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
-    getJson(key, stackingIndice, path).fold(ce ⇒ throw ce.toException, identity)
 
   def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
     for {
