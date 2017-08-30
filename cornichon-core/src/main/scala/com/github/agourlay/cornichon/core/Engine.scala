@@ -18,7 +18,6 @@ import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
 import FutureEitherTHelpers._
-import cats.data.Validated.Valid
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
@@ -32,23 +31,23 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1, Nil)
       runSteps(initialRunState).flatMap {
         case (mainState, mainRunReport) ⇒
-          val stateAndReporAfterEndSteps = if (finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
-            Future.successful((mainState, Valid(Done)))
-          else if (finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
-            // Reuse mainline session
-            val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-            val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
-            runSteps(finallyRunState).map {
-              case (finallyState, finallyReport) ⇒
-                (finallyState, finallyReport.toValidatedNel)
-            }
-          } else {
-            // Reuse mainline session
-            val finallyLog = InfoLogInstruction("cleanup steps", initMargin + 1)
-            val finallyRunState = mainState.withSteps(mainState.cleanupSteps).withLog(finallyLog)
-            runStepsDontShortCircuit(finallyRunState).map {
-              case (finallyState, finallyReport) ⇒
-                (mainState.combine(finallyState), finallyReport.toValidated)
+          val stateAndReporAfterEndSteps = {
+            if (finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
+              Future.successful((mainState, validDone))
+            else if (finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
+              // Reuse mainline session
+              val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+              val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
+              runSteps(finallyRunState).map {
+                case (finallyState, finallyReport) ⇒ (finallyState, finallyReport.toValidatedNel)
+              }
+            } else {
+              // Reuse mainline session
+              val finallyLog = InfoLogInstruction("cleanup steps", initMargin + 1)
+              val finallyRunState = mainState.withSteps(mainState.cleanupSteps).withLog(finallyLog)
+              runStepsDontShortCircuit(finallyRunState).map {
+                case (finallyState, finallyReport) ⇒ (mainState.combine(finallyState), finallyReport.toValidated)
+              }
             }
           }
           stateAndReporAfterEndSteps.map {
