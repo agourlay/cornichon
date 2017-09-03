@@ -6,11 +6,9 @@ import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import monix.execution.Scheduler
 
-import scala.concurrent.ExecutionContext
-
 trait StepUtilSpec extends ProvidedInstances {
 
-  implicit val scheduler = Scheduler(ExecutionContext.global)
+  implicit val scheduler = Scheduler.Implicits.global
   val resolver = PlaceholderResolver.withoutExtractor()
   val engine = Engine.withStepTitleResolver(resolver)
 
