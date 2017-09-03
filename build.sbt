@@ -119,6 +119,8 @@ lazy val core =
     .settings(
       name := "cornichon-core",
       libraryDependencies ++= Seq(
+        library.okHttpMonix,
+        library.sttpCirce,
         library.http4sClient,
         library.http4sCirce,
         library.akkaActor,
@@ -271,31 +273,34 @@ lazy val library =
       val monix         = "2.3.0"
       val sbtTest       = "1.0"
       val http4s        = "0.17.0"
+      val okHttpMonix   = "0.0.9"
     }
-    val akkaActor     = "com.typesafe.akka"   %% "akka-actor"          % Version.akkaActor
-    val akkaStream    = "com.typesafe.akka"   %% "akka-stream"         % Version.akkaActor
-    val akkaHttpCore  = "com.typesafe.akka"   %% "akka-http-core"      % Version.akkaHttp
-    val akkaHttp      = "com.typesafe.akka"   %% "akka-http"           % Version.akkaHttp
-    val akkHttpCirce  = "de.heikoseeberger"   %% "akka-http-circe"     % Version.akkaHttpCirce
-    val catsMacro     = "org.typelevel"       %% "cats-macros"         % Version.cats
-    val catsCore      = "org.typelevel"       %% "cats-core"           % Version.cats
-    val scalatest     = "org.scalatest"       %% "scalatest"           % Version.scalaTest
-    val ficus         = "com.iheart"          %% "ficus"               % Version.ficus
-    val parboiled     = "org.parboiled"       %% "parboiled"           % Version.parboiled
-    val fansi         = "com.lihaoyi"         %% "fansi"               % Version.fansi
-    val sangria       = "org.sangria-graphql" %% "sangria"             % Version.sangria
-    val sangriaCirce  = "org.sangria-graphql" %% "sangria-circe"       % Version.sangriaCirce
-    val circeCore     = "io.circe"            %% "circe-core"          % Version.circe
-    val circeGeneric  = "io.circe"            %% "circe-generic"       % Version.circe
-    val circeParser   = "io.circe"            %% "circe-parser"        % Version.circe
-    val diffsonCirce  = "org.gnieh"           %% "diffson-circe"       % Version.diffson
-    val scalacheck    = "org.scalacheck"      %% "scalacheck"          % Version.scalaCheck
-    val catsScalatest = "com.ironcorelabs"    %% "cats-scalatest"      % Version.catsScalaTest
-    val monixExec     = "io.monix"            %% "monix-execution"     % Version.monix
-    val monixReactive = "io.monix"            %% "monix-reactive"      % Version.monix
-    val sbtTest       = "org.scala-sbt"       %  "test-interface"      % Version.sbtTest
-    val http4sClient  = "org.http4s"          %% "http4s-blaze-client" % Version.http4s
-    val http4sServer  = "org.http4s"          %% "http4s-blaze-server" % Version.http4s
-    val http4sCirce   = "org.http4s"          %% "http4s-circe"        % Version.http4s
-    val http4sDsl     = "org.http4s"          %% "http4s-dsl"          % Version.http4s
+    val akkaActor     = "com.typesafe.akka"     %% "akka-actor"           % Version.akkaActor
+    val akkaStream    = "com.typesafe.akka"     %% "akka-stream"          % Version.akkaActor
+    val akkaHttpCore  = "com.typesafe.akka"     %% "akka-http-core"       % Version.akkaHttp
+    val akkaHttp      = "com.typesafe.akka"     %% "akka-http"            % Version.akkaHttp
+    val akkHttpCirce  = "de.heikoseeberger"     %% "akka-http-circe"      % Version.akkaHttpCirce
+    val catsMacro     = "org.typelevel"         %% "cats-macros"          % Version.cats
+    val catsCore      = "org.typelevel"         %% "cats-core"            % Version.cats
+    val scalatest     = "org.scalatest"         %% "scalatest"            % Version.scalaTest
+    val ficus         = "com.iheart"            %% "ficus"                % Version.ficus
+    val parboiled     = "org.parboiled"         %% "parboiled"            % Version.parboiled
+    val fansi         = "com.lihaoyi"           %% "fansi"                % Version.fansi
+    val sangria       = "org.sangria-graphql"   %% "sangria"              % Version.sangria
+    val sangriaCirce  = "org.sangria-graphql"   %% "sangria-circe"        % Version.sangriaCirce
+    val circeCore     = "io.circe"              %% "circe-core"           % Version.circe
+    val circeGeneric  = "io.circe"              %% "circe-generic"        % Version.circe
+    val circeParser   = "io.circe"              %% "circe-parser"         % Version.circe
+    val diffsonCirce  = "org.gnieh"             %% "diffson-circe"        % Version.diffson
+    val scalacheck    = "org.scalacheck"        %% "scalacheck"           % Version.scalaCheck
+    val catsScalatest = "com.ironcorelabs"      %% "cats-scalatest"       % Version.catsScalaTest
+    val monixExec     = "io.monix"              %% "monix-execution"      % Version.monix
+    val monixReactive = "io.monix"              %% "monix-reactive"       % Version.monix
+    val sbtTest       = "org.scala-sbt"         %  "test-interface"       % Version.sbtTest
+    val http4sClient  = "org.http4s"            %% "http4s-blaze-client"  % Version.http4s
+    val http4sServer  = "org.http4s"            %% "http4s-blaze-server"  % Version.http4s
+    val http4sCirce   = "org.http4s"            %% "http4s-circe"         % Version.http4s
+    val http4sDsl     = "org.http4s"            %% "http4s-dsl"           % Version.http4s
+    val okHttpMonix   = "com.softwaremill.sttp" %% "okhttp-handler-monix" % Version.okHttpMonix
+    val sttpCirce     = "com.softwaremill.sttp" %% "circe"                % Version.okHttpMonix
   }

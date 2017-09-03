@@ -4,6 +4,8 @@ import cats.data.Validated.Valid
 import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.kernel.Semigroup
 
+import scala.concurrent.Future
+
 sealed trait ScenarioReport {
   def isSuccess: Boolean
   def scenarioName: String
@@ -48,6 +50,7 @@ sealed abstract class Done
 case object Done extends Done {
   val rightDone = Right(Done)
   val validDone = Valid(Done)
+  val futureDone = Future.successful(Done)
   implicit val semigroup = new Semigroup[Done] {
     def combine(x: Done, y: Done): Done = x
   }
