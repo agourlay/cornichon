@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.feature
 
-import java.util.concurrent.{ Executors, ThreadFactory }
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
@@ -71,17 +70,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 // Protect and free resources
 object BaseFeature {
 
-  private lazy val executorService = Executors.newScheduledThreadPool(
-    Runtime.getRuntime.availableProcessors() + 1,
-    new ThreadFactory {
-      val count = new AtomicInteger(0)
-      override def newThread(r: Runnable) = {
-        new Thread(r, "cornichon-" + count.incrementAndGet)
-      }
-    }
-  )
-
-  implicit private lazy val scheduler: Scheduler = Scheduler(executorService)
+  implicit private lazy val scheduler = Scheduler.Implicits.global
 
   private lazy val client: HttpClient = new AkkaHttpClient()
 
@@ -101,10 +90,7 @@ object BaseFeature {
   def disableAutomaticResourceCleanup() =
     reaperProcess.cancel()
 
-  def shutDownGlobalResources(): Future[Unit] =
-    for {
-      _ ← client.shutdown()
-    } yield executorService.shutdownNow()
+  def shutDownGlobalResources(): Future[Done] = client.shutdown()
 
   lazy val globalRuntime = (client, scheduler)
   def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
