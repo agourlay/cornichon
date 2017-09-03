@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
-import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, HttpClient }
+import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient, OkHttpMonixClient }
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.github.agourlay.cornichon.feature.BaseFeature._
@@ -71,11 +71,17 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 // Protect and free resources
 object BaseFeature {
 
+  implicit private val scheduler = Scheduler.Implicits.global
+
   private val config = ConfigFactory.load().as[Config]("cornichon")
 
-  implicit private lazy val scheduler = Scheduler.Implicits.global
+  println(s"Running Cornichon features using '${config.httpClient}' HTTP client.")
 
-  private lazy val client: HttpClient = new AkkaHttpClient()
+  private val client: HttpClient = config.httpClient match {
+    case "akka"   ⇒ new AkkaHttpClient()
+    case "http4s" ⇒ new Http4sClient()
+    case "okhttp" ⇒ new OkHttpMonixClient()
+  }
 
   private val registeredUsage = new AtomicInteger
   private val safePassInRow = new AtomicInteger

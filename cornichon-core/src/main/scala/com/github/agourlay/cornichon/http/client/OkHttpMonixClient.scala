@@ -6,11 +6,12 @@ import cats.data.EitherT
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.HttpMethods._
-import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest, HttpStreamedRequest, RequestError }
+import com.github.agourlay.cornichon.http._
 import com.softwaremill.sttp.okhttp.monix.OkHttpMonixHandler
 import com.softwaremill.sttp._
 import com.softwaremill.sttp.circe._
 import io.circe.Json
+import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import okhttp3.{ Dispatcher, OkHttpClient }
 
@@ -54,9 +55,9 @@ class OkHttpMonixClient extends HttpClient {
     EitherT[Future, CornichonError, CornichonHttpResponse] {
       sttpReqFinal
         .send()
-        .timeout(t)
-        .map(handleResponse)
-        .map(Right(_))
+        .map(_.asRight)
+        .timeoutTo(t, Task.delay(TimeoutErrorAfter(req, t).asLeft))
+        .map(_.map(handleResponse))
         .runAsync
         .recover {
           case t: Throwable ⇒ RequestError(req, t).asLeft
@@ -64,14 +65,12 @@ class OkHttpMonixClient extends HttpClient {
     }
   }
 
-  def handleResponse[A](response: Response[String]) = {
-    println(response)
+  def handleResponse[A](response: Response[String]) =
     CornichonHttpResponse(
       status = response.code,
       headers = response.headers,
       body = response.body.fold(identity, identity)
     )
-  }
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration) = ???
 

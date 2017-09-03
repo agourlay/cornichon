@@ -3,11 +3,15 @@ package com.github.agourlay.cornichon.http.client
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
+
 import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
-import fs2.Task
+
+import fs2.{ Scheduler, Strategy, Task }
+
 import io.circe.Json
+
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.blaze.{ BlazeClientConfig, PooledHttp1Client }
@@ -15,12 +19,11 @@ import org.http4s.client.blaze.{ BlazeClientConfig, PooledHttp1Client }
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-// Experimental client
-// TODO Gzip support
-// TODO request timeout
-// TODO SSE
-// TODO offer toggle in baseFeature to pick it
+// TODO Gzip support https://github.com/http4s/http4s/issues/1327
 class Http4sClient(implicit executionContext: ExecutionContext) extends HttpClient {
+
+  implicit val strategy = Strategy.fromExecutionContext(executionContext)
+  implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
 
   private val httpClient = PooledHttp1Client(
     maxTotalConnections = 100,
@@ -71,8 +74,13 @@ class Http4sClient(implicit executionContext: ExecutionContext) extends HttpClie
         cReq.body
           .fold(Task.now(r))(b ⇒ r.withBody(b))
           .flatMap(r ⇒ httpClient.fetch(r)(handleResponse))
+          .map(_.asRight)
+          .race(Task.schedule(TimeoutErrorAfter(cReq, t).asLeft, t))
+          .map(_.fold(identity, identity))
           .unsafeRunAsyncFuture()
-          .map(Right(_))
+          .recover {
+            case t: Throwable ⇒ RequestError(cReq, t).asLeft
+          }
       }
     )
 
