@@ -52,7 +52,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
           }
           stateAndReporAfterEndSteps.map {
             case (state, report) ⇒
-              ScenarioReport.build(scenario.name, mainState combine state, mainRunReport.toValidatedNel.combine(report))
+              ScenarioReport.build(scenario.name, state, mainRunReport.toValidatedNel.combine(report))
           }
 
       }
