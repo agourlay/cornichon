@@ -6,5 +6,5 @@ case class Config(
     executeScenariosInParallel: Boolean = true,
     requestTimeout: FiniteDuration = 2000.millis,
     baseUrl: String = "",
-    httpClient: String = "akka"
+    httpClient: String = "okhttp"
 )

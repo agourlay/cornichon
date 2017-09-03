@@ -214,8 +214,6 @@ class SuperHeroesScenario extends CornichonFeature {
             """
               )
 
-          Then assert headers.contain("Content-Encoding" → "gzip")
-
           Then assert body.path("city").is("Pankow")
         }
 
@@ -677,7 +675,7 @@ class SuperHeroesScenario extends CornichonFeature {
         And I show_last_status
       }
 
-      Scenario("demonstrate streaming support") {
+      Scenario("demonstrate streaming support").ignoredBecause("not supported anymore") {
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I open_sse("/sseStream/superheroes", takeWithin = 3 seconds).withParams(

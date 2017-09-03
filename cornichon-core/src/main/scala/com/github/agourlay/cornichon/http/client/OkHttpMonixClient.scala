@@ -35,7 +35,7 @@ class OkHttpMonixClient extends HttpClient {
   implicit val sttpHandler = OkHttpMonixHandler(client)
 
   def runRequest(req: HttpRequest[Json], t: FiniteDuration) = {
-    val uri: Uri = uri"${req.url}?${req.params}"
+    val uri: Uri = uri"${req.url}".params(req.params: _*)
     val sttpReq = req
       .body
       .fold(sttp)(b ⇒ sttp.body(b))

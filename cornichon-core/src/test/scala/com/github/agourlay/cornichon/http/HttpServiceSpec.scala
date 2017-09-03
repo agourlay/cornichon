@@ -1,10 +1,8 @@
 package com.github.agourlay.cornichon.http
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import com.github.agourlay.cornichon.core.Session
-import com.github.agourlay.cornichon.http.client.AkkaHttpClient
+import com.github.agourlay.cornichon.http.client.OkHttpMonixClient
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
@@ -17,14 +15,11 @@ class HttpServiceSpec extends WordSpec
   with EitherValues
   with EitherMatchers {
 
-  implicit val system = ActorSystem("akka-http-client")
-  implicit val mat = ActorMaterializer()
-
-  val client = new AkkaHttpClient()
+  val client = new OkHttpMonixClient()
   val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor())
 
   override def afterAll() = {
-    client.shutdown().map { _ ⇒ system.terminate() }
+    client.shutdown()
   }
 
   "HttpService" when {

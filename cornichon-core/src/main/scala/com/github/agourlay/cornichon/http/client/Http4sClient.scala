@@ -18,11 +18,12 @@ import org.http4s.client.blaze.{ BlazeClientConfig, PooledHttp1Client }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
+import ExecutionContext.Implicits.global
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
-class Http4sClient(implicit executionContext: ExecutionContext) extends HttpClient {
+class Http4sClient() extends HttpClient {
 
-  implicit val strategy = Strategy.fromExecutionContext(executionContext)
+  implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
   implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
 
   private val httpClient = PooledHttp1Client(
@@ -86,7 +87,7 @@ class Http4sClient(implicit executionContext: ExecutionContext) extends HttpClie
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration) = ???
 
-  def shutdown() = httpClient.shutdown.unsafeRunAsyncFuture().map(_ ⇒ Done)
+  def shutdown() = httpClient.shutdown.map(_ ⇒ Done).unsafeRunAsyncFuture()
 
   def paramsFromUrl(url: String) = Uri.unsafeFromString(url).params.toList
 }

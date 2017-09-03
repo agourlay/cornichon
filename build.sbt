@@ -123,10 +123,6 @@ lazy val core =
         library.sttpCirce,
         library.http4sClient,
         library.http4sCirce,
-        library.akkaActor,
-        library.akkaStream,
-        library.akkaHttp,
-        library.akkaHttpCore,
         library.catsCore,
         library.catsMacro,
         library.ficus,
@@ -159,7 +155,8 @@ lazy val scalatest =
       name := "cornichon",
       libraryDependencies ++= Seq(
         library.scalatest,
-        library.akkHttpCirce % Test
+        library.akkaHttp % Test,
+        library.akkaHttpCirce % Test
       )
     )
 
@@ -257,7 +254,6 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.0.4"
-      val akkaActor     = "2.5.4"
       val akkaHttp      = "10.0.10"
       val cats          = "0.9.0"
       val parboiled     = "2.1.4"
@@ -275,11 +271,8 @@ lazy val library =
       val http4s        = "0.17.0"
       val okHttpMonix   = "0.0.9"
     }
-    val akkaActor     = "com.typesafe.akka"     %% "akka-actor"           % Version.akkaActor
-    val akkaStream    = "com.typesafe.akka"     %% "akka-stream"          % Version.akkaActor
-    val akkaHttpCore  = "com.typesafe.akka"     %% "akka-http-core"       % Version.akkaHttp
     val akkaHttp      = "com.typesafe.akka"     %% "akka-http"            % Version.akkaHttp
-    val akkHttpCirce  = "de.heikoseeberger"     %% "akka-http-circe"      % Version.akkaHttpCirce
+    val akkaHttpCirce = "de.heikoseeberger"     %% "akka-http-circe"      % Version.akkaHttpCirce
     val catsMacro     = "org.typelevel"         %% "cats-macros"          % Version.cats
     val catsCore      = "org.typelevel"         %% "cats-core"            % Version.cats
     val scalatest     = "org.scalatest"         %% "scalatest"            % Version.scalaTest
