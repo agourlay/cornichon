@@ -42,7 +42,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(rightNone)
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
-      paramsResolved ← allParamsResolved(urlResolved, params)(s)
+      paramsResolved ← allParamsResolved(completeUrlResolved, params)(s)
       extractedWithHeaders ← extractWithHeadersSession(s)
       allHeaders = headers ++ extractedWithHeaders
       headersResolved ← resolver.fillPlaceholders(allHeaders.toList)(s)
@@ -73,8 +73,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     }.getOrElse(Right(httpResponse))
 
   def allParamsResolved(url: String, params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
-    val urlsParamsPart = url.dropWhile(_ != '?').drop(1)
-    val urlParams = if (urlsParamsPart.trim.isEmpty) Nil else client.paramsFromUrl(urlsParamsPart)
+    val urlParams = if (!url.contains('?')) Nil else client.paramsFromUrl(url)
     val allParams = urlParams ++ params
     resolver.fillPlaceholders(allParams.toList)(session)
   }
