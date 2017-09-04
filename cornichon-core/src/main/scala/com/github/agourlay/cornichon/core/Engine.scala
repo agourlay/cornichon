@@ -39,7 +39,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
               val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
               val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
               runSteps(finallyRunState).map {
-                case (finallyState, finallyReport) ⇒ (finallyState, finallyReport.toValidatedNel)
+                case (finallyState, finallyReport) ⇒ (mainState.combine(finallyState), finallyReport.toValidatedNel)
               }
             } else {
               // Reuse mainline session
