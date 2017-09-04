@@ -42,11 +42,13 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(rightNone)
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
-      paramsResolved ← allParamsResolved(completeUrlResolved, params)(s)
+      urlParams ← client.paramsFromUrl(completeUrlResolved)
+      explicitParams ← resolver.fillPlaceholders(params.toList)(s)
+      allParams = urlParams ++ explicitParams
       extractedWithHeaders ← extractWithHeadersSession(s)
       allHeaders = headers ++ extractedWithHeaders
       headersResolved ← resolver.fillPlaceholders(allHeaders.toList)(s)
-    } yield (completeUrlResolved, jsonBodyResolved, paramsResolved, headersResolved)
+    } yield (completeUrlResolved, jsonBodyResolved, allParams, headersResolved)
 
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
@@ -71,12 +73,6 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       else
         Left(StatusNonExpected(expectedStatus, httpResponse))
     }.getOrElse(Right(httpResponse))
-
-  def allParamsResolved(url: String, params: Seq[(String, String)])(session: Session): Either[CornichonError, Seq[(String, String)]] = {
-    val urlParams = if (!url.contains('?')) Nil else client.paramsFromUrl(url)
-    val allParams = urlParams ++ params
-    resolver.fillPlaceholders(allParams.toList)(session)
-  }
 
   private def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
     for {

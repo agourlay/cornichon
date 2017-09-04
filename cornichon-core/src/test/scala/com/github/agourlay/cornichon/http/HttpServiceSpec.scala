@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.http
 
 import cats.scalatest.{ EitherMatchers, EitherValues }
-import com.github.agourlay.cornichon.core.Session
-import com.github.agourlay.cornichon.http.client.OkHttpMonixClient
+import com.github.agourlay.cornichon.core.{ Config, Session }
+import com.github.agourlay.cornichon.http.client.Http4sClient
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
@@ -15,7 +15,7 @@ class HttpServiceSpec extends WordSpec
   with EitherValues
   with EitherMatchers {
 
-  val client = new OkHttpMonixClient()
+  val client = new Http4sClient(Config())
   val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor())
 
   override def afterAll() = {
@@ -56,27 +56,6 @@ class HttpServiceSpec extends WordSpec
           """
         )
         filledSession.value.get("part-of-body") should beRight("batman")
-      }
-    }
-
-    "resolveParams" must {
-      "resolve also params in URL" in {
-        val s = Session.newEmpty
-          .addValues("hero" → "batman", "color" → "blue")
-        val url = "http://yada.com?hero=<hero>&color=<color>"
-        service.allParamsResolved(url, params = Seq.empty)(s) should beRight(Seq("hero" → "batman", "color" → "blue"))
-      }
-
-      "detect non resolvable params" in {
-        val s = Session.newEmpty
-          .addValues("hero" → "batman", "color" → "blue")
-        val url = "http://yada.com?hero=<hero>&color=<color2>"
-        service.allParamsResolved(url, params = Seq.empty)(s).isLeft should be(true)
-      }
-
-      "handle URL without param" in {
-        val url = "http://yada.com"
-        service.allParamsResolved(url, params = Seq.empty)(Session.newEmpty) should beRight(Seq.empty[(String, String)])
       }
     }
 

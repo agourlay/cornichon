@@ -16,5 +16,5 @@ trait HttpClient {
 
   def shutdown(): Future[Done]
 
-  def paramsFromUrl(url: String): Seq[(String, String)]
+  def paramsFromUrl(url: String): Either[CornichonError, Seq[(String, String)]]
 }

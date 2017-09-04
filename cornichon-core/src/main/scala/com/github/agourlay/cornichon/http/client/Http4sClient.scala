@@ -65,10 +65,11 @@ class Http4sClient(config: Config) extends HttpClient {
   }
 
   override def runRequest(cReq: HttpRequest[Json], t: FiniteDuration): EitherT[Future, CornichonError, CornichonHttpResponse] =
-    Uri.fromString(cReq.url).fold(
-      e ⇒ EitherT.left[Future, CornichonError, CornichonHttpResponse](Future.successful(MalformedHeadersError(e.message))),
-      uri ⇒ EitherT[Future, CornichonError, CornichonHttpResponse] {
+    Uri.fromString(cReq.url).fold[EitherT[Future, CornichonError, CornichonHttpResponse]](
+      e ⇒ EitherT.left(Future.successful(MalformedUriError(cReq.url, e.message))),
+      uri ⇒ EitherT {
         if (config.traceRequest) println(cReq)
+
         val r = Request(httpMethodMapper(cReq.method))
           .withHeaders(buildHeaders(cReq.headers))
           .withUri(addQueryParams(uri, cReq.params))
@@ -90,5 +91,9 @@ class Http4sClient(config: Config) extends HttpClient {
 
   def shutdown() = httpClient.shutdown.map(_ ⇒ Done).unsafeRunAsyncFuture()
 
-  def paramsFromUrl(url: String) = Uri.unsafeFromString(url).params.toList
+  def paramsFromUrl(url: String) =
+    if (url.contains('?'))
+      Uri.fromString(url).map(_.params.toList).leftMap(e ⇒ MalformedUriError(url, e.message))
+    else
+      Right(Nil)
 }
