@@ -28,7 +28,11 @@ class Http4sClient() extends HttpClient {
 
   private val httpClient = PooledHttp1Client(
     maxTotalConnections = 100,
-    config = BlazeClientConfig.insecure.copy(idleTimeout = Duration.Inf)
+    config = BlazeClientConfig.insecure.copy(
+      idleTimeout = Duration.Inf,
+      responseHeaderTimeout = Duration.Inf,
+      requestTimeout = Duration.Inf
+    )
   )
 
   def httpMethodMapper(method: HttpMethod): Method = method match {
