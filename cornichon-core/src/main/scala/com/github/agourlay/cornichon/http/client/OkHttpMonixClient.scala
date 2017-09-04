@@ -1,6 +1,9 @@
 package com.github.agourlay.cornichon.http.client
 
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.ssl._
 
 import cats.data.EitherT
 import cats.syntax.either._
@@ -24,9 +27,21 @@ class OkHttpMonixClient extends HttpClient {
   dispatcher.setMaxRequests(100)
   dispatcher.setMaxRequestsPerHost(100)
 
+  val ssl = SSLContext.getInstance("SSL")
+  val byPassTrustManager = new X509TrustManager() {
+    override def getAcceptedIssuers: Array[X509Certificate] = Array.empty
+    override def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
+    override def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
+  }
+  ssl.init(null, Array[TrustManager](byPassTrustManager), new SecureRandom)
+
   val client = new OkHttpClient.Builder()
     .followRedirects(false)
     .followSslRedirects(false)
+    .hostnameVerifier(new HostnameVerifier {
+      def verify(s: String, sslSession: SSLSession): Boolean = true
+    })
+    .sslSocketFactory(ssl.getSocketFactory, byPassTrustManager)
     .readTimeout(0, TimeUnit.MILLISECONDS)
     .writeTimeout(0, TimeUnit.MILLISECONDS)
     .dispatcher(dispatcher)
