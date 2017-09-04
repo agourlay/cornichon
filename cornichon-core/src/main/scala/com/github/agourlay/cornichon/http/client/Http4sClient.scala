@@ -3,15 +3,11 @@ package com.github.agourlay.cornichon.http.client
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
-
-import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
+import com.github.agourlay.cornichon.core.{ Config, CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
-
 import fs2.{ Scheduler, Strategy, Task }
-
 import io.circe.Json
-
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.blaze.{ BlazeClientConfig, PooledHttp1Client }
@@ -21,7 +17,7 @@ import scala.concurrent.duration.{ Duration, FiniteDuration }
 import ExecutionContext.Implicits.global
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
-class Http4sClient() extends HttpClient {
+class Http4sClient(config: Config) extends HttpClient {
 
   implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
   implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
@@ -72,6 +68,7 @@ class Http4sClient() extends HttpClient {
     Uri.fromString(cReq.url).fold(
       e ⇒ EitherT.left[Future, CornichonError, CornichonHttpResponse](Future.successful(MalformedHeadersError(e.message))),
       uri ⇒ EitherT[Future, CornichonError, CornichonHttpResponse] {
+        if (config.traceRequest) println(cReq)
         val r = Request(httpMethodMapper(cReq.method))
           .withHeaders(buildHeaders(cReq.headers))
           .withUri(addQueryParams(uri, cReq.params))
