@@ -75,10 +75,7 @@ object BaseFeature {
 
   private val config = ConfigFactory.load().as[Config]("cornichon")
 
-  private val client: HttpClient = config.httpClient match {
-    case "okhttp" ⇒ new OkHttpMonixClient()
-    case "http4s" ⇒ new Http4sClient()
-  }
+  private val client: HttpClient = new Http4sClient()
 
   private val registeredUsage = new AtomicInteger
   private val safePassInRow = new AtomicInteger

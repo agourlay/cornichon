@@ -119,8 +119,6 @@ lazy val core =
     .settings(
       name := "cornichon-core",
       libraryDependencies ++= Seq(
-        library.okHttpMonix,
-        library.sttpCirce,
         library.http4sClient,
         library.http4sCirce,
         library.catsCore,
@@ -269,7 +267,6 @@ lazy val library =
       val monix         = "2.3.0"
       val sbtTest       = "1.0"
       val http4s        = "0.17.0"
-      val okHttpMonix   = "0.0.10"
     }
     val akkaHttp      = "com.typesafe.akka"     %% "akka-http"            % Version.akkaHttp
     val akkaHttpCirce = "de.heikoseeberger"     %% "akka-http-circe"      % Version.akkaHttpCirce
@@ -294,6 +291,4 @@ lazy val library =
     val http4sServer  = "org.http4s"            %% "http4s-blaze-server"  % Version.http4s
     val http4sCirce   = "org.http4s"            %% "http4s-circe"         % Version.http4s
     val http4sDsl     = "org.http4s"            %% "http4s-dsl"           % Version.http4s
-    val okHttpMonix   = "com.softwaremill.sttp" %% "okhttp-handler-monix" % Version.okHttpMonix
-    val sttpCirce     = "com.softwaremill.sttp" %% "circe"                % Version.okHttpMonix
   }
