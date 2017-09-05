@@ -56,7 +56,7 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
 
   def getList(keys: Seq[String]): Either[CornichonError, List[String]] = keys.toList.traverseU(v ⇒ get(v))
 
-  def getHistory(key: String): Vector[String] = content.getOrElse(key, Vector.empty)
+  def getHistory(key: String) = content.get(key).toRight(KeyNotFoundInSession(key, this))
 
   //FIXME turning this into a proper CornichonError creates a lot of work to handle the Either
   def addValue(key: String, value: String) = {
@@ -74,6 +74,17 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
   def addValues(tuples: (String, String)*) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
 
   def removeKey(key: String) = Session(content - key)
+
+  def rollbackKey(key: String) =
+    getHistory(key).map { values ⇒
+      val s = Session(content - key)
+      val previous = values.init
+      if (previous.isEmpty)
+        s
+      else
+        s.copy(content = s.content + (key -> previous))
+    }
+
 }
 
 object Session {

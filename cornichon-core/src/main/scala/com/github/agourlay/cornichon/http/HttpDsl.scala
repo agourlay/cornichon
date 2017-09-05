@@ -130,11 +130,10 @@ trait HttpDsl extends HttpRequestsDsl {
     s.addValue("with-headers", s"$currentHeader${encodeSessionHeader(name, value)}")
   }
 
-  //FIXME do not destroy the content of 'withHeadersKey' afterwards but restore it to its first value
   def WithHeaders(headers: (String, String)*) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
       val saveStep = save((withHeadersKey, headers.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }.mkString(","))).copy(show = false)
-      val removeStep = remove(withHeadersKey).copy(show = false)
-      saveStep +: steps :+ removeStep
+      val rollbackStep = rollback(withHeadersKey).copy(show = false)
+      saveStep +: steps :+ rollbackStep
     }
 }

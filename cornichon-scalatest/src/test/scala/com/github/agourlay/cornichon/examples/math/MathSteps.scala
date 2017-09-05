@@ -57,13 +57,14 @@ trait MathSteps {
   )
 
   def estimate_pi_from_ratio(inside: String, target: String) =
-    EffectStep.fromSync(
+    EffectStep.fromSyncE(
       title = s"estimate PI from ratio into key '$target'",
       effect = s ⇒ {
-        val insides = s.getHistory(inside)
-        val trial = insides.size
-        val estimation = (insides.count(_ == "1").toDouble / trial) * 4
-        s.addValue(target, estimation.toString)
+        s.getHistory(inside).map { insides ⇒
+          val trial = insides.size
+          val estimation = (insides.count(_ == "1").toDouble / trial) * 4
+          s.addValue(target, estimation.toString)
+        }
       }
     )
 }

@@ -118,6 +118,24 @@ class SessionSpec extends WordSpec
         }
       }
     }
+
+    "rollbackKey" must {
+      "rollback properly" in {
+        forAll(keyGen, valueGen, valueGen) { (key, value1, value2) ⇒
+          val s = Session.newEmpty.addValue(key, value1).addValue(key, value2)
+          s.get(key) should beRight(value2)
+          s.rollbackKey(key).value.get(key) should beRight(value1)
+        }
+      }
+
+      "delete key if it has only one value" in {
+        forAll(keyGen, valueGen) { (key, value) ⇒
+          val s = Session.newEmpty.addValue(key, value)
+          s.get(key) should beRight(value)
+          s.rollbackKey(key).value.getOpt(key) should be(None)
+        }
+      }
+    }
   }
 }
 

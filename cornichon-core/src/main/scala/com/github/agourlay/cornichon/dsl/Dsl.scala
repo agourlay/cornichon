@@ -139,6 +139,11 @@ trait Dsl extends ProvidedInstances {
     effect = _.removeKey(key)
   )
 
+  def rollback(key: String) = EffectStep.fromSyncE(
+    title = s"rollback '$key' in session",
+    effect = _.rollbackKey(key)
+  )
+
   def transform_session(key: String)(map: String ⇒ String) = EffectStep.fromSyncE(
     title = s"transform '$key' from session",
     effect = s ⇒ {
