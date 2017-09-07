@@ -194,12 +194,8 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         WithBasicAuth("admin", "cornichon") {
-          When I put("/superheroes").withParams(
-            "sessionId" → "<session-id>"
-          ).withHeaders(
-              "Accept-Encoding" → "gzip"
-            ).withBody(
-                """
+          When I put("/superheroes").withParams("sessionId" → "<session-id>").withBody(
+            """
             {
               "name": "Scalaman",
               "realName": "Oleg Ilyenko",
@@ -212,7 +208,7 @@ class SuperHeroesScenario extends CornichonFeature {
               }
             }
             """
-              )
+          )
 
           Then assert body.path("city").is("Pankow")
         }
@@ -245,6 +241,34 @@ class SuperHeroesScenario extends CornichonFeature {
         Then assert status.isClientError
 
         And I show_last_status
+      }
+
+      Scenario("demonstrate Gzip support").ignoredBecause("http4s client") {
+
+        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>").withHeaders(
+          "Accept-Encoding" → "gzip"
+        )
+
+        Then assert status.is(200)
+
+        And assert body.is(
+          """
+          {
+            "name": "Batman",
+            "realName": "Bruce Wayne",
+            "city": "Gotham city",
+            "hasSuperpowers": false,
+            "publisher":{
+              "name":"DC",
+              "foundationYear":1934,
+              "location":"Burbank, California"
+            }
+          }
+          """
+        )
+
+        Then assert headers.contain("Content-Encoding" → "gzip")
+
       }
 
       Scenario("demonstrate collection features") {
