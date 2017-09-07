@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.http.server
 import java.net.NetworkInterface
 
 import com.github.agourlay.cornichon.dsl.CloseableResource
-
+import monix.eval.Task
 import org.http4s.HttpService
 import org.http4s.server.blaze.BlazeBuilder
 
@@ -24,7 +24,7 @@ class MockHttpServer(interface: Option[String], port: Option[Range], mockService
       .map { serverBinding ⇒
         val fullAddress = s"http://$selectedInterface:${serverBinding.address.getPort}"
         val closeable = new CloseableResource {
-          def stopResource() = serverBinding.shutdown.unsafeRunAsyncFuture()
+          def stopResource() = Task.fromFuture(serverBinding.shutdown.unsafeRunAsyncFuture())
         }
         (fullAddress, closeable)
       }.unsafeRunAsyncFuture()

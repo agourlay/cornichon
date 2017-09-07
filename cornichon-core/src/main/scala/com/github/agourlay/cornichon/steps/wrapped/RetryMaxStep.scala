@@ -1,14 +1,10 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.NonEmptyList
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
-
-import monix.execution.Scheduler
-
-import scala.concurrent.Future
+import monix.eval.Task
 
 case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
@@ -16,9 +12,9 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   val title = s"RetryMax block with limit '$limit'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState) = {
 
-    def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] =
+    def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
       engine.runSteps(runState.resetLogs).flatMap {
         case (retriedState, stepsResult) ⇒
           stepsResult.fold(
@@ -28,10 +24,10 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
                 retryMaxSteps(runState.appendLogs(retriedState.logs), limit - 1, retriesNumber + 1)
               else
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Future.successful((retriesNumber, retriedState, Left(failedStep))),
+                Task.delay((retriesNumber, retriedState, Left(failedStep))),
             _ ⇒ {
               val successState = runState.withSession(retriedState.session).appendLogs(retriedState.logs)
-              Future.successful((retriesNumber, successState, rightDone))
+              Task.delay((retriesNumber, successState, rightDone))
             }
           )
       }

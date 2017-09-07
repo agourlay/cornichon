@@ -4,15 +4,13 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 
-import monix.execution.Scheduler
-
 import scala.concurrent.duration.Duration
 
 case class WithinStep(nested: List[Step], maxDuration: Duration) extends WrapperStep {
 
   val title = s"Within block with max duration '$maxDuration'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState) = {
 
     val initialDepth = initialRunState.depth
 

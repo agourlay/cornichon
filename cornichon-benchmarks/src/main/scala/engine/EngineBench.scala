@@ -23,7 +23,7 @@ import scala.concurrent.duration._
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
   "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
-  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"))
+  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"))
 class EngineBench {
 
   var es: ExecutorService = _
@@ -48,12 +48,12 @@ class EngineBench {
     es.shutdown()
   }
 
-  //    [info] Benchmark                (stepsNumber)   Mode  Cnt      Score     Error  Units
-  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  49271.503 ± 216.229  ops/s
-  //    [info] EngineBench.lotsOfSteps             20  thrpt   20  33547.080 ± 135.881  ops/s
-  //    [info] EngineBench.lotsOfSteps             50  thrpt   20  18031.057 ±  96.539  ops/s
-  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   9938.628 ±  43.894  ops/s
-  //    [info] EngineBench.lotsOfSteps            200  thrpt   20   4946.067 ±  27.745  ops/s
+  //    [info] Benchmark                (stepsNumber)   Mode  Cnt       Score     Error   Units
+  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  130454.985 ± 7743.991  ops/s
+  //    [info] EngineBench.lotsOfSteps             20  thrpt   20   79174.242 ± 2540.647  ops/s
+  //    [info] EngineBench.lotsOfSteps             50  thrpt   20   35998.823 ±  734.948  ops/s
+  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   18788.477 ±  342.522  ops/s
+  //    [info] EngineBench.lotsOfSteps            200  thrpt   20    9086.221 ±  414.376  ops/s
   @Benchmark
   def lotsOfSteps() = {
     val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)

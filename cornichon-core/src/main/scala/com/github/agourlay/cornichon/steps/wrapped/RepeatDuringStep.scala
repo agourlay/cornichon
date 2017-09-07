@@ -3,24 +3,21 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.concurrent.TimeUnit
 
 import cats.data.NonEmptyList
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
+import monix.eval.Task
 
-import monix.execution.Scheduler
-
-import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extends WrapperStep {
   val title = s"Repeat block during '$duration'"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState) = {
 
     val initialDepth = initialRunState.depth
 
-    def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] = {
+    def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
         engine.runSteps(runState.resetLogs)
@@ -31,7 +28,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
           res.fold(
             failedStep ⇒ {
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Future.successful((retriesNumber, repeatedOnceMore, Left(failedStep)))
+              Task.delay((retriesNumber, repeatedOnceMore, Left(failedStep)))
             },
             _ ⇒ {
               val successState = runState.withSession(repeatedOnceMore.session).appendLogsFrom(repeatedOnceMore)
@@ -39,7 +36,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
                 repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
               else
                 // In case of success all logs are returned but they are not printed by default.
-                Future.successful((retriesNumber, successState, rightDone))
+                Task.delay((retriesNumber, successState, rightDone))
             }
           )
       }

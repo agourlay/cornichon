@@ -6,18 +6,17 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
 
-import monix.execution.Scheduler
-
 case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedResource) extends WrapperStep {
 
   val title = resource.openingTitle
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState) = {
 
     for {
       resourceHandle ← resource.startResource()
       resourcedRunState = initialRunState.forNestedSteps(nested).mergeSessions(resourceHandle.initialisedSession)
-      (resourcedState, resourcedRes) ← engine.runSteps(resourcedRunState)
+      resTuple ← engine.runSteps(resourcedRunState)
+      (resourcedState, resourcedRes) = resTuple
       (fullLogs, xor) = {
         val nestedLogs = resourcedState.logs
         val initialDepth = initialRunState.depth

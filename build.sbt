@@ -134,6 +134,7 @@ lazy val core =
         library.diffsonCirce,
         library.monixExec,
         library.monixReactive,
+        library.monixCats,
         library.scalatest % Test,
         library.scalacheck % Test,
         library.catsScalatest % Test
@@ -286,6 +287,7 @@ lazy val library =
     val catsScalatest = "com.ironcorelabs"      %% "cats-scalatest"       % Version.catsScalaTest
     val monixExec     = "io.monix"              %% "monix-execution"      % Version.monix
     val monixReactive = "io.monix"              %% "monix-reactive"       % Version.monix
+    val monixCats     = "io.monix"              %% "monix-cats"           % Version.monix
     val sbtTest       = "org.scala-sbt"         %  "test-interface"       % Version.sbtTest
     val http4sClient  = "org.http4s"            %% "http4s-blaze-client"  % Version.http4s
     val http4sServer  = "org.http4s"            %% "http4s-blaze-server"  % Version.http4s

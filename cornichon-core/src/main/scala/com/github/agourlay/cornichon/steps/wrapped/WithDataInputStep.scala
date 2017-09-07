@@ -9,18 +9,16 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.util.Timing._
 import com.github.agourlay.cornichon.util.Printing._
-import monix.execution.Scheduler
-
-import scala.concurrent.Future
+import monix.eval.Task
 
 case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderResolver) extends WrapperStep {
 
   val title = s"With data input block $where"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState) = {
 
-    def runInputs(inputs: List[List[(String, String)]], runState: RunState): Future[(RunState, Either[(List[(String, String)], FailedStep), Done])] = {
-      if (inputs.isEmpty) Future.successful((runState, rightDone))
+    def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] = {
+      if (inputs.isEmpty) Task.delay((runState, rightDone))
       else {
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
@@ -30,7 +28,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
             stepsResult.fold(
               failedStep ⇒ {
                 // Prepend previous logs
-                Future.successful((runState.withSession(filledState.session).appendLogsFrom(filledState), Left((currentInputs, failedStep))))
+                Task.delay((runState.withSession(filledState.session).appendLogsFrom(filledState), Left((currentInputs, failedStep))))
               },
               _ ⇒ {
                 // Logs are propogated but not the session
@@ -44,7 +42,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
     r.fillPlaceholders(where)(initialRunState.session)
       .flatMap(CornichonJson.parseDataTable)
       .fold(
-        t ⇒ Future.successful(handleErrors(this, initialRunState, NonEmptyList.of(t))),
+        t ⇒ Task.delay(handleErrors(this, initialRunState, NonEmptyList.of(t))),
         parsedTable ⇒ {
           val inputs = parsedTable.map { line ⇒
             line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }

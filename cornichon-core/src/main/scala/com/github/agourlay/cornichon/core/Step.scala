@@ -2,28 +2,27 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.NonEmptyList
 import monix.execution.Scheduler
-
 import com.github.agourlay.cornichon.core.Done._
+import monix.eval.Task
 
-import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
 sealed trait Step {
   def title: String
   def setTitle(newTitle: String): Step
-  def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler): Future[(RunState, FailedStep Either Done)]
+  def run(engine: Engine)(initialRunState: RunState): Task[(RunState, FailedStep Either Done)]
 }
 
 //Step that produces a value
 trait ValueStep[A] extends Step {
 
-  def run(initialRunState: RunState)(implicit scheduler: Scheduler): Future[NonEmptyList[CornichonError] Either A]
+  def run(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either A]
 
   def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
 
   def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (Option[LogInstruction], Option[Session])
 
-  def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  def run(engine: Engine)(initialRunState: RunState) = {
     val now = System.nanoTime
     run(initialRunState).map {
       case Left(errors) ⇒
@@ -50,7 +49,7 @@ trait SimpleWrapperStep extends Step {
 
   def onNestedSuccess(resultRunState: RunState, initialRunState: RunState, executionTime: Duration): RunState
 
-  def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  def run(engine: Engine)(initialRunState: RunState) = {
     val nestedStartingState = initialRunState.forNestedSteps(nestedToRun)
     val now = System.nanoTime
     engine.runSteps(nestedStartingState).map {

@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.util
 
-import scala.concurrent.{ ExecutionContext, Future }
+import monix.eval.Task
+
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 object Timing {
@@ -12,7 +13,7 @@ object Timing {
     (res, executionTime)
   }
 
-  def withDuration[A](fct: ⇒ Future[A])(implicit ec: ExecutionContext): Future[(A, FiniteDuration)] = {
+  def withDuration[A](fct: ⇒ Task[A]): Task[(A, FiniteDuration)] = {
     val now = System.nanoTime
     fct.map { res ⇒
       val executionTime = Duration.fromNanos(System.nanoTime - now)

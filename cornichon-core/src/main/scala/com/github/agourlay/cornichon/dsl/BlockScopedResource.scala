@@ -1,8 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.Session
-
-import scala.concurrent.Future
+import monix.eval.Task
 
 trait BlockScopedResource {
 
@@ -11,14 +10,14 @@ trait BlockScopedResource {
   val openingTitle: String
   val closingTitle: String
 
-  def startResource(): Future[ResourceHandle]
+  def startResource(): Task[ResourceHandle]
 }
 
 trait ResourceHandle extends CloseableResource {
-  def resourceResults(): Future[Session]
+  def resourceResults(): Task[Session]
   val initialisedSession: Session
 }
 
 trait CloseableResource {
-  def stopResource(): Future[Unit]
+  def stopResource(): Task[Unit]
 }

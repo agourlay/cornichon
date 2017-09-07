@@ -5,10 +5,12 @@ import cats.syntax.either._
 import cats.syntax.monoid._
 import cats.syntax.cartesian._
 import cats.syntax.coflatMap._
-import cats.instances.future._
+
 import cats.instances.list._
 import cats.instances.tuple._
 import monix.execution.Scheduler
+import monix.eval.Task
+import monix.cats.monixToCatsMonad
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
@@ -22,10 +24,13 @@ import FutureEitherTHelpers._
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
   def runScenario(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Future[ScenarioReport] =
+    runScenarioTask(session, finallySteps, featureIgnored)(scenario).runAsync
+
+  def runScenarioTask(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Task[ScenarioReport] =
     if (featureIgnored || scenario.ignored)
-      Future.successful(IgnoreScenarioReport(scenario.name, session))
+      Task.delay(IgnoreScenarioReport(scenario.name, session))
     else if (scenario.pending)
-      Future.successful(PendingScenarioReport(scenario.name, session))
+      Task.delay(PendingScenarioReport(scenario.name, session))
     else {
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
       val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1, Nil)
@@ -33,7 +38,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
         case (mainState, mainRunReport) ⇒
           val stateAndReporAfterEndSteps = {
             if (finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
-              Future.successful((mainState, validDone))
+              Task.delay((mainState, validDone))
             else if (finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
               // Reuse mainline session
               val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
@@ -54,24 +59,23 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
             case (state, report) ⇒
               ScenarioReport.build(scenario.name, state, mainRunReport.toValidatedNel.combine(report))
           }
-
       }
     }
 
-  private def runStepsDontShortCircuit(initialRunState: RunState): Future[(RunState, NonEmptyList[FailedStep] Either Done)] = {
+  private def runStepsDontShortCircuit(initialRunState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
     initialRunState.remainingSteps
       .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
-      .foldLeft(Future.successful((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
+      .foldLeft(Task.delay((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
         case (runStateF, (currentStep, tail)) ⇒
           runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, tail, _) }
       }.deDup
   }
 
-  def runSteps(initialRunState: RunState): Future[(RunState, FailedStep Either Done)] = {
+  def runSteps(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] = {
 
     initialRunState.remainingSteps
       .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
-      .foldLeft(EitherT.pure[Future, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
+      .foldLeft(EitherT.pure[Task, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
         case (runStateF, (currentStep, tail)) ⇒
           runStateF.flatMap { case (runState, _) ⇒ prepareAndRunStep(currentStep, tail, runState) }
       }.runAndDeDup
@@ -81,7 +85,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
     val stepResult = prepareAndRunStep(currentStep, tail, runState).value
     stepResult
-      .recover(fromExceptionsWithFailedSteps(runState, currentStep))
+      .onErrorRecover(fromExceptionsWithFailedSteps(runState, currentStep))
       .map {
         currentStepResult ⇒
           (currentStepResult.toValidatedNel |@| failureOrDoneWithRunState.toValidated).map {
@@ -95,21 +99,21 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       (runState, FailedStep.fromSingle(step, StepExecutionError(ex))).asLeft[(RunState, Done)]
   }
 
-  private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState): EitherT[Future, (RunState, FailedStep), (RunState, Done)] = {
+  private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState): EitherT[Task, (RunState, FailedStep), (RunState, Done)] = {
     stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
       (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
     }.fold(
-      ce ⇒ Future.successful(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+      ce ⇒ Task.delay(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
       ps ⇒ runStep(runState.withSteps(tail), ps)
     ).toEitherT
   }
 
-  private def runStep(runState: RunState, ps: Step): Future[(RunState, FailedStep Either Done)] =
+  private def runStep(runState: RunState, ps: Step): Task[(RunState, FailedStep Either Done)] =
     Either
       .catchNonFatal(ps.run(this)(runState))
       .fold(
-        e ⇒ Future.successful(handleThrowable(ps, runState, e)),
-        _.recover { case NonFatal(t) ⇒ handleThrowable(ps, runState, t) }
+        e ⇒ Task.delay(handleThrowable(ps, runState, e)),
+        _.onErrorRecover { case NonFatal(t) ⇒ handleThrowable(ps, runState, t) }
       )
 }
 
@@ -153,19 +157,19 @@ object Engine {
 
 object FutureEitherTHelpers {
 
-  implicit class ToEitherTOps[A, B, C](fe: Future[(A, B Either C)]) {
-    def toEitherT(implicit ec: scala.concurrent.ExecutionContext) = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
+  implicit class ToEitherTOps[A, B, C](fe: Task[(A, B Either C)]) {
+    def toEitherT = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
   }
 
-  implicit class FactorOutCommandAInEitherTOps[A, B, C](fe: EitherT[Future, (A, B), (A, C)]) {
-    def runAndDeDup(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[B, C])] = fe.value.map(_.fold(
+  implicit class FactorOutCommandAInEitherTOps[A, B, C](fe: EitherT[Task, (A, B), (A, C)]) {
+    def runAndDeDup: Task[(A, Either[B, C])] = fe.value.map(_.fold(
       { case (a, b) ⇒ (a, Left(b)) },
       { case (a, c) ⇒ (a, Right(c)) }
     ))
   }
 
-  implicit class FactorOutCommonAOps[A, B, C](fe: Future[Either[NonEmptyList[(A, B)], (A, C)]]) {
-    def deDup(implicit ec: scala.concurrent.ExecutionContext): Future[(A, Either[NonEmptyList[B], C])] = fe.map(_.fold(
+  implicit class FactorOutCommonAOps[A, B, C](fe: Task[Either[NonEmptyList[(A, B)], (A, C)]]) {
+    def deDup: Task[(A, Either[NonEmptyList[B], C])] = fe.map(_.fold(
       { abs ⇒ (abs.head._1, Left(abs.map(_._2))) },
       { case (a, c) ⇒ (a, Right(c)) }
     ))

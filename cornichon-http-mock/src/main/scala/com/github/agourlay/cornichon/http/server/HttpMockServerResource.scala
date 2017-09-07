@@ -4,10 +4,9 @@ import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import io.circe.Json
+import monix.eval.Task
 
-import scala.concurrent.{ ExecutionContext, Future }
-
-case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range])(implicit ec: ExecutionContext)
+case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range])
   extends BlockScopedResource {
 
   val sessionTarget: String = label
@@ -16,9 +15,9 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
 
   def startResource() = {
     val mockRequestHandler = new MockServerRequestHandler()
-    new MockHttpServer(interface, portRange, mockRequestHandler.mockService).startServer().map { serverCloseHandler ⇒
+    Task.fromFuture(new MockHttpServer(interface, portRange, mockRequestHandler.mockService).startServer()).map { serverCloseHandler ⇒
       new ResourceHandle {
-        def resourceResults() = Future.successful(requestsResults(mockRequestHandler))
+        def resourceResults() = Task.delay(requestsResults(mockRequestHandler))
 
         val initialisedSession = Session.newEmpty.addValue(s"$label-url", serverCloseHandler._1)
 

@@ -8,18 +8,17 @@ import cats.syntax.either._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import monix.execution.Scheduler
+import monix.eval.Task
 
-import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
 case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends ValueStep[Done] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  override def run(initialRunState: RunState) = {
     val assertion = action(initialRunState.session)
-    Future.successful(runStepPredicate(assertion))
+    Task.delay(runStepPredicate(assertion))
   }
 
   override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =

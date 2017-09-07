@@ -2,20 +2,17 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.util.Futures
 import com.github.agourlay.cornichon.util.Timing._
+import monix.eval.Task
 
-import monix.execution.Scheduler
-
-import scala.concurrent.Future
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine)(initialRunState: RunState)(implicit scheduler: Scheduler) = {
+  override def run(engine: Engine)(initialRunState: RunState) = {
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Future[(Long, RunState, Either[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
         val retryRunState = runState.resetLogs
@@ -26,23 +23,21 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
           res.fold(
             failedStep ⇒ {
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-                Futures.evalAfter(conf.interval) {
-                  retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime + conf.interval), retriesNumber + 1)
-                }
+                retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime + conf.interval), retriesNumber + 1).delayExecution(conf.interval)
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Future.successful((retriesNumber, newRunState, Left(failedStep)))
+                Task.delay((retriesNumber, newRunState, Left(failedStep)))
               }
             },
             _ ⇒ {
               val state = runState.withSession(newRunState.session).appendLogsFrom(newRunState)
               if (remainingTime.gt(Duration.Zero)) {
                 // In case of success all logs are returned but they are not printed by default.
-                Future.successful((retriesNumber, state, rightDone))
+                Task.delay((retriesNumber, state, rightDone))
               } else {
                 // Run was a success but the time is up.
                 val failedStep = FailedStep.fromSingle(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
-                Future.successful((retriesNumber, state, Left(failedStep)))
+                Task.delay((retriesNumber, state, Left(failedStep)))
               }
             }
           )

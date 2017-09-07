@@ -6,8 +6,7 @@ import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Engine._
-
-import monix.execution.Scheduler
+import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
@@ -16,8 +15,8 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(initialRunState: RunState)(implicit scheduler: Scheduler) =
-    effect(initialRunState.session).map(_.leftMap(NonEmptyList.of(_)))
+  override def run(initialRunState: RunState) =
+    Task.deferFuture(effect(initialRunState.session)).map(_.leftMap(NonEmptyList.of(_)))
 
   override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =
     errorsToFailureStep(this, initialRunState.depth, errors)
