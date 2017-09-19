@@ -24,13 +24,13 @@ trait MathSteps {
   }
 
   def generate_random_int(target: String, max: Int = 10) =
-    EffectStep.fromSync(
+    EffectStep.fromSyncE(
       title = s"generate random Int into '$target' (max=$max)",
       effect = s ⇒ s.addValue(target, Random.nextInt(max).toString)
     )
 
   def generate_random_double(target: String) =
-    EffectStep.fromSync(
+    EffectStep.fromSyncE(
       title = s"generate random Double into '$target'",
       effect = s ⇒ s.addValue(target, Random.nextDouble().toString)
     )
@@ -52,7 +52,8 @@ trait MathSteps {
         x ← s.get("x").map(_.toDouble)
         y ← s.get("y").map(_.toDouble)
         inside = Math.sqrt(x * x + y * y) <= 1
-      } yield s.addValue(target, if (inside) "1" else "0")
+        ns ← s.addValue(target, if (inside) "1" else "0")
+      } yield ns
     }
   )
 
@@ -60,7 +61,7 @@ trait MathSteps {
     EffectStep.fromSyncE(
       title = s"estimate PI from ratio into key '$target'",
       effect = s ⇒ {
-        s.getHistory(inside).map { insides ⇒
+        s.getHistory(inside).flatMap { insides ⇒
           val trial = insides.size
           val estimation = (insides.count(_ == "1").toDouble / trial) * 4
           s.addValue(target, estimation.toString)

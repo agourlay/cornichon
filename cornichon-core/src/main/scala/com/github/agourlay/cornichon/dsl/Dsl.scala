@@ -130,7 +130,7 @@ trait Dsl extends ProvidedInstances {
     val (key, value) = input
     EffectStep.fromSyncE(
       s"add value '$value' to session under key '$key' ",
-      s ⇒ placeholderResolver.fillPlaceholders(value)(s).map(s.addValue(key, _))
+      s ⇒ placeholderResolver.fillPlaceholders(value)(s).flatMap(s.addValue(key, _))
     )
   }
 
@@ -150,7 +150,8 @@ trait Dsl extends ProvidedInstances {
       for {
         v ← s.get(key)
         tv ← Either.catchNonFatal(map(v)).leftMap(CornichonError.fromThrowable)
-      } yield s.addValue(key, tv)
+        ns ← s.addValue(key, tv)
+      } yield ns
     }
   )
 
@@ -181,7 +182,7 @@ object Dsl {
         for {
           allValues ← session.getList(keys)
           extracted ← allValues.zip(extractors).traverseU { case (value, extractor) ⇒ extractor(session, value) }
-          x ← targets.zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) ⇒ s.map(_.addValue(tuple._1, tuple._2)))
+          x ← targets.zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) ⇒ s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield x
       }
     )

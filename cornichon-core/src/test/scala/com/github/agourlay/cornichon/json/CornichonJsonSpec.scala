@@ -27,7 +27,7 @@ class CornichonJsonSpec extends WordSpec
     Json.fromJsonObject(JsonObject.fromMap(m))
 
   def parseUnsafe(path: String) =
-    parse(path).fold(e ⇒ throw e.toException, identity)
+    parse(path).valueUnsafe
 
   "CornichonJson" when {
     "parseJson" must {

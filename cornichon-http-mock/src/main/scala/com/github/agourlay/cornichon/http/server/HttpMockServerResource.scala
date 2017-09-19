@@ -19,7 +19,7 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
       new ResourceHandle {
         def resourceResults() = Task.delay(requestsResults(mockRequestHandler))
 
-        val initialisedSession = Session.newEmpty.addValue(s"$label-url", serverCloseHandler._1)
+        val initialisedSession = Session.newEmpty.addValueUnsafe(s"$label-url", serverCloseHandler._1)
 
         def stopResource() = serverCloseHandler._2.stopResource()
       }
@@ -29,8 +29,8 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
   def requestsResults(mockRequestHandler: MockServerRequestHandler) = {
     val jsonRequests = mockRequestHandler.fetchRecordedRequestsAsJson()
     Session.newEmpty
-      .addValue(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
-      .addValue(s"$sessionTarget$nbReceivedCallsSuffix", jsonRequests.size.toString)
+      .addValueUnsafe(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
+      .addValueUnsafe(s"$sessionTarget$nbReceivedCallsSuffix", jsonRequests.size.toString)
   }
 }
 

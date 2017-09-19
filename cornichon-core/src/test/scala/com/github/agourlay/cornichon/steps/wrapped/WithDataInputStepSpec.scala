@@ -111,7 +111,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
 
       val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-      val res = engine.runScenario(Session.newEmpty.addValue("other", "customers"))(s)
+      val res = engine.runScenario(Session.newEmpty.addValueUnsafe("other", "customers"))(s)
       res.map(_.isSuccess should be(true))
     }
   }

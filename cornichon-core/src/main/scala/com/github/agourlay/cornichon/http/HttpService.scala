@@ -87,20 +87,20 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       lastResponseHeadersKey → encodeSessionHeaders(response)
     )
 
-  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] = {
-    val filledSession = commonSessionExtraction(session, response)
-    extractor match {
-      case NoOpExtraction ⇒
-        Right(filledSession)
+  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
+    commonSessionExtraction(session, response).flatMap { filledSession ⇒
+      extractor match {
+        case NoOpExtraction ⇒
+          Right(filledSession)
 
-      case RootExtractor(targetKey) ⇒
-        Right(filledSession.addValue(targetKey, response.body))
+        case RootExtractor(targetKey) ⇒
+          filledSession.addValue(targetKey, response.body)
 
-      case PathExtractor(path, targetKey) ⇒
-        JsonPath.run(path, response.body)
-          .map(extractedJson ⇒ filledSession.addValue(targetKey, jsonStringValue(extractedJson)))
+        case PathExtractor(path, targetKey) ⇒
+          JsonPath.run(path, response.body)
+            .flatMap(extractedJson ⇒ filledSession.addValue(targetKey, jsonStringValue(extractedJson)))
+      }
     }
-  }
 
   private def extractWithHeadersSession(session: Session): Either[CornichonError, Seq[(String, String)]] =
     session.getOpt(withHeadersKey) match {

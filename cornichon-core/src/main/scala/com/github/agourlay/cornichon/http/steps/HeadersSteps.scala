@@ -77,7 +77,7 @@ object HeadersSteps {
   }
 
   def headersDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
-    val prettyHeaders = printArrowPairs(decodeSessionHeaders(sourceArray).fold(e ⇒ throw e.toException, _.toSeq))
+    val prettyHeaders = printArrowPairs(decodeSessionHeaders(sourceArray).valueUnsafe)
     s"""expected headers to contain '$expected' but it is not the case with headers:
        |$prettyHeaders""".stripMargin
   }

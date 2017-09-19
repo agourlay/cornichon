@@ -38,7 +38,7 @@ trait CornichonJson {
   }
 
   def parseJsonUnsafe[A: Encoder: Show](input: A): Json =
-    parseJson(input).fold(e ⇒ throw e.toException, identity)
+    parseJson(input).valueUnsafe
 
   def parseString(s: String) =
     io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
@@ -48,9 +48,6 @@ trait CornichonJson {
 
   def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
     DataTableParser.parse(table).map(_.rawStringList)
-
-  def parseDataTableUnsafe(table: String): List[JsonObject] =
-    parseDataTable(table).fold(e ⇒ throw e.toException, identity)
 
   def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
     case Success(value) ⇒ Right(value.convertMarshaled[Json])
@@ -118,7 +115,7 @@ trait CornichonJson {
 
     // Do not traverse the JSON if there are no values to find
     if (values.nonEmpty)
-      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k).fold(e ⇒ throw e.toException, identity) }
+      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k).valueUnsafe }
     else
       Vector.empty
   }
@@ -139,7 +136,7 @@ object CornichonJson extends CornichonJson {
       Show.show[GqlString](g ⇒ s"GraphQl JSON ${g.input}")
 
     implicit val gqlEncode =
-      Encoder.instance[GqlString](g ⇒ parseGraphQLJson(g.input).fold(e ⇒ throw e.toException, identity))
+      Encoder.instance[GqlString](g ⇒ parseGraphQLJson(g.input).valueUnsafe)
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {

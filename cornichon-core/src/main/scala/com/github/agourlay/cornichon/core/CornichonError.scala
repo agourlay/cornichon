@@ -34,6 +34,10 @@ object CornichonError {
 
   def catchThrowable[A](f: ⇒ A): Either[CornichonError, A] =
     Either.catchNonFatal(f).leftMap(fromThrowable)
+
+  implicit class fromEither[A](e: Either[CornichonError, A]) {
+    def valueUnsafe = e.fold(e ⇒ throw e.toException, identity)
+  }
 }
 
 case class StepExecutionError[A](e: Throwable) extends CornichonError {

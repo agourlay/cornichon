@@ -69,7 +69,7 @@ class PlaceholderResolverSpec extends WordSpec
     "fillPlaceholders" must {
       "replace a single string" in {
         forAll(keyGen, valueGen) { (ph, value) ⇒
-          val session = Session.newEmpty.addValue(ph, value)
+          val session = Session.newEmpty.addValueUnsafe(ph, value)
           val content = s"This project is <$ph>"
           resolver.fillPlaceholders(content)(session).value should be(s"This project is $value")
         }
@@ -77,44 +77,44 @@ class PlaceholderResolverSpec extends WordSpec
 
       "not be confused by markup order" in {
         forAll(keyGen, valueGen) { (ph, value) ⇒
-          val session = Session.newEmpty.addValue(ph, value)
+          val session = Session.newEmpty.addValueUnsafe(ph, value)
           val content = s"This project is >$ph<"
           resolver.fillPlaceholders(content)(session).value should be(s"This project is >$ph<")
         }
       }
 
       "not be confused if key contains empty string" in {
-        val session = Session.newEmpty.addValue("project-name", "cornichon")
+        val session = Session.newEmpty.addValueUnsafe("project-name", "cornichon")
         val content = "This project is named <project name>"
         resolver.fillPlaceholders(content)(session).value should be("This project is named <project name>")
       }
 
       "not be confused by unclosed markup used in a math context" in {
-        val session = Session.newEmpty.addValue("pi", "3.14")
+        val session = Session.newEmpty.addValueUnsafe("pi", "3.14")
         val content = "3.15 > <pi>"
         resolver.fillPlaceholders(content)(session).value should be("3.15 > 3.14")
       }
 
       "not be confused by markup langage" in {
-        val session = Session.newEmpty.addValue("pi", "3.14")
+        val session = Session.newEmpty.addValueUnsafe("pi", "3.14")
         val content = "PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT <pi>"
         resolver.fillPlaceholders(content)(session).value should be("PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT 3.14")
       }
 
       "return ResolverError if placeholder not found" in {
-        val session = Session.newEmpty.addValue("project-name", "cornichon")
+        val session = Session.newEmpty.addValueUnsafe("project-name", "cornichon")
         val content = "This project is named <project-new-name>"
         resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("project-new-name", session))
       }
 
       "resolve two placeholders" in {
-        val session = Session.newEmpty.addValues("project-name" → "cornichon", "taste" → "tasty")
+        val session = Session.newEmpty.addValuesUnsafe("project-name" → "cornichon", "taste" → "tasty")
         val content = "This project is named <project-name> and is super <taste>"
         resolver.fillPlaceholders(content)(session).value should be("This project is named cornichon and is super tasty")
       }
 
       "return ResolverError for the first placeholder not found" in {
-        val session = Session.newEmpty.addValues("project-name" → "cornichon", "taste" → "tasty")
+        val session = Session.newEmpty.addValuesUnsafe("project-name" → "cornichon", "taste" → "tasty")
         val content = "This project is named <project-name> and is super <new-taste>"
         resolver.fillPlaceholders(content)(session).leftValue should be(KeyNotFoundInSession("new-taste", session))
       }
@@ -128,7 +128,7 @@ class PlaceholderResolverSpec extends WordSpec
 
       "take the first value in session if indice = 0" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
-          val s = Session.newEmpty.addValue(key, firstValue).addValue(key, secondValue)
+          val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
           val content = s"<$key[0]>"
           resolver.fillPlaceholders(content)(s).value should be(firstValue)
         }
@@ -136,7 +136,7 @@ class PlaceholderResolverSpec extends WordSpec
 
       "take the second value in session if indice = 1" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
-          val s = Session.newEmpty.addValue(key, firstValue).addValue(key, secondValue)
+          val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
           val content = s"<$key[1]>"
           resolver.fillPlaceholders(content)(s).value should be(secondValue)
         }
@@ -145,7 +145,7 @@ class PlaceholderResolverSpec extends WordSpec
       "fail with clear error message if key is defined in both Session and Extractors" in {
         val extractor = JsonMapper("customer", "id")
         val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
-        val s = Session.newEmpty.addValue("customer-id", "12345")
+        val s = Session.newEmpty.addValueUnsafe("customer-id", "12345")
         resolverWithExt.fillPlaceholders("<customer-id>")(s).leftValue should be(AmbiguousKeyDefinition("customer-id"))
       }
     }

@@ -25,7 +25,7 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
     get(key, stackingIndice).toOption
 
   def getUnsafe(key: String, stackingIndice: Option[Int] = None): String =
-    get(key, stackingIndice).fold(ce ⇒ throw ce.toException, identity)
+    get(key, stackingIndice).valueUnsafe
 
   def get(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
     for {
@@ -34,7 +34,8 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
       value ← values.lift(indice).toRight(IndiceNotFoundForKey(key, indice, values))
     } yield value
 
-  def get(sessionKey: SessionKey): Either[CornichonError, String] = get(sessionKey.name, sessionKey.index)
+  def get(sessionKey: SessionKey): Either[CornichonError, String] =
+    get(sessionKey.name, sessionKey.index)
 
   def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
     for {
@@ -50,30 +51,42 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
     } yield field
 
   def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
-    getJsonStringField(key, stackingIndice, path).fold(ce ⇒ throw ce.toException, identity)
+    getJsonStringField(key, stackingIndice, path).valueUnsafe
 
-  def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] = getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
+  def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] =
+    getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
 
-  def getList(keys: Seq[String]): Either[CornichonError, List[String]] = keys.toList.traverseU(v ⇒ get(v))
+  def getList(keys: Seq[String]): Either[CornichonError, List[String]] =
+    keys.toList.traverseU(v ⇒ get(v))
 
-  def getHistory(key: String) = content.get(key).toRight(KeyNotFoundInSession(key, this))
+  def getHistory(key: String) =
+    content.get(key).toRight(KeyNotFoundInSession(key, this))
 
-  //FIXME turning this into a proper CornichonError creates a lot of work to handle the Either
-  def addValue(key: String, value: String) = {
+  def addValue(key: String, value: String): Either[CornichonError, Session] = {
     val trimmedKey = key.trim
     if (trimmedKey.isEmpty)
-      throw EmptyKey(this).toException
+      Left(EmptyKey(this))
     else if (Session.notAllowedInKey.exists(forbidden ⇒ trimmedKey.contains(forbidden)))
-      throw IllegalKey(trimmedKey).toException
+      Left(IllegalKey(trimmedKey))
     else
-      content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
-        Session((content - key) + (key → values.:+(value)))
-      }
+      Right(
+        content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
+          Session((content - key) + (key → values.:+(value)))
+        }
+      )
   }
 
-  def addValues(tuples: (String, String)*) = tuples.foldLeft(this)((s, t) ⇒ s.addValue(t._1, t._2))
+  def addValueUnsafe(key: String, value: String): Session =
+    addValue(key, value).valueUnsafe
 
-  def removeKey(key: String) = Session(content - key)
+  def addValues(tuples: (String, String)*) =
+    tuples.foldLeft(this.asRight[CornichonError])((s, t) ⇒ s.flatMap(_.addValue(t._1, t._2)))
+
+  def addValuesUnsafe(tuples: (String, String)*) =
+    addValues(tuples: _*).valueUnsafe
+
+  def removeKey(key: String) =
+    Session(content - key)
 
   def rollbackKey(key: String) =
     getHistory(key).map { values ⇒

@@ -23,8 +23,8 @@ case class RunState(
   def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)
 
   def withSession(s: Session) = copy(session = s)
-  def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValues(tuples: _*))
-  def addToSession(key: String, value: String) = withSession(session.addValue(key, value))
+  def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValuesUnsafe(tuples: _*))
+  def addToSession(key: String, value: String) = withSession(session.addValueUnsafe(key, value))
   def mergeSessions(other: Session) = copy(session = session.combine(other))
 
   def withLogs(logs: Vector[LogInstruction]) = copy(logs = logs)

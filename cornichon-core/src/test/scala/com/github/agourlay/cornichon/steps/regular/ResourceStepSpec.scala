@@ -87,7 +87,7 @@ class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       s ⇒ F {
         val name = key + "-" + randomName
         queueResource.create(name)
-        Right(s.addValue(key, name))
+        s.addValue(key, name)
       }
     )
 
