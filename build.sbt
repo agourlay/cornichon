@@ -267,7 +267,7 @@ lazy val library =
       val ficus         = "1.4.2"
       val monix         = "2.3.0"
       val sbtTest       = "1.0"
-      val http4s        = "0.17.0"
+      val http4s        = "0.17.1"
     }
     val akkaHttp      = "com.typesafe.akka"     %% "akka-http"            % Version.akkaHttp
     val akkaHttpCirce = "de.heikoseeberger"     %% "akka-http-circe"      % Version.akkaHttpCirce
