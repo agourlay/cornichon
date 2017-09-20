@@ -15,6 +15,7 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable }
 import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.json.JsonSteps.jsonAssertionTitleBuilder
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import io.circe.{ Encoder, Json }
@@ -216,6 +217,14 @@ object JsonSteps {
         jArray.map(l ⇒ (size, l.size, arraySizeError(size, Json.fromValues(l).show)))
       }
     )
+
+    def is[A: Show: Resolvable: Encoder](expected: Either[CornichonError, A]): AssertStep = expected match {
+      case Left(e) ⇒
+        val baseTitle = if (jsonPath == JsonPath.root) s"$target array " else s"$target's array '$jsonPath'"
+        AssertStep(jsonAssertionTitleBuilder(baseTitle, ignoredEachKeys), s ⇒ Assertion.either(Left(e)))
+      case Right(a) ⇒
+        is(a)
+    }
 
     def is[A: Show: Resolvable: Encoder](expected: A) = {
       val assertionTitle = {
