@@ -29,6 +29,8 @@ class SbtCornichonTask(task: TaskDef) extends Task {
 
     println(SuccessLogInstruction(s"${featureDef.name}:", 0).colorized)
 
+    // Run before feature
+    baseFeature.beforeFeature.foreach(f ⇒ f())
     val featResults = featureDef.scenarios.map { s ⇒
       val startTS = System.currentTimeMillis()
       BaseFeature.reserveGlobalRuntime()
@@ -43,7 +45,11 @@ class SbtCornichonTask(task: TaskDef) extends Task {
 
     Future.sequence(featResults)
       .map(_.foreach(printResultLogs))
-      .onComplete(_ ⇒ continuation(Array.empty))
+      .onComplete { _ ⇒
+        // Run after feature
+        baseFeature.afterFeature.foreach(f ⇒ f())
+        continuation(Array.empty)
+      }
   }
 
   def printResultLogs(sr: ScenarioReport) = sr match {

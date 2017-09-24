@@ -33,4 +33,12 @@ class DummyExamplesTwo extends CornichonFeature {
     print_step("after each scenario dummy two")
   )
 
+  beforeFeature(
+    println("before feature")
+  )
+
+  afterFeature(
+    println("after feature")
+  )
+
 }

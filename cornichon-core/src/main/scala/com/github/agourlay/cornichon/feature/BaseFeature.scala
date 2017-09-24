@@ -20,8 +20,8 @@ import scala.concurrent.duration._
 
 trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 
-  protected var beforeFeature: Seq[() ⇒ Unit] = Nil
-  protected var afterFeature: Seq[() ⇒ Unit] = Nil
+  private[cornichon] var beforeFeature: Seq[() ⇒ Unit] = Nil
+  private[cornichon] var afterFeature: Seq[() ⇒ Unit] = Nil
 
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
