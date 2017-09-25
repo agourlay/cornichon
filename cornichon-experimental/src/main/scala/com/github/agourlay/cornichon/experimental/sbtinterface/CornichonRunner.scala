@@ -19,8 +19,10 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
   }
 
   override def done(): String = {
-    //For some reason CornichonRunner is instantiated twice thus this is called twice?!
+    // Function called twice - main and forked process
+    // https://github.com/sbt/sbt/issues/3510
     if (gotTasks.get) Await.result(BaseFeature.shutDownGlobalResources(), Duration.Inf)
+    // empty strings means letting SBT generate the result summary
     ""
   }
 

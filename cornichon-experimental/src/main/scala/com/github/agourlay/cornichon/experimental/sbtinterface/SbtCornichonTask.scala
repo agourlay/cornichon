@@ -11,7 +11,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class SbtCornichonTask(task: TaskDef) extends Task {
 
   override def tags(): Array[String] = Array.empty
-  def taskDef(): TaskDef = task
+  override def taskDef(): TaskDef = task
+
+  private val baseFeature = {
+    val featureClass = Class.forName(task.fullyQualifiedName())
+    val constructor = featureClass.getConstructor()
+    constructor.newInstance().asInstanceOf[BaseFeature]
+  }
+
+  private val featureDef = baseFeature.feature
 
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
     val p = Promise[Unit]()
@@ -21,24 +29,15 @@ class SbtCornichonTask(task: TaskDef) extends Task {
   }
 
   def execute(eventHandler: EventHandler, continuation: (Array[Task]) ⇒ Unit): Unit = {
-
-    val c = Class.forName(task.fullyQualifiedName())
-    val cons = c.getConstructor()
-    val baseFeature = cons.newInstance().asInstanceOf[BaseFeature]
-    val featureDef = baseFeature.feature
-
     println(SuccessLogInstruction(s"${featureDef.name}:", 0).colorized)
-
-    // Run before feature
+    // Run 'before feature' hooks
     baseFeature.beforeFeature.foreach(f ⇒ f())
     val featResults = featureDef.scenarios.map { s ⇒
       val startTS = System.currentTimeMillis()
-      BaseFeature.reserveGlobalRuntime()
       baseFeature.runScenario(s).map { r ⇒
         //Generate result event
         val endTS = System.currentTimeMillis()
         eventHandler.handle(eventBuilder(r, endTS - startTS))
-        BaseFeature.releaseGlobalRuntime()
         r
       }
     }
@@ -46,7 +45,7 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     Future.sequence(featResults)
       .map(_.foreach(printResultLogs))
       .onComplete { _ ⇒
-        // Run after feature
+        // Run 'after feature' hooks
         baseFeature.afterFeature.foreach(f ⇒ f())
         continuation(Array.empty)
       }
