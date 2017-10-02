@@ -29,7 +29,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   implicit lazy val (globalClient, scheduler) = globalRuntime
   private lazy val engine = Engine.withStepTitleResolver(placeholderResolver)
 
-  private lazy val config = BaseFeature.config
+  private[cornichon] lazy val config = BaseFeature.config
 
   lazy val requestTimeout = config.requestTimeout
   lazy val baseUrl = config.baseUrl

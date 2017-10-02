@@ -4,6 +4,8 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.feature.BaseFeature
 import sbt.testing._
 
+import cats.syntax.either._
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future, Promise }
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,7 +21,7 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     constructor.newInstance().asInstanceOf[BaseFeature]
   }
 
-  private val featureDef = baseFeature.feature
+  private val featureDef = Either.catchNonFatal(baseFeature.feature)
 
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
     val p = Promise[Unit]()
@@ -28,27 +30,53 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     Array.empty
   }
 
-  def execute(eventHandler: EventHandler, continuation: (Array[Task]) ⇒ Unit): Unit = {
-    println(SuccessLogInstruction(s"${featureDef.name}:", 0).colorized)
-    // Run 'before feature' hooks
-    baseFeature.beforeFeature.foreach(f ⇒ f())
-    val featResults = featureDef.scenarios.map { s ⇒
-      val startTS = System.currentTimeMillis()
-      baseFeature.runScenario(s).map { r ⇒
-        //Generate result event
-        val endTS = System.currentTimeMillis()
-        eventHandler.handle(eventBuilder(r, endTS - startTS))
-        r
+  def execute(eventHandler: EventHandler, continuation: (Array[Task]) ⇒ Unit): Unit = featureDef.fold(
+    e ⇒ {
+      val msg = e match {
+        case c: CornichonError ⇒ c.renderedMessage
+        case e: Throwable      ⇒ e.getMessage
       }
-    }
+      val banner = s"""
+                      |exception thrown during Feature initialization - $msg :
+                      |${CornichonError.genStacktrace(e)}
+                      |""".stripMargin
+      println(FailureLogInstruction(banner, 0).colorized)
+      eventHandler.handle(failureEventBuilder(e))
+      continuation(Array.empty)
+    },
+    feature ⇒ {
+      println(SuccessLogInstruction(s"${feature.name}:", 0).colorized)
+      // Run 'before feature' hooks
+      baseFeature.beforeFeature.foreach(f ⇒ f())
+      val scenarioResults = {
+        if (baseFeature.executeScenariosInParallel)
+          Future.traverse(feature.scenarios)(runScenario(eventHandler))
+        else
+          feature.scenarios.foldLeft(Future.successful(List.empty[ScenarioReport])) { (r, s) ⇒
+            for {
+              acc ← r
+              current ← runScenario(eventHandler)(s)
+            } yield acc :+ current
+          }
+      }
 
-    Future.sequence(featResults)
-      .map(_.foreach(printResultLogs))
-      .onComplete { _ ⇒
-        // Run 'after feature' hooks
-        baseFeature.afterFeature.foreach(f ⇒ f())
-        continuation(Array.empty)
-      }
+      scenarioResults.map(_.foreach(printResultLogs))
+        .onComplete { _ ⇒
+          // Run 'after feature' hooks
+          baseFeature.afterFeature.foreach(f ⇒ f())
+          continuation(Array.empty)
+        }
+    }
+  )
+
+  def runScenario(eventHandler: EventHandler)(s: Scenario): Future[ScenarioReport] = {
+    val startTS = System.currentTimeMillis()
+    baseFeature.runScenario(s).map { r ⇒
+      //Generate result event
+      val endTS = System.currentTimeMillis()
+      eventHandler.handle(eventBuilder(r, endTS - startTS))
+      r
+    }
   }
 
   def printResultLogs(sr: ScenarioReport) = sr match {
@@ -85,6 +113,15 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     val selector = task.selectors().head
     val fingerprint = task.fingerprint()
     val duration = durationInMillis
+  }
+
+  def failureEventBuilder(exception: Throwable) = new Event {
+    val status = Status.Failure
+    val throwable = new OptionalThrowable(exception)
+    val fullyQualifiedName = task.fullyQualifiedName()
+    val selector = task.selectors().head
+    val fingerprint = task.fingerprint()
+    val duration = 0L
   }
 
 }
