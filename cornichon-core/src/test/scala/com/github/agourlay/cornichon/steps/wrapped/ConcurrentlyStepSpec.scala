@@ -31,15 +31,15 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         "always succeed after 1000 ms",
         s ⇒ {
           println("before going to sleep")
-          Thread.sleep(10000)
+          Thread.sleep(1000)
           println("after sleep")
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val steps = ConcurrentlyStep(nested, 3, 200.millis) :: Nil
+      val steps = ConcurrentlyStep(nested, 1, 200.millis) :: Nil
       val s = Scenario("scenario with Concurrently", steps)
       engine.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Concurrently block did not reach completion in time: 0/3 finished")
+        case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Concurrently block did not reach completion in time: 0/1 finished")
         case _                        ⇒ assert(false)
       }
     }
