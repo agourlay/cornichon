@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.core
 
 import cats.data.NonEmptyList
-import monix.execution.Scheduler
 import com.github.agourlay.cornichon.core.Done._
 import monix.eval.Task
 

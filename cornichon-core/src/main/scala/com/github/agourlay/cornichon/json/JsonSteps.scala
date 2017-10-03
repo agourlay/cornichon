@@ -15,7 +15,6 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonSteps.jsonAssertionTitleBuilder
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import io.circe.{ Encoder, Json }
