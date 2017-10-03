@@ -30,7 +30,9 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val nested = AssertStep(
         "always succeed after 1000 ms",
         s ⇒ {
+          println("before going to sleep")
           Thread.sleep(1000)
+          println("after sleep")
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
