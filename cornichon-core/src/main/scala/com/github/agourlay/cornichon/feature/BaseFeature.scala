@@ -79,7 +79,7 @@ object BaseFeature {
     if (config.useExperimentalHttp4sClient)
       new Http4sClient(config)
     else
-      new AkkaHttpClient(config)(scheduler)
+      new AkkaHttpClient(config, scheduler)
   }
 
   private val registeredUsage = new AtomicInteger

@@ -40,10 +40,11 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
 import scala.util.{ Failure, Success }
 
-class AkkaHttpClient(config: Config)(implicit executionContext: ExecutionContext) extends HttpClient {
+class AkkaHttpClient(config: Config, ec: ExecutionContext) extends HttpClient {
 
-  implicit private lazy val system = ActorSystem("cornichon-actor-system")
-  implicit private lazy val mat = ActorMaterializer()
+  implicit private val system = ActorSystem("cornichon-actor-system")
+  implicit private val mat = ActorMaterializer()
+  implicit private val iec = ec
 
   // Disable JDK built-in checks
   // https://groups.google.com/forum/#!topic/akka-user/ziI1fPBtxV8
