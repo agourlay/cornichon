@@ -7,7 +7,7 @@ import sbt.testing._
 import cats.syntax.either._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, Future, Promise }
+import scala.concurrent.{ Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SbtCornichonTask(task: TaskDef) extends Task {
@@ -15,63 +15,63 @@ class SbtCornichonTask(task: TaskDef) extends Task {
   override def tags(): Array[String] = Array.empty
   override def taskDef(): TaskDef = task
 
-  private val baseFeature = {
-    val featureClass = Class.forName(task.fullyQualifiedName())
-    val constructor = featureClass.getConstructor()
-    constructor.newInstance().asInstanceOf[BaseFeature]
-  }
-
-  private val featureDef = Either.catchNonFatal(baseFeature.feature)
-
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
-    val p = Promise[Unit]()
-    execute(eventHandler, _ ⇒ p.success(()))
-    Await.result(p.future, Duration.Inf)
+    Await.result(executeFeature(eventHandler), Duration.Inf)
     Array.empty
   }
 
-  def execute(eventHandler: EventHandler, continuation: (Array[Task]) ⇒ Unit): Unit = featureDef.fold(
-    e ⇒ {
-      val msg = e match {
-        case c: CornichonError ⇒ c.renderedMessage
-        case e: Throwable      ⇒ e.getMessage
-      }
-      val banner = s"""
-                      |exception thrown during Feature initialization - $msg :
-                      |${CornichonError.genStacktrace(e)}
-                      |""".stripMargin
-      println(FailureLogInstruction(banner, 0).colorized)
-      eventHandler.handle(failureEventBuilder(e))
-      continuation(Array.empty)
-    },
-    feature ⇒ {
-      println(SuccessLogInstruction(s"${feature.name}:", 0).colorized)
-      // Run 'before feature' hooks
-      baseFeature.beforeFeature.foreach(f ⇒ f())
-      val scenarioResults = {
-        if (baseFeature.executeScenariosInParallel)
-          Future.traverse(feature.scenarios)(runScenario(eventHandler))
-        else
-          feature.scenarios.foldLeft(Future.successful(List.empty[ScenarioReport])) { (r, s) ⇒
-            for {
-              acc ← r
-              current ← runScenario(eventHandler)(s)
-            } yield acc :+ current
-          }
-      }
+  def executeFeature(eventHandler: EventHandler): Future[Done] = {
 
-      scenarioResults.map(_.foreach(printResultLogs))
-        .onComplete { _ ⇒
+    val baseFeature = {
+      val featureClass = Class.forName(task.fullyQualifiedName())
+      val constructor = featureClass.getConstructor()
+      constructor.newInstance().asInstanceOf[BaseFeature]
+    }
+
+    Either.catchNonFatal(baseFeature.feature).fold(
+      e ⇒ {
+        val msg = e match {
+          case c: CornichonError ⇒ c.renderedMessage
+          case e: Throwable      ⇒ e.getMessage
+        }
+        val banner =
+          s"""
+             |exception thrown during Feature initialization - $msg :
+             |${CornichonError.genStacktrace(e)}
+             |""".stripMargin
+        println(FailureLogInstruction(banner, 0).colorized)
+        eventHandler.handle(failureEventBuilder(e))
+        Done.futureDone
+      },
+      feature ⇒ {
+        println(SuccessLogInstruction(s"${feature.name}:", 0).colorized)
+        // Run 'before feature' hooks
+        baseFeature.beforeFeature.foreach(f ⇒ f())
+        val scenarioResults = {
+          if (baseFeature.executeScenariosInParallel)
+            Future.traverse(feature.scenarios)(runScenario(baseFeature, eventHandler))
+          else
+            feature.scenarios.foldLeft(Future.successful(List.empty[ScenarioReport])) { (r, s) ⇒
+              for {
+                acc ← r
+                current ← runScenario(baseFeature, eventHandler)(s)
+              } yield acc :+ current
+            }
+        }
+
+        scenarioResults.map { results ⇒
+          results.foreach(printResultLogs)
           // Run 'after feature' hooks
           baseFeature.afterFeature.foreach(f ⇒ f())
-          continuation(Array.empty)
+          Done
         }
-    }
-  )
+      }
+    )
+  }
 
-  def runScenario(eventHandler: EventHandler)(s: Scenario): Future[ScenarioReport] = {
+  def runScenario(feature: BaseFeature, eventHandler: EventHandler)(s: Scenario): Future[ScenarioReport] = {
     val startTS = System.currentTimeMillis()
-    baseFeature.runScenario(s).map { r ⇒
+    feature.runScenario(s).map { r ⇒
       //Generate result event
       val endTS = System.currentTimeMillis()
       eventHandler.handle(eventBuilder(r, endTS - startTS))
