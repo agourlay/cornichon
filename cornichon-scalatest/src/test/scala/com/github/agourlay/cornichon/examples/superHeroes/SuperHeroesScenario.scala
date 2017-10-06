@@ -801,6 +801,12 @@ class SuperHeroesScenario extends CornichonFeature {
 
   }
 
+  afterEachScenario {
+
+    Then I print_step("done!")
+
+  }
+
   override def registerExtractors = Map(
     "name" → JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "name")
   )

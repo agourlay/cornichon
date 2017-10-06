@@ -21,7 +21,10 @@ class EngineSpec extends AsyncWordSpec with Matchers {
       "executes all steps of a scenario" in {
         val steps = AssertStep("first step", s ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
         val s = Scenario("test", steps)
-        engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
+        engine.runScenario(Session.newEmpty)(s).map { r ⇒
+          r.isSuccess should be(true)
+          r.logs.size should be(2)
+        }
       }
 
       "stops at first failed step" in {
@@ -42,6 +45,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
                   |'5'"""
                     .stripMargin.trim
                 )
+                f.logs.size should be(7)
               case _ ⇒ fail(s"Should be a FailedScenarioReport but got \n${res.logs}")
             }
           }
@@ -80,6 +84,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
                 |""".
                   stripMargin
               )
+              f.logs.size should be(12)
             }
           case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
         }
@@ -100,6 +105,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         engine.runScenario(Session.newEmpty)(s).map { res ⇒
           res.isSuccess should be(true)
           uglyCounter.get() should be(effectNumber)
+          res.logs.size should be(effectNumber + 1)
         }
       }
 
@@ -118,6 +124,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         engine.runScenario(Session.newEmpty, List.fill(effectNumber)(effect))(s).map { res ⇒
           res.isSuccess should be(true)
           uglyCounter.get() should be(effectNumber * 2)
+          res.logs.size should be(effectNumber * 2 + 2)
         }
       }
     }

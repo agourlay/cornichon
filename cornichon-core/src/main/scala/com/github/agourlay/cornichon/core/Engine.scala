@@ -71,15 +71,13 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       }.deDup
   }
 
-  def runSteps(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] = {
-
+  def runSteps(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
     initialRunState.remainingSteps
       .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
       .foldLeft(EitherT.pure[Task, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
         case (runStateF, (currentStep, tail)) ⇒
           runStateF.flatMap { case (runState, _) ⇒ prepareAndRunStep(currentStep, tail, runState) }
       }.runAndDeDup
-  }
 
   private def prepareAndRunStepsAccumulatingErrors(currentStep: Step, tail: List[Step], failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
     val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
