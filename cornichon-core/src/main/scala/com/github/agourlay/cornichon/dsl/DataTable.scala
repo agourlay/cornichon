@@ -11,6 +11,7 @@ import cats.instances.list._
 import cats.instances.either._
 
 import scala.util.{ Failure, Success }
+import scala.collection.breakOut
 
 object DataTableParser {
   val WhiteSpace = CharPredicate("\u0009\u0020")
@@ -66,10 +67,12 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
   }
 
   def rawStringList: List[Map[String, String]] =
-    rows.map(row ⇒
-      (headers.fields zip row.fields)
-        .collect { case (name, value) if value.trim.nonEmpty ⇒ name → value.trim }
-        .toMap).toList
+    rows.map { row ⇒
+      val map: Map[String, String] = (headers.fields zip row.fields).collect {
+        case (name, value) if value.trim.nonEmpty ⇒ name → value.trim
+      }(breakOut)
+      map
+    }.toList
 }
 
 case class Headers(fields: Seq[String])
