@@ -7,7 +7,7 @@ import sbt.testing._
 import cats.syntax.either._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SbtCornichonTask(task: TaskDef) extends Task {

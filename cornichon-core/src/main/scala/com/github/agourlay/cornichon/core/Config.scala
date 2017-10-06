@@ -6,5 +6,6 @@ case class Config(
     executeScenariosInParallel: Boolean = true,
     requestTimeout: FiniteDuration = 2000.millis,
     baseUrl: String = "",
-    traceRequest: Boolean = false
+    traceRequest: Boolean = false,
+    useExperimentalHttp4sClient: Boolean = false
 )

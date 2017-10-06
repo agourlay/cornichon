@@ -75,7 +75,12 @@ object BaseFeature {
 
   private val config = ConfigFactory.load().as[Config]("cornichon")
 
-  private val client: HttpClient = new Http4sClient(config)
+  private val client: HttpClient = {
+    if (config.useExperimentalHttp4sClient)
+      new Http4sClient(config)
+    else
+      new AkkaHttpClient(config)(scheduler)
+  }
 
   private val registeredUsage = new AtomicInteger
   private val safePassInRow = new AtomicInteger
