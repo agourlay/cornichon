@@ -47,7 +47,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   }
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, globalClient, placeholderResolver)
+    new HttpService(baseUrl, timeout, globalClient, placeholderResolver, config)
 
   def feature: FeatureDef
 
@@ -77,9 +77,9 @@ object BaseFeature {
 
   private val client: HttpClient = {
     if (config.useExperimentalHttp4sClient)
-      new Http4sClient(config)
+      new Http4sClient()
     else
-      new AkkaHttpClient(config, scheduler)
+      new AkkaHttpClient(scheduler)
   }
 
   private val registeredUsage = new AtomicInteger

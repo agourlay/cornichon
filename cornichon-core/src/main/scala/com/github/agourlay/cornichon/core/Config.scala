@@ -6,6 +6,8 @@ case class Config(
     executeScenariosInParallel: Boolean = true,
     requestTimeout: FiniteDuration = 2000.millis,
     baseUrl: String = "",
-    traceRequest: Boolean = false,
-    useExperimentalHttp4sClient: Boolean = false
+    traceRequests: Boolean = false,
+    useExperimentalHttp4sClient: Boolean = false,
+    warnOnDuplicateHeaders: Boolean = false,
+    addAcceptGzipByDefault: Boolean = false
 )

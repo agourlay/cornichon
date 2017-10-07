@@ -243,7 +243,7 @@ class SuperHeroesScenario extends CornichonFeature {
         And I show_last_status
       }
 
-      Scenario("demonstrate Gzip support").ignoredBecause("http4s client") {
+      Scenario("demonstrate Gzip support") {
 
         When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>").withHeaders(
           "Accept-Encoding" → "gzip"
@@ -699,7 +699,7 @@ class SuperHeroesScenario extends CornichonFeature {
         And I show_last_status
       }
 
-      Scenario("demonstrate streaming support").ignoredBecause("not supported anymore") {
+      Scenario("demonstrate streaming support") {
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I open_sse("/sseStream/superheroes", takeWithin = 3 seconds).withParams(

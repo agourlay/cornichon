@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.http
 
 import cats.scalatest.{ EitherMatchers, EitherValues }
+import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Config, Session }
+import com.github.agourlay.cornichon.http.HttpMethods.GET
 import com.github.agourlay.cornichon.http.client.Http4sClient
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
@@ -15,8 +17,8 @@ class HttpServiceSpec extends WordSpec
   with EitherValues
   with EitherMatchers {
 
-  val client = new Http4sClient(Config())
-  val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor())
+  val client = new Http4sClient()
+  val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config())
 
   override def afterAll() = {
     client.shutdown()
@@ -63,6 +65,19 @@ class HttpServiceSpec extends WordSpec
       "fail if wrong format" in {
         HttpService.decodeSessionHeaders("headerkey-headervalue") should be(left)
       }
+    }
+
+    "configureRequest" must {
+      "add accept gzip according to config - true" in {
+        val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config(addAcceptGzipByDefault = true))
+        service.configureRequest(HttpRequest[String](GET, "", None, Nil, Nil)).headers should be(("Accept-Encoding" -> "gzip") :: Nil)
+      }
+
+      "add accept gzip according to config - false" in {
+        val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config(addAcceptGzipByDefault = false))
+        service.configureRequest(HttpRequest[String](GET, "", None, Nil, Nil)).headers should be(Nil)
+      }
+
     }
   }
 }

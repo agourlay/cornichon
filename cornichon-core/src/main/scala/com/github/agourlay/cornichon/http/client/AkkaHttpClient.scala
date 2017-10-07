@@ -25,7 +25,7 @@ import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.core.{ Config, CornichonError, CornichonException, Done }
+import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest }
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
@@ -40,7 +40,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
 import scala.util.{ Failure, Success }
 
-class AkkaHttpClient(config: Config, ec: ExecutionContext) extends HttpClient {
+class AkkaHttpClient(ec: ExecutionContext) extends HttpClient {
 
   implicit private val system = ActorSystem("cornichon-actor-system")
   implicit private val mat = ActorMaterializer()
@@ -99,7 +99,6 @@ class AkkaHttpClient(config: Config, ec: ExecutionContext) extends HttpClient {
         val requestBuilder = httpMethodMapper(req.method)
         val uri = uriBuilder(req.url, req.params)
         val request = requestBuilder(uri, req.body).withHeaders(collection.immutable.Seq(akkaHeaders: _*))
-        if (config.traceRequest) println(request)
         val response = Http().singleRequest(request, sslContext)
         for {
           resp ← EitherT(handleRequest(t, req)(response))

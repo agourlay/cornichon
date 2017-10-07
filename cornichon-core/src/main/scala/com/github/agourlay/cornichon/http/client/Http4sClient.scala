@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.http.client
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
-import com.github.agourlay.cornichon.core.{ Config, CornichonError, CornichonException, Done }
+import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
 import fs2.{ Scheduler, Strategy, Task }
@@ -17,7 +17,7 @@ import scala.concurrent.duration.{ Duration, FiniteDuration }
 import ExecutionContext.Implicits.global
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
-class Http4sClient(config: Config) extends HttpClient {
+class Http4sClient extends HttpClient {
 
   implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
   implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
@@ -68,8 +68,6 @@ class Http4sClient(config: Config) extends HttpClient {
     Uri.fromString(cReq.url).fold[EitherT[Future, CornichonError, CornichonHttpResponse]](
       e ⇒ EitherT.left(Future.successful(MalformedUriError(cReq.url, e.message))),
       uri ⇒ EitherT {
-        if (config.traceRequest) println(cReq)
-
         val r = Request(httpMethodMapper(cReq.method))
           .withHeaders(buildHeaders(cReq.headers))
           .withUri(addQueryParams(uri, cReq.params))

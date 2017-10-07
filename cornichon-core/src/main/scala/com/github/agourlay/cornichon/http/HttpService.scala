@@ -4,6 +4,7 @@ import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.syntax.traverse._
+import cats.syntax.show._
 import cats.instances.list._
 import cats.instances.either._
 import cats.instances.future._
@@ -16,13 +17,19 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ Resolvable, PlaceholderResolver }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
+import com.github.agourlay.cornichon.http.HttpRequest._
 
 import io.circe.Encoder
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 
-class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpClient, resolver: PlaceholderResolver)(implicit ec: ExecutionContext) {
+class HttpService(
+    baseUrl: String,
+    requestTimeout: FiniteDuration,
+    client: HttpClient,
+    resolver: PlaceholderResolver,
+    config: Config)(implicit ec: ExecutionContext) {
 
   private def resolveRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A])(s: Session) =
     for {
@@ -53,7 +60,8 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
   private def runRequest[A: Show: Resolvable: Encoder](r: HttpRequest[A], expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       resolvedRequest ← EitherT.fromEither[Future](resolveRequest(r)(s))
-      resp ← client.runRequest(resolvedRequest, requestTimeout)
+      configuredRequest = configureRequest(resolvedRequest)
+      resp ← client.runRequest(configuredRequest, requestTimeout)
       newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
     } yield (resp, newSession)
 
@@ -64,6 +72,17 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       resp ← EitherT(client.openStream(resolvedRequest, requestTimeout))
       newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
     } yield (resp, newSession)
+  }
+
+  def configureRequest[A: Show](req: HttpRequest[A]): HttpRequest[A] = {
+    if (config.traceRequests)
+      println(DebugLogInstruction(req.show, 1).colorized)
+    if (config.warnOnDuplicateHeaders && req.headers.groupBy(_._1).exists(_._2.size > 1))
+      println(WarningLogInstruction(s"**Warning**\nduplicate headers in request:\n${req.show}", 1).colorized)
+    if (config.addAcceptGzipByDefault)
+      req.addHeaders("Accept-Encoding" -> "gzip")
+    else
+      req
   }
 
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Either[CornichonError, CornichonHttpResponse] =
