@@ -25,6 +25,7 @@ import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpMethod
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http.HttpStreams._
+import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest }
 import java.security.SecureRandom
@@ -188,6 +189,6 @@ class AkkaHttpClient(ec: ExecutionContext) extends HttpClient {
       Either.catchNonFatal(Query(url.split('?')(1)))
         .leftMap(e ⇒ MalformedUriError(url, e.getMessage))
     else
-      Right(Nil)
+      rightNil
 
 }

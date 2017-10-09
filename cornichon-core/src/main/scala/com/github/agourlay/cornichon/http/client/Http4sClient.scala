@@ -6,6 +6,7 @@ import cats.instances.future._
 import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
+import com.github.agourlay.cornichon.http.HttpService._
 import fs2.{ Scheduler, Strategy, Task }
 import io.circe.Json
 import org.http4s._
@@ -93,5 +94,5 @@ class Http4sClient extends HttpClient {
     if (url.contains('?'))
       Uri.fromString(url).map(_.params.toList).leftMap(e ⇒ MalformedUriError(url, e.message))
     else
-      Right(Nil)
+      rightNil
 }

@@ -6,9 +6,9 @@ import com.github.agourlay.cornichon.core.{ Scenario, ScenarioTitleLogInstructio
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
-import org.scalatest.{ AsyncWordSpec, Matchers }
+import org.scalatest.{ AsyncWordSpec, Matchers, OptionValues }
 
-class AttachStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with StepUtilSpec {
 
   "AttachStep" must {
     "merge nested steps in the parent flow when first" in {
@@ -17,7 +17,7 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val s = Scenario("scenario with Attach", steps)
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
-        r.logs.head should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
+        r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
         r.logs.size should be(6)
       }
     }
@@ -28,7 +28,7 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val s = Scenario("scenario with Attach", RepeatStep(steps, 1, None) :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
-        r.logs.head should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
+        r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
         r.logs.size should be(8)
       }
     }

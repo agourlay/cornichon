@@ -78,7 +78,7 @@ class HttpService(
     if (config.traceRequests)
       println(DebugLogInstruction(req.show, 1).colorized)
     if (config.warnOnDuplicateHeaders && req.headers.groupBy(_._1).exists(_._2.size > 1))
-      println(WarningLogInstruction(s"**Warning**\nduplicate headers in request:\n${req.show}", 1).colorized)
+      println(WarningLogInstruction(s"\n**Warning**\nduplicate headers detected in request:\n${req.show}", 1).colorized)
     if (config.addAcceptGzipByDefault)
       req.addHeaders("Accept-Encoding" -> "gzip")
     else
