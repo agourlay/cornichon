@@ -9,5 +9,6 @@ case class Config(
     traceRequests: Boolean = false,
     useExperimentalHttp4sClient: Boolean = false,
     warnOnDuplicateHeaders: Boolean = false,
+    failOnDuplicateHeaders: Boolean = false,
     addAcceptGzipByDefault: Boolean = false
 )
