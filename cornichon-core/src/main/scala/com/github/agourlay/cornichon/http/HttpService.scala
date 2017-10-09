@@ -103,7 +103,7 @@ class HttpService(
     session.addValues(
       lastResponseStatusKey → response.status.intValue().toString,
       lastResponseBodyKey → response.body,
-      lastResponseHeadersKey → encodeSessionHeaders(response)
+      lastResponseHeadersKey → encodeSessionHeaders(response.headers)
     )
 
   def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
@@ -119,12 +119,6 @@ class HttpService(
           JsonPath.run(path, response.body)
             .flatMap(extractedJson ⇒ filledSession.addValue(targetKey, jsonStringValue(extractedJson)))
       }
-    }
-
-  private def extractWithHeadersSession(session: Session): Either[CornichonError, Seq[(String, String)]] =
-    session.getOpt(withHeadersKey) match {
-      case Some(h) ⇒ decodeSessionHeaders(h)
-      case None    ⇒ rightNil
     }
 
   private def withBaseUrl(input: String) =
@@ -175,11 +169,17 @@ object HttpService {
 
   import HttpService.SessionKeys._
 
+  def extractWithHeadersSession(session: Session): Either[CornichonError, Seq[(String, String)]] =
+    session.getOpt(withHeadersKey) match {
+      case Some(h) ⇒ decodeSessionHeaders(h)
+      case None    ⇒ rightNil
+    }
+
   def encodeSessionHeader(name: String, value: String) =
     s"$name$headersKeyValueDelim$value"
 
-  def encodeSessionHeaders(response: CornichonHttpResponse): String =
-    response.headers.map {
+  def encodeSessionHeaders(headers: Seq[(String, String)]): String =
+    headers.map {
       case (name, value) ⇒ encodeSessionHeader(name, value)
     }.mkString(interHeadersValueDelim.toString)
 

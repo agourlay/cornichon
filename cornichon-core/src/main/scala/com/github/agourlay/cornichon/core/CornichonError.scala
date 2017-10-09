@@ -2,9 +2,11 @@ package com.github.agourlay.cornichon.core
 
 import java.io.{ PrintWriter, StringWriter }
 
-import cats.data.NonEmptyList
+import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
+import cats.instances.future._
 
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.control.NoStackTrace
 
 trait CornichonError {
@@ -37,6 +39,7 @@ object CornichonError {
 
   implicit class fromEither[A](e: Either[CornichonError, A]) {
     def valueUnsafe = e.fold(e ⇒ throw e.toException, identity)
+    def futureEitherT(implicit ec: ExecutionContext): EitherT[Future, CornichonError, A] = EitherT.fromEither[Future](e)
   }
 }
 

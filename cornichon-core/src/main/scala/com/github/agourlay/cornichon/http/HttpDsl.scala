@@ -29,7 +29,7 @@ import sangria.ast.Document
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends HttpRequestsDsl {
+trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   this: BaseFeature with Dsl ⇒
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
@@ -122,13 +122,10 @@ trait HttpDsl extends HttpRequestsDsl {
 
   def show_last_headers = show_session(lastResponseHeadersKey)
 
+  def show_with_headers = show_session(withHeadersKey)
+
   def WithBasicAuth(userName: String, password: String) =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
-
-  def addToWithHeaders(name: String, value: String)(s: Session) = {
-    val currentHeader = s.getOpt(withHeadersKey).fold("")(v ⇒ s"$v$interHeadersValueDelim")
-    s.addValue("with-headers", s"$currentHeader${encodeSessionHeader(name, value)}")
-  }
 
   def WithHeaders(headers: (String, String)*) =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
@@ -136,4 +133,31 @@ trait HttpDsl extends HttpRequestsDsl {
       val rollbackStep = rollback(withHeadersKey).copy(show = false)
       saveStep +: steps :+ rollbackStep
     }
+}
+
+// Utils not building Steps
+trait HttpDslOps {
+
+  def addToWithHeaders(name: String, value: String)(s: Session) = {
+    val currentHeader = s.getOpt(withHeadersKey).fold("")(v ⇒ s"$v$interHeadersValueDelim")
+    s.addValue(withHeadersKey, s"$currentHeader${encodeSessionHeader(name, value)}")
+  }
+
+  def removeFromWithHeaders(name: String)(s: Session) =
+    s.getOpt(withHeadersKey)
+      .fold[Either[CornichonError, Session]](Right(s)) { currentHeadersString ⇒
+        if (currentHeadersString.trim.isEmpty)
+          Right(s)
+        else
+          decodeSessionHeaders(currentHeadersString).flatMap { ch ⇒
+            val (dump, keep) = ch.partition(_._1 == name)
+            if (dump.isEmpty)
+              Right(s)
+            else if (keep.isEmpty)
+              Right(s.removeKey(withHeadersKey))
+            else
+              s.addValue(withHeadersKey, encodeSessionHeaders(keep))
+          }
+      }
+
 }

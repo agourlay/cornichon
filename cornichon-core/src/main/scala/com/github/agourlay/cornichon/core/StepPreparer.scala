@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.core
 
+import cats.syntax.either._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 sealed trait StepPreparer {
