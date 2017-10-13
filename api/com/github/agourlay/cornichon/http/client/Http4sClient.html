@@ -276,9 +276,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.client.Http4sClient#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;()(implicitexecutionContext:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.client.Http4sClient"></a><a id="&lt;init&gt;:Http4sClient"></a>
+      <a id="&lt;init&gt;():com.github.agourlay.cornichon.http.client.Http4sClient"></a><a id="&lt;init&gt;:Http4sClient"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#&lt;init&gt;()(implicitexecutionContext:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.client.Http4sClient" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#&lt;init&gt;():com.github.agourlay.cornichon.http.client.Http4sClient" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -287,7 +287,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Http4sClient</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="executionContext">executionContext: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span>
+        <span class="name">Http4sClient</span><span class="params">()</span>
       </span>
       
       
@@ -618,9 +618,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#paramsFromUrl" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="paramsFromUrl(url:String):List[(String,String)]"></a><a id="paramsFromUrl(String):List[(String,String)]"></a>
+      <a id="paramsFromUrl(url:String):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]"></a><a id="paramsFromUrl(String):Either[CornichonError,Seq[(String,String)]]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#paramsFromUrl(url:String):List[(String,String)]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#paramsFromUrl(url:String):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -629,7 +629,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">paramsFromUrl</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>
+        <span class="name">paramsFromUrl</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
@@ -649,6 +649,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#scheduler" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="scheduler:fs2.Scheduler"></a><a id="scheduler:Scheduler"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#scheduler:fs2.Scheduler" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scheduler</span><span class="result">: <span class="extype" name="fs2.Scheduler">Scheduler</span></span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#shutdown" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="shutdown():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done.type]"></a><a id="shutdown():Future[Done.type]"></a>
       <span class="permalink">
@@ -665,6 +681,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#strategy" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="strategy:fs2.Strategy"></a><a id="strategy:Strategy"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#strategy:fs2.Strategy" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">strategy</span><span class="result">: <span class="extype" name="fs2.Strategy">Strategy</span></span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">

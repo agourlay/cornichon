@@ -441,22 +441,6 @@
       </span>
       
       
-    </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#execute" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="execute(eventHandler:sbt.testing.EventHandler,continuation:Array[sbt.testing.Task]=&gt;Unit):Unit"></a><a id="execute(EventHandler,(Array[Task])⇒Unit):Unit"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#execute(eventHandler:sbt.testing.EventHandler,continuation:Array[sbt.testing.Task]=&gt;Unit):Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">execute</span><span class="params">(<span name="eventHandler">eventHandler: <span class="extype" name="sbt.testing.EventHandler">EventHandler</span></span>, <span name="continuation">continuation: (<a href="http://www.scala-lang.org/api/2.12.3/scala/Array.html#scala.Array" class="extype" name="scala.Array">Array</a>[<span class="extype" name="sbt.testing.Task">Task</span>]) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
-      </span>
-      
-      
     </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#execute" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="execute(eventHandler:sbt.testing.EventHandler,loggers:Array[sbt.testing.Logger]):Array[sbt.testing.Task]"></a><a id="execute(EventHandler,Array[Logger]):Array[Task]"></a>
       <span class="permalink">
@@ -473,6 +457,38 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask">SbtCornichonTask</a> → Task</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#executeFeature" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="executeFeature(eventHandler:sbt.testing.EventHandler):scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]"></a><a id="executeFeature(EventHandler):Future[Done]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#executeFeature(eventHandler:sbt.testing.EventHandler):scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">executeFeature</span><span class="params">(<span name="eventHandler">eventHandler: <span class="extype" name="sbt.testing.EventHandler">EventHandler</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>]</span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#failureEventBuilder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="failureEventBuilder(exception:Throwable):sbt.testing.Event{valstatus:sbt.testing.Status;valthrowable:sbt.testing.OptionalThrowable;valfullyQualifiedName:String;valselector:sbt.testing.Selector;valfingerprint:sbt.testing.Fingerprint;valduration:Long}"></a><a id="failureEventBuilder(Throwable):Event{.../*6definitionsintyperefinement*/}"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#failureEventBuilder(exception:Throwable):sbt.testing.Event{valstatus:sbt.testing.Status;valthrowable:sbt.testing.OptionalThrowable;valfullyQualifiedName:String;valselector:sbt.testing.Selector;valfingerprint:sbt.testing.Fingerprint;valduration:Long}" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">failureEventBuilder</span><span class="params">(<span name="exception">exception: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result">: <span class="extype" name="sbt.testing.Event">Event</span> { ... /* 6 definitions in type refinement */ }</span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
@@ -604,6 +620,22 @@
       </span>
       <span class="symbol">
         <span class="name">printResultLogs</span><span class="params">(<span name="sr">sr: <a href="../../core/ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#runScenario" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="runScenario(feature:com.github.agourlay.cornichon.feature.BaseFeature,eventHandler:sbt.testing.EventHandler)(s:com.github.agourlay.cornichon.core.Scenario):scala.concurrent.Future[com.github.agourlay.cornichon.core.ScenarioReport]"></a><a id="runScenario(BaseFeature,EventHandler)(Scenario):Future[ScenarioReport]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#runScenario(feature:com.github.agourlay.cornichon.feature.BaseFeature,eventHandler:sbt.testing.EventHandler)(s:com.github.agourlay.cornichon.core.Scenario):scala.concurrent.Future[com.github.agourlay.cornichon.core.ScenarioReport]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">runScenario</span><span class="params">(<span name="feature">feature: <a href="../../feature/BaseFeature.html" class="extype" name="com.github.agourlay.cornichon.feature.BaseFeature">BaseFeature</a></span>, <span name="eventHandler">eventHandler: <span class="extype" name="sbt.testing.EventHandler">EventHandler</span></span>)</span><span class="params">(<span name="s">s: <a href="../../core/Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<a href="../../core/ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a>]</span>
       </span>
       
       

@@ -276,9 +276,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(fe:scala.concurrent.Future[Either[cats.data.NonEmptyList[(A,B)],(A,C)]]):com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps[A,B,C]"></a><a id="&lt;init&gt;:FactorOutCommonAOps[A,B,C]"></a>
+      <a id="&lt;init&gt;(fe:monix.eval.Task[Either[cats.data.NonEmptyList[(A,B)],(A,C)]]):com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps[A,B,C]"></a><a id="&lt;init&gt;:FactorOutCommonAOps[A,B,C]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/core/FutureEitherTHelpers$$FactorOutCommonAOps.html#&lt;init&gt;(fe:scala.concurrent.Future[Either[cats.data.NonEmptyList[(A,B)],(A,C)]]):com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps[A,B,C]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/FutureEitherTHelpers$$FactorOutCommonAOps.html#&lt;init&gt;(fe:monix.eval.Task[Either[cats.data.NonEmptyList[(A,B)],(A,C)]]):com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps[A,B,C]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -287,7 +287,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">FactorOutCommonAOps</span><span class="params">(<span name="fe">fe: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<span class="extype" name="scala.Either">Either</span>[<a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[(<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.A">A</span>, <span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.B">B</span>)], (<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.A">A</span>, <span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.C">C</span>)]]</span>)</span>
+        <span class="name">FactorOutCommonAOps</span><span class="params">(<span name="fe">fe: <span class="extype" name="monix.eval.Task">Task</span>[<span class="extype" name="scala.Either">Either</span>[<a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[(<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.A">A</span>, <span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.B">B</span>)], (<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.A">A</span>, <span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.C">C</span>)]]</span>)</span>
       </span>
       
       
@@ -388,9 +388,9 @@
               
         </dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps#deDup" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="deDup(implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(A,Either[cats.data.NonEmptyList[B],C])]"></a><a id="deDup(ExecutionContext):Future[(A,Either[NonEmptyList[B],C])]"></a>
+      <a id="deDup:monix.eval.Task[(A,Either[cats.data.NonEmptyList[B],C])]"></a><a id="deDup:Task[(A,Either[NonEmptyList[B],C])]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/core/FutureEitherTHelpers$$FactorOutCommonAOps.html#deDup(implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(A,Either[cats.data.NonEmptyList[B],C])]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/FutureEitherTHelpers$$FactorOutCommonAOps.html#deDup:monix.eval.Task[(A,Either[cats.data.NonEmptyList[B],C])]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -399,7 +399,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deDup</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[(<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.A">A</span>, <span class="extype" name="scala.Either">Either</span>[<a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.B">B</span>], <span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.C">C</span>])]</span>
+        <span class="name">deDup</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[(<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.A">A</span>, <span class="extype" name="scala.Either">Either</span>[<a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.B">B</span>], <span class="extype" name="com.github.agourlay.cornichon.core.FutureEitherTHelpers.FactorOutCommonAOps.C">C</span>])]</span>
       </span>
       
       

@@ -241,6 +241,12 @@
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="trait" href="HttpDslOps.html" title=""></a>
+                        <a href="HttpDslOps.html" title="">
+                          HttpDslOps
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="trait" href="HttpError.html" title=""></a>
                         <a href="HttpError.html" title="">
                           HttpError
@@ -304,6 +310,12 @@
                         <a class="class" href="MalformedHeadersError.html" title=""></a>
                         <a href="MalformedHeadersError.html" title="">
                           MalformedHeadersError
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="MalformedUriError.html" title=""></a>
+                        <a href="MalformedUriError.html" title="">
+                          MalformedUriError
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
@@ -577,9 +589,9 @@
       
       
     </li><li name="com.github.agourlay.cornichon.http.HttpService#encodeSessionHeaders" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="encodeSessionHeaders(response:com.github.agourlay.cornichon.http.CornichonHttpResponse):String"></a><a id="encodeSessionHeaders(CornichonHttpResponse):String"></a>
+      <a id="encodeSessionHeaders(headers:Seq[(String,String)]):String"></a><a id="encodeSessionHeaders(Seq[(String,String)]):String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService$.html#encodeSessionHeaders(response:com.github.agourlay.cornichon.http.CornichonHttpResponse):String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService$.html#encodeSessionHeaders(headers:Seq[(String,String)]):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -588,7 +600,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">encodeSessionHeaders</span><span class="params">(<span name="response">response: <a href="CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">encodeSessionHeaders</span><span class="params">(<span name="headers">headers: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
@@ -624,6 +636,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.http.HttpService#extractWithHeadersSession" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="extractWithHeadersSession(session:com.github.agourlay.cornichon.core.Session):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]"></a><a id="extractWithHeadersSession(Session):Either[CornichonError,Seq[(String,String)]]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService$.html#extractWithHeadersSession(session:com.github.agourlay.cornichon.core.Session):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">extractWithHeadersSession</span><span class="params">(<span name="session">session: <a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]]</span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">

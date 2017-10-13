@@ -15,6 +15,14 @@
   <li>
     <p><code class="highlighter-rouge">cornichon-experimental</code> : exposes the cornichon feature through a direct integration with <code class="highlighter-rouge">SBT test-interface</code>.</p>
   </li>
+</ul>
+
+<p>Requires a special configuration in the build.sbt file to use the right <code class="highlighter-rouge">TestFramework</code>:
+<code class="highlighter-rouge">testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework")</code></p>
+
+<p>Moreover <code class="highlighter-rouge">CornichonFeature</code> lives under <code class="highlighter-rouge">com.github.agourlay.cornichon.experimental</code>.</p>
+
+<ul>
   <li>
     <p><code class="highlighter-rouge">cornichon-docs</code>: documentation built with <code class="highlighter-rouge">sbt-microsite</code>.</p>
   </li>

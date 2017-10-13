@@ -311,6 +311,12 @@
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="trait" href="HttpDslOps.html" title=""></a>
+                        <a href="HttpDslOps.html" title="">
+                          HttpDslOps
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="trait" href="HttpError.html" title=""></a>
                         <a href="HttpError.html" title="">
                           HttpError
@@ -374,6 +380,12 @@
                         <a class="class" href="MalformedHeadersError.html" title=""></a>
                         <a href="MalformedHeadersError.html" title="">
                           MalformedHeadersError
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="MalformedUriError.html" title=""></a>
+                        <a href="MalformedUriError.html" title="">
+                          MalformedUriError
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
@@ -685,9 +697,9 @@
       
       
     </li><li name="com.github.agourlay.cornichon.http.HttpDsl" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="HttpDslextendsHttpRequestsDsl"></a><a id="HttpDsl:HttpDsl"></a>
+      <a id="HttpDslextendsHttpDslOpswithHttpRequestsDsl"></a><a id="HttpDsl:HttpDsl"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/http/index.html#HttpDslextendsHttpRequestsDsl" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/index.html#HttpDslextendsHttpDslOpswithHttpRequestsDsl" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -698,7 +710,25 @@
       <span class="symbol">
         <a title="" href="HttpDsl.html">
               <span class="name">HttpDsl</span>
-            </a><span class="result"> extends <a href="HttpRequestsDsl.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequestsDsl">HttpRequestsDsl</a></span>
+            </a><span class="result"> extends <a href="HttpDslOps.html" class="extype" name="com.github.agourlay.cornichon.http.HttpDslOps">HttpDslOps</a> with <a href="HttpRequestsDsl.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequestsDsl">HttpRequestsDsl</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.http.HttpDslOps" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HttpDslOpsextendsAnyRef"></a><a id="HttpDslOps:HttpDslOps"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/index.html#HttpDslOpsextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="HttpDslOps.html">
+              <span class="name">HttpDslOps</span>
+            </a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.3/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       
       
@@ -861,6 +891,24 @@
         <a title="" href="MalformedHeadersError.html">
               <span class="name">MalformedHeadersError</span>
             </a><span class="params">(<span name="error">error: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.http.MalformedUriError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MalformedUriErrorextendsCornichonErrorwithProductwithSerializable"></a><a id="MalformedUriError:MalformedUriError"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/index.html#MalformedUriErrorextendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="MalformedUriError.html">
+              <span class="name">MalformedUriError</span>
+            </a><span class="params">(<span name="uri">uri: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="error">error: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       

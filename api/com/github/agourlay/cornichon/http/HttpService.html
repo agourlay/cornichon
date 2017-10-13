@@ -241,6 +241,12 @@
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="trait" href="HttpDslOps.html" title=""></a>
+                        <a href="HttpDslOps.html" title="">
+                          HttpDslOps
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="trait" href="HttpError.html" title=""></a>
                         <a href="HttpError.html" title="">
                           HttpError
@@ -304,6 +310,12 @@
                         <a class="class" href="MalformedHeadersError.html" title=""></a>
                         <a href="MalformedHeadersError.html" title="">
                           MalformedHeadersError
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="MalformedUriError.html" title=""></a>
+                        <a href="MalformedUriError.html" title="">
+                          MalformedUriError
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
@@ -452,9 +464,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.HttpService#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(baseUrl:String,requestTimeout:scala.concurrent.duration.FiniteDuration,client:com.github.agourlay.cornichon.http.client.HttpClient,resolver:com.github.agourlay.cornichon.resolver.PlaceholderResolver)(implicitec:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.HttpService"></a><a id="&lt;init&gt;:HttpService"></a>
+      <a id="&lt;init&gt;(baseUrl:String,requestTimeout:scala.concurrent.duration.FiniteDuration,client:com.github.agourlay.cornichon.http.client.HttpClient,resolver:com.github.agourlay.cornichon.resolver.PlaceholderResolver,config:com.github.agourlay.cornichon.core.Config)(implicitec:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.HttpService"></a><a id="&lt;init&gt;:HttpService"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#&lt;init&gt;(baseUrl:String,requestTimeout:scala.concurrent.duration.FiniteDuration,client:com.github.agourlay.cornichon.http.client.HttpClient,resolver:com.github.agourlay.cornichon.resolver.PlaceholderResolver)(implicitec:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.HttpService" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#&lt;init&gt;(baseUrl:String,requestTimeout:scala.concurrent.duration.FiniteDuration,client:com.github.agourlay.cornichon.http.client.HttpClient,resolver:com.github.agourlay.cornichon.resolver.PlaceholderResolver,config:com.github.agourlay.cornichon.core.Config)(implicitec:scala.concurrent.ExecutionContext):com.github.agourlay.cornichon.http.HttpService" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -463,7 +475,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">HttpService</span><span class="params">(<span name="baseUrl">baseUrl: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="requestTimeout">requestTimeout: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>, <span name="client">client: <a href="client/HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></span>, <span name="resolver">resolver: <a href="../resolver/PlaceholderResolver.html" class="extype" name="com.github.agourlay.cornichon.resolver.PlaceholderResolver">PlaceholderResolver</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span>
+        <span class="name">HttpService</span><span class="params">(<span name="baseUrl">baseUrl: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="requestTimeout">requestTimeout: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>, <span name="client">client: <a href="client/HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></span>, <span name="resolver">resolver: <a href="../resolver/PlaceholderResolver.html" class="extype" name="com.github.agourlay.cornichon.resolver.PlaceholderResolver">PlaceholderResolver</a></span>, <span name="config">config: <a href="../core/Config.html" class="extype" name="com.github.agourlay.cornichon.core.Config">Config</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span>
       </span>
       
       
@@ -525,22 +537,6 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.HttpService#allParamsResolved" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="allParamsResolved(url:String,params:Seq[(String,String)])(session:com.github.agourlay.cornichon.core.Session):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]"></a><a id="allParamsResolved(String,Seq[(String,String)])(Session):Either[CornichonError,Seq[(String,String)]]"></a>
-      <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#allParamsResolved(url:String,params:Seq[(String,String)])(session:com.github.agourlay.cornichon.core.Session):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">allParamsResolved</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="params">params: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>)</span><span class="params">(<span name="session">session: <a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]]</span>
-      </span>
-      
-      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
@@ -579,6 +575,22 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.http.HttpService#configureRequest" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="configureRequest[A](req:com.github.agourlay.cornichon.http.HttpRequest[A])(implicitevidence$13:cats.Show[A]):com.github.agourlay.cornichon.http.HttpRequest[A]"></a><a id="configureRequest[A](HttpRequest[A])(Show[A]):HttpRequest[A]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#configureRequest[A](req:com.github.agourlay.cornichon.http.HttpRequest[A])(implicitevidence$13:cats.Show[A]):com.github.agourlay.cornichon.http.HttpRequest[A]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">configureRequest</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="req">req: <a href="HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<span class="extype" name="com.github.agourlay.cornichon.http.HttpService.configureRequest.A">A</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="cats.Show">Show</span>[<span class="extype" name="com.github.agourlay.cornichon.http.HttpService.configureRequest.A">A</span>]</span>)</span><span class="result">: <a href="HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<span class="extype" name="com.github.agourlay.cornichon.http.HttpService.configureRequest.A">A</span>]</span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
@@ -794,9 +806,9 @@
       
       
     </li><li name="com.github.agourlay.cornichon.http.HttpService#requestEffect" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="requestEffect[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$16:cats.Show[A],implicitevidence$17:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$18:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;scala.concurrent.Future[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]]"></a><a id="requestEffect[A](HttpRequest[A],ResponseExtractor,Option[Int])(Show[A],Resolvable[A],Encoder[A]):(Session)⇒Future[Either[CornichonError,Session]]"></a>
+      <a id="requestEffect[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$17:cats.Show[A],implicitevidence$18:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$19:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;scala.concurrent.Future[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]]"></a><a id="requestEffect[A](HttpRequest[A],ResponseExtractor,Option[Int])(Show[A],Resolvable[A],Encoder[A]):(Session)⇒Future[Either[CornichonError,Session]]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#requestEffect[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$16:cats.Show[A],implicitevidence$17:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$18:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;scala.concurrent.Future[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#requestEffect[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$17:cats.Show[A],implicitevidence$18:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$19:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;scala.concurrent.Future[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -810,9 +822,9 @@
       
       
     </li><li name="com.github.agourlay.cornichon.http.HttpService#requestEffectT" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="requestEffectT[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$13:cats.Show[A],implicitevidence$14:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$15:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]"></a><a id="requestEffectT[A](HttpRequest[A],ResponseExtractor,Option[Int])(Show[A],Resolvable[A],Encoder[A]):(Session)⇒EitherT[Future,CornichonError,Session]"></a>
+      <a id="requestEffectT[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$14:cats.Show[A],implicitevidence$15:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$16:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]"></a><a id="requestEffectT[A](HttpRequest[A],ResponseExtractor,Option[Int])(Show[A],Resolvable[A],Encoder[A]):(Session)⇒EitherT[Future,CornichonError,Session]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#requestEffectT[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$13:cats.Show[A],implicitevidence$14:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$15:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/http/HttpService.html#requestEffectT[A](request:com.github.agourlay.cornichon.http.HttpRequest[A],extractor:com.github.agourlay.cornichon.http.ResponseExtractor,expectedStatus:Option[Int])(implicitevidence$14:cats.Show[A],implicitevidence$15:com.github.agourlay.cornichon.resolver.Resolvable[A],implicitevidence$16:io.circe.Encoder[A]):com.github.agourlay.cornichon.core.Session=&gt;cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.core.Session]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>

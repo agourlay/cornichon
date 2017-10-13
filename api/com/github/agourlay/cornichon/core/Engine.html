@@ -729,10 +729,10 @@
       </span>
       
       
-    </li><li name="com.github.agourlay.cornichon.core.Engine#runSteps" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="runSteps(initialRunState:com.github.agourlay.cornichon.core.RunState):scala.concurrent.Future[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]"></a><a id="runSteps(RunState):Future[(RunState,Either[FailedStep,Done])]"></a>
+    </li><li name="com.github.agourlay.cornichon.core.Engine#runScenarioTask" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="runScenarioTask(session:com.github.agourlay.cornichon.core.Session,finallySteps:List[com.github.agourlay.cornichon.core.Step],featureIgnored:Boolean)(scenario:com.github.agourlay.cornichon.core.Scenario):monix.eval.Task[com.github.agourlay.cornichon.core.ScenarioReport]"></a><a id="runScenarioTask(Session,List[Step],Boolean)(Scenario):Task[ScenarioReport]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#runSteps(initialRunState:com.github.agourlay.cornichon.core.RunState):scala.concurrent.Future[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#runScenarioTask(session:com.github.agourlay.cornichon.core.Session,finallySteps:List[com.github.agourlay.cornichon.core.Step],featureIgnored:Boolean)(scenario:com.github.agourlay.cornichon.core.Scenario):monix.eval.Task[com.github.agourlay.cornichon.core.ScenarioReport]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -741,7 +741,23 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runSteps</span><span class="params">(<span name="initialRunState">initialRunState: <a href="RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[(<a href="RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>, <span class="extype" name="scala.Either">Either</span>[<a href="FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>, <a href="Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>])]</span>
+        <span class="name">runScenarioTask</span><span class="params">(<span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="finallySteps">finallySteps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>] = <span class="symbol">Nil</span></span>, <span name="featureIgnored">featureIgnored: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="params">(<span name="scenario">scenario: <a href="Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a></span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a>]</span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.core.Engine#runSteps" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="runSteps(initialRunState:com.github.agourlay.cornichon.core.RunState):monix.eval.Task[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]"></a><a id="runSteps(RunState):Task[(RunState,Either[FailedStep,Done])]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#runSteps(initialRunState:com.github.agourlay.cornichon.core.RunState):monix.eval.Task[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">runSteps</span><span class="params">(<span name="initialRunState">initialRunState: <a href="RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[(<a href="RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>, <span class="extype" name="scala.Either">Either</span>[<a href="FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>, <a href="Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>])]</span>
       </span>
       
       
