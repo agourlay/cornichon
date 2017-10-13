@@ -16,6 +16,11 @@ The library is composed of several modules with different purposes:
 
 - ```cornichon-experimental``` : exposes the cornichon feature through a direct integration with ```SBT test-interface```.
 
+Requires a special configuration in the build.sbt file to use the right `TestFramework`:
+`testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework")`
+
+Moreover `CornichonFeature` lives under `com.github.agourlay.cornichon.experimental`.
+
 - ```cornichon-docs```: documentation built with ```sbt-microsite```.
 
 - ```cornichon-benchmarks``` : performance benchmarks built with ```sbt-jmh```.
