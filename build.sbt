@@ -271,7 +271,7 @@ lazy val library =
       val ficus         = "1.4.2"
       val monix         = "2.3.0"
       val sbtTest       = "1.0"
-      val http4s        = "0.17.4"
+      val http4s        = "0.17.5"
     }
     val akkaActor     = "com.typesafe.akka"     %% "akka-actor"           % Version.akkaActor
     val akkaStream    = "com.typesafe.akka"     %% "akka-stream"          % Version.akkaActor
