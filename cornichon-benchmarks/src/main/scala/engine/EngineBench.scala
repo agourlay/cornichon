@@ -26,10 +26,10 @@ import scala.concurrent.duration._
   "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"))
 class EngineBench {
 
+  @Param(Array("10", "20", "50", "100", "200"))
+  var stepsNumber: String = ""
   var es: ExecutorService = _
   var engine: Engine = _
-  @Param(Array("10", "20", "50", "100", "200"))
-  var stepsNumber: String = _
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
