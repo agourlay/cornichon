@@ -4,7 +4,6 @@ import cats.scalatest.{ EitherMatchers, EitherValues }
 import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Config, Session }
 import com.github.agourlay.cornichon.http.HttpMethods.GET
-import com.github.agourlay.cornichon.http.client.Http4sClient
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
@@ -17,8 +16,9 @@ class HttpServiceSpec extends WordSpec
   with EitherValues
   with EitherMatchers {
 
-  val client = new Http4sClient()
+  val client = new NoOpHttpClient
   val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config())
+  val dummyRequest = HttpRequest[String](GET, "", None, Nil, Nil)
 
   override def afterAll() = {
     client.shutdown()
@@ -28,14 +28,14 @@ class HttpServiceSpec extends WordSpec
     "fillInSessionWithResponse" must {
       "extract content with NoOpExtraction" in {
         val resp = CornichonHttpResponse(200, Nil, "hello world")
-        val filledSession = service.fillInSessionWithResponse(Session.newEmpty, resp, NoOpExtraction)
+        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, resp, NoOpExtraction)
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight("hello world")
       }
 
       "extract content with RootResponseExtraction" in {
         val resp = CornichonHttpResponse(200, Nil, "hello world")
-        val filledSession = service.fillInSessionWithResponse(Session.newEmpty, resp, RootExtractor("copy-body"))
+        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, resp, RootExtractor("copy-body"))
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight("hello world")
         filledSession.value.get("copy-body") should beRight("hello world")
@@ -48,7 +48,7 @@ class HttpServiceSpec extends WordSpec
               "name" : "batman"
             }
           """)
-        val filledSession = service.fillInSessionWithResponse(Session.newEmpty, resp, PathExtractor("name", "part-of-body"))
+        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, resp, PathExtractor("name", "part-of-body"))
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight(
           """
@@ -69,13 +69,13 @@ class HttpServiceSpec extends WordSpec
 
     "configureRequest" must {
       "add accept gzip according to config - true" in {
-        val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config(addAcceptGzipByDefault = true))
-        service.configureRequest(HttpRequest[String](GET, "", None, Nil, Nil)).headers should be(("Accept-Encoding" -> "gzip") :: Nil)
+        val config = Config(addAcceptGzipByDefault = true)
+        HttpService.configureRequest(dummyRequest, config).headers should be(("Accept-Encoding" -> "gzip") :: Nil)
       }
 
       "add accept gzip according to config - false" in {
-        val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config(addAcceptGzipByDefault = false))
-        service.configureRequest(HttpRequest[String](GET, "", None, Nil, Nil)).headers should be(Nil)
+        val config = Config(addAcceptGzipByDefault = false)
+        HttpService.configureRequest(dummyRequest, config).headers should be(Nil)
       }
 
     }
