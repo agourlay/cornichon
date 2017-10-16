@@ -48,7 +48,7 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
   def withBody[B: Show: Resolvable: Encoder](body: B) = copy(body = Some(body))
 
-  def compactDescription: String = {
+  lazy val compactDescription: String = {
     val base = s"${method.name} $url"
     val payloadTitle = body.fold("")(p ⇒ s" with body ${p.show}")
     base + payloadTitle + paramsTitle + headersTitle
@@ -101,7 +101,7 @@ case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: Fini
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
-  def compactDescription: String = {
+  lazy val compactDescription: String = {
     val base = s"open ${stream.name} to $url"
     base + paramsTitle + headersTitle
   }
