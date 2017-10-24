@@ -36,13 +36,14 @@ trait Dsl extends ProvidedInstances {
 
   def Scenario(name: String) = ScenarioBuilder(name)
 
-  private[dsl] case class ScenarioBuilder(name: String, ignored: Boolean = false) {
+  private[dsl] case class ScenarioBuilder(name: String, ignored: Boolean = false, focus: Boolean = false) {
     def ignoredBecause(reason: String) = copy(ignored = true)
+    def focused = copy(focus = true)
     def pending = ScenarioDef(name, Nil, pending = true)
   }
 
   implicit def scenarioBuilder(s: ScenarioBuilder): BodyElementCollector[Step, ScenarioDef] =
-    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(s.name, steps, s.ignored))
+    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(s.name, steps, s.ignored, focused = s.focus))
 
   sealed trait Starters extends Dynamic {
     def name: String

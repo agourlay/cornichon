@@ -39,9 +39,9 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   lazy val placeholderResolver = new PlaceholderResolver(registerExtractors)
   lazy val matcherResolver = new MatcherResolver(registerMatcher)
 
-  def runScenario(s: Scenario) = {
+  def runScenario(s: Scenario, focusedScenarios: Set[String]) = {
     println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newEmpty, afterEachScenario.toList, feature.ignored) {
+    engine.runScenario(Session.newEmpty, afterEachScenario.toList, feature.ignored, focusedScenarios) {
       s.copy(steps = beforeEachScenario.toList ++ s.steps)
     }
   }

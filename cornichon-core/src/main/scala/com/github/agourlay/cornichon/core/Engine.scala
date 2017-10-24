@@ -23,11 +23,11 @@ import FutureEitherTHelpers._
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
-  def runScenario(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Future[ScenarioReport] =
-    runScenarioTask(session, finallySteps, featureIgnored)(scenario).runAsync
+  def runScenario(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false, focusedScenarios: Set[String] = Set.empty)(scenario: Scenario): Future[ScenarioReport] =
+    runScenarioTask(session, finallySteps, featureIgnored, focusedScenarios)(scenario).runAsync
 
-  def runScenarioTask(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Task[ScenarioReport] =
-    if (featureIgnored || scenario.ignored)
+  def runScenarioTask(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false, focusedScenarios: Set[String] = Set.empty)(scenario: Scenario): Task[ScenarioReport] =
+    if (featureIgnored || scenario.ignored || (focusedScenarios.nonEmpty && !focusedScenarios.contains(scenario.name)))
       Task.delay(IgnoreScenarioReport(scenario.name, session))
     else if (scenario.pending)
       Task.delay(PendingScenarioReport(scenario.name, session))
