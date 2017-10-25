@@ -23,13 +23,13 @@ import FutureEitherTHelpers._
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
-  def runScenario(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Future[ScenarioReport] =
-    runScenarioTask(session, finallySteps, featureIgnored)(scenario).runAsync
+  def runScenario(session: Session, context: ScenarioExecutionContext = ScenarioExecutionContext.empty)(scenario: Scenario): Future[ScenarioReport] =
+    runScenarioTask(session, context)(scenario).runAsync
 
-  def runScenarioTask(session: Session, finallySteps: List[Step] = Nil, featureIgnored: Boolean = false)(scenario: Scenario): Task[ScenarioReport] =
-    if (featureIgnored || scenario.ignored)
+  def runScenarioTask(session: Session, context: ScenarioExecutionContext = ScenarioExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
+    if (context isIgnored scenario)
       Task.delay(IgnoreScenarioReport(scenario.name, session))
-    else if (scenario.pending)
+    else if (context isPending scenario)
       Task.delay(PendingScenarioReport(scenario.name, session))
     else {
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
@@ -37,12 +37,12 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       runSteps(initialRunState).flatMap {
         case (mainState, mainRunReport) ⇒
           val stateAndReporAfterEndSteps = {
-            if (finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
+            if (context.finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
               Task.delay((mainState, validDone))
-            else if (finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
+            else if (context.finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
               // Reuse mainline session
               val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-              val finallyRunState = mainState.withSteps(finallySteps).withLog(finallyLog)
+              val finallyRunState = mainState.withSteps(context.finallySteps).withLog(finallyLog)
               runSteps(finallyRunState).map {
                 case (finallyState, finallyReport) ⇒ (mainState.combine(finallyState), finallyReport.toValidatedNel)
               }

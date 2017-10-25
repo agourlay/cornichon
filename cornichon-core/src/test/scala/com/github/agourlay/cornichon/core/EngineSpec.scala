@@ -56,7 +56,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         val mainStep = AssertStep("main step", s ⇒ GenericEqualityAssertion(true, false))
         val finallyStep = AssertStep("finally step", s ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
-        engine.runScenario(Session.newEmpty, finallyStep :: Nil)(s).map {
+        engine.runScenario(Session.newEmpty, ScenarioExecutionContext(finallyStep :: Nil))(s).map {
           case f: FailureScenarioReport ⇒
             withClue(f.msg) {
               f.msg should be(
@@ -120,8 +120,9 @@ class EngineSpec extends AsyncWordSpec with Matchers {
           }
         )
 
-        val s = Scenario("scenario with effects", List.fill(effectNumber)(effect))
-        engine.runScenario(Session.newEmpty, List.fill(effectNumber)(effect))(s).map { res ⇒
+        val context = ScenarioExecutionContext(List.fill(effectNumber)(effect))
+        val s = Scenario("scenario with effects", context.finallySteps)
+        engine.runScenario(Session.newEmpty, context)(s).map { res ⇒
           res.isSuccess should be(true)
           uglyCounter.get() should be(effectNumber * 2)
           res.logs.size should be(effectNumber * 2 + 2)

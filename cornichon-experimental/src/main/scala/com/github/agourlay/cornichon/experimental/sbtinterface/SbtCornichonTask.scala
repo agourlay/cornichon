@@ -47,6 +47,7 @@ class SbtCornichonTask(task: TaskDef) extends Task {
         println(SuccessLogInstruction(s"${feature.name}:", 0).colorized)
         // Run 'before feature' hooks
         baseFeature.beforeFeature.foreach(f ⇒ f())
+
         val scenarioResults = {
           if (baseFeature.executeScenariosInParallel)
             Future.traverse(feature.scenarios)(runScenario(baseFeature, eventHandler))
