@@ -41,18 +41,17 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
           )
         }
       }
+
     case Success(feat) ⇒
       feat.name should {
-        val focusedScenarios = feat.scenarios.collect { case s if s.focused ⇒ s.name }.toSet
-
         feat.scenarios.foreach { s ⇒
-          if (feat.ignored || s.ignored || (focusedScenarios.nonEmpty && !focusedScenarios.contains(s.name)))
+          if (feat.ignored || s.ignored || (feat.focusedScenarios.nonEmpty && !feat.focusedScenarios.contains(s.name)))
             s.name ignore { Future.successful(Succeeded) }
           else if (s.pending)
             s.name in pending
           else
             s.name in {
-              runScenario(s, focusedScenarios).map {
+              runScenario(s).map {
                 case s: SuccessScenarioReport ⇒
                   if (s.shouldShowLogs) printLogs(s.logs)
                   assert(true)

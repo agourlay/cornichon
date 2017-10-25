@@ -47,15 +47,15 @@ class SbtCornichonTask(task: TaskDef) extends Task {
         println(SuccessLogInstruction(s"${feature.name}:", 0).colorized)
         // Run 'before feature' hooks
         baseFeature.beforeFeature.foreach(f ⇒ f())
-        val focusedScenarios = feature.scenarios.collect { case s if s.focused ⇒ s.name }.toSet
+
         val scenarioResults = {
           if (baseFeature.executeScenariosInParallel)
-            Future.traverse(feature.scenarios)(runScenario(baseFeature, eventHandler, focusedScenarios))
+            Future.traverse(feature.scenarios)(runScenario(baseFeature, eventHandler))
           else
             feature.scenarios.foldLeft(Future.successful(List.empty[ScenarioReport])) { (r, s) ⇒
               for {
                 acc ← r
-                current ← runScenario(baseFeature, eventHandler, focusedScenarios)(s)
+                current ← runScenario(baseFeature, eventHandler)(s)
               } yield acc :+ current
             }
         }
@@ -70,9 +70,9 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     )
   }
 
-  def runScenario(feature: BaseFeature, eventHandler: EventHandler, focusedScenarios: Set[String])(s: Scenario): Future[ScenarioReport] = {
+  def runScenario(feature: BaseFeature, eventHandler: EventHandler)(s: Scenario): Future[ScenarioReport] = {
     val startTS = System.currentTimeMillis()
-    feature.runScenario(s, focusedScenarios).map { r ⇒
+    feature.runScenario(s).map { r ⇒
       //Generate result event
       val endTS = System.currentTimeMillis()
       eventHandler.handle(eventBuilder(r, endTS - startTS))

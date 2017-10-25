@@ -5,6 +5,8 @@ case class FeatureDef(name: String, scenarios: List[Scenario], ignored: Boolean 
     scenarios.map(s ⇒ s.name).distinct.length == scenarios.length,
     s"Scenarios name must be unique within a Feature - error caused by duplicated declaration of scenarios '${scenarios.map(s ⇒ s.name).diff(scenarios.map(s ⇒ s.name).distinct).mkString(", ")}'"
   )
+
+  val focusedScenarios = scenarios.collect { case s if s.focused ⇒ s.name }.toSet
 }
 
 case class Scenario(name: String, steps: List[Step], ignored: Boolean = false, pending: Boolean = false, focused: Boolean = false)
