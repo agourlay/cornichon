@@ -38,6 +38,7 @@ trait Dsl extends ProvidedInstances {
 
   private[dsl] case class ScenarioBuilder(name: String, ignored: Boolean = false, focus: Boolean = false) {
     def ignoredBecause(reason: String) = copy(ignored = true)
+    /** Focus on this scenario ignoring all other scenarios withing a `Feature` */
     def focused = copy(focus = true)
     def pending = ScenarioDef(name, Nil, pending = true)
   }
