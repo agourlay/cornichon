@@ -37,7 +37,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         withClue(executionTime.toMillis) {
           executionTime.gt(50.millis) should be(true)
           // empiric values for the upper bound here
-          executionTime.lt(60.millis) should be(true)
+          executionTime.lteq(65.millis) should be(true)
         }
       }
     }
