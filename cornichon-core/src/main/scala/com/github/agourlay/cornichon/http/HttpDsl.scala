@@ -6,11 +6,11 @@ import java.util.Base64
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.feature.BaseFeature.{ config, globalScheduler }
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -20,17 +20,25 @@ import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
+import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
-
 import io.circe.{ Encoder, Json }
-
 import sangria.ast.Document
 
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   this: BaseFeature with Dsl ⇒
+
+  lazy val requestTimeout = config.requestTimeout
+  lazy val baseUrl = config.baseUrl
+
+  implicit lazy val client = HttpDsl.globalHttpclient
+  def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
+    new HttpService(baseUrl, timeout, client, placeholderResolver, config)
+
+  lazy val http = httpServiceByURL(baseUrl, requestTimeout)
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
     EffectStep(
@@ -160,4 +168,18 @@ trait HttpDslOps {
           }
       }
 
+}
+
+object HttpDsl {
+
+  lazy val globalHttpclient: HttpClient = {
+    val c = {
+      if (BaseFeature.config.useExperimentalHttp4sClient)
+        new Http4sClient()
+      else
+        new AkkaHttpClient(globalScheduler)
+    }
+    BaseFeature.addShutdownHook(() ⇒ c.shutdown())
+    c
+  }
 }

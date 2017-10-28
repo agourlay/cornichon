@@ -1,20 +1,19 @@
 package com.github.agourlay.cornichon.feature
 
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
-import com.github.agourlay.cornichon.http.{ HttpDsl, HttpService }
-import com.github.agourlay.cornichon.http.client._
+import com.github.agourlay.cornichon.http.HttpDsl
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.github.agourlay.cornichon.feature.BaseFeature._
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
 import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler
-import net.ceedubs.ficus.Ficus._
-import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
+import scala.annotation.tailrec
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -26,16 +25,14 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var beforeEachScenario: Seq[Step] = Nil
   protected var afterEachScenario: Seq[Step] = Nil
 
-  implicit lazy val (globalClient, scheduler) = globalRuntime
+  implicit lazy val scheduler = globalScheduler
+
   private lazy val engine = Engine.withStepTitleResolver(placeholderResolver)
 
   private[cornichon] lazy val config = BaseFeature.config
 
-  lazy val requestTimeout = config.requestTimeout
-  lazy val baseUrl = config.baseUrl
   lazy val executeScenariosInParallel = config.executeScenariosInParallel
 
-  lazy val http = httpServiceByURL(baseUrl, requestTimeout)
   lazy val placeholderResolver = new PlaceholderResolver(registerExtractors)
   lazy val matcherResolver = new MatcherResolver(registerMatcher)
 
@@ -48,9 +45,6 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
       s.copy(steps = beforeEachScenario.toList ++ s.steps)
     }
   }
-
-  def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, globalClient, placeholderResolver, config)
 
   def feature: FeatureDef
 
@@ -73,24 +67,37 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 
 // Protect and free resources
 object BaseFeature {
+  import net.ceedubs.ficus.Ficus._
+  import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
-  private val scheduler = Scheduler.Implicits.global
+  lazy val config = ConfigFactory.load().as[Config]("cornichon")
 
-  private val config = ConfigFactory.load().as[Config]("cornichon")
+  private val hooks = new ConcurrentLinkedDeque[() ⇒ Future[_]]()
 
-  private val client: HttpClient = {
-    if (config.useExperimentalHttp4sClient)
-      new Http4sClient()
-    else
-      new AkkaHttpClient(scheduler)
+  def addShutdownHook(h: () ⇒ Future[_]) =
+    hooks.push(h)
+
+  lazy val globalScheduler = Scheduler.Implicits.global
+
+  def shutDownGlobalResources(): Future[Done] = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    @tailrec
+    def clearHooks(previous: Future[Any] = Future.successful[Any](())): Future[Any] = {
+      Option(hooks.poll()) match {
+        case None ⇒ previous
+        case Some(f) ⇒
+          clearHooks {
+            previous.flatMap { _ ⇒ f().recover { case _ ⇒ Done } }
+          }
+      }
+    }
+
+    clearHooks().map(_ ⇒ Done)
   }
-
-  private val registeredUsage = new AtomicInteger
-  private val safePassInRow = new AtomicInteger
 
   // Custom Reaper process for the time being
   // Will tear down stuff if no Feature registers during 10 secs
-  private val reaperProcess = scheduler.scheduleWithFixedDelay(5.seconds, 5.seconds) {
+  private val reaperProcess = globalScheduler.scheduleWithFixedDelay(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 2) shutDownGlobalResources()
@@ -98,12 +105,14 @@ object BaseFeature {
       safePassInRow.decrementAndGet()
   }
 
+  private val registeredUsage = new AtomicInteger
+  private val safePassInRow = new AtomicInteger
+
   def disableAutomaticResourceCleanup() =
     reaperProcess.cancel()
 
-  def shutDownGlobalResources(): Future[Done] = client.shutdown()
-
-  lazy val globalRuntime = (client, scheduler)
-  def reserveGlobalRuntime(): Unit = registeredUsage.incrementAndGet()
-  def releaseGlobalRuntime(): Unit = registeredUsage.decrementAndGet()
+  def reserveGlobalRuntime(): Unit =
+    registeredUsage.incrementAndGet()
+  def releaseGlobalRuntime(): Unit =
+    registeredUsage.decrementAndGet()
 }
