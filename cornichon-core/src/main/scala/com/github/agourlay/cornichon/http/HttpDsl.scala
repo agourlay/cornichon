@@ -34,9 +34,8 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   lazy val requestTimeout = config.requestTimeout
   lazy val baseUrl = config.baseUrl
 
-  implicit lazy val client = HttpDsl.globalHttpclient
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, client, placeholderResolver, config)
+    new HttpService(baseUrl, timeout, HttpDsl.globalHttpclient, placeholderResolver, config)
 
   lazy val http = httpServiceByURL(baseUrl, requestTimeout)
 

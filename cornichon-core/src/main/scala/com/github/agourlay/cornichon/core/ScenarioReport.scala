@@ -4,6 +4,8 @@ import cats.data.Validated.Valid
 import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.kernel.Semigroup
 
+import com.github.agourlay.cornichon.core.ScenarioReport._
+
 import scala.concurrent.Future
 
 sealed trait ScenarioReport {
@@ -19,6 +21,7 @@ object ScenarioReport {
       failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logs),
       _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logs)
     )
+  val emptyLogs = Vector.empty[LogInstruction]
 }
 
 case class SuccessScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
@@ -29,12 +32,12 @@ case class SuccessScenarioReport(scenarioName: String, session: Session, logs: V
 }
 
 case class IgnoreScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
-  val logs = Vector.empty[LogInstruction]
+  val logs = emptyLogs
   val isSuccess = false
 }
 
 case class PendingScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
-  val logs = Vector.empty[LogInstruction]
+  val logs = emptyLogs
   val isSuccess = false
 }
 
