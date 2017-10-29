@@ -4,6 +4,10 @@ import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
 import cats.instances.string._
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
+
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.resolver.Resolvable
@@ -43,8 +47,12 @@ trait CornichonJson {
   def parseString(s: String) =
     io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
 
-  def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] =
-    DataTableParser.parse(table).flatMap(_.objectList)
+  def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
+    def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
+    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol) map JsonObject.fromIterable
+
+    parseDataTableRaw(table).flatMap(_.traverseU(parseRow))
+  }
 
   def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
     DataTableParser.parse(table).map(_.rawStringList)

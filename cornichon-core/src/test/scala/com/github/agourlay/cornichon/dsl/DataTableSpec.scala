@@ -1,21 +1,17 @@
 package com.github.agourlay.cornichon.dsl
 
+import cats.scalatest.EitherMatchers
 import io.circe.Json
-import org.parboiled2.ParseError
-import org.scalatest.{ Matchers, OptionValues, TryValues, WordSpec, EitherValues }
+import org.scalatest.{ Matchers, OptionValues, WordSpec }
+import com.github.agourlay.cornichon.json.CornichonJson.parseDataTable
 
-import scala.util.{ Failure, Success }
-
-class DataTableSpec extends WordSpec with Matchers with TryValues with OptionValues with EitherValues {
+class DataTableSpec extends WordSpec
+  with Matchers
+  with OptionValues
+  with EitherMatchers {
 
   def referenceParser(input: String) =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
-
-  def parse(p: DataTableParser) = p.dataTableRule.run() match {
-    case Success(dt)                ⇒ dt
-    case Failure(error: ParseError) ⇒ fail(p.formatError(error))
-    case Failure(error)             ⇒ fail(error)
-  }
 
   "DataTable parser" must {
 
@@ -25,8 +21,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
                     |  "John" |   5a    |
                   """
 
-      val p = new DataTableParser(input)
-      p.dataTableRule.run().map(_.objectList.right.value).isFailure should be(true)
+      parseDataTable(input) should be(left)
     }
 
     "process a single line with 1 value without new line on first" in {
@@ -34,7 +29,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
                       |  "John"  |
                   """
 
-      parse(new DataTableParser(input)).objectList.right.value should be(
+      parseDataTable(input) should beRight(
         List(Json.obj("Name" → Json.fromString("John")).asObject.value))
     }
 
@@ -44,7 +39,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         |  "John"  |
         """
 
-      parse(new DataTableParser(input)).objectList.right.value should be(
+      parseDataTable(input) should beRight(
         List(Json.obj("Name" → Json.fromString("John")).asObject.value))
     }
 
@@ -54,7 +49,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         |  "John" |   50    |
       """
 
-      parse(new DataTableParser(input)).objectList.right.value should be(
+      parseDataTable(input) should beRight(
         List(Json.obj(
           "Name" → Json.fromString("John"),
           "Age" → Json.fromInt(50)
@@ -68,7 +63,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
           | "öÖß \u00DF \" test " |   50                     |
         """
 
-      parse(new DataTableParser(input)).objectList.right.value should be(
+      parseDataTable(input) should beRight(
         List(Json.obj(
           "Name" → Json.fromString("öÖß \u00DF \" test "),
           "Größe \u00DF \" | test" → Json.fromInt(50)
@@ -82,7 +77,7 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         | "Bob"  |   11   |
       """
 
-      parse(new DataTableParser(input)).objectList.right.value should be(
+      parseDataTable(input) should beRight(
         List(
           Json.obj(
             "Name" → Json.fromString("John"),
@@ -100,8 +95,10 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         | "John"  |   50   | "blah" |
       """
 
-      val p = new DataTableParser(input)
-      p.dataTableRule.run().failure.exception should have message "requirement failed: Datatable is malformed, all rows must have the same number of elements"
+      parseDataTable(input) match {
+        case Right(t) ⇒ fail(s"should have failed but got $t")
+        case Left(e)  ⇒ e.renderedMessage should include("requirement failed: Datatable is malformed, all rows must have the same number of elements")
+      }
     }
 
     "produce valid Json Array" in {
@@ -125,9 +122,8 @@ class DataTableSpec extends WordSpec with Matchers with TryValues with OptionVal
         }]
         """
 
-      val p = new DataTableParser(input)
-      val objects = parse(p).objectList.right.value
-      Json.fromValues(objects.map(Json.fromJsonObject)) should be(referenceParser(expected))
+      val objects = parseDataTable(input).map(l ⇒ l.map(Json.fromJsonObject)).map(Json.fromValues)
+      objects should beRight(referenceParser(expected))
     }
   }
 }
