@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.feature
 
 import java.util.concurrent.ConcurrentLinkedDeque
-import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
@@ -15,7 +14,6 @@ import monix.execution.Scheduler
 
 import scala.annotation.tailrec
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 
@@ -82,7 +80,7 @@ object BaseFeature {
   def shutDownGlobalResources(): Future[Done] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     @tailrec
-    def clearHooks(previous: Future[Any] = Future.successful[Any](())): Future[Any] = {
+    def clearHooks(previous: Future[Any] = Future.successful[Any](())): Future[Any] =
       Option(hooks.poll()) match {
         case None ⇒ previous
         case Some(f) ⇒
@@ -90,29 +88,7 @@ object BaseFeature {
             previous.flatMap { _ ⇒ f().recover { case _ ⇒ Done } }
           }
       }
-    }
 
     clearHooks().map(_ ⇒ Done)
   }
-
-  // Custom Reaper process for the time being
-  // Will tear down stuff if no Feature registers during 10 secs
-  private val reaperProcess = globalScheduler.scheduleWithFixedDelay(5.seconds, 5.seconds) {
-    if (registeredUsage.get() == 0) {
-      safePassInRow.incrementAndGet()
-      if (safePassInRow.get() == 2) shutDownGlobalResources()
-    } else if (safePassInRow.get() > 0)
-      safePassInRow.decrementAndGet()
-  }
-
-  private val registeredUsage = new AtomicInteger
-  private val safePassInRow = new AtomicInteger
-
-  def disableAutomaticResourceCleanup() =
-    reaperProcess.cancel()
-
-  def reserveGlobalRuntime(): Unit =
-    registeredUsage.incrementAndGet()
-  def releaseGlobalRuntime(): Unit =
-    registeredUsage.decrementAndGet()
 }

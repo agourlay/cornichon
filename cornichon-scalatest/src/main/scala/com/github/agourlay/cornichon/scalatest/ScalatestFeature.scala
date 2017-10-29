@@ -1,24 +1,30 @@
 package com.github.agourlay.cornichon.scalatest
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import com.github.agourlay.cornichon.core.LogInstruction._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.feature.BaseFeature.{ globalScheduler, shutDownGlobalResources }
 import org.scalatest._
 
+import com.github.agourlay.cornichon.scalatest.ScalatestFeature._
+
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
 
 trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: BaseFeature ⇒
 
   override def beforeAll() = {
-    BaseFeature.reserveGlobalRuntime()
+    reserveGlobalRuntime()
     beforeFeature.foreach(f ⇒ f())
   }
 
   override def afterAll() = {
     afterFeature.foreach(f ⇒ f())
-    BaseFeature.releaseGlobalRuntime()
+    releaseGlobalRuntime()
   }
 
   override def run(testName: Option[String], args: Args) =
@@ -75,4 +81,25 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
   private def scalaTestReplayCmd(featureName: String, scenarioName: String) =
     s"""testOnly *${this.getClass.getSimpleName} -- -t "$featureName should $scenarioName" """
 
+}
+
+object ScalatestFeature {
+
+  private val registeredUsage = new AtomicInteger
+  private val safePassInRow = new AtomicInteger
+
+  // Custom Reaper process for the time being as we want to cleanup afterall Feature
+  // Will tear down stuff if no Feature registers during 10 secs
+  globalScheduler.scheduleWithFixedDelay(5.seconds, 5.seconds) {
+    if (registeredUsage.get() == 0) {
+      safePassInRow.incrementAndGet()
+      if (safePassInRow.get() == 2) shutDownGlobalResources()
+    } else if (safePassInRow.get() > 0)
+      safePassInRow.decrementAndGet()
+  }
+
+  def reserveGlobalRuntime(): Unit =
+    registeredUsage.incrementAndGet()
+  def releaseGlobalRuntime(): Unit =
+    registeredUsage.decrementAndGet()
 }
