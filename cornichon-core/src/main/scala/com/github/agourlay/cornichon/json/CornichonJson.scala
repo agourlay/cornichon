@@ -4,7 +4,7 @@ import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
 import cats.instances.string._
-import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import com.github.agourlay.cornichon.resolver.Resolvable
 import gnieh.diffson.circe._
@@ -122,6 +122,27 @@ trait CornichonJson {
 }
 
 object CornichonJson extends CornichonJson {
+
+  implicit class sessionJson(val s: Session) {
+    def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
+      for {
+        sessionValue ← s.get(key, stackingIndice)
+        jsonValue ← parseJson(sessionValue)
+        extracted ← JsonPath.run(path, jsonValue)
+      } yield extracted
+
+    def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+      for {
+        json ← getJson(key, stackingIndice, path)
+        field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
+      } yield field
+
+    def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+      getJsonStringField(key, stackingIndice, path).valueUnsafe
+
+    def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] =
+      s.getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
+  }
 
   case class GqlString(input: String) extends AnyVal
 

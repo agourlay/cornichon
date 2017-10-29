@@ -12,10 +12,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
-import com.github.agourlay.cornichon.json.{ JsonPath, NotStringFieldError }
-import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.Strings
-import io.circe.Json
 
 import scala.collection.immutable.HashMap
 
@@ -36,25 +33,6 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
 
   def get(sessionKey: SessionKey): Either[CornichonError, String] =
     get(sessionKey.name, sessionKey.index)
-
-  def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
-    for {
-      sessionValue ← get(key, stackingIndice)
-      jsonValue ← parseJson(sessionValue)
-      extracted ← JsonPath.run(path, jsonValue)
-    } yield extracted
-
-  def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
-    for {
-      json ← getJson(key, stackingIndice, path)
-      field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
-    } yield field
-
-  def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
-    getJsonStringField(key, stackingIndice, path).valueUnsafe
-
-  def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] =
-    getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
 
   def getList(keys: Seq[String]): Either[CornichonError, List[String]] =
     keys.toList.traverseU(v ⇒ get(v))
