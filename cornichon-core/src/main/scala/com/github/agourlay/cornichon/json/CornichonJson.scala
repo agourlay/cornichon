@@ -10,7 +10,6 @@ import cats.instances.either._
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
-import com.github.agourlay.cornichon.resolver.Resolvable
 import gnieh.diffson.circe._
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.syntax._
@@ -150,22 +149,6 @@ object CornichonJson extends CornichonJson {
 
     def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] =
       s.getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
-  }
-
-  case class GqlString(input: String) extends AnyVal
-
-  object GqlString {
-
-    implicit val gqlResolvableForm = new Resolvable[GqlString] {
-      def toResolvableForm(g: GqlString) = g.input
-      def fromResolvableForm(s: String) = GqlString(s)
-    }
-
-    implicit val gqlShow =
-      Show.show[GqlString](g ⇒ s"GraphQl JSON ${g.input}")
-
-    implicit val gqlEncode =
-      Encoder.instance[GqlString](g ⇒ parseGraphQLJson(g.input).valueUnsafe)
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {
