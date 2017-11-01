@@ -1,234 +1,168 @@
 package com.github.agourlay.cornichon.examples.superHeroes.server
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling
-import akka.http.scaladsl.model.{ ContentTypes, HttpEntity }
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.sse.ServerSentEvent
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.PathMatchers.Remaining
-import akka.http.scaladsl.server._
-import akka.http.scaladsl.server.directives.Credentials
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Source
+import cats.data.Validated
+import cats.data.Validated.{ Invalid, Valid }
 
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-
-import io.circe.{ Json, JsonObject }
+import cats.syntax.semigroup._
+import fs2.{ Strategy, Task, Stream }
+import io.circe.{ Decoder, Encoder, Json, JsonObject }
 import io.circe.generic.auto._
+import io.circe.syntax._
+import org.http4s.server.Server
+import org.http4s.server.blaze.BlazeBuilder
+import org.http4s.server.middleware.authentication.BasicAuth
+import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
+import org.http4s._
+import org.http4s.circe._
+import org.http4s.dsl._
+import org.http4s.server.middleware.GZip
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{ Failure, Success }
+import sangria.execution._
+import sangria.parser.QueryParser
+import sangria.marshalling.circe._
 
-class HttpAPI() extends EventStreamMarshalling {
+class HttpAPI() {
 
-  import com.github.agourlay.cornichon.examples.superHeroes.server.JsonSupport._
+  implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
+  val sm = new SuperMicroService()
 
-  implicit val system = ActorSystem("testData-http-server")
-  implicit val mat = ActorMaterializer()
-  implicit val ec: ExecutionContext = system.dispatcher
+  implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[A] = jsonOf[A]
 
-  val testData = new TestData()
+  object SessionIdQueryParamMatcher extends QueryParamDecoderMatcher[String]("sessionId")
+  object ProtectIdentityQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("protectIdentity")
+  object JustNameQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("justName")
 
-  implicit val exceptionHandler = ExceptionHandler {
+  def validatedJsonReponse[A: Encoder](s: Json ⇒ Task[Response])(v: Validated[ApiError, A]) =
+    v match {
+      case Valid(a)   ⇒ s(a.asJson)
+      case Invalid(e) ⇒ apiErrorResponse(e)
+    }
 
-    case e: PublisherNotFound ⇒
-      extractUri { uri ⇒
-        complete(ToResponseMarshallable(NotFound → HttpError(s"Publisher ${e.id} not found")))
-      }
+  def apiErrorResponse(e: ApiError): Task[Response] =
+    e match {
+      case SessionNotFound(_)        ⇒ NotFound(HttpError(e.msg).asJson)
+      case PublisherNotFound(_)      ⇒ NotFound(HttpError(e.msg).asJson)
+      case SuperHeroNotFound(_)      ⇒ NotFound(HttpError(e.msg).asJson)
+      case PublisherAlreadyExists(_) ⇒ Conflict(HttpError(e.msg).asJson)
+      case SuperHeroAlreadyExists(_) ⇒ Conflict(HttpError(e.msg).asJson)
+    }
 
-    case e: PublisherAlreadyExists ⇒
-      extractUri { uri ⇒
-        complete(ToResponseMarshallable(Conflict → HttpError(s"Publisher ${e.id} already exist")))
-      }
-
-    case e: SuperHeroNotFound ⇒
-      extractUri { uri ⇒
-        complete(ToResponseMarshallable(NotFound → HttpError(s"Superhero ${e.id} not found")))
-      }
-
-    case e: SuperHeroAlreadyExists ⇒
-      extractUri { uri ⇒
-        complete(ToResponseMarshallable(Conflict → HttpError(s"Superhero ${e.id} already exist")))
-      }
-
-    case e: SessionNotFound ⇒
-      extractUri { uri ⇒
-        complete(ToResponseMarshallable(NotFound → HttpError(s"Session ${e.id} not found")))
-      }
-
-    case e: Exception ⇒
-      extractUri { uri ⇒
-        println(e.printStackTrace())
-        complete(ToResponseMarshallable(InternalServerError → HttpError("An unexpected error occured")))
-      }
+  val sessionService = HttpService {
+    case POST -> Root / "session" ⇒
+      val sessionId = sm.createSession()
+      Created(sessionId)
   }
 
-  val route: Route = encodeResponse {
-    path("session") {
-      post {
-        onSuccess(testData.createSession()) { session: String ⇒
-          complete(Created → HttpEntity(ContentTypes.`text/html(UTF-8)`, session))
-        }
-      }
-    } ~
-      path("publishers") {
-        get {
-          parameters('sessionId) { sessionId: String ⇒
-            onSuccess(testData.allPublishers(sessionId)) { publishers: Seq[Publisher] ⇒
-              complete(ToResponseMarshallable(OK → publishers))
-            }
-          }
-        } ~
-          post {
-            parameters('sessionId) { sessionId: String ⇒
-              entity(as[Publisher]) { p: Publisher ⇒
-                onSuccess(testData.addPublisher(sessionId, p)) { created: Publisher ⇒
-                  complete(ToResponseMarshallable(Created → created))
+  val publishersService = HttpService {
+    case GET -> Root / "publishers" :? SessionIdQueryParamMatcher(sessionId) ⇒
+      Ok(sm.allPublishers(sessionId).asJson)
+
+    case GET -> Root / "publishers" / name :? SessionIdQueryParamMatcher(sessionId) ⇒
+      validatedJsonReponse(Ok(_))(sm.publisherByName(sessionId, name))
+
+    case req @ POST -> Root / "publishers" :? SessionIdQueryParamMatcher(sessionId) ⇒
+      for {
+        p ← req.as[Publisher]
+        created ← Task.delay(sm.addPublisher(sessionId, p))
+        resp ← validatedJsonReponse(Ok(_))(created)
+      } yield resp
+  }
+
+  val superHeroesService = HttpService {
+    case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) ⇒
+      Ok(sm.allSuperheroes(sessionId).asJson)
+
+    case GET -> Root / "superheroes" / name :? SessionIdQueryParamMatcher(sessionId) :? ProtectIdentityQueryParamMatcher(protectIdentity) ⇒
+      validatedJsonReponse(Ok(_))(sm.superheroByName(sessionId, name, protectIdentity.getOrElse(false)))
+
+    case DELETE -> Root / "superheroes" / name :? SessionIdQueryParamMatcher(sessionId) ⇒
+      validatedJsonReponse(Ok(_))(sm.deleteSuperhero(sessionId, name))
+  }
+
+  val authStore: BasicAuthenticator[String] = (creds: BasicCredentials) ⇒
+    if (creds.username == "admin" && creds.password == "cornichon")
+      Task.delay(Some(creds.username))
+    else
+      Task.delay(None)
+
+  val securedSuperHeroesService: HttpService = BasicAuth("secure site", authStore)(AuthedService[String] {
+    case req @ POST -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
+      for {
+        s ← req.req.as[SuperHero]
+        created ← Task.delay(sm.addSuperhero(sessionId, s))
+        resp ← validatedJsonReponse(Created(_))(created)
+      } yield resp
+
+    case req @ PUT -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
+      for {
+        s ← req.req.as[SuperHero]
+        updated ← Task.delay(sm.updateSuperhero(sessionId, s))
+        resp ← validatedJsonReponse(Ok(_))(updated)
+      } yield resp
+  })
+
+  val gqlService = HttpService {
+    case req @ POST -> Root ⇒
+      req.as[Json].flatMap { requestJson ⇒
+
+        val obj = requestJson.asObject
+        val query = obj.flatMap(_("query")).flatMap(_.asString)
+        val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
+        val vars = obj.flatMap(_("variables")).getOrElse(Json.fromJsonObject(JsonObject.empty))
+        query.fold(BadRequest(Json.obj("error" → Json.fromString("Query is required")))) { q ⇒
+          QueryParser.parse(q) match {
+
+            // can't parse GraphQL query, return error
+            case Failure(error) ⇒
+              BadRequest(Json.obj("error" → Json.fromString(error.getMessage)))
+
+            // query parsed successfully, time to execute it!
+            case Success(queryAst) ⇒
+              val f: Future[Json] = Executor.execute(
+                schema = GraphQlSchema.SuperHeroesSchema,
+                queryAst = queryAst,
+                root = new GraphQLSuperMicroService(sm),
+                variables = vars,
+                operationName = operation
+              )
+
+              Task.fromFuture(f)
+                .flatMap(a ⇒ Ok(a))
+                .handleWith {
+                  case e: QueryAnalysisError ⇒ BadRequest(e.resolveError)
+                  case e: ErrorWithResolver  ⇒ InternalServerError(e.resolveError)
                 }
-              }
-            }
-          }
-      } ~
-      path("publishers" / Remaining) { name: String ⇒
-        get {
-          parameters('sessionId) { sessionId: String ⇒
-            onSuccess(testData.publisherByName(name, sessionId)) { pub: Publisher ⇒
-              complete(ToResponseMarshallable(OK → pub))
-            }
-          }
-        }
-      } ~
-      path("superheroes") {
-        get {
-          parameters('sessionId) { sessionId: String ⇒
-            onSuccess(testData.allSuperheroes(sessionId)) { superheroes: Seq[SuperHero] ⇒
-              complete(ToResponseMarshallable(OK → superheroes))
-            }
-          }
-        } ~
-          post {
-            authenticateBasicPF(realm = "secure site", login) { userName ⇒
-              parameters('sessionId) { sessionId: String ⇒
-                entity(as[SuperHero]) { s: SuperHero ⇒
-                  onSuccess(testData.addSuperhero(sessionId, s)) { created: SuperHero ⇒
-                    complete(ToResponseMarshallable(Created → created))
-                  }
-                }
-              }
-            }
-          } ~
-          put {
-            authenticateBasicPF(realm = "secure site", login) { userName ⇒
-              entity(as[SuperHero]) { s: SuperHero ⇒
-                parameters('sessionId) { sessionId: String ⇒
-                  onSuccess(testData.updateSuperhero(sessionId, s)) { updated: SuperHero ⇒
-                    complete(ToResponseMarshallable(OK → updated))
-                  }
-                }
-              }
-            }
-          }
-      } ~
-      path("superheroes" / Remaining) { name: String ⇒
-        get {
-          parameters('protectIdentity ? false) { protectIdentity: Boolean ⇒
-            parameters('sessionId) { sessionId: String ⇒
-              onSuccess(testData.superheroByName(sessionId, name, protectIdentity)) { s: SuperHero ⇒
-                complete(ToResponseMarshallable(OK → s))
-              }
-            }
-          }
-
-        } ~
-          delete {
-            parameters('sessionId) { sessionId: String ⇒
-              onSuccess(testData.deleteSuperhero(sessionId, name)) { s: SuperHero ⇒
-                complete(ToResponseMarshallable(OK → s))
-              }
-            }
-          }
-      } ~
-      pathPrefix("sseStream") {
-        path("superheroes") {
-          get {
-            parameters('justName ? false) { justName: Boolean ⇒
-              parameters('sessionId) { sessionId: String ⇒
-                onSuccess(testData.allSuperheroes(sessionId)) { superheroes: Seq[SuperHero] ⇒
-                  complete {
-                    if (justName) Source(superheroes.toVector.map(sh ⇒ ServerSentEvent(`type` = "superhero name", data = sh.name)))
-                    else Source(superheroes.toVector.map(toServerSentEvent))
-                  }
-                }
-              }
-            }
-          }
-        }
-      } ~
-      path("graphql") {
-        post {
-          entity(as[Json]) { requestJson ⇒
-
-            //Scope import to avoid clash with akka-http 'ExceptionHandler'
-            import sangria.execution._
-            import sangria.parser.QueryParser
-            import sangria.marshalling.circe._
-
-            val obj = requestJson.asObject
-            val query = obj.flatMap(_("query")).flatMap(_.asString)
-            val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
-            val vars = obj.flatMap(_("variables")).getOrElse(Json.fromJsonObject(JsonObject.empty))
-
-            query.fold(complete(BadRequest → Json.obj("error" → Json.fromString("Query is required")))) { q ⇒
-
-              QueryParser.parse(q) match {
-
-                // query parsed successfully, time to execute it!
-                case Success(queryAst) ⇒
-                  complete(
-                    Executor.execute(
-                      schema = GraphQlSchema.SuperHeroesSchema,
-                      queryAst = queryAst,
-                      root = testData,
-                      variables = vars,
-                      operationName = operation
-                    ).map(OK → _)
-                      .recover {
-                        case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
-                        case error: ErrorWithResolver  ⇒ InternalServerError → error.resolveError
-                      }
-                  )
-
-                // can't parse GraphQL query, return error
-                case Failure(error) ⇒
-                  complete(BadRequest → Json.obj("error" → Json.fromString(error.getMessage)))
-              }
-
-            }
-
           }
         }
       }
   }
+
+  val sseSuperHeroesService = HttpService {
+    case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) :? JustNameQueryParamMatcher(justNameOpt) ⇒
+      val superheroes = sm.allSuperheroes(sessionId)
+      val sse = if (justNameOpt.getOrElse(false))
+        superheroes.map(sh ⇒ ServerSentEvent(eventType = Some("superhero name"), data = sh.name))
+      else
+        superheroes.map(sh ⇒ ServerSentEvent(eventType = Some("superhero"), data = sh.asJson.noSpaces))
+      Ok(Stream.emits[Task, ServerSentEvent](sse.toSeq))
+  }
+
+  val services = GZip(sessionService |+| publishersService |+| superHeroesService |+| securedSuperHeroesService)
 
   def start(httpPort: Int) =
-    Http(system)
-      .bindAndHandle(route, "localhost", port = httpPort)
+    BlazeBuilder
+      .bindHttp(httpPort, "localhost")
+      .mountService(services, "/")
+      .mountService(sseSuperHeroesService, "/sseStream")
+      .mountService(gqlService, "/graphql")
+      .start
       .map(new HttpServer(_))
-
-  def login: PartialFunction[Credentials, String] = {
-    case u @ Credentials.Provided(username) if username == "admin" && u.verify("cornichon") ⇒ "admin"
-  }
+      .unsafeRunAsyncFuture()
 }
 
-class HttpServer(server: ServerBinding)(implicit sys: ActorSystem, mat: ActorMaterializer, ec: ExecutionContext) {
-  def shutdown() =
-    for {
-      _ ← server.unbind()
-      _ ← Future.successful(mat.shutdown())
-      _ ← sys.terminate()
-    } yield ()
+class HttpServer(server: Server) {
+  def shutdown() = server.shutdown.unsafeRunAsyncFuture()
 }

@@ -123,7 +123,6 @@ lazy val core =
         library.http4sCirce,
         library.catsCore,
         library.catsMacro,
-        library.akkaActor,
         library.akkaStream,
         library.akkaHttp,
         library.ficus,
@@ -157,8 +156,9 @@ lazy val scalatest =
       name := "cornichon",
       libraryDependencies ++= Seq(
         library.scalatest,
-        library.akkaHttp % Test,
-        library.akkaHttpCirce % Test
+        library.http4sServer % Test,
+        library.http4sCirce % Test,
+        library.http4sDsl % Test
       )
     )
 
@@ -266,17 +266,14 @@ lazy val library =
       val diffson       = "2.2.3"
       val sangria       = "1.3.0"
       val fansi         = "0.2.5"
-      val akkaHttpCirce = "1.18.1"
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.3"
       val monix         = "2.3.0"
       val sbtTest       = "1.0"
       val http4s        = "0.17.5"
     }
-    val akkaActor     = "com.typesafe.akka"     %% "akka-actor"           % Version.akkaActor
     val akkaStream    = "com.typesafe.akka"     %% "akka-stream"          % Version.akkaActor
     val akkaHttp      = "com.typesafe.akka"     %% "akka-http"            % Version.akkaHttp
-    val akkaHttpCirce = "de.heikoseeberger"     %% "akka-http-circe"      % Version.akkaHttpCirce
     val catsMacro     = "org.typelevel"         %% "cats-macros"          % Version.cats
     val catsCore      = "org.typelevel"         %% "cats-core"            % Version.cats
     val scalatest     = "org.scalatest"         %% "scalatest"            % Version.scalaTest

@@ -141,8 +141,7 @@ class SuperHeroesScenario extends CornichonFeature {
           """)
 
         Then assert status.is(401)
-
-        Then assert body.is("The resource requires authentication, which was not supplied with the request")
+        //The resource requires authentication, which was not supplied with the request
 
         // Try again with authentication
         When I post("/superheroes").withBody(
@@ -447,8 +446,6 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert session_value("batman-city").is("Gotham city")
 
-        And I show_last_body_json
-
         Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
           {
@@ -458,13 +455,6 @@ class SuperHeroesScenario extends CornichonFeature {
           }
           """
         )
-
-        Then assert headers.name("Server").isPresent
-        Then assert headers.contain("Server" → "akka-http/10.0.10")
-        Then assert headers.name("server").isAbsent
-        And I save_header_value("Server" → "my-server-version")
-        Then assert session_value("my-server-version").is("akka-http/10.0.10")
-        Then assert headers.hasSize(2)
 
         // To make debugging easier, here are some debug steps printing into console
         And I show_session
@@ -794,6 +784,8 @@ class SuperHeroesScenario extends CornichonFeature {
     AttachAs("Setup session") {
 
       When I post("/session")
+
+      Then assert status.is(201)
 
       And I save_body("session-id")
 
