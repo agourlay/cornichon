@@ -13,19 +13,24 @@ import io.circe.syntax._
 
 class GraphQLSuperMicroService(sm: SuperMicroService) {
 
-  def publisherByName(sessionId: String, name: String): Publisher =
+  def publisherByName(sessionId: String, name: String): Option[Publisher] =
     unpack(sm.publisherByName(sessionId, name))
 
-  def superheroByName(sessionId: String, name: String, protectIdentity: Boolean = false): SuperHero =
+  def superheroByName(sessionId: String, name: String, protectIdentity: Boolean = false): Option[SuperHero] =
     unpack(sm.superheroByName(sessionId, name, protectIdentity))
 
-  def updateSuperhero(sessionId: String, s: SuperHero): SuperHero =
+  def updateSuperhero(sessionId: String, s: SuperHero): Option[SuperHero] =
     unpack(sm.updateSuperhero(sessionId, s))
 
-  private def unpack[A](v: Validated[ApiError, A]): A =
+  private def unpack[A](v: Validated[ApiError, A]): Option[A] =
     v match {
-      case Invalid(e) ⇒ throw new RuntimeException(e.msg)
-      case Valid(p)   ⇒ p
+      case Valid(p) ⇒ Some(p)
+      case Invalid(e) ⇒ e match {
+        case SessionNotFound(_)   ⇒ None
+        case PublisherNotFound(_) ⇒ None
+        case SuperHeroNotFound(_) ⇒ None
+        case _                    ⇒ throw new RuntimeException(e.msg)
+      }
     }
 }
 
