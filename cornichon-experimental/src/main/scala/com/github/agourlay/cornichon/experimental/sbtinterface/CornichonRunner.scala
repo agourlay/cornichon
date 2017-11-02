@@ -12,9 +12,11 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
 
   private val gotTasks = new AtomicBoolean(false)
 
+  // A task is a Feature class
   override def tasks(taskDefs: Array[TaskDef]) = {
     gotTasks.set(true)
-    taskDefs.map(new SbtCornichonTask(_))
+    val scenarioNameFilter = args.toSet
+    taskDefs.map(new SbtCornichonTask(_, scenarioNameFilter))
   }
 
   override def done(): String = {

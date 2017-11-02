@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.experimental.sbtinterface
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask._
 import sbt.testing._
 
 import cats.syntax.either._
@@ -10,7 +11,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SbtCornichonTask(task: TaskDef) extends Task {
+class SbtCornichonTask(task: TaskDef, scenarioNameFilter: Set[String]) extends Task {
 
   override def tags(): Array[String] = Array.empty
   override def taskDef(): TaskDef = task
@@ -22,11 +23,8 @@ class SbtCornichonTask(task: TaskDef) extends Task {
 
   def executeFeature(eventHandler: EventHandler): Future[Done] = {
 
-    val baseFeature = {
-      val featureClass = Class.forName(task.fullyQualifiedName())
-      val constructor = featureClass.getConstructor()
-      constructor.newInstance().asInstanceOf[BaseFeature]
-    }
+    val featureClass = Class.forName(task.fullyQualifiedName())
+    val baseFeature = featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
     Either.catchNonFatal(baseFeature.feature).fold(
       e ⇒ {
@@ -48,11 +46,13 @@ class SbtCornichonTask(task: TaskDef) extends Task {
         // Run 'before feature' hooks
         baseFeature.beforeFeature.foreach(f ⇒ f())
 
+        val scenariosToRun = filterScenarios(feature)
+
         val scenarioResults = {
           if (baseFeature.executeScenariosInParallel)
-            Future.traverse(feature.scenarios)(runScenario(baseFeature, eventHandler))
+            Future.traverse(scenariosToRun)(runScenario(baseFeature, eventHandler))
           else
-            feature.scenarios.foldLeft(Future.successful(List.empty[ScenarioReport])) { (r, s) ⇒
+            scenariosToRun.foldLeft(emptyScenarioReportsF) { (r, s) ⇒
               for {
                 acc ← r
                 current ← runScenario(baseFeature, eventHandler)(s)
@@ -61,7 +61,7 @@ class SbtCornichonTask(task: TaskDef) extends Task {
         }
 
         scenarioResults.map { results ⇒
-          results.foreach(printResultLogs)
+          results.foreach(printResultLogs(featureClass))
           // Run 'after feature' hooks
           baseFeature.afterFeature.foreach(f ⇒ f())
           Done
@@ -69,6 +69,15 @@ class SbtCornichonTask(task: TaskDef) extends Task {
       }
     )
   }
+
+  def filterScenarios(feature: FeatureDef): List[Scenario] =
+    if (scenarioNameFilter.isEmpty)
+      feature.scenarios
+    else
+      feature.scenarios.filter(s ⇒ scenarioNameFilter.contains(s.name))
+
+  def replayCommand(featureClass: Class[_], scenarioName: String): String =
+    s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" """
 
   def runScenario(feature: BaseFeature, eventHandler: EventHandler)(s: Scenario): Future[ScenarioReport] = {
     val startTS = System.currentTimeMillis()
@@ -80,13 +89,13 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     }
   }
 
-  def printResultLogs(sr: ScenarioReport) = sr match {
+  def printResultLogs(featureClass: Class[_])(sr: ScenarioReport) = sr match {
     case s: SuccessScenarioReport ⇒
       val msg = s"- ${s.scenarioName} "
       println(SuccessLogInstruction(msg, 0).colorized)
       if (s.shouldShowLogs) LogInstruction.printLogs(s.logs)
     case f: FailureScenarioReport ⇒
-      val msg = s"- **failed** ${f.scenarioName} "
+      val msg = failureErrorMessage(featureClass, f.scenarioName)
       println(FailureLogInstruction(msg, 0).colorized)
       LogInstruction.printLogs(f.logs)
     case i: IgnoreScenarioReport ⇒
@@ -96,6 +105,11 @@ class SbtCornichonTask(task: TaskDef) extends Task {
       val msg = s"- **pending** ${p.scenarioName} "
       println(DebugLogInstruction(msg, 0).colorized)
   }
+
+  def failureErrorMessage(featureClass: Class[_], scenarioName: String): String =
+    s"""|- **failed** $scenarioName
+        |${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
+        |${replayCommand(featureClass, scenarioName)}""".stripMargin
 
   def eventBuilder(sr: ScenarioReport, durationInMillis: Long) = new Event {
     val status = sr match {
@@ -125,4 +139,8 @@ class SbtCornichonTask(task: TaskDef) extends Task {
     val duration = 0L
   }
 
+}
+
+object SbtCornichonTask {
+  val emptyScenarioReportsF: Future[List[ScenarioReport]] = Future.successful(Nil)
 }
