@@ -16,14 +16,16 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
         val retryRunState = runState.resetLogs
-        engine.runSteps(retryRunState)
+        val nested = engine.runSteps(retryRunState)
+        if (retriesNumber == 0) nested else nested.delayExecution(conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime
           res.fold(
             failedStep ⇒ {
+              // Check that it could go through another loop ather the interval
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-                retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime + conf.interval), retriesNumber + 1).delayExecution(conf.interval)
+                retryEventuallySteps(runState.appendLogsFrom(newRunState), conf.consume(executionTime), retriesNumber + 1)
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
                 Task.delay((retriesNumber, newRunState, Left(failedStep)))

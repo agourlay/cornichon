@@ -2,8 +2,8 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import org.scalatest.{ Matchers, AsyncWordSpec }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.duration._
 
@@ -23,13 +23,20 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     }
 
     "replay eventually wrapped steps until limit" in {
-      val eventuallyConf = EventuallyConf(maxTime = 10.milliseconds, interval = 1.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      var counter = 0
       val nested = AssertStep(
-        "impossible random value step", s ⇒ GenericEqualityAssertion(11, scala.util.Random.nextInt(10))
+        "impossible random value step", s ⇒ {
+          counter = counter + 1
+          Assertion.failWith("nop!")
+        }
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      engine.runScenario(Session.newEmpty)(s).map { r ⇒
+        r.isSuccess should be(false)
+        counter <= 10 should be(true) // at most 10*100millis
+      }
     }
 
   }
