@@ -10,7 +10,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
 import com.github.agourlay.cornichon.feature.BaseFeature
-import com.github.agourlay.cornichon.feature.BaseFeature.{ config, globalScheduler }
+import com.github.agourlay.cornichon.feature.BaseFeature.globalScheduler
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
