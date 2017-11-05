@@ -68,9 +68,12 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   }
 
   implicit def queryGqlToHttpRequest(queryGQL: QueryGQL): HttpRequest[String] =
-    post(queryGQL.url).withBody(queryGQL.payload)
+    post(queryGQL.url)
+      .withBody(queryGQL.payload)
+      .withParams(queryGQL.params: _*)
+      .withHeaders(queryGQL.headers: _*)
 
-  def query_gql(url: String) = QueryGQL(url, Document(Vector.empty))
+  def query_gql(url: String) = QueryGQL(url, Document(Vector.empty), None, None, Nil, Nil)
 
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Seq.empty, Seq.empty)
 

@@ -122,7 +122,19 @@ object HttpStreamedRequest {
 
 }
 
-case class QueryGQL(url: String, query: Document, operationName: Option[String] = None, variables: Option[Map[String, Json]] = None) {
+case class QueryGQL(
+    url: String,
+    query: Document,
+    operationName: Option[String],
+    variables: Option[Map[String, Json]],
+    params: Seq[(String, String)],
+    headers: Seq[(String, String)]) {
+
+  def withParams(params: (String, String)*) = copy(params = params)
+  def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+
+  def withHeaders(headers: (String, String)*) = copy(headers = headers)
+  def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
   def withQuery(query: Document) = copy(query = query)
 
