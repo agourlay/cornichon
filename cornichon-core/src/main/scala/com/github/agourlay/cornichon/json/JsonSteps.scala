@@ -27,7 +27,7 @@ object JsonSteps {
       private val k1: String,
       private val k2: String,
       private val placeholderResolver: PlaceholderResolver,
-      private val ignoredKeys: Seq[String] = Seq.empty
+      private val ignoredKeys: Seq[String] = Nil
   ) {
 
     def ignoring(ignoring: String*): JsonValuesStepBuilder = copy(ignoredKeys = ignoring)

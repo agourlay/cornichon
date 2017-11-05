@@ -26,7 +26,7 @@ package object macros {
             case ((accTree, accSingle), elem) if elem.tpe <:< elementType ⇒
               accTree → (accSingle :+ elem)
             case ((accTree, accSingle), elem) ⇒
-              q"$accTree ++ $accSingle ++ $elem" → List.empty
+              q"$accTree ++ $accSingle ++ $elem" → Nil
           }
 
           q"${c.prefix.tree}.get($finalTree ++ $rest)"

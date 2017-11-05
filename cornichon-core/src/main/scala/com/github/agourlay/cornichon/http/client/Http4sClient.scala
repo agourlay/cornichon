@@ -15,6 +15,7 @@ import org.http4s.client.blaze.{ BlazeClientConfig, PooledHttp1Client }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
+import scala.collection.breakOut
 import ExecutionContext.Implicits.global
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
@@ -43,14 +44,19 @@ class Http4sClient extends HttpClient {
     case other   ⇒ throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  def buildHeaders(headers: Seq[(String, String)]): Headers =
-    Headers(headers.toList.map { case (n, v) ⇒ Header(n, v).parsed })
-
-  def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri = {
-    val q = Query.fromPairs(moreParams: _*)
-    //Not sure it is not most efficient way
-    uri.copy(query = Query(uri.query.toVector ++ q.toVector: _*))
+  def buildHeaders(headers: Seq[(String, String)]): Headers = {
+    val h: List[Header] = headers.map { case (n, v) ⇒ Header(n, v).parsed }(breakOut)
+    Headers(h)
   }
+
+  def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
+    if (moreParams.isEmpty)
+      uri
+    else {
+      val q = Query.fromPairs(moreParams: _*)
+      //Not sure it is not most efficient way
+      uri.copy(query = Query(uri.query.toVector ++ q.toVector: _*))
+    }
 
   def handleResponse[A](response: Response): Task[CornichonHttpResponse] = {
     response
@@ -59,7 +65,7 @@ class Http4sClient extends HttpClient {
       .map { decodedBody ⇒
         CornichonHttpResponse(
           status = response.status.code,
-          headers = response.headers.toList.map(h ⇒ (h.name.value, h.value)),
+          headers = response.headers.map(h ⇒ (h.name.value, h.value))(breakOut),
           body = decodedBody
         )
       }
