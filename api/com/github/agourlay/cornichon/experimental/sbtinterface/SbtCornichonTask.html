@@ -178,7 +178,7 @@
                         <a class="class" href="CornichonRunner.html" title=""></a>
                         <a href="CornichonRunner.html" title="">CornichonRunner</a>
                       </li><li class="current-entities indented6">
-                        <span class="separator"></span>
+                        <a class="object" href="SbtCornichonTask$.html" title=""></a>
                         <a class="class" href="" title=""></a>
                         <a href="" title="">SbtCornichonTask</a>
                       </li>
@@ -188,14 +188,16 @@
           <div id="content">
             <body class="class type">
       <div id="definition">
-        <div class="big-circle class">c</div>
+        <a href="SbtCornichonTask$.html" title="See companion object"><div class="big-circle class-companion-object">c</div></a>
         <p id="owner"><a href="../../../../../index.html" class="extype" name="com">com</a>.<a href="../../../../index.html" class="extype" name="com.github">github</a>.<a href="../../../index.html" class="extype" name="com.github.agourlay">agourlay</a>.<a href="../../index.html" class="extype" name="com.github.agourlay.cornichon">cornichon</a>.<a href="../index.html" class="extype" name="com.github.agourlay.cornichon.experimental">experimental</a>.<a href="index.html" class="extype" name="com.github.agourlay.cornichon.experimental.sbtinterface">sbtinterface</a></p>
-        <h1>SbtCornichonTask<span class="permalink">
+        <h1><a href="SbtCornichonTask$.html" title="See companion object">SbtCornichonTask</a><span class="permalink">
       <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
-        <h3><span class="morelinks"></span></h3>
+        <h3><span class="morelinks"><div>
+            Companion <a href="SbtCornichonTask$.html" title="See companion object">object SbtCornichonTask</a>
+          </div></span></h3>
       </div>
 
       <h4 id="signature" class="signature">
@@ -260,9 +262,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(task:sbt.testing.TaskDef):com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask"></a><a id="&lt;init&gt;:SbtCornichonTask"></a>
+      <a id="&lt;init&gt;(task:sbt.testing.TaskDef,scenarioNameFilter:Set[String]):com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask"></a><a id="&lt;init&gt;:SbtCornichonTask"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#&lt;init&gt;(task:sbt.testing.TaskDef):com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#&lt;init&gt;(task:sbt.testing.TaskDef,scenarioNameFilter:Set[String]):com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -271,7 +273,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">SbtCornichonTask</span><span class="params">(<span name="task">task: <span class="extype" name="sbt.testing.TaskDef">TaskDef</span></span>)</span>
+        <span class="name">SbtCornichonTask</span><span class="params">(<span name="task">task: <span class="extype" name="sbt.testing.TaskDef">TaskDef</span></span>, <span name="scenarioNameFilter">scenarioNameFilter: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span>
       </span>
       
       
@@ -453,6 +455,22 @@
       </span>
       
       
+    </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#failureErrorMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="failureErrorMessage(featureClass:Class[_],scenarioName:String):String"></a><a id="failureErrorMessage(Class[_],String):String"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#failureErrorMessage(featureClass:Class[_],scenarioName:String):String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">failureErrorMessage</span><span class="params">(<span name="featureClass">featureClass: <span class="extype" name="scala.Predef.Class">Class</span>[_]</span>, <span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#failureEventBuilder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="failureEventBuilder(exception:Throwable):sbt.testing.Event{valstatus:sbt.testing.Status;valthrowable:sbt.testing.OptionalThrowable;valfullyQualifiedName:String;valselector:sbt.testing.Selector;valfingerprint:sbt.testing.Fingerprint;valduration:Long}"></a><a id="failureEventBuilder(Throwable):Event{.../*6definitionsintyperefinement*/}"></a>
       <span class="permalink">
@@ -466,6 +484,22 @@
       </span>
       <span class="symbol">
         <span class="name">failureEventBuilder</span><span class="params">(<span name="exception">exception: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result">: <span class="extype" name="sbt.testing.Event">Event</span> { ... /* 6 definitions in type refinement */ }</span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#filterScenarios" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="filterScenarios(feature:com.github.agourlay.cornichon.core.FeatureDef):List[com.github.agourlay.cornichon.core.Scenario]"></a><a id="filterScenarios(FeatureDef):List[Scenario]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#filterScenarios(feature:com.github.agourlay.cornichon.core.FeatureDef):List[com.github.agourlay.cornichon.core.Scenario]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filterScenarios</span><span class="params">(<span name="feature">feature: <a href="../../core/FeatureDef.html" class="extype" name="com.github.agourlay.cornichon.core.FeatureDef">FeatureDef</a></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="../../core/Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a>]</span>
       </span>
       
       
@@ -600,9 +634,9 @@
               
         </dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#printResultLogs" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="printResultLogs(sr:com.github.agourlay.cornichon.core.ScenarioReport):Unit"></a><a id="printResultLogs(ScenarioReport):Unit"></a>
+      <a id="printResultLogs(featureClass:Class[_])(sr:com.github.agourlay.cornichon.core.ScenarioReport):Unit"></a><a id="printResultLogs(Class[_])(ScenarioReport):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#printResultLogs(sr:com.github.agourlay.cornichon.core.ScenarioReport):Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#printResultLogs(featureClass:Class[_])(sr:com.github.agourlay.cornichon.core.ScenarioReport):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -611,7 +645,23 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">printResultLogs</span><span class="params">(<span name="sr">sr: <a href="../../core/ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+        <span class="name">printResultLogs</span><span class="params">(<span name="featureClass">featureClass: <span class="extype" name="scala.Predef.Class">Class</span>[_]</span>)</span><span class="params">(<span name="sr">sr: <a href="../../core/ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.experimental.sbtinterface.SbtCornichonTask#replayCommand" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="replayCommand(featureClass:Class[_],scenarioName:String):String"></a><a id="replayCommand(Class[_],String):String"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/experimental/sbtinterface/SbtCornichonTask.html#replayCommand(featureClass:Class[_],scenarioName:String):String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">replayCommand</span><span class="params">(<span name="featureClass">featureClass: <span class="extype" name="scala.Predef.Class">Class</span>[_]</span>, <span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
