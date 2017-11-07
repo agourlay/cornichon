@@ -243,7 +243,8 @@ lazy val docSettings = Seq(
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )
 
-lazy val formattingSettings = scalariformSettings(autoformat = true) ++ Seq(
+lazy val formattingSettings = Seq(
+  scalariformAutoformat := true,
   scalariformPreferences := scalariformPreferences.value
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
