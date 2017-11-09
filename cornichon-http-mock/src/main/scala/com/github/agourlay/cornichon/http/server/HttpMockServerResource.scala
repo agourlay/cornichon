@@ -15,7 +15,8 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
 
   def startResource() = {
     val mockRequestHandler = new MockServerRequestHandler()
-    Task.fromFuture(new MockHttpServer(interface, portRange, mockRequestHandler.mockService).startServer()).map { serverCloseHandler ⇒
+    val mockServer = new MockHttpServer(interface, portRange, mockRequestHandler.mockService)
+    Task.fromFuture(mockServer.startServer()).map { serverCloseHandler ⇒
       new ResourceHandle {
         def resourceResults() = Task.delay(requestsResults(mockRequestHandler))
 

@@ -11,6 +11,8 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl._
 
+import scala.collection.breakOut
+
 class MockServerRequestHandler() {
 
   private val requestReceivedRepo = new MockServerResultsHolder()
@@ -72,7 +74,7 @@ class MockServerRequestHandler() {
           url = rawReq.uri.path.toString(),
           body = Some(decodedBody),
           params = rawReq.params.toList,
-          headers = rawReq.headers.toList.map(h ⇒ (h.name.value, h.value))
+          headers = rawReq.headers.map(h ⇒ (h.name.value, h.value))(breakOut)
         )
         requestReceivedRepo.registerRequest(req)
       }
