@@ -177,6 +177,17 @@ lazy val experimental =
       )
     )
 
+lazy val kafka =
+  project
+    .in(file("./cornichon-kafka"))
+    .dependsOn(core)
+    .enablePlugins(SbtScalariform)
+    .settings(commonSettings)
+    .settings(formattingSettings)
+    .settings(
+      name := "cornichon-kafka"
+    )
+
 lazy val httpMock =
   project
     .in(file("./cornichon-http-mock"))
