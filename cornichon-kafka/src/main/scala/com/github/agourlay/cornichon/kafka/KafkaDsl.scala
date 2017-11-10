@@ -39,7 +39,7 @@ trait KafkaDsl {
   )
 
   def read_from_topic(topic: String, amount: Int, timeout: Int = 500) = EffectStep.fromAsync(
-    title = s"reading the last $amount messages from topic=$topic ",
+    title = s"read the last $amount messages from topic=$topic ",
     effect = s ⇒ Future {
       consumer.unsubscribe()
       consumer.subscribe(Seq(topic).asJava)
