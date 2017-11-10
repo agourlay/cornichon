@@ -39,18 +39,31 @@ class MockServerRequestHandler() {
       requestReceivedRepo.clearRegisteredRequest()
       Ok()
 
+    case r @ POST -> Root / "response" ⇒
+      r.bodyAsText.runFold("")(_ ++ _).flatMap { body ⇒
+        requestReceivedRepo.setResponse(body)
+        Ok()
+      }
+
     case POST -> Root / "toggle-error-mode" ⇒
       requestReceivedRepo.toggleErrorMode
       Ok()
 
+    case POST -> Root / "toggle-bad-request-mode" ⇒
+      requestReceivedRepo.toggleBadRequestMode
+      Ok()
+
     case _ if requestReceivedRepo.getErrorMode ⇒
-      InternalServerError()
+      InternalServerError(requestReceivedRepo.getResponse)
+
+    case _ if requestReceivedRepo.getBadRequestMode ⇒
+      BadRequest(requestReceivedRepo.getResponse)
 
     case r @ POST -> _ ⇒
-      saveRequest(r).flatMap(_ ⇒ Created())
+      saveRequest(r).flatMap(_ ⇒ Created(requestReceivedRepo.getResponse))
 
     case r @ _ -> _ ⇒
-      saveRequest(r).flatMap(_ ⇒ Ok())
+      saveRequest(r).flatMap(_ ⇒ Ok(requestReceivedRepo.getResponse))
   }
 
   def httpMethodMapper(method: Method): HttpMethod = method match {
