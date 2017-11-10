@@ -13,6 +13,10 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
       And I show_session
 
+      Then I read_from_topic("my-topic", amount = 1)
+
+      Then assert session_value("my-topic").is("""{my-json}""")
+
     }
 
   }

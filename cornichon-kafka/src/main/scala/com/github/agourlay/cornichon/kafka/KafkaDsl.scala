@@ -9,8 +9,10 @@ import org.apache.kafka.clients.{CommonClientConfigs, KafkaClient, consumer}
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
-import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, KafkaConsumer}
 
+import scala.collection.JavaConverters._
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.{Future, Promise}
 
 
@@ -35,6 +37,27 @@ trait KafkaDsl {
     }
   )
 
+  def read_from_topic(topic: String, amount: Int) = EffectStep.fromSync(
+    title = s"reading the last $amount messages from $topic ",
+    effect = s => {
+      consumer
+      consumer.unsubscribe()
+      consumer.subscribe(Seq(topic).asJava)
+      val messages = ListBuffer.empty[ConsumerRecord[String,String]]
+      var nothingNewAnymore = false
+      while(!nothingNewAnymore){
+        val newMassages = consumer.poll(5000)
+        val collectionOfNewMessages = newMassages.iterator().asScala.toList
+        messages ++= collectionOfNewMessages
+        nothingNewAnymore = newMassages.isEmpty
+      }
+      messages.drop(messages.size - amount)
+      messages.foldLeft(s) {(session, value) =>
+        session.addValue(topic, buildConsumerRecordJsonProjection(value)).valueUnsafe
+      }
+    }
+  )
+
 
 }
 
@@ -43,7 +66,7 @@ object KafkaDsl {
 
   import net.ceedubs.ficus.Ficus._
   import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-  import scala.collection.JavaConverters._
+
 
   lazy val kafkaConfig = ConfigFactory.load().as[KafkaConfig]("kafka")
 
@@ -78,6 +101,14 @@ object KafkaDsl {
 
   def buildProducerRecord(topic:String, key: String, message: String) : ProducerRecord[String, String] =
     new ProducerRecord[String, String](topic, key, message)
+
+  def buildConsumerRecordJsonProjection(record: ConsumerRecord[String, String]) =
+    s"""{
+       |  "key": "${record.key()}",
+       |  "topic": "${record.topic()}",
+       |  "timestamp": "${record.timestamp()}"
+       |  "value": "${record.value()}"
+       |}""".stripMargin
 
 
 }
