@@ -2,20 +2,21 @@ package com.github.agourlay.cornichon.kafka
 
 import java.util.UUID
 
+import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.producer._
-import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
+import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
-import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, KafkaConsumer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{ Future, Promise }
-import scala.util.Random
+import scala.concurrent.{Future, Promise}
 
 trait KafkaDsl {
   this: BaseFeature with Dsl ⇒
@@ -38,26 +39,33 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int, timeout: Int = 500) = EffectStep.fromAsync(
+  def read_from_topic(topic: String, amount: Int, targetKey: Option[String], timeout: Int = 500) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from $topic ",
-    effect = s ⇒ Future {
-      consumer.unsubscribe()
-      consumer.subscribe(Seq(topic).asJava)
-      val messages = ListBuffer.empty[ConsumerRecord[String, String]]
-      var nothingNewAnymore = false
-      while (!nothingNewAnymore) {
-        val newMessages = consumer.poll(timeout)
-        val collectionOfNewMessages = newMessages.iterator().asScala.toList
-        messages ++= collectionOfNewMessages
-        nothingNewAnymore = newMessages.isEmpty
-      }
-      consumer.commitSync()
-      messages.drop(messages.size - amount)
-      messages.foldLeft(s) { (session, value) ⇒
-        session.addValue(topic, buildConsumerRecordJsonProjection(value)).valueUnsafe
-      }
-    }
+    effect = s ⇒ readFromTopic( topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v => s"$v"))
   )
+
+  def read_json_from_topic(topic: String, amount: Int, targetKey: Option[String], timeout: Int = 500) = EffectStep.fromAsync(
+    title = s"reading the last $amount messages from $topic ",
+    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v => CornichonJson.parseJson(v).valueUnsafe.noSpaces))
+  )
+
+  private def readFromTopic(topic: String,  targetKey: String, amount:Int,  timeout:Int, s: Session)(transformRecord: ConsumerRecord[String, String] => String) = Future {
+    consumer.unsubscribe()
+    consumer.subscribe(Seq(topic).asJava)
+    val messages = ListBuffer.empty[ConsumerRecord[String, String]]
+    var nothingNewAnymore = false
+    while (!nothingNewAnymore) {
+      val newMessages = consumer.poll(timeout)
+      val collectionOfNewMessages = newMessages.iterator().asScala.toList
+      messages ++= collectionOfNewMessages
+      nothingNewAnymore = newMessages.isEmpty
+    }
+    consumer.commitSync()
+    messages.drop(messages.size - amount)
+    messages.foldLeft(s) { (session, value) ⇒
+      session.addValue(targetKey, transformRecord(value)).valueUnsafe
+    }
+  }
 }
 
 object KafkaDsl {
@@ -101,12 +109,12 @@ object KafkaDsl {
   def buildProducerRecord(topic: String, key: String, message: String): ProducerRecord[String, String] =
     new ProducerRecord[String, String](topic, key, message)
 
-  def buildConsumerRecordJsonProjection(record: ConsumerRecord[String, String]) =
+  def buildConsumerRecordJsonProjection(f: String => String)(record: ConsumerRecord[String, String]) =
     s"""{
        |  "key": "${record.key()}",
        |  "topic": "${record.topic()}",
        |  "timestamp": "${record.timestamp()}",
-       |  "value": "${record.value()}"
+       |  "value": ${f(record.value())}
        |}""".stripMargin
 
 }
@@ -118,4 +126,4 @@ case class KafkaConfig(
 
 case class KafkaProducerConfig(ack: String = "all", batchSizeInBytes: Int = 1, retriesConfig: Option[Int])
 
-case class KafkaConsumerConfig(groupId: String = s"cornichon-${UUID.randomUUID().toString}")
+case class KafkaConsumerConfig(groupId: String = s"cornichon-groupId")
