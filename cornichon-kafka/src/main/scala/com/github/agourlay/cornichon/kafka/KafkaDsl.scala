@@ -9,14 +9,14 @@ import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.producer._
-import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
+import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, KafkaConsumer}
+import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ Future, Promise }
 
 trait KafkaDsl {
   this: BaseFeature with Dsl ⇒
@@ -39,17 +39,17 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int, targetKey: Option[String], timeout: Int = 500) = EffectStep.fromAsync(
+  def read_from_topic(topic: String, amount: Int, targetKey: Option[String] = None, timeout: Int = 500) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from topic=$topic",
-    effect = s ⇒ readFromTopic( topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v => s"$v"))
+    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v ⇒ s""" "$v" """))
   )
 
-  def read_json_from_topic(topic: String, amount: Int, targetKey: Option[String], timeout: Int = 500) = EffectStep.fromAsync(
+  def read_json_from_topic(topic: String, amount: Int, targetKey: Option[String] = None, timeout: Int = 500) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from topic=$topic ",
-    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v => CornichonJson.parseJson(v).valueUnsafe.noSpaces))
+    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v ⇒ CornichonJson.jsonStringValue(CornichonJson.parseJson(v).valueUnsafe)))
   )
 
-  private def readFromTopic(topic: String,  targetKey: String, amount:Int,  timeout:Int, s: Session)(transformRecord: ConsumerRecord[String, String] => String) = Future {
+  private def readFromTopic(topic: String, targetKey: String, amount: Int, timeout: Int, s: Session)(transformRecord: ConsumerRecord[String, String] ⇒ String) = Future {
     consumer.unsubscribe()
     consumer.subscribe(Seq(topic).asJava)
     val messages = ListBuffer.empty[ConsumerRecord[String, String]]
@@ -109,7 +109,7 @@ object KafkaDsl {
   def buildProducerRecord(topic: String, key: String, message: String): ProducerRecord[String, String] =
     new ProducerRecord[String, String](topic, key, message)
 
-  def buildConsumerRecordJsonProjection(f: String => String)(record: ConsumerRecord[String, String]) =
+  def buildConsumerRecordJsonProjection(f: String ⇒ String)(record: ConsumerRecord[String, String]) =
     s"""{
        |  "key": "${record.key()}",
        |  "topic": "${record.topic()}",
