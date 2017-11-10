@@ -7,7 +7,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
   def feature = Feature("Kafka test") {
 
-    Scenario("put to topic") {
+    Scenario("put and read to topic") {
 
       Given I put_topic("my-topic", "my-key", "my-json")
 
@@ -15,7 +15,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
       Then I read_from_topic("my-topic", amount = 1)
 
-      Then assert session_value("my-topic").asJson.is(
+      Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
         """
           {
              "key": "my-key",
@@ -23,6 +23,37 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
              "value": "my-json"
           }
         """)
+
+    }
+
+    Scenario("put and read to topic 2 ") {
+
+      Given I put_topic("my-topic", "my-key", "my-json")
+
+      And I show_session
+
+      Then I read_from_topic("my-topic", amount = 1)
+
+      Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
+        """
+          {
+             "key": "my-key",
+             "topic": "my-topic",
+             "value": "my-json"
+          }
+        """)
+
+    }
+
+    Scenario("put and read to other topic ") {
+
+      Given I put_topic("my-topic-2", "my-key", "my-json")
+
+      And I show_session
+
+      Then I read_from_topic("my-topic", amount = 1)
+
+      Then assert session_value("my-topic").isAbsent
 
     }
 

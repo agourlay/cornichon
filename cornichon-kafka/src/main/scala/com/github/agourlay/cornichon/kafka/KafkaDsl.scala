@@ -17,8 +17,10 @@ import scala.concurrent.{ Future, Promise }
 trait KafkaDsl {
   this: BaseFeature with Dsl ⇒
 
+  override private[cornichon] lazy val config = BaseFeature.config.copy(executeScenariosInParallel = false)
+
   def put_topic(topic: String, key: String, message: String) = EffectStep.fromAsync(
-    title = s"put message $message with $key to  $topic",
+    title = s"put message $message with $key to $topic",
     effect = s ⇒ {
       val pr = buildProducerRecord(topic, key, message)
       val p = Promise[Unit]()
@@ -41,13 +43,12 @@ trait KafkaDsl {
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
       while (!nothingNewAnymore) {
-        println(messages)
-        val newMassages = consumer.poll(0)
-        println("Polled!!")
-        val collectionOfNewMessages = newMassages.iterator().asScala.toList
+        val newMessages = consumer.poll(500)
+        val collectionOfNewMessages = newMessages.iterator().asScala.toList
         messages ++= collectionOfNewMessages
-        nothingNewAnymore = newMassages.isEmpty
+        nothingNewAnymore = newMessages.isEmpty
       }
+      consumer.commitSync()
       messages.drop(messages.size - amount)
       messages.foldLeft(s) { (session, value) ⇒
         session.addValue(topic, buildConsumerRecordJsonProjection(value)).valueUnsafe
@@ -81,7 +82,7 @@ object KafkaDsl {
   lazy val consumer = {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> kafkaConfig.bootstrapServers,
-      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "true",
+      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
       ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "1000",
       ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG -> "100",
       ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "10000",
