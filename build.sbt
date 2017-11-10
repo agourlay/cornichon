@@ -187,7 +187,8 @@ lazy val kafka =
     .settings(
       name := "cornichon-kafka",
       libraryDependencies ++= Seq(
-        library.kafkaClient
+        library.kafkaClient,
+        "ch.qos.logback" % "logback-classic" % "1.1.1"
       )
     )
 

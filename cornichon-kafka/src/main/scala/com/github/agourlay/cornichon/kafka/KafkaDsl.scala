@@ -9,6 +9,7 @@ import org.apache.kafka.common.serialization.{ StringDeserializer, StringSeriali
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ Future, Promise }
@@ -32,15 +33,17 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int) = EffectStep.fromSync(
+  def read_from_topic(topic: String, amount: Int) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from $topic ",
-    effect = s ⇒ {
+    effect = s ⇒ Future {
       consumer.unsubscribe()
       consumer.subscribe(Seq(topic).asJava)
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
       while (!nothingNewAnymore) {
-        val newMassages = consumer.poll(5000)
+        println(messages)
+        val newMassages = consumer.poll(0)
+        println("Polled!!")
         val collectionOfNewMessages = newMassages.iterator().asScala.toList
         messages ++= collectionOfNewMessages
         nothingNewAnymore = newMassages.isEmpty
@@ -68,7 +71,10 @@ object KafkaDsl {
     )
 
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
-    BaseFeature.addShutdownHook(() ⇒ Future.successful(p.close()))
+    BaseFeature.addShutdownHook(() ⇒ Future {
+      println("Closing producer")
+      p.close()
+    })
     p
   }
 
@@ -77,13 +83,17 @@ object KafkaDsl {
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> kafkaConfig.bootstrapServers,
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "true",
       ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "1000",
-      ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "300000",
+      ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG -> "100",
+      ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "10000",
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest",
       ConsumerConfig.GROUP_ID_CONFIG -> "1234"
     )
 
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
-    BaseFeature.addShutdownHook(() ⇒ Future.successful(c.close()))
+    BaseFeature.addShutdownHook(() ⇒ Future {
+      println("Closing consumer")
+      c.close()
+    })
     c
   }
 
