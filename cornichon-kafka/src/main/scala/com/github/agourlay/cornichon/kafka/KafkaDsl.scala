@@ -24,7 +24,7 @@ trait KafkaDsl {
   override private[cornichon] lazy val config = BaseFeature.config.copy(executeScenariosInParallel = false)
 
   def put_topic(topic: String, key: String, message: String) = EffectStep.fromAsync(
-    title = s"put message $message with $key to $topic",
+    title = s"put message=$message with key=$key to topic=$topic",
     effect = s ⇒ {
       val pr = buildProducerRecord(topic, key, message)
       val p = Promise[Unit]()
@@ -40,12 +40,12 @@ trait KafkaDsl {
   )
 
   def read_from_topic(topic: String, amount: Int, targetKey: Option[String], timeout: Int = 500) = EffectStep.fromAsync(
-    title = s"reading the last $amount messages from $topic ",
+    title = s"reading the last $amount messages from topic=$topic",
     effect = s ⇒ readFromTopic( topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v => s"$v"))
   )
 
   def read_json_from_topic(topic: String, amount: Int, targetKey: Option[String], timeout: Int = 500) = EffectStep.fromAsync(
-    title = s"reading the last $amount messages from $topic ",
+    title = s"reading the last $amount messages from topic=$topic ",
     effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v => CornichonJson.parseJson(v).valueUnsafe.noSpaces))
   )
 
