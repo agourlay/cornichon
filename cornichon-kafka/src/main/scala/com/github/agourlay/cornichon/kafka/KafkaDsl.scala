@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.kafka
 
+import java.util.UUID
+
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.regular.EffectStep
@@ -13,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ Future, Promise }
+import scala.util.Random
 
 trait KafkaDsl {
   this: BaseFeature with Dsl ⇒
@@ -35,7 +38,7 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int) = EffectStep.fromAsync(
+  def read_from_topic(topic: String, amount: Int, timeout: Int = 500) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from $topic ",
     effect = s ⇒ Future {
       consumer.unsubscribe()
@@ -43,7 +46,7 @@ trait KafkaDsl {
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
       while (!nothingNewAnymore) {
-        val newMessages = consumer.poll(500)
+        val newMessages = consumer.poll(timeout)
         val collectionOfNewMessages = newMessages.iterator().asScala.toList
         messages ++= collectionOfNewMessages
         nothingNewAnymore = newMessages.isEmpty
@@ -68,12 +71,11 @@ object KafkaDsl {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> kafkaConfig.bootstrapServers,
       ProducerConfig.ACKS_CONFIG -> kafkaConfig.producer.ack,
-      ProducerConfig.BATCH_SIZE_CONFIG -> kafkaConfig.producer.batchSize.map(_.toString).getOrElse("")
+      ProducerConfig.BATCH_SIZE_CONFIG -> kafkaConfig.producer.batchSizeInBytes.toString
     )
 
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
     BaseFeature.addShutdownHook(() ⇒ Future {
-      println("Closing producer")
       p.close()
     })
     p
@@ -83,16 +85,14 @@ object KafkaDsl {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> kafkaConfig.bootstrapServers,
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
-      ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "1000",
       ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG -> "100",
       ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "10000",
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest",
-      ConsumerConfig.GROUP_ID_CONFIG -> "1234"
+      ConsumerConfig.GROUP_ID_CONFIG -> kafkaConfig.consumer.groupId
     )
 
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
     BaseFeature.addShutdownHook(() ⇒ Future {
-      println("Closing consumer")
       c.close()
     })
     c
@@ -113,6 +113,9 @@ object KafkaDsl {
 
 case class KafkaConfig(
     bootstrapServers: String,
-    producer: KafkaProducerConfig)
+    producer: KafkaProducerConfig,
+    consumer: KafkaConsumerConfig)
 
-case class KafkaProducerConfig(ack: String = "all", batchSize: Option[Int], retriesConfig: Option[Int])
+case class KafkaProducerConfig(ack: String = "all", batchSizeInBytes: Int = 1, retriesConfig: Option[Int])
+
+case class KafkaConsumerConfig(groupId: String = s"cornichon-${UUID.randomUUID().toString}")

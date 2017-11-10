@@ -78,7 +78,6 @@ object BaseFeature {
   lazy val globalScheduler = Scheduler.Implicits.global
 
   def shutDownGlobalResources(): Future[Done] = {
-    println("calling shutdown hooks!")
     import scala.concurrent.ExecutionContext.Implicits.global
     @tailrec
     def clearHooks(previous: Future[Any] = Future.successful[Any](())): Future[Any] =
