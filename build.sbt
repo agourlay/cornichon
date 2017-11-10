@@ -101,7 +101,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks, experimental, httpMock)
+    .aggregate(core, scalatest, docs, benchmarks, experimental, httpMock, kafka)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -180,12 +180,15 @@ lazy val experimental =
 lazy val kafka =
   project
     .in(file("./cornichon-kafka"))
-    .dependsOn(core)
+    .dependsOn(core, scalatest % Test)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(formattingSettings)
     .settings(
-      name := "cornichon-kafka"
+      name := "cornichon-kafka",
+      libraryDependencies ++= Seq(
+        library.kafkaClient
+      )
     )
 
 lazy val httpMock =
@@ -283,6 +286,7 @@ lazy val library =
       val monix         = "2.3.0"
       val sbtTest       = "1.0"
       val http4s        = "0.17.5"
+      val kafkaClient   = "0.11.0.1"
     }
     val akkaStream    = "com.typesafe.akka"     %% "akka-stream"          % Version.akkaActor
     val akkaHttp      = "com.typesafe.akka"     %% "akka-http"            % Version.akkaHttp
@@ -308,4 +312,5 @@ lazy val library =
     val http4sServer  = "org.http4s"            %% "http4s-blaze-server"  % Version.http4s
     val http4sCirce   = "org.http4s"            %% "http4s-circe"         % Version.http4s
     val http4sDsl     = "org.http4s"            %% "http4s-dsl"           % Version.http4s
+    val kafkaClient   = "org.apache.kafka"      %  "kafka-clients"        % Version.kafkaClient
   }
