@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.kafka
 
-import java.util.UUID
-
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.feature.BaseFeature

@@ -2,6 +2,7 @@ package com.github.agourlay.kafka.kafka
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.kafka.KafkaDsl
+import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
 class KafkaExample extends CornichonFeature with KafkaDsl {
 
@@ -58,4 +59,17 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
     }
 
   }
+  override def beforeAll() = {
+    EmbeddedKafka.start()(EmbeddedKafkaConfig(
+      kafkaPort = 9092,
+      customBrokerProperties = Map(
+        "group.initial.rebalance.delay.ms" -> "10",
+
+      )
+    ))
+  }
+  override def afterAll() = {
+    EmbeddedKafka.stop()
+  }
+
 }
