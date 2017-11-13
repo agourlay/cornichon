@@ -7,7 +7,7 @@ class MockServerExample extends CornichonFeature with HttpMockDsl {
 
   override lazy val requestTimeout = 3.seconds
 
-  def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 8083)))_
+  def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 8085)))_
 
   def feature =
     Feature("Cornichon feature mock server examples") {
