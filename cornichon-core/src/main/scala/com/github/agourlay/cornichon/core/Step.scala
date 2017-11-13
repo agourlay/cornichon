@@ -72,9 +72,6 @@ trait SimpleWrapperStep extends Step {
 
 //Step that explictly control the execution of nested steps
 trait WrapperStep extends Step {
-  // Only used to enforce the shape of the concrete type
-  def nested: List[Step]
-
   // Without effect by default - wrapper steps usually build dynamically their title
   def setTitle(newTitle: String) = this
   def failedTitleLog(depth: Int) = FailureLogInstruction(title, depth)

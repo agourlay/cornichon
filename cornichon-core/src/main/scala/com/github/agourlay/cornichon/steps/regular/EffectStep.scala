@@ -2,15 +2,15 @@ package com.github.agourlay.cornichon.steps.regular
 
 import cats.instances.future._
 import cats.instances.either._
-import cats.data.{EitherT, NonEmptyList}
+import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Engine._
-import com.github.agourlay.cornichon.steps.wrapped.{AttachAsStep, AttachStep}
+import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
 import monix.eval.Task
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 case class EffectStep(title: String, effect: Session ⇒ Future[Either[CornichonError, Session]], show: Boolean = true) extends ValueStep[Session] {
 
@@ -29,8 +29,11 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
   def chain(secondEffect: EffectStep)(implicit ec: ExecutionContext) =
     copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT(secondEffect.effect(s2))).value)
 
-  def chain(others: List[EffectStep])(implicit ec: ExecutionContext) : Step =
+  def chain(others: List[EffectStep]): Step =
     AttachStep("", this :: others)
+
+  def chain(others: Session ⇒ List[EffectStep]): Step =
+    FlatMapStep("", others)
 
   def chain(chainedEffect: Session ⇒ Future[Either[CornichonError, Session]])(implicit ec: ExecutionContext) =
     copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT(chainedEffect(s2))).value)
