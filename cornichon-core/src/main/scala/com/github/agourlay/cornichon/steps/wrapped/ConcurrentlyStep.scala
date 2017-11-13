@@ -56,10 +56,10 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
 }
 
 case class ConcurrentlyTimeout(factor: Int, success: Int) extends CornichonError {
-  val baseErrorMessage = s"Concurrently block did not reach completion in time: $success/$factor finished"
+  lazy val baseErrorMessage = s"Concurrently block did not reach completion in time: $success/$factor finished"
 }
 
 case class ConcurrentlyError(cause: Throwable) extends CornichonError {
-  val baseErrorMessage = "Concurrently block has thrown an error"
+  lazy val baseErrorMessage = "Concurrently block has thrown an error"
   override val causedBy = Some(NonEmptyList.of(CornichonError.fromThrowable(cause)))
 }

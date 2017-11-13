@@ -77,9 +77,9 @@ case class EventuallyConf(maxTime: FiniteDuration, interval: FiniteDuration) {
 }
 
 object EventuallyConf {
-  def empty = EventuallyConf(Duration.Zero, Duration.Zero)
+  val empty = EventuallyConf(Duration.Zero, Duration.Zero)
 }
 
 case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
-  val baseErrorMessage = "Eventually block succeeded after 'maxDuration'"
+  lazy val baseErrorMessage = "Eventually block succeeded after 'maxDuration'"
 }

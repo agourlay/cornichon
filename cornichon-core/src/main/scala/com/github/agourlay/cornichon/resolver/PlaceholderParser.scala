@@ -44,9 +44,9 @@ case class Placeholder(key: String, index: Option[Int]) {
 }
 
 case class PlaceholderError(input: String, error: Throwable) extends CornichonError {
-  val baseErrorMessage = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
+  lazy val baseErrorMessage = s"error '${error.getMessage}' thrown during placeholder parsing for input $input"
 }
 
 case class PlaceholderParsingError(input: String, error: String) extends CornichonError {
-  val baseErrorMessage = s"error '$error' during placeholder parsing for input $input"
+  lazy val baseErrorMessage = s"error '$error' during placeholder parsing for input $input"
 }

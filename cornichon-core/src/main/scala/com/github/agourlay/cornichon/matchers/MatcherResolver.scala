@@ -71,10 +71,10 @@ object MatcherResolver {
 }
 
 case class MatcherUndefined(name: String) extends CornichonError {
-  val baseErrorMessage = s"there is no matcher named '$name' defined."
+  lazy val baseErrorMessage = s"there is no matcher named '$name' defined."
 }
 
 case class DuplicateMatcherDefinition(name: String, descriptions: List[String]) extends CornichonError {
-  val baseErrorMessage = s"there are ${descriptions.size} matchers named '$name': " +
+  lazy val baseErrorMessage = s"there are ${descriptions.size} matchers named '$name': " +
     s"${descriptions.map(d ⇒ s"'$d'").mkString(" and ")}"
 }

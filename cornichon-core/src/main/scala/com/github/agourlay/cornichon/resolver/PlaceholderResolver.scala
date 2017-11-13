@@ -101,9 +101,9 @@ object PlaceholderResolver {
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {
-  val baseErrorMessage = s"ambiguous definition of key '$key' - it is present in both session and extractors"
+  lazy val baseErrorMessage = s"ambiguous definition of key '$key' - it is present in both session and extractors"
 }
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
-  val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
+  lazy val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
 }

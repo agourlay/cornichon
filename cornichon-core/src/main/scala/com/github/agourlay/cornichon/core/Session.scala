@@ -117,14 +117,14 @@ case class SessionKey(name: String, index: Option[Int] = None) {
 }
 
 case class EmptyKey(s: Session) extends CornichonError {
-  val baseErrorMessage = s"key can not be empty - session is \n${s.show}"
+  lazy val baseErrorMessage = s"key can not be empty - session is \n${s.show}"
 }
 
 case class IllegalKey(key: String) extends CornichonError {
-  val baseErrorMessage = s"error for key '$key' - session key can not contain chars '${Session.notAllowedInKey}'"
+  lazy val baseErrorMessage = s"error for key '$key' - session key can not contain chars '${Session.notAllowedInKey}'"
 }
 
 case class IndiceNotFoundForKey(key: String, indice: Int, values: Vector[String]) extends CornichonError {
-  val baseErrorMessage = s"indice '$indice' not found for key '$key' with values \n" +
+  lazy val baseErrorMessage = s"indice '$indice' not found for key '$key' with values \n" +
     s"${values.zipWithIndex.map { case (v, i) ⇒ s"$i -> $v" }.mkString("\n")}"
 }

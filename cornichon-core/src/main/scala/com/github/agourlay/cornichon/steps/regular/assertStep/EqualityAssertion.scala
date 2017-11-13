@@ -39,7 +39,7 @@ case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, 
         |'${actual.show}'
         |""".stripMargin.trim
 
-  val baseErrorMessage = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg ⇒
+  lazy val baseErrorMessage = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg ⇒
     s"""|$baseMsg
         |
         |$diffMsg
@@ -65,5 +65,5 @@ object CustomMessageEqualityAssertion {
 }
 
 case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
-  val baseErrorMessage = detailedAssertion(result)
+  lazy val baseErrorMessage = detailedAssertion(result)
 }
