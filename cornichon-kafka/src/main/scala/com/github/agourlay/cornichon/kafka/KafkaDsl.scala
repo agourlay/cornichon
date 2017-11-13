@@ -11,7 +11,6 @@ import org.apache.kafka.common.serialization.{ StringDeserializer, StringSeriali
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ Future, Promise }
@@ -83,7 +82,7 @@ object KafkaDsl {
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
     BaseFeature.addShutdownHook(() ⇒ Future {
       p.close()
-    })
+    }(BaseFeature.globalScheduler))
     p
   }
 
@@ -100,7 +99,7 @@ object KafkaDsl {
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
     BaseFeature.addShutdownHook(() ⇒ Future {
       c.close()
-    })
+    }(BaseFeature.globalScheduler))
     c
   }
 
