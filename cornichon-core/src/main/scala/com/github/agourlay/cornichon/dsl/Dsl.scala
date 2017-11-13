@@ -167,7 +167,7 @@ trait Dsl extends ProvidedInstances {
     }
   }
 
-  def print_step(message: String) = DebugStep(_ ⇒ message.asRight)
+  def print_step(message: String) = DebugStep(placeholderResolver.fillPlaceholders(message))
 }
 
 object Dsl {
