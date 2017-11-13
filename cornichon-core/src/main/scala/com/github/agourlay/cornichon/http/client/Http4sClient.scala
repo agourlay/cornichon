@@ -17,12 +17,16 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.collection.breakOut
 import ExecutionContext.Implicits.global
+import scala.collection.concurrent.TrieMap
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
 class Http4sClient extends HttpClient {
 
   implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
   implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
+
+  // Lives for the duration of the test run
+  private val uriCache = TrieMap.empty[String, Either[CornichonError, Uri]]
 
   private val httpClient = PooledHttp1Client(
     maxTotalConnections = 100,
@@ -72,8 +76,8 @@ class Http4sClient extends HttpClient {
   }
 
   override def runRequest(cReq: HttpRequest[Json], t: FiniteDuration): EitherT[Future, CornichonError, CornichonHttpResponse] =
-    Uri.fromString(cReq.url).fold[EitherT[Future, CornichonError, CornichonHttpResponse]](
-      e ⇒ EitherT.left(Future.successful(MalformedUriError(cReq.url, e.message))),
+    parseUri(cReq.url).fold[EitherT[Future, CornichonError, CornichonHttpResponse]](
+      e ⇒ EitherT.left(Future.successful(e)),
       uri ⇒ EitherT {
         val r = Request(httpMethodMapper(cReq.method))
           .withHeaders(buildHeaders(cReq.headers))
@@ -94,11 +98,15 @@ class Http4sClient extends HttpClient {
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration) = ???
 
-  def shutdown() = httpClient.shutdown.map(_ ⇒ Done).unsafeRunAsyncFuture()
+  def shutdown() = httpClient.shutdown.map { _ ⇒ uriCache.clear(); Done }.unsafeRunAsyncFuture()
 
   def paramsFromUrl(url: String) =
     if (url.contains('?'))
-      Uri.fromString(url).map(_.params.toList).leftMap(e ⇒ MalformedUriError(url, e.message))
+      parseUri(url).map(_.params.toList)
     else
       rightNil
+
+  private def parseUri(uri: String): Either[CornichonError, Uri] =
+    uriCache.getOrElseUpdate(uri, Uri.fromString(uri).leftMap(e ⇒ MalformedUriError(uri, e.message)))
+
 }
