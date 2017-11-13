@@ -90,10 +90,13 @@ object Session {
   }
 
   implicit val showSession = Show.show[Session] { s ⇒
-    s.content.toSeq
-      .sortBy(_._1)
-      .map(pair ⇒ pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
-      .mkString("\n")
+    if (s.content.isEmpty)
+      "empty"
+    else
+      s.content.toSeq
+        .sortBy(_._1)
+        .map(pair ⇒ pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
+        .mkString("\n")
   }
 
   // In companion object to access 'content'
