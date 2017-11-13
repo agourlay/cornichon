@@ -101,14 +101,14 @@ object Session {
 
   // In companion object to access 'content'
   case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
-    val similarKeysMsg = {
+    lazy val similarKeysMsg = {
       val similar = s.content.keys.filter(Strings.levenshtein(_, key) == 1)
       if (similar.isEmpty)
         ""
       else
         s"maybe you meant ${similar.map(s ⇒ s"'$s'").mkString(" or ")}"
     }
-    val baseErrorMessage = s"key '$key' can not be found in session $similarKeysMsg \n${s.show}"
+    lazy val baseErrorMessage = s"key '$key' can not be found in session $similarKeysMsg \n${s.show}"
   }
 }
 
