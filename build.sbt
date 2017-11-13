@@ -269,7 +269,7 @@ lazy val library =
       val fansi         = "0.2.5"
       val catsScalaTest = "2.2.0"
       val ficus         = "1.4.3"
-      val monix         = "2.3.0"
+      val monix         = "2.3.2"
       val sbtTest       = "1.0"
       val http4s        = "0.17.5"
     }
