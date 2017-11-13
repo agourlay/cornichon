@@ -164,6 +164,85 @@ class MockServerExample extends CornichonFeature with HttpMockDsl {
         }
       }
 
+      Scenario("toggle bad request mode") {
+        HttpMock("awesome-server") {
+          When I get("<awesome-server-url>/")
+          Then assert status.is(200)
+
+          When I post("<awesome-server-url>/toggle-bad-request-mode")
+          When I get("<awesome-server-url>/")
+          Then assert status.is(400)
+
+          When I post("<awesome-server-url>/toggle-bad-request-mode")
+          When I get("<awesome-server-url>/")
+          Then assert status.is(200)
+        }
+      }
+
+      Scenario("reply to request with previously set response") {
+        HttpMock("awesome-server") {
+          // Setup a response
+          When I post("<awesome-server-url>/response").withBody(
+            """
+            {
+              "id": "1234"
+            }
+            """
+          )
+
+          // Check if the response is returned
+          When I post("<awesome-server-url>/heroes").withBody(
+            """
+            {
+              "name": "Batman",
+              "realName": "Bruce Wayne",
+              "hasSuperpowers": false
+            }
+            """
+          )
+          Then assert status.is(201)
+
+          And assert body.is(
+            """
+            {
+              "id": "1234"
+            }
+            """
+          )
+
+          // Setup an error response
+          When I post("<awesome-server-url>/response").withBody(
+            """
+            {
+              "error": "There is already a hero with the name 'Batman'!"
+            }
+            """
+          )
+          And I post("<awesome-server-url>/toggle-bad-request-mode")
+
+          // Check if the error is returned
+          When I post("<awesome-server-url>/heroes").withBody(
+            """
+            {
+              "name": "Batman",
+              "realName": "Bruce Wayne",
+              "hasSuperpowers": false
+            }
+            """
+          )
+          Then assert status.is(400)
+
+          And assert body.is(
+            """
+            {
+              "error": "There is already a hero with the name 'Batman'!"
+            }
+            """
+          )
+        }
+      }
+
+
       Scenario("httpListen blocks can be nested in one another") {
         HttpMock("first-server") {
           HttpMock("second-server") {
