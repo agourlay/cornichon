@@ -1,14 +1,22 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
+import monix.eval.Task
 
 // Transparent wrapper - Steps are flatten in the main execution
-case class FlatMapStep(title: String = "", nestedProducer: Session ⇒ List[Step]) extends WrapperStep {
+case class FlatMapStep(started: Step, nestedProducers: Session ⇒ List[Step], title: String = "") extends WrapperStep {
 
-  // remove AttachStep from remainingStep
   override def run(engine: Engine)(initialRunState: RunState) = {
-    val nestedStep = nestedProducer(initialRunState.session)
-    engine.runSteps(initialRunState.withSteps(nestedStep))
+    val rs = initialRunState.withSteps(started :: Nil)
+    engine.runSteps(rs).flatMap {
+      case (rs2, res) ⇒
+        if (res.isLeft)
+          Task.delay((rs2, res))
+        else {
+          val nestedStep = nestedProducers(rs2.session)
+          engine.runSteps(rs2.withSteps(nestedStep))
+        }
+    }
   }
 
 }

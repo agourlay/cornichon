@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.steps.wrapped.FlatMapStep
 import monix.eval.Task
 
 import scala.concurrent.duration.Duration
@@ -10,6 +11,7 @@ sealed trait Step {
   def title: String
   def setTitle(newTitle: String): Step
   def run(engine: Engine)(initialRunState: RunState): Task[(RunState, FailedStep Either Done)]
+  def chain(others: Session ⇒ List[Step]): Step = FlatMapStep(this, others)
 }
 
 //Step that produces a value

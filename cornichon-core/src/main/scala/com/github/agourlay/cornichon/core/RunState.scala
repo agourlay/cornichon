@@ -19,6 +19,7 @@ case class RunState(
   lazy val resetLogs = copy(logs = Vector.empty)
 
   def withSteps(steps: List[Step]) = copy(remainingSteps = steps)
+  def prependSteps(prepend: List[Step]) = copy(remainingSteps = prepend ++ remainingSteps)
   // Helper fct to set remaining steps, go deeper and reset logs
   def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)
 
@@ -34,8 +35,6 @@ case class RunState(
   def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
   def appendLogsFrom(fromRun: RunState) = appendLogs(fromRun.logs)
   def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
-
-  def prependSteps(prepend: List[Step]) = copy(remainingSteps = prepend ++ remainingSteps)
 
 }
 
