@@ -12,9 +12,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
       Given I put_topic("my-topic", "my-key", "my-json")
 
-      And I show_session
-
-      Then I read_from_topic("my-topic", amount = 1)
+      Then I read_from_topic("my-topic", amount = 1, timeout = 1000)
 
       Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
         """
@@ -31,9 +29,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
       Given I put_topic("my-topic", "my-key", "my-json")
 
-      And I show_session
-
-      Then I read_from_topic("my-topic", amount = 1)
+      Then I read_from_topic("my-topic", amount = 1, timeout = 1000)
 
       Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
         """
@@ -50,9 +46,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
       Given I put_topic("my-topic-2", "my-key", "my-json")
 
-      And I show_session
-
-      Then I read_from_topic("my-topic", amount = 1)
+      Then I read_from_topic("my-topic", amount = 1, timeout = 1000)
 
       Then assert session_value("my-topic").isAbsent
 
