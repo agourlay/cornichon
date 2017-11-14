@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.NonEmptyList
+import cats.instances.list._
+import cats.syntax.foldable._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 
@@ -33,12 +35,13 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
           failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
             val executionTime = Duration.fromNanos(System.nanoTime - start)
             val successStepsRun = results.collect { case (s, r @ Right(_)) ⇒ (s, r) }
-            // all runs were successfull, we pick the first one
-            val resultState = successStepsRun.head._1
-            //TODO all sessions should be merged?
-            val updatedSession = resultState.session
+            val allRunStates = successStepsRun.map(_._1)
             //TODO all logs should be merged?
-            val updatedLogs = successTitleLog(initialDepth) +: resultState.logs :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
+            // all runs were successfull, we pick the first one for the logs
+            val firstStateLog = allRunStates.head.logs
+            val updatedLogs = successTitleLog(initialDepth) +: firstStateLog :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
+            // merge all sessions together
+            val updatedSession = allRunStates.foldMap(_.session)
             Task.delay((initialRunState.withSession(updatedSession).appendLogs(updatedLogs), rightDone))
           } {
             case (s, failedXor) ⇒

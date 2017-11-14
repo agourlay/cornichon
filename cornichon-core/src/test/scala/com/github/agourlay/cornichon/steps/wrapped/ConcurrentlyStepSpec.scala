@@ -4,8 +4,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
+import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import org.scalatest.{ Matchers, AsyncWordSpec }
+import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.duration._
 
@@ -57,6 +58,23 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         uglyCounter.intValue() should be(loop)
+      }
+    }
+
+    "merge all session from concurrent runs" in {
+      val steps = Range.inclusive(1, 5).map { i ⇒
+        EffectStep.fromSyncE(
+          title = s"set $i in the session",
+          effect = _.addValue("indice", i.toString)
+        )
+      }
+      val concurrentFactor = 5
+      val concurrentlyStep = ConcurrentlyStep(steps.toList, concurrentFactor, 300.millis)
+      val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
+      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+        res.isSuccess should be(true)
+        res.session.getHistory("indice").valueUnsafe should be(Vector.fill(concurrentFactor)(Vector("1", "2", "3", "4", "5")).flatten)
+
       }
     }
   }
