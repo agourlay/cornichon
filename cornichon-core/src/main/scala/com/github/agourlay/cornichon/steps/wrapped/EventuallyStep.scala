@@ -16,8 +16,8 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
         val retryRunState = runState.resetLogs
-        val nested = engine.runSteps(retryRunState)
-        if (retriesNumber == 0) nested else nested.delayExecution(conf.interval)
+        val nestedTask = engine.runSteps(nested, retryRunState)
+        if (retriesNumber == 0) nestedTask else nestedTask.delayExecution(conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime
@@ -38,7 +38,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
                 Task.delay((retriesNumber, state, rightDone))
               } else {
                 // Run was a success but the time is up.
-                val failedStep = FailedStep.fromSingle(runState.remainingSteps.last, EventuallyBlockSucceedAfterMaxDuration)
+                val failedStep = FailedStep.fromSingle(nested.last, EventuallyBlockSucceedAfterMaxDuration)
                 Task.delay((retriesNumber, state, Left(failedStep)))
               }
             }
@@ -47,8 +47,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
     }
 
     withDuration {
-      val initialRetryState = initialRunState.forNestedSteps(nested)
-      retryEventuallySteps(initialRetryState, conf, 0)
+      retryEventuallySteps(initialRunState.nestedContext, conf, 0)
     }.map {
       case (run, executionTime) ⇒
         val (retries, retriedRunState, report) = run

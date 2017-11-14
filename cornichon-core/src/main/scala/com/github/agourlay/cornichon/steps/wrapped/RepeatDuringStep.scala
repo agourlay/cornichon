@@ -20,7 +20,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
     def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
-        engine.runSteps(runState.resetLogs)
+        engine.runSteps(nested, runState.resetLogs)
       }.flatMap {
         case (run, executionTime) ⇒
           val (repeatedOnceMore, res) = run
@@ -43,8 +43,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
     }
 
     withDuration {
-      val bootstrapRepeatState = initialRunState.forNestedSteps(nested)
-      repeatStepsDuring(bootstrapRepeatState, duration, 0)
+      repeatStepsDuring(initialRunState.nestedContext, duration, 0)
     }.map {
       case (run, executionTime) ⇒
         val (retries, repeatedRunState, report) = run

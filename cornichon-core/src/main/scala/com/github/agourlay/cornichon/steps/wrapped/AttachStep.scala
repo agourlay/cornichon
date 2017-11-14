@@ -6,6 +6,6 @@ import com.github.agourlay.cornichon.core._
 case class AttachStep(title: String = "", nested: List[Step]) extends WrapperStep {
 
   override def run(engine: Engine)(initialRunState: RunState) =
-    engine.runSteps(initialRunState.withSteps(nested))
+    engine.runSteps(nested, initialRunState)
 
 }

@@ -15,7 +15,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
   override def run(engine: Engine)(initialRunState: RunState) = {
 
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
-      engine.runSteps(runState.resetLogs).flatMap {
+      engine.runSteps(nested, runState.resetLogs).flatMap {
         case (retriedState, stepsResult) ⇒
           stepsResult.fold(
             failedStep ⇒
@@ -33,8 +33,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
       }
 
     withDuration {
-      val bootstrapRetryState = initialRunState.forNestedSteps(nested)
-      retryMaxSteps(bootstrapRetryState, limit, 0)
+      retryMaxSteps(initialRunState.nestedContext, limit, 0)
     }.map {
       case (run, executionTime) ⇒
         val (retries, retriedState, report) = run

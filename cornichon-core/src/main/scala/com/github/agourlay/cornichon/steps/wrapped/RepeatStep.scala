@@ -18,7 +18,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
       // reset logs at each loop to have the possibility to not aggregate in failure case
       val rs = runState.resetLogs
       val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
-      engine.runSteps(runStateWithIndex).flatMap {
+      engine.runSteps(nested, runStateWithIndex).flatMap {
         case (onceMoreRunState, stepResult) ⇒
           stepResult.fold(
             failed ⇒ {
@@ -36,8 +36,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
     }
 
     withDuration {
-      val bootstrapRepeatState = initialRunState.forNestedSteps(nested)
-      repeatSuccessSteps(0, bootstrapRepeatState)
+      repeatSuccessSteps(0, initialRunState.nestedContext)
     }.map {
       case (run, executionTime) ⇒
         val (retries, repeatedState, report) = run

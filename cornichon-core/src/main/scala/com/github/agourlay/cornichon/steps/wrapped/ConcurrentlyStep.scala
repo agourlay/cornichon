@@ -17,11 +17,11 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
   val title = s"Concurrently block with factor '$factor' and maxTime '$maxTime'"
 
   override def run(engine: Engine)(initialRunState: RunState) = {
-    val nestedRunState = initialRunState.forNestedSteps(nested)
+    val nestedRunState = initialRunState.nestedContext
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
     Observable.fromIterator(List.fill(factor)(()).iterator)
-      .mapAsync(factor)(_ ⇒ engine.runSteps(nestedRunState))
+      .mapAsync(factor)(_ ⇒ engine.runSteps(nested, nestedRunState))
       .takeUntil(Observable.evalDelayed(maxTime, ()))
       .toListL
       .flatMap { results ⇒

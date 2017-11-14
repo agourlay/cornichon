@@ -22,8 +22,8 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
       else {
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
-        val boostrapFilledInput = runState.withSteps(nested).addToSession(currentInputs).withLog(runInfo).goDeeper
-        engine.runSteps(boostrapFilledInput).flatMap {
+        val boostrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
+        engine.runSteps(nested, boostrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒
             stepsResult.fold(
               failedStep ⇒ {
@@ -49,7 +49,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
           }
 
           withDuration {
-            runInputs(inputs, initialRunState.forNestedSteps(nested))
+            runInputs(inputs, initialRunState.nestedContext)
           }.map {
             case ((inputsState, inputsRes), executionTime) ⇒
               val initialDepth = initialRunState.depth

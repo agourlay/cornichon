@@ -6,17 +6,15 @@ import monix.eval.Task
 // Transparent wrapper - Steps are flatten in the main execution
 case class FlatMapStep(started: Step, nestedProducers: Session ⇒ List[Step], title: String = "") extends WrapperStep {
 
-  override def run(engine: Engine)(initialRunState: RunState) = {
-    val rs = initialRunState.withSteps(started :: Nil)
-    engine.runSteps(rs).flatMap {
+  override def run(engine: Engine)(initialRunState: RunState) =
+    engine.runSteps(started :: Nil, initialRunState).flatMap {
       case (rs2, res) ⇒
         if (res.isLeft)
           Task.delay((rs2, res))
         else {
           val nestedStep = nestedProducers(rs2.session)
-          engine.runSteps(rs2.withSteps(nestedStep))
+          engine.runSteps(nestedStep, rs2)
         }
     }
-  }
 
 }

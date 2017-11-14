@@ -7,7 +7,6 @@ import cats.kernel.Monoid
 import cats.syntax.monoid._
 
 case class RunState(
-    remainingSteps: List[Step],
     session: Session,
     logs: Vector[LogInstruction],
     depth: Int,
@@ -15,13 +14,9 @@ case class RunState(
 ) {
 
   lazy val goDeeper = copy(depth = depth + 1)
-
   lazy val resetLogs = copy(logs = Vector.empty)
-
-  def withSteps(steps: List[Step]) = copy(remainingSteps = steps)
-  def prependSteps(prepend: List[Step]) = copy(remainingSteps = prepend ++ remainingSteps)
-  // Helper fct to set remaining steps, go deeper and reset logs
-  def forNestedSteps(steps: List[Step]) = copy(remainingSteps = steps, depth = depth + 1, logs = Vector.empty)
+  // Helper fct to go deeper and reset logs in one copy.
+  lazy val nestedContext = copy(depth = depth + 1, logs = Vector.empty)
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValuesUnsafe(tuples: _*))
@@ -41,11 +36,11 @@ case class RunState(
 object RunState {
 
   implicit val monoidRunState = new Monoid[RunState] {
-    def empty: RunState = RunState(Nil, Session.newEmpty, Vector.empty, 1, Nil)
+    def empty: RunState = RunState(Session.newEmpty, Vector.empty, 1, Nil)
     def combine(x: RunState, y: RunState): RunState = x.copy(
-      remainingSteps = x.remainingSteps.combine(y.remainingSteps),
       session = x.session.combine(y.session),
-      logs = x.logs.combine(y.logs)
+      logs = x.logs.combine(y.logs),
+      cleanupSteps = x.cleanupSteps.combine(y.cleanupSteps)
     )
   }
 }

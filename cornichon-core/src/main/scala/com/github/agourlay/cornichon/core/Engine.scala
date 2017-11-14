@@ -4,9 +4,7 @@ import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
 import cats.syntax.monoid._
 import cats.syntax.cartesian._
-import cats.syntax.coflatMap._
 
-import cats.instances.list._
 import cats.instances.tuple._
 import monix.execution.Scheduler
 import monix.eval.Task
@@ -33,8 +31,8 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       Task.delay(PendingScenarioReport(scenario.name, session))
     else {
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-      val initialRunState = RunState(scenario.steps, session, Vector(titleLog), initMargin + 1, Nil)
-      runSteps(initialRunState).flatMap {
+      val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
+      runSteps(scenario.steps, initialRunState).flatMap {
         case (mainState, mainRunReport) ⇒
           val stateAndReporAfterEndSteps = {
             if (context.finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
@@ -42,15 +40,15 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
             else if (context.finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
               // Reuse mainline session
               val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-              val finallyRunState = mainState.withSteps(context.finallySteps).withLog(finallyLog)
-              runSteps(finallyRunState).map {
+              val finallyRunState = mainState.withLog(finallyLog)
+              runSteps(context.finallySteps, finallyRunState).map {
                 case (finallyState, finallyReport) ⇒ (mainState.combine(finallyState), finallyReport.toValidatedNel)
               }
             } else {
               // Reuse mainline session
               val finallyLog = InfoLogInstruction("cleanup steps", initMargin + 1)
-              val finallyRunState = mainState.withSteps(mainState.cleanupSteps).withLog(finallyLog)
-              runStepsDontShortCircuit(finallyRunState).map {
+              val finallyRunState = mainState.withLog(finallyLog)
+              runStepsDontShortCircuit(mainState.cleanupSteps, finallyRunState).map {
                 case (finallyState, finallyReport) ⇒ (mainState.combine(finallyState), finallyReport.toValidated)
               }
             }
@@ -62,26 +60,22 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       }
     }
 
-  private def runStepsDontShortCircuit(initialRunState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
-    initialRunState.remainingSteps
-      .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
-      .foldLeft(Task.delay((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
-        case (runStateF, (currentStep, tail)) ⇒
-          runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, tail, _) }
-      }.deDup
+  private def runStepsDontShortCircuit(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
+    remainingSteps.foldLeft(Task.delay((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
+      case (runStateF, currentStep) ⇒
+        runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, _) }
+    }.deDup
   }
 
-  def runSteps(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
-    initialRunState.remainingSteps
-      .coflatMap { case h :: t ⇒ (h, t); case _ ⇒ throw new Exception("just to silence the warnings") }
-      .foldLeft(EitherT.pure[Task, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
-        case (runStateF, (currentStep, tail)) ⇒
-          runStateF.flatMap { case (runState, _) ⇒ prepareAndRunStep(currentStep, tail, runState) }
-      }.runAndDeDup
+  def runSteps(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
+    remainingSteps.foldLeft(EitherT.pure[Task, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
+      case (runStateF, currentStep) ⇒
+        runStateF.flatMap { case (runState, _) ⇒ prepareAndRunStep(currentStep, runState) }
+    }.runAndDeDup
 
-  private def prepareAndRunStepsAccumulatingErrors(currentStep: Step, tail: List[Step], failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
+  private def prepareAndRunStepsAccumulatingErrors(currentStep: Step, failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
     val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
-    val stepResult = prepareAndRunStep(currentStep, tail, runState).value
+    val stepResult = prepareAndRunStep(currentStep, runState).value
     stepResult
       .onErrorRecover(fromExceptionsWithFailedSteps(runState, currentStep))
       .map {
@@ -97,12 +91,12 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       (runState, FailedStep.fromSingle(step, StepExecutionError(ex))).asLeft[(RunState, Done)]
   }
 
-  private def prepareAndRunStep(currentStep: Step, tail: List[Step], runState: RunState): EitherT[Task, (RunState, FailedStep), (RunState, Done)] = {
+  private def prepareAndRunStep(currentStep: Step, runState: RunState): EitherT[Task, (RunState, FailedStep), (RunState, Done)] = {
     stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
       (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
     }.fold(
       ce ⇒ Task.delay(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
-      ps ⇒ runStep(runState.withSteps(tail), ps)
+      ps ⇒ runStep(runState, ps)
     ).toEitherT
   }
 
