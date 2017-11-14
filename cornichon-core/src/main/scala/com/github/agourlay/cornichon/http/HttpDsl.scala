@@ -24,7 +24,6 @@ import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient,
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
 import io.circe.{ Encoder, Json }
-import sangria.ast.Document
 
 import scala.concurrent.duration._
 
