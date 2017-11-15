@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import cats.data.NonEmptyList
 import cats.instances.list._
 import cats.syntax.foldable._
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 
@@ -40,8 +41,8 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
             // all runs were successfull, we pick the first one for the logs
             val firstStateLog = allRunStates.head.logs
             val updatedLogs = successTitleLog(initialDepth) +: firstStateLog :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
-            // merge all sessions together
-            val updatedSession = allRunStates.foldMap(_.session)
+            // TODO merge all sessions together - require diffing Sessions or it produces a huge map full of duplicate as they all started from the same.
+            val updatedSession = allRunStates.head.session
             // merge all cleanups steps
             val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
             val failedState = initialRunState.withSession(updatedSession).appendLogs(updatedLogs).prependCleanupSteps(allCleanupSteps)

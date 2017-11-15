@@ -61,7 +61,7 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       }
     }
 
-    "merge all session from concurrent runs" in {
+    "merge all session from concurrent runs" ignore {
       val steps = Range.inclusive(1, 5).map { i ⇒
         EffectStep.fromSyncE(
           title = s"set $i in the session",
