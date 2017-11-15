@@ -45,8 +45,8 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
             val updatedSession = allRunStates.head.session
             // merge all cleanups steps
             val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
-            val failedState = initialRunState.withSession(updatedSession).appendLogs(updatedLogs).prependCleanupSteps(allCleanupSteps)
-            Task.delay((failedState, rightDone))
+            val successState = initialRunState.withSession(updatedSession).appendLogs(updatedLogs).prependCleanupSteps(allCleanupSteps)
+            Task.delay((successState, rightDone))
           } {
             case (s, failedXor) ⇒
               val ratio = s"'${failedStepRuns.size}/$factor' run(s)"

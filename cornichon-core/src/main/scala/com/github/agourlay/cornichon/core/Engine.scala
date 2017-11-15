@@ -24,7 +24,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
   def runScenario(session: Session, context: ScenarioExecutionContext = ScenarioExecutionContext.empty)(scenario: Scenario): Future[ScenarioReport] =
     runScenarioTask(session, context)(scenario).runAsync
 
-  def runScenarioTask(session: Session, context: ScenarioExecutionContext = ScenarioExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
+  def runScenarioTask(session: Session, context: ScenarioExecutionContext)(scenario: Scenario): Task[ScenarioReport] =
     if (context isIgnored scenario)
       Task.delay(IgnoreScenarioReport(scenario.name, session))
     else if (context isPending scenario)
@@ -33,29 +33,27 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
       val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
       runSteps(scenario.steps, initialRunState).flatMap {
-        case (mainState, mainRunReport) ⇒
+        case (mainState, mainReport) ⇒
           val stateAndReporAfterEndSteps = {
             if (context.finallySteps.isEmpty && mainState.cleanupSteps.isEmpty)
               Task.delay((mainState, validDone))
             else if (context.finallySteps.nonEmpty && mainState.cleanupSteps.isEmpty) {
               // Reuse mainline session
-              val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-              val finallyRunState = mainState.withLog(finallyLog)
+              val finallyRunState = mainState.appendLog(finallyLog)
               runSteps(context.finallySteps, finallyRunState).map {
-                case (finallyState, finallyReport) ⇒ (mainState.combine(finallyState), finallyReport.toValidatedNel)
+                case (finallyState, finallyReport) ⇒ (finallyState, finallyReport.toValidatedNel)
               }
             } else {
               // Reuse mainline session
-              val finallyLog = InfoLogInstruction("cleanup steps", initMargin + 1)
-              val finallyRunState = mainState.withLog(finallyLog)
+              val finallyRunState = mainState.appendLog(cleanupLog)
               runStepsDontShortCircuit(mainState.cleanupSteps, finallyRunState).map {
-                case (finallyState, finallyReport) ⇒ (mainState.combine(finallyState), finallyReport.toValidated)
+                case (finallyState, finallyReport) ⇒ (finallyState, finallyReport.toValidated)
               }
             }
           }
           stateAndReporAfterEndSteps.map {
             case (state, report) ⇒
-              ScenarioReport.build(scenario.name, state, mainRunReport.toValidatedNel.combine(report))
+              ScenarioReport.build(scenario.name, state, mainReport.toValidatedNel.combine(report))
           }
       }
     }
@@ -112,6 +110,8 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 object Engine {
 
   val initMargin = 1
+  val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+  val cleanupLog = InfoLogInstruction("cleanup steps", initMargin + 1)
 
   def withStepTitleResolver(resolver: PlaceholderResolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)

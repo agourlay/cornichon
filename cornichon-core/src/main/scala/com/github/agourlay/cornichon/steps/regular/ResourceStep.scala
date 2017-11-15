@@ -7,16 +7,9 @@ import scala.concurrent.duration.Duration
 case class ResourceStep[R](title: String, acquire: Step, release: Step) extends SimpleWrapperStep {
   val nestedToRun = acquire :: Nil
 
-  def onNestedError(
-    failedStep: FailedStep,
-    resultRunState: RunState,
-    initialRunState: RunState,
-    executionTime: Duration
-  ): (RunState, FailedStep) = (initialRunState, failedStep)
+  def onNestedError(failedStep: FailedStep, resultRunState: RunState, initialRunState: RunState, executionTime: Duration) =
+    (initialRunState.mergeNested(resultRunState), failedStep)
 
-  def onNestedSuccess(
-    resultRunState: RunState,
-    initialRunState: RunState,
-    executionTime: Duration
-  ): RunState = resultRunState.prependCleanupStep(release)
+  def onNestedSuccess(resultRunState: RunState, initialRunState: RunState, executionTime: Duration) =
+    initialRunState.mergeNested(resultRunState).prependCleanupStep(release)
 }

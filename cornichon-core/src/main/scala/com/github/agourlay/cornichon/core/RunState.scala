@@ -15,8 +15,10 @@ case class RunState(
 
   lazy val goDeeper = copy(depth = depth + 1)
   lazy val resetLogs = copy(logs = Vector.empty)
-  // Helper fct to go deeper and reset logs in one copy.
-  lazy val nestedContext = copy(depth = depth + 1, logs = Vector.empty)
+
+  // Helper fct to setup up a child nested context for a run which result must be merged back in using 'mergeNested'.
+  // Only the session is propagated downstream as it is.
+  lazy val nestedContext = copy(depth = depth + 1, logs = Vector.empty, cleanupSteps = Nil)
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValuesUnsafe(tuples: _*))
