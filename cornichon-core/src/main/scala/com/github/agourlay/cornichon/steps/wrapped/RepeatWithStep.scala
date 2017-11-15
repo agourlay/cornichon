@@ -31,7 +31,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
                   Task.delay((onceMoreRunState, Left((element, failed))))
                 },
                 _ ⇒ {
-                  val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
+                  val successState = runState.mergeNested(onceMoreRunState)
                   repeatSuccessSteps(tail, successState)
                 }
               )
@@ -52,7 +52,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
             val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement, failedStep.errors))
             (fullLogs, Left(artificialFailedStep))
         }
-        (initialRunState.withSession(repeatedState.session).appendLogs(fullLogs), xor)
+        (initialRunState.mergeNested(repeatedState, fullLogs), xor)
     }
   }
 }

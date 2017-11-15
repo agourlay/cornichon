@@ -28,9 +28,22 @@ case class RunState(
 
   // Vector concat. is not great, maybe change logs data structure
   def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
-  def appendLogsFrom(fromRun: RunState) = appendLogs(fromRun.logs)
+  def appendLogsFrom(from: RunState) = appendLogs(from.logs)
   def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
 
+  // Cleanups steps are added in the opposite order
+  def prependCleanupStep(add: Step) = copy(cleanupSteps = add :: cleanupSteps)
+  def prependCleanupSteps(add: List[Step]) = copy(cleanupSteps = add ::: cleanupSteps)
+  def prependCleanupStepsFrom(from: RunState) = copy(cleanupSteps = from.cleanupSteps ::: cleanupSteps)
+
+  // Helpers to propagate info from nested computation
+  def mergeNested(r: RunState): RunState = mergeNested(r, r.logs)
+  def mergeNested(r: RunState, computationLogs: Vector[LogInstruction]): RunState =
+    this.copy(
+      session = r.session, // no need to combine, nested session is built on top of the initial one
+      cleanupSteps = r.cleanupSteps ::: this.cleanupSteps, // prepend cleanup steps
+      logs = this.logs ++ computationLogs // logs are often built manually and not extracted from RunState
+    )
 }
 
 object RunState {

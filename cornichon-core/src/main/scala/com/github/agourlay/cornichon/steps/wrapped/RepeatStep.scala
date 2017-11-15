@@ -52,7 +52,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
             (fullLogs, rightDone)
           }
         )
-        (initialRunState.withSession(repeatedState.session).appendLogs(fullLogs), xor)
+        (initialRunState.mergeNested(repeatedState, fullLogs), xor)
     }
   }
 }

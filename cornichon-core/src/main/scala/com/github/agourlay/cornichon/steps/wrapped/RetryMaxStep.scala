@@ -49,7 +49,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
             (fullLogs, rightDone)
           }
         )
-        (initialRunState.withSession(retriedState.session).appendLogs(fullLogs), xor)
+        (initialRunState.mergeNested(retriedState, fullLogs), xor)
     }
   }
 }

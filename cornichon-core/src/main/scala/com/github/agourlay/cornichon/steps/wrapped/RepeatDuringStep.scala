@@ -31,7 +31,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
               Task.delay((retriesNumber, repeatedOnceMore, Left(failedStep)))
             },
             _ ⇒ {
-              val successState = runState.withSession(repeatedOnceMore.session).appendLogsFrom(repeatedOnceMore)
+              val successState = runState.mergeNested(repeatedOnceMore)
               if (remainingTime.gt(FiniteDuration(0, TimeUnit.MILLISECONDS)))
                 repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
               else
@@ -47,7 +47,6 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
     }.map {
       case (run, executionTime) ⇒
         val (retries, repeatedRunState, report) = run
-        val withSession = initialRunState.withSession(repeatedRunState.session)
         val (logs, res) = report.fold(
           failedStep ⇒ {
             val fullLogs = failedTitleLog(initialDepth) +: repeatedRunState.logs :+ FailureLogInstruction(s"Repeat block during '$duration' failed after being retried '$retries' times", initialDepth, Some(executionTime))
@@ -59,7 +58,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
             (fullLogs, rightDone)
           }
         )
-        (withSession.appendLogs(logs), res)
+        (initialRunState.mergeNested(repeatedRunState, logs), res)
     }
   }
 }

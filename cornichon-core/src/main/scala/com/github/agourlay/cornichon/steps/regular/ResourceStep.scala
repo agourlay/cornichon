@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.core._
 import scala.concurrent.duration.Duration
 
 case class ResourceStep[R](title: String, acquire: Step, release: Step) extends SimpleWrapperStep {
-  def nestedToRun: List[Step] = List(acquire)
+  val nestedToRun = acquire :: Nil
 
   def onNestedError(
     failedStep: FailedStep,
@@ -18,5 +18,5 @@ case class ResourceStep[R](title: String, acquire: Step, release: Step) extends 
     resultRunState: RunState,
     initialRunState: RunState,
     executionTime: Duration
-  ): RunState = resultRunState.copy(cleanupSteps = release :: resultRunState.cleanupSteps)
+  ): RunState = resultRunState.prependCleanupStep(release)
 }

@@ -8,17 +8,17 @@ case class LogDurationStep(nested: List[Step], label: String) extends SimpleWrap
 
   val title = s"Log duration block with label '$label' started"
 
-  override def nestedToRun: List[Step] = nested
+  val nestedToRun = nested
 
   override def onNestedError(failedStep: FailedStep, result: RunState, initialRunState: RunState, executionTime: Duration) = {
     val titleLog = DebugLogInstruction(title, initialRunState.depth)
     val fullLogs = titleLog +: result.logs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", initialRunState.depth, Some(executionTime))
-    (initialRunState.withSession(result.session).appendLogs(fullLogs), failedStep)
+    (initialRunState.mergeNested(result, fullLogs), failedStep)
   }
 
   override def onNestedSuccess(result: RunState, initialRunState: RunState, executionTime: Duration): RunState = {
     val titleLog = DebugLogInstruction(title, initialRunState.depth)
     val fullLogs = titleLog +: result.logs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", initialRunState.depth, Some(executionTime))
-    initialRunState.withSession(result.session).appendLogs(fullLogs)
+    initialRunState.mergeNested(result, fullLogs)
   }
 }

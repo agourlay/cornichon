@@ -35,7 +35,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
       _ ← resourceHandle.stopResource()
     } yield {
       val completeSession = resourcedState.session.combine(results)
-      (initialRunState.withSession(completeSession).appendLogs(fullLogs), xor)
+      (initialRunState.withSession(completeSession).appendLogs(fullLogs).prependCleanupStepsFrom(resourcedRunState), xor)
     }
   }
 }

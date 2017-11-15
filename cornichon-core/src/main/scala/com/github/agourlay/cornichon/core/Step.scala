@@ -43,7 +43,6 @@ trait ValueStep[A] extends Step {
 //Step that delegate the execution of nested steps
 trait SimpleWrapperStep extends Step {
 
-  //Run nested with initialRunState.forNestedSteps(nested)
   def nestedToRun: List[Step]
 
   def onNestedError(failedStep: FailedStep, resultRunState: RunState, initialRunState: RunState, executionTime: Duration): (RunState, FailedStep)

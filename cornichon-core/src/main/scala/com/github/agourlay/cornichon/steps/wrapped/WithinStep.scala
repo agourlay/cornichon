@@ -37,7 +37,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
             }
           }
         )
-        (initialRunState.withSession(withinState.session).appendLogs(fullLogs), xor)
+        (initialRunState.mergeNested(withinState, fullLogs), xor)
 
     }
   }

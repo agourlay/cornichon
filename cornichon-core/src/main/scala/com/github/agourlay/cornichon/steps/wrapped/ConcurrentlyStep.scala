@@ -42,12 +42,15 @@ case class ConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDura
             val updatedLogs = successTitleLog(initialDepth) +: firstStateLog :+ SuccessLogInstruction(s"Concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
             // merge all sessions together
             val updatedSession = allRunStates.foldMap(_.session)
-            Task.delay((initialRunState.withSession(updatedSession).appendLogs(updatedLogs), rightDone))
+            // merge all cleanups steps
+            val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
+            val failedState = initialRunState.withSession(updatedSession).appendLogs(updatedLogs).prependCleanupSteps(allCleanupSteps)
+            Task.delay((failedState, rightDone))
           } {
             case (s, failedXor) ⇒
               val ratio = s"'${failedStepRuns.size}/$factor' run(s)"
               val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Concurrently block failed for $ratio", initialDepth)
-              Task.delay((initialRunState.withSession(s.session).appendLogs(updatedLogs), failedXor))
+              Task.delay((initialRunState.mergeNested(s, updatedLogs), failedXor))
           }
         }
       }.onErrorRecover {

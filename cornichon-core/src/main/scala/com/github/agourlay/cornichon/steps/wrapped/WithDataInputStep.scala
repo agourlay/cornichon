@@ -28,7 +28,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
             stepsResult.fold(
               failedStep ⇒ {
                 // Prepend previous logs
-                Task.delay((runState.withSession(filledState.session).appendLogsFrom(filledState), Left((currentInputs, failedStep))))
+                Task.delay((runState.mergeNested(filledState), Left((currentInputs, failedStep))))
               },
               _ ⇒ {
                 // Logs are propogated but not the session
@@ -62,7 +62,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
                   val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
                   (fullLogs, Left(artificialFailedStep))
               }
-              (initialRunState.withSession(inputsState.session).appendLogs(fullLogs), xor)
+              (initialRunState.mergeNested(inputsState, fullLogs), xor)
           }
         }
       )
