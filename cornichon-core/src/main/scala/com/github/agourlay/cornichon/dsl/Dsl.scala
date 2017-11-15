@@ -6,18 +6,16 @@ import cats.syntax.show._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
-
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Session, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
-import com.github.agourlay.cornichon.util.Futures
 import com.github.agourlay.cornichon.util.Printing._
+import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.breakOut
-import scala.concurrent.Future
 import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
@@ -125,7 +123,7 @@ trait Dsl extends ProvidedInstances {
 
   def wait(duration: FiniteDuration) = EffectStep.fromAsync(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ Futures.evalAfter(duration)(Future.successful(s))
+    effect = s ⇒ Task.delay(s).delayExecution(duration).runAsync
   )
 
   def save(input: (String, String)) = {
