@@ -51,11 +51,14 @@ case class RunState(
 object RunState {
 
   implicit val monoidRunState = new Monoid[RunState] {
-    def empty: RunState = RunState(Session.newEmpty, Vector.empty, 1, Nil)
+    def empty: RunState = emptyRunState
     def combine(x: RunState, y: RunState): RunState = x.copy(
       session = x.session.combine(y.session),
       logs = x.logs.combine(y.logs),
-      cleanupSteps = x.cleanupSteps.combine(y.cleanupSteps)
+      cleanupSteps = x.cleanupSteps.combine(y.cleanupSteps),
+      depth = Math.max(x.depth, y.depth)
     )
   }
+
+  val emptyRunState = RunState(Session.newEmpty, Vector.empty, 1, Nil)
 }
