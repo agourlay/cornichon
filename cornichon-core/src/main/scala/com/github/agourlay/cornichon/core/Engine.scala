@@ -2,10 +2,8 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
-import cats.syntax.monoid._
 import cats.syntax.cartesian._
 
-import cats.instances.tuple._
 import monix.execution.Scheduler
 import monix.eval.Task
 
@@ -16,7 +14,6 @@ import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
-import FutureEitherTHelpers._
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
@@ -62,7 +59,10 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     remainingSteps.foldLeft(Task.delay((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, _) }
-    }.deDup
+    }.map(_.fold(
+      { errors ⇒ (errors.head._1, Left(errors.map(_._2))) },
+      { case (r, _) ⇒ (r, rightDone) }
+    ))
   }
 
   // run steps and short-circuit on Task[Either]
@@ -88,7 +88,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       .map {
         currentStepResult ⇒
           (currentStepResult.toValidatedNel |@| failureOrDoneWithRunState.toValidated).map {
-            case (r1, r2) ⇒ r1 combine r2
+            case ((r1, _), (r2, _)) ⇒ (r1.mergeNested(r2), Done)
           }.toEither
       }
   }
@@ -147,15 +147,5 @@ object Engine {
       FailureLogInstruction(m, depth)
     })
     logs.toVector
-  }
-}
-
-object FutureEitherTHelpers {
-
-  implicit class FactorOutCommonAOps[A, B, C](fe: Task[Either[NonEmptyList[(A, B)], (A, C)]]) {
-    def deDup: Task[(A, Either[NonEmptyList[B], C])] = fe.map(_.fold(
-      { abs ⇒ (abs.head._1, Left(abs.map(_._2))) },
-      { case (a, c) ⇒ (a, Right(c)) }
-    ))
   }
 }

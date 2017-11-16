@@ -82,10 +82,10 @@ trait SimpleWrapperStep extends Step {
   def run(engine: Engine)(initialRunState: RunState) = {
     val now = System.nanoTime
     engine.runSteps(nestedToRun, initialRunState.nestedContext).map {
-      case (resState, l @ Left(failedStep)) ⇒
+      case (resState, Left(failedStep)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val (finalState, fs) = onNestedError(failedStep, resState, initialRunState, executionTime)
-        (finalState, l)
+        (finalState, Left(fs))
 
       case (resState, Right(_)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
