@@ -40,7 +40,37 @@ trait ValueStep[A] extends Step {
   }
 }
 
-//Step that delegate the execution of nested steps
+//Step that delegate the execution of nested steps and enable to decorate the nestedLogs
+trait LogDecoratorStep extends Step {
+
+  def nestedToRun: List[Step]
+
+  def onNestedError(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration): Vector[LogInstruction]
+
+  def onNestedSuccess(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration): Vector[LogInstruction]
+
+  def run(engine: Engine)(initialRunState: RunState) = {
+    val now = System.nanoTime
+    engine.runSteps(nestedToRun, initialRunState.nestedContext).map {
+      case (resState, l @ Left(_)) ⇒
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        val decoratedLogs = onNestedError(resState.logs, initialRunState.depth, executionTime)
+        (initialRunState.mergeNested(resState, decoratedLogs), l)
+
+      case (resState, r @ Right(_)) ⇒
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        val decoratedLogs = onNestedSuccess(resState.logs, initialRunState.depth, executionTime)
+        (initialRunState.mergeNested(resState, decoratedLogs), r)
+    }
+  }
+
+  // Without effect by default - wrapper steps usually build dynamically their title
+  def setTitle(newTitle: String) = this
+  def failedTitleLog(depth: Int) = FailureLogInstruction(title, depth)
+  def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
+}
+
+//Step that delegate the execution of nested steps and enable to inspect RunState and FailedStep
 trait SimpleWrapperStep extends Step {
 
   def nestedToRun: List[Step]
@@ -52,10 +82,10 @@ trait SimpleWrapperStep extends Step {
   def run(engine: Engine)(initialRunState: RunState) = {
     val now = System.nanoTime
     engine.runSteps(nestedToRun, initialRunState.nestedContext).map {
-      case (resState, Left(failedStep)) ⇒
+      case (resState, l @ Left(failedStep)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val (finalState, fs) = onNestedError(failedStep, resState, initialRunState, executionTime)
-        (finalState, Left(fs))
+        (finalState, l)
 
       case (resState, Right(_)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
@@ -70,7 +100,7 @@ trait SimpleWrapperStep extends Step {
   def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
 }
 
-//Step that explictly control the execution of nested steps
+//Step that gives full control over the execution of nested steps and their error reporting
 trait WrapperStep extends Step {
   // Without effect by default - wrapper steps usually build dynamically their title
   def setTitle(newTitle: String) = this
