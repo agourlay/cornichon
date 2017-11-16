@@ -49,11 +49,11 @@ class EngineBench {
   }
 
   //    [info] Benchmark                (stepsNumber)   Mode  Cnt       Score      Error  Units
-  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  145117.340 ± 3144.259  ops/s
-  //    [info] EngineBench.lotsOfSteps             20  thrpt   20   86757.747 ± 1147.031  ops/s
-  //    [info] EngineBench.lotsOfSteps             50  thrpt   20   38873.183 ±  407.842  ops/s
-  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   19687.716 ±  144.423  ops/s
-  //    [info] EngineBench.lotsOfSteps            200  thrpt   20   10146.414 ±  103.932  ops/s
+  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  150482.613 ± 3612.120  ops/s
+  //    [info] EngineBench.lotsOfSteps             20  thrpt   20   91696.437 ± 1794.269  ops/s
+  //    [info] EngineBench.lotsOfSteps             50  thrpt   20   39091.272 ±  916.840  ops/s
+  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   20436.742 ±  385.482  ops/s
+  //    [info] EngineBench.lotsOfSteps            200  thrpt   20   10416.139 ±  160.309  ops/s
   @Benchmark
   def lotsOfSteps() = {
     val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)

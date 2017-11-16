@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.{ EitherT, NonEmptyList }
+import cats.data.NonEmptyList
 import cats.syntax.either._
 import cats.syntax.monoid._
 import cats.syntax.cartesian._
@@ -8,7 +8,6 @@ import cats.syntax.cartesian._
 import cats.instances.tuple._
 import monix.execution.Scheduler
 import monix.eval.Task
-import monix.cats.monixToCatsMonad
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
@@ -58,6 +57,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       }
     }
 
+  // run steps and aggregate failed steps
   private def runStepsDontShortCircuit(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
     remainingSteps.foldLeft(Task.delay((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
       case (runStateF, currentStep) ⇒
@@ -65,17 +65,26 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     }.deDup
   }
 
+  // run steps and short-circuit on Task[Either]
   def runSteps(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
-    remainingSteps.foldLeft(EitherT.pure[Task, (RunState, FailedStep), (RunState, Done)]((initialRunState, Done))) {
+    remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.delay((initialRunState, Done.asRight[FailedStep]))) {
       case (runStateF, currentStep) ⇒
-        runStateF.flatMap { case (runState, _) ⇒ prepareAndRunStep(currentStep, runState) }
-    }.runAndDeDup
+        runStateF.flatMap {
+          case (runState, Right(_))    ⇒ prepareAndRunStep(currentStep, runState)
+          case (runState, l @ Left(_)) ⇒ Task.delay((runState, l))
+        }
+    }
 
   private def prepareAndRunStepsAccumulatingErrors(currentStep: Step, failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
     val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
-    val stepResult = prepareAndRunStep(currentStep, runState).value
+    // Inject RunState into Either to align on aggreation shape
+    val stepResult = prepareAndRunStep(currentStep, runState).map {
+      case (r, Right(_))         ⇒ Right((r, Done))
+      case (r, Left(failedStep)) ⇒ Left((r, failedStep))
+    }
+
     stepResult
-      .onErrorRecover(fromExceptionsWithFailedSteps(runState, currentStep))
+      .onErrorRecover { case NonFatal(ex) ⇒ (runState, FailedStep.fromSingle(currentStep, StepExecutionError(ex))).asLeft[(RunState, Done)] }
       .map {
         currentStepResult ⇒
           (currentStepResult.toValidatedNel |@| failureOrDoneWithRunState.toValidated).map {
@@ -84,19 +93,13 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       }
   }
 
-  private def fromExceptionsWithFailedSteps(runState: RunState, step: Step): PartialFunction[Throwable, (RunState, FailedStep) Either (RunState, Done)] = {
-    case NonFatal(ex) ⇒
-      (runState, FailedStep.fromSingle(step, StepExecutionError(ex))).asLeft[(RunState, Done)]
-  }
-
-  private def prepareAndRunStep(currentStep: Step, runState: RunState): EitherT[Task, (RunState, FailedStep), (RunState, Done)] = {
-    stepPreparers.foldLeft[CornichonError Either Step](Right(currentStep)) {
+  private def prepareAndRunStep(currentStep: Step, runState: RunState): Task[(RunState, FailedStep Either Done)] =
+    stepPreparers.foldLeft[CornichonError Either Step](currentStep.asRight) {
       (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
     }.fold(
       ce ⇒ Task.delay(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
       ps ⇒ runStep(runState, ps)
-    ).toEitherT
-  }
+    )
 
   private def runStep(runState: RunState, ps: Step): Task[(RunState, FailedStep Either Done)] =
     Either
@@ -148,17 +151,6 @@ object Engine {
 }
 
 object FutureEitherTHelpers {
-
-  implicit class ToEitherTOps[A, B, C](fe: Task[(A, B Either C)]) {
-    def toEitherT = EitherT(fe.map { case (rs, e) ⇒ e.bimap((rs, _), (rs, _)) })
-  }
-
-  implicit class FactorOutCommandAInEitherTOps[A, B, C](fe: EitherT[Task, (A, B), (A, C)]) {
-    def runAndDeDup: Task[(A, Either[B, C])] = fe.value.map(_.fold(
-      { case (a, b) ⇒ (a, Left(b)) },
-      { case (a, c) ⇒ (a, Right(c)) }
-    ))
-  }
 
   implicit class FactorOutCommonAOps[A, B, C](fe: Task[Either[NonEmptyList[(A, B)], (A, C)]]) {
     def deDup: Task[(A, Either[NonEmptyList[B], C])] = fe.map(_.fold(
