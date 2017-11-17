@@ -8,6 +8,7 @@ import com.github.agourlay.cornichon.examples.superHeroes.server.{ HttpAPI, Http
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper
+import com.github.agourlay.cornichon.steps.regular.ResourceStep
 import sangria.macros._
 
 import scala.concurrent.Await
@@ -778,12 +779,18 @@ class SuperHeroesScenario extends CornichonFeature {
     Await.result(server.shutdown(), 5 second)
   }
 
-  // List of Steps to be executed after each scenario
+  def session_resource = ResourceStep(
+    title = "manages Session",
+    acquire = post("/session"),
+    release = delete("/session").withParams("sessionId" → "<session-id>")
+  )
+
+  // Step to be executed before each scenario
   beforeEachScenario {
 
     AttachAs("Setup session") {
 
-      When I post("/session")
+      Given a session_resource
 
       Then assert status.is(201)
 
@@ -793,6 +800,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
   }
 
+  // Step to be executed after each scenario
   afterEachScenario {
 
     Then I print_step("done!")

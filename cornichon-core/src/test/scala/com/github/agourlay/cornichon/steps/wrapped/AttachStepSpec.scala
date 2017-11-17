@@ -18,7 +18,7 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
-        r.logs.size should be(6)
+        r.logs.size should be(7)
       }
     }
 
@@ -29,7 +29,7 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
-        r.logs.size should be(8)
+        r.logs.size should be(9)
       }
     }
 

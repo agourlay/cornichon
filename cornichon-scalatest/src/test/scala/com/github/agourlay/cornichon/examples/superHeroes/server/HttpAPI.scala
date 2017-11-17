@@ -54,6 +54,11 @@ class HttpAPI() {
     case POST -> Root / "session" ⇒
       val sessionId = sm.createSession()
       Created(sessionId)
+    case DELETE -> Root / "session" :? SessionIdQueryParamMatcher(sessionId) ⇒
+      sm.deleteSession(sessionId) match {
+        case Valid(_)   ⇒ Ok()
+        case Invalid(e) ⇒ apiErrorResponse(e)
+      }
   }
 
   val publishersService = HttpService {

@@ -20,7 +20,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with FlatMap", 1))
-        r.logs.size should be(7)
+        r.logs.size should be(8)
       }
     }
 
@@ -32,7 +32,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(false)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with FlatMap", 1))
-        r.logs.size should be(3)
+        r.logs.size should be(4)
       }
     }
 
@@ -44,7 +44,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with FlatMap", 1))
-        r.logs.size should be(3)
+        r.logs.size should be(4)
       }
     }
 
@@ -61,7 +61,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with FlatMap", 1))
-        r.logs.size should be(7)
+        r.logs.size should be(8)
       }
     }
 
@@ -73,7 +73,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with FlatMap", 1))
-        r.logs.size should be(9)
+        r.logs.size should be(10)
       }
     }
 

@@ -2,8 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.Validated.Valid
 import cats.data.{ NonEmptyList, ValidatedNel }
-import cats.kernel.Semigroup
-
+import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.ScenarioReport._
 
 import scala.concurrent.Future
@@ -54,7 +53,8 @@ case object Done extends Done {
   val rightDone = Right(Done)
   val validDone = Valid(Done)
   val futureDone = Future.successful(Done)
-  implicit val semigroup = new Semigroup[Done] {
+  implicit val monoid = new Monoid[Done] {
+    def empty: Done = Done
     def combine(x: Done, y: Done): Done = x
   }
 }

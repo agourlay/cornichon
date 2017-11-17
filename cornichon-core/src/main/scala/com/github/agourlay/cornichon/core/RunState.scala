@@ -50,6 +50,7 @@ case class RunState(
 
 object RunState {
 
+  // Warning: do not use it if RunState are forked because it duplicates Session data
   implicit val monoidRunState = new Monoid[RunState] {
     def empty: RunState = emptyRunState
     def combine(x: RunState, y: RunState): RunState = x.copy(

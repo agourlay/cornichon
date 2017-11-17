@@ -23,7 +23,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         val s = Scenario("test", steps)
         engine.runScenario(Session.newEmpty)(s).map { r ⇒
           r.isSuccess should be(true)
-          r.logs.size should be(2)
+          r.logs.size should be(3)
         }
       }
 
@@ -45,7 +45,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
                   |'5'"""
                     .stripMargin.trim
                 )
-                f.logs.size should be(7)
+                f.logs.size should be(8)
               case _ ⇒ fail(s"Should be a FailedScenarioReport but got \n${res.logs}")
             }
           }
@@ -84,7 +84,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
                 |""".
                   stripMargin
               )
-              f.logs.size should be(12)
+              f.logs.size should be(13)
             }
           case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
         }
@@ -105,7 +105,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         engine.runScenario(Session.newEmpty)(s).map { res ⇒
           res.isSuccess should be(true)
           uglyCounter.get() should be(effectNumber)
-          res.logs.size should be(effectNumber + 1)
+          res.logs.size should be(effectNumber + 2)
         }
       }
 
@@ -125,7 +125,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
         engine.runScenario(Session.newEmpty, context)(s).map { res ⇒
           res.isSuccess should be(true)
           uglyCounter.get() should be(effectNumber * 2)
-          res.logs.size should be(effectNumber * 2 + 2)
+          res.logs.size should be(effectNumber * 2 + 3)
         }
       }
     }

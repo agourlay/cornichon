@@ -30,6 +30,12 @@ class SuperMicroService {
     newSessionId
   }
 
+  def deleteSession(sessionId: String): Validated[ApiError, Unit] =
+    publishersBySession.remove(sessionId)
+      .flatMap(_ ⇒ superheroesBySession.remove(sessionId))
+      .map(_ ⇒ ())
+      .toValid(SessionNotFound(sessionId))
+
   def publishersBySessionV(sessionId: String) =
     publishersBySession.get(sessionId).toValid(SessionNotFound(sessionId))
 
