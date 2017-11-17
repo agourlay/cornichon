@@ -20,8 +20,8 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   private[cornichon] var beforeFeature: Seq[() ⇒ Unit] = Nil
   private[cornichon] var afterFeature: Seq[() ⇒ Unit] = Nil
 
-  protected var beforeEachScenario: Seq[Step] = Nil
-  protected var afterEachScenario: Seq[Step] = Nil
+  protected var beforeEachScenario: List[Step] = Nil
+  protected var afterEachScenario: List[Step] = Nil
 
   implicit lazy val scheduler = globalScheduler
 
@@ -34,14 +34,11 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   lazy val placeholderResolver = new PlaceholderResolver(registerExtractors)
   lazy val matcherResolver = new MatcherResolver(registerMatcher)
 
+  private lazy val context = FeatureExecutionContext(beforeEachScenario, afterEachScenario, feature.ignored, feature.focusedScenarios)
+
   def runScenario(s: Scenario) = {
-    val context = ScenarioExecutionContext(afterEachScenario.toList, feature.ignored, feature.focusedScenarios)
-
     println(s"Starting scenario '${s.name}'")
-
-    engine.runScenario(Session.newEmpty, context) {
-      s.copy(steps = beforeEachScenario.toList ++ s.steps)
-    }
+    engine.runScenario(Session.newEmpty, context)(s)
   }
 
   def feature: FeatureDef

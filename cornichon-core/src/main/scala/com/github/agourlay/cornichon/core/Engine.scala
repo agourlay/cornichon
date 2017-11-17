@@ -15,16 +15,17 @@ import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
+import com.github.agourlay.cornichon.core.RunState._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
 
 class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
 
-  def runScenario(session: Session, context: ScenarioExecutionContext = ScenarioExecutionContext.empty)(scenario: Scenario): Future[ScenarioReport] =
+  def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Future[ScenarioReport] =
     runScenarioTask(session, context)(scenario).runAsync
 
-  def runScenarioTask(session: Session, context: ScenarioExecutionContext)(scenario: Scenario): Task[ScenarioReport] =
+  def runScenarioTask(session: Session, context: FeatureExecutionContext)(scenario: Scenario): Task[ScenarioReport] =
     if (context isIgnored scenario)
       Task.delay(IgnoreScenarioReport(scenario.name, session))
     else if (context isPending scenario)
@@ -34,15 +35,17 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
       val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
 
       for {
-        mainResult ← runStage(scenario.steps, mainLog, initialRunState)
+        beforeResult ← runStage(context.beforeSteps, beforeLog, initialRunState)
+        (beforeState, beforeReport) = beforeResult
+        mainResult ← if (beforeReport.isValid) runStage(scenario.steps, mainLog, beforeState) else noOpStage
         (mainState, mainReport) = mainResult
         finallyResult ← runStage(context.finallySteps, finallyLog, mainState)
         (finallyState, finallyReport) = finallyResult
         cleanupResult ← runStage(finallyState.cleanupSteps, cleanupLog, finallyState, shortCircuit = false)
-        (cleanupState, cleanupReport) = cleanupResult
+        (lastState, cleanupReport) = cleanupResult
       } yield {
-        val aggregatedReport = Foldable[List].fold(List(mainReport, finallyReport, cleanupReport))
-        ScenarioReport.build(scenario.name, cleanupState, aggregatedReport)
+        val aggregatedReport = Foldable[List].fold(List(beforeReport, mainReport, finallyReport, cleanupReport))
+        ScenarioReport.build(scenario.name, lastState, aggregatedReport)
       }
     }
 
@@ -119,6 +122,8 @@ object Engine {
   val mainLog = InfoLogInstruction("main steps", initMargin + 1)
   val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
   val cleanupLog = InfoLogInstruction("cleanup steps", initMargin + 1)
+
+  val noOpStage = Task.delay((emptyRunState, validDone))
 
   def withStepTitleResolver(resolver: PlaceholderResolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)

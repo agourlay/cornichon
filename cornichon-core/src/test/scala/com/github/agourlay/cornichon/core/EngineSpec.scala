@@ -54,9 +54,9 @@ class EngineSpec extends AsyncWordSpec with Matchers {
 
       "accumulates errors if 'main' and 'finally' fail" in {
         val mainStep = AssertStep("main step", s ⇒ GenericEqualityAssertion(true, false))
-        val finallyStep = AssertStep("finally step", s ⇒ GenericEqualityAssertion(true, false))
+        val finalAssertion = AssertStep("finally step", s ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
-        engine.runScenario(Session.newEmpty, ScenarioExecutionContext(finallyStep :: Nil))(s).map {
+        engine.runScenario(Session.newEmpty, FeatureExecutionContext(finallySteps = finalAssertion :: Nil))(s).map {
           case f: FailureScenarioReport ⇒
             withClue(f.msg) {
               f.msg should be(
@@ -120,7 +120,7 @@ class EngineSpec extends AsyncWordSpec with Matchers {
           }
         )
 
-        val context = ScenarioExecutionContext(List.fill(effectNumber)(effect))
+        val context = FeatureExecutionContext(finallySteps = List.fill(effectNumber)(effect))
         val s = Scenario("scenario with effects", context.finallySteps)
         engine.runScenario(Session.newEmpty, context)(s).map { res ⇒
           res.isSuccess should be(true)
