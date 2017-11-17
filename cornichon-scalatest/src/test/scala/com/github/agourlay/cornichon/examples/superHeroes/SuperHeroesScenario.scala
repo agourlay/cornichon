@@ -780,7 +780,7 @@ class SuperHeroesScenario extends CornichonFeature {
   }
 
   def session_resource = ResourceStep(
-    title = "manages Session",
+    title = "manage session resource",
     acquire = post("/session"),
     release = delete("/session").withParams("sessionId" → "<session-id>")
   )

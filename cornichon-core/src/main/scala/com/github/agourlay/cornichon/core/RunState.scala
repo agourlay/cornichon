@@ -19,6 +19,7 @@ case class RunState(
   // Helper fct to setup up a child nested context for a run which result must be merged back in using 'mergeNested'.
   // Only the session is propagated downstream as it is.
   lazy val nestedContext = copy(depth = depth + 1, logs = Vector.empty, cleanupSteps = Nil)
+  lazy val sameLevelContext = copy(logs = Vector.empty, cleanupSteps = Nil)
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValuesUnsafe(tuples: _*))

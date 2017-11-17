@@ -75,13 +75,15 @@ trait SimpleWrapperStep extends Step {
 
   def nestedToRun: List[Step]
 
+  def indentLog: Boolean = true
+
   def onNestedError(failedStep: FailedStep, resultRunState: RunState, initialRunState: RunState, executionTime: Duration): (RunState, FailedStep)
 
   def onNestedSuccess(resultRunState: RunState, initialRunState: RunState, executionTime: Duration): RunState
 
   def run(engine: Engine)(initialRunState: RunState) = {
     val now = System.nanoTime
-    engine.runSteps(nestedToRun, initialRunState.nestedContext).map {
+    engine.runSteps(nestedToRun, if (indentLog) initialRunState.nestedContext else initialRunState.sameLevelContext).map {
       case (resState, Left(failedStep)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val (finalState, fs) = onNestedError(failedStep, resState, initialRunState, executionTime)
