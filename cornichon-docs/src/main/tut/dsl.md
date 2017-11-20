@@ -298,13 +298,13 @@ Given I put_topic(topic = "my-topic", key = "my-key", message = "the actual mess
 Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000)
 
 Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
-        """
+"""
           {
              "key": "my-key",
              "topic": "my-topic",
              "value": "the actual message"
           }
-        """)
+""")
  
 
 ```
