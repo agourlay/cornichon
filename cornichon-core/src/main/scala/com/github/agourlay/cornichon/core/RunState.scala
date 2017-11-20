@@ -1,9 +1,5 @@
 package com.github.agourlay.cornichon.core
 
-import cats.instances.list._
-import cats.instances.vector._
-
-import cats.kernel.Monoid
 import cats.syntax.monoid._
 
 case class RunState(
@@ -26,7 +22,6 @@ case class RunState(
   def addToSession(key: String, value: String) = withSession(session.addValueUnsafe(key, value))
   def mergeSessions(other: Session) = copy(session = session.combine(other))
 
-  def withLogs(logs: Vector[LogInstruction]) = copy(logs = logs)
   def withLog(log: LogInstruction) = copy(logs = Vector(log))
 
   // Vector concat. is not great, maybe change logs data structure
@@ -50,17 +45,5 @@ case class RunState(
 }
 
 object RunState {
-
-  // Warning: do not use it if RunState are forked because it duplicates Session data
-  implicit val monoidRunState = new Monoid[RunState] {
-    def empty: RunState = emptyRunState
-    def combine(x: RunState, y: RunState): RunState = x.copy(
-      session = x.session.combine(y.session),
-      logs = x.logs.combine(y.logs),
-      cleanupSteps = x.cleanupSteps.combine(y.cleanupSteps),
-      depth = Math.max(x.depth, y.depth)
-    )
-  }
-
   val emptyRunState = RunState(Session.newEmpty, Vector.empty, 1, Nil)
 }
