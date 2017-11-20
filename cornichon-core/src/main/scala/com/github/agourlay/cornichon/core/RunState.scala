@@ -33,6 +33,7 @@ case class RunState(
   def prependCleanupStep(add: Step) = copy(cleanupSteps = add :: cleanupSteps)
   def prependCleanupSteps(add: List[Step]) = copy(cleanupSteps = add ::: cleanupSteps)
   def prependCleanupStepsFrom(from: RunState) = copy(cleanupSteps = from.cleanupSteps ::: cleanupSteps)
+  lazy val resetCleanupSteps = copy(cleanupSteps = Nil)
 
   // Helpers to propagate info from nested computation
   def mergeNested(r: RunState): RunState = mergeNested(r, r.logs)

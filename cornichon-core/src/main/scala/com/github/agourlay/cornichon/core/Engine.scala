@@ -39,12 +39,14 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
         (beforeState, beforeReport) = beforeResult
         mainResult ← if (beforeReport.isValid) runStage(scenario.steps, mainLog, beforeState) else noOpStage
         (mainState, mainReport) = mainResult
-        finallyResult ← runStage(context.finallySteps, finallyLog, mainState)
+        mainCleanupResult ← runStage(mainState.cleanupSteps, cleanupLog, mainState, shortCircuit = false)
+        (mainCleanupState, mainCleanupReport) = mainCleanupResult
+        finallyResult ← runStage(context.finallySteps, finallyLog, mainCleanupState.resetCleanupSteps) // 'cleanupSteps' already consumed above
         (finallyState, finallyReport) = finallyResult
         cleanupResult ← runStage(finallyState.cleanupSteps, cleanupLog, finallyState, shortCircuit = false)
-        (lastState, cleanupReport) = cleanupResult
+        (lastState, finallyCleanupReport) = cleanupResult
       } yield {
-        val aggregatedReport = Foldable[List].fold(List(beforeReport, mainReport, finallyReport, cleanupReport))
+        val aggregatedReport = Foldable[List].fold(List(beforeReport, mainReport, mainCleanupReport, finallyReport, finallyCleanupReport))
         ScenarioReport.build(scenario.name, lastState, aggregatedReport)
       }
     }
