@@ -23,8 +23,11 @@ import scala.concurrent.duration._
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
   "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
-  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"))
+  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
+  "-Xmx1G"))
 class EngineBench {
+
+  //sbt:benchmarks> jmh:run .*Engine.* -prof gc -foe true -gc true -rf csv
 
   @Param(Array("10", "20", "50", "100", "200"))
   var stepsNumber: String = ""
