@@ -12,24 +12,31 @@ import scala.collection.mutable.ListBuffer
 case class JsonPath(operations: List[JsonPathOperation] = Nil) extends AnyVal {
 
   def run(superSet: Json): Json = {
-    val focused = cursors(superSet).map(c ⇒ c.focus.getOrElse(Json.Null))
-    if (focused.length == 1)
-      focused.head
-    else
+    val (allCursors, projectionMode) = cursors(superSet)
+    val focused = allCursors.map(c ⇒ c.focus.getOrElse(Json.Null))
+    if (projectionMode)
       Json.fromValues(focused)
+    else
+      focused.head
   }
 
   def run(json: String): Either[CornichonError, Json] = parseJson(json).map(run)
 
-  def cursors(input: Json): List[ACursor] = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) ⇒
-    op match {
-      case RootSelection                      ⇒ oc
-      case FieldSelection(field)              ⇒ oc.map(_.downField(field))
-      case RootArrayElementSelection(indice)  ⇒ oc.map(_.downArray.rightN(indice))
-      case ArrayFieldSelection(field, indice) ⇒ oc.map(_.downField(field).downArray.rightN(indice))
-      case RootArrayFieldProjection           ⇒ oc.flatMap(o ⇒ expandCursors(o))
-      case ArrayFieldProjection(field)        ⇒ oc.flatMap(o ⇒ expandCursors(o.downField(field)))
+  // Boolean flag to indicate if the operations contain a projection segment.
+  // If it is the case, the result must be interpreted as a List.
+  // Otherwise it is always a List of one element.
+  def cursors(input: Json): (List[ACursor], Boolean) = {
+    val cursors = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) ⇒
+      op match {
+        case RootSelection                      ⇒ oc
+        case FieldSelection(field)              ⇒ oc.map(_.downField(field))
+        case RootArrayElementSelection(indice)  ⇒ oc.map(_.downArray.rightN(indice))
+        case ArrayFieldSelection(field, indice) ⇒ oc.map(_.downField(field).downArray.rightN(indice))
+        case RootArrayFieldProjection           ⇒ oc.flatMap(o ⇒ expandCursors(o))
+        case ArrayFieldProjection(field)        ⇒ oc.flatMap(o ⇒ expandCursors(o.downField(field)))
+      }
     }
+    (cursors, operations.exists(_.projection))
   }
 
   private def expandCursors(arrayFieldCursor: ACursor) =
@@ -48,7 +55,7 @@ case class JsonPath(operations: List[JsonPathOperation] = Nil) extends AnyVal {
     }
 
   def removeFromJson(input: Json): Json =
-    cursors(input).foldLeft(input) { (j, c) ⇒ c.delete.top.getOrElse(j) }
+    cursors(input)._1.foldLeft(input) { (j, c) ⇒ c.delete.top.getOrElse(j) }
 
 }
 
@@ -93,6 +100,7 @@ object JsonPath {
 sealed trait JsonPathOperation {
   def field: String
   def pretty: String
+  def projection: Boolean = false
 }
 
 case object RootSelection extends JsonPathOperation {
@@ -115,9 +123,11 @@ case class ArrayFieldSelection(field: String, indice: Int) extends JsonPathOpera
 
 case class ArrayFieldProjection(field: String) extends JsonPathOperation {
   val pretty = s"$field[*]"
+  override val projection = true
 }
 
 case object RootArrayFieldProjection extends JsonPathOperation {
   val field = JsonPath.root
   val pretty = s"$field[*]"
+  override val projection = true
 }

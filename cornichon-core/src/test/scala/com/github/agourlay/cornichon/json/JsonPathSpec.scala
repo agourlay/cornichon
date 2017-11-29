@@ -102,6 +102,25 @@ class JsonPathSpec extends WordSpec
       JsonPath.run("brothers[*].Age", input) should beRight(Json.arr(Json.fromInt(50), Json.fromInt(30)))
     }
 
+    "select properly nested fields projected in Array with a single value" in {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brothers": [
+          |   {
+          |     "Name" : "Paul",
+          |     "Age": 50
+          |   }
+          | ]
+          |}
+        """.stripMargin
+
+      JsonPath.run("brothers[*].Age", input) should beRight(Json.arr(Json.fromInt(50)))
+    }
+
     "select properly doubly nested fields projected in Array" in {
       val input =
         """
