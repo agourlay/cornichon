@@ -357,13 +357,11 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then I save("5th-name" → "IronMan")
 
-        And assert body.asArray.contains(
+        And assert body.asArray.ignoringEach("city", "hasSuperpowers").contains(
           """
           {
             "name": "<5th-name>",
             "realName": "Tony Stark",
-            "city": "New York",
-            "hasSuperpowers": false,
             "publisher":{
               "name":"Marvel",
               "foundationYear":1939,

@@ -235,11 +235,6 @@ object JsonSteps {
         jsonAssertionTitleBuilder(titleString, ignoredEachKeys)
       }
 
-      def removeIgnoredPathFromElements(s: Session, jArray: Vector[Json]) =
-        ignoredEachKeys.toList
-          .traverseU(resolveAndParseJsonPath(_, resolver)(s))
-          .map(ignoredPaths ⇒ jArray.map(removeFieldsByPath(_, ignoredPaths)))
-
       AssertStep(
         title = assertionTitle,
         action = s ⇒ Assertion.either {
@@ -271,18 +266,24 @@ object JsonSteps {
       bodyContainsElmt(title, elements, expected = true)
     }
 
-    private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, elements: Seq[A], expected: Boolean) =
+    private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, expectedElements: Seq[A], expected: Boolean) =
       AssertStep(
         title = title,
         action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-          applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).flatMap { jArr ⇒
-            elements.toList.traverseU(resolveAndParseJson(_, s, resolver)).map { resolvedJson ⇒
-              val containsAll = resolvedJson.forall(jArr.contains)
-              (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
-            }
-          }
+          for {
+            jArr ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
+            actualValue ← removeIgnoredPathFromElements(s, jArr)
+            resolvedJson ← expectedElements.toVector.traverseU(resolveAndParseJson(_, s, resolver))
+            containsAll = resolvedJson.forall(actualValue.contains)
+          } yield (expected, containsAll, arrayContainsError(resolvedJson.map(_.show), Json.fromValues(jArr).show, expected))
         }
       )
+
+    private def removeIgnoredPathFromElements(s: Session, jArray: Vector[Json]) =
+      ignoredEachKeys.toList
+        .traverseU(resolveAndParseJsonPath(_, resolver)(s))
+        .map(ignoredPaths ⇒ jArray.map(removeFieldsByPath(_, ignoredPaths)))
+
   }
 
   private def applyPathAndFindArray(path: String, resolver: PlaceholderResolver)(s: Session, sessionValue: String): Either[CornichonError, Vector[Json]] =
