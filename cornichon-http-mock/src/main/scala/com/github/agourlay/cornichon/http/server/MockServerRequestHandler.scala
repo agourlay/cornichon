@@ -67,19 +67,19 @@ class MockServerRequestHandler(implicit strategy: Strategy, scheduler: Scheduler
       Ok()
 
     case _ if mockState.getErrorMode ⇒
-      replyWithDeplay(InternalServerError(mockState.getResponse))
+      replyWithDelay(InternalServerError(mockState.getResponse))
 
     case _ if mockState.getBadRequestMode ⇒
-      replyWithDeplay(BadRequest(mockState.getResponse))
+      replyWithDelay(BadRequest(mockState.getResponse))
 
     case r @ POST -> _ ⇒
-      saveRequest(r).flatMap(_ ⇒ replyWithDeplay(Created(mockState.getResponse)))
+      saveRequest(r).flatMap(_ ⇒ replyWithDelay(Created(mockState.getResponse)))
 
     case r @ _ -> _ ⇒
-      saveRequest(r).flatMap(_ ⇒ replyWithDeplay(Ok(mockState.getResponse)))
+      saveRequest(r).flatMap(_ ⇒ replyWithDelay(Ok(mockState.getResponse)))
   }
 
-  def replyWithDeplay(t: Task[Response]): Task[Response] =
+  def replyWithDelay(t: Task[Response]): Task[Response] =
     if (mockState.getDelay == 0)
       t
     else
