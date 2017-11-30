@@ -1,23 +1,24 @@
 package com.github.agourlay.cornichon.http.server
 
 import cats.instances.string._
-import com.github.agourlay.cornichon.core.CornichonException
+import cats.syntax.either._
+import com.github.agourlay.cornichon.core.{ CornichonException, Done }
 import com.github.agourlay.cornichon.http.{ HttpMethod, HttpMethods, HttpRequest }
 import com.github.agourlay.cornichon.json.CornichonJson
-
+import fs2.{ Scheduler, Strategy, Task }
 import io.circe.Json
-
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl._
 
 import scala.collection.breakOut
+import scala.concurrent.duration._
 
-class MockServerRequestHandler() {
+class MockServerRequestHandler(implicit strategy: Strategy, scheduler: Scheduler) {
 
-  private val requestReceivedRepo = new MockServerResultsHolder()
+  private val mockState = new MockServerStateHolder()
 
-  def fetchRecordedRequestsAsJson() = requestReceivedRepo.getReceivedRequest.map { req ⇒
+  def fetchRecordedRequestsAsJson() = mockState.getReceivedRequest.map { req ⇒
     Json.fromFields(
       Seq(
         "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
@@ -36,35 +37,53 @@ class MockServerRequestHandler() {
       Ok(body)
 
     case GET -> Root / "reset" ⇒
-      requestReceivedRepo.clearRegisteredRequest()
+      mockState.clearRegisteredRequest()
       Ok()
 
     case r @ POST -> Root / "response" ⇒
       r.bodyAsText.runFold("")(_ ++ _).flatMap { body ⇒
-        requestReceivedRepo.setResponse(body)
+        mockState.setResponse(body)
         Ok()
       }
 
+    case r @ POST -> Root / "delayInMs" ⇒
+      r.bodyAsText.runFold("")(_ ++ _).flatMap { body ⇒
+        // Dropping extra quotes
+        Either.catchNonFatal(body.substring(1, body.length - 1).toLong) match {
+          case Right(delay) ⇒
+            mockState.setDelay(delay)
+            Ok()
+          case Left(_) ⇒
+            BadRequest(s"$body is not a valid delay value")
+        }
+      }
+
     case POST -> Root / "toggle-error-mode" ⇒
-      requestReceivedRepo.toggleErrorMode
+      mockState.toggleErrorMode
       Ok()
 
     case POST -> Root / "toggle-bad-request-mode" ⇒
-      requestReceivedRepo.toggleBadRequestMode
+      mockState.toggleBadRequestMode
       Ok()
 
-    case _ if requestReceivedRepo.getErrorMode ⇒
-      InternalServerError(requestReceivedRepo.getResponse)
+    case _ if mockState.getErrorMode ⇒
+      replyWithDelay(InternalServerError(mockState.getResponse))
 
-    case _ if requestReceivedRepo.getBadRequestMode ⇒
-      BadRequest(requestReceivedRepo.getResponse)
+    case _ if mockState.getBadRequestMode ⇒
+      replyWithDelay(BadRequest(mockState.getResponse))
 
     case r @ POST -> _ ⇒
-      saveRequest(r).flatMap(_ ⇒ Created(requestReceivedRepo.getResponse))
+      saveRequest(r).flatMap(_ ⇒ replyWithDelay(Created(mockState.getResponse)))
 
     case r @ _ -> _ ⇒
-      saveRequest(r).flatMap(_ ⇒ Ok(requestReceivedRepo.getResponse))
+      saveRequest(r).flatMap(_ ⇒ replyWithDelay(Ok(mockState.getResponse)))
   }
+
+  def replyWithDelay(t: Task[Response]): Task[Response] =
+    if (mockState.getDelay == 0)
+      t
+    else
+      Task.schedule(Done, mockState.getDelay.millis).flatMap(_ ⇒ t)
 
   def httpMethodMapper(method: Method): HttpMethod = method match {
     case DELETE  ⇒ HttpMethods.DELETE
@@ -89,6 +108,6 @@ class MockServerRequestHandler() {
           params = rawReq.params.toList,
           headers = rawReq.headers.map(h ⇒ (h.name.value, h.value))(breakOut)
         )
-        requestReceivedRepo.registerRequest(req)
+        mockState.registerRequest(req)
       }
 }

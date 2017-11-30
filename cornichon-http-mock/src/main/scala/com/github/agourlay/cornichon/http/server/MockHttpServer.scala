@@ -10,14 +10,15 @@ import org.http4s.HttpService
 import org.http4s.server.blaze.BlazeBuilder
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Random
 
-class MockHttpServer(interface: Option[String], port: Option[Range], mockService: HttpService, maxRetries: Int = 5) extends HttpServer {
-
-  implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
-  implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
+class MockHttpServer(
+    interface: Option[String],
+    port: Option[Range],
+    mockService: HttpService,
+    maxRetries: Int = 5)(implicit strategy: Strategy, scheduler: Scheduler) extends HttpServer {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(List(0))(r ⇒ Random.shuffle(r.toList))
@@ -55,9 +56,9 @@ class MockHttpServer(interface: Option[String], port: Option[Range], mockService
     NetworkInterface.getNetworkInterfaces.asScala
       .filter(_.isUp)
       .flatMap(_.getInetAddresses.asScala)
-      .find(i ⇒ i.isSiteLocalAddress)
-      .map(_.getHostAddress).getOrElse("localhost")
-
+      .find(_.isSiteLocalAddress)
+      .map(_.getHostAddress)
+      .getOrElse("localhost")
 }
 
 case object MockHttpServerError extends CornichonError {
