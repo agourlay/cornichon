@@ -101,7 +101,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks, experimental, httpMock)
+    .aggregate(core, scalatest, docs, benchmarks, experimental, httpMock, kafka)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -174,6 +174,21 @@ lazy val experimental =
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.sbtTest
+      )
+    )
+
+lazy val kafka =
+  project
+    .in(file("./cornichon-kafka"))
+    .dependsOn(core, scalatest % Test)
+    .enablePlugins(SbtScalariform)
+    .settings(commonSettings)
+    .settings(formattingSettings)
+    .settings(
+      name := "cornichon-kafka",
+      libraryDependencies ++= Seq(
+        library.kafkaClient,
+        library.kafkaBroker % Test
       )
     )
 
@@ -272,29 +287,32 @@ lazy val library =
       val monix         = "2.3.2"
       val sbtTest       = "1.0"
       val http4s        = "0.17.5"
+      val kafkaVersion  = "1.0.0"
     }
-    val akkaStream    = "com.typesafe.akka"     %% "akka-stream"          % Version.akkaActor
-    val akkaHttp      = "com.typesafe.akka"     %% "akka-http"            % Version.akkaHttp
-    val catsMacro     = "org.typelevel"         %% "cats-macros"          % Version.cats
-    val catsCore      = "org.typelevel"         %% "cats-core"            % Version.cats
-    val scalatest     = "org.scalatest"         %% "scalatest"            % Version.scalaTest
-    val ficus         = "com.iheart"            %% "ficus"                % Version.ficus
-    val parboiled     = "org.parboiled"         %% "parboiled"            % Version.parboiled
-    val fansi         = "com.lihaoyi"           %% "fansi"                % Version.fansi
-    val sangria       = "org.sangria-graphql"   %% "sangria"              % Version.sangria
-    val sangriaCirce  = "org.sangria-graphql"   %% "sangria-circe"        % Version.sangriaCirce
-    val circeCore     = "io.circe"              %% "circe-core"           % Version.circe
-    val circeGeneric  = "io.circe"              %% "circe-generic"        % Version.circe
-    val circeParser   = "io.circe"              %% "circe-parser"         % Version.circe
-    val diffsonCirce  = "org.gnieh"             %% "diffson-circe"        % Version.diffson
-    val scalacheck    = "org.scalacheck"        %% "scalacheck"           % Version.scalaCheck
-    val catsScalatest = "com.ironcorelabs"      %% "cats-scalatest"       % Version.catsScalaTest
-    val monixExec     = "io.monix"              %% "monix-execution"      % Version.monix
-    val monixReactive = "io.monix"              %% "monix-reactive"       % Version.monix
-    val monixCats     = "io.monix"              %% "monix-cats"           % Version.monix
-    val sbtTest       = "org.scala-sbt"         %  "test-interface"       % Version.sbtTest
-    val http4sClient  = "org.http4s"            %% "http4s-blaze-client"  % Version.http4s
-    val http4sServer  = "org.http4s"            %% "http4s-blaze-server"  % Version.http4s
-    val http4sCirce   = "org.http4s"            %% "http4s-circe"         % Version.http4s
-    val http4sDsl     = "org.http4s"            %% "http4s-dsl"           % Version.http4s
+    val akkaStream    = "com.typesafe.akka"     %% "akka-stream"              % Version.akkaActor
+    val akkaHttp      = "com.typesafe.akka"     %% "akka-http"                % Version.akkaHttp
+    val catsMacro     = "org.typelevel"         %% "cats-macros"              % Version.cats
+    val catsCore      = "org.typelevel"         %% "cats-core"                % Version.cats
+    val scalatest     = "org.scalatest"         %% "scalatest"                % Version.scalaTest
+    val ficus         = "com.iheart"            %% "ficus"                    % Version.ficus
+    val parboiled     = "org.parboiled"         %% "parboiled"                % Version.parboiled
+    val fansi         = "com.lihaoyi"           %% "fansi"                    % Version.fansi
+    val sangria       = "org.sangria-graphql"   %% "sangria"                  % Version.sangria
+    val sangriaCirce  = "org.sangria-graphql"   %% "sangria-circe"            % Version.sangriaCirce
+    val circeCore     = "io.circe"              %% "circe-core"               % Version.circe
+    val circeGeneric  = "io.circe"              %% "circe-generic"            % Version.circe
+    val circeParser   = "io.circe"              %% "circe-parser"             % Version.circe
+    val diffsonCirce  = "org.gnieh"             %% "diffson-circe"            % Version.diffson
+    val scalacheck    = "org.scalacheck"        %% "scalacheck"               % Version.scalaCheck
+    val catsScalatest = "com.ironcorelabs"      %% "cats-scalatest"           % Version.catsScalaTest
+    val monixExec     = "io.monix"              %% "monix-execution"          % Version.monix
+    val monixReactive = "io.monix"              %% "monix-reactive"           % Version.monix
+    val monixCats     = "io.monix"              %% "monix-cats"               % Version.monix
+    val sbtTest       = "org.scala-sbt"         %  "test-interface"           % Version.sbtTest
+    val http4sClient  = "org.http4s"            %% "http4s-blaze-client"      % Version.http4s
+    val http4sServer  = "org.http4s"            %% "http4s-blaze-server"      % Version.http4s
+    val http4sCirce   = "org.http4s"            %% "http4s-circe"             % Version.http4s
+    val http4sDsl     = "org.http4s"            %% "http4s-dsl"               % Version.http4s
+    val kafkaClient   = "org.apache.kafka"      %  "kafka-clients"            % Version.kafkaVersion
+    val kafkaBroker   = "net.manub"             %% "scalatest-embedded-kafka" % Version.kafkaVersion
   }

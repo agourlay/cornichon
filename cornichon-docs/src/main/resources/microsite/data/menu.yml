@@ -17,3 +17,6 @@ options:
 
   - title: Modules
     url: modules.html
+
+  - title: Kafka (Experimental)
+    url: kafka.html
