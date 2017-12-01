@@ -284,7 +284,7 @@ This module is experimental and will be subject to important changes in the futu
 
 Cornichon offers a support for [Kafka](https://kafka.apache.org) v1.0.0
 
-Due to the architecture of kafka and and the handling of consumers offsets, **the default execution of
+Due to the architecture of kafka and the handling of consumers offsets, **the default execution of
 scenarios and features is sequential**.
 
 The underlying kafka client used in cornichon is configured with a fixed group-id to 'cornichon' and is set with offset-reset to 'earliest'.
