@@ -6,42 +6,133 @@ position: 6
 
 # Modules
 
-The library is composed of several modules with different purposes:
+The library is composed of several modules with different purposes to enable users to pick and choose according to their needs:
 
-## Core
-
-```cornichon-core``` this is the central brick containing the models and execution engine.
+Experimental modules are likely to be subject to important changes in the future.
 
 ## Cornichon
 
 ```cornichon``` exposes the cornichon features through an integration with ```Scalatest```. (might be renamed to ```cornichon-scalatest``` later)
 
-## Cornichon without Scalatest
 
-```cornichon-experimental``` exposes the cornichon feature through a direct integration with ```SBT test-interface```.
+## Cornichon without Scalatest (experimental)
 
-Requires a special configuration in the build.sbt file to use the right `TestFramework`:
+```cornichon-experimental``` exposes Cornichon's feature through a direct integration with ```SBT test-interface```.
+
+This requires a special configuration in the build.sbt file to use the right `TestFramework`:
+
 `testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework")`
 
 Moreover `CornichonFeature` lives under `com.github.agourlay.cornichon.experimental`.
 
-## Docs
 
-```cornichon-docs``` contains the code to generate this documentation using ```sbt-microsite```.
+## Http Mock (experimental)
 
-## Benchmarks
+```cornichon-http-mock``` contains the ```ListenTo``` DSL and infrastructure to build tests relying on mocked endpoints.
 
-```cornichon-benchmarks``` contains performance benchmarks built with ```sbt-jmh```.
+```
+ Scenario("reply to POST request with 201 and assert on received bodies") {
+    HttpMock("awesome-server") {
+      When I post("<awesome-server-url>/heroes/batman").withBody(
+        """
+        {
+          "name": "Batman",
+          "realName": "Bruce Wayne",
+          "hasSuperpowers": false
+        }
+        """
+      )
 
-## Http mock
+      When I post("<awesome-server-url>/heroes/superman").withBody(
+        """
+        {
+          "name": "Superman",
+          "realName": "Clark Kent",
+          "hasSuperpowers": true
+        }
+        """
+      )
 
-```cornichon-http-mock``` : contains the ```ListenTo``` DSL and infrastructure to build tests relying on mocked endpoints. See tests in module for usage.
+      Then assert status.is(201)
+
+      // HTTP Mock exposes what it received
+      When I get("<awesome-server-url>/requests-received")
+
+      Then assert body.asArray.ignoringEach("headers").is(
+        """
+        [
+          {
+            "body" : {
+              "name" : "Batman",
+              "realName" : "Bruce Wayne",
+              "hasSuperpowers" : false
+            },
+            "url" : "/heroes/batman",
+            "method" : "POST",
+            "parameters" : {}
+          },
+          {
+            "body" : {
+              "name" : "Superman",
+              "realName" : "Clark Kent",
+              "hasSuperpowers" : true
+            },
+            "url" : "/heroes/superman",
+            "method" : "POST",
+            "parameters" : {}
+          }
+        ]
+      """
+      )
+
+    }
+
+    // Once HTTP Mock closed, the recorded requests are dumped in the session
+    And assert httpListen("awesome-server").received_calls(2)
+
+    And assert httpListen("awesome-server").received_requests.asArray.ignoringEach("headers").is(
+      """
+        [
+          {
+            "body" : {
+              "name" : "Batman",
+              "realName" : "Bruce Wayne",
+              "hasSuperpowers" : false
+            },
+            "url" : "/heroes/batman",
+            "method" : "POST",
+            "parameters" : {}
+          },
+          {
+            "body" : {
+              "name" : "Superman",
+              "realName" : "Clark Kent",
+              "hasSuperpowers" : true
+            },
+            "url" : "/heroes/superman",
+            "method" : "POST",
+            "parameters" : {}
+          }
+        ]
+      """
+    )
+
+    And assert httpListen("awesome-server").received_requests.path("$[0].body.name").is("Batman")
+
+    And assert httpListen("awesome-server").received_requests.path("$[1].body").is(
+      """
+      {
+        "name": "Superman",
+        "realName": "Clark Kent",
+        "hasSuperpowers": true
+      }
+      """
+    )
+ }
+```
+
 
 ## Kafka Support (experimental)
-
-### Disclaimer
-
-This module is experimental and will be subject to important changes in the future
 
 ### Description
 
@@ -68,11 +159,11 @@ Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000)
 
 Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
 """
-          {
-             "key": "my-key",
-             "topic": "my-topic",
-             "value": "the actual message"
-          }
+    {
+     "key": "my-key",
+     "topic": "my-topic",
+     "value": "the actual message"
+    }
 """)
 
 
@@ -89,11 +180,11 @@ Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey
 
 Then assert session_value("message").asJson.ignoring("timestamp").is(
 """
-          {
-             "key": "my-key",
-             "topic": "my-topic",
-             "value": "the actual message"
-          }
+    {
+     "key": "my-key",
+     "topic": "my-topic",
+     "value": "the actual message"
+    }
 """)
 
 
@@ -105,17 +196,17 @@ the message can be read as json:
 ```
 Given I put_topic(topic = "my-topic", key = "my-key", message =
 """
-        {
-           "cornichon": "mon dieu",
-           "cucumber": "sacre bleu"
-        }
+    {
+       "cornichon": "mon dieu",
+       "cucumber": "sacre bleu"
+    }
 """)
 Then I read_json_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey = Some("message"))
 Then assert session_value("message").asJson.ignoring("cucumber").is(
 """
-       {
-           "cornichon": "mon dieu"
-       }
+   {
+       "cornichon": "mon dieu"
+   }
 """
 )
 ```
