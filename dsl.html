@@ -1,4 +1,4 @@
-<html><head><title>Cornichon</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Arnaud Gourlay" /><meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="og:image" content="/cornichon/img/poster.png" /><meta name="og:title" content="Cornichon" /><meta name="og:site_name" content="Cornichon" /><meta name="og:url" content="http://agourlay.github.io/cornichon/" /><meta name="og:type" content="website" /><meta name="og:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><link rel="icon" type="image/png" href="/cornichon/img/favicon.png" /><meta name="twitter:title" content="Cornichon" /><meta name="twitter:image" content="http://agourlay.github.io/cornichon/img/poster.png" /><meta name="twitter:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/cornichon/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/cornichon/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/cornichon/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/cornichon/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/cornichon/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/cornichon/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/cornichon/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/cornichon/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/cornichon/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/cornichon/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/cornichon/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/cornichon/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/cornichon/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/cornichon/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/cornichon/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/cornichon/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/cornichon/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/cornichon/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/cornichon/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/cornichon/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/cornichon/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/cornichon/css/style.css" /><link rel="stylesheet" href="/cornichon/css/palette.css" /><link rel="stylesheet" href="/cornichon/css/codemirror.css" /><link rel="stylesheet" href="/cornichon/css/kazari-style.css" /><link rel="stylesheet" href="/cornichon/css/monokai.css" /><link rel="stylesheet" href="/cornichon/css/override.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/cornichon/" class="brand"><div class="brand-wrapper"><span>Cornichon</span></div></a></li> <li><a href="/cornichon/dsl.html" class=" active ">DSL</a></li> <li><a href="/cornichon/custom-steps.html" class="">Custom steps</a></li> <li><a href="/cornichon/placeholders-matchers.html" class="">Placeholders & matchers</a></li> <li><a href="/cornichon/feature-options.html" class="">Feature options</a></li> <li><a href="/cornichon/misc.html" class="">Misc.</a></li> <li><a href="/cornichon/modules.html" class="">Modules</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="agourlay" data-github-repo="cornichon"><div class="content-wrapper"><section><h1 id="dsl">DSL</h1>
+<html><head><title>Cornichon</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Arnaud Gourlay" /><meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="og:image" content="/cornichon/img/poster.png" /><meta name="og:title" content="Cornichon" /><meta name="og:site_name" content="Cornichon" /><meta name="og:url" content="http://agourlay.github.io/cornichon/" /><meta name="og:type" content="website" /><meta name="og:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><link rel="icon" type="image/png" href="/cornichon/img/favicon.png" /><meta name="twitter:title" content="Cornichon" /><meta name="twitter:image" content="http://agourlay.github.io/cornichon/img/poster.png" /><meta name="twitter:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/cornichon/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/cornichon/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/cornichon/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/cornichon/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/cornichon/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/cornichon/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/cornichon/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/cornichon/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/cornichon/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/cornichon/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/cornichon/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/cornichon/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/cornichon/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/cornichon/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/cornichon/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/cornichon/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/cornichon/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/cornichon/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/cornichon/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/cornichon/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/cornichon/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/cornichon/css/style.css" /><link rel="stylesheet" href="/cornichon/css/palette.css" /><link rel="stylesheet" href="/cornichon/css/codemirror.css" /><link rel="stylesheet" href="/cornichon/css/kazari-style.css" /><link rel="stylesheet" href="/cornichon/css/monokai.css" /><link rel="stylesheet" href="/cornichon/css/override.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/cornichon/" class="brand"><div class="brand-wrapper"><span>Cornichon</span></div></a></li> <li><a href="/cornichon/dsl.html" class=" active ">DSL</a></li> <li><a href="/cornichon/custom-steps.html" class="">Custom steps</a></li> <li><a href="/cornichon/placeholders-matchers.html" class="">Placeholders & matchers</a></li> <li><a href="/cornichon/feature-options.html" class="">Feature options</a></li> <li><a href="/cornichon/misc.html" class="">Misc.</a></li> <li><a href="/cornichon/modules.html" class="">Modules</a></li> <li><a href="/cornichon/kafka.html" class="">Kafka (Experimental)</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="agourlay" data-github-repo="cornichon"><div class="content-wrapper"><section><h1 id="dsl">DSL</h1>
 
 <p>The content of a <code class="highlighter-rouge">feature</code> is described using a domain-specific language (DSL) providing a clear structure for statement definitions.</p>
 
@@ -18,15 +18,14 @@
 
 <p>For example :</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Given</span> <span class="n">I</span> <span class="n">step_definition</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Given</span> <span class="n">I</span> <span class="n">step_definition</span>
 
 <span class="nc">When</span> <span class="n">a</span> <span class="n">step_definition</span>
 
 <span class="nc">And</span> <span class="o">\`</span><span class="n">another</span> <span class="n">really</span> <span class="n">important</span><span class="o">\`</span> <span class="n">step_definition</span>
 
 <span class="nc">Then</span> <span class="n">assert</span> <span class="n">step_definition</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">step_definition</code> stands here for any object of type <code class="highlighter-rouge">Step</code>, those can be manually defined or simply built-in in Cornichon.</p>
 
@@ -40,7 +39,7 @@
   <li>GET, DELETE, HEAD, OPTIONS, POST, PUT and PATCH use the same request builder for request’s body, URL parameters and headers.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">head</span><span class="o">(</span><span class="s">"http://superhero.io/daredevil"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">head</span><span class="o">(</span><span class="s">"http://superhero.io/daredevil"</span><span class="o">)</span>
 
 <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/daredevil"</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span>
   <span class="s">"firstParam"</span> <span class="o">→</span> <span class="s">"value1"</span><span class="o">,</span>
@@ -55,8 +54,7 @@
   <span class="s">"secondParam"</span> <span class="o">→</span> <span class="s">"value2"</span><span class="o">)</span>
 
 <span class="n">patch</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">).</span><span class="n">withBody</span><span class="o">(</span><span class="s">"JSON description of Batman goes here"</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section <a href="#custom-http-body-type">Custom HTTP body type</a>.</p>
 
@@ -66,29 +64,27 @@
   <li>assert response status</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+</code></pre></div></div>
 
 <ul>
   <li>assert response headers</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">headers</span><span class="o">.</span><span class="n">name</span><span class="o">(</span><span class="s">"cache-control"</span><span class="o">).</span><span class="n">isPresent</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">headers</span><span class="o">.</span><span class="n">name</span><span class="o">(</span><span class="s">"cache-control"</span><span class="o">).</span><span class="n">isPresent</span>
 
 <span class="n">headers</span><span class="o">.</span><span class="n">contain</span><span class="o">(</span><span class="s">"cache-control"</span> <span class="o">→</span> <span class="s">"no-cache"</span><span class="o">)</span>
 
 <span class="n">headers</span><span class="o">.</span><span class="n">name</span><span class="o">(</span><span class="s">"cache_control"</span><span class="o">).</span><span class="n">isAbsent</span>
 
 <span class="n">save_header_value</span><span class="o">(</span><span class="s">"cache_control"</span> <span class="o">→</span> <span class="s">"my-cache-control-value"</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>assert response body comes with different flavors (ignoring, whitelisting)</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span>
   <span class="s">"""
   {
     "name": "Batman",
@@ -124,8 +120,7 @@
     }
   }
   """</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Ignored keys and extractors are JsonPaths following the format “a.b.c[index].d”.</p>
 
@@ -138,7 +133,7 @@
 
 <p>JsonPath can also be used to only assert part of the response</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"city"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="s">"Gotham city"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"city"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="s">"Gotham city"</span><span class="o">)</span>
 
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"hasSuperpowers"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
 
@@ -153,20 +148,18 @@
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"publisher.foundationYear"</span><span class="o">).</span><span class="n">isPresent</span>
 
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"publisher.foundationMonth"</span><span class="o">).</span><span class="n">isAbsent</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>If one key of the path contains a “.” it has to be wrapped with “`” to notify the parser.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"`message.en`"</span><span class="o">).</span><span class="n">isPresent</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"`message.en`"</span><span class="o">).</span><span class="n">isPresent</span>
 
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"`message.fr`"</span><span class="o">).</span><span class="n">isAbsent</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">asArray</span><span class="o">.</span><span class="n">inOrder</span><span class="o">.</span><span class="n">ignoringEach</span><span class="o">(</span><span class="s">"city"</span><span class="o">,</span> <span class="s">"hasSuperpowers"</span><span class="o">,</span> <span class="s">"publisher"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">asArray</span><span class="o">.</span><span class="n">inOrder</span><span class="o">.</span><span class="n">ignoringEach</span><span class="o">(</span><span class="s">"city"</span><span class="o">,</span> <span class="s">"hasSuperpowers"</span><span class="o">,</span> <span class="s">"publisher"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
   <span class="s">"""
   [{
     "name": "Batman",
@@ -203,8 +196,7 @@
     }
   }
   """</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="http-streams">HTTP streams</h2>
 
@@ -212,7 +204,7 @@
   <li>Server-Sent-Event.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="n">open_sse</span><span class="o">(</span><span class="n">s</span><span class="s">"http://superhero.io/stream"</span><span class="o">,</span> <span class="n">takeWithin</span> <span class="k">=</span> <span class="mf">1.</span><span class="n">seconds</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"justName"</span> <span class="o">→</span> <span class="s">"true"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="n">open_sse</span><span class="o">(</span><span class="n">s</span><span class="s">"http://superhero.io/stream"</span><span class="o">,</span> <span class="n">takeWithin</span> <span class="k">=</span> <span class="mf">1.</span><span class="n">seconds</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"justName"</span> <span class="o">→</span> <span class="s">"true"</span><span class="o">)</span>
 
 <span class="nc">Then</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">asArray</span><span class="o">.</span><span class="n">hasSize</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
 
@@ -221,8 +213,7 @@
   | "superhero name" |  "Batman"   |
   | "superhero name" | "Superman"  |
 """</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.</p>
 
@@ -234,7 +225,7 @@
   <li>GraphQL query</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">sangria.macros._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">sangria.macros._</span>
 
  <span class="nc">When</span> <span class="n">I</span> <span class="n">query_gql</span><span class="o">(</span><span class="s">"/&lt;project-key&gt;/graphql"</span><span class="o">).</span><span class="n">withQuery</span><span class="o">(</span>
     <span class="n">graphql</span><span class="s">"""
@@ -251,8 +242,7 @@
       }
     """</span>
     <span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">query_gql</code> can also be used for mutation query.</p>
 
@@ -262,7 +252,7 @@
 
 <p>all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the <code class="highlighter-rouge">gqljson</code> StringContext.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.json.CornichonJson._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.json.CornichonJson._</span>
 
 <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">ignoring</span><span class="o">(</span><span class="s">"city"</span><span class="o">,</span> <span class="s">"publisher"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
   <span class="n">gqljson</span><span class="s">"""
@@ -272,8 +262,7 @@
     hasSuperpowers: false
   }
   """</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="session-steps">Session steps</h2>
 
@@ -281,50 +270,44 @@
   <li>setting a value in <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">save</span><span class="o">(</span><span class="s">"favorite-superhero"</span> <span class="o">→</span> <span class="s">"Batman"</span><span class="o">)</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">save</span><span class="o">(</span><span class="s">"favorite-superhero"</span> <span class="o">→</span> <span class="s">"Batman"</span><span class="o">)</span>
+</code></pre></div></div>
 
 <ul>
   <li>saving value to <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">save_body_path</span><span class="o">(</span><span class="s">"city"</span> <span class="o">-&gt;</span> <span class="s">"batman-city"</span><span class="o">)</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">save_body_path</span><span class="o">(</span><span class="s">"city"</span> <span class="o">-&gt;</span> <span class="s">"batman-city"</span><span class="o">)</span>
+</code></pre></div></div>
 
 <ul>
   <li>asserting value in <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="s">"Batman"</span><span class="o">)</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="s">"Batman"</span><span class="o">)</span>
+</code></pre></div></div>
 
 <ul>
   <li>asserting JSON value in <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">session_value</span><span class="o">(</span><span class="s">"my-json-response"</span><span class="o">).</span><span class="n">asJson</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"a.b.c"</span><span class="o">).</span><span class="n">ignoring</span><span class="o">(</span><span class="s">"d"</span><span class="o">).</span><span class="n">is</span><span class="o">(...)</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">session_value</span><span class="o">(</span><span class="s">"my-json-response"</span><span class="o">).</span><span class="n">asJson</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"a.b.c"</span><span class="o">).</span><span class="n">ignoring</span><span class="o">(</span><span class="s">"d"</span><span class="o">).</span><span class="n">is</span><span class="o">(...)</span>
+</code></pre></div></div>
 
 <ul>
   <li>asserting existence of value in <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">isPresent</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">isPresent</span>
 <span class="n">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="n">isAbsent</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>transforming a value in <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">transform_session</span><span class="o">(</span><span class="s">"my-key"</span><span class="o">)(</span><span class="k">_</span><span class="o">.</span><span class="n">toUpperCase</span><span class="o">)</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">transform_session</span><span class="o">(</span><span class="s">"my-key"</span><span class="o">)(</span><span class="k">_</span><span class="o">.</span><span class="n">toUpperCase</span><span class="o">)</span>
+</code></pre></div></div>
 
 <h3 id="wrapper-steps">Wrapper steps</h3>
 
@@ -334,31 +317,29 @@
   <li>repeating a series of <code class="highlighter-rouge">steps</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Repeat</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Repeat</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>repeating a series of <code class="highlighter-rouge">steps</code> during a period of time</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">RepeatDuring</span><span class="o">(</span><span class="mf">300.</span><span class="n">millis</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatDuring</span><span class="o">(</span><span class="mf">300.</span><span class="n">millis</span><span class="o">)</span> <span class="o">{</span>
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>repeat a series of <code class="highlighter-rouge">steps</code> for each input element</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">RepeatWith</span><span class="o">(</span><span class="s">"Superman"</span><span class="o">,</span> <span class="s">"GreenLantern"</span><span class="o">,</span> <span class="s">"Spiderman"</span><span class="o">)(</span><span class="s">"superhero-name"</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatWith</span><span class="o">(</span><span class="s">"Superman"</span><span class="o">,</span> <span class="s">"GreenLantern"</span><span class="o">,</span> <span class="s">"Spiderman"</span><span class="o">)(</span><span class="s">"superhero-name"</span><span class="o">)</span> <span class="o">{</span>
 
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"/superheroes/&lt;superhero-name&gt;"</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"sessionId"</span> <span class="o">→</span> <span class="s">"&lt;session-id&gt;"</span><span class="o">)</span>
 
@@ -366,26 +347,24 @@
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"hasSuperpowers"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>retry a series of <code class="highlighter-rouge">steps</code> until it succeeds or reaches the limit</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">RetryMax</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RetryMax</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>repeating a series of <code class="highlighter-rouge">steps</code> until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Eventually</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mf">15.</span><span class="n">seconds</span><span class="o">,</span> <span class="n">interval</span> <span class="k">=</span> <span class="mf">200.</span><span class="n">milliseconds</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Eventually</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mf">15.</span><span class="n">seconds</span><span class="o">,</span> <span class="n">interval</span> <span class="k">=</span> <span class="mf">200.</span><span class="n">milliseconds</span><span class="o">)</span> <span class="o">{</span>
 
     <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/random"</span><span class="o">)</span>
 
@@ -399,40 +378,37 @@
       """</span>
     <span class="o">)</span>
   <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>execute a series of steps ‘n’ times concurrently and wait ‘maxTime’ for completion.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Concurrently</span><span class="o">(</span><span class="n">factor</span> <span class="k">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Concurrently</span><span class="o">(</span><span class="n">factor</span> <span class="k">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
 
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>execute a series of steps and fails if the execution does not complete within ‘maxDuration’.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Within</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Within</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
 
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>repeat a series of steps with different inputs specified via a datatable</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">WithDataInputs</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">WithDataInputs</span><span class="o">(</span>
   <span class="s">"""
     | a | b  | c  |
     | 1 | 3  | 4  |
@@ -445,30 +421,27 @@
 
 <span class="k">def</span> <span class="n">a_plus_b_equals_c</span> <span class="k">=</span>
   <span class="nc">AssertStep</span><span class="o">(</span><span class="s">"sum of 'a' + 'b' = 'c'"</span><span class="o">,</span> <span class="n">s</span> <span class="k">⇒</span> <span class="nc">GenericEqualityAssertion</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="n">getUnsafe</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">toInt</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">getUnsafe</span><span class="o">(</span><span class="s">"b"</span><span class="o">).</span><span class="n">toInt</span><span class="o">,</span> <span class="n">s</span><span class="o">.</span><span class="n">getUnsafe</span><span class="o">(</span><span class="s">"c"</span><span class="o">).</span><span class="n">toInt</span><span class="o">))</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>WithHeaders automatically sets headers for several steps useful for authenticated scenario.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">WithHeaders</span><span class="o">((</span><span class="s">"Authorization"</span><span class="o">,</span> <span class="s">"Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="</span><span class="o">)){</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">WithHeaders</span><span class="o">((</span><span class="s">"Authorization"</span><span class="o">,</span> <span class="s">"Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="</span><span class="o">)){</span>
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/secured"</span><span class="o">)</span>
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>WithBasicAuth automatically sets basic auth headers for several steps.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">WithBasicAuth</span><span class="o">(</span><span class="s">"admin"</span><span class="o">,</span> <span class="s">"root"</span><span class="o">){</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">WithBasicAuth</span><span class="o">(</span><span class="s">"admin"</span><span class="o">,</span> <span class="s">"root"</span><span class="o">){</span>
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/secured"</span><span class="o">)</span>
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.</li>
@@ -501,14 +474,13 @@
 
 <p>This is where <code class="highlighter-rouge">LogDuration</code> comes in handy, it requires a label that will be printed as well to identify results.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">LogDuration</span><span class="o">(</span><span class="n">label</span> <span class="k">=</span> <span class="s">"my experiment"</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">LogDuration</span><span class="o">(</span><span class="n">label</span> <span class="k">=</span> <span class="s">"my experiment"</span><span class="o">)</span> <span class="o">{</span>
 
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="debug-steps">Debug steps</h2>
 
@@ -516,7 +488,7 @@
   <li>showing session content for debugging purpose</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code> <span class="nc">And</span> <span class="n">I</span> <span class="n">show_session</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nc">And</span> <span class="n">I</span> <span class="n">show_session</span>
 
  <span class="nc">And</span> <span class="n">I</span> <span class="n">show_last_response</span>
 
@@ -529,8 +501,7 @@
  <span class="nc">And</span> <span class="n">I</span> <span class="n">show_last_body_json</span> <span class="o">(</span><span class="n">pretty</span> <span class="n">print</span> <span class="n">the</span> <span class="n">json</span> <span class="n">body</span><span class="o">)</span>
 
  <span class="nc">And</span> <span class="n">I</span> <span class="n">show_last_headers</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Those descriptions might be already outdated, in case of doubt always refer to those <a href="https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala">examples</a> as they are executed as part of Cornichon’s test suite.</p>
 
@@ -540,7 +511,7 @@
 
 <p>Using the keyword <code class="highlighter-rouge">Attach</code> if the series starts with a <code class="highlighter-rouge">Step</code> and without if it starts with a wrapping bloc.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">scala.concurrent.duration._</span>
 
 <span class="k">class</span> <span class="nc">CompositionFeature</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="o">{</span>
@@ -570,8 +541,7 @@
       <span class="nc">Then</span> <span class="n">I</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"bingo!"</span><span class="o">)</span>
     <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>It is possible to give a title to an attached bloc using <code class="highlighter-rouge">AttachAs(title)</code>.</p>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>hljs.configure({
@@ -579,7 +549,7 @@ languages:['scala','java','bash']
 });
 hljs.initHighlighting();
              </script><script>((window.gitter = {}).chat = {}).options = {
-room: 'agourlay/cornichon'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/cornichon/js/main.js"></script><script src="/cornichon/js/kazari.js"></script><script>
+room: 'agourlay/cornichon'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/cornichon/js/main.js"></script><script>
 $(document).ready(function() {
 	kazari.KazariPlugin().decorateCode('https://scala-evaluator-212.herokuapp.com/eval', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.S2F6YXJp.Jl2eqMfw8IakJF93PjxTbrf-8YUJgX5OoOfy5JHE8Yw', '', 'monokai')
 })

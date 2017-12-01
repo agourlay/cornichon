@@ -9,9 +9,8 @@
 
 <p>cornichon is cross-built for Scala 2.11, and 2.12 so you can just add the following to your build:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.github.agourlay"</span> <span class="o">%%</span> <span class="s">"cornichon"</span> <span class="o">%</span> <span class="s">"0.14.1"</span> <span class="o">%</span> <span class="nc">Test</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.github.agourlay"</span> <span class="o">%%</span> <span class="s">"cornichon"</span> <span class="o">%</span> <span class="s">"0.14.1"</span> <span class="o">%</span> <span class="nc">Test</span>
+</code></pre></div></div>
 
 <p>Cornichon is currently integrated with <a href="http://www.scalatest.org/">ScalaTest</a>, place your <code class="highlighter-rouge">Feature</code> files inside <code class="highlighter-rouge">src/test/scala</code> and run them using <code class="highlighter-rouge">sbt test</code>.</p>
 
@@ -21,7 +20,7 @@
 
 <p>Find below an example of testing the Open Movie Database API.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 
 <span class="k">class</span> <span class="nc">ReadmeExample</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="o">{</span>
 
@@ -95,8 +94,7 @@
     <span class="o">}</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>For more examples see the following files which are part of the test pipeline:</p>
 
@@ -128,7 +126,7 @@
 
 <p>The example below contains one <code class="highlighter-rouge">feature</code> with one <code class="highlighter-rouge">scenario</code> with two <code class="highlighter-rouge">steps</code>.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 
 <span class="k">class</span> <span class="nc">CornichonExamplesSpec</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="o">{</span>
 
@@ -142,8 +140,7 @@
     <span class="o">}</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The failure modes are the following:</p>
 
@@ -174,8 +171,4 @@ languages:['scala','java','bash']
 });
 hljs.initHighlighting();
              </script><script>((window.gitter = {}).chat = {}).options = {
-room: 'agourlay/cornichon'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/cornichon/js/kazari.js"></script><script>
-$(document).ready(function() {
-	kazari.KazariPlugin().decorateCode('https://scala-evaluator-212.herokuapp.com/eval', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.S2F6YXJp.Jl2eqMfw8IakJF93PjxTbrf-8YUJgX5OoOfy5JHE8Yw', '', 'monokai')
-})
-    </script></body></html>
+room: 'agourlay/cornichon'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script></body></html>

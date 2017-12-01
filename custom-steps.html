@@ -1,4 +1,4 @@
-<html><head><title>Cornichon</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Arnaud Gourlay" /><meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="og:image" content="/cornichon/img/poster.png" /><meta name="og:title" content="Cornichon" /><meta name="og:site_name" content="Cornichon" /><meta name="og:url" content="http://agourlay.github.io/cornichon/" /><meta name="og:type" content="website" /><meta name="og:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><link rel="icon" type="image/png" href="/cornichon/img/favicon.png" /><meta name="twitter:title" content="Cornichon" /><meta name="twitter:image" content="http://agourlay.github.io/cornichon/img/poster.png" /><meta name="twitter:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/cornichon/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/cornichon/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/cornichon/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/cornichon/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/cornichon/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/cornichon/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/cornichon/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/cornichon/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/cornichon/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/cornichon/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/cornichon/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/cornichon/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/cornichon/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/cornichon/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/cornichon/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/cornichon/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/cornichon/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/cornichon/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/cornichon/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/cornichon/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/cornichon/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/cornichon/css/style.css" /><link rel="stylesheet" href="/cornichon/css/palette.css" /><link rel="stylesheet" href="/cornichon/css/codemirror.css" /><link rel="stylesheet" href="/cornichon/css/kazari-style.css" /><link rel="stylesheet" href="/cornichon/css/monokai.css" /><link rel="stylesheet" href="/cornichon/css/override.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/cornichon/" class="brand"><div class="brand-wrapper"><span>Cornichon</span></div></a></li> <li><a href="/cornichon/dsl.html" class="">DSL</a></li> <li><a href="/cornichon/custom-steps.html" class=" active ">Custom steps</a></li> <li><a href="/cornichon/placeholders-matchers.html" class="">Placeholders & matchers</a></li> <li><a href="/cornichon/feature-options.html" class="">Feature options</a></li> <li><a href="/cornichon/misc.html" class="">Misc.</a></li> <li><a href="/cornichon/modules.html" class="">Modules</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="agourlay" data-github-repo="cornichon"><div class="content-wrapper"><section><h1 id="custom-steps">Custom steps</h1>
+<html><head><title>Cornichon</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Arnaud Gourlay" /><meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="og:image" content="/cornichon/img/poster.png" /><meta name="og:title" content="Cornichon" /><meta name="og:site_name" content="Cornichon" /><meta name="og:url" content="http://agourlay.github.io/cornichon/" /><meta name="og:type" content="website" /><meta name="og:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><link rel="icon" type="image/png" href="/cornichon/img/favicon.png" /><meta name="twitter:title" content="Cornichon" /><meta name="twitter:image" content="http://agourlay.github.io/cornichon/img/poster.png" /><meta name="twitter:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/cornichon/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/cornichon/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/cornichon/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/cornichon/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/cornichon/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/cornichon/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/cornichon/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/cornichon/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/cornichon/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/cornichon/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/cornichon/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/cornichon/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/cornichon/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/cornichon/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/cornichon/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/cornichon/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/cornichon/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/cornichon/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/cornichon/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/cornichon/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/cornichon/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/cornichon/css/style.css" /><link rel="stylesheet" href="/cornichon/css/palette.css" /><link rel="stylesheet" href="/cornichon/css/codemirror.css" /><link rel="stylesheet" href="/cornichon/css/kazari-style.css" /><link rel="stylesheet" href="/cornichon/css/monokai.css" /><link rel="stylesheet" href="/cornichon/css/override.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/cornichon/" class="brand"><div class="brand-wrapper"><span>Cornichon</span></div></a></li> <li><a href="/cornichon/dsl.html" class="">DSL</a></li> <li><a href="/cornichon/custom-steps.html" class=" active ">Custom steps</a></li> <li><a href="/cornichon/placeholders-matchers.html" class="">Placeholders & matchers</a></li> <li><a href="/cornichon/feature-options.html" class="">Feature options</a></li> <li><a href="/cornichon/misc.html" class="">Misc.</a></li> <li><a href="/cornichon/modules.html" class="">Modules</a></li> <li><a href="/cornichon/kafka.html" class="">Kafka (Experimental)</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="agourlay" data-github-repo="cornichon"><div class="content-wrapper"><section><h1 id="custom-steps">Custom steps</h1>
 
 <h2 id="effectstep">EffectStep</h2>
 
@@ -10,23 +10,20 @@
 
 <p>Here is the most simple <code class="highlighter-rouge">EffectStep</code>:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">.</span><span class="n">successful</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">s</span><span class="o">)))</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">.</span><span class="n">successful</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">s</span><span class="o">)))</span>
+</code></pre></div></div>
 
 <p>or using a factory helper when dealing with computations that do not fit the <code class="highlighter-rouge">EffectStep</code> type.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">)</span>
 <span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="n">s</span><span class="o">))</span>
 <span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromAsync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Future</span><span class="o">(</span><span class="n">s</span><span class="o">))</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Let’s try so save a value into the <code class="highlighter-rouge">Session</code></p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="n">piComputation</span><span class="o">())</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="n">piComputation</span><span class="o">())</span>
+</code></pre></div></div>
 
 <p>The test engine is responsible for controling the execution of the side effect function and to report any error.</p>
 
@@ -36,7 +33,7 @@
 
 <p>In order to illustrate its usage let’s take the following example, you would like to write a custom step like:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Customer endpoint"</span><span class="o">){</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Customer endpoint"</span><span class="o">){</span>
 
   <span class="nc">Scenario</span><span class="o">(</span><span class="s">"create customer"</span><span class="o">){</span>
 
@@ -45,14 +42,13 @@
     <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">201</span><span class="o">)</span>
 
   <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Most of the time you will create your own trait containing your custom steps and declare a self-type on <code class="highlighter-rouge">CornichonFeature</code> to be able to access the <code class="highlighter-rouge">httpService</code>.</p>
 
 <p>It exposes a method <code class="highlighter-rouge">requestEffect</code> turning an <code class="highlighter-rouge">HttpRequest</code> into an asynchronous effect.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MySteps</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MySteps</span> <span class="o">{</span>
   <span class="k">this:</span> <span class="kt">CornichonFeature</span> <span class="k">⇒</span>
 
   <span class="kt">def</span> <span class="kt">create_customer</span> <span class="o">=</span> <span class="nc">EffectStep</span><span class="o">(</span>
@@ -64,8 +60,7 @@
     <span class="o">)</span>
   <span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The built-in HTTP steps available on the DSL are actually built on top of the <code class="highlighter-rouge">httpService</code> which means that you benefit from all the existing infrastructure to:</p>
 
@@ -87,16 +82,14 @@
       <li>
         <p>GenericEqualityAssertion to leave all the details to Cornichon</p>
 
-        <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">AssertStep</span><span class="o">(</span><span class="s">"always true!"</span><span class="o">,</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">GenericEqualityAssertion</span><span class="o">(</span><span class="kc">true</span><span class="o">,</span> <span class="kc">true</span><span class="o">))</span>
-</code></pre>
-        </div>
+        <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">AssertStep</span><span class="o">(</span><span class="s">"always true!"</span><span class="o">,</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">GenericEqualityAssertion</span><span class="o">(</span><span class="kc">true</span><span class="o">,</span> <span class="kc">true</span><span class="o">))</span>
+</code></pre></div>        </div>
       </li>
       <li>
         <p>CustomMessageEqualityAssertion to provide a custom error message</p>
 
-        <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">CustomMessageAssertion</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">expected</span><span class="k">:</span> <span class="kt">A</span><span class="o">,</span> <span class="n">result</span><span class="k">:</span> <span class="kt">A</span><span class="o">,</span> <span class="n">customMessage</span><span class="k">:</span> <span class="kt">A</span> <span class="k">⇒</span> <span class="kt">String</span><span class="o">)</span>
-</code></pre>
-        </div>
+        <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">CustomMessageAssertion</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">expected</span><span class="k">:</span> <span class="kt">A</span><span class="o">,</span> <span class="n">result</span><span class="k">:</span> <span class="kt">A</span><span class="o">,</span> <span class="n">customMessage</span><span class="k">:</span> <span class="kt">A</span> <span class="k">⇒</span> <span class="kt">String</span><span class="o">)</span>
+</code></pre></div>        </div>
       </li>
     </ul>
   </li>
@@ -125,7 +118,7 @@
 
 <p>Below is a longer example showing how to integration an assertion into scenario.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span>
   <span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span>
   <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="n">piComputation</span><span class="o">())</span>
 <span class="o">)</span>
@@ -136,8 +129,7 @@
     <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"result"</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">BetweenAssertion</span><span class="o">(</span><span class="mf">3.1</span><span class="o">,</span> <span class="n">r</span><span class="o">.</span><span class="n">toDouble</span><span class="o">,</span> <span class="mf">3.2</span><span class="o">))</span>
   <span class="o">}</span>
 <span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">Assertions</code> can also be composed using <code class="highlighter-rouge">and</code> and <code class="highlighter-rouge">or</code>, for instance <code class="highlighter-rouge">BetweenAssertion</code> is the result of <code class="highlighter-rouge">LessThanAssertion</code> and <code class="highlighter-rouge">GreaterThanAssertion</code>.</p>
 
@@ -159,12 +151,11 @@ through the <code class="highlighter-rouge">Session</code>.</p>
 
 <p>So, for example, in a scenario containing:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Given</span> <span class="n">I</span> <span class="n">setup_some_fixture_data</span><span class="o">()</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Given</span> <span class="n">I</span> <span class="n">setup_some_fixture_data</span><span class="o">()</span>
+</code></pre></div></div>
 
 <p>where</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">setup_some_fixture_data</span><span class="o">()</span> <span class="k">=</span> <span class="nc">ResourceStep</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="n">setup_some_fixture_data</span><span class="o">()</span> <span class="k">=</span> <span class="nc">ResourceStep</span><span class="o">(</span>
   <span class="n">title</span> <span class="k">=</span> <span class="s">"Set up fixture data"</span>
   <span class="n">acquire</span> <span class="k">=</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="s">"insert data"</span><span class="o">,</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
     <span class="k">val</span> <span class="n">randomId</span> <span class="k">=</span> <span class="n">insertData</span><span class="o">()</span>
@@ -175,8 +166,7 @@ through the <code class="highlighter-rouge">Session</code>.</p>
     <span class="n">deleteData</span><span class="o">(</span><span class="n">randomId</span><span class="o">)</span>
   <span class="o">})</span>
 <span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>we can be sure that the <code class="highlighter-rouge">clean up data</code> step runs regardless of what happens after <code class="highlighter-rouge">insert data</code>.</p>
 
@@ -187,7 +177,7 @@ languages:['scala','java','bash']
 });
 hljs.initHighlighting();
              </script><script>((window.gitter = {}).chat = {}).options = {
-room: 'agourlay/cornichon'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/cornichon/js/main.js"></script><script src="/cornichon/js/kazari.js"></script><script>
+room: 'agourlay/cornichon'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/cornichon/js/main.js"></script><script>
 $(document).ready(function() {
 	kazari.KazariPlugin().decorateCode('https://scala-evaluator-212.herokuapp.com/eval', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.S2F6YXJp.Jl2eqMfw8IakJF93PjxTbrf-8YUJgX5OoOfy5JHE8Yw', '', 'monokai')
 })

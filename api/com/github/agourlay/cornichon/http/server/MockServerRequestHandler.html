@@ -179,12 +179,16 @@
                         <a href="MockHttpServer.html" title="">MockHttpServer</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
+                        <a class="object" href="MockHttpServerError$.html" title=""></a>
+                        <a href="MockHttpServerError$.html" title="">MockHttpServerError</a>
+                      </li><li class="current-entities indented6">
+                        <span class="separator"></span>
                         <a class="class" href="" title=""></a>
                         <a href="" title="">MockServerRequestHandler</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="class" href="MockServerResultsHolder.html" title=""></a>
-                        <a href="MockServerResultsHolder.html" title="">MockServerResultsHolder</a>
+                        <a class="class" href="MockServerStateHolder.html" title=""></a>
+                        <a href="MockServerStateHolder.html" title="">MockServerStateHolder</a>
                       </li>
               </ul>
             </div>
@@ -264,9 +268,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;():com.github.agourlay.cornichon.http.server.MockServerRequestHandler"></a><a id="&lt;init&gt;:MockServerRequestHandler"></a>
+      <a id="&lt;init&gt;()(implicitstrategy:fs2.Strategy,implicitscheduler:fs2.Scheduler):com.github.agourlay.cornichon.http.server.MockServerRequestHandler"></a><a id="&lt;init&gt;:MockServerRequestHandler"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#&lt;init&gt;():com.github.agourlay.cornichon.http.server.MockServerRequestHandler" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#&lt;init&gt;()(implicitstrategy:fs2.Strategy,implicitscheduler:fs2.Scheduler):com.github.agourlay.cornichon.http.server.MockServerRequestHandler" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -275,7 +279,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MockServerRequestHandler</span><span class="params">()</span>
+        <span class="name">MockServerRequestHandler</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="strategy">strategy: <span class="extype" name="fs2.Strategy">Strategy</span></span>, <span name="scheduler">scheduler: <span class="extype" name="fs2.Scheduler">Scheduler</span></span>)</span>
       </span>
       
       
@@ -587,6 +591,22 @@
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#replyWithDelay" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="replyWithDelay(t:fs2.Task[org.http4s.Response]):fs2.Task[org.http4s.Response]"></a><a id="replyWithDelay(Task[Response]):Task[Response]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockServerRequestHandler.html#replyWithDelay(t:fs2.Task[org.http4s.Response]):fs2.Task[org.http4s.Response]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">replyWithDelay</span><span class="params">(<span name="t">t: <span class="extype" name="fs2.Task">Task</span>[<span class="extype" name="org.http4s.Response">Response</span>]</span>)</span><span class="result">: <span class="extype" name="fs2.Task">Task</span>[<span class="extype" name="org.http4s.Response">Response</span>]</span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.http.server.MockServerRequestHandler#saveRequest" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="saveRequest(rawReq:org.http4s.Request):fs2.Task[Boolean]"></a><a id="saveRequest(Request):Task[Boolean]"></a>
       <span class="permalink">

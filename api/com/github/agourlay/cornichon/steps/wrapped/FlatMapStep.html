@@ -199,8 +199,8 @@
                         <a href="EventuallyStep.html" title="">EventuallyStep</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="class" href="FlatMapStep.html" title=""></a>
-                        <a href="FlatMapStep.html" title="">FlatMapStep</a>
+                        <a class="class" href="" title=""></a>
+                        <a href="" title="">FlatMapStep</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
                         <a class="class" href="LogDurationStep.html" title=""></a>
@@ -231,8 +231,8 @@
                         <a href="RepeatWithStep.html" title="">RepeatWithStep</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">RetryMaxBlockReachedLimit</a>
+                        <a class="class" href="RetryMaxBlockReachedLimit.html" title=""></a>
+                        <a href="RetryMaxBlockReachedLimit.html" title="">RetryMaxBlockReachedLimit</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
                         <a class="class" href="RetryMaxStep.html" title=""></a>
@@ -266,8 +266,8 @@
       <div id="definition">
         <div class="big-circle class">c</div>
         <p id="owner"><a href="../../../../../index.html" class="extype" name="com">com</a>.<a href="../../../../index.html" class="extype" name="com.github">github</a>.<a href="../../../index.html" class="extype" name="com.github.agourlay">agourlay</a>.<a href="../../index.html" class="extype" name="com.github.agourlay.cornichon">cornichon</a>.<a href="../index.html" class="extype" name="com.github.agourlay.cornichon.steps">steps</a>.<a href="index.html" class="extype" name="com.github.agourlay.cornichon.steps.wrapped">wrapped</a></p>
-        <h1>RetryMaxBlockReachedLimit<span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html" title="Permalink">
+        <h1>FlatMapStep<span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
@@ -280,7 +280,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">RetryMaxBlockReachedLimit</span><span class="params">(<span name="limit">limit: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <span class="name">FlatMapStep</span><span class="params">(<span name="started">started: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="nestedProducers">nestedProducers: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;&quot;</span></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       </h4>
 
@@ -289,7 +289,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.4/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="http://www.scala-lang.org/api/2.12.4/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.4/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.4/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a>, <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>, <a href="http://www.scala-lang.org/api/2.12.4/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.4/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></div>
         </div></div>
         
 
@@ -315,7 +315,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit"><span>RetryMaxBlockReachedLimit</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.core.CornichonError"><span>CornichonError</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep"><span>FlatMapStep</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.core.WrapperStep"><span>WrapperStep</span></li><li class="in" name="com.github.agourlay.cornichon.core.Step"><span>Step</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -335,10 +335,10 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(limit:Int,errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]):com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit"></a><a id="&lt;init&gt;:RetryMaxBlockReachedLimit"></a>
+              <ol><li name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(started:com.github.agourlay.cornichon.core.Step,nestedProducers:com.github.agourlay.cornichon.core.Session=&gt;List[com.github.agourlay.cornichon.core.Step],title:String):com.github.agourlay.cornichon.steps.wrapped.FlatMapStep"></a><a id="&lt;init&gt;:FlatMapStep"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#&lt;init&gt;(limit:Int,errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]):com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#&lt;init&gt;(started:com.github.agourlay.cornichon.core.Step,nestedProducers:com.github.agourlay.cornichon.core.Session=&gt;List[com.github.agourlay.cornichon.core.Step],title:String):com.github.agourlay.cornichon.steps.wrapped.FlatMapStep" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -347,7 +347,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">RetryMaxBlockReachedLimit</span><span class="params">(<span name="limit">limit: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span>
+        <span class="name">FlatMapStep</span><span class="params">(<span name="started">started: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="nestedProducers">nestedProducers: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="title">title: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;&quot;</span></span>)</span>
       </span>
       
       
@@ -364,7 +364,7 @@
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -380,7 +380,7 @@
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html###():Int" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -396,7 +396,7 @@
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -412,7 +412,7 @@
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -425,42 +425,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit#baseErrorMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="baseErrorMessage:String"></a>
+    </li><li name="com.github.agourlay.cornichon.core.Step#chain" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="chain(others:com.github.agourlay.cornichon.core.Session=&gt;List[com.github.agourlay.cornichon.core.Step]):com.github.agourlay.cornichon.core.Step"></a><a id="chain((Session)⇒List[Step]):Step"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#baseErrorMessage:String" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#chain(others:com.github.agourlay.cornichon.core.Session=&gt;List[com.github.agourlay.cornichon.core.Step]):com.github.agourlay.cornichon.core.Step" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">baseErrorMessage</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">chain</span><span class="params">(<span name="others">others: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>)</span><span class="result">: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit">RetryMaxBlockReachedLimit</a> → <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit#causedBy" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="causedBy:Some[cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]]"></a><a id="causedBy:Some[NonEmptyList[CornichonError]]"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#causedBy:Some[cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">causedBy</span><span class="result">: <span class="extype" name="scala.Some">Some</span>[<a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]]</span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit">RetryMaxBlockReachedLimit</a> → <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#clone():Object" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -484,7 +468,7 @@
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -497,26 +481,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit#errors" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]"></a><a id="errors:NonEmptyList[CornichonError]"></a>
+    </li><li name="com.github.agourlay.cornichon.core.WrapperStep#failedTitleLog" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="failedTitleLog(depth:Int):com.github.agourlay.cornichon.core.FailureLogInstruction"></a><a id="failedTitleLog(Int):FailureLogInstruction"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#failedTitleLog(depth:Int):com.github.agourlay.cornichon.core.FailureLogInstruction" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">errors</span><span class="result">: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>
+        <span class="name">failedTitleLog</span><span class="params">(<span name="depth">depth: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="../../core/FailureLogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.FailureLogInstruction">FailureLogInstruction</a></span>
       </span>
       
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#finalize():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -538,7 +522,7 @@
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#getClass():Class[_]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -557,7 +541,7 @@
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -570,26 +554,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.RetryMaxBlockReachedLimit#limit" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="limit:Int"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#limit:Int" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">limit</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -602,10 +570,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep#nestedProducers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="nestedProducers:com.github.agourlay.cornichon.core.Session=&gt;List[com.github.agourlay.cornichon.core.Step]"></a><a id="nestedProducers:(Session)⇒List[Step]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#nestedProducers:com.github.agourlay.cornichon.core.Session=&gt;List[com.github.agourlay.cornichon.core.Step]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nestedProducers</span><span class="result">: (<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#notify():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -624,7 +608,7 @@
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#notifyAll():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -640,26 +624,74 @@
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.core.CornichonError#renderedMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="renderedMessage:String"></a>
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="run(engine:com.github.agourlay.cornichon.core.Engine)(initialRunState:com.github.agourlay.cornichon.core.RunState):monix.eval.Task[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]"></a><a id="run(Engine)(RunState):Task[(RunState,Either[FailedStep,Done])]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#renderedMessage:String" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#run(engine:com.github.agourlay.cornichon.core.Engine)(initialRunState:com.github.agourlay.cornichon.core.RunState):monix.eval.Task[(com.github.agourlay.cornichon.core.RunState,Either[com.github.agourlay.cornichon.core.FailedStep,com.github.agourlay.cornichon.core.Done])]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">lazy val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">renderedMessage</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">run</span><span class="params">(<span name="engine">engine: <a href="../../core/Engine.html" class="extype" name="com.github.agourlay.cornichon.core.Engine">Engine</a></span>)</span><span class="params">(<span name="initialRunState">initialRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[(<a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>, <span class="extype" name="scala.Either">Either</span>[<a href="../../core/FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>, <a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>])]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep">FlatMapStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.core.WrapperStep#setTitle" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setTitle(newTitle:String):com.github.agourlay.cornichon.core.WrapperStep"></a><a id="setTitle(String):WrapperStep"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#setTitle(newTitle:String):com.github.agourlay.cornichon.core.WrapperStep" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setTitle</span><span class="params">(<span name="newTitle">newTitle: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep#started" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="started:com.github.agourlay.cornichon.core.Step"></a><a id="started:Step"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#started:com.github.agourlay.cornichon.core.Step" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">started</span><span class="result">: <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.core.WrapperStep#successTitleLog" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="successTitleLog(depth:Int):com.github.agourlay.cornichon.core.SuccessLogInstruction"></a><a id="successTitleLog(Int):SuccessLogInstruction"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#successTitleLog(depth:Int):com.github.agourlay.cornichon.core.SuccessLogInstruction" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">successTitleLog</span><span class="params">(<span name="depth">depth: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="../../core/SuccessLogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.SuccessLogInstruction">SuccessLogInstruction</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -672,26 +704,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.core.CornichonError#toException" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="toException:com.github.agourlay.cornichon.core.CornichonException"></a><a id="toException:CornichonException"></a>
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep#title" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="title:String"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#toException:com.github.agourlay.cornichon.core.CornichonException" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#title:String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">def</span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">toException</span><span class="result">: <a href="../../core/CornichonException.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonException">CornichonException</a></span>
+        <span class="name">title</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.steps.wrapped.FlatMapStep">FlatMapStep</a> → <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#wait():Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -713,7 +745,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -735,7 +767,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/RetryMaxBlockReachedLimit.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/FlatMapStep.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -774,8 +806,10 @@
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a></h3>
             </div><div class="parent" name="scala.Equals">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.4/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a></h3>
-            </div><div class="parent" name="com.github.agourlay.cornichon.core.CornichonError">
-              <h3>Inherited from <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></h3>
+            </div><div class="parent" name="com.github.agourlay.cornichon.core.WrapperStep">
+              <h3>Inherited from <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a></h3>
+            </div><div class="parent" name="com.github.agourlay.cornichon.core.Step">
+              <h3>Inherited from <a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></h3>
             </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.4/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
