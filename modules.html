@@ -1,41 +1,128 @@
 <html><head><title>Cornichon</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Arnaud Gourlay" /><meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="og:image" content="/cornichon/img/poster.png" /><meta name="og:title" content="Cornichon" /><meta name="og:site_name" content="Cornichon" /><meta name="og:url" content="http://agourlay.github.io/cornichon/" /><meta name="og:type" content="website" /><meta name="og:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><link rel="icon" type="image/png" href="/cornichon/img/favicon.png" /><meta name="twitter:title" content="Cornichon" /><meta name="twitter:image" content="http://agourlay.github.io/cornichon/img/poster.png" /><meta name="twitter:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/cornichon/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/cornichon/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/cornichon/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/cornichon/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/cornichon/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/cornichon/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/cornichon/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/cornichon/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/cornichon/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/cornichon/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/cornichon/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/cornichon/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/cornichon/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/cornichon/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/cornichon/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/cornichon/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/cornichon/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/cornichon/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/cornichon/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/cornichon/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/cornichon/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/cornichon/css/style.css" /><link rel="stylesheet" href="/cornichon/css/palette.css" /><link rel="stylesheet" href="/cornichon/css/codemirror.css" /><link rel="stylesheet" href="/cornichon/css/override.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/cornichon/" class="brand"><div class="brand-wrapper"><span>Cornichon</span></div></a></li> <li><a href="/cornichon/dsl.html" class="">DSL</a></li> <li><a href="/cornichon/custom-steps.html" class="">Custom steps</a></li> <li><a href="/cornichon/placeholders-matchers.html" class="">Placeholders & matchers</a></li> <li><a href="/cornichon/feature-options.html" class="">Feature options</a></li> <li><a href="/cornichon/misc.html" class="">Misc.</a></li> <li><a href="/cornichon/modules.html" class=" active ">Modules</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="agourlay" data-github-repo="cornichon"><div class="content-wrapper"><section><h1 id="modules">Modules</h1>
 
-<p>The library is composed of several modules with different purposes:</p>
+<p>The library is composed of several modules with different purposes to enable users to pick and choose according to their needs:</p>
 
-<h2 id="core">Core</h2>
-
-<p><code class="highlighter-rouge">cornichon-core</code> this is the central brick containing the models and execution engine.</p>
+<p>Experimental modules are likely to be subject to important changes in the future.</p>
 
 <h2 id="cornichon">Cornichon</h2>
 
 <p><code class="highlighter-rouge">cornichon</code> exposes the cornichon features through an integration with <code class="highlighter-rouge">Scalatest</code>. (might be renamed to <code class="highlighter-rouge">cornichon-scalatest</code> later)</p>
 
-<h2 id="cornichon-without-scalatest">Cornichon without Scalatest</h2>
+<h2 id="cornichon-without-scalatest-experimental">Cornichon without Scalatest (experimental)</h2>
 
-<p><code class="highlighter-rouge">cornichon-experimental</code> exposes the cornichon feature through a direct integration with <code class="highlighter-rouge">SBT test-interface</code>.</p>
+<p><code class="highlighter-rouge">cornichon-experimental</code> exposes Cornichon’s feature through a direct integration with <code class="highlighter-rouge">SBT test-interface</code>.</p>
 
-<p>Requires a special configuration in the build.sbt file to use the right <code class="highlighter-rouge">TestFramework</code>:
-<code class="highlighter-rouge">testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework")</code></p>
+<p>This requires a special configuration in the build.sbt file to use the right <code class="highlighter-rouge">TestFramework</code>:</p>
+
+<p><code class="highlighter-rouge">testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework")</code></p>
 
 <p>Moreover <code class="highlighter-rouge">CornichonFeature</code> lives under <code class="highlighter-rouge">com.github.agourlay.cornichon.experimental</code>.</p>
 
-<h2 id="docs">Docs</h2>
+<h2 id="http-mock-experimental">Http Mock (experimental)</h2>
 
-<p><code class="highlighter-rouge">cornichon-docs</code> contains the code to generate this documentation using <code class="highlighter-rouge">sbt-microsite</code>.</p>
+<p><code class="highlighter-rouge">cornichon-http-mock</code> contains the <code class="highlighter-rouge">ListenTo</code> DSL and infrastructure to build tests relying on mocked endpoints.</p>
 
-<h2 id="benchmarks">Benchmarks</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> Scenario("reply to POST request with 201 and assert on received bodies") {
+    HttpMock("awesome-server") {
+      When I post("&lt;awesome-server-url&gt;/heroes/batman").withBody(
+        """
+        {
+          "name": "Batman",
+          "realName": "Bruce Wayne",
+          "hasSuperpowers": false
+        }
+        """
+      )
 
-<p><code class="highlighter-rouge">cornichon-benchmarks</code> contains performance benchmarks built with <code class="highlighter-rouge">sbt-jmh</code>.</p>
+      When I post("&lt;awesome-server-url&gt;/heroes/superman").withBody(
+        """
+        {
+          "name": "Superman",
+          "realName": "Clark Kent",
+          "hasSuperpowers": true
+        }
+        """
+      )
 
-<h2 id="http-mock">Http mock</h2>
+      Then assert status.is(201)
 
-<p><code class="highlighter-rouge">cornichon-http-mock</code> : contains the <code class="highlighter-rouge">ListenTo</code> DSL and infrastructure to build tests relying on mocked endpoints. See tests in module for usage.</p>
+      // HTTP Mock exposes what it received
+      When I get("&lt;awesome-server-url&gt;/requests-received")
+
+      Then assert body.asArray.ignoringEach("headers").is(
+        """
+        [
+          {
+            "body" : {
+              "name" : "Batman",
+              "realName" : "Bruce Wayne",
+              "hasSuperpowers" : false
+            },
+            "url" : "/heroes/batman",
+            "method" : "POST",
+            "parameters" : {}
+          },
+          {
+            "body" : {
+              "name" : "Superman",
+              "realName" : "Clark Kent",
+              "hasSuperpowers" : true
+            },
+            "url" : "/heroes/superman",
+            "method" : "POST",
+            "parameters" : {}
+          }
+        ]
+      """
+      )
+
+    }
+
+    // Once HTTP Mock closed, the recorded requests are dumped in the session
+    And assert httpListen("awesome-server").received_calls(2)
+
+    And assert httpListen("awesome-server").received_requests.asArray.ignoringEach("headers").is(
+      """
+        [
+          {
+            "body" : {
+              "name" : "Batman",
+              "realName" : "Bruce Wayne",
+              "hasSuperpowers" : false
+            },
+            "url" : "/heroes/batman",
+            "method" : "POST",
+            "parameters" : {}
+          },
+          {
+            "body" : {
+              "name" : "Superman",
+              "realName" : "Clark Kent",
+              "hasSuperpowers" : true
+            },
+            "url" : "/heroes/superman",
+            "method" : "POST",
+            "parameters" : {}
+          }
+        ]
+      """
+    )
+
+    And assert httpListen("awesome-server").received_requests.path("$[0].body.name").is("Batman")
+
+    And assert httpListen("awesome-server").received_requests.path("$[1].body").is(
+      """
+      {
+        "name": "Superman",
+        "realName": "Clark Kent",
+        "hasSuperpowers": true
+      }
+      """
+    )
+ }
+</code></pre></div></div>
 
 <h2 id="kafka-support-experimental">Kafka Support (experimental)</h2>
-
-<h3 id="disclaimer">Disclaimer</h3>
-
-<p>This module is experimental and will be subject to important changes in the future</p>
 
 <h3 id="description">Description</h3>
 
@@ -64,11 +151,11 @@ Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000)
 
 Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
 """
-          {
-             "key": "my-key",
-             "topic": "my-topic",
-             "value": "the actual message"
-          }
+    {
+     "key": "my-key",
+     "topic": "my-topic",
+     "value": "the actual message"
+    }
 """)
 
 
@@ -84,11 +171,11 @@ Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey
 
 Then assert session_value("message").asJson.ignoring("timestamp").is(
 """
-          {
-             "key": "my-key",
-             "topic": "my-topic",
-             "value": "the actual message"
-          }
+    {
+     "key": "my-key",
+     "topic": "my-topic",
+     "value": "the actual message"
+    }
 """)
 
 
@@ -99,17 +186,17 @@ the message can be read as json:</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Given I put_topic(topic = "my-topic", key = "my-key", message =
 """
-        {
-           "cornichon": "mon dieu",
-           "cucumber": "sacre bleu"
-        }
+    {
+       "cornichon": "mon dieu",
+       "cucumber": "sacre bleu"
+    }
 """)
 Then I read_json_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey = Some("message"))
 Then assert session_value("message").asJson.ignoring("cucumber").is(
 """
-       {
-           "cornichon": "mon dieu"
-       }
+   {
+       "cornichon": "mon dieu"
+   }
 """
 )
 </code></pre></div></div>
