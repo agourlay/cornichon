@@ -276,6 +276,12 @@ And assert body.ignoring("city", "publisher").is(
 
 ## Kafka Support (experimental)
 
+### Disclaimer
+
+This module is experimental and will be subject to important changes in the future
+
+### Description
+
 Cornichon offers a support for [Kafka](https://kafka.apache.org) v1.0.0
 
 Due to the architecture of kafka and and the handling of consumers offsets, **the default execution of
