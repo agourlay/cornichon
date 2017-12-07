@@ -105,8 +105,8 @@ lazy val cornichon =
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
-      unmanagedSourceDirectories.in(Compile) := Seq.empty,
-      unmanagedSourceDirectories.in(Test) := Seq.empty
+      unmanagedSourceDirectories.in(Compile) := Nil,
+      unmanagedSourceDirectories.in(Test) := Nil
     )
 
 lazy val core =
@@ -223,7 +223,6 @@ lazy val docs =
       name := "cornichon-docs",
       unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks)
     )
-    .dependsOn(core, scalatest)
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(ScalaUnidocPlugin)
     .enablePlugins(GhpagesPlugin)
