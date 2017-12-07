@@ -223,6 +223,7 @@ lazy val docs =
       name := "cornichon-docs",
       unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks)
     )
+    .dependsOn(core, scalatest)
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(ScalaUnidocPlugin)
     .enablePlugins(GhpagesPlugin)
