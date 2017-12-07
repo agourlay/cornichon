@@ -4,6 +4,7 @@ import cats.scalatest.{ EitherMatchers, EitherValues }
 import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Config, Session }
 import com.github.agourlay.cornichon.http.HttpMethods.GET
+import com.github.agourlay.cornichon.http.client.NoOpHttpClient
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
@@ -19,10 +20,6 @@ class HttpServiceSpec extends WordSpec
   val client = new NoOpHttpClient
   val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config())
   val dummyRequest = HttpRequest[String](GET, "", None, Nil, Nil)
-
-  override def afterAll() = {
-    client.shutdown()
-  }
 
   "HttpService" when {
     "fillInSessionWithResponse" must {
