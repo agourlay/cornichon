@@ -72,8 +72,10 @@ package object macros {
     private def typecheck(tree: Tree, elementType: Type) = {
       val seq = seqType(elementType)
       val checked = c.typecheck(tree)
-
-      if (checked.tpe <:< elementType || checked.tpe <:< seq)
+      // checked.tpe is null if the statement is an import
+      if (checked.tpe == null)
+        Left(tree.pos → s"Expected expression of either `$elementType` or `$seq` but found '$tree'")
+      else if (checked.tpe <:< elementType || checked.tpe <:< seq)
         Right(checked)
       else
         try Right(c.typecheck(tree, pt = elementType)) catch {

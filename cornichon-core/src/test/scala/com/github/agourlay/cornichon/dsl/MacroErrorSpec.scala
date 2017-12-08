@@ -26,6 +26,27 @@ class MacroErrorSpec extends WordSpec with Matchers {
       """ should compile
     }
 
+    "not compile feature definitions containing imports in DSL" in {
+      """
+        import com.github.agourlay.cornichon.feature.BaseFeature
+        import com.github.agourlay.cornichon.steps.regular.EffectStep
+
+        class Foo extends BaseFeature {
+          val feature =
+            Feature("foo") {
+              import scala.concurrent.Future
+              Scenario("aaa") {
+                EffectStep.fromSync("just testing", identity)
+
+                Repeat(10) {
+                  EffectStep.fromAsync("just testing repeat", s => Future.successful(s))
+                }
+              }
+            }
+        }
+      """ shouldNot typeCheck
+    }
+
     "not compile if feature definition contains invalid expressions" in {
       """
         import com.github.agourlay.cornichon.feature.BaseFeature
