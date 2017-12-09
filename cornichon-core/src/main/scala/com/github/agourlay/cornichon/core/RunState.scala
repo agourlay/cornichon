@@ -44,7 +44,3 @@ case class RunState(
       logs = this.logs ++ computationLogs // logs are often built manually and not extracted from RunState
     )
 }
-
-object RunState {
-  val emptyRunState = RunState(Session.newEmpty, Vector.empty, 1, Nil)
-}

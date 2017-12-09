@@ -1,21 +1,20 @@
 package com.github.agourlay.cornichon.core
 
 import cats.Foldable
-import cats.data.{ NonEmptyList, ValidatedNel }
+import cats.data.{ NonEmptyList, StateT, ValidatedNel }
 import cats.syntax.either._
 import cats.syntax.cartesian._
 import cats.instances.list._
 import cats.data.NonEmptyList._
 import cats.data.Validated._
-
 import monix.execution.Scheduler
 import monix.eval.Task
+import monix.cats._
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
-import com.github.agourlay.cornichon.core.RunState._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
@@ -31,40 +30,42 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
     else if (context isPending scenario)
       Task.delay(PendingScenarioReport(scenario.name, session))
     else {
+      val stages = for {
+        beforeResult ← regularStage(context.beforeSteps, beforeLog)
+        mainResult ← if (beforeResult.isValid) regularStage(scenario.steps, mainLog) else noOpStage
+        mainCleanupResult ← cleanupStage()
+        finallyResult ← regularStage(context.finallySteps, finallyLog)
+        finallyCleanupResult ← cleanupStage()
+      } yield Foldable[List].fold(List(beforeResult, mainResult, mainCleanupResult, finallyResult, finallyCleanupResult))
+
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
       val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
 
-      for {
-        beforeResult ← runStage(context.beforeSteps, beforeLog, initialRunState)
-        (beforeState, beforeReport) = beforeResult
-        mainResult ← if (beforeReport.isValid) runStage(scenario.steps, mainLog, beforeState) else noOpStage
-        (mainState, mainReport) = mainResult
-        mainCleanupResult ← runStage(mainState.cleanupSteps, cleanupLog, mainState, shortCircuit = false)
-        (mainCleanupState, mainCleanupReport) = mainCleanupResult
-        finallyResult ← runStage(context.finallySteps, finallyLog, mainCleanupState.resetCleanupSteps) // 'cleanupSteps' already consumed above
-        (finallyState, finallyReport) = finallyResult
-        cleanupResult ← runStage(finallyState.cleanupSteps, cleanupLog, finallyState, shortCircuit = false)
-        (lastState, finallyCleanupReport) = cleanupResult
-      } yield {
-        val aggregatedReport = Foldable[List].fold(List(beforeReport, mainReport, mainCleanupReport, finallyReport, finallyCleanupReport))
-        ScenarioReport.build(scenario.name, lastState, aggregatedReport)
+      stages.run(initialRunState).map {
+        case (lastState, aggregatedResult) ⇒ ScenarioReport.build(scenario.name, lastState, aggregatedResult)
       }
     }
 
-  private def runStage(
-    steps: List[Step],
-    stageTitle: InfoLogInstruction,
-    runState: RunState,
-    shortCircuit: Boolean = true): Task[(RunState, FailedStep ValidatedNel Done)] =
+  private def regularStage(steps: List[Step], stageTitle: InfoLogInstruction): StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { runState ⇒
     if (steps.isEmpty)
       Task.delay((runState, validDone))
-    else if (shortCircuit)
+    else
       runSteps(steps, runState.appendLog(stageTitle)).map {
         case (resultState, resultReport) ⇒ (resultState, resultReport.toValidatedNel)
       }
-    else runStepsDontShortCircuit(steps, runState.appendLog(stageTitle)).map {
-      case (resultState, resultReport) ⇒ (resultState, resultReport.toValidated)
+  }
+
+  private def cleanupStage(): StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { runState ⇒
+    if (runState.cleanupSteps.isEmpty)
+      Task.delay((runState, validDone))
+    else {
+      // Cleanup steps are consumed to avoid double run
+      val cleanupState = runState.resetCleanupSteps.appendLog(cleanupLog)
+      runStepsDontShortCircuit(runState.cleanupSteps, cleanupState).map {
+        case (resultState, resultReport) ⇒ (resultState, resultReport.toValidated)
+      }
     }
+  }
 
   // run steps and short-circuit on Task[Either]
   def runSteps(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
@@ -125,7 +126,7 @@ object Engine {
   val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
   val cleanupLog = InfoLogInstruction("cleanup steps", initMargin + 1)
 
-  val noOpStage = Task.delay((emptyRunState, validDone))
+  val noOpStage: StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { s ⇒ Task.delay((s, validDone)) }
 
   def withStepTitleResolver(resolver: PlaceholderResolver)(implicit scheduler: Scheduler) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
