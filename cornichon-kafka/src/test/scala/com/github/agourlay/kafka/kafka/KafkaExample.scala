@@ -57,7 +57,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
     EmbeddedKafka.start()(EmbeddedKafkaConfig(
       kafkaPort = 9092,
       customBrokerProperties = Map(
-        "group.initial.rebalance.delay.ms" -> "10"
+        "group.initial.rebalance.delay.ms" -> "10000"
       )
     ))
   }

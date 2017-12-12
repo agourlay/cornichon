@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
+import org.apache.kafka.common.TopicPartition
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -48,7 +49,13 @@ trait KafkaDsl {
 
   private def readFromTopic(topic: String, targetKey: String, amount: Int, timeout: Int, s: Session)(transformRecord: ConsumerRecord[String, String] ⇒ String) = Future {
     consumer.unsubscribe()
-    consumer.subscribe(Seq(topic).asJava)
+    val partitions = consumer.partitionsFor(topic).asScala.map { partitionInfo ⇒
+      new TopicPartition(
+        partitionInfo.topic(),
+        partitionInfo.partition()
+      )
+    }.asJava
+    consumer.assign(partitions)
     val messages = ListBuffer.empty[ConsumerRecord[String, String]]
     var nothingNewAnymore = false
     while (!nothingNewAnymore) {
