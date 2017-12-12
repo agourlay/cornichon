@@ -143,6 +143,16 @@ scenarios and features is sequential**.
 
 The underlying kafka client used in cornichon is configured with a fixed group-id to 'cornichon' and is set with offset-reset to 'earliest'.
 
+- Configuration of the client
+
+Put to the application.conf
+
+```
+kafka {
+  bootstrapServers = "localhost:9092"
+}
+```
+
 - putting a message to a topic
 
 ```
