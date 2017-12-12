@@ -1,10 +1,10 @@
 package com.github.agourlay.kafka.kafka
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.kafka.KafkaDsl
+import com.github.agourlay.cornichon.kafka.{ KafkaConfig, KafkaDsl }
 import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
-class KafkaExample extends CornichonFeature with KafkaDsl {
+class KafkaExample extends CornichonFeature with KafkaDsl with KafkaConfig {
 
   def feature = Feature("Kafka test") {
 
