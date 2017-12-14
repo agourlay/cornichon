@@ -4,6 +4,7 @@ import cats.data.Validated.Valid
 import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.ScenarioReport._
+import monix.eval.Task
 
 import scala.concurrent.Future
 
@@ -53,6 +54,7 @@ case object Done extends Done {
   val rightDone = Right(Done)
   val validDone = Valid(Done)
   val futureDone = Future.successful(Done)
+  val taskDone = Task.now(Done)
   implicit val monoid = new Monoid[Done] {
     def empty: Done = Done
     def combine(x: Done, y: Done): Done = x

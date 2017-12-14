@@ -16,25 +16,25 @@ class JsonPathParserSpec extends WordSpec
     "parseJsonPath" must {
       "parse JsonPath containing a field without index" in {
         forAll(fieldGen) { field ⇒
-          JsonPathParser.parseJsonPath(field).right.value should be(List(FieldSegment(field, None)))
+          JsonPathParser.parseJsonPath(field).right.value should be(List(FieldSelection(field)))
         }
       }
 
       "parse JsonPath containing a field with index" in {
         forAll(fieldGen, indiceGen) { (field, indice) ⇒
-          JsonPathParser.parseJsonPath(s"$field[$indice]").right.value should be(List(FieldSegment(field, Some(indice))))
+          JsonPathParser.parseJsonPath(s"$field[$indice]").right.value should be(List(ArrayFieldSelection(field, indice)))
         }
       }
 
       "parse JsonPath containing two fields without index" in {
         forAll(fieldGen, fieldGen) { (field1, field2) ⇒
-          JsonPathParser.parseJsonPath(s"$field1.$field2").right.value should be(List(FieldSegment(field1, None), FieldSegment(field2, None)))
+          JsonPathParser.parseJsonPath(s"$field1.$field2").right.value should be(List(FieldSelection(field1), FieldSelection(field2)))
         }
       }
 
       "parse JsonPath containing a field with projection" in {
         forAll(fieldGen) { field ⇒
-          JsonPathParser.parseJsonPath(s"$field[*]").right.value should be(List(ArrayProjectionSegment(field)))
+          JsonPathParser.parseJsonPath(s"$field[*]").right.value should be(List(ArrayFieldProjection(field)))
         }
       }
 
@@ -43,7 +43,7 @@ class JsonPathParserSpec extends WordSpec
           val composedPath = s"$field1.$field2"
           val fullPath = s"`$composedPath`.$field3"
           withClue(s"fullPath was $fullPath") {
-            JsonPathParser.parseJsonPath(fullPath).right.value should be(List(FieldSegment(composedPath, None), FieldSegment(field3, None)))
+            JsonPathParser.parseJsonPath(fullPath).right.value should be(List(FieldSelection(composedPath), FieldSelection(field3)))
           }
         }
       }
@@ -53,7 +53,7 @@ class JsonPathParserSpec extends WordSpec
           val composedPath = s"$field1.$field2"
           val fullPath = s"`$composedPath`.$field3[$index]"
           withClue(s"fullPath was $fullPath") {
-            JsonPathParser.parseJsonPath(fullPath).right.value should be(List(FieldSegment(composedPath, None), FieldSegment(field3, Some(index))))
+            JsonPathParser.parseJsonPath(fullPath).right.value should be(List(FieldSelection(composedPath), ArrayFieldSelection(field3, index)))
           }
         }
       }

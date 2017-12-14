@@ -7,11 +7,10 @@ import cats.syntax.cartesian._
 import cats.instances.list._
 import cats.data.NonEmptyList._
 import cats.data.Validated._
-import monix.execution.Scheduler
+
 import monix.eval.Task
 import monix.cats._
 
-import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
@@ -19,12 +18,9 @@ import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
 
-class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
+class Engine(stepPreparers: List[StepPreparer]) {
 
-  def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Future[ScenarioReport] =
-    runScenarioTask(session, context)(scenario).runAsync
-
-  def runScenarioTask(session: Session, context: FeatureExecutionContext)(scenario: Scenario): Task[ScenarioReport] =
+  final def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
     if (context isIgnored scenario)
       Task.delay(IgnoreScenarioReport(scenario.name, session))
     else if (context isPending scenario)
@@ -68,7 +64,7 @@ class Engine(stepPreparers: List[StepPreparer])(implicit scheduler: Scheduler) {
   }
 
   // run steps and short-circuit on Task[Either]
-  def runSteps(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
+  final def runSteps(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
     remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.delay((initialRunState, Done.asRight[FailedStep]))) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap {
@@ -128,7 +124,7 @@ object Engine {
 
   val noOpStage: StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { s ⇒ Task.delay((s, validDone)) }
 
-  def withStepTitleResolver(resolver: PlaceholderResolver)(implicit scheduler: Scheduler) =
+  def withStepTitleResolver(resolver: PlaceholderResolver) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
   def successLog(title: String, depth: Int, show: Boolean, duration: Duration) =

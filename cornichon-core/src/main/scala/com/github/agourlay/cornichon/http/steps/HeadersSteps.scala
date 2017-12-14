@@ -12,6 +12,8 @@ import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Printing._
 
+import scala.collection.breakOut
+
 object HeadersSteps {
   private val headersSessionKey = SessionKey(lastResponseHeadersKey)
 
@@ -21,7 +23,7 @@ object HeadersSteps {
       action = s ⇒ Assertion.either {
         s.get(headersSessionKey).map { sessionHeaders ⇒
           val actualValue = sessionHeaders.split(",").toList
-          val expectedValue = expected.toList.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }
+          val expectedValue: List[String] = expected.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }(breakOut)
           GenericEqualityAssertion(expectedValue, actualValue)
         }
       }

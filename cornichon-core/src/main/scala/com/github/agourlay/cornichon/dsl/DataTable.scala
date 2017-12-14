@@ -58,7 +58,7 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
         case (name, value) if value.trim.nonEmpty ⇒ name → value.trim
       }(breakOut)
       map
-    }.toList
+    }(breakOut)
 }
 
 case class Headers(fields: Seq[String])

@@ -6,12 +6,13 @@ import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.util.TaskSpec
 import monix.execution.Scheduler
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.ExecutionContext
 
-class EngineSpec extends AsyncWordSpec with Matchers {
+class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
 
   implicit val scheduler = Scheduler(ExecutionContext.global)
   val engine = Engine.withStepTitleResolver(PlaceholderResolver.withoutExtractor())

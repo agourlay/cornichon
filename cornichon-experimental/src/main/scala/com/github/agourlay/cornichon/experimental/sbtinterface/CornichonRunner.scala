@@ -16,7 +16,7 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
   override def tasks(taskDefs: Array[TaskDef]) = {
     gotTasks.set(true)
     val scenarioNameFilter = args.toSet
-    taskDefs.map(new SbtCornichonTask(_, scenarioNameFilter))
+    taskDefs.map(new CornichonFeatureTask(_, scenarioNameFilter))
   }
 
   override def done(): String = {

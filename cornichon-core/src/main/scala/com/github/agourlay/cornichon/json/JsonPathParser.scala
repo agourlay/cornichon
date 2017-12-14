@@ -13,8 +13,8 @@ class JsonPathParser(val input: ParserInput) extends Parser {
   }
 
   def SegmentRule = rule {
-    Field ~ optIndex ~> ((f, i) ⇒ buildSegment(f, i)) |
-      '`' ~ FieldWithDot ~ optIndex ~ '`' ~> ((f, i) ⇒ buildSegment(f, i))
+    Field ~ optIndex ~> ((f, i) ⇒ operation(f, i)) |
+      '`' ~ FieldWithDot ~ optIndex ~ '`' ~> ((f, i) ⇒ operation(f, i))
   }
 
   def optIndex = rule(optional('[' ~ (Number | capture('*')) ~ ']'))
@@ -27,12 +27,16 @@ class JsonPathParser(val input: ParserInput) extends Parser {
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
 
-  // The values in the Option are constrainted in the parser itself (any Number or '*')
-  private def buildSegment(field: String, index: Option[Any]): JsonPathSegment = index match {
-    case Some(i: Int) ⇒ FieldSegment(field, Some(i))
-    case Some("*")    ⇒ ArrayProjectionSegment(field)
-    case _            ⇒ FieldSegment(field, None)
-  }
+  // The value in the Option is constrainted in the parser itself (any Number or '*')
+  private def operation(field: String, index: Option[Any]): JsonPathOperation =
+    (field, index) match {
+      case (JsonPath.root, None)         ⇒ RootSelection
+      case (JsonPath.root, Some(i: Int)) ⇒ RootArrayElementSelection(i)
+      case (f, None)                     ⇒ FieldSelection(f)
+      case (f, Some(i: Int))             ⇒ ArrayFieldSelection(f, i)
+      case (JsonPath.root, Some("*"))    ⇒ RootArrayFieldProjection
+      case (f, Some("*"))                ⇒ ArrayFieldProjection(f)
+    }
 
 }
 
@@ -40,7 +44,7 @@ object JsonPathParser {
 
   val notAllowedInField = "\r\n[]` "
 
-  def parseJsonPath(input: String): Either[CornichonError, List[JsonPathSegment]] = {
+  def parseJsonPath(input: String): Either[CornichonError, List[JsonPathOperation]] = {
     val p = new JsonPathParser(input)
     p.placeholdersRule.run() match {
       case Failure(e: ParseError) ⇒
@@ -52,7 +56,3 @@ object JsonPathParser {
     }
   }
 }
-
-trait JsonPathSegment
-case class FieldSegment(field: String, index: Option[Int]) extends JsonPathSegment
-case class ArrayProjectionSegment(field: String) extends JsonPathSegment

@@ -32,6 +32,7 @@ class EngineBench {
   @Param(Array("10", "20", "50", "100", "200"))
   var stepsNumber: String = ""
   var es: ExecutorService = _
+  var scheduler: Scheduler = _
   var engine: Engine = _
 
   @Setup(Level.Trial)
@@ -40,8 +41,8 @@ class EngineBench {
     println("Creating Engine...")
     val resolver = PlaceholderResolver.withoutExtractor()
     es = Executors.newFixedThreadPool(1)
-    val scheduler = Scheduler(es)
-    engine = Engine.withStepTitleResolver(resolver)(scheduler)
+    scheduler = Scheduler(es)
+    engine = Engine.withStepTitleResolver(resolver)
   }
 
   @TearDown(Level.Trial)
@@ -59,11 +60,12 @@ class EngineBench {
   //    [info] EngineBench.lotsOfSteps            200  thrpt   20   10416.139 ±  160.309  ops/s
   @Benchmark
   def lotsOfSteps() = {
-    val assertSteps = List.fill(stepsNumber.toInt / 2)(assertStep)
-    val effectSteps = List.fill(stepsNumber.toInt / 2)(effectStep)
+    val half = stepsNumber.toInt / 2
+    val assertSteps = List.fill(half)(assertStep)
+    val effectSteps = List.fill(half)(effectStep)
     val scenario = Scenario("test scenario", setupSession +: (assertSteps ++ effectSteps))
     val f = engine.runScenario(Session.newEmpty)(scenario)
-    val res = Await.result(f, Duration.Inf)
+    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 }

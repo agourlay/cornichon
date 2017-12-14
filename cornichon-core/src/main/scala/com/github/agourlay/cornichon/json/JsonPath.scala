@@ -70,10 +70,8 @@ object JsonPath {
   def parse(path: String) =
     if (path == root)
       rightEmptyJsonPath
-    else {
-      val segments = JsonPathParser.parseJsonPath(path)
-      segments.map(fromSegments)
-    }
+    else
+      JsonPathParser.parseJsonPath(path).map(JsonPath(_))
 
   def run(path: String, json: Json) = JsonPath.parse(path).map(_.run(json))
 
@@ -82,18 +80,6 @@ object JsonPath {
       json ← parseJson(json)
       jsonPath ← JsonPath.parse(path)
     } yield jsonPath.run(json)
-
-  def fromSegments(segments: List[JsonPathSegment]) =
-    JsonPath(
-      segments.map {
-        case FieldSegment(JsonPath.root, None)        ⇒ RootSelection
-        case FieldSegment(JsonPath.root, Some(index)) ⇒ RootArrayElementSelection(index)
-        case FieldSegment(field, None)                ⇒ FieldSelection(field)
-        case FieldSegment(field, Some(index))         ⇒ ArrayFieldSelection(field, index)
-        case ArrayProjectionSegment(JsonPath.root)    ⇒ RootArrayFieldProjection
-        case ArrayProjectionSegment(field)            ⇒ ArrayFieldProjection(field)
-      }
-    )
 
 }
 

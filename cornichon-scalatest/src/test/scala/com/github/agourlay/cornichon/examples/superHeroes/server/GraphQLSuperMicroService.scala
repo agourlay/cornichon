@@ -9,7 +9,6 @@ import sangria.schema.Schema
 import sangria.schema._
 import sangria.marshalling.circe._
 import io.circe.generic.auto._
-import io.circe.syntax._
 
 class GraphQLSuperMicroService(sm: SuperMicroService) {
 
