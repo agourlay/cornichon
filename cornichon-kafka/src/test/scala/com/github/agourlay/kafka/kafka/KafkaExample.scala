@@ -1,10 +1,10 @@
 package com.github.agourlay.kafka.kafka
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.kafka.KafkaDsl
+import com.github.agourlay.cornichon.kafka.{ KafkaConfig, KafkaDsl }
 import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
-class KafkaExample extends CornichonFeature with KafkaDsl {
+class KafkaExample extends CornichonFeature with KafkaDsl with KafkaConfig {
 
   def feature = Feature("Kafka test") {
 
@@ -57,7 +57,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
     EmbeddedKafka.start()(EmbeddedKafkaConfig(
       kafkaPort = 9092,
       customBrokerProperties = Map(
-        "group.initial.rebalance.delay.ms" -> "10"
+        "group.initial.rebalance.delay.ms" -> "10000"
       )
     ))
   }

@@ -143,6 +143,24 @@ scenarios and features is sequential**.
 
 The underlying kafka client used in cornichon is configured with a fixed group-id to 'cornichon' and is set with offset-reset to 'earliest'.
 
+- Usage
+
+The trait com.github.agourlay.cornichon.kafka.KafkaConfig has to be mixed into the KafkaDsl
+
+```scala
+
+import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.kafka.{ KafkaConfig, KafkaDsl }
+
+class MyTest extends CornichonFeature with KafkaDsl with KafkaConfig { 
+  override val bootstrapServers = "localhost:9092"  // The default
+  override val consumerGroup = s"cornichon-groupId" // The default
+
+  def feature = ???
+}
+
+``
+
 - putting a message to a topic
 
 ```
