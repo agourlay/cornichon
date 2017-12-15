@@ -4,8 +4,9 @@ import cats.syntax.show._
 import cats.syntax.either._
 import cats.instances.int._
 import cats.instances.string._
-
+import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
+import com.github.agourlay.cornichon.http.{ HttpService, StatusNonExpected }
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 
@@ -33,10 +34,9 @@ object StatusSteps {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
       action = s ⇒ Assertion.either {
-        for {
-          lastResponseStatus ← s.get(lastResponseStatusKey).map(_.toInt)
-          lastBody ← s.get(lastResponseBodyKey)
-        } yield CustomMessageEqualityAssertion(expected, lastResponseStatus, statusError(expected, lastBody))
+        s.get(lastResponseStatusKey).map { lastResponseStatus ⇒
+          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, statusError(expected, s))
+        }
       }
     )
 
@@ -65,8 +65,10 @@ object StatusSteps {
   def withResponseBody(body: String) = s""" with response body:
        |${parseJsonUnsafe(body).show}""".stripMargin
 
-  def statusError(expected: Int, body: String): Int ⇒ String = actual ⇒ {
-    s"expected status '$expected' but actual is '$actual' ${withResponseBody(body)}"
+  def statusError(expected: Int, session: Session): Int ⇒ String = actual ⇒ {
+    val body = session.get(lastResponseBodyKey).valueUnsafe
+    val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe
+    StatusNonExpected(expected, actual, headers, body).baseErrorMessage
   }
 
   def statusKindError(expectedKind: Int, actualStatus: Int, body: String): Int ⇒ String = actual ⇒ {

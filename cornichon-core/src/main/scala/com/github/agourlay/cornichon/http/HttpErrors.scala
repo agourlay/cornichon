@@ -5,6 +5,7 @@ import cats.syntax.show._
 import cats.instances.string._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson.parseJsonUnsafe
+import com.github.agourlay.cornichon.util.Printing.printArrowPairs
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -38,11 +39,14 @@ case class WsUpgradeError(status: Int) extends HttpError {
   lazy val baseErrorMessage = s"Websocket upgrade error - status received '$status'"
 }
 
-//TODO unify with StatusSteps assertion
-case class StatusNonExpected(expected: Int, response: CornichonHttpResponse) extends HttpError {
-  lazy val baseErrorMessage =
-    s"""expected status code '$expected' but '${response.status}' was received with body:
-       |${parseJsonUnsafe(response.body).show}""".stripMargin
+case class StatusNonExpected(expectedStatus: Int, actualStatus: Int, headers: Seq[(String, String)], rawBody: String) extends HttpError {
+  lazy val baseErrorMessage = {
+    val prettyBody = parseJsonUnsafe(rawBody).show
+    val headersMsg = if (headers.isEmpty) "" else s"and with headers:\n${printArrowPairs(headers)}"
+    s"""expected status code '$expectedStatus' but '$actualStatus' was received with body:
+       |$prettyBody
+       |$headersMsg""".stripMargin
+  }
 }
 
 case class MalformedHeadersError(error: String) extends CornichonError {

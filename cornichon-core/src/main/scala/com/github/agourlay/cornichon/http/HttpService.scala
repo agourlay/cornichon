@@ -179,12 +179,14 @@ object HttpService {
     }
 
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Either[CornichonError, CornichonHttpResponse] =
-    expected.map { expectedStatus ⇒
-      if (httpResponse.status == expectedStatus)
+    expected match {
+      case None ⇒
         Right(httpResponse)
-      else
-        Left(StatusNonExpected(expectedStatus, httpResponse))
-    }.getOrElse(Right(httpResponse))
+      case Some(expectedStatus) if httpResponse.status == expectedStatus ⇒
+        Right(httpResponse)
+      case Some(expectedStatus) ⇒
+        Left(StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body))
+    }
 
   def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
     commonSessionExtraction(session, response).flatMap { filledSession ⇒
