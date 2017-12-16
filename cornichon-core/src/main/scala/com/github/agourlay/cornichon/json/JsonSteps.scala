@@ -149,10 +149,11 @@ object JsonSteps {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is absent" else s"$target's field '$jsonPath' is absent"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
-          resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(session).map {
-            subJson ⇒ (true, subJson.isNull, keyIsPresentError(jsonPath, subJson))
-          }
+        action = s ⇒ Assertion.either {
+          for {
+            sessionValue ← s.get(sessionKey)
+            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+          } yield CustomMessageEqualityAssertion(true, subJson.isNull, () ⇒ keyIsPresentError(jsonPath, subJson))
         }
       )
     }
@@ -161,10 +162,11 @@ object JsonSteps {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is present" else s"$target's field '$jsonPath' is present"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
-        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (session, sessionValue) ⇒
-          resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(session).map {
-            subJson ⇒ (false, subJson.isNull, keyIsAbsentError(jsonPath, sessionValue))
-          }
+        action = s ⇒ Assertion.either {
+          for {
+            sessionValue ← s.get(sessionKey)
+            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+          } yield CustomMessageEqualityAssertion(false, subJson.isNull, () ⇒ keyIsAbsentError(jsonPath, sessionValue))
         }
       )
     }
@@ -193,17 +195,23 @@ object JsonSteps {
 
     def isNotEmpty = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty",
-      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-        applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).map(l ⇒ (true, l.nonEmpty, jsonArrayNotEmptyError(l)))
+      action = s ⇒ Assertion.either {
+        for {
+          sessionValue ← s.get(sessionKey)
+          elements ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
+        } yield CustomMessageEqualityAssertion(true, elements.nonEmpty, () ⇒ jsonArrayNotEmptyError(elements))
       }
     )
 
     def isEmpty = hasSize(0)
 
-    def hasSize(size: Int) = AssertStep(
-      title = if (jsonPath == JsonPath.root) s"$target array size is '$size'" else s"$target's array '$jsonPath' size is '$size'",
-      action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
-        applyPathAndFindArray(jsonPath, resolver)(s, sessionValue).map(l ⇒ (size, l.size, arraySizeError(size, l)))
+    def hasSize(expectedSize: Int) = AssertStep(
+      title = if (jsonPath == JsonPath.root) s"$target array size is '$expectedSize'" else s"$target's array '$jsonPath' size is '$expectedSize'",
+      action = s ⇒ Assertion.either {
+        for {
+          sessionValue ← s.get(sessionKey)
+          elements ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
+        } yield CustomMessageEqualityAssertion(expectedSize, elements.size, () ⇒ arraySizeError(expectedSize, elements))
       }
     )
 
@@ -217,7 +225,8 @@ object JsonSteps {
 
     def is[A: Show: Resolvable: Encoder](expected: A) = {
       val assertionTitle = {
-        val expectedSentence = if (ordered) s"in order is $expected" else s"is $expected"
+        val expectedShow = expected.show
+        val expectedSentence = if (ordered) s"in order is $expectedShow" else s"is $expectedShow"
         val titleString = if (jsonPath == JsonPath.root)
           s"$target array $expectedSentence"
         else
@@ -259,13 +268,14 @@ object JsonSteps {
     private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, expectedElements: Seq[A], expected: Boolean) =
       AssertStep(
         title = title,
-        action = s ⇒ CustomMessageEqualityAssertion.fromSession(s, sessionKey) { (s, sessionValue) ⇒
+        action = s ⇒ Assertion.either {
           for {
+            sessionValue ← s.get(sessionKey)
             jArr ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
             actualValue ← removeIgnoredPathFromElements(s, jArr)
             resolvedJson ← expectedElements.toVector.traverseU(resolveAndParseJson(_, s, resolver))
             containsAll = resolvedJson.forall(actualValue.contains)
-          } yield (expected, containsAll, arrayContainsError(resolvedJson, jArr, expected))
+          } yield CustomMessageEqualityAssertion(expected, containsAll, () ⇒ arrayContainsError(resolvedJson, jArr, expected))
         }
       )
 

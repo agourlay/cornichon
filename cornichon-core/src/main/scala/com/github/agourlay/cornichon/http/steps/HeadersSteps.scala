@@ -44,7 +44,7 @@ object HeadersSteps {
         s.get(headersSessionKey).map { sessionHeaders ⇒
           val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
           val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
-          CustomMessageEqualityAssertion(true, predicate, headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
+          CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
         }
       }
     )
@@ -62,7 +62,7 @@ object HeadersSteps {
           sessionHeaders ← s.get(headersSessionKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
           predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
-        } yield CustomMessageEqualityAssertion(true, predicate, headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
+        } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
       }
     )
 
@@ -73,24 +73,24 @@ object HeadersSteps {
           sessionHeaders ← s.get(headersSessionKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
           predicate ← Right(!sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
-        } yield CustomMessageEqualityAssertion(true, predicate, headersContainFieldWithNameError(name, sessionHeadersValue))
+        } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersContainFieldWithNameError(name, sessionHeadersValue))
       }
     )
   }
 
-  def headersDoesNotContainError(expected: String, sourceArray: String): Boolean ⇒ String = resFalse ⇒ {
+  def headersDoesNotContainError(expected: String, sourceArray: String): String = {
     val prettyHeaders = printArrowPairs(decodeSessionHeaders(sourceArray).valueUnsafe)
     s"""expected headers to contain '$expected' but it is not the case with headers:
        |$prettyHeaders""".stripMargin
   }
 
-  def headersDoesNotContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): Boolean ⇒ String = resFalse ⇒ {
+  def headersDoesNotContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): String = {
     val prettyHeaders = printArrowPairs(sourceHeaders)
     s"""expected headers to contain field with name '$name' but it is not the case with headers:
        |$prettyHeaders""".stripMargin
   }
 
-  def headersContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): Boolean ⇒ String = resFalse ⇒ {
+  def headersContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): String = {
     val prettyHeaders = printArrowPairs(sourceHeaders)
     s"""expected headers to not contain field with name '$name' but it is not the case with headers:
        |$prettyHeaders""".stripMargin

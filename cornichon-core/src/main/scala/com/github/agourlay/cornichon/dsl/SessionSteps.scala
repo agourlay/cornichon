@@ -36,25 +36,29 @@ object SessionSteps {
       title = s"session contains key '$key'",
       action = s ⇒ {
         val predicate = s.getOpt(key, indice).isDefined
-        CustomMessageEqualityAssertion(true, predicate, keyIsAbsentError(key, s.show))
+        CustomMessageEqualityAssertion(true, predicate, () ⇒ keyIsAbsentError(key, s.show))
       }
     )
 
     def isAbsent = AssertStep(
       title = s"session does not contain key '$key'",
-      action = s ⇒ CustomMessageEqualityAssertion(None, s.getOpt(key, indice), keyIsPresentError(key))
+      action = s ⇒
+        s.getOpt(key, indice) match {
+          case None        ⇒ Assertion.alwaysValid
+          case Some(value) ⇒ CustomMessageEqualityAssertion(false, true, () ⇒ keyIsPresentError(key, value))
+        }
     )
 
     def asJson = JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(key))
 
   }
 
-  def keyIsPresentError(keyName: String): Option[String] ⇒ String = resOpt ⇒ {
+  def keyIsPresentError(keyName: String, keyValue: String): String = {
     s"""expected key '$keyName' to be absent from session but it was found with value :
-       |${resOpt.get}""".stripMargin
+       |$keyValue""".stripMargin
   }
 
-  def keyIsAbsentError(keyName: String, session: String): Boolean ⇒ String = resFalse ⇒ {
+  def keyIsAbsentError(keyName: String, session: String): String = {
     s"""expected key '$keyName' to be present but it was not found in the session :
        |$session""".stripMargin
   }

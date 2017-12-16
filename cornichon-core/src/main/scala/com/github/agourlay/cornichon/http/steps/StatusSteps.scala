@@ -2,6 +2,8 @@ package com.github.agourlay.cornichon.http.steps
 
 import cats.syntax.either._
 import cats.instances.int._
+import cats.instances.string._
+
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.{ HttpService, StatusNonExpected }
@@ -32,7 +34,7 @@ object StatusSteps {
       title = s"status is '$expected'",
       action = s ⇒ Assertion.either {
         s.get(lastResponseStatusKey).map { lastResponseStatus ⇒
-          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, statusError(expected, s))
+          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, () ⇒ statusError(expected, lastResponseStatus, s))
         }
       }
     )
@@ -42,7 +44,7 @@ object StatusSteps {
       action = s ⇒ Assertion.either {
         s.get(lastResponseStatusKey).map { lastResponseStatus ⇒
           val actualKind = StatusKind.computeKind(lastResponseStatus.toInt)
-          CustomMessageEqualityAssertion(expectedKind, actualKind, statusKindError(expectedKind, lastResponseStatus, s))
+          CustomMessageEqualityAssertion(expectedKind, actualKind, () ⇒ statusKindError(expectedKind, lastResponseStatus, s))
         }
       }
     )
@@ -54,13 +56,13 @@ object StatusSteps {
 
   }
 
-  def statusError(expected: Int, session: Session): Int ⇒ String = actual ⇒ {
+  def statusError(expected: Int, actual: String, session: Session): String = {
     val body = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe
-    StatusNonExpected(expected.toString, actual.toString, headers, body).baseErrorMessage
+    StatusNonExpected(expected, actual.toInt, headers, body).baseErrorMessage
   }
 
-  def statusKindError(expectedKind: Int, actualStatus: String, session: Session): Int ⇒ String = _ ⇒ {
+  def statusKindError(expectedKind: Int, actualStatus: String, session: Session): String = {
     val expected = StatusKind.kindDisplay(expectedKind)
     val body = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe

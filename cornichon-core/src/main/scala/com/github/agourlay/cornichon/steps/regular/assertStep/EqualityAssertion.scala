@@ -2,10 +2,9 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.{ Eq, Show }
 import cats.syntax.show._
-import cats.syntax.either._
 import cats.syntax.validated._
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
+import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.core.Done._
 
 abstract class EqualityAssertion[A: Eq] extends Assertion {
@@ -32,7 +31,7 @@ case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, n
 }
 
 case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
-  private val baseMsg =
+  private lazy val baseMsg =
     s"""|expected result was${if (negate) " different than:" else ":"}
         |'${expected.show}'
         |but actual result is:
@@ -47,23 +46,6 @@ case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, 
   }
 }
 
-case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customMessage: A ⇒ String, negate: Boolean = false) extends EqualityAssertion[A] {
-  lazy val assertionError = CustomMessageAssertionError(actual, customMessage)
-}
-
-object CustomMessageEqualityAssertion {
-  def fromSession[A: Eq](s: Session, key: SessionKey)(transformSessionValue: (Session, String) ⇒ Either[CornichonError, (A, A, A ⇒ String)]) =
-    Assertion.either {
-      s.get(key)
-        .flatMap(transformSessionValue(s, _))
-        .map { r ⇒
-          val (expected, actual, details) = r
-          CustomMessageEqualityAssertion(expected, actual, details)
-        }
-    }
-
-}
-
-case class CustomMessageAssertionError[A](result: A, detailedAssertion: A ⇒ String) extends CornichonError {
-  lazy val baseErrorMessage = detailedAssertion(result)
+case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customMessage: () ⇒ String, negate: Boolean = false) extends EqualityAssertion[A] {
+  lazy val assertionError = CornichonError.fromString(customMessage())
 }

@@ -31,6 +31,9 @@ object CornichonError {
     sw.toString
   }
 
+  def fromString(error: String): CornichonError =
+    BasicError(error)
+
   def fromThrowable(exception: Throwable): CornichonError =
     StepExecutionError(exception)
 

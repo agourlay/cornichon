@@ -96,7 +96,7 @@ The test engine is responsible to test the validity of the provided ```Assertion
   * CustomMessageEqualityAssertion to provide a custom error message
 
     ```scala
-    CustomMessageAssertion[A](expected: A, result: A, customMessage: A ⇒ String)
+    CustomMessageAssertion[A](expected: A, result: A, customMessage: () ⇒ String)
     ```
 
 * Ordering assertions : compare two objects using the cats ```Order``` typeclass.

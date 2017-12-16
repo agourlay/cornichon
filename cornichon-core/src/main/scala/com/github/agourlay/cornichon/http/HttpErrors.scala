@@ -39,12 +39,12 @@ case class WsUpgradeError(status: Int) extends HttpError {
   lazy val baseErrorMessage = s"Websocket upgrade error - status received '$status'"
 }
 
-case class StatusNonExpected(expectedStatus: String, actualStatus: String, headers: Seq[(String, String)], rawBody: String) extends HttpError {
+case class StatusNonExpected[A: Show](expectedStatus: A, actualStatus: A, headers: Seq[(String, String)], rawBody: String) extends HttpError {
   lazy val baseErrorMessage = {
     // TODO do not assume that body is JSON - use content-type
     val prettyBody = parseJsonUnsafe(rawBody).show
     val headersMsg = if (headers.isEmpty) "" else s"and with headers:\n${printArrowPairs(headers)}"
-    s"""expected status code '$expectedStatus' but '$actualStatus' was received with body:
+    s"""expected status code '${expectedStatus.show}' but '${actualStatus.show}' was received with body:
        |$prettyBody
        |$headersMsg""".stripMargin
   }
