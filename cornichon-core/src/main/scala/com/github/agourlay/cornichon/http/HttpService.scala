@@ -185,7 +185,7 @@ object HttpService {
       case Some(expectedStatus) if httpResponse.status == expectedStatus ⇒
         Right(httpResponse)
       case Some(expectedStatus) ⇒
-        Left(StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body))
+        Left(StatusNonExpected(expectedStatus.toString, httpResponse.status.toString, httpResponse.headers, httpResponse.body))
     }
 
   def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
