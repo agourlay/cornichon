@@ -4,39 +4,28 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import cats.Show
-import cats.syntax.show._
 import cats.syntax.either._
+import cats.syntax.show._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.Dsl._
-import com.github.agourlay.cornichon.feature.BaseFeature
-import com.github.agourlay.cornichon.feature.BaseFeature.globalScheduler
-import com.github.agourlay.cornichon.http.steps.HeadersSteps._
-import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.json.JsonPath
-import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
+import com.github.agourlay.cornichon.dsl._
+import com.github.agourlay.cornichon.feature.{ BaseFeature, HttpFeature }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
+import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient }
+import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
+import com.github.agourlay.cornichon.json.CornichonJson._
+import com.github.agourlay.cornichon.resolver.Resolvable
+import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.util.Printing._
 import io.circe.{ Encoder, Json }
 
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
-  this: BaseFeature with Dsl ⇒
-
-  lazy val requestTimeout = config.requestTimeout
-  lazy val baseUrl = config.baseUrl
-
-  def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, HttpDsl.globalHttpclient, placeholderResolver, config)
-
-  lazy val http = httpServiceByURL(baseUrl, requestTimeout)
+  this: HttpFeature with Dsl ⇒
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
     EffectStep(
@@ -72,31 +61,11 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
       .withParams(queryGQL.params: _*)
       .withHeaders(queryGQL.headers: _*)
 
-  def query_gql(url: String) = QueryGQL(url, QueryGQL.emptyDocument, None, None, Nil, Nil)
-
   def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Nil, Nil)
 
   def status = StatusStepBuilder
 
   def headers = HeadersStepBuilder(ordered = false)
-
-  //FIXME the body is expected to always contains JSON currently
-  def body = JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(lastResponseBodyKey), Some("response body"))
-
-  def save_body(target: String) = save_body_path(JsonPath.root → target)
-
-  def save_body_path(args: (String, String)*) = {
-    val inputs = args.map {
-      case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, (session, s) ⇒ {
-        for {
-          resolvedPath ← placeholderResolver.fillPlaceholders(path)(session)
-          jsonPath ← JsonPath.parse(resolvedPath)
-          json ← jsonPath.run(s)
-        } yield jsonStringValue(json)
-      }, target)
-    }
-    save_from_session(inputs)
-  }
 
   def save_header_value(args: (String, String)*) = {
     val inputs = args.map {
@@ -178,7 +147,7 @@ object HttpDsl {
       if (BaseFeature.config.useExperimentalHttp4sClient)
         new Http4sClient()
       else
-        new AkkaHttpClient(globalScheduler)
+        new AkkaHttpClient(BaseFeature.globalScheduler)
     }
     BaseFeature.addShutdownHook(() ⇒ c.shutdown())
     c

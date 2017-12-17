@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.experimental
 
-import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.feature.{ BaseFeature, HttpFeature }
 
-trait CornichonFeature extends BaseFeature
+trait CornichonBaseFeature extends BaseFeature
+trait CornichonFeature extends HttpFeature

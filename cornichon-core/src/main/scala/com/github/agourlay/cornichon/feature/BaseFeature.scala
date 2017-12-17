@@ -4,18 +4,17 @@ import java.util.concurrent.ConcurrentLinkedDeque
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.Dsl
-import com.github.agourlay.cornichon.http.HttpDsl
-import com.github.agourlay.cornichon.json.JsonDsl
-import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
-import com.github.agourlay.cornichon.feature.BaseFeature._
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
+import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler
+import net.ceedubs.ficus.Ficus._
+import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
 import scala.annotation.tailrec
 import scala.concurrent.Future
 
-trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
+trait BaseFeature extends Dsl {
 
   private[cornichon] var beforeFeature: Seq[() ⇒ Unit] = Nil
   private[cornichon] var afterFeature: Seq[() ⇒ Unit] = Nil
@@ -23,9 +22,9 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var beforeEachScenario: List[Step] = Nil
   protected var afterEachScenario: List[Step] = Nil
 
-  implicit lazy val scheduler = globalScheduler
+  implicit lazy val scheduler = BaseFeature.globalScheduler
 
-  private lazy val engine = Engine.withStepTitleResolver(placeholderResolver)
+  protected lazy val engine: Engine = Engine.withStepTitleResolver(placeholderResolver)
 
   private[cornichon] lazy val config = BaseFeature.config
 
@@ -60,19 +59,13 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
     afterEachScenario = step +: afterEachScenario
 }
 
-// Protect and free resources
 object BaseFeature {
-  import net.ceedubs.ficus.Ficus._
-  import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-
-  lazy val config = ConfigFactory.load().as[Config]("cornichon")
+  import monix.execution.Scheduler.global
 
   private val hooks = new ConcurrentLinkedDeque[() ⇒ Future[_]]()
 
   def addShutdownHook(h: () ⇒ Future[_]) =
     hooks.push(h)
-
-  lazy val globalScheduler = Scheduler.Implicits.global
 
   def shutDownGlobalResources(): Future[Done] = {
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -88,4 +81,8 @@ object BaseFeature {
 
     clearHooks().map(_ ⇒ Done)
   }
+
+  lazy val config = ConfigFactory.load().as[Config]("cornichon")
+
+  lazy val globalScheduler = global
 }
