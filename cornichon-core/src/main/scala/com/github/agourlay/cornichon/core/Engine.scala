@@ -36,9 +36,10 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
       val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
-
+      val now = System.nanoTime
       stages.run(initialRunState).map {
-        case (lastState, aggregatedResult) ⇒ ScenarioReport.build(scenario.name, lastState, aggregatedResult)
+        case (lastState, aggregatedResult) ⇒
+          ScenarioReport.build(scenario.name, lastState, aggregatedResult, Duration.fromNanos(System.nanoTime - now))
       }
     }
 

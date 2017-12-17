@@ -83,11 +83,11 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
 
   private def printResultLogs(featureClass: Class[_])(sr: ScenarioReport): Unit = sr match {
     case s: SuccessScenarioReport ⇒
-      val msg = s"- ${s.scenarioName} "
+      val msg = s"- ${s.scenarioName} (${s.duration.toMillis} millis)"
       println(SuccessLogInstruction(msg, 0).colorized)
       if (s.shouldShowLogs) LogInstruction.printLogs(s.logs)
     case f: FailureScenarioReport ⇒
-      val msg = failureErrorMessage(featureClass, f.scenarioName)
+      val msg = failureErrorMessage(featureClass, f.scenarioName, f.msg, f.duration)
       println(FailureLogInstruction(msg, 0).colorized)
       LogInstruction.printLogs(f.logs)
     case i: IgnoreScenarioReport ⇒
@@ -98,10 +98,13 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
       println(DebugLogInstruction(msg, 0).colorized)
   }
 
-  private def failureErrorMessage(featureClass: Class[_], scenarioName: String): String =
-    s"""|- **failed** $scenarioName
-        |${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
-        |${replayCommand(featureClass, scenarioName)}""".stripMargin
+  private def failureErrorMessage(featureClass: Class[_], scenarioName: String, errorMessage: String, duration: Duration): String =
+    s"""|- **failed** $scenarioName (${duration.toMillis} millis)
+        |
+        |  ${errorMessage.split('\n').toList.mkString("\n  ")}
+        |
+        |  ${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
+        |  ${replayCommand(featureClass, scenarioName)}""".stripMargin
 
   private def eventBuilder(sr: ScenarioReport, durationInMillis: Long) = new Event {
     val status = sr match {

@@ -7,24 +7,26 @@ import com.github.agourlay.cornichon.core.ScenarioReport._
 import monix.eval.Task
 
 import scala.concurrent.Future
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 sealed trait ScenarioReport {
   def isSuccess: Boolean
   def scenarioName: String
   def session: Session
   def logs: Vector[LogInstruction]
+  def duration: FiniteDuration
 }
 
 object ScenarioReport {
-  def build(scenarioName: String, runState: RunState, result: ValidatedNel[FailedStep, Done]): ScenarioReport =
+  def build(scenarioName: String, runState: RunState, result: ValidatedNel[FailedStep, Done], duration: FiniteDuration): ScenarioReport =
     result.fold(
-      failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logs),
-      _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logs)
+      failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logs, duration),
+      _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logs, duration)
     )
   val emptyLogs = Vector.empty[LogInstruction]
 }
 
-case class SuccessScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
+case class SuccessScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
   val isSuccess = true
 
   // In case of success, logs are only shown if the scenario contains DebugLogInstruction
@@ -34,14 +36,16 @@ case class SuccessScenarioReport(scenarioName: String, session: Session, logs: V
 case class IgnoreScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
   val logs = emptyLogs
   val isSuccess = false
+  val duration = Duration.Zero
 }
 
 case class PendingScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
   val logs = emptyLogs
   val isSuccess = false
+  val duration = Duration.Zero
 }
 
-case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logs: Vector[LogInstruction]) extends ScenarioReport {
+case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logs: Vector[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
   val isSuccess = false
 
   val msg =
