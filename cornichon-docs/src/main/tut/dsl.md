@@ -384,7 +384,7 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
 - execute a series of steps 'n' times concurrently and wait 'maxTime' for completion.
 
 ```scala
-Concurrently(factor = 3, maxTime = 10 seconds) {
+RepeatConcurrently(factor = 3, maxTime = 10 seconds) {
 
   When I get("http://superhero.io/batman")
 

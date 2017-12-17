@@ -10,16 +10,16 @@ import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.duration._
 
-class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
-  "ConcurrentlyStep" must {
-    "fail if 'concurrently' block contains a failed step" in {
+  "RepeatConcurrentlyStep" must {
+    "fail if 'repeatConcurrently' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
         s ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
-      val steps = ConcurrentlyStep(nested, 3, 200.millis) :: Nil
-      val s = Scenario("scenario with Concurrently", steps)
+      val steps = RepeatConcurrentlyStep(nested, 3, 200.millis) :: Nil
+      val s = Scenario("scenario with RepeatConcurrently", steps)
       engine.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
           f.failedSteps.head.errors.head.renderedMessage should be("expected result was:\n'true'\nbut actual result is:\n'false'")
@@ -27,7 +27,7 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       }
     }
 
-    "fail if 'concurrently' block does not complete within 'maxDuraiton because of a single step duration" in {
+    "fail if 'RepeatConcurrently' block does not complete within 'maxDuration because of a single step duration" in {
       val nested = AssertStep(
         "always succeed after 1000 ms",
         s ⇒ {
@@ -35,10 +35,10 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val steps = ConcurrentlyStep(nested, 1, 200.millis) :: Nil
-      val s = Scenario("scenario with Concurrently", steps)
+      val steps = RepeatConcurrentlyStep(nested, 1, 200.millis) :: Nil
+      val s = Scenario("scenario with RepeatConcurrently", steps)
       engine.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Concurrently block did not reach completion in time: 0/1 finished")
+        case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Repeat concurrently block did not reach completion in time: 0/1 finished")
         case _                        ⇒ assert(false)
       }
     }
@@ -53,15 +53,15 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val concurrentlyStep = ConcurrentlyStep(nested, loop, 300.millis)
-      val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
+      val concurrentlyStep = RepeatConcurrentlyStep(nested, loop, 300.millis)
+      val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         uglyCounter.intValue() should be(loop)
       }
     }
 
-    "merge all session from concurrent runs" ignore {
+    "merge all session from 'RepeatConcurrent' runs" ignore {
       val steps = Range.inclusive(1, 5).map { i ⇒
         EffectStep.fromSyncE(
           title = s"set $i in the session",
@@ -69,8 +69,8 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         )
       }
       val concurrentFactor = 5
-      val concurrentlyStep = ConcurrentlyStep(steps.toList, concurrentFactor, 300.millis)
-      val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
+      val concurrentlyStep = RepeatConcurrentlyStep(steps.toList, concurrentFactor, 300.millis)
+      val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         res.session.getHistory("indice").valueUnsafe should be(Vector.fill(concurrentFactor)(Vector("1", "2", "3", "4", "5")).flatten)

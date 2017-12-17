@@ -23,7 +23,7 @@ class MockServerExample extends CornichonFeature with HttpMockDsl {
 
       Scenario("keep valid counters under concurrent requests") {
         HttpMock("awesome-server") {
-          Concurrently(2, 10.seconds) {
+          RepeatConcurrently(2, 10.seconds) {
             Repeat(10) {
               When I get("<awesome-server-url>/")
             }

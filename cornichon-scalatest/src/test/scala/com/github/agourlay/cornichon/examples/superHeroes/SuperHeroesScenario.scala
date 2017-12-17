@@ -575,7 +575,7 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Execute steps in parallel 'factor times'
-        Concurrently(factor = 3, maxTime = 20 seconds) {
+        RepeatConcurrently(factor = 3, maxTime = 20 seconds) {
 
           When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
 
@@ -667,7 +667,7 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Blocks can be nested
-        Concurrently(factor = 2, maxTime = 20 seconds) {
+        RepeatConcurrently(factor = 2, maxTime = 20 seconds) {
 
           Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
 

@@ -101,9 +101,9 @@ trait Dsl extends ProvidedInstances {
       EventuallyStep(steps, conf)
     }
 
-  def Concurrently(factor: Int, maxTime: FiniteDuration) =
+  def RepeatConcurrently(factor: Int, maxTime: FiniteDuration) =
     BodyElementCollector[Step, Step] { steps ⇒
-      ConcurrentlyStep(steps, factor, maxTime)
+      RepeatConcurrentlyStep(steps, factor, maxTime)
     }
 
   def Within(maxDuration: FiniteDuration) =
