@@ -87,22 +87,22 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
   def save_body_path(args: (String, String)*) = {
     val inputs = args.map {
-      case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, (session, s) ⇒ {
+      case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (session, s) ⇒ {
         for {
           resolvedPath ← placeholderResolver.fillPlaceholders(path)(session)
           jsonPath ← JsonPath.parse(resolvedPath)
           json ← jsonPath.run(s)
         } yield jsonStringValue(json)
-      }, target)
+      })
     }
     save_from_session(inputs)
   }
 
   def save_header_value(args: (String, String)*) = {
     val inputs = args.map {
-      case (headerFieldname, target) ⇒ FromSessionSetter(lastResponseHeadersKey, (session, s) ⇒ {
-        decodeSessionHeaders(s).map(_.find(_._1 == headerFieldname).map(h ⇒ h._2).getOrElse(""))
-      }, target)
+      case (headerFieldName, target) ⇒ FromSessionSetter(lastResponseHeadersKey, target, s"save '$headerFieldName' header value to key '$target'", (_, s) ⇒ {
+        decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h ⇒ h._2).getOrElse(""))
+      })
     }
     save_from_session(inputs)
   }

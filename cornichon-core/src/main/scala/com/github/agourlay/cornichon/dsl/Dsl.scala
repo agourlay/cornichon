@@ -11,7 +11,6 @@ import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
-import com.github.agourlay.cornichon.util.Printing._
 import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
@@ -170,23 +169,19 @@ trait Dsl extends ProvidedInstances {
 
 object Dsl {
 
-  case class FromSessionSetter(fromKey: String, trans: (Session, String) ⇒ Either[CornichonError, String], target: String)
+  case class FromSessionSetter(fromKey: String, target: String, title: String, trans: (Session, String) ⇒ Either[CornichonError, String])
 
-  def save_from_session(args: Seq[FromSessionSetter]) = {
-    val keys = args.map(_.fromKey)
-    val extractors = args.map(_.trans)
-    val targets = args.map(_.target)
+  def save_from_session(args: Seq[FromSessionSetter]) =
     EffectStep.fromSyncE(
-      s"save parts from session '${printArrowPairs(keys.zip(targets))}'",
+      s"${args.map(_.title).mkString(" and ")}",
       session ⇒ {
         for {
-          allValues ← session.getList(keys)
-          extracted ← allValues.zip(extractors).traverseU { case (value, extractor) ⇒ extractor(session, value) }
-          x ← targets.zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) ⇒ s.flatMap(_.addValue(tuple._1, tuple._2)))
-        } yield x
+          allValues ← session.getList(args.map(_.fromKey))
+          extracted ← allValues.zip(args.map(_.trans)).traverseU { case (value, extractor) ⇒ extractor(session, value) }
+          newSession ← args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) ⇒ s.flatMap(_.addValue(tuple._1, tuple._2)))
+        } yield newSession
       }
     )
-  }
 }
 
 case class ContainerType[+T, B[_]](element: T, tci: B[T @uncheckedVariance])
