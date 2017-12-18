@@ -36,17 +36,12 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int, targetKey: Option[String] = None, timeout: Int = 500) = EffectStep.fromAsync(
+  def read_from_topic(topic: String, amount: Int = 1, timeout: Int = 500) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from topic=$topic",
-    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v ⇒ s""" "$v" """))
+    effect = s ⇒ readFromTopic(topic, amount, timeout, s)
   )
 
-  def read_json_from_topic(topic: String, amount: Int, targetKey: Option[String] = None, timeout: Int = 500) = EffectStep.fromAsync(
-    title = s"reading the last $amount messages from topic=$topic ",
-    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v ⇒ CornichonJson.jsonStringValue(CornichonJson.parseJson(v).valueUnsafe)))
-  )
-
-  private def readFromTopic(topic: String, targetKey: String, amount: Int, timeout: Int, s: Session)(transformRecord: ConsumerRecord[String, String] ⇒ String) = Future {
+  private def readFromTopic(topic: String, amount: Int, timeout: Int, s: Session) = Future {
     consumer.unsubscribe()
     consumer.subscribe(Seq(topic).asJava)
     val messages = ListBuffer.empty[ConsumerRecord[String, String]]
@@ -60,9 +55,23 @@ trait KafkaDsl {
     consumer.commitSync()
     messages.drop(messages.size - amount)
     messages.foldLeft(s) { (session, value) ⇒
-      session.addValue(targetKey, transformRecord(value)).valueUnsafe
+      commonSessionExtraction(session, topic, value).valueUnsafe
     }
   }
+
+  def kafka(topic: String) = KafkaStepBuilder(
+    sessionKey = topic,
+    placeholderResolver = placeholderResolver,
+    matcherResolver = matcherResolver
+  )
+
+  def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
+    session.addValues(
+      s"$topic-topic" → response.topic(),
+      s"$topic-key" → response.key(),
+      s"$topic-value" → response.value()
+    )
+
 }
 
 object KafkaDsl {

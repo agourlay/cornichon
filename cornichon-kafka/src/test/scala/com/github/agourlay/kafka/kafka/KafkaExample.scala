@@ -6,50 +6,42 @@ import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
 class KafkaExample extends CornichonFeature with KafkaDsl {
 
-  def feature = Feature("Kafka test") {
+  def feature = Feature("Kafka DSL") {
 
-    Scenario("put and read to topic") {
+    Scenario("Can write and read arbitrary Strings to/from topic") {
+      Given I put_topic(
+        topic = "cornichon",
+        key = "success",
+        message = "I am a plain string"
+      )
 
-      Given I put_topic("my-topic", "my-key", "my-json")
+      When I read_from_topic(
+        topic = "cornichon"
+      )
 
-      Then I read_from_topic("my-topic", amount = 1, timeout = 1000)
-
-      Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
-        """
-          {
-             "key": "my-key",
-             "topic": "my-topic",
-             "value": "my-json"
-          }
-        """)
-
+      Then assert kafka("cornichon").topic_is("cornichon")
+      Then assert kafka("cornichon").key_is("success")
+      Then assert kafka("cornichon").message_value.is("I am a plain string")
     }
+    Scenario("Can use cornichon jsonAssertions on the message value") {
+      Given I put_topic(
+        topic = "cornichon",
+        key = "json",
+        message =
+          """{
+            | "coffee"   : "black",
+            | "cornichon": "green"
+            |}""".stripMargin
+      )
 
-    Scenario("put and read to topic 2 ") {
+      When I read_from_topic(
+        topic = "cornichon"
+      )
 
-      Given I put_topic("my-topic", "my-key", "my-json")
-
-      Then I read_from_topic("my-topic", amount = 1, timeout = 1000)
-
-      Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
-        """
-          {
-             "key": "my-key",
-             "topic": "my-topic",
-             "value": "my-json"
-          }
-        """)
-
-    }
-
-    Scenario("put and read to other topic ") {
-
-      Given I put_topic("my-topic-2", "my-key", "my-json")
-
-      Then I read_from_topic("my-topic", amount = 1, timeout = 1000)
-
-      Then assert session_value("my-topic").isAbsent
-
+      Then assert kafka("cornichon").message_value.ignoring("coffee").is(
+        """{
+          | "cornichon": "green"
+          |}""".stripMargin)
     }
 
   }
