@@ -71,28 +71,28 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
   private def replayCommand(featureClass: Class[_], scenarioName: String): String =
     s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" """
 
-  private def runScenario(feature: BaseFeature, eventHandler: EventHandler)(s: Scenario) = {
-    val startTS = System.currentTimeMillis()
+  private def runScenario(feature: BaseFeature, eventHandler: EventHandler)(s: Scenario) =
     feature.runScenario(s).map { r ⇒
       //Generate result event
-      val endTS = System.currentTimeMillis()
-      eventHandler.handle(eventBuilder(r, endTS - startTS))
+      eventHandler.handle(eventBuilder(r, r.duration.toMillis))
       r
     }
-  }
 
   private def printResultLogs(featureClass: Class[_])(sr: ScenarioReport): Unit = sr match {
     case s: SuccessScenarioReport ⇒
       val msg = s"- ${s.scenarioName} (${s.duration.toMillis} millis)"
       println(SuccessLogInstruction(msg, 0).colorized)
       if (s.shouldShowLogs) LogInstruction.printLogs(s.logs)
+
     case f: FailureScenarioReport ⇒
       val msg = failureErrorMessage(featureClass, f.scenarioName, f.msg, f.duration)
       println(FailureLogInstruction(msg, 0).colorized)
       LogInstruction.printLogs(f.logs)
+
     case i: IgnoreScenarioReport ⇒
       val msg = s"- **ignored** ${i.scenarioName} "
       println(WarningLogInstruction(msg, 0).colorized)
+
     case p: PendingScenarioReport ⇒
       val msg = s"- **pending** ${p.scenarioName} "
       println(DebugLogInstruction(msg, 0).colorized)
