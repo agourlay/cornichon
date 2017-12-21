@@ -38,26 +38,24 @@ trait KafkaDsl {
 
   def read_from_topic(topic: String, amount: Int = 1, timeout: Int = 500) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from topic=$topic",
-    effect = s ⇒ readFromTopic(topic, amount, timeout, s)
+    effect = s ⇒ Future {
+      consumer.unsubscribe()
+      consumer.subscribe(Seq(topic).asJava)
+      val messages = ListBuffer.empty[ConsumerRecord[String, String]]
+      var nothingNewAnymore = false
+      while (!nothingNewAnymore) {
+        val newMessages = consumer.poll(timeout)
+        val collectionOfNewMessages = newMessages.iterator().asScala.toList
+        messages ++= collectionOfNewMessages
+        nothingNewAnymore = newMessages.isEmpty
+      }
+      consumer.commitSync()
+      messages.drop(messages.size - amount)
+      messages.foldLeft(s) { (session, value) ⇒
+        commonSessionExtraction(session, topic, value).valueUnsafe
+      }
+    }
   )
-
-  private def readFromTopic(topic: String, amount: Int, timeout: Int, s: Session) = Future {
-    consumer.unsubscribe()
-    consumer.subscribe(Seq(topic).asJava)
-    val messages = ListBuffer.empty[ConsumerRecord[String, String]]
-    var nothingNewAnymore = false
-    while (!nothingNewAnymore) {
-      val newMessages = consumer.poll(timeout)
-      val collectionOfNewMessages = newMessages.iterator().asScala.toList
-      messages ++= collectionOfNewMessages
-      nothingNewAnymore = newMessages.isEmpty
-    }
-    consumer.commitSync()
-    messages.drop(messages.size - amount)
-    messages.foldLeft(s) { (session, value) ⇒
-      commonSessionExtraction(session, topic, value).valueUnsafe
-    }
-  }
 
   def kafka(topic: String) = KafkaStepBuilder(
     sessionKey = topic,
@@ -65,7 +63,7 @@ trait KafkaDsl {
     matcherResolver = matcherResolver
   )
 
-  def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
+  private def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
     session.addValues(
       s"$topic-topic" → response.topic(),
       s"$topic-key" → response.key(),

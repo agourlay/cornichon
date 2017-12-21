@@ -8,6 +8,7 @@ import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import cats.instances.string._
+import cats.instances.either._
 
 case class KafkaStepBuilder(
     sessionKey: String,
@@ -18,23 +19,21 @@ case class KafkaStepBuilder(
     title = s"topic is $expected",
     action = s ⇒ Assertion.either {
       for {
-        messageObject ← s.getJsonStringField(s"$sessionKey-topic")
-      } yield GenericEqualityAssertion(expected, messageObject)
+        actualTopic ← s.getJsonStringField(s"$sessionKey-topic")
+        resolvedExpectedTopic ← placeholderResolver.fillPlaceholders(expected)(s)
+      } yield GenericEqualityAssertion(resolvedExpectedTopic, actualTopic)
     }
   )
 
-  def message_value = {
-    val actualSessionKey = s"$sessionKey-value"
+  def message_value = JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(s"$sessionKey-value"), Some("kafka message value"))
 
-    //the sessionKey would be "$topic-value"
-    JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(actualSessionKey), Some("kafka message value"))
-  }
   def key_is(expected: String) = AssertStep(
     title = s"key is $expected",
     action = s ⇒ Assertion.either {
       for {
-        messageObject ← s.getJsonStringField(s"$sessionKey-key")
-      } yield GenericEqualityAssertion(expected, messageObject)
+        actualKey ← s.getJsonStringField(s"$sessionKey-key")
+        resolvedExpectedKey ← placeholderResolver.fillPlaceholders(expected)(s)
+      } yield GenericEqualityAssertion(resolvedExpectedKey, actualKey)
     }
   )
 }
