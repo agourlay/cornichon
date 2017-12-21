@@ -36,33 +36,40 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int, targetKey: Option[String] = None, timeout: Int = 500) = EffectStep.fromAsync(
+  def read_from_topic(topic: String, amount: Int = 1, timeout: Int = 500) = EffectStep.fromAsync(
     title = s"reading the last $amount messages from topic=$topic",
-    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v ⇒ s""" "$v" """))
+    effect = s ⇒ Future {
+      consumer.unsubscribe()
+      consumer.subscribe(Seq(topic).asJava)
+      val messages = ListBuffer.empty[ConsumerRecord[String, String]]
+      var nothingNewAnymore = false
+      while (!nothingNewAnymore) {
+        val newMessages = consumer.poll(timeout)
+        val collectionOfNewMessages = newMessages.iterator().asScala.toList
+        messages ++= collectionOfNewMessages
+        nothingNewAnymore = newMessages.isEmpty
+      }
+      consumer.commitSync()
+      messages.drop(messages.size - amount)
+      messages.foldLeft(s) { (session, value) ⇒
+        commonSessionExtraction(session, topic, value).valueUnsafe
+      }
+    }
   )
 
-  def read_json_from_topic(topic: String, amount: Int, targetKey: Option[String] = None, timeout: Int = 500) = EffectStep.fromAsync(
-    title = s"reading the last $amount messages from topic=$topic ",
-    effect = s ⇒ readFromTopic(topic, targetKey.getOrElse(topic), amount, timeout, s)(buildConsumerRecordJsonProjection(v ⇒ CornichonJson.jsonStringValue(CornichonJson.parseJson(v).valueUnsafe)))
+  def kafka(topic: String) = KafkaStepBuilder(
+    sessionKey = topic,
+    placeholderResolver = placeholderResolver,
+    matcherResolver = matcherResolver
   )
 
-  private def readFromTopic(topic: String, targetKey: String, amount: Int, timeout: Int, s: Session)(transformRecord: ConsumerRecord[String, String] ⇒ String) = Future {
-    consumer.unsubscribe()
-    consumer.subscribe(Seq(topic).asJava)
-    val messages = ListBuffer.empty[ConsumerRecord[String, String]]
-    var nothingNewAnymore = false
-    while (!nothingNewAnymore) {
-      val newMessages = consumer.poll(timeout)
-      val collectionOfNewMessages = newMessages.iterator().asScala.toList
-      messages ++= collectionOfNewMessages
-      nothingNewAnymore = newMessages.isEmpty
-    }
-    consumer.commitSync()
-    messages.drop(messages.size - amount)
-    messages.foldLeft(s) { (session, value) ⇒
-      session.addValue(targetKey, transformRecord(value)).valueUnsafe
-    }
-  }
+  private def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
+    session.addValues(
+      s"$topic-topic" → response.topic(),
+      s"$topic-key" → response.key(),
+      s"$topic-value" → response.value()
+    )
+
 }
 
 object KafkaDsl {

@@ -143,70 +143,59 @@ scenarios and features is sequential**.
 
 The underlying kafka client used in cornichon is configured with a fixed group-id to 'cornichon' and is set with offset-reset to 'earliest'.
 
-- putting a message to a topic
+- Comprehensive example
 
-```
+```scala
+import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.kafka.KafkaDsl
 
-Given I put_topic(topic = "my-topic", key = "my-key", message = "the actual message")
+class KafkaExample extends CornichonFeature with KafkaDsl {
 
-```
+  def feature = Feature("Kafka DSL") {
 
-- getting a message from a topic
+    Scenario("Can write and read arbitrary Strings to/from topic") {
+      Given I put_topic(
+        topic = "cornichon",
+        key = "success",
+        message = "I am a plain string"
+      )
 
-```
+      When I read_from_topic(
+        topic = "cornichon",
+        timeout = 500,
+        amount = 1
+      )
 
-Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000)
-
-Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
-"""
-    {
-     "key": "my-key",
-     "topic": "my-topic",
-     "value": "the actual message"
+      Then assert kafka("cornichon").topic_is("cornichon")
+      Then assert kafka("cornichon").key_is("success")
+      Then assert kafka("cornichon").message_value.is("I am a plain string")
     }
-""")
+    Scenario("Can use cornichon jsonAssertions on the message value") {
+      Given I put_topic(
+        topic = "cornichon",
+        key = "json",
+        message =
+          """{
+            | "coffee"   : "black",
+            | "cornichon": "green"
+            |}""".stripMargin
+      )
+
+      When I read_from_topic(
+        topic = "cornichon"
+      )
+
+      Then assert kafka("cornichon").message_value.ignoring("coffee").is(
+        """{
+          | "cornichon": "green"
+          |}""".stripMargin)
+    }
+
+  }
+}
 
 
 ```
 
 Note that this dsl always return the latest `amount` of messages found on the topic.
 The consumer polls `timeout` ms until it does not find any new messages anymore
-
-It is also possible to use a different session key to store the messages from the topic, then the topic-name itself
-
-```
-
-Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey = Some("message"))
-
-Then assert session_value("message").asJson.ignoring("timestamp").is(
-"""
-    {
-     "key": "my-key",
-     "topic": "my-topic",
-     "value": "the actual message"
-    }
-""")
-
-
-```
-
-Most of the time, the message on the topic is json-formatted. In order to use the convenient JsonMatchers of cornichon,
-the message can be read as json:
-
-```
-Given I put_topic(topic = "my-topic", key = "my-key", message =
-"""
-    {
-       "cornichon": "mon dieu",
-       "cucumber": "sacre bleu"
-    }
-""")
-Then I read_json_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey = Some("message"))
-Then assert session_value("message").asJson.ignoring("cucumber").is(
-"""
-   {
-       "cornichon": "mon dieu"
-   }
-"""
-)
-```
