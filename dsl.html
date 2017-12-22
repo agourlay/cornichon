@@ -384,7 +384,7 @@
   <li>execute a series of steps ‘n’ times concurrently and wait ‘maxTime’ for completion.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Concurrently</span><span class="o">(</span><span class="n">factor</span> <span class="k">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatConcurrently</span><span class="o">(</span><span class="n">factor</span> <span class="k">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
 
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 

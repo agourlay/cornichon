@@ -230,7 +230,7 @@
                         <a class="class" href="PendingScenarioReport.html" title=""></a>
                         <a href="PendingScenarioReport.html" title="">PendingScenarioReport</a>
                       </li><li class="current-entities indented5">
-                        <a class="object" href="RunState$.html" title=""></a>
+                        <span class="separator"></span>
                         <a class="class" href="RunState.html" title=""></a>
                         <a href="RunState.html" title="">RunState</a>
                       </li><li class="current-entities indented5">
@@ -374,9 +374,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.core.Engine#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(stepPreparers:List[com.github.agourlay.cornichon.core.StepPreparer])(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.core.Engine"></a><a id="&lt;init&gt;:Engine"></a>
+      <a id="&lt;init&gt;(stepPreparers:List[com.github.agourlay.cornichon.core.StepPreparer]):com.github.agourlay.cornichon.core.Engine"></a><a id="&lt;init&gt;:Engine"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#&lt;init&gt;(stepPreparers:List[com.github.agourlay.cornichon.core.StepPreparer])(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.core.Engine" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#&lt;init&gt;(stepPreparers:List[com.github.agourlay.cornichon.core.StepPreparer]):com.github.agourlay.cornichon.core.Engine" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -385,7 +385,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Engine</span><span class="params">(<span name="stepPreparers">stepPreparers: <span class="extype" name="scala.List">List</span>[<a href="StepPreparer.html" class="extype" name="com.github.agourlay.cornichon.core.StepPreparer">StepPreparer</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="scheduler">scheduler: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>)</span>
+        <span class="name">Engine</span><span class="params">(<span name="stepPreparers">stepPreparers: <span class="extype" name="scala.List">List</span>[<a href="StepPreparer.html" class="extype" name="com.github.agourlay.cornichon.core.StepPreparer">StepPreparer</a>]</span>)</span>
       </span>
       
       
@@ -650,34 +650,18 @@
               
         </dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.core.Engine#runScenario" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="runScenario(session:com.github.agourlay.cornichon.core.Session,context:com.github.agourlay.cornichon.core.FeatureExecutionContext)(scenario:com.github.agourlay.cornichon.core.Scenario):scala.concurrent.Future[com.github.agourlay.cornichon.core.ScenarioReport]"></a><a id="runScenario(Session,FeatureExecutionContext)(Scenario):Future[ScenarioReport]"></a>
+      <a id="runScenario(session:com.github.agourlay.cornichon.core.Session,context:com.github.agourlay.cornichon.core.FeatureExecutionContext)(scenario:com.github.agourlay.cornichon.core.Scenario):monix.eval.Task[com.github.agourlay.cornichon.core.ScenarioReport]"></a><a id="runScenario(Session,FeatureExecutionContext)(Scenario):Task[ScenarioReport]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#runScenario(session:com.github.agourlay.cornichon.core.Session,context:com.github.agourlay.cornichon.core.FeatureExecutionContext)(scenario:com.github.agourlay.cornichon.core.Scenario):scala.concurrent.Future[com.github.agourlay.cornichon.core.ScenarioReport]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#runScenario(session:com.github.agourlay.cornichon.core.Session,context:com.github.agourlay.cornichon.core.FeatureExecutionContext)(scenario:com.github.agourlay.cornichon.core.Scenario):monix.eval.Task[com.github.agourlay.cornichon.core.ScenarioReport]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runScenario</span><span class="params">(<span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="context">context: <a href="FeatureExecutionContext.html" class="extype" name="com.github.agourlay.cornichon.core.FeatureExecutionContext">FeatureExecutionContext</a> = <span class="symbol"><span class="name"><a href="FeatureExecutionContext$.html">FeatureExecutionContext.empty</a></span></span></span>)</span><span class="params">(<span name="scenario">scenario: <a href="Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a>]</span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.core.Engine#runScenarioTask" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="runScenarioTask(session:com.github.agourlay.cornichon.core.Session,context:com.github.agourlay.cornichon.core.FeatureExecutionContext)(scenario:com.github.agourlay.cornichon.core.Scenario):monix.eval.Task[com.github.agourlay.cornichon.core.ScenarioReport]"></a><a id="runScenarioTask(Session,FeatureExecutionContext)(Scenario):Task[ScenarioReport]"></a>
-      <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/core/Engine.html#runScenarioTask(session:com.github.agourlay.cornichon.core.Session,context:com.github.agourlay.cornichon.core.FeatureExecutionContext)(scenario:com.github.agourlay.cornichon.core.Scenario):monix.eval.Task[com.github.agourlay.cornichon.core.ScenarioReport]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">runScenarioTask</span><span class="params">(<span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="context">context: <a href="FeatureExecutionContext.html" class="extype" name="com.github.agourlay.cornichon.core.FeatureExecutionContext">FeatureExecutionContext</a></span>)</span><span class="params">(<span name="scenario">scenario: <a href="Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a></span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a>]</span>
+        <span class="name">runScenario</span><span class="params">(<span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="context">context: <a href="FeatureExecutionContext.html" class="extype" name="com.github.agourlay.cornichon.core.FeatureExecutionContext">FeatureExecutionContext</a> = <span class="symbol"><span class="name"><a href="FeatureExecutionContext$.html">FeatureExecutionContext.empty</a></span></span></span>)</span><span class="params">(<span name="scenario">scenario: <a href="Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a></span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a>]</span>
       </span>
       
       
@@ -689,7 +673,7 @@
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">

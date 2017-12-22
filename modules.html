@@ -134,72 +134,62 @@ scenarios and features is sequential</strong>.</p>
 <p>The underlying kafka client used in cornichon is configured with a fixed group-id to ‘cornichon’ and is set with offset-reset to ‘earliest’.</p>
 
 <ul>
-  <li>putting a message to a topic</li>
+  <li>Comprehensive example</li>
 </ul>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-Given I put_topic(topic = "my-topic", key = "my-key", message = "the actual message")
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.kafka.KafkaDsl</span>
 
-</code></pre></div></div>
+<span class="k">class</span> <span class="nc">KafkaExample</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="k">with</span> <span class="nc">KafkaDsl</span> <span class="o">{</span>
 
-<ul>
-  <li>getting a message from a topic</li>
-</ul>
+  <span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Kafka DSL"</span><span class="o">)</span> <span class="o">{</span>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000)
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"Can write and read arbitrary Strings to/from topic"</span><span class="o">)</span> <span class="o">{</span>
+      <span class="nc">Given</span> <span class="n">I</span> <span class="n">put_topic</span><span class="o">(</span>
+        <span class="n">topic</span> <span class="k">=</span> <span class="s">"cornichon"</span><span class="o">,</span>
+        <span class="n">key</span> <span class="k">=</span> <span class="s">"success"</span><span class="o">,</span>
+        <span class="n">message</span> <span class="k">=</span> <span class="s">"I am a plain string"</span>
+      <span class="o">)</span>
 
-Then assert session_value("my-topic").asJson.ignoring("timestamp").is(
-"""
-    {
-     "key": "my-key",
-     "topic": "my-topic",
-     "value": "the actual message"
-    }
-""")
+      <span class="nc">When</span> <span class="n">I</span> <span class="n">read_from_topic</span><span class="o">(</span>
+        <span class="n">topic</span> <span class="k">=</span> <span class="s">"cornichon"</span><span class="o">,</span>
+        <span class="n">timeout</span> <span class="k">=</span> <span class="mi">500</span><span class="o">,</span>
+        <span class="n">amount</span> <span class="k">=</span> <span class="mi">1</span>
+      <span class="o">)</span>
+
+      <span class="nc">Then</span> <span class="n">assert</span> <span class="n">kafka</span><span class="o">(</span><span class="s">"cornichon"</span><span class="o">).</span><span class="n">topic_is</span><span class="o">(</span><span class="s">"cornichon"</span><span class="o">)</span>
+      <span class="nc">Then</span> <span class="n">assert</span> <span class="n">kafka</span><span class="o">(</span><span class="s">"cornichon"</span><span class="o">).</span><span class="n">key_is</span><span class="o">(</span><span class="s">"success"</span><span class="o">)</span>
+      <span class="nc">Then</span> <span class="n">assert</span> <span class="n">kafka</span><span class="o">(</span><span class="s">"cornichon"</span><span class="o">).</span><span class="n">message_value</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"I am a plain string"</span><span class="o">)</span>
+    <span class="o">}</span>
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"Can use cornichon jsonAssertions on the message value"</span><span class="o">)</span> <span class="o">{</span>
+      <span class="nc">Given</span> <span class="n">I</span> <span class="n">put_topic</span><span class="o">(</span>
+        <span class="n">topic</span> <span class="k">=</span> <span class="s">"cornichon"</span><span class="o">,</span>
+        <span class="n">key</span> <span class="k">=</span> <span class="s">"json"</span><span class="o">,</span>
+        <span class="n">message</span> <span class="k">=</span>
+          <span class="s">"""{
+            | "coffee"   : "black",
+            | "cornichon": "green"
+            |}"""</span><span class="o">.</span><span class="n">stripMargin</span>
+      <span class="o">)</span>
+
+      <span class="nc">When</span> <span class="n">I</span> <span class="n">read_from_topic</span><span class="o">(</span>
+        <span class="n">topic</span> <span class="k">=</span> <span class="s">"cornichon"</span>
+      <span class="o">)</span>
+
+      <span class="nc">Then</span> <span class="n">assert</span> <span class="n">kafka</span><span class="o">(</span><span class="s">"cornichon"</span><span class="o">).</span><span class="n">message_value</span><span class="o">.</span><span class="n">ignoring</span><span class="o">(</span><span class="s">"coffee"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
+        <span class="s">"""{
+          | "cornichon": "green"
+          |}"""</span><span class="o">.</span><span class="n">stripMargin</span><span class="o">)</span>
+    <span class="o">}</span>
+
+  <span class="o">}</span>
+<span class="o">}</span>
 
 
 </code></pre></div></div>
 
 <p>Note that this dsl always return the latest <code class="highlighter-rouge">amount</code> of messages found on the topic.
 The consumer polls <code class="highlighter-rouge">timeout</code> ms until it does not find any new messages anymore</p>
-
-<p>It is also possible to use a different session key to store the messages from the topic, then the topic-name itself</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-Then I read_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey = Some("message"))
-
-Then assert session_value("message").asJson.ignoring("timestamp").is(
-"""
-    {
-     "key": "my-key",
-     "topic": "my-topic",
-     "value": "the actual message"
-    }
-""")
-
-
-</code></pre></div></div>
-
-<p>Most of the time, the message on the topic is json-formatted. In order to use the convenient JsonMatchers of cornichon,
-the message can be read as json:</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Given I put_topic(topic = "my-topic", key = "my-key", message =
-"""
-    {
-       "cornichon": "mon dieu",
-       "cucumber": "sacre bleu"
-    }
-""")
-Then I read_json_from_topic(topic = "my-topic", amount = 1, timeout = 1000, targetKey = Some("message"))
-Then assert session_value("message").asJson.ignoring("cucumber").is(
-"""
-   {
-       "cornichon": "mon dieu"
-   }
-"""
-)
-</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });

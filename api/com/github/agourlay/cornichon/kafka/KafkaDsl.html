@@ -165,6 +165,10 @@
                         <span class="separator"></span>
                         <a class="class" href="KafkaProducerConfig.html" title=""></a>
                         <a href="KafkaProducerConfig.html" title="">KafkaProducerConfig</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="KafkaStepBuilder.html" title=""></a>
+                        <a href="KafkaStepBuilder.html" title="">KafkaStepBuilder</a>
                       </li>
               </ul>
             </div>
@@ -448,6 +452,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.kafka.KafkaDsl#kafka" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="kafka(topic:String):com.github.agourlay.cornichon.kafka.KafkaStepBuilder"></a><a id="kafka(String):KafkaStepBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/kafka/KafkaDsl.html#kafka(topic:String):com.github.agourlay.cornichon.kafka.KafkaStepBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">kafka</span><span class="params">(<span name="topic">topic: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="KafkaStepBuilder.html" class="extype" name="com.github.agourlay.cornichon.kafka.KafkaStepBuilder">KafkaStepBuilder</a></span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
@@ -519,9 +539,9 @@
       
       
     </li><li name="com.github.agourlay.cornichon.kafka.KafkaDsl#read_from_topic" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="read_from_topic(topic:String,amount:Int,targetKey:Option[String],timeout:Int):com.github.agourlay.cornichon.steps.regular.EffectStep"></a><a id="read_from_topic(String,Int,Option[String],Int):EffectStep"></a>
+      <a id="read_from_topic(topic:String,amount:Int,timeout:Int):com.github.agourlay.cornichon.steps.regular.EffectStep"></a><a id="read_from_topic(String,Int,Int):EffectStep"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/kafka/KafkaDsl.html#read_from_topic(topic:String,amount:Int,targetKey:Option[String],timeout:Int):com.github.agourlay.cornichon.steps.regular.EffectStep" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/kafka/KafkaDsl.html#read_from_topic(topic:String,amount:Int,timeout:Int):com.github.agourlay.cornichon.steps.regular.EffectStep" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -530,23 +550,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">read_from_topic</span><span class="params">(<span name="topic">topic: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="amount">amount: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="targetKey">targetKey: <a href="http://www.scala-lang.org/api/2.12.4/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="timeout">timeout: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">500</span></span>)</span><span class="result">: <a href="../steps/regular/EffectStep.html" class="extype" name="com.github.agourlay.cornichon.steps.regular.EffectStep">EffectStep</a></span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.kafka.KafkaDsl#read_json_from_topic" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="read_json_from_topic(topic:String,amount:Int,targetKey:Option[String],timeout:Int):com.github.agourlay.cornichon.steps.regular.EffectStep"></a><a id="read_json_from_topic(String,Int,Option[String],Int):EffectStep"></a>
-      <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/kafka/KafkaDsl.html#read_json_from_topic(topic:String,amount:Int,targetKey:Option[String],timeout:Int):com.github.agourlay.cornichon.steps.regular.EffectStep" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">read_json_from_topic</span><span class="params">(<span name="topic">topic: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="amount">amount: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="targetKey">targetKey: <a href="http://www.scala-lang.org/api/2.12.4/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="timeout">timeout: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">500</span></span>)</span><span class="result">: <a href="../steps/regular/EffectStep.html" class="extype" name="com.github.agourlay.cornichon.steps.regular.EffectStep">EffectStep</a></span>
+        <span class="name">read_from_topic</span><span class="params">(<span name="topic">topic: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="amount">amount: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">1</span></span>, <span name="timeout">timeout: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">500</span></span>)</span><span class="result">: <a href="../steps/regular/EffectStep.html" class="extype" name="com.github.agourlay.cornichon.steps.regular.EffectStep">EffectStep</a></span>
       </span>
       
       

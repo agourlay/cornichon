@@ -191,18 +191,6 @@
                         <a href="AttachStep.html" title="">AttachStep</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="class" href="ConcurrentlyError.html" title=""></a>
-                        <a href="ConcurrentlyError.html" title="">ConcurrentlyError</a>
-                      </li><li class="current-entities indented6">
-                        <span class="separator"></span>
-                        <a class="class" href="ConcurrentlyStep.html" title=""></a>
-                        <a href="ConcurrentlyStep.html" title="">ConcurrentlyStep</a>
-                      </li><li class="current-entities indented6">
-                        <span class="separator"></span>
-                        <a class="class" href="ConcurrentlyTimeout.html" title=""></a>
-                        <a href="ConcurrentlyTimeout.html" title="">ConcurrentlyTimeout</a>
-                      </li><li class="current-entities indented6">
-                        <span class="separator"></span>
                         <a class="object" href="EventuallyBlockSucceedAfterMaxDuration$.html" title=""></a>
                         <a href="EventuallyBlockSucceedAfterMaxDuration$.html" title="">EventuallyBlockSucceedAfterMaxDuration</a>
                       </li><li class="current-entities indented6">
@@ -225,6 +213,18 @@
                         <span class="separator"></span>
                         <a class="class" href="RepeatBlockContainFailedSteps.html" title=""></a>
                         <a href="RepeatBlockContainFailedSteps.html" title="">RepeatBlockContainFailedSteps</a>
+                      </li><li class="current-entities indented6">
+                        <span class="separator"></span>
+                        <a class="class" href="RepeatConcurrentlyError.html" title=""></a>
+                        <a href="RepeatConcurrentlyError.html" title="">RepeatConcurrentlyError</a>
+                      </li><li class="current-entities indented6">
+                        <span class="separator"></span>
+                        <a class="class" href="RepeatConcurrentlyStep.html" title=""></a>
+                        <a href="RepeatConcurrentlyStep.html" title="">RepeatConcurrentlyStep</a>
+                      </li><li class="current-entities indented6">
+                        <span class="separator"></span>
+                        <a class="class" href="RepeatConcurrentlyTimeout.html" title=""></a>
+                        <a href="RepeatConcurrentlyTimeout.html" title="">RepeatConcurrentlyTimeout</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
                         <a class="class" href="RepeatDuringBlockContainFailedSteps.html" title=""></a>
@@ -368,54 +368,6 @@
       </span>
       
       
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.ConcurrentlyError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ConcurrentlyErrorextendsCornichonErrorwithProductwithSerializable"></a><a id="ConcurrentlyError:ConcurrentlyError"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#ConcurrentlyErrorextendsCornichonErrorwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="ConcurrentlyError.html"><span class="name">ConcurrentlyError</span></a><span class="params">(<span name="cause">cause: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.ConcurrentlyStep" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ConcurrentlyStepextendsWrapperStepwithProductwithSerializable"></a><a id="ConcurrentlyStep:ConcurrentlyStep"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#ConcurrentlyStepextendsWrapperStepwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="ConcurrentlyStep.html"><span class="name">ConcurrentlyStep</span></a><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="factor">factor: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="maxTime">maxTime: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.steps.wrapped.ConcurrentlyTimeout" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ConcurrentlyTimeoutextendsCornichonErrorwithProductwithSerializable"></a><a id="ConcurrentlyTimeout:ConcurrentlyTimeout"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#ConcurrentlyTimeoutextendsCornichonErrorwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="ConcurrentlyTimeout.html"><span class="name">ConcurrentlyTimeout</span></a><span class="params">(<span name="factor">factor: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="success">success: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
-      </span>
-      
-      
     </li><li name="com.github.agourlay.cornichon.steps.wrapped.EventuallyConf" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="EventuallyConfextendsProductwithSerializable"></a><a id="EventuallyConf:EventuallyConf"></a>
       <span class="permalink">
@@ -493,6 +445,54 @@
       </span>
       <span class="symbol">
         <a title="" href="RepeatBlockContainFailedSteps.html"><span class="name">RepeatBlockContainFailedSteps</span></a><span class="params">(<span name="failedOccurence">failedOccurence: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.RepeatConcurrentlyError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RepeatConcurrentlyErrorextendsCornichonErrorwithProductwithSerializable"></a><a id="RepeatConcurrentlyError:RepeatConcurrentlyError"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#RepeatConcurrentlyErrorextendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="RepeatConcurrentlyError.html"><span class="name">RepeatConcurrentlyError</span></a><span class="params">(<span name="cause">cause: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.RepeatConcurrentlyStep" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RepeatConcurrentlyStepextendsWrapperStepwithProductwithSerializable"></a><a id="RepeatConcurrentlyStep:RepeatConcurrentlyStep"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#RepeatConcurrentlyStepextendsWrapperStepwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="RepeatConcurrentlyStep.html"><span class="name">RepeatConcurrentlyStep</span></a><span class="params">(<span name="nested">nested: <span class="extype" name="scala.List">List</span>[<a href="../../core/Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="factor">factor: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="maxTime">maxTime: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="../../core/WrapperStep.html" class="extype" name="com.github.agourlay.cornichon.core.WrapperStep">WrapperStep</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.steps.wrapped.RepeatConcurrentlyTimeout" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RepeatConcurrentlyTimeoutextendsCornichonErrorwithProductwithSerializable"></a><a id="RepeatConcurrentlyTimeout:RepeatConcurrentlyTimeout"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/steps/wrapped/index.html#RepeatConcurrentlyTimeoutextendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="RepeatConcurrentlyTimeout.html"><span class="name">RepeatConcurrentlyTimeout</span></a><span class="params">(<span name="factor">factor: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="success">success: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result"> extends <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.4/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       

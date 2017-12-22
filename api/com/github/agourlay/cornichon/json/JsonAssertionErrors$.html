@@ -158,17 +158,9 @@
                         <a class="class" href="ArrayFieldSelection.html" title=""></a>
                         <a href="ArrayFieldSelection.html" title="">ArrayFieldSelection</a>
                       </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="class" href="ArrayProjectionSegment.html" title=""></a>
-                        <a href="ArrayProjectionSegment.html" title="">ArrayProjectionSegment</a>
-                      </li><li class="current-entities indented5">
                         <a class="object" href="CornichonJson$.html" title=""></a>
                         <a class="trait" href="CornichonJson.html" title=""></a>
                         <a href="CornichonJson.html" title="">CornichonJson</a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="class" href="FieldSegment.html" title=""></a>
-                        <a href="FieldSegment.html" title="">FieldSegment</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="class" href="FieldSelection.html" title=""></a>
@@ -209,10 +201,6 @@
                         <span class="separator"></span>
                         <a class="class" href="JsonPathParsingError.html" title=""></a>
                         <a href="JsonPathParsingError.html" title="">JsonPathParsingError</a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="trait" href="JsonPathSegment.html" title=""></a>
-                        <a href="JsonPathSegment.html" title="">JsonPathSegment</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="object" href="JsonSteps$.html" title=""></a>
@@ -387,9 +375,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.json.JsonAssertionErrors#arrayContainsError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="arrayContainsError(expected:Seq[String],sourceArray:String,contains:Boolean):Boolean=&gt;String"></a><a id="arrayContainsError(Seq[String],String,Boolean):(Boolean)⇒String"></a>
+      <a id="arrayContainsError(expected:Vector[io.circe.Json],sourceArray:Vector[io.circe.Json],contains:Boolean):String"></a><a id="arrayContainsError(Vector[Json],Vector[Json],Boolean):String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#arrayContainsError(expected:Seq[String],sourceArray:String,contains:Boolean):Boolean=&gt;String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#arrayContainsError(expected:Vector[io.circe.Json],sourceArray:Vector[io.circe.Json],contains:Boolean):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -398,14 +386,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">arrayContainsError</span><span class="params">(<span name="expected">expected: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="sourceArray">sourceArray: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="contains">contains: <a href="http://www.scala-lang.org/api/2.12.4/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: (<a href="http://www.scala-lang.org/api/2.12.4/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">arrayContainsError</span><span class="params">(<span name="expected">expected: <span class="extype" name="scala.Vector">Vector</span>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="sourceArray">sourceArray: <span class="extype" name="scala.Vector">Vector</span>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="contains">contains: <a href="http://www.scala-lang.org/api/2.12.4/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.json.JsonAssertionErrors#arraySizeError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="arraySizeError(expected:Int,sourceArray:String):Int=&gt;String"></a><a id="arraySizeError(Int,String):(Int)⇒String"></a>
+      <a id="arraySizeError(expected:Int,arrayElements:Vector[io.circe.Json]):String"></a><a id="arraySizeError(Int,Vector[Json]):String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#arraySizeError(expected:Int,sourceArray:String):Int=&gt;String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#arraySizeError(expected:Int,arrayElements:Vector[io.circe.Json]):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -414,7 +402,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">arraySizeError</span><span class="params">(<span name="expected">expected: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="sourceArray">sourceArray: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: (<a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">arraySizeError</span><span class="params">(<span name="expected">expected: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="arrayElements">arrayElements: <span class="extype" name="scala.Vector">Vector</span>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
@@ -567,9 +555,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.json.JsonAssertionErrors#jsonArrayNotEmptyError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="jsonArrayNotEmptyError(jsonArray:io.circe.Json):Boolean=&gt;String"></a><a id="jsonArrayNotEmptyError(Json):(Boolean)⇒String"></a>
+      <a id="jsonArrayNotEmptyError(arrayElements:Vector[io.circe.Json]):String"></a><a id="jsonArrayNotEmptyError(Vector[Json]):String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#jsonArrayNotEmptyError(jsonArray:io.circe.Json):Boolean=&gt;String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#jsonArrayNotEmptyError(arrayElements:Vector[io.circe.Json]):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -578,14 +566,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">jsonArrayNotEmptyError</span><span class="params">(<span name="jsonArray">jsonArray: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>)</span><span class="result">: (<a href="http://www.scala-lang.org/api/2.12.4/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">jsonArrayNotEmptyError</span><span class="params">(<span name="arrayElements">arrayElements: <span class="extype" name="scala.Vector">Vector</span>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.json.JsonAssertionErrors#keyIsAbsentError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="keyIsAbsentError(keyName:String,source:String):Boolean=&gt;String"></a><a id="keyIsAbsentError(String,String):(Boolean)⇒String"></a>
+      <a id="keyIsAbsentError(keyName:String,source:String):String"></a><a id="keyIsAbsentError(String,String):String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#keyIsAbsentError(keyName:String,source:String):Boolean=&gt;String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#keyIsAbsentError(keyName:String,source:String):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -594,14 +582,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keyIsAbsentError</span><span class="params">(<span name="keyName">keyName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="source">source: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: (<a href="http://www.scala-lang.org/api/2.12.4/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">keyIsAbsentError</span><span class="params">(<span name="keyName">keyName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="source">source: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.json.JsonAssertionErrors#keyIsPresentError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="keyIsPresentError(keyName:String,source:String):Boolean=&gt;String"></a><a id="keyIsPresentError(String,String):(Boolean)⇒String"></a>
+      <a id="keyIsPresentError(keyName:String,source:io.circe.Json):String"></a><a id="keyIsPresentError(String,Json):String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#keyIsPresentError(keyName:String,source:String):Boolean=&gt;String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/json/JsonAssertionErrors$.html#keyIsPresentError(keyName:String,source:io.circe.Json):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -610,7 +598,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keyIsPresentError</span><span class="params">(<span name="keyName">keyName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="source">source: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: (<a href="http://www.scala-lang.org/api/2.12.4/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">keyIsPresentError</span><span class="params">(<span name="keyName">keyName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="source">source: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
