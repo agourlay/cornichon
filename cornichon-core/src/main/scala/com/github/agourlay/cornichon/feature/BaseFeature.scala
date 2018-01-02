@@ -7,7 +7,6 @@ import com.github.agourlay.cornichon.dsl.Dsl
 import com.github.agourlay.cornichon.http.HttpDsl
 import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
-import com.github.agourlay.cornichon.feature.BaseFeature._
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
 import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler
@@ -15,7 +14,7 @@ import monix.execution.Scheduler
 import scala.annotation.tailrec
 import scala.concurrent.Future
 
-trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
+trait CornichonBaseFeature extends Dsl {
 
   private[cornichon] var beforeFeature: Seq[() ⇒ Unit] = Nil
   private[cornichon] var afterFeature: Seq[() ⇒ Unit] = Nil
@@ -23,11 +22,12 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
   protected var beforeEachScenario: List[Step] = Nil
   protected var afterEachScenario: List[Step] = Nil
 
-  implicit lazy val scheduler = globalScheduler
+  // Convenient implicits for the custom DSL's
+  implicit lazy val ec = Scheduler.Implicits.global
 
   private lazy val engine = Engine.withStepTitleResolver(placeholderResolver)
 
-  private[cornichon] lazy val config = BaseFeature.config
+  private[cornichon] lazy val config = CornichonBaseFeature.config
 
   lazy val executeScenariosInParallel = config.executeScenariosInParallel
 
@@ -61,7 +61,7 @@ trait BaseFeature extends HttpDsl with JsonDsl with Dsl {
 }
 
 // Protect and free resources
-object BaseFeature {
+object CornichonBaseFeature {
   import net.ceedubs.ficus.Ficus._
   import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
@@ -71,8 +71,6 @@ object BaseFeature {
 
   def addShutdownHook(h: () ⇒ Future[_]) =
     hooks.push(h)
-
-  lazy val globalScheduler = Scheduler.Implicits.global
 
   def shutDownGlobalResources(): Future[Done] = {
     import scala.concurrent.ExecutionContext.Implicits.global

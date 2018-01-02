@@ -5,16 +5,16 @@ import org.scalatest._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
 
-class BaseFeatureSpec extends WordSpec with Matchers {
+class CornichonBaseFeatureSpec extends WordSpec with Matchers {
 
   "BaseFeature" must {
     "shutDownGlobalResources" in {
       var counter = 0
       val f1 = () ⇒ Future.successful({ counter = counter + 1 })
-      BaseFeature.addShutdownHook(f1)
+      CornichonBaseFeature.addShutdownHook(f1)
       val f2 = () ⇒ Future.successful({ counter = counter + 2 })
-      BaseFeature.addShutdownHook(f2)
-      Await.ready(BaseFeature.shutDownGlobalResources(), Duration.Inf)
+      CornichonBaseFeature.addShutdownHook(f2)
+      Await.ready(CornichonBaseFeature.shutDownGlobalResources(), Duration.Inf)
       counter should be(3)
     }
   }
