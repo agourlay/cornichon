@@ -4,11 +4,11 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core.LogInstruction._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.feature.BaseFeature
-import com.github.agourlay.cornichon.feature.BaseFeature.{ globalScheduler, shutDownGlobalResources }
+import com.github.agourlay.cornichon.feature.{ BaseFeature, FeatureRunner }
+import com.github.agourlay.cornichon.feature.BaseFeature.shutDownGlobalResources
 import org.scalatest._
-
 import com.github.agourlay.cornichon.scalatest.ScalatestFeature._
+import monix.execution.Scheduler
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -57,7 +57,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
             s.name in pending
           else
             s.name in {
-              runScenario(s).map {
+              FeatureRunner(feature, this).runScenario(s).map {
                 case s: SuccessScenarioReport ⇒
                   if (s.shouldShowLogs) printLogs(s.logs)
                   assert(true)
@@ -90,7 +90,7 @@ object ScalatestFeature {
 
   // Custom Reaper process for the time being as we want to cleanup afterall Feature
   // Will tear down stuff if no Feature registers during 10 secs
-  globalScheduler.scheduleWithFixedDelay(5.seconds, 5.seconds) {
+  Scheduler.Implicits.global.scheduleWithFixedDelay(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
       if (safePassInRow.get() == 2) shutDownGlobalResources()

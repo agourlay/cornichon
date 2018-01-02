@@ -8,10 +8,11 @@ class MacroErrorSpec extends WordSpec with Matchers {
     "compile valid feature definitions" in {
       """
         import com.github.agourlay.cornichon.feature.BaseFeature
+        import com.github.agourlay.cornichon.dsl.CoreDsl
         import com.github.agourlay.cornichon.steps.regular.EffectStep
         import scala.concurrent.Future
 
-        class Foo extends BaseFeature {
+        class Foo extends BaseFeature with CoreDsl {
           val feature =
             Feature("foo") {
               Scenario("aaa") {
@@ -29,9 +30,10 @@ class MacroErrorSpec extends WordSpec with Matchers {
     "not compile feature definitions containing imports in DSL" in {
       """
         import com.github.agourlay.cornichon.feature.BaseFeature
+        import com.github.agourlay.cornichon.dsl.CoreDsl
         import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-        class Foo extends BaseFeature {
+        class Foo extends BaseFeature with CoreDsl {
           val feature =
             Feature("foo") {
               import scala.concurrent.Future
@@ -50,9 +52,10 @@ class MacroErrorSpec extends WordSpec with Matchers {
     "not compile if feature definition contains invalid expressions" in {
       """
         import com.github.agourlay.cornichon.feature.BaseFeature
+        import com.github.agourlay.cornichon.dsl.CoreDsl
         import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-        class Foo extends BaseFeature {
+        class Foo extends BaseFeature with CoreDsl {
           val feature =
             Feature("foo") {
               Scenario("aaa") {

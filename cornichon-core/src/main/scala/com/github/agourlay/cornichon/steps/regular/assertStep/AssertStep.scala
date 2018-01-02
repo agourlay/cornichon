@@ -18,7 +18,7 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
 
   override def run(initialRunState: RunState) = {
     val assertion = action(initialRunState.session)
-    Task.delay(runStepPredicate(assertion))
+    Task.now(assertion.validated.toEither)
   }
 
   override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =
@@ -26,8 +26,6 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
 
   override def onSuccess(result: Done, initialRunState: RunState, executionTime: Duration) =
     (successLog(title, initialRunState.depth, show, executionTime), None)
-
-  def runStepPredicate(assertion: Assertion) = assertion.validated.toEither
 }
 
 trait Assertion { self ⇒

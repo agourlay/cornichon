@@ -43,7 +43,7 @@ trait CornichonJson {
   def parseJsonUnsafe[A: Encoder: Show](input: A): Json =
     parseJson(input).valueUnsafe
 
-  def parseString(s: String) =
+  def parseString(s: String): Either[MalformedJsonError[String], Json] =
     io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
@@ -56,10 +56,11 @@ trait CornichonJson {
   def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
     DataTableParser.parse(table).map(_.rawStringList)
 
-  def parseGraphQLJson(input: String) = QueryParser.parseInput(input) match {
-    case Success(value) ⇒ Right(value.convertMarshaled[Json])
-    case Failure(e)     ⇒ Left(MalformedGraphQLJsonError(input, e))
-  }
+  def parseGraphQLJson(input: String): Either[MalformedGraphQLJsonError[String], Json] =
+    QueryParser.parseInput(input) match {
+      case Success(value) ⇒ Right(value.convertMarshaled[Json])
+      case Failure(e)     ⇒ Left(MalformedGraphQLJsonError(input, e))
+    }
 
   def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
     json.asArray.map(Right(_)).getOrElse(Left(NotAnArrayError(json)))
@@ -70,7 +71,7 @@ trait CornichonJson {
   def selectArrayJsonPath(path: JsonPath, json: String): Either[CornichonError, Vector[Json]] =
     path.run(json).flatMap(jsonArrayValues)
 
-  def removeFieldsByPath(input: Json, paths: Seq[JsonPath]) =
+  def removeFieldsByPath(input: Json, paths: Seq[JsonPath]): Json =
     paths.foldLeft(input) { (json, path) ⇒
       path.removeFromJson(json)
     }
@@ -85,12 +86,14 @@ trait CornichonJson {
       jsonObject = _ ⇒ j.show
     )
 
-  def extract(json: Json, path: String) =
+  def extract(json: Json, path: String): Either[CornichonError, Json] =
     JsonPath.run(path, json)
 
-  def prettyPrint(json: Json) = json.spaces2
+  def prettyPrint(json: Json): String =
+    json.spaces2
 
-  def diffPatch(first: Json, second: Json): JsonPatch = JsonDiff.diff(first, second, remember = true)
+  def diffPatch(first: Json, second: Json): JsonPatch =
+    JsonDiff.diff(first, second, remember = true)
 
   def whitelistingValue(first: Json, second: Json): Either[WhitelistingError, Json] = {
     val diff = diffPatch(first, second)
@@ -134,13 +137,13 @@ object CornichonJson extends CornichonJson {
         extracted ← JsonPath.run(path, jsonValue)
       } yield extracted
 
-    def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, String] =
       for {
         json ← getJson(key, stackingIndice, path)
         field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
       } yield field
 
-    def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root) =
+    def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): String =
       getJsonStringField(key, stackingIndice, path).valueUnsafe
 
     def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] =

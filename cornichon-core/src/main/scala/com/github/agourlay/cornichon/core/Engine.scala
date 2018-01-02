@@ -22,9 +22,9 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
   final def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
     if (context isIgnored scenario)
-      Task.delay(IgnoreScenarioReport(scenario.name, session))
+      Task.now(IgnoreScenarioReport(scenario.name, session))
     else if (context isPending scenario)
-      Task.delay(PendingScenarioReport(scenario.name, session))
+      Task.now(PendingScenarioReport(scenario.name, session))
     else {
       val stages = for {
         beforeResult ← regularStage(context.beforeSteps, beforeLog)
@@ -45,7 +45,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
   private def regularStage(steps: List[Step], stageTitle: InfoLogInstruction): StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { runState ⇒
     if (steps.isEmpty)
-      Task.delay((runState, validDone))
+      Task.now((runState, validDone))
     else
       runSteps(steps, runState.appendLog(stageTitle)).map {
         case (resultState, resultReport) ⇒ (resultState, resultReport.toValidatedNel)
@@ -54,7 +54,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
   private def cleanupStage(): StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { runState ⇒
     if (runState.cleanupSteps.isEmpty)
-      Task.delay((runState, validDone))
+      Task.now((runState, validDone))
     else {
       // Cleanup steps are consumed to avoid double run
       val cleanupState = runState.resetCleanupSteps.appendLog(cleanupLog)
@@ -66,17 +66,17 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
   // run steps and short-circuit on Task[Either]
   final def runSteps(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
-    remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.delay((initialRunState, Done.asRight[FailedStep]))) {
+    remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.now((initialRunState, Done.asRight[FailedStep]))) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap {
           case (runState, Right(_))    ⇒ prepareAndRunStep(currentStep, runState)
-          case (runState, l @ Left(_)) ⇒ Task.delay((runState, l))
+          case (runState, l @ Left(_)) ⇒ Task.now((runState, l))
         }
     }
 
   // run steps and aggregate failed steps
   private def runStepsDontShortCircuit(steps: List[Step], runState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
-    steps.foldLeft(Task.delay((runState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
+    steps.foldLeft(Task.now((runState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, _) }
     }.map(_.fold(
@@ -102,7 +102,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
     stepPreparers.foldLeft[CornichonError Either Step](currentStep.asRight) {
       (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
     }.fold(
-      ce ⇒ Task.delay(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+      ce ⇒ Task.now(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
       ps ⇒ runStep(runState, ps)
     )
 
@@ -110,7 +110,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
     Either
       .catchNonFatal(ps.run(this)(runState))
       .fold(
-        e ⇒ Task.delay(handleThrowable(ps, runState, e)),
+        e ⇒ Task.now(handleThrowable(ps, runState, e)),
         _.onErrorRecover { case NonFatal(t) ⇒ handleThrowable(ps, runState, t) }
       )
 }
@@ -123,12 +123,12 @@ object Engine {
   val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
   val cleanupLog = InfoLogInstruction("cleanup steps", initMargin + 1)
 
-  val noOpStage: StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { s ⇒ Task.delay((s, validDone)) }
+  val noOpStage: StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { s ⇒ Task.now((s, validDone)) }
 
   def withStepTitleResolver(resolver: PlaceholderResolver) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
-  def successLog(title: String, depth: Int, show: Boolean, duration: Duration) =
+  def successLog(title: String, depth: Int, show: Boolean, duration: Duration): Option[SuccessLogInstruction] =
     if (show)
       Some(SuccessLogInstruction(title, depth, Some(duration)))
     else
@@ -150,7 +150,7 @@ object Engine {
     (runState.appendLogs(runLogs), Left(failedStep))
   }
 
-  def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int) = {
+  def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int): Vector[FailureLogInstruction] = {
     val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)
     val logs = failureLog +: errors.toList.flatMap(_.renderedMessage.split('\n').map { m ⇒
       FailureLogInstruction(m, depth)

@@ -1,14 +1,13 @@
 package com.github.agourlay.cornichon.experimental.sbtinterface
 
-import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.feature.BaseFeature
-
-import sbt.testing._
-
 import cats.syntax.either._
 
-import monix.reactive.Observable
+import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.feature.{ BaseFeature, FeatureRunner }
+
 import monix.execution.Scheduler.Implicits.global
+
+import sbt.testing._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await
@@ -24,7 +23,6 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
   }
 
   private def loadAndExecuteFeature(eventHandler: EventHandler) = {
-
     val featureClass = Class.forName(task.fullyQualifiedName())
     val baseFeature = featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
@@ -45,38 +43,29 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
       },
       feature ⇒ {
         println(SuccessLogInstruction(s"${feature.name}:", 0).colorized)
-        // Run 'before feature' hooks
-        baseFeature.beforeFeature.foreach(f ⇒ f())
-        val scenariosToRun = filterScenarios(feature)
-        val parallelism = if (baseFeature.executeScenariosInParallel) scenariosToRun.size else 1
-        Observable.fromIterable(scenariosToRun)
-          .mapAsync(parallelism)(runScenario(baseFeature, eventHandler))
-          .toListL
+        FeatureRunner(feature, baseFeature)
+          .runFeature(filterScenarios)(generateResultEvent(eventHandler))
           .map { results ⇒
             results.foreach(printResultLogs(featureClass))
-            // Run 'after feature' hooks
-            baseFeature.afterFeature.foreach(f ⇒ f())
             Done
           }
       }
     )
   }
 
-  private def filterScenarios(feature: FeatureDef): List[Scenario] =
+  private def filterScenarios(s: Scenario): Boolean =
     if (scenarioNameFilter.isEmpty)
-      feature.scenarios
+      true
     else
-      feature.scenarios.filter(s ⇒ scenarioNameFilter.contains(s.name))
+      scenarioNameFilter.contains(s.name)
 
   private def replayCommand(featureClass: Class[_], scenarioName: String): String =
     s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" """
 
-  private def runScenario(feature: BaseFeature, eventHandler: EventHandler)(s: Scenario) =
-    feature.runScenario(s).map { r ⇒
-      //Generate result event
-      eventHandler.handle(eventBuilder(r, r.duration.toMillis))
-      r
-    }
+  private def generateResultEvent(eventHandler: EventHandler)(sr: ScenarioReport) = {
+    eventHandler.handle(eventBuilder(sr, sr.duration.toMillis))
+    sr
+  }
 
   private def printResultLogs(featureClass: Class[_])(sr: ScenarioReport): Unit = sr match {
     case s: SuccessScenarioReport ⇒

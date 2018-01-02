@@ -65,7 +65,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
     }
   }
 
-  def fillPlaceholders(input: String)(session: Session) = {
+  def fillPlaceholders(input: String)(session: Session): Either[CornichonError, String] = {
     def loop(placeholders: List[Placeholder], acc: String): Either[CornichonError, String] =
       placeholders match {
         case Nil ⇒ Right(acc)

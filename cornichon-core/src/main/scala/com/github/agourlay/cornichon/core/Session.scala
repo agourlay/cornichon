@@ -11,12 +11,13 @@ import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
 import cats.kernel.Monoid
+
 import com.github.agourlay.cornichon.core.Session._
 import com.github.agourlay.cornichon.util.Strings
 
 import scala.collection.immutable.HashMap
 
-case class Session(private val content: Map[String, Vector[String]]) extends AnyVal {
+case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] =
     get(key, stackingIndice).toOption
@@ -35,9 +36,9 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
     get(sessionKey.name, sessionKey.index)
 
   def getList(keys: Seq[String]): Either[CornichonError, List[String]] =
-    keys.toList.traverseU(v ⇒ get(v))
+    keys.toList.traverseU(get(_))
 
-  def getHistory(key: String) =
+  def getHistory(key: String): Either[KeyNotFoundInSession, Vector[String]] =
     content.get(key).toRight(KeyNotFoundInSession(key, this))
 
   def addValue(key: String, value: String): Either[CornichonError, Session] = {
@@ -57,16 +58,16 @@ case class Session(private val content: Map[String, Vector[String]]) extends Any
   def addValueUnsafe(key: String, value: String): Session =
     addValue(key, value).valueUnsafe
 
-  def addValues(tuples: (String, String)*) =
+  def addValues(tuples: (String, String)*): Either[CornichonError, Session] =
     tuples.foldLeft(this.asRight[CornichonError])((s, t) ⇒ s.flatMap(_.addValue(t._1, t._2)))
 
-  def addValuesUnsafe(tuples: (String, String)*) =
+  def addValuesUnsafe(tuples: (String, String)*): Session =
     addValues(tuples: _*).valueUnsafe
 
-  def removeKey(key: String) =
+  def removeKey(key: String): Session =
     Session(content - key)
 
-  def rollbackKey(key: String) =
+  def rollbackKey(key: String): Either[KeyNotFoundInSession, Session] =
     getHistory(key).map { values ⇒
       val s = Session(content - key)
       val previous = values.init
@@ -114,6 +115,14 @@ object Session {
 
 case class SessionKey(name: String, index: Option[Int] = None) {
   def atIndex(index: Int) = copy(index = Some(index))
+}
+
+object SessionKey {
+  implicit val showSessionKey = Show.show[SessionKey] { sk ⇒
+    val key = sk.name
+    val indice = sk.index
+    s"$key${indice.map(i ⇒ s"[$i]").getOrElse("")}"
+  }
 }
 
 case class EmptyKey(s: Session) extends CornichonError {

@@ -18,7 +18,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
     def repeatSuccessSteps(remainingElements: List[String], runState: RunState): Task[(RunState, Either[(String, FailedStep), Done])] =
       remainingElements match {
         case Nil ⇒
-          Task.delay((runState, rightDone))
+          Task.now((runState, rightDone))
         case element :: tail ⇒
           // reset logs at each loop to have the possibility to not aggregate in failure case
           val rs = runState.resetLogs
@@ -28,7 +28,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
               stepResult.fold(
                 failed ⇒ {
                   // In case of failure only the logs of the last run are shown to avoid giant traces.
-                  Task.delay((onceMoreRunState, Left((element, failed))))
+                  Task.now((onceMoreRunState, Left((element, failed))))
                 },
                 _ ⇒ {
                   val successState = runState.mergeNested(onceMoreRunState)

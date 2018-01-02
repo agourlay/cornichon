@@ -2,7 +2,8 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.steps.wrapped.FlatMapStep
+import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
 import monix.eval.Task
 
 import scala.concurrent.duration.Duration
@@ -14,6 +15,11 @@ sealed trait Step {
   def chain(others: Session ⇒ List[Step]): Step = FlatMapStep(this, others)
 }
 
+object Step {
+  def chain(steps: List[EffectStep]): Step =
+    AttachStep(steps)
+}
+
 //Step that produces a value
 trait ValueStep[A] extends Step {
 
@@ -23,7 +29,7 @@ trait ValueStep[A] extends Step {
 
   def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (Option[LogInstruction], Option[Session])
 
-  def run(engine: Engine)(initialRunState: RunState) = {
+  def run(engine: Engine)(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] = {
     val now = System.nanoTime
     run(initialRunState).map {
       case Left(errors) ⇒
@@ -49,7 +55,7 @@ trait LogDecoratorStep extends Step {
 
   def onNestedSuccess(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration): Vector[LogInstruction]
 
-  def run(engine: Engine)(initialRunState: RunState) = {
+  def run(engine: Engine)(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] = {
     val now = System.nanoTime
     engine.runSteps(nestedToRun, initialRunState.nestedContext).map {
       case (resState, l @ Left(_)) ⇒
@@ -81,7 +87,7 @@ trait SimpleWrapperStep extends Step {
 
   def onNestedSuccess(resultRunState: RunState, initialRunState: RunState, executionTime: Duration): RunState
 
-  def run(engine: Engine)(initialRunState: RunState) = {
+  def run(engine: Engine)(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] = {
     val now = System.nanoTime
     engine.runSteps(nestedToRun, if (indentLog) initialRunState.nestedContext else initialRunState.sameLevelContext).map {
       case (resState, Left(failedStep)) ⇒

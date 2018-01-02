@@ -23,12 +23,12 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
           stepResult.fold(
             failed ⇒ {
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Task.delay((retriesNumber, onceMoreRunState, Left(failed)))
+              Task.now((retriesNumber, onceMoreRunState, Left(failed)))
             },
             _ ⇒ {
               val successState = runState.withSession(onceMoreRunState.session).appendLogsFrom(onceMoreRunState)
               // only show last successful run to avoid giant traces.
-              if (retriesNumber == occurrence - 1) Task.delay((retriesNumber, successState, rightDone))
+              if (retriesNumber == occurrence - 1) Task.now((retriesNumber, successState, rightDone))
               else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session))
             }
           )

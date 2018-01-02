@@ -89,9 +89,9 @@ class HttpAPI() {
 
   val authStore: BasicAuthenticator[String] = (creds: BasicCredentials) ⇒
     if (creds.username == "admin" && creds.password == "cornichon")
-      Task.delay(Some(creds.username))
+      Task.now(Some(creds.username))
     else
-      Task.delay(None)
+      Task.now(None)
 
   val securedSuperHeroesService: HttpService = BasicAuth("secure site", authStore)(AuthedService[String] {
     case req @ POST -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒

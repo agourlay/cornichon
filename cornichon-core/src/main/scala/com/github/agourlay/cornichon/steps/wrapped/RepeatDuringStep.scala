@@ -28,7 +28,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
           res.fold(
             failedStep ⇒ {
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Task.delay((retriesNumber, repeatedOnceMore, Left(failedStep)))
+              Task.now((retriesNumber, repeatedOnceMore, Left(failedStep)))
             },
             _ ⇒ {
               val successState = runState.mergeNested(repeatedOnceMore)
@@ -36,7 +36,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
                 repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
               else
                 // In case of success all logs are returned but they are not printed by default.
-                Task.delay((retriesNumber, successState, rightDone))
+                Task.now((retriesNumber, successState, rightDone))
             }
           )
       }

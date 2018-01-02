@@ -5,7 +5,6 @@ import cats.instances.boolean._
 import cats.instances.string._
 import cats.syntax.either._
 
-import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
@@ -15,13 +14,12 @@ import com.github.agourlay.cornichon.util.Printing._
 import scala.collection.breakOut
 
 object HeadersSteps {
-  private val headersSessionKey = SessionKey(lastResponseHeadersKey)
 
-  case class HeadersStepBuilder(private val ordered: Boolean) {
+  case object HeadersStepBuilder {
     def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${printArrowPairs(expected)}",
       action = s ⇒ Assertion.either {
-        s.get(headersSessionKey).map { sessionHeaders ⇒
+        s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
           val actualValue = sessionHeaders.split(",").toList
           val expectedValue: List[String] = expected.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }(breakOut)
           GenericEqualityAssertion(expectedValue, actualValue)
@@ -32,7 +30,7 @@ object HeadersSteps {
     def hasSize(expectedSize: Int) = AssertStep(
       title = s"headers size is '$expectedSize'",
       action = s ⇒ Assertion.either {
-        s.get(headersSessionKey).map { sessionHeaders ⇒
+        s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
           CollectionSizeAssertion(sessionHeaders.split(","), expectedSize).withName("headers")
         }
       }
@@ -41,15 +39,13 @@ object HeadersSteps {
     def contain(elements: (String, String)*) = AssertStep(
       title = s"headers contain ${printArrowPairs(elements)}",
       action = s ⇒ Assertion.either {
-        s.get(headersSessionKey).map { sessionHeaders ⇒
+        s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
           val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
           val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
           CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
         }
       }
     )
-
-    def inOrder: HeadersStepBuilder = copy(ordered = true)
 
     def name(name: String) = HeadersNameStepBuilder(name)
   }
@@ -59,7 +55,7 @@ object HeadersSteps {
       title = s"headers contain field with name '$name'",
       action = s ⇒ Assertion.either {
         for {
-          sessionHeaders ← s.get(headersSessionKey)
+          sessionHeaders ← s.get(lastResponseHeadersKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
           predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
         } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
@@ -70,7 +66,7 @@ object HeadersSteps {
       title = s"headers do not contain field with name '$name'",
       action = s ⇒ Assertion.either {
         for {
-          sessionHeaders ← s.get(headersSessionKey)
+          sessionHeaders ← s.get(lastResponseHeadersKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
           predicate ← Right(!sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
         } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersContainFieldWithNameError(name, sessionHeadersValue))

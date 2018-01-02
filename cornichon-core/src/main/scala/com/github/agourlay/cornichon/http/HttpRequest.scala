@@ -29,8 +29,8 @@ trait BaseRequest {
 
   def compactDescription: String
 
-  def paramsTitle = if (params.isEmpty) "" else s" with query parameters ${printArrowPairs(params)}"
-  def headersTitle = if (headers.isEmpty) "" else s" with headers ${printArrowPairs(headers)}"
+  def paramsTitle: String = if (params.isEmpty) "" else s" with query parameters ${printArrowPairs(params)}"
+  def headersTitle: String = if (headers.isEmpty) "" else s" with headers ${printArrowPairs(headers)}"
 }
 
 case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
@@ -55,13 +55,13 @@ trait HttpRequestsDsl {
   import com.github.agourlay.cornichon.http.HttpMethods._
   import cats.instances.string._
 
-  def get(url: String) = HttpRequest[String](GET, url, None, Nil, Nil)
-  def head(url: String) = HttpRequest[String](HEAD, url, None, Nil, Nil)
-  def options(url: String) = HttpRequest[String](OPTIONS, url, None, Nil, Nil)
-  def delete(url: String) = HttpRequest[String](DELETE, url, None, Nil, Nil)
-  def post(url: String) = HttpRequest[String](POST, url, None, Nil, Nil)
-  def put(url: String) = HttpRequest[String](PUT, url, None, Nil, Nil)
-  def patch(url: String) = HttpRequest[String](PATCH, url, None, Nil, Nil)
+  def get(url: String): HttpRequest[String] = HttpRequest[String](GET, url, None, Nil, Nil)
+  def head(url: String): HttpRequest[String] = HttpRequest[String](HEAD, url, None, Nil, Nil)
+  def options(url: String): HttpRequest[String] = HttpRequest[String](OPTIONS, url, None, Nil, Nil)
+  def delete(url: String): HttpRequest[String] = HttpRequest[String](DELETE, url, None, Nil, Nil)
+  def post(url: String): HttpRequest[String] = HttpRequest[String](POST, url, None, Nil, Nil)
+  def put(url: String): HttpRequest[String] = HttpRequest[String](PUT, url, None, Nil, Nil)
+  def patch(url: String): HttpRequest[String] = HttpRequest[String](PATCH, url, None, Nil, Nil)
 }
 
 object HttpRequest extends HttpRequestsDsl {
@@ -81,7 +81,7 @@ object HttpRequest extends HttpRequestsDsl {
 
 }
 
-case class HttpStream(name: String)
+case class HttpStream(name: String) extends AnyVal
 
 object HttpStreams {
   val SSE = HttpStream("Server-Sent-Event")

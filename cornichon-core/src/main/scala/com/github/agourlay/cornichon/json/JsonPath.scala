@@ -67,15 +67,16 @@ object JsonPath {
     p.operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
   }
 
-  def parse(path: String) =
+  def parse(path: String): Either[CornichonError, JsonPath] =
     if (path == root)
       rightEmptyJsonPath
     else
       JsonPathParser.parseJsonPath(path).map(JsonPath(_))
 
-  def run(path: String, json: Json) = JsonPath.parse(path).map(_.run(json))
+  def run(path: String, json: Json): Either[CornichonError, Json] =
+    JsonPath.parse(path).map(_.run(json))
 
-  def run(path: String, json: String) =
+  def run(path: String, json: String): Either[CornichonError, Json] =
     for {
       json ← parseJson(json)
       jsonPath ← JsonPath.parse(path)

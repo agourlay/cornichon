@@ -24,10 +24,10 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
                 retryMaxSteps(runState.appendLogs(retriedState.logs), limit - 1, retriesNumber + 1)
               else
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Task.delay((retriesNumber, retriedState, Left(failedStep))),
+                Task.now((retriesNumber, retriedState, Left(failedStep))),
             _ ⇒ {
               val successState = runState.withSession(retriedState.session).appendLogs(retriedState.logs)
-              Task.delay((retriesNumber, successState, rightDone))
+              Task.now((retriesNumber, successState, rightDone))
             }
           )
       }

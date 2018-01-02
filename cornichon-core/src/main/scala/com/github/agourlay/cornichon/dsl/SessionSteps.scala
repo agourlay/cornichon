@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.instances.option._
 import cats.instances.string._
 import cats.instances.boolean._
 import cats.syntax.either._

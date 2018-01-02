@@ -30,7 +30,7 @@ case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: Fini
       .flatMap { results ⇒
         if (results.size != factor) {
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyTimeout(factor, results.size))
-          Task.delay((nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep)))
+          Task.now((nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep)))
         } else {
           val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
           failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
@@ -46,12 +46,12 @@ case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: Fini
             // merge all cleanups steps
             val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
             val successState = initialRunState.withSession(updatedSession).appendLogs(updatedLogs).prependCleanupSteps(allCleanupSteps)
-            Task.delay((successState, rightDone))
+            Task.now((successState, rightDone))
           } {
             case (s, failedXor) ⇒
               val ratio = s"'${failedStepRuns.size}/$factor' run(s)"
               val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Repeat concurrently block failed for $ratio", initialDepth)
-              Task.delay((initialRunState.mergeNested(s, updatedLogs), failedXor))
+              Task.now((initialRunState.mergeNested(s, updatedLogs), failedXor))
           }
         }
       }.onErrorRecover {

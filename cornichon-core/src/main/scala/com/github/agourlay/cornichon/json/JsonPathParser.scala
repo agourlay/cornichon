@@ -34,14 +34,15 @@ class JsonPathParser(val input: ParserInput) extends Parser {
       case (JsonPath.root, Some(i: Int)) ⇒ RootArrayElementSelection(i)
       case (f, None)                     ⇒ FieldSelection(f)
       case (f, Some(i: Int))             ⇒ ArrayFieldSelection(f, i)
-      case (JsonPath.root, Some("*"))    ⇒ RootArrayFieldProjection
-      case (f, Some("*"))                ⇒ ArrayFieldProjection(f)
+      case (JsonPath.root, someStar)     ⇒ RootArrayFieldProjection
+      case (f, someStar)                 ⇒ ArrayFieldProjection(f)
     }
 
 }
 
 object JsonPathParser {
 
+  val someStar = Some("*")
   val notAllowedInField = "\r\n[]` "
 
   def parseJsonPath(input: String): Either[CornichonError, List[JsonPathOperation]] = {

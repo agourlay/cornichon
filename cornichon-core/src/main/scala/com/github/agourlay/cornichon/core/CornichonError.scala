@@ -24,7 +24,7 @@ trait CornichonError {
 }
 
 object CornichonError {
-  def genStacktrace(exception: Throwable) = {
+  def genStacktrace(exception: Throwable): String = {
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
     exception.printStackTrace(pw)
@@ -41,7 +41,7 @@ object CornichonError {
     Either.catchNonFatal(f).leftMap(fromThrowable)
 
   implicit class fromEither[A](e: Either[CornichonError, A]) {
-    def valueUnsafe = e.fold(e ⇒ throw e.toException, identity)
+    def valueUnsafe: A = e.fold(e ⇒ throw e.toException, identity)
     def futureEitherT(implicit ec: ExecutionContext): EitherT[Future, CornichonError, A] = EitherT.fromEither[Future](e)
   }
 }

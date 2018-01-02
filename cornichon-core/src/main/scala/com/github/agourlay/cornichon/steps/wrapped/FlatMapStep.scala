@@ -10,7 +10,7 @@ case class FlatMapStep(started: Step, nestedProducers: Session ⇒ List[Step], t
     engine.runSteps(started :: Nil, initialRunState).flatMap {
       case (rs2, res) ⇒
         if (res.isLeft)
-          Task.delay((rs2, res))
+          Task.now((rs2, res))
         else {
           val nestedStep = nestedProducers(rs2.session)
           engine.runSteps(nestedStep, rs2)

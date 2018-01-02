@@ -9,6 +9,7 @@ import cats.instances.int._
 import cats.instances.list._
 import cats.instances.either._
 import cats.instances.future._
+import cats.instances.string._
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
@@ -63,8 +64,7 @@ class HttpService(
       newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
     } yield (resp, newSession)
 
-  def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) = {
-    import cats.instances.string._
+  private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
       resolvedRequestParts ← EitherT.fromEither[Future](resolveRequestParts(r.url, None, r.params, r.headers)(SelectNone)(s))
       (url, _, params, headers) = resolvedRequestParts
@@ -72,7 +72,6 @@ class HttpService(
       resp ← EitherT(client.openStream(resolvedRequest, requestTimeout))
       newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
     } yield (resp, newSession)
-  }
 
   private def withBaseUrl(input: String) =
     if (baseUrl.isEmpty) input
@@ -204,13 +203,13 @@ object HttpService {
       }
     }
 
-  def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session) =
+  def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
     for {
       resExpected ← expectStatusCode(resp, expectedStatus)
       newSession ← fillInSessionWithResponse(session, resExpected, extractor)
     } yield newSession
 
-  def commonSessionExtraction(session: Session, response: CornichonHttpResponse) =
+  def commonSessionExtraction(session: Session, response: CornichonHttpResponse): Either[CornichonError, Session] =
     session.addValues(
       lastResponseStatusKey → response.status.intValue().toString,
       lastResponseBodyKey → response.body,

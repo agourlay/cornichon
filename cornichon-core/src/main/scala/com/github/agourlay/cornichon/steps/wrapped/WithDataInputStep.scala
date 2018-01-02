@@ -18,7 +18,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
   override def run(engine: Engine)(initialRunState: RunState) = {
 
     def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] = {
-      if (inputs.isEmpty) Task.delay((runState, rightDone))
+      if (inputs.isEmpty) Task.now((runState, rightDone))
       else {
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
@@ -28,7 +28,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
             stepsResult.fold(
               failedStep ⇒ {
                 // Prepend previous logs
-                Task.delay((runState.mergeNested(filledState), Left((currentInputs, failedStep))))
+                Task.now((runState.mergeNested(filledState), Left((currentInputs, failedStep))))
               },
               _ ⇒ {
                 // Logs are propogated but not the session
@@ -42,7 +42,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
     r.fillPlaceholders(where)(initialRunState.session)
       .flatMap(CornichonJson.parseDataTable)
       .fold(
-        t ⇒ Task.delay(handleErrors(this, initialRunState, NonEmptyList.of(t))),
+        t ⇒ Task.now(handleErrors(this, initialRunState, NonEmptyList.of(t))),
         parsedTable ⇒ {
           val inputs = parsedTable.map { line ⇒
             line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }

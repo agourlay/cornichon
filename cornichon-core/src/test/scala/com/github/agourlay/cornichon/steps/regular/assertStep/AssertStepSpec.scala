@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.scalatest.EitherValues
-import com.github.agourlay.cornichon.core.{ Done, Scenario, Session }
+import com.github.agourlay.cornichon.core.{ Scenario, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
@@ -22,17 +22,9 @@ class AssertStepSpec extends AsyncWordSpec
     }
 
     "success if non equality was expected" in {
-      val step = AssertStep("non equals step", s ⇒ GenericEqualityAssertion(1, 2, negate = true))
+      val step = AssertStep("non equals step", _ ⇒ GenericEqualityAssertion(1, 2, negate = true))
       val s = Scenario("scenario with unresolved", step :: Nil)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
-    }
-  }
-
-  "runStepPredicate" must {
-    "return session if assertion is True" in {
-      val assertion = GenericEqualityAssertion(2, 2)
-      val step = AssertStep("stupid step", s ⇒ assertion)
-      step.runStepPredicate(assertion).value should be(Done)
     }
   }
 }

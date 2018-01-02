@@ -7,7 +7,7 @@ sealed trait LogInstruction {
   def marginNb: Int
   def duration: Option[Duration]
   def colorized: String
-  lazy val completeMessage = {
+  lazy val completeMessage: String = {
 
     val fullMargin = LogInstruction.physicalMargin * marginNb
     def withDuration(line: String) = fullMargin + line + duration.fold("")(d ⇒ s" (${d.toMillis} millis)")

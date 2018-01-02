@@ -3,9 +3,6 @@ package com.github.agourlay.cornichon.feature
 import java.util.concurrent.ConcurrentLinkedDeque
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.Dsl
-import com.github.agourlay.cornichon.http.HttpDsl
-import com.github.agourlay.cornichon.json.JsonDsl
 import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
 import com.typesafe.config.ConfigFactory
@@ -14,32 +11,22 @@ import monix.execution.Scheduler
 import scala.annotation.tailrec
 import scala.concurrent.Future
 
-trait CornichonBaseFeature extends Dsl {
+trait BaseFeature {
 
-  private[cornichon] var beforeFeature: Seq[() ⇒ Unit] = Nil
-  private[cornichon] var afterFeature: Seq[() ⇒ Unit] = Nil
+  protected[cornichon] var beforeFeature: Seq[() ⇒ Unit] = Nil
+  protected[cornichon] var afterFeature: Seq[() ⇒ Unit] = Nil
 
-  protected var beforeEachScenario: List[Step] = Nil
-  protected var afterEachScenario: List[Step] = Nil
+  protected[cornichon] var beforeEachScenario: List[Step] = Nil
+  protected[cornichon] var afterEachScenario: List[Step] = Nil
 
-  // Convenient implicits for the custom DSL's
-  implicit lazy val ec = Scheduler.Implicits.global
-
-  private lazy val engine = Engine.withStepTitleResolver(placeholderResolver)
-
-  private[cornichon] lazy val config = CornichonBaseFeature.config
-
-  lazy val executeScenariosInParallel = config.executeScenariosInParallel
+  private[cornichon] lazy val config = BaseFeature.config
+  lazy val executeScenariosInParallel: Boolean = config.executeScenariosInParallel
 
   lazy val placeholderResolver = new PlaceholderResolver(registerExtractors)
   lazy val matcherResolver = new MatcherResolver(registerMatcher)
 
-  private lazy val context = FeatureExecutionContext(beforeEachScenario, afterEachScenario, feature.ignored, feature.focusedScenarios)
-
-  def runScenario(s: Scenario) = {
-    println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newEmpty, context)(s)
-  }
+  // Convenient implicits for the custom DSL's
+  implicit lazy val ec = Scheduler.Implicits.global
 
   def feature: FeatureDef
 
@@ -61,7 +48,7 @@ trait CornichonBaseFeature extends Dsl {
 }
 
 // Protect and free resources
-object CornichonBaseFeature {
+object BaseFeature {
   import net.ceedubs.ficus.Ficus._
   import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 

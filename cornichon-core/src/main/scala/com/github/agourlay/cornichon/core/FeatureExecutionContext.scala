@@ -5,10 +5,11 @@ case class FeatureExecutionContext(
     finallySteps: List[Step] = Nil,
     featureIgnored: Boolean = false,
     focusedScenarios: Set[String] = Set.empty) {
-  def isIgnored(scenario: Scenario) =
+
+  def isIgnored(scenario: Scenario): Boolean =
     featureIgnored || scenario.ignored || (focusedScenarios.nonEmpty && !focusedScenarios.contains(scenario.name))
 
-  def isPending(scenario: Scenario) =
+  def isPending(scenario: Scenario): Boolean =
     scenario.pending
 }
 

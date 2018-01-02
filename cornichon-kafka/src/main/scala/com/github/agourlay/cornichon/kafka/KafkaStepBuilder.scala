@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.kafka
 
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver

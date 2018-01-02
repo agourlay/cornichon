@@ -30,18 +30,18 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
                 retryEventuallySteps(nextRetryState, conf.consume(executionTime), retriesNumber + 1)
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Task.delay((retriesNumber, newRunState, Left(failedStep)))
+                Task.now((retriesNumber, newRunState, Left(failedStep)))
               }
             },
             _ ⇒ {
               val state = runState.mergeNested(newRunState)
               if (remainingTime.gt(Duration.Zero)) {
                 // In case of success all logs are returned but they are not printed by default.
-                Task.delay((retriesNumber, state, rightDone))
+                Task.now((retriesNumber, state, rightDone))
               } else {
                 // Run was a success but the time is up.
                 val failedStep = FailedStep.fromSingle(nested.last, EventuallyBlockSucceedAfterMaxDuration)
-                Task.delay((retriesNumber, state, Left(failedStep)))
+                Task.now((retriesNumber, state, Left(failedStep)))
               }
             }
           )

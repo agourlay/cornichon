@@ -1,9 +1,8 @@
 package com.github.agourlay.cornichon.kafka
 
 import com.github.agourlay.cornichon.core.Session
-import com.github.agourlay.cornichon.dsl.Dsl
+import com.github.agourlay.cornichon.dsl.CoreDsl
 import com.github.agourlay.cornichon.feature.BaseFeature
-import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.producer._
@@ -16,9 +15,10 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ Future, Promise }
 
 trait KafkaDsl {
-  this: BaseFeature with Dsl ⇒
+  this: BaseFeature with CoreDsl ⇒
 
-  override private[cornichon] lazy val config = BaseFeature.config.copy(executeScenariosInParallel = false)
+  // Kafka tests can not run in //
+  override lazy val executeScenariosInParallel: Boolean = false
 
   def put_topic(topic: String, key: String, message: String) = EffectStep.fromAsync(
     title = s"put message=$message with key=$key to topic=$topic",
@@ -44,7 +44,7 @@ trait KafkaDsl {
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
       while (!nothingNewAnymore) {
-        val newMessages = consumer.poll(timeout)
+        val newMessages = consumer.poll(timeout.toLong)
         val collectionOfNewMessages = newMessages.iterator().asScala.toList
         messages ++= collectionOfNewMessages
         nothingNewAnymore = newMessages.isEmpty
@@ -76,6 +76,7 @@ object KafkaDsl {
 
   import net.ceedubs.ficus.Ficus._
   import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   lazy val kafkaConfig = ConfigFactory.load().as[KafkaConfig]("kafka")
 
@@ -89,7 +90,7 @@ object KafkaDsl {
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
     BaseFeature.addShutdownHook(() ⇒ Future {
       p.close()
-    }(BaseFeature.globalScheduler))
+    })
     p
   }
 
@@ -106,7 +107,7 @@ object KafkaDsl {
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
     BaseFeature.addShutdownHook(() ⇒ Future {
       c.close()
-    }(BaseFeature.globalScheduler))
+    })
     c
   }
 

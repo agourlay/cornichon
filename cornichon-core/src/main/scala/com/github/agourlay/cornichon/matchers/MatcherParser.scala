@@ -39,11 +39,11 @@ object MatcherParser {
 }
 
 case class MatcherError(input: String, error: Throwable) extends CornichonError {
-  val baseErrorMessage = s"error '${error.getMessage}' thrown during matcher parsing for input $input"
+  lazy val baseErrorMessage = s"error '${error.getMessage}' thrown during matcher parsing for input $input"
 }
 
 case class MatcherParsingError(input: String, error: String) extends CornichonError {
-  val baseErrorMessage = s"error '$error' thrown during matcher parsing for input $input"
+  lazy val baseErrorMessage = s"error '$error' thrown during matcher parsing for input $input"
 }
 
 case class MatcherKey(key: String) extends AnyVal

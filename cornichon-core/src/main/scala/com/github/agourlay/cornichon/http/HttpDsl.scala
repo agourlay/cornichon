@@ -1,56 +1,58 @@
 package com.github.agourlay.cornichon.http
 
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
-import com.github.agourlay.cornichon.dsl.Dsl._
+import com.github.agourlay.cornichon.dsl.CoreDsl._
 import com.github.agourlay.cornichon.feature.BaseFeature
-import com.github.agourlay.cornichon.feature.BaseFeature.globalScheduler
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.json.JsonPath
+import com.github.agourlay.cornichon.json.{ JsonDsl, JsonPath }
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient }
+import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
+
 import io.circe.{ Encoder, Json }
+
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
-  this: BaseFeature with Dsl ⇒
+  this: BaseFeature with JsonDsl with CoreDsl ⇒
 
-  lazy val requestTimeout = config.requestTimeout
-  lazy val baseUrl = config.baseUrl
+  lazy val requestTimeout: FiniteDuration = config.requestTimeout
+  lazy val baseUrl: String = config.baseUrl
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, HttpDsl.globalHttpclient, placeholderResolver, config)
+    new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, placeholderResolver, config)
 
-  lazy val http = httpServiceByURL(baseUrl, requestTimeout)
+  lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
-  implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): EffectStep =
+  implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): Step =
     EffectStep(
       title = request.compactDescription,
       effect = http.requestEffect(request)
     )
 
-  implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): EffectStep =
+  implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): Step =
     EffectStep(
       title = request.compactDescription,
       effect = http.streamEffect(request)
     )
 
-  implicit def queryGqlToStep(queryGQL: QueryGQL): EffectStep = {
+  implicit def queryGqlToStep(queryGQL: QueryGQL): Step = {
     // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
     val prettyPayload = queryGQL.querySource
 
@@ -72,42 +74,50 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
       .withParams(queryGQL.params: _*)
       .withHeaders(queryGQL.headers: _*)
 
-  def query_gql(url: String) = QueryGQL(url, QueryGQL.emptyDocument, None, None, Nil, Nil)
+  def query_gql(url: String): QueryGQL =
+    QueryGQL(url, QueryGQL.emptyDocument, None, None, Nil, Nil)
 
-  def open_sse(url: String, takeWithin: FiniteDuration) = HttpStreamedRequest(SSE, url, takeWithin, Nil, Nil)
+  def open_sse(url: String, takeWithin: FiniteDuration): HttpStreamedRequest =
+    HttpStreamedRequest(SSE, url, takeWithin, Nil, Nil)
 
-  def status = StatusStepBuilder
+  def status: StatusSteps.StatusStepBuilder.type =
+    StatusStepBuilder
 
-  def headers = HeadersStepBuilder(ordered = false)
+  def headers: HeadersSteps.HeadersStepBuilder.type =
+    HeadersStepBuilder
 
   //FIXME the body is expected to always contains JSON currently
-  def body = JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(lastResponseBodyKey), Some("response body"))
+  def body: JsonStepBuilder =
+    JsonStepBuilder(placeholderResolver, matcherResolver, HttpDsl.lastBodySessionKey, HttpDsl.bodyBuilderTitle)
 
-  def save_body(target: String) = save_body_path(JsonPath.root → target)
+  def save_body(target: String): Step =
+    save_body_path(JsonPath.root → target)
 
-  def save_body_path(args: (String, String)*) = {
-    val inputs = args.map {
-      case (path, target) ⇒ FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (session, s) ⇒ {
-        for {
-          resolvedPath ← placeholderResolver.fillPlaceholders(path)(session)
-          jsonPath ← JsonPath.parse(resolvedPath)
-          json ← jsonPath.run(s)
-        } yield jsonStringValue(json)
-      })
+  def save_body_path(args: (String, String)*): Step =
+    save_from_session {
+      args.map {
+        case (path, target) ⇒
+          FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (session, s) ⇒ {
+            for {
+              resolvedPath ← placeholderResolver.fillPlaceholders(path)(session)
+              jsonPath ← JsonPath.parse(resolvedPath)
+              json ← jsonPath.run(s)
+            } yield jsonStringValue(json)
+          })
+      }
     }
-    save_from_session(inputs)
-  }
 
-  def save_header_value(args: (String, String)*) = {
-    val inputs = args.map {
-      case (headerFieldName, target) ⇒ FromSessionSetter(lastResponseHeadersKey, target, s"save '$headerFieldName' header value to key '$target'", (_, s) ⇒ {
-        decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h ⇒ h._2).getOrElse(""))
-      })
+  def save_header_value(args: (String, String)*): Step =
+    save_from_session {
+      args.map {
+        case (headerFieldName, target) ⇒
+          FromSessionSetter(lastResponseHeadersKey, target, s"save '$headerFieldName' header value to key '$target'", (_, s) ⇒ {
+            decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h ⇒ h._2).getOrElse(""))
+          })
+      }
     }
-    save_from_session(inputs)
-  }
 
-  private def showLastReponse[A: Show](parse: String ⇒ Either[CornichonError, A]) = DebugStep(s ⇒
+  private def showLastResponse[A: Show](parse: String ⇒ Either[CornichonError, A]) = DebugStep(s ⇒
     for {
       headers ← s.get(lastResponseHeadersKey)
       decodedHeaders ← decodeSessionHeaders(headers)
@@ -122,21 +132,20 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
      """.stripMargin
     })
 
-  def show_last_response = showLastReponse(b ⇒ Right(b))
-  def show_last_response_json = showLastReponse[Json](parseJson)
-  def show_last_status = show_session(lastResponseStatusKey)
+  def show_last_response: Step = showLastResponse(_.asRight)
+  def show_last_response_json: Step = showLastResponse[Json](parseJson)
+  def show_last_status: Step = show_session(lastResponseStatusKey)
 
-  def show_last_body = show_session(lastResponseBodyKey)
-  def show_last_body_json = show_key_as_json(lastResponseBodyKey)
+  def show_last_body: Step = show_session(lastResponseBodyKey)
+  def show_last_body_json: Step = show_key_as_json(lastResponseBodyKey)
 
-  def show_last_headers = show_session(lastResponseHeadersKey)
+  def show_last_headers: Step = show_session(lastResponseHeadersKey)
+  def show_with_headers: Step = show_session(withHeadersKey)
 
-  def show_with_headers = show_session(withHeadersKey)
-
-  def WithBasicAuth(userName: String, password: String) =
+  def WithBasicAuth(userName: String, password: String): BodyElementCollector[Step, Seq[Step]] =
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
 
-  def WithHeaders(headers: (String, String)*) =
+  def WithHeaders(headers: (String, String)*): BodyElementCollector[Step, Seq[Step]] =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
       val saveStep = save((withHeadersKey, headers.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }.mkString(","))).copy(show = false)
       val rollbackStep = rollback(withHeadersKey).copy(show = false)
@@ -147,12 +156,12 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 // Utils not building Steps
 trait HttpDslOps {
 
-  def addToWithHeaders(name: String, value: String)(s: Session) = {
+  def addToWithHeaders(name: String, value: String)(s: Session): Either[CornichonError, Session] = {
     val currentHeader = s.getOpt(withHeadersKey).fold("")(v ⇒ s"$v$interHeadersValueDelim")
     s.addValue(withHeadersKey, s"$currentHeader${encodeSessionHeader(name, value)}")
   }
 
-  def removeFromWithHeaders(name: String)(s: Session) =
+  def removeFromWithHeaders(name: String)(s: Session): Either[CornichonError, Session] =
     s.getOpt(withHeadersKey)
       .fold[Either[CornichonError, Session]](Right(s)) { currentHeadersString ⇒
         if (currentHeadersString.trim.isEmpty)
@@ -173,12 +182,15 @@ trait HttpDslOps {
 
 object HttpDsl {
 
-  lazy val globalHttpclient: HttpClient = {
+  val lastBodySessionKey = SessionKey(lastResponseBodyKey)
+  val bodyBuilderTitle = Some("response body")
+
+  lazy val globalHttpClient: HttpClient = {
     val c = {
       if (BaseFeature.config.useExperimentalHttp4sClient)
         new Http4sClient()
       else
-        new AkkaHttpClient(globalScheduler)
+        new AkkaHttpClient(scala.concurrent.ExecutionContext.global)
     }
     BaseFeature.addShutdownHook(() ⇒ c.shutdown())
     c

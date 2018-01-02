@@ -30,7 +30,7 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
     findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
 
   // Add quotes around known matchers
-  def quoteMatchers(input: String) =
+  def quoteMatchers(input: String): String =
     allMatchers.foldLeft(input) {
       case (i, m) ⇒ i.replaceAll(Pattern.quote(m.fullKey), '"' + m.fullKey + '"')
     }
