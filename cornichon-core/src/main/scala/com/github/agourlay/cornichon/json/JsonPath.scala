@@ -1,15 +1,18 @@
 package com.github.agourlay.cornichon.json
 
 import cats.Show
-import com.github.agourlay.cornichon.core.CornichonError
-import com.github.agourlay.cornichon.json.CornichonJson._
-import io.circe.{ ACursor, Json }
 import cats.instances.string._
 import cats.syntax.either._
 
+import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.json.CornichonJson._
+
+import io.circe.{ ACursor, Json }
+
+import scala.collection.concurrent.TrieMap
 import scala.collection.mutable.ListBuffer
 
-case class JsonPath(operations: List[JsonPathOperation] = Nil) extends AnyVal {
+case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
   def run(superSet: Json): Json = {
     val (allCursors, projectionMode) = cursors(superSet)
@@ -61,7 +64,8 @@ case class JsonPath(operations: List[JsonPathOperation] = Nil) extends AnyVal {
 
 object JsonPath {
   val root = "$"
-  private val rightEmptyJsonPath = Right(JsonPath())
+  private val rightEmptyJsonPath = Right(JsonPath(Nil))
+  private val operationsCache = TrieMap.empty[String, Either[CornichonError, List[JsonPathOperation]]]
 
   implicit val showJsonPath = Show.show[JsonPath] { p ⇒
     p.operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
@@ -71,7 +75,7 @@ object JsonPath {
     if (path == root)
       rightEmptyJsonPath
     else
-      JsonPathParser.parseJsonPath(path).map(JsonPath(_))
+      operationsCache.getOrElseUpdate(path, JsonPathParser.parseJsonPath(path)).map(JsonPath(_))
 
   def run(path: String, json: Json): Either[CornichonError, Json] =
     JsonPath.parse(path).map(_.run(json))
