@@ -8,7 +8,12 @@ import monix.reactive.Observable
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
 
   private val engine = Engine.withStepTitleResolver(baseFeature.placeholderResolver)
-  private val featureContext = FeatureExecutionContext(baseFeature.beforeEachScenario, baseFeature.afterEachScenario, featureDef.ignored, featureDef.focusedScenarios)
+  private val featureContext = FeatureExecutionContext(
+    beforeSteps = baseFeature.beforeEachScenario.toList,
+    finallySteps = baseFeature.afterEachScenario.toList,
+    featureIgnored = featureDef.ignored,
+    focusedScenarios = featureDef.focusedScenarios
+  )
 
   final def runScenario(s: Scenario): Task[ScenarioReport] = {
     println(s"Starting scenario '${s.name}'")

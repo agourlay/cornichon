@@ -9,15 +9,16 @@ import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler
 
 import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 
 trait BaseFeature {
 
-  protected[cornichon] var beforeFeature: Seq[() ⇒ Unit] = Nil
-  protected[cornichon] var afterFeature: Seq[() ⇒ Unit] = Nil
+  protected[cornichon] val beforeFeature: ListBuffer[() ⇒ Unit] = ListBuffer.empty
+  protected[cornichon] val afterFeature: ListBuffer[() ⇒ Unit] = ListBuffer.empty
 
-  protected[cornichon] var beforeEachScenario: List[Step] = Nil
-  protected[cornichon] var afterEachScenario: List[Step] = Nil
+  protected[cornichon] val beforeEachScenario: ListBuffer[Step] = ListBuffer.empty
+  protected[cornichon] val afterEachScenario: ListBuffer[Step] = ListBuffer.empty
 
   private[cornichon] lazy val config = BaseFeature.config
   lazy val executeScenariosInParallel: Boolean = config.executeScenariosInParallel
@@ -35,16 +36,16 @@ trait BaseFeature {
   def registerMatcher: List[Matcher] = Nil
 
   def beforeFeature(before: ⇒ Unit): Unit =
-    beforeFeature = beforeFeature :+ (() ⇒ before)
+    beforeFeature += (() ⇒ before)
 
   def afterFeature(after: ⇒ Unit): Unit =
-    afterFeature = (() ⇒ after) +: afterFeature
+    (() ⇒ after) +=: afterFeature
 
   def beforeEachScenario(step: Step): Unit =
-    beforeEachScenario = beforeEachScenario :+ step
+    beforeEachScenario += step
 
   def afterEachScenario(step: Step): Unit =
-    afterEachScenario = step +: afterEachScenario
+    step +=: afterEachScenario
 }
 
 // Protect and free resources
