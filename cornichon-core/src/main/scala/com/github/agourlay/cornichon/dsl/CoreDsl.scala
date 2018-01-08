@@ -54,6 +54,7 @@ trait CoreDsl extends ProvidedInstances {
   case object Given extends Starters { val name = "Given" }
   case object Then extends Starters { val name = "Then" }
   case object And extends Starters { val name = "And" }
+  case object But extends Starters { val name = "But" }
 
   def Attach: BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
