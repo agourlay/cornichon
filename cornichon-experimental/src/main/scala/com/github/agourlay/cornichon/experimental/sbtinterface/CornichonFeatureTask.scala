@@ -109,7 +109,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
         new OptionalThrowable()
     }
     val fullyQualifiedName = task.fullyQualifiedName()
-    val selector = task.selectors().head
+    val selector = new TestSelector(sr.scenarioName) // points to the correct scenario
     val fingerprint = task.fingerprint()
     val duration = durationInMillis
   }
