@@ -27,7 +27,7 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
     }
 
   def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
-    findMatcherKeys(input).flatMap(_.traverseU(resolveMatcherKeys))
+    findMatcherKeys(input).flatMap(_.traverse(resolveMatcherKeys))
 
   // Add quotes around known matchers
   def quoteMatchers(input: String): String =

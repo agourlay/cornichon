@@ -186,7 +186,7 @@ object CoreDsl {
       session ⇒ {
         for {
           allValues ← session.getList(args.map(_.fromKey))
-          extracted ← allValues.zip(args.map(_.trans)).traverseU { case (value, extractor) ⇒ extractor(session, value) }
+          extracted ← allValues.zip(args.map(_.trans)).traverse { case (value, extractor) ⇒ extractor(session, value) }
           newSession ← args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) ⇒ s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }

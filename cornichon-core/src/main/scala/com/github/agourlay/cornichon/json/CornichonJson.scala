@@ -48,9 +48,9 @@ trait CornichonJson {
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
-    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol) map JsonObject.fromIterable
+    def parseRow(row: Map[String, String]) = row.toList.traverse(parseCol) map JsonObject.fromIterable
 
-    parseDataTableRaw(table).flatMap(_.traverseU(parseRow))
+    parseDataTableRaw(table).flatMap(_.traverse(parseRow))
   }
 
   def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =

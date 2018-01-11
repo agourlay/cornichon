@@ -49,7 +49,7 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
       else {
         val lb = ListBuffer.empty[ACursor]
         var arrayElementsCursor = arrayFieldCursor.downArray
-        for (_ ← values.indices) {
+        for (_ ← values.seq) {
           lb += arrayElementsCursor
           arrayElementsCursor = arrayElementsCursor.right
         }

@@ -26,7 +26,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
     val scenariosToRun = featureDef.scenarios.filter(filterScenario)
     val parallelism = if (baseFeature.executeScenariosInParallel) scenariosToRun.size else 1
     Observable.fromIterable(scenariosToRun)
-      .mapAsync(parallelism)(runScenario(_).map(scenarioResultHandler))
+      .mapParallelUnordered(parallelism)(runScenario(_).map(scenarioResultHandler))
       .toListL
       .map { results ⇒
         // Run 'after feature' hooks

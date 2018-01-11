@@ -38,7 +38,7 @@ object JsonSteps {
       title = jsonAssertionTitleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoredKeys),
       action = s ⇒ Assertion.either {
         for {
-          ignoredPaths ← ignoredKeys.traverseU(resolveAndParseJsonPath(_, placeholderResolver)(s))
+          ignoredPaths ← ignoredKeys.traverse(resolveAndParseJsonPath(_, placeholderResolver)(s))
           v1 ← s.getJson(k1).map(removeFieldsByPath(_, ignoredPaths))
           v2 ← s.getJson(k2).map(removeFieldsByPath(_, ignoredPaths))
         } yield GenericEqualityAssertion(v1, v2)
@@ -95,7 +95,7 @@ object JsonSteps {
           whitelistingValue(expected, actual).map(expectedWhitelistedValue ⇒ (expectedWhitelistedValue, actual))
         else if (ignoredKeys.nonEmpty)
           // remove ignore fields from the actual result
-          ignoredKeys.traverseU(resolveAndParseJsonPath(_, placeholderResolver)(s))
+          ignoredKeys.traverse(resolveAndParseJsonPath(_, placeholderResolver)(s))
             .map(ignoredPaths ⇒ (expected, removeFieldsByPath(actual, ignoredPaths)))
         else
           // nothing to prepare
@@ -275,14 +275,14 @@ object JsonSteps {
             sessionValue ← s.get(sessionKey)
             jArr ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
             actualValue ← removeIgnoredPathFromElements(s, jArr)
-            resolvedJson ← expectedElements.toVector.traverseU(resolveAndParseJson(_, s, resolver))
+            resolvedJson ← expectedElements.toVector.traverse(resolveAndParseJson(_, s, resolver))
             containsAll = resolvedJson.forall(actualValue.contains)
           } yield CustomMessageEqualityAssertion(expected, containsAll, () ⇒ arrayContainsError(resolvedJson, jArr, expected))
         }
       )
 
     private def removeIgnoredPathFromElements(s: Session, jArray: Vector[Json]) =
-      ignoredEachKeys.traverseU(resolveAndParseJsonPath(_, resolver)(s))
+      ignoredEachKeys.traverse(resolveAndParseJsonPath(_, resolver)(s))
         .map(ignoredPaths ⇒ jArray.map(removeFieldsByPath(_, ignoredPaths)))
 
   }

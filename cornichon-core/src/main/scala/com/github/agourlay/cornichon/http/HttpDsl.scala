@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.CoreDsl._
@@ -21,11 +20,11 @@ import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient,
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
-
 import io.circe.{ Encoder, Json }
-
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+
+import monix.execution.Scheduler
 
 import scala.concurrent.duration._
 
@@ -188,7 +187,7 @@ object HttpDsl {
   lazy val globalHttpClient: HttpClient = {
     val c = {
       if (BaseFeature.config.useExperimentalHttp4sClient)
-        new Http4sClient()
+        new Http4sClient(Scheduler.Implicits.global)
       else
         new AkkaHttpClient(scala.concurrent.ExecutionContext.global)
     }

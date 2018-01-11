@@ -7,11 +7,14 @@ import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, 
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpService._
-import fs2.{ Scheduler, Strategy, Task }
 import io.circe.Json
+import monix.eval.Task
+import monix.eval.Task._
+import monix.execution.Scheduler
+import Scheduler.Implicits.global
 import org.http4s._
 import org.http4s.circe._
-import org.http4s.client.blaze.{ BlazeClientConfig, PooledHttp1Client }
+import org.http4s.client.blaze.{ BlazeClientConfig, Http1Client, PooledHttp1Client }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
@@ -20,22 +23,21 @@ import ExecutionContext.Implicits.global
 import scala.collection.concurrent.TrieMap
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
-class Http4sClient extends HttpClient {
-
-  implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
-  implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
+class Http4sClient(scheduler: Scheduler) extends HttpClient {
+  implicit val s = scheduler
+  //implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
 
   // Lives for the duration of the test run
   private val uriCache = TrieMap.empty[String, Either[CornichonError, Uri]]
 
-  private val httpClient = PooledHttp1Client(
-    maxTotalConnections = 100,
-    config = BlazeClientConfig.insecure.copy(
+  private val httpClient = Http1Client[Task](
+    BlazeClientConfig.insecure.copy(
+      maxTotalConnections = 100,
       idleTimeout = Duration.Inf,
       responseHeaderTimeout = Duration.Inf,
       requestTimeout = Duration.Inf
     )
-  )
+  ).runSyncMaybe.fold(throw new RuntimeException("no client!"), identity(_))
 
   def httpMethodMapper(method: HttpMethod): Method = method match {
     case DELETE  ⇒ org.http4s.Method.DELETE
@@ -62,10 +64,11 @@ class Http4sClient extends HttpClient {
       uri.copy(query = Query(uri.query.toVector ++ q.toVector: _*))
     }
 
-  def handleResponse[A](response: Response): Task[CornichonHttpResponse] = {
+  def handleResponse[A](response: Response[Task]): Task[CornichonHttpResponse] = {
     response
       .bodyAsText
-      .runFold("")(_ ++ _)
+      .compile
+      .fold("")(_ ++ _)
       .map { decodedBody ⇒
         CornichonHttpResponse(
           status = response.status.code,
@@ -77,19 +80,22 @@ class Http4sClient extends HttpClient {
 
   override def runRequest(cReq: HttpRequest[Json], t: FiniteDuration): EitherT[Future, CornichonError, CornichonHttpResponse] =
     parseUri(cReq.url).fold[EitherT[Future, CornichonError, CornichonHttpResponse]](
-      e ⇒ EitherT.left(Future.successful(e)),
+      e ⇒ EitherT.left[CornichonHttpResponse](Future.successful(e)),
       uri ⇒ EitherT {
-        val r = Request(httpMethodMapper(cReq.method))
+        val req = Request[Task](httpMethodMapper(cReq.method))
           .withHeaders(buildHeaders(cReq.headers))
           .withUri(addQueryParams(uri, cReq.params))
 
-        cReq.body
-          .fold(Task.now(r))(b ⇒ r.withBody(b))
+        val resp = cReq.body
+          .fold(Task.now(req))(b ⇒ req.withBody(b))
           .flatMap(r ⇒ httpClient.fetch(r)(handleResponse))
-          .map(_.asRight)
-          .race(Task.schedule(TimeoutErrorAfter(cReq, t).asLeft, t))
+          .map(_.asRight[CornichonError])
+
+        val timeout = Task.delay(TimeoutErrorAfter(cReq, t).asLeft).delayExecution(t)
+
+        Task.race(resp, timeout)
           .map(_.fold(identity, identity))
-          .unsafeRunAsyncFuture()
+          .runAsync
           .recover {
             case t: Throwable ⇒ RequestError(cReq, t).asLeft
           }
@@ -98,7 +104,7 @@ class Http4sClient extends HttpClient {
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration) = ???
 
-  def shutdown() = httpClient.shutdown.map { _ ⇒ uriCache.clear(); Done }.unsafeRunAsyncFuture()
+  def shutdown() = httpClient.shutdown.map { _ ⇒ uriCache.clear(); Done }.runAsync
 
   def paramsFromUrl(url: String) =
     if (url.contains('?'))
