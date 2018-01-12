@@ -2,25 +2,24 @@ package com.github.agourlay.cornichon.examples.superHeroes.server
 
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
-import cats.syntax.semigroup._
-import cats._
-import data._
-import implicits._
-import io.circe.{ Decoder, Encoder, Json, JsonObject }
+import cats.implicits._
+
+import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._
 import io.circe.syntax._
 import monix.eval.Task
 import monix.eval.Task._
+
 import monix.execution.Scheduler
-import org.http4s.server.Server
+import org.http4s.server.{ AuthMiddleware, Server }
 import org.http4s.server.blaze.BlazeBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
-import org.http4s.{ AuthedService, _ }
+import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl._
 import org.http4s.server.middleware.GZip
-import org.http4s.implicits._
+
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
@@ -33,7 +32,8 @@ class HttpAPI() extends Http4sDsl[Task] {
   val sm = new SuperMicroService()
   implicit val s = Scheduler.Implicits.global
 
-  implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[Task, A] = jsonOf[Task, A]
+  implicit val heroJsonDecoder = jsonOf[Task, SuperHero]
+  implicit val publisherJsonDecoder = jsonOf[Task, Publisher]
 
   object SessionIdQueryParamMatcher extends QueryParamDecoderMatcher[String]("sessionId")
   object ProtectIdentityQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("protectIdentity")
@@ -97,21 +97,25 @@ class HttpAPI() extends Http4sDsl[Task] {
     else
       Task.now(None)
 
-  val securedSuperHeroesService = BasicAuth("secure site", authStore)(AuthedService[String, Task] {
-    case req @ POST -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
-      for {
-        s ← req.req.as[SuperHero]
-        created ← Task.delay(sm.addSuperhero(sessionId, s))
-        resp ← validatedJsonResponse(Created(_))(created)
-      } yield resp
+  val authMiddleware: AuthMiddleware[Task, String] = BasicAuth("secure site", authStore)
 
-    case req @ PUT -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
-      for {
-        s ← req.req.as[SuperHero]
-        updated ← Task.delay(sm.updateSuperhero(sessionId, s))
-        resp ← validatedJsonResponse(Ok(_))(updated)
-      } yield resp
-  })
+  val securedSuperHeroesService = authMiddleware {
+    AuthedService[String, Task] {
+      case req @ POST -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
+        for {
+          s ← req.req.as[SuperHero]
+          created ← Task.delay(sm.addSuperhero(sessionId, s))
+          resp ← validatedJsonResponse(Created(_))(created)
+        } yield resp
+
+      case req @ PUT -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
+        for {
+          s ← req.req.as[SuperHero]
+          updated ← Task.delay(sm.updateSuperhero(sessionId, s))
+          resp ← validatedJsonResponse(Ok(_))(updated)
+        } yield resp
+    }
+  }
 
   val gqlService: HttpService[Task] = HttpService[Task] {
     case req @ POST -> Root ⇒
@@ -156,7 +160,7 @@ class HttpAPI() extends Http4sDsl[Task] {
         superheroes.map(sh ⇒ ServerSentEvent(eventType = Some("superhero name"), data = sh.name))
       else
         superheroes.map(sh ⇒ ServerSentEvent(eventType = Some("superhero"), data = sh.asJson.noSpaces))
-      Ok(Stream[ServerSentEvent](sse.toSeq: _*))
+      Ok(fs2.Stream.fromIterator[Task, ServerSentEvent](sse.toIterator))
   }
 
   val services = GZip[Task](sessionService <+> publishersService <+> superHeroesService <+> securedSuperHeroesService)
