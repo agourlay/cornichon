@@ -5,7 +5,6 @@ import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMa
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
 lazy val compilerOptions = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
-  "-feature", // Emit warning and location for usages of features that should be imported explicitly.
   "-unchecked", // Enable additional warnings where generated code depends on assumptions.
   "-language:implicitConversions",
   "-Ypartial-unification",             // SI-2712

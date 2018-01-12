@@ -2,23 +2,25 @@ package com.github.agourlay.cornichon.http.server
 
 import cats.instances.string._
 import cats.syntax.either._
-import cats.effect._
 
 import com.github.agourlay.cornichon.core.{ CornichonException, Done }
 import com.github.agourlay.cornichon.http.{ HttpMethod, HttpMethods, HttpRequest }
 import com.github.agourlay.cornichon.json.CornichonJson
+
 import io.circe.Json
+
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
+
 import org.http4s._
 import org.http4s.circe._
-import org.http4s.dsl.io._
+import org.http4s.dsl.Http4sDsl
 
 import scala.collection.breakOut
 import scala.concurrent.duration._
 
-class MockServerRequestHandler(implicit scheduler: Scheduler) {
+class MockServerRequestHandler(implicit scheduler: Scheduler) extends Http4sDsl[Task] {
 
   private val mockState = new MockServerStateHolder()
 
@@ -45,13 +47,13 @@ class MockServerRequestHandler(implicit scheduler: Scheduler) {
       Ok()
 
     case r @ POST -> Root / "response" ⇒
-      r.bodyAsText.runFold("")(_ ++ _).flatMap { body ⇒
+      r.bodyAsText.compile.fold("")(_ ++ _).flatMap { body ⇒
         mockState.setResponse(body)
         Ok()
       }
 
     case r @ POST -> Root / "delayInMs" ⇒
-      r.bodyAsText.runFold("")(_ ++ _).flatMap { body ⇒
+      r.bodyAsText.compile.fold("")(_ ++ _).flatMap { body ⇒
         // Dropping extra quotes
         Either.catchNonFatal(body.substring(1, body.length - 1).toLong) match {
           case Right(delay) ⇒
@@ -83,11 +85,11 @@ class MockServerRequestHandler(implicit scheduler: Scheduler) {
       saveRequest(r).flatMap(_ ⇒ replyWithDelay(Ok(mockState.getResponse)))
   }
 
-  def replyWithDelay(t: Task[Response]): Task[Response] =
+  def replyWithDelay(t: Task[Response[Task]]): Task[Response[Task]] =
     if (mockState.getDelay == 0)
       t
     else
-      Task.schedule(Done, mockState.getDelay.millis).flatMap(_ ⇒ t)
+      Task.now(Done).delayExecution(mockState.getDelay.millis).flatMap(_ ⇒ t)
 
   def httpMethodMapper(method: Method): HttpMethod = method match {
     case DELETE  ⇒ HttpMethods.DELETE
@@ -100,7 +102,7 @@ class MockServerRequestHandler(implicit scheduler: Scheduler) {
     case other   ⇒ throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  def saveRequest(rawReq: Request[Task]) =
+  def saveRequest(rawReq: Request[Task]): Task[Boolean] =
     rawReq
       .bodyAsText
       .compile

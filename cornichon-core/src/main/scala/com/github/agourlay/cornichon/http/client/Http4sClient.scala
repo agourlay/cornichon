@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.http.client
 
+import java.util.concurrent.TimeUnit.SECONDS
+
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
@@ -11,33 +13,30 @@ import io.circe.Json
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
-import Scheduler.Implicits.global
 import org.http4s._
 import org.http4s.circe._
-import org.http4s.client.blaze.{ BlazeClientConfig, Http1Client, PooledHttp1Client }
+import org.http4s.client.blaze.{ BlazeClientConfig, Http1Client }
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.collection.breakOut
-import ExecutionContext.Implicits.global
 import scala.collection.concurrent.TrieMap
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
 class Http4sClient(scheduler: Scheduler) extends HttpClient {
   implicit val s = scheduler
-  //implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
 
   // Lives for the duration of the test run
   private val uriCache = TrieMap.empty[String, Either[CornichonError, Uri]]
 
-  private val httpClient = Http1Client[Task](
+  // Not sure it is the right way to do
+  private val httpClient = Await.result(Http1Client[Task](
     BlazeClientConfig.insecure.copy(
       maxTotalConnections = 100,
       idleTimeout = Duration.Inf,
       responseHeaderTimeout = Duration.Inf,
       requestTimeout = Duration.Inf
-    )
-  ).runSyncMaybe.fold(throw new RuntimeException("no client!"), identity(_))
+    )).runAsync, Duration(2, SECONDS))
 
   def httpMethodMapper(method: HttpMethod): Method = method match {
     case DELETE  ⇒ org.http4s.Method.DELETE
