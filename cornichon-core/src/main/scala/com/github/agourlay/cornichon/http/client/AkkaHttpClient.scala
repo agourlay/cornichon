@@ -35,6 +35,7 @@ import javax.net.ssl._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
+import monix.eval.Task
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.FiniteDuration
@@ -90,8 +91,8 @@ class AkkaHttpClient(ec: ExecutionContext) extends HttpClient {
     loop(headers, Nil)
   }
 
-  override def runRequest(req: HttpRequest[Json], t: FiniteDuration): EitherT[Future, CornichonError, CornichonHttpResponse] =
-    runSingleRequest(req, t)(toCornichonResponse)
+  override def runRequest(req: HttpRequest[Json], t: FiniteDuration): EitherT[Task, CornichonError, CornichonHttpResponse] =
+    EitherT(Task.deferFuture(runSingleRequest(req, t)(toCornichonResponse).value))
 
   private def runSingleRequest[A: Show: ToEntityMarshaller, B](req: HttpRequest[A], t: FiniteDuration)(unmarshaller: HttpResponse ⇒ Future[Either[CornichonError, B]]): EitherT[Future, CornichonError, B] =
     parseHttpHeaders(req.headers).fold(
@@ -133,7 +134,7 @@ class AkkaHttpClient(ec: ExecutionContext) extends HttpClient {
 
   override def openStream(req: HttpStreamedRequest, t: FiniteDuration) =
     req.stream match {
-      case SSE ⇒ openSSE(req, t).value
+      case SSE ⇒ Task.deferFuture(openSSE(req, t).value)
       case _   ⇒ ??? // TODO implement WS support
     }
 
@@ -178,11 +179,15 @@ class AkkaHttpClient(ec: ExecutionContext) extends HttpClient {
         Left(UnmarshallingResponseError(e, httpResponse.toString()))
     }
 
-  override def shutdown() = for {
-    _ ← Http().shutdownAllConnectionPools()
-    _ ← Future.successful(mat.shutdown())
-    _ ← system.terminate()
-  } yield Done
+  override def shutdown() = {
+    val f = for {
+      _ ← Http().shutdownAllConnectionPools()
+      _ ← Future.successful(mat.shutdown())
+      _ ← system.terminate()
+    } yield Done
+
+    Task.deferFuture(f)
+  }
 
   override def paramsFromUrl(url: String): Either[CornichonError, Seq[(String, String)]] =
     if (url.contains('?'))

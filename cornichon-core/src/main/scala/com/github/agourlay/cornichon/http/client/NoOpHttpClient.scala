@@ -5,6 +5,7 @@ import cats.syntax.either._
 import com.github.agourlay.cornichon.core.Done
 import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest, HttpStreamedRequest }
 import io.circe.Json
+import monix.eval.Task
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
@@ -12,13 +13,13 @@ import scala.concurrent.duration.FiniteDuration
 class NoOpHttpClient extends HttpClient {
 
   def runRequest(req: HttpRequest[Json], t: FiniteDuration) =
-    EitherT.apply(Future.successful(CornichonHttpResponse(200, Nil, "NoOpBody").asRight))
+    EitherT.apply(Task.now(CornichonHttpResponse(200, Nil, "NoOpBody").asRight))
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration) =
-    Future.successful(CornichonHttpResponse(200, Nil, "NoOpBody").asRight)
+    Task.now(CornichonHttpResponse(200, Nil, "NoOpBody").asRight)
 
   def shutdown() =
-    Done.futureDone
+    Done.taskDone
 
   def paramsFromUrl(url: String) =
     Right(Nil)

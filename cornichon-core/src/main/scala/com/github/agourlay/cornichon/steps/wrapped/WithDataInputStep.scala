@@ -42,7 +42,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
     r.fillPlaceholders(where)(initialRunState.session)
       .flatMap(CornichonJson.parseDataTable)
       .fold(
-        t ⇒ Task.now(handleErrors(this, initialRunState, NonEmptyList.of(t))),
+        t ⇒ Task.now(handleErrors(this, initialRunState, NonEmptyList.one(t))),
         parsedTable ⇒ {
           val inputs = parsedTable.map { line ⇒
             line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }

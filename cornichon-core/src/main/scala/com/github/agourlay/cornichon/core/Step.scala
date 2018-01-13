@@ -16,7 +16,7 @@ sealed trait Step {
 }
 
 object Step {
-  def chain(steps: List[EffectStep]): Step =
+  def chain(steps: List[Step]): Step =
     AttachStep(steps)
 }
 

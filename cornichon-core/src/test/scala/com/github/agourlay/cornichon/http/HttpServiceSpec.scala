@@ -2,14 +2,17 @@ package com.github.agourlay.cornichon.http
 
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import cats.instances.string._
+
 import com.github.agourlay.cornichon.core.{ Config, Session }
 import com.github.agourlay.cornichon.http.HttpMethods.GET
 import com.github.agourlay.cornichon.http.client.NoOpHttpClient
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
+
+import monix.execution.Scheduler.Implicits.global
+
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class HttpServiceSpec extends WordSpec
   with Matchers

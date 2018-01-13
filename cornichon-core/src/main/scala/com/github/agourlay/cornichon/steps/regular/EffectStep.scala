@@ -16,7 +16,7 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
   def setTitle(newTitle: String) = copy(title = newTitle)
 
   override def run(initialRunState: RunState) =
-    Task.deferFuture(effect(initialRunState.session)).map(_.leftMap(NonEmptyList.of(_)))
+    Task.deferFuture(effect(initialRunState.session)).map(_.leftMap(NonEmptyList.one))
 
   override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =
     errorsToFailureStep(this, initialRunState.depth, errors)

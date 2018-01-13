@@ -15,7 +15,7 @@ case class DebugStep(message: Session ⇒ Either[CornichonError, String], title:
 
   override def run(initialRunState: RunState) =
     Task.delay {
-      message(initialRunState.session).leftMap(NonEmptyList.of(_))
+      message(initialRunState.session).leftMap(NonEmptyList.one)
     }
 
   override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) = {
