@@ -7,11 +7,10 @@ import cats.instances.string._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
-
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import gnieh.diffson.circe._
-import io.circe.{ Encoder, Json, JsonObject }
+import io.circe.{ Encoder, Json, JsonNumber, JsonObject }
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
@@ -48,9 +47,9 @@ trait CornichonJson {
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
-    def parseRow(row: Map[String, String]) = row.toList.traverseU(parseCol) map JsonObject.fromIterable
+    def parseRow(row: Map[String, String]) = row.toList.traverse(parseCol) map JsonObject.fromIterable
 
-    parseDataTableRaw(table).flatMap(_.traverseU(parseRow))
+    parseDataTableRaw(table).flatMap(_.traverse(parseRow))
   }
 
   def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
@@ -77,13 +76,16 @@ trait CornichonJson {
     }
 
   def jsonStringValue(j: Json): String =
-    j.fold(
-      jsonNull = "",
-      jsonBoolean = _ ⇒ j.show,
-      jsonNumber = _ ⇒ j.show,
-      jsonString = s ⇒ s,
-      jsonArray = _ ⇒ j.show,
-      jsonObject = _ ⇒ j.show
+    // Use Json.Folder for performance https://github.com/circe/circe/pull/656
+    j.foldWith(
+      new Json.Folder[String] {
+        def onNull: String = ""
+        def onBoolean(value: Boolean): String = j.show
+        def onNumber(value: JsonNumber): String = j.show
+        def onString(value: String): String = value
+        def onArray(value: Vector[Json]): String = j.show
+        def onObject(value: JsonObject): String = j.show
+      }
     )
 
   def extract(json: Json, path: String): Either[CornichonError, Json] =

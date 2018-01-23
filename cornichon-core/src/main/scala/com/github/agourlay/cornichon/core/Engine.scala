@@ -3,13 +3,12 @@ package com.github.agourlay.cornichon.core
 import cats.Foldable
 import cats.data.{ NonEmptyList, StateT, ValidatedNel }
 import cats.syntax.either._
-import cats.syntax.cartesian._
+import cats.syntax.apply._
 import cats.instances.list._
 import cats.data.NonEmptyList._
 import cats.data.Validated._
 
 import monix.eval.Task
-import monix.cats._
 
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
@@ -95,7 +94,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
     stepResult
       .onErrorRecover { case NonFatal(ex) ⇒ (runState, FailedStep.fromSingle(currentStep, StepExecutionError(ex))).asLeft[(RunState, Done)] }
-      .map(res ⇒ (res.toValidatedNel <* failureOrDoneWithRunState.toValidated).toEither) // if current step is successfull, it is propagated
+      .map(res ⇒ (res.toValidatedNel <* failureOrDoneWithRunState.toValidated).toEither) // if current step is successful, it is propagated
   }
 
   private def prepareAndRunStep(currentStep: Step, runState: RunState): Task[(RunState, FailedStep Either Done)] =
@@ -146,7 +145,7 @@ object Engine {
   }
 
   def handleThrowable(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) = {
-    val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.of(CornichonError.fromThrowable(error)))
+    val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.one(CornichonError.fromThrowable(error)))
     (runState.appendLogs(runLogs), Left(failedStep))
   }
 

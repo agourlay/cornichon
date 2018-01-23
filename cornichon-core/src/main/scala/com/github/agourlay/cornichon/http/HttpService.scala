@@ -8,7 +8,6 @@ import cats.syntax.show._
 import cats.instances.int._
 import cats.instances.list._
 import cats.instances.either._
-import cats.instances.future._
 import cats.instances.string._
 
 import com.github.agourlay.cornichon.core._
@@ -16,13 +15,17 @@ import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpStreams._
-import com.github.agourlay.cornichon.resolver.{ Resolvable, PlaceholderResolver }
+import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpRequest._
 
 import io.circe.Encoder
 
-import scala.concurrent.{ ExecutionContext, Future }
+import monix.eval.Task
+import monix.eval.Task._
+import monix.execution.Scheduler
+
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class HttpService(
@@ -30,7 +33,7 @@ class HttpService(
     requestTimeout: FiniteDuration,
     client: HttpClient,
     resolver: PlaceholderResolver,
-    config: Config)(implicit ec: ExecutionContext) {
+    config: Config)(implicit ec: Scheduler) {
 
   private def resolveRequestParts[A: Show: Resolvable: Encoder](
     url: String,
@@ -54,24 +57,24 @@ class HttpService(
     r: HttpRequest[A],
     expectedStatus: Option[Int],
     extractor: ResponseExtractor,
-    ignoreFromWithHeaders: HeaderSelection)(s: Session) =
+    ignoreFromWithHeaders: HeaderSelection)(s: Session): EitherT[Task, CornichonError, Session] =
     for {
-      resolvedRequestParts ← EitherT.fromEither[Future](resolveRequestParts(r.url, r.body, r.params, r.headers)(ignoreFromWithHeaders)(s))
+      resolvedRequestParts ← EitherT.fromEither[Task](resolveRequestParts(r.url, r.body, r.params, r.headers)(ignoreFromWithHeaders)(s))
       (url, jsonBody, params, headers) = resolvedRequestParts
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
       configuredRequest = configureRequest(resolvedRequest, config)
       resp ← client.runRequest(configuredRequest, requestTimeout)
-      newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
-    } yield (resp, newSession)
+      newSession ← EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(s))
+    } yield newSession
 
   private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequestParts ← EitherT.fromEither[Future](resolveRequestParts(r.url, None, r.params, r.headers)(SelectNone)(s))
+      resolvedRequestParts ← EitherT.fromEither[Task](resolveRequestParts(r.url, None, r.params, r.headers)(SelectNone)(s))
       (url, _, params, headers) = resolvedRequestParts
       resolvedRequest = HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
       resp ← EitherT(client.openStream(resolvedRequest, requestTimeout))
-      newSession ← EitherT.fromEither[Future](handleResponse(resp, expectedStatus, extractor)(s))
-    } yield (resp, newSession)
+      newSession ← EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(s))
+    } yield newSession
 
   private def withBaseUrl(input: String) =
     if (baseUrl.isEmpty) input
@@ -84,17 +87,31 @@ class HttpService(
     extractor: ResponseExtractor = NoOpExtraction,
     expectedStatus: Option[Int] = None,
     ignoreFromWithHeaders: HeaderSelection = SelectNone): Session ⇒ EitherT[Future, CornichonError, Session] =
-    s ⇒ runRequest(request, expectedStatus, extractor, ignoreFromWithHeaders)(s).map(_._2)
+    s ⇒ {
+      val f = requestEffect(request, extractor, expectedStatus, ignoreFromWithHeaders)
+      EitherT(f(s))
+    }
+
+  // Just used for internal optimisation for the time being
+  private[cornichon] def requestEffectTask[A: Show: Resolvable: Encoder](
+    request: HttpRequest[A],
+    extractor: ResponseExtractor = NoOpExtraction,
+    expectedStatus: Option[Int] = None,
+    ignoreFromWithHeaders: HeaderSelection = SelectNone): Session ⇒ Task[Either[CornichonError, Session]] =
+    s ⇒ runRequest(request, expectedStatus, extractor, ignoreFromWithHeaders)(s).value
 
   def requestEffect[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
     expectedStatus: Option[Int] = None,
     ignoreFromWithHeaders: HeaderSelection = SelectNone): Session ⇒ Future[Either[CornichonError, Session]] =
-    s ⇒ runRequest(request, expectedStatus, extractor, ignoreFromWithHeaders)(s).map(_._2).value
+    s ⇒ {
+      val effect = requestEffectTask(request, extractor, expectedStatus, ignoreFromWithHeaders)
+      effect(s).runAsync
+    }
 
   def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Future[Either[CornichonError, Session]] =
-    s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).map(_._2).value
+    s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).value.runAsync
 
   def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
@@ -150,7 +167,7 @@ object HttpService {
     }.mkString(interHeadersValueDelimString)
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
-    headers.split(interHeadersValueDelim).toList.traverseU[Either[CornichonError, (String, String)]] { header ⇒
+    headers.split(interHeadersValueDelim).toList.traverse { header ⇒
       val elms = header.split(headersKeyValueDelim)
       if (elms.length != 2)
         Left(BadSessionHeadersEncoding(header))

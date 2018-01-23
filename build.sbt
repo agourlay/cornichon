@@ -3,6 +3,7 @@ import sbt.{Developer, file}
 import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
+//-Xlint triggers a compilatio error https://github.com/scala/bug/issues/10448#issuecomment-359170583
 lazy val compilerOptions = Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
@@ -16,24 +17,24 @@ lazy val compilerOptions = Seq(
   "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
   //"-Xfatal-warnings",                  // Fail the compilation if there are any warnings. (too hardcore due to the 2.11 cross compilation Either madness)
   "-Xfuture",                          // Turn on future language features.
-  "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
-  "-Xlint:by-name-right-associative",  // By-name parameter of right associative operator.
-  "-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
-  "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
-  "-Xlint:doc-detached",               // A Scaladoc comment appears to be detached from its element.
-  "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
-  "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
-  "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
-  "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
-  "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
-  "-Xlint:option-implicit",            // Option.apply used implicit view.
+  //"-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
+  //"-Xlint:by-name-right-associative",  // By-name parameter of right associative operator.
+  //"-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
+  //"-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
+  //"-Xlint:doc-detached",               // A Scaladoc comment appears to be detached from its element.
+  //"-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
+  //"-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
+  //"-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
+  //"-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
+  //"-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
+  //"-Xlint:option-implicit",            // Option.apply used implicit view.
   //"-Xlint:package-object-classes",     // Class or object defined in package object. (got a macro there)
-  "-Xlint:poly-implicit-overload",     // Parameterized overloaded implicit methods are not visible as view bounds.
-  "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
-  "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
-  "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
-  "-Xlint:unsound-match",              // Pattern match may not be typesafe.
-  "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+  //"-Xlint:poly-implicit-overload",     // Parameterized overloaded implicit methods are not visible as view bounds.
+  //"-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
+  //"-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
+  //"-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
+  //"-Xlint:unsound-match",              // Pattern match may not be typesafe.
+  //"-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
   "-Ypartial-unification",             // Enable partial unification in type constructor inference
   "-Ywarn-dead-code",                  // Warn when dead code is identified.
   //"-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined. (not for scala 2.11)
@@ -136,7 +137,6 @@ lazy val core =
         library.diffsonCirce,
         library.monixExec,
         library.monixReactive,
-        library.monixCats,
         library.scalatest % Test,
         library.scalacheck % Test,
         library.catsScalatest % Test
@@ -272,21 +272,21 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.0.4"
-      val akkaStream    = "2.5.8"
+      val akkaStream    = "2.5.9"
       val akkaHttp      = "10.0.11"
-      val cats          = "0.9.0"
+      val cats          = "1.0.1"
       val parboiled     = "2.1.4"
       val scalaCheck    = "1.13.5"
-      val sangriaCirce  = "1.1.0"
-      val circe         = "0.8.0"
-      val diffson       = "2.2.4"
+      val sangriaCirce  = "1.2.0"
+      val circe         = "0.9.1"
+      val diffson       = "2.2.5"
       val sangria       = "1.3.3"
       val fansi         = "0.2.5"
-      val catsScalaTest = "2.2.0"
+      val catsScalaTest = "2.3.1"
       val ficus         = "1.4.3"
-      val monix         = "2.3.2"
+      val monix         = "3.0.0-M3"
       val sbtTest       = "1.0"
-      val http4s        = "0.17.6"
+      val http4s        = "0.18.0-M8"
       val kafkaVersion  = "1.0.0"
     }
     val akkaStream    = "com.typesafe.akka"   %% "akka-stream"              % Version.akkaStream
@@ -307,7 +307,6 @@ lazy val library =
     val catsScalatest = "com.ironcorelabs"    %% "cats-scalatest"           % Version.catsScalaTest
     val monixExec     = "io.monix"            %% "monix-execution"          % Version.monix
     val monixReactive = "io.monix"            %% "monix-reactive"           % Version.monix
-    val monixCats     = "io.monix"            %% "monix-cats"               % Version.monix
     val sbtTest       = "org.scala-sbt"       %  "test-interface"           % Version.sbtTest
     val http4sClient  = "org.http4s"          %% "http4s-blaze-client"      % Version.http4s
     val http4sServer  = "org.http4s"          %% "http4s-blaze-server"      % Version.http4s

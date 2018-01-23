@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.CoreDsl._
@@ -14,18 +13,18 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.json.{ JsonDsl, JsonPath }
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
+import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep, TaskStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
-
 import io.circe.{ Encoder, Json }
-
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+
+import monix.execution.Scheduler
 
 import scala.concurrent.duration._
 
@@ -41,9 +40,9 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): Step =
-    EffectStep(
+    TaskStep(
       title = request.compactDescription,
-      effect = http.requestEffect(request)
+      effect = http.requestEffectTask(request)
     )
 
   implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): Step =
@@ -62,9 +61,9 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
     val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")
 
-    EffectStep(
+    TaskStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
-      effect = http.requestEffect(queryGQL)
+      effect = http.requestEffectTask(queryGQL)
     )
   }
 
@@ -188,11 +187,11 @@ object HttpDsl {
   lazy val globalHttpClient: HttpClient = {
     val c = {
       if (BaseFeature.config.useExperimentalHttp4sClient)
-        new Http4sClient()
+        new Http4sClient(Scheduler.Implicits.global)
       else
         new AkkaHttpClient(scala.concurrent.ExecutionContext.global)
     }
-    BaseFeature.addShutdownHook(() ⇒ c.shutdown())
+    BaseFeature.addShutdownHook(() ⇒ c.shutdown().runAsync(Scheduler.Implicits.global))
     c
   }
 }

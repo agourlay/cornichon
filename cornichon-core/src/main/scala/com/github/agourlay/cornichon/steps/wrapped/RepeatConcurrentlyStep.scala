@@ -24,7 +24,7 @@ case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: Fini
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
     Observable.fromIterator(List.fill(factor)(()).iterator)
-      .mapAsync(factor)(_ ⇒ engine.runSteps(nested, nestedRunState))
+      .mapParallelUnordered(factor)(_ ⇒ engine.runSteps(nested, nestedRunState))
       .takeUntil(Observable.evalDelayed(maxTime, ()))
       .toListL
       .flatMap { results ⇒
@@ -68,5 +68,5 @@ case class RepeatConcurrentlyTimeout(factor: Int, success: Int) extends Cornicho
 
 case class RepeatConcurrentlyError(cause: Throwable) extends CornichonError {
   lazy val baseErrorMessage = "Repeat concurrently block has thrown an error"
-  override val causedBy = Some(NonEmptyList.of(CornichonError.fromThrowable(cause)))
+  override val causedBy = Some(NonEmptyList.one(CornichonError.fromThrowable(cause)))
 }

@@ -4,8 +4,10 @@ import java.net.NetworkInterface
 
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.CloseableResource
-import fs2.{ Scheduler, Strategy }
+
 import monix.eval.Task
+import monix.execution.Scheduler
+
 import org.http4s.HttpService
 import org.http4s.server.blaze.BlazeBuilder
 
@@ -17,37 +19,37 @@ import scala.util.Random
 class MockHttpServer(
     interface: Option[String],
     port: Option[Range],
-    mockService: HttpService,
-    maxRetries: Int = 5)(implicit strategy: Strategy, scheduler: Scheduler) extends HttpServer {
+    mockService: HttpService[Task],
+    maxRetries: Int = 5)(implicit scheduler: Scheduler) extends HttpServer {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
-  private val randomPortOrder = port.fold(List(0))(r ⇒ Random.shuffle(r.toList))
+  private val randomPortOrder = port.fold(0 :: Nil)(r ⇒ Random.shuffle(r.toList))
 
   def startServer(): Future[(String, CloseableResource)] =
     if (randomPortOrder.isEmpty)
       Future.failed(MockHttpServerError.toException)
     else
-      startServerTryPorts(randomPortOrder).unsafeRunAsyncFuture()
+      startServerTryPorts(randomPortOrder).runAsync
 
-  private def startServerTryPorts(ports: List[Int], retry: Int = 0): fs2.Task[(String, CloseableResource)] =
-    startBlazeServer(ports.head).handleWith {
+  private def startServerTryPorts(ports: List[Int], retry: Int = 0): Task[(String, CloseableResource)] =
+    startBlazeServer(ports.head).onErrorHandleWith {
       case _: java.net.BindException if ports.length > 1 ⇒
         startServerTryPorts(ports.tail, retry)
       case _: java.net.BindException if retry < maxRetries ⇒
         val sleepFor = retry + 1
         println(s"Could not start server on any port. Retrying in $sleepFor seconds...")
-        startServerTryPorts(randomPortOrder, retry + 1).schedule((retry + 1) seconds)
+        startServerTryPorts(randomPortOrder, retry + 1).delayExecution((retry + 1).seconds)
     }
 
-  private def startBlazeServer(port: Int): fs2.Task[(String, CloseableResource)] =
-    BlazeBuilder
+  private def startBlazeServer(port: Int): Task[(String, CloseableResource)] =
+    BlazeBuilder[Task]
       .bindHttp(port, selectedInterface)
       .mountService(mockService, "/")
       .start
       .map { serverBinding ⇒
         val fullAddress = s"http://$selectedInterface:${serverBinding.address.getPort}"
         val closeable = new CloseableResource {
-          def stopResource() = Task.fromFuture(serverBinding.shutdown.unsafeRunAsyncFuture())
+          def stopResource() = serverBinding.shutdown
         }
         (fullAddress, closeable)
       }

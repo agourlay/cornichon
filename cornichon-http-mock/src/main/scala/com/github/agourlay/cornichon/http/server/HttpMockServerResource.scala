@@ -3,11 +3,9 @@ package com.github.agourlay.cornichon.http.server
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.{ BlockScopedResource, ResourceHandle }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
-import fs2.{ Scheduler, Strategy }
 import io.circe.Json
 import monix.eval.Task
-
-import scala.concurrent.ExecutionContext
+import monix.execution.Scheduler
 
 case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range])
   extends BlockScopedResource {
@@ -18,9 +16,7 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
 
   def startResource() = {
 
-    implicit val strategy = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
-    implicit val scheduler = Scheduler.fromFixedDaemonPool(1)
-
+    implicit val scheduler = Scheduler.Implicits.global
     val mockRequestHandler = new MockServerRequestHandler()
     val mockServer = new MockHttpServer(interface, portRange, mockRequestHandler.mockService)
     Task.fromFuture(mockServer.startServer()).map { serverCloseHandler ⇒

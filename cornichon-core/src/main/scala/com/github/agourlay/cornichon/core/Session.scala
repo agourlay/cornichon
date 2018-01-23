@@ -36,7 +36,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
     get(sessionKey.name, sessionKey.index)
 
   def getList(keys: Seq[String]): Either[CornichonError, List[String]] =
-    keys.toList.traverseU(get(_))
+    keys.toList.traverse(get(_))
 
   def getHistory(key: String): Either[KeyNotFoundInSession, Vector[String]] =
     content.get(key).toRight(KeyNotFoundInSession(key, this))

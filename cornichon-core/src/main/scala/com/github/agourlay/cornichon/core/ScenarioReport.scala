@@ -78,5 +78,5 @@ case class FailedStep(step: Step, errors: NonEmptyList[CornichonError]) {
 }
 
 object FailedStep {
-  def fromSingle(step: Step, error: CornichonError) = FailedStep(step, NonEmptyList.of(error))
+  def fromSingle(step: Step, error: CornichonError) = FailedStep(step, NonEmptyList.one(error))
 }
