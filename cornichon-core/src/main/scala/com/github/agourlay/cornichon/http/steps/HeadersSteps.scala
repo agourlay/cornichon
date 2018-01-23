@@ -21,7 +21,7 @@ object HeadersSteps {
       action = s ⇒ Assertion.either {
         s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
           val actualValue = sessionHeaders.split(",").toList
-          val expectedValue: List[String] = expected.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }(breakOut)
+          val expectedValue: List[String] = expected.map { case (name, value) ⇒ encodeSessionHeader(name, value) }(breakOut)
           GenericEqualityAssertion(expectedValue, actualValue)
         }
       }
@@ -41,7 +41,7 @@ object HeadersSteps {
       action = s ⇒ Assertion.either {
         s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
           val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
-          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(s"$name$headersKeyValueDelim$value") }
+          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(encodeSessionHeader(name, value)) }
           CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
         }
       }
