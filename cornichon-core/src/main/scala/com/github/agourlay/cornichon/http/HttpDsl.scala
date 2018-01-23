@@ -146,7 +146,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
   def WithHeaders(headers: (String, String)*): BodyElementCollector[Step, Seq[Step]] =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      val saveStep = save((withHeadersKey, headers.map { case (name, value) ⇒ s"$name$headersKeyValueDelim$value" }.mkString(","))).copy(show = false)
+      val saveStep = save((withHeadersKey, encodeSessionHeaders(headers))).copy(show = false)
       val rollbackStep = rollback(withHeadersKey).copy(show = false)
       saveStep +: steps :+ rollbackStep
     }
