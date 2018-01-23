@@ -169,7 +169,7 @@ trait CoreDsl extends ProvidedInstances {
       for {
         v ← s.get(key, indice)
         transformed ← transform(v)
-      } yield s"Session content for key '${SessionKey(key, indice).show}' is\n$transformed}"
+      } yield s"Session content for key '${SessionKey(key, indice).show}' is\n$transformed"
     }
 
   def print_step(message: String): Step =
