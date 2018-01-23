@@ -268,9 +268,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.server.MockHttpServer#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpService,maxRetries:Int)(implicitstrategy:fs2.Strategy,implicitscheduler:fs2.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer"></a><a id="&lt;init&gt;:MockHttpServer"></a>
+      <a id="&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpService[monix.eval.Task],maxRetries:Int)(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer"></a><a id="&lt;init&gt;:MockHttpServer"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockHttpServer.html#&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpService,maxRetries:Int)(implicitstrategy:fs2.Strategy,implicitscheduler:fs2.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockHttpServer.html#&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpService[monix.eval.Task],maxRetries:Int)(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -279,7 +279,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MockHttpServer</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.4/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="port">port: <a href="http://www.scala-lang.org/api/2.12.4/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>, <span name="mockService">mockService: <span class="extype" name="org.http4s.HttpService">org.http4s.HttpService</span></span>, <span name="maxRetries">maxRetries: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">5</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="strategy">strategy: <span class="extype" name="fs2.Strategy">Strategy</span></span>, <span name="scheduler">scheduler: <span class="extype" name="fs2.Scheduler">Scheduler</span></span>)</span>
+        <span class="name">MockHttpServer</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.4/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="port">port: <a href="http://www.scala-lang.org/api/2.12.4/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>, <span name="mockService">mockService: <a href="../../../../../../org/http4s/index.html#HttpService[F[_]]=cats.data.Kleisli[[β$0$]cats.data.OptionT[F,β$0$],org.http4s.Request[F],org.http4s.Response[F]]" class="extmbr" name="org.http4s.HttpService">org.http4s.HttpService</a>[<span class="extype" name="monix.eval.Task">Task</span>]</span>, <span name="maxRetries">maxRetries: <a href="http://www.scala-lang.org/api/2.12.4/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">5</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="scheduler">scheduler: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>)</span>
       </span>
       
       

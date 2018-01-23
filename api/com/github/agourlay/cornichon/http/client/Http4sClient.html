@@ -260,9 +260,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.client.Http4sClient#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;():com.github.agourlay.cornichon.http.client.Http4sClient"></a><a id="&lt;init&gt;:Http4sClient"></a>
+      <a id="&lt;init&gt;(scheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.client.Http4sClient"></a><a id="&lt;init&gt;:Http4sClient"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#&lt;init&gt;():com.github.agourlay.cornichon.http.client.Http4sClient" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#&lt;init&gt;(scheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.client.Http4sClient" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -271,7 +271,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Http4sClient</span><span class="params">()</span>
+        <span class="name">Http4sClient</span><span class="params">(<span name="scheduler">scheduler: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>)</span>
       </span>
       
       
@@ -333,22 +333,6 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#addQueryParams" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="addQueryParams(uri:org.http4s.Uri,moreParams:Seq[(String,String)]):org.http4s.Uri"></a><a id="addQueryParams(Uri,Seq[(String,String)]):Uri"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#addQueryParams(uri:org.http4s.Uri,moreParams:Seq[(String,String)]):org.http4s.Uri" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">addQueryParams</span><span class="params">(<span name="uri">uri: <span class="extype" name="org.http4s.Uri">Uri</span></span>, <span name="moreParams">moreParams: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>)</span><span class="result">: <span class="extype" name="org.http4s.Uri">Uri</span></span>
-      </span>
-      
-      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
@@ -365,22 +349,6 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#buildHeaders" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="buildHeaders(headers:Seq[(String,String)]):org.http4s.Headers"></a><a id="buildHeaders(Seq[(String,String)]):Headers"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#buildHeaders(headers:Seq[(String,String)]):org.http4s.Headers" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">buildHeaders</span><span class="params">(<span name="headers">headers: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>)</span><span class="result">: <span class="extype" name="org.http4s.Headers">Headers</span></span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
@@ -478,22 +446,6 @@
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#handleResponse" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="handleResponse[A](response:org.http4s.Response):fs2.Task[com.github.agourlay.cornichon.http.CornichonHttpResponse]"></a><a id="handleResponse[A](Response):Task[CornichonHttpResponse]"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#handleResponse[A](response:org.http4s.Response):fs2.Task[com.github.agourlay.cornichon.http.CornichonHttpResponse]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">handleResponse</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="response">response: <span class="extype" name="org.http4s.Response">Response</span></span>)</span><span class="result">: <span class="extype" name="fs2.Task">Task</span>[<a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]</span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -513,22 +465,6 @@
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#httpMethodMapper" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="httpMethodMapper(method:com.github.agourlay.cornichon.http.HttpMethod):org.http4s.Method"></a><a id="httpMethodMapper(HttpMethod):Method"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#httpMethodMapper(method:com.github.agourlay.cornichon.http.HttpMethod):org.http4s.Method" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">httpMethodMapper</span><span class="params">(<span name="method">method: <a href="../HttpMethod.html" class="extype" name="com.github.agourlay.cornichon.http.HttpMethod">HttpMethod</a></span>)</span><span class="result">: <span class="extype" name="org.http4s.Method">Method</span></span>
-      </span>
-      
-      
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
@@ -600,9 +536,9 @@
               
         </dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#openStream" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):Nothing"></a><a id="openStream(HttpStreamedRequest,FiniteDuration):Nothing"></a>
+      <a id="openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):monix.eval.Task[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]]"></a><a id="openStream(HttpStreamedRequest,FiniteDuration):Task[Either[CornichonError,CornichonHttpResponse]]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):Nothing" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):monix.eval.Task[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -611,14 +547,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">openStream</span><span class="params">(<span name="req">req: <a href="../HttpStreamedRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpStreamedRequest">HttpStreamedRequest</a></span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/collection/immutable/List.html#scala.Nothing" class="extype" name="scala.collection.immutable.List">Nothing</a></span>
+        <span class="name">openStream</span><span class="params">(<span name="req">req: <a href="../HttpStreamedRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpStreamedRequest">HttpStreamedRequest</a></span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#paramsFromUrl" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="paramsFromUrl(url:String):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]"></a><a id="paramsFromUrl(String):Either[CornichonError,Seq[(String,String)]]"></a>
+      <a id="paramsFromUrl(url:String):Either[com.github.agourlay.cornichon.core.CornichonError,List[(String,String)]]"></a><a id="paramsFromUrl(String):Either[CornichonError,List[(String,String)]]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#paramsFromUrl(url:String):Either[com.github.agourlay.cornichon.core.CornichonError,Seq[(String,String)]]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#paramsFromUrl(url:String):Either[com.github.agourlay.cornichon.core.CornichonError,List[(String,String)]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -627,14 +563,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">paramsFromUrl</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]]</span>
+        <span class="name">paramsFromUrl</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.List">List</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#runRequest" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="runRequest(cReq:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]"></a><a id="runRequest(HttpRequest[Json],FiniteDuration):EitherT[Future,CornichonError,CornichonHttpResponse]"></a>
+      <a id="runRequest(cReq:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[monix.eval.Task,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]"></a><a id="runRequest(HttpRequest[Json],FiniteDuration):EitherT[Task,CornichonError,CornichonHttpResponse]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#runRequest(cReq:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#runRequest(cReq:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[monix.eval.Task,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -643,14 +579,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runRequest</span><span class="params">(<span name="cReq">cReq: <a href="../HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <a href="http://typelevel.org/cats/api/cats/data/EitherT.html#cats.data.EitherT" class="extype" name="cats.data.EitherT">EitherT</a>[<a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>, <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]</span>
+        <span class="name">runRequest</span><span class="params">(<span name="cReq">cReq: <a href="../HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <a href="http://typelevel.org/cats/api/cats/data/EitherT.html#cats.data.EitherT" class="extype" name="cats.data.EitherT">EitherT</a>[<span class="extype" name="monix.eval.Task">Task</span>, <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#scheduler" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="scheduler:fs2.Scheduler"></a><a id="scheduler:Scheduler"></a>
+    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#s" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="s:monix.execution.Scheduler"></a><a id="s:Scheduler"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#scheduler:fs2.Scheduler" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#s:monix.execution.Scheduler" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -659,14 +595,14 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">scheduler</span><span class="result">: <span class="extype" name="fs2.Scheduler">Scheduler</span></span>
+        <span class="name">s</span><span class="result">: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#shutdown" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="shutdown():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done.type]"></a><a id="shutdown():Future[Done.type]"></a>
+      <a id="shutdown():monix.eval.Task[com.github.agourlay.cornichon.core.Done]"></a><a id="shutdown():Task[Done]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#shutdown():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done.type]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#shutdown():monix.eval.Task[com.github.agourlay.cornichon.core.Done]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -675,26 +611,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">shutdown</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<a href="../../core/Done$.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>.type]</span>
+        <span class="name">shutdown</span><span class="params">()</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.client.Http4sClient">Http4sClient</a> → <a href="HttpClient.html" class="extype" name="com.github.agourlay.cornichon.http.client.HttpClient">HttpClient</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.client.Http4sClient#strategy" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="strategy:fs2.Strategy"></a><a id="strategy:Strategy"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/Http4sClient.html#strategy:fs2.Strategy" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">strategy</span><span class="result">: <span class="extype" name="fs2.Strategy">Strategy</span></span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">

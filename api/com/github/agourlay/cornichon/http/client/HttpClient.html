@@ -269,9 +269,9 @@
         <div class="values members">
               <h3>Abstract Value Members</h3>
               <ol><li name="com.github.agourlay.cornichon.http.client.HttpClient#openStream" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):scala.concurrent.Future[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]]"></a><a id="openStream(HttpStreamedRequest,FiniteDuration):Future[Either[CornichonError,CornichonHttpResponse]]"></a>
+      <a id="openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):monix.eval.Task[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]]"></a><a id="openStream(HttpStreamedRequest,FiniteDuration):Task[Either[CornichonError,CornichonHttpResponse]]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):scala.concurrent.Future[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#openStream(req:com.github.agourlay.cornichon.http.HttpStreamedRequest,t:scala.concurrent.duration.FiniteDuration):monix.eval.Task[Either[com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -280,7 +280,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">openStream</span><span class="params">(<span name="req">req: <a href="../HttpStreamedRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpStreamedRequest">HttpStreamedRequest</a></span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]]</span>
+        <span class="name">openStream</span><span class="params">(<span name="req">req: <a href="../HttpStreamedRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpStreamedRequest">HttpStreamedRequest</a></span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<span class="extype" name="scala.Either">Either</span>[<a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]]</span>
       </span>
       
       
@@ -301,9 +301,9 @@
       
       
     </li><li name="com.github.agourlay.cornichon.http.client.HttpClient#runRequest" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="runRequest(req:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]"></a><a id="runRequest(HttpRequest[Json],FiniteDuration):EitherT[Future,CornichonError,CornichonHttpResponse]"></a>
+      <a id="runRequest(req:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[monix.eval.Task,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]"></a><a id="runRequest(HttpRequest[Json],FiniteDuration):EitherT[Task,CornichonError,CornichonHttpResponse]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#runRequest(req:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[scala.concurrent.Future,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#runRequest(req:com.github.agourlay.cornichon.http.HttpRequest[io.circe.Json],t:scala.concurrent.duration.FiniteDuration):cats.data.EitherT[monix.eval.Task,com.github.agourlay.cornichon.core.CornichonError,com.github.agourlay.cornichon.http.CornichonHttpResponse]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -312,14 +312,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runRequest</span><span class="params">(<span name="req">req: <a href="../HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <a href="http://typelevel.org/cats/api/cats/data/EitherT.html#cats.data.EitherT" class="extype" name="cats.data.EitherT">EitherT</a>[<a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>, <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]</span>
+        <span class="name">runRequest</span><span class="params">(<span name="req">req: <a href="../HttpRequest.html" class="extype" name="com.github.agourlay.cornichon.http.HttpRequest">HttpRequest</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>, <span name="t">t: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result">: <a href="http://typelevel.org/cats/api/cats/data/EitherT.html#cats.data.EitherT" class="extype" name="cats.data.EitherT">EitherT</a>[<span class="extype" name="monix.eval.Task">Task</span>, <a href="../../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <a href="../CornichonHttpResponse.html" class="extype" name="com.github.agourlay.cornichon.http.CornichonHttpResponse">CornichonHttpResponse</a>]</span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.http.client.HttpClient#shutdown" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="shutdown():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]"></a><a id="shutdown():Future[Done]"></a>
+      <a id="shutdown():monix.eval.Task[com.github.agourlay.cornichon.core.Done]"></a><a id="shutdown():Task[Done]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#shutdown():scala.concurrent.Future[com.github.agourlay.cornichon.core.Done]" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/client/HttpClient.html#shutdown():monix.eval.Task[com.github.agourlay.cornichon.core.Done]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -328,7 +328,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">shutdown</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.4/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>]</span>
+        <span class="name">shutdown</span><span class="params">()</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<a href="../../core/Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a>]</span>
       </span>
       
       
