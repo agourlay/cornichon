@@ -52,3 +52,10 @@ case class PathSelectsNothing(path: String, input: Json) extends JsonError {
     s"""JSON path '$path' is not defined in object
        |${input.show}""".stripMargin
 }
+
+case class JsonDecodingFailure(json: Json, actualType: String) extends JsonError {
+  lazy val baseErrorMessage =
+    s"""error while trying to decode JSON
+       |${json.show}
+       |into type '$actualType'""".stripMargin
+}

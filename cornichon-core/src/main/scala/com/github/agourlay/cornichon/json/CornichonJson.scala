@@ -10,7 +10,7 @@ import cats.instances.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import gnieh.diffson.circe._
-import io.circe.{ Encoder, Json, JsonNumber, JsonObject }
+import io.circe._
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
@@ -96,6 +96,9 @@ trait CornichonJson {
 
   def diffPatch(first: Json, second: Json): JsonPatch =
     JsonDiff.diff(first, second, remember = true)
+
+  def decodeAs[A: Decoder](json: Json): Either[CornichonError, A] =
+    json.as[A].leftMap(df ⇒ JsonDecodingFailure(json, df.message))
 
   def whitelistingValue(first: Json, second: Json): Either[WhitelistingError, Json] = {
     val diff = diffPatch(first, second)

@@ -113,6 +113,12 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.path("publisher.foundationYear").is(1934)
 
+        Then assert body.path("publisher.foundationYear").isLessThan(1935)
+
+        Then assert body.path("publisher.foundationYear").isGreaterThan(1933)
+
+        Then assert body.path("publisher.foundationYear").isBetween(1933, 1935)
+
         When I get("/superheroes/Scalaman").withParams("sessionId" → "<session-id>")
 
         Then assert status.is(404)

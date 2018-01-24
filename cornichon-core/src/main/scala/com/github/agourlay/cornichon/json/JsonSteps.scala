@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.json
 
-import cats.Show
+import cats.{ Order, Show }
 import cats.syntax.show._
 import cats.syntax.either._
 import cats.syntax.traverse._
@@ -10,7 +10,6 @@ import cats.instances.string._
 import cats.instances.vector._
 import cats.instances.list._
 import cats.instances.either._
-
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
@@ -18,8 +17,7 @@ import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable 
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-
-import io.circe.{ Encoder, Json }
+import io.circe.{ Decoder, Encoder, Json }
 
 import scala.util.matching.Regex
 
@@ -116,6 +114,53 @@ object JsonSteps {
               withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
               (expectedPrepared, actualPrepared) = withIgnoredFields
             } yield GenericEqualityAssertion(expectedPrepared, actualPrepared) andAll matcherAssertions
+        }
+      )
+    }
+
+    def isLessThan[A: Show: Resolvable: Order: Decoder](lessThan: A): AssertStep = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target is less than '$lessThan'" else s"$target's field '$jsonPath' is less than '$lessThan'"
+      AssertStep(
+        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        action = s ⇒ Assertion.either {
+          for {
+            sessionValue ← s.get(sessionKey)
+            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJsonTyped ← decodeAs[A](subJson)
+            resolvedExpected ← placeholderResolver.fillPlaceholders(lessThan)(s)
+          } yield LessThanAssertion(subJsonTyped, resolvedExpected)
+
+        }
+      )
+    }
+
+    def isGreaterThan[A: Show: Order: Resolvable: Decoder](greaterThan: A): AssertStep = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target is greater than '$greaterThan'" else s"$target's field '$jsonPath' is greater than '$greaterThan'"
+      AssertStep(
+        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        action = s ⇒ Assertion.either {
+          for {
+            sessionValue ← s.get(sessionKey)
+            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJsonTyped ← decodeAs[A](subJson)
+            resolvedExpected ← placeholderResolver.fillPlaceholders(greaterThan)(s)
+          } yield GreaterThanAssertion(subJsonTyped, resolvedExpected)
+        }
+      )
+    }
+
+    def isBetween[A: Show: Order: Resolvable: Decoder](less: A, greater: A): AssertStep = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target is between '$less' and '$greater'" else s"$target's field '$jsonPath'  is between '$less' and '$greater'"
+      AssertStep(
+        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        action = s ⇒ Assertion.either {
+          for {
+            sessionValue ← s.get(sessionKey)
+            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJsonTyped ← decodeAs[A](subJson)
+            resolvedLess ← placeholderResolver.fillPlaceholders(less)(s)
+            resolvedGreater ← placeholderResolver.fillPlaceholders(greater)(s)
+          } yield BetweenAssertion(resolvedLess, subJsonTyped, resolvedGreater)
         }
       )
     }
