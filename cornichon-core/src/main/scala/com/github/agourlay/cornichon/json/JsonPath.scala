@@ -58,7 +58,7 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
     }
 
   def removeFromJson(input: Json): Json =
-    cursors(input)._1.foldLeft(input) { (j, c) ⇒ c.delete.top.getOrElse(j) }
+    cursors(input)._1.foldLeft(input) { (j, c) ⇒ c.delete.top.getOrElse(Json.Null) }
 
 }
 

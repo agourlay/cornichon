@@ -145,6 +145,20 @@ class CornichonJsonSpec extends WordSpec
     }
 
     "removeFieldsByPath" must {
+
+      "remove everything if root path" in {
+        val input =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |}
+          """.stripMargin
+
+        removeFieldsByPath(refParser(input), Seq(JsonPath(Nil))) should be(Json.Null)
+      }
+
       "remove root keys" in {
         val input =
           """
@@ -530,7 +544,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("John"), parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Name")))
+        findAllJsonWithValue("John" :: Nil, parseJsonUnsafe(input)) should be(Vector(parseUnsafe("$.Name")))
 
       }
 
@@ -549,7 +563,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("Paul"), parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brother.Name")))
+        findAllJsonWithValue("Paul" :: Nil, parseJsonUnsafe(input)) should be(Vector(parseUnsafe("$.Brother.Name")))
 
       }
 
@@ -574,7 +588,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("Bob"), parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brothers[1].Name")))
+        findAllJsonWithValue("Bob" :: Nil, parseJsonUnsafe(input)) should be(Vector(parseUnsafe("$.Brothers[1].Name")))
 
       }
 
@@ -590,7 +604,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue(List("Coding"), parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
+        findAllJsonWithValue("Coding" :: Nil, parseJsonUnsafe(input)) should be(Vector(parseUnsafe("$.Hobbies[2]")))
 
       }
     }

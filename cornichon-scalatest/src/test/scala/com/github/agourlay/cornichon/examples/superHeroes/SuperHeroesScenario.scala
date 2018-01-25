@@ -735,6 +735,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert status.is(200)
 
+        And assert body.path("city").is("*any-string*")
+
         And assert body.ignoring("city", "realName", "publisher.location").is(
           """
           {

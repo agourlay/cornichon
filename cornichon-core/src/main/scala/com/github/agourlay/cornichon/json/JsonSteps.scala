@@ -77,7 +77,11 @@ object JsonSteps {
       def handleMatchers(session: Session, sessionValueWithFocusJson: Json) =
         matcherResolver.findAllMatchers(expectedShow).flatMap { matchers ⇒
           if (matchers.nonEmpty) {
-            val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected)(matcherResolver.quoteMatchers)
+            val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected) { r ⇒
+              // don't add quotes if is not a complex JsonObject otherwise it would produce a double quoted string
+              if (isJsonString(r)) r
+              else matcherResolver.quoteMatchers(r)
+            }
             resolveAndParseJson(withQuotedMatchers, session, placeholderResolver).map {
               expectedJson ⇒ matcherResolver.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson)
             }

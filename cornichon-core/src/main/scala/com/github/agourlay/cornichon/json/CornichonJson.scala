@@ -45,6 +45,13 @@ trait CornichonJson {
   def parseString(s: String): Either[MalformedJsonError[String], Json] =
     io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
 
+  def isJsonString(s: String): Boolean = {
+    val trimmed = s.trim
+    if (trimmed.isEmpty)
+      false
+    else trimmed.head != '[' && trimmed.head != '{' && trimmed.head != '|'
+  }
+
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
     def parseRow(row: Map[String, String]) = row.toList.traverse(parseCol) map JsonObject.fromIterable
@@ -111,22 +118,29 @@ trait CornichonJson {
   }
 
   def findAllJsonWithValue(values: List[String], json: Json): Vector[JsonPath] = {
-    def keyValues(currentPath: String, json: Json): Vector[(String, Json)] =
-      json.fold(
-        jsonNull = Vector.empty,
-        jsonBoolean = _ ⇒ Vector.empty,
-        jsonNumber = _ ⇒ Vector.empty,
-        jsonString = _ ⇒ Vector.empty,
-        jsonArray = elems ⇒ elems.zipWithIndex.flatMap { case (e, indice) ⇒ keyValuesHelper(s"$currentPath[$indice]", e) },
-        jsonObject = elems ⇒ elems.toVector.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v) }
-      )
+    def keyValues(currentPath: String, json: Json, level: Int): Vector[(String, Json)] = {
 
-    def keyValuesHelper(key: String, value: Json): Vector[(String, Json)] =
-      (key, value) +: keyValues(key, value)
+      def leafValue() = if (level == 0) Vector((currentPath, json)) else Vector.empty
+
+      // Use Json.Folder for performance https://github.com/circe/circe/pull/656
+      json.foldWith(
+        new Json.Folder[Vector[(String, Json)]] {
+          def onNull = Vector.empty
+          def onBoolean(value: Boolean) = leafValue()
+          def onNumber(value: JsonNumber) = leafValue()
+          def onString(value: String) = leafValue()
+          def onArray(elems: Vector[Json]) = elems.zipWithIndex.flatMap { case (e, indice) ⇒ keyValuesHelper(s"$currentPath[$indice]", e, level) }
+          def onObject(elems: JsonObject) = elems.toVector.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v, level) }
+        }
+      )
+    }
+
+    def keyValuesHelper(key: String, value: Json, level: Int): Vector[(String, Json)] =
+      (key, value) +: keyValues(key, value, level + 1)
 
     // Do not traverse the JSON if there are no values to find
     if (values.nonEmpty)
-      keyValues(JsonPath.root, json).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k).valueUnsafe }
+      keyValues(JsonPath.root, json, level = 0).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k).valueUnsafe }
     else
       Vector.empty
   }
