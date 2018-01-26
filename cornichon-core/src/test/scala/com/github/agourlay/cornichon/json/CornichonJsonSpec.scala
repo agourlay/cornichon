@@ -10,7 +10,7 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import cats.instances.bigDecimal._
 import cats.scalatest.{ EitherMatchers, EitherValues }
-import com.github.agourlay.cornichon.json.JsonPath.parse
+import com.github.agourlay.cornichon.json.JsonPath._
 
 class CornichonJsonSpec extends WordSpec
   with Matchers
@@ -156,7 +156,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        removeFieldsByPath(refParser(input), Seq(JsonPath(Nil))) should be(Json.Null)
+        removeFieldsByPath(refParser(input), Seq(rootPath)) should be(Json.Null)
       }
 
       "remove root keys" in {
@@ -532,6 +532,20 @@ class CornichonJsonSpec extends WordSpec
     }
 
     "findAllContainingValue" must {
+
+      "find root value" in {
+
+        val input = "target value"
+
+        findAllJsonWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(Vector(rootPath))
+      }
+
+      "not find root value" in {
+
+        val input = "target values"
+
+        findAllJsonWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(Vector.empty)
+      }
 
       "find root key" in {
 

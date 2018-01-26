@@ -64,7 +64,8 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
 object JsonPath {
   val root = "$"
-  private val rightEmptyJsonPath = Right(JsonPath(Nil))
+  val rootPath = JsonPath(Nil)
+  private val rightEmptyJsonPath = Right(rootPath)
   private val operationsCache = TrieMap.empty[String, Either[CornichonError, List[JsonPathOperation]]]
 
   implicit val showJsonPath = Show.show[JsonPath] { p ⇒
