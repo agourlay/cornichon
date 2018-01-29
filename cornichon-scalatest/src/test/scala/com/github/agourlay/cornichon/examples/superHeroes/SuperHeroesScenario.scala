@@ -86,6 +86,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.path("name").matchesRegex(".*man".r)
 
+        Then assert body.path("name").isNot("Superman")
+
         Then assert body.path("country").isAbsent
 
         Then assert body.path("hasSuperpowers").is(false)

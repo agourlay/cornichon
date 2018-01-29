@@ -70,7 +70,10 @@ object JsonSteps {
         is(a)
     }
 
-    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
+    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected)
+    def isNot[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected, negate = true)
+
+    private def isImpl[A: Show: Resolvable: Encoder](expected: A, negate: Boolean = false): AssertStep = {
       val expectedShow = expected.show
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expectedShow" else s"$target's field '$jsonPath' is $expectedShow"
 
@@ -117,7 +120,7 @@ object JsonSteps {
               (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = withMatchers
               withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
               (expectedPrepared, actualPrepared) = withIgnoredFields
-            } yield GenericEqualityAssertion(expectedPrepared, actualPrepared) andAll matcherAssertions
+            } yield GenericEqualityAssertion(expectedPrepared, actualPrepared, negate) andAll matcherAssertions
         }
       )
     }
