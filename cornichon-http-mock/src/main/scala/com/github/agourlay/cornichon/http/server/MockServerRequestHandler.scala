@@ -11,7 +11,6 @@ import io.circe.Json
 
 import monix.eval.Task
 import monix.eval.Task._
-import monix.execution.Scheduler
 
 import org.http4s._
 import org.http4s.circe._
@@ -20,7 +19,7 @@ import org.http4s.dsl.Http4sDsl
 import scala.collection.breakOut
 import scala.concurrent.duration._
 
-class MockServerRequestHandler(implicit scheduler: Scheduler) extends Http4sDsl[Task] {
+class MockServerRequestHandler() extends Http4sDsl[Task] {
 
   private val mockState = new MockServerStateHolder()
 
