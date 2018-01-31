@@ -86,8 +86,8 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     HeadersStepBuilder
 
   //FIXME the body is expected to always contains JSON currently
-  def body: JsonStepBuilder =
-    JsonStepBuilder(placeholderResolver, matcherResolver, HttpDsl.lastBodySessionKey, HttpDsl.bodyBuilderTitle)
+  private lazy val jsonStepBuilder = JsonStepBuilder(placeholderResolver, matcherResolver, HttpDsl.lastBodySessionKey, HttpDsl.bodyBuilderTitle)
+  def body: JsonStepBuilder = jsonStepBuilder
 
   def save_body(target: String): Step =
     save_body_path(JsonPath.root → target)
