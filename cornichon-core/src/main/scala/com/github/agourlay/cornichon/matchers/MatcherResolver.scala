@@ -36,13 +36,13 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
     }
 
   // Removes JSON fields targetted by matchers and builds corresponding matchers assertions
-  def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json): (Json, Json, Seq[MatcherAssertion]) =
+  def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, Seq[MatcherAssertion]) =
     if (matchers.isEmpty)
       (expected, actual, Nil)
     else {
       val pathAssertions = CornichonJson.findAllJsonWithValue(matchers.map(_.fullKey), expected)
         .zip(matchers)
-        .map { case (jsonPath, matcher) ⇒ (jsonPath, MatcherAssertion.atJsonPath(jsonPath, actual, matcher)) }
+        .map { case (jsonPath, matcher) ⇒ (jsonPath, MatcherAssertion.atJsonPath(jsonPath, actual, matcher, negate)) }
 
       val jsonPathToIgnore = pathAssertions.map(_._1)
       val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
