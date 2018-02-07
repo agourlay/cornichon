@@ -55,6 +55,6 @@ object Assertion {
 
   def either(v: Either[CornichonError, Assertion]) = v.fold(e ⇒ failWith(e), identity)
 
-  def all(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.and(assertion))
-  def any(assertions: List[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.or(assertion))
+  def all(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.and(assertion))
+  def any(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.or(assertion))
 }

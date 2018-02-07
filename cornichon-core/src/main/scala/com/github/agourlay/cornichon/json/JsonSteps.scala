@@ -122,9 +122,10 @@ object JsonSteps {
               withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
               (expectedPrepared, actualPrepared) = withIgnoredFields
             } yield {
-              if (negate && matcherAssertions.nonEmpty && expectedPrepared.isNull && actualPrepared.isNull) {
-                Assertion.all(matcherAssertions.toList)
-              } else
+              if (negate && matcherAssertions.nonEmpty && expectedPrepared.isNull && actualPrepared.isNull)
+                // Handles annoying edge case of no payload remaining once all matched keys have been removed for negated assertion
+                Assertion.all(matcherAssertions)
+              else
                 GenericEqualityAssertion(expectedPrepared, actualPrepared, negate) andAll matcherAssertions
             }
         }

@@ -22,6 +22,7 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
   def resolveMatcherKeys(mk: MatcherKey): Either[CornichonError, Matcher] =
     allMatchersByKey.get(mk.key) match {
       case None              ⇒ Left(MatcherUndefined(mk.key))
+      case Some(Nil)         ⇒ Left(MatcherUndefined(mk.key))
       case Some(m :: Nil)    ⇒ Right(m)
       case Some(m :: others) ⇒ Left(DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)))
     }
@@ -53,7 +54,7 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
 
 object MatcherResolver {
 
-  val builtInMatchers =
+  val builtInMatchers: List[Matcher] =
     isPresent ::
       anyString ::
       anyArray ::
