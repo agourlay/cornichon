@@ -20,10 +20,10 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
     MatcherParser.parse(input)
 
   def resolveMatcherKeys(mk: MatcherKey): Either[CornichonError, Matcher] =
-    allMatchersByKey(mk.key) match {
-      case Nil         ⇒ Left(MatcherUndefined(mk.key))
-      case m :: Nil    ⇒ Right(m)
-      case m :: others ⇒ Left(DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)))
+    allMatchersByKey.get(mk.key) match {
+      case None              ⇒ Left(MatcherUndefined(mk.key))
+      case Some(m :: Nil)    ⇒ Right(m)
+      case Some(m :: others) ⇒ Left(DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)))
     }
 
   def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
