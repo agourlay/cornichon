@@ -22,8 +22,8 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
       else {
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
-        val boostrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
-        engine.runSteps(nested, boostrapFilledInput).flatMap {
+        val bootstrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
+        engine.runSteps(nested, bootstrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒
             stepsResult.fold(
               failedStep ⇒ {
@@ -31,7 +31,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
                 Task.now((runState.mergeNested(filledState), Left((currentInputs, failedStep))))
               },
               _ ⇒ {
-                // Logs are propogated but not the session
+                // Logs are propagated but not the session
                 runInputs(inputs.tail, runState.appendLogsFrom(filledState))
               }
             )
