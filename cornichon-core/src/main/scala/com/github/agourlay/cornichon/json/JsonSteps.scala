@@ -70,9 +70,13 @@ object JsonSteps {
         is(a)
     }
 
-    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
+    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected)
+    def isNot[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected, negate = true)
+
+    private def isImpl[A: Show: Resolvable: Encoder](expected: A, negate: Boolean = false): AssertStep = {
       val expectedShow = expected.show
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is $expectedShow" else s"$target's field '$jsonPath' is $expectedShow"
+      val isOrNot = if (negate) "is not" else "is"
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target $isOrNot $expectedShow" else s"$target's field '$jsonPath' $isOrNot $expectedShow"
 
       def handleMatchers(session: Session, sessionValueWithFocusJson: Json) =
         matcherResolver.findAllMatchers(expectedShow).flatMap { matchers ⇒
@@ -83,7 +87,7 @@ object JsonSteps {
               else matcherResolver.quoteMatchers(r)
             }
             resolveAndParseJson(withQuotedMatchers, session, placeholderResolver).map {
-              expectedJson ⇒ matcherResolver.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson)
+              expectedJson ⇒ matcherResolver.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson, negate)
             }
           } else
             resolveAndParseJson(expected, session, placeholderResolver).map {
@@ -117,7 +121,12 @@ object JsonSteps {
               (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = withMatchers
               withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
               (expectedPrepared, actualPrepared) = withIgnoredFields
-            } yield GenericEqualityAssertion(expectedPrepared, actualPrepared) andAll matcherAssertions
+            } yield {
+              if (negate && matcherAssertions.nonEmpty && expectedPrepared.isNull && actualPrepared.isNull) {
+                Assertion.all(matcherAssertions.toList)
+              } else
+                GenericEqualityAssertion(expectedPrepared, actualPrepared, negate) andAll matcherAssertions
+            }
         }
       )
     }

@@ -10,6 +10,7 @@ import com.github.agourlay.cornichon.json.JsonPath
 import io.circe.Json
 
 trait MatcherAssertion extends Assertion {
+  val negate: Boolean
   val m: Matcher
   val input: Json
 
@@ -18,7 +19,9 @@ trait MatcherAssertion extends Assertion {
       .leftMap(e ⇒ MatcherAssertionEvaluationError(m, input, e))
       .fold[ValidatedNel[CornichonError, Done]](
         errors ⇒ errors.invalidNel,
-        booleanResult ⇒ if (booleanResult) validDone else MatcherAssertionError(m, input).invalidNel
+        matcherResult ⇒
+          // XNOR condition for not negate
+          if (matcherResult == !negate) validDone else MatcherAssertionError(m, input, negate).invalidNel
       )
 }
 
@@ -27,13 +30,14 @@ case class MatcherAssertionEvaluationError(m: Matcher, input: Json, error: Throw
   override val causedBy = Some(NonEmptyList.of(CornichonError.fromThrowable(error)))
 }
 
-case class MatcherAssertionError(m: Matcher, input: Json) extends CornichonError {
-  val baseErrorMessage = s"matcher '${m.key}' (${m.description}) failed for input '${input.spaces2}'"
+case class MatcherAssertionError(m: Matcher, input: Json, negate: Boolean) extends CornichonError {
+  val baseErrorMessage = s"matcher '${m.key}' (${m.description}) ${if (negate) "was expected to fail" else "failed"} for input '${input.spaces2}'"
 }
 
 object MatcherAssertion {
-  def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher) =
+  def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher, negateMatcher: Boolean) =
     new MatcherAssertion {
+      val negate = negateMatcher
       val m = matcher
       val input = jsonPath.run(json)
     }
