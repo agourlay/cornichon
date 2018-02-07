@@ -159,6 +159,19 @@ class CornichonJsonSpec extends WordSpec
         removeFieldsByPath(refParser(input), Seq(rootPath)) should be(Json.Null)
       }
 
+      "remove nothing if path does not exist" in {
+        val input =
+          """
+            |{
+            |"2LettersName" : false,
+            | "Age": 50,
+            | "Name": "John"
+            |}
+          """.stripMargin
+
+        removeFieldsByPath(refParser(input), parseUnsafe("blah") :: Nil) should be(refParser(input))
+      }
+
       "remove root keys" in {
         val input =
           """
