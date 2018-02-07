@@ -284,7 +284,7 @@ lazy val library =
       val ficus         = "1.4.3"
       val monix         = "3.0.0-M3"
       val sbtTest       = "1.0"
-      val http4s        = "0.18.0-M9"
+      val http4s        = "0.18.0"
       val kafkaVersion  = "1.0.0"
     }
     val akkaHttp      = "com.typesafe.akka"   %% "akka-http"                % Version.akkaHttp
