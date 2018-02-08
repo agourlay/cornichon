@@ -76,11 +76,13 @@ class HttpService(
       newSession ← EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(s))
     } yield newSession
 
-  private def withBaseUrl(input: String) =
-    if (baseUrl.isEmpty) input
+  private def withBaseUrl(input: String) = {
+    val trimmedUrl = input.trim
+    if (baseUrl.isEmpty) trimmedUrl
     // the base URL is not applied if the input URL already starts with the protocol
-    else if (input.startsWith("https://") || input.startsWith("http://")) input
-    else baseUrl + input
+    else if (trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://")) trimmedUrl
+    else baseUrl + trimmedUrl
+  }
 
   def requestEffectT[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
