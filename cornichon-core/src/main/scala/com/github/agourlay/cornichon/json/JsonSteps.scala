@@ -102,7 +102,7 @@ object JsonSteps {
         else if (ignoredKeys.nonEmpty)
           // remove ignore fields from the actual result
           ignoredKeys.traverse(resolveAndParseJsonPath(_, placeholderResolver)(s))
-            .map(ignoredPaths ⇒ (expected, removeFieldsByPath(actual, ignoredPaths)))
+            .map(ignoredPaths ⇒ (removeFieldsByPath(expected, ignoredPaths), removeFieldsByPath(actual, ignoredPaths)))
         else
           // nothing to prepare
           Right((expected, actual))
@@ -301,14 +301,15 @@ object JsonSteps {
           for {
             expectedArrayJson ← resolveAndParseJson(expected, s, resolver)
             expectedArray ← Either.fromOption(expectedArrayJson.asArray, NotAnArrayError(expected))
+            expectedArrayWithIgnore ← removeIgnoredPathFromElements(s, expectedArray)
             sessionValue ← s.get(sessionKey)
             arrayFromSession ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-            actualValue ← removeIgnoredPathFromElements(s, arrayFromSession)
+            actualValueWithIgnore ← removeIgnoredPathFromElements(s, arrayFromSession)
           } yield {
             if (ordered)
-              GenericEqualityAssertion(expectedArray, actualValue)
+              GenericEqualityAssertion(expectedArrayWithIgnore, actualValueWithIgnore)
             else
-              CollectionsContainSameElements(expectedArray, actualValue)
+              CollectionsContainSameElements(expectedArrayWithIgnore, actualValueWithIgnore)
           }
         }
       )

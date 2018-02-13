@@ -85,6 +85,15 @@ class JsonStepsSpec extends AsyncWordSpec with Matchers with OptionValues with S
         }
       }
 
+      "is json with ignore provided in expected anyway" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        val step = jsonStepBuilder.ignoring("myKey").is("""{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
       "is json ignoring absent key does not fail" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
         val step = jsonStepBuilder.ignoring("myKey", "myKey1").is("""{ "myKeyOther" : "myOtherValue" }""")
@@ -235,6 +244,24 @@ class JsonStepsSpec extends AsyncWordSpec with Matchers with OptionValues with S
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.not_contains("d")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "is json with ignoreEach" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
+        val step = jsonStepBuilder.asArray.ignoringEach("myKey").is("""[{ "myKeyOther" : "myOtherValue" }]""")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "is json with ignoreEach provided in expected anyway" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
+        val step = jsonStepBuilder.asArray.ignoringEach("myKey").is("""[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
