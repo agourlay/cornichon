@@ -120,6 +120,56 @@ class JsonStepsSpec extends AsyncWordSpec with Matchers with OptionValues with S
           r.isSuccess should be(true)
         }
       }
+
+      "is Circe json" in {
+        val jsonString = """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }"""
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> jsonString)
+        val jsonObj = CornichonJson.parseJsonUnsafe(jsonString)
+        val step = jsonStepBuilder.is(jsonObj)
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "is Circe json with placeholder" in {
+        val jsonString = """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }"""
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> jsonString, "a-placeholder" -> "myOtherValue")
+        val jsonObj = CornichonJson.parseJsonUnsafe("""{ "myKey" : "myValue", "myKeyOther" : "<a-placeholder>" }""")
+        val step = jsonStepBuilder.is(jsonObj)
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "is Circe json with absent placeholder" in {
+        val jsonString = """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }"""
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> jsonString)
+        val jsonObj = CornichonJson.parseJsonUnsafe("""{ "myKey" : "myValue", "myKeyOther" : "<a-placeholder>" }""")
+        val step = jsonStepBuilder.is(jsonObj)
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
+      "is case class asJson with placeholder" in {
+        import io.circe.generic.auto._
+        import io.circe.syntax._
+        case class MyObj(myKey: String, myKeyOther: String)
+
+        val jsonString = """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }"""
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> jsonString, "a-placeholder" -> "myOtherValue")
+
+        val instance = MyObj("myValue", "<a-placeholder>")
+
+        val step = jsonStepBuilder.is(instance.asJson)
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
     }
 
     "JsonArrayStepBuilder" must {
