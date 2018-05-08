@@ -169,14 +169,14 @@ lazy val scalatest =
 
 lazy val experimental =
   project
-    .in(file("./cornichon-experimental"))
+    .in(file("./cornichon-test-framework"))
     .dependsOn(core)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(formattingSettings)
     .settings(
-      name := "cornichon-experimental",
-      testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework"),
+      name := "cornichon-test-framework",
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.sbtinterface.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.sbtTest
       )
