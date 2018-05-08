@@ -106,7 +106,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks, experimental, httpMock, kafka)
+    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -167,7 +167,7 @@ lazy val scalatest =
       )
     )
 
-lazy val experimental =
+lazy val testFramework =
   project
     .in(file("./cornichon-test-framework"))
     .dependsOn(core)
