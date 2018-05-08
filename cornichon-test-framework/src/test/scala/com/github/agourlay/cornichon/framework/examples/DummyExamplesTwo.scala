@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples
 
-import com.github.agourlay.cornichon.framework.CornichonFeature
+import com.github.agourlay.cornichon.CornichonFeature
+
 import scala.concurrent.duration._
 
 class DummyExamplesTwo extends CornichonFeature {

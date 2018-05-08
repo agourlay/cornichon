@@ -10,21 +10,6 @@ The library is composed of several modules with different purposes to enable use
 
 Experimental modules are likely to be subject to important changes in the future.
 
-## Cornichon-scalatest
-
-`cornichon-scalatest` exposes the cornichon features through an integration with `Scalatest`.
-
-
-## Cornichon-test-framework
-
-`cornichon-test-framework` exposes Cornichon's feature through a direct integration with `SBT test-interface`.
-
-This requires a special configuration in the build.sbt file to use the right `TestFramework`:
-
-`testFrameworks += new TestFramework("com.github.agourlay.cornichon.sbtinterface.CornichonFramework")`
-
-Moreover `CornichonFeature` lives under `com.github.agourlay.cornichon.framework`.
-
 
 ## Http Mock (experimental)
 

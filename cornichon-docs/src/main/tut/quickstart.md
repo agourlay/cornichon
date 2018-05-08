@@ -1,14 +1,33 @@
 ## Quick start
 
-cornichon is cross-built for Scala 2.11, and 2.12 so you can just add the following to your build:
+Cornichon is cross-built for Scala 2.11, and 2.12.
+
+For the [ScalaTest](http://www.scalatest.org/) flavor which integrates nicely with various build tools and pipeline:
 
 ``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.15.3" % Test
+// SBT
+libraryDependencies += "com.github.agourlay" %% "cornichon-scalatest" % "0.16.0" % Test
 ```
 
-Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
+Or for a more lightweight version without Scalatest which works with SBT and [Mill](http://www.lihaoyi.com/mill/):
 
-A ```Feature``` is a class extending ```CornichonFeature``` and implementing the required ```feature``` function.
+``` scala
+// SBT
+libraryDependencies += "com.github.agourlay" %% "cornichon-test-framework" % "0.16.0" % Test
+testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.sbtinterface.CornichonFramework")
+```
+
+```scala
+// Mill
+object test extends Tests{
+  def ivyDeps = Agg(ivy"com.github.agourlay::cornichon-test-framework:0.16.0")
+  def testFrameworks = Seq("com.github.agourlay.cornichon.framework.sbtinterface.CornichonFramework")
+}
+```
+
+A `Feature` is a class extending `CornichonFeature` and implementing the required `feature` function.
+
+Create your `Feature` files inside `src/test/scala` and run them using `sbt test`.
 
 How does it look like?
 
