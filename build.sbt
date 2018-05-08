@@ -158,7 +158,7 @@ lazy val scalatest =
     .settings(commonSettings)
     .settings(formattingSettings)
     .settings(
-      name := "cornichon",
+      name := "cornichon-scalatest",
       libraryDependencies ++= Seq(
         library.scalatest,
         library.http4sServer % Test,
