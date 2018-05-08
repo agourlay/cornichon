@@ -49,7 +49,10 @@ trait CornichonJson {
     val trimmed = s.trim
     if (trimmed.isEmpty)
       false
-    else trimmed.head != '[' && trimmed.head != '{' && trimmed.head != '|'
+    else {
+      val head = trimmed.head
+      head != '[' && head != '{' && head != '|'
+    }
   }
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
@@ -108,13 +111,13 @@ trait CornichonJson {
     json.as[A].leftMap(df ⇒ JsonDecodingFailure(json, df.message))
 
   def whitelistingValue(first: Json, second: Json): Either[WhitelistingError, Json] = {
-    val diff = diffPatch(first, second)
-    val forbiddenPatchOps = diff.ops.collect { case r: Remove ⇒ r }
+    val diffOps = diffPatch(first, second).ops
+    val forbiddenPatchOps = diffOps.collect { case r: Remove ⇒ r }
     if (forbiddenPatchOps.isEmpty) {
-      val addOps = diff.ops.collect { case r: Add ⇒ r }
+      val addOps = diffOps.collect { case r: Add ⇒ r }
       Right(JsonPatch(addOps)(first))
     } else
-      Left(WhitelistingError(forbiddenPatchOps.map(_.path.toString), second))
+      Left(WhitelistingError(forbiddenPatchOps.map(_.path.serialize), second))
   }
 
   def findAllJsonWithValue(values: List[String], json: Json): Vector[JsonPath] = {

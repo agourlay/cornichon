@@ -9,7 +9,6 @@ import cats.instances.int._
 import cats.instances.list._
 import cats.instances.either._
 import cats.instances.string._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
@@ -18,13 +17,12 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpRequest._
-
 import io.circe.Encoder
-
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
 
+import scala.collection.concurrent.TrieMap
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -34,6 +32,8 @@ class HttpService(
     client: HttpClient,
     resolver: PlaceholderResolver,
     config: Config)(implicit ec: Scheduler) {
+
+  private val fullUrlCache = TrieMap.empty[String, String]
 
   private def resolveRequestParts[A: Show: Resolvable: Encoder](
     url: String,
@@ -46,11 +46,11 @@ class HttpService(
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       urlParams ← client.paramsFromUrl(completeUrlResolved)
-      explicitParams ← resolver.fillPlaceholders(params.toList)(s)
+      explicitParams ← resolver.fillPlaceholders(params)(s)
       allParams = urlParams ++ explicitParams
       extractedWithHeaders ← extractWithHeadersSession(s)
       allHeaders = headers ++ ignoreHeadersSelection(extractedWithHeaders, ignoreFromWithHeaders)
-      headersResolved ← resolver.fillPlaceholders(allHeaders.toList)(s)
+      headersResolved ← resolver.fillPlaceholders(allHeaders)(s)
     } yield (completeUrlResolved, jsonBodyResolved, allParams, headersResolved)
 
   private def runRequest[A: Show: Resolvable: Encoder](
@@ -77,11 +77,15 @@ class HttpService(
     } yield newSession
 
   private def withBaseUrl(input: String) = {
-    val trimmedUrl = input.trim
-    if (baseUrl.isEmpty) trimmedUrl
-    // the base URL is not applied if the input URL already starts with the protocol
-    else if (trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://")) trimmedUrl
-    else baseUrl + trimmedUrl
+    def urlBuilder(url: String) = {
+      val trimmedUrl = url.trim
+      if (baseUrl.isEmpty) trimmedUrl
+      // the base URL is not applied if the input URL already starts with the protocol
+      else if (trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://")) trimmedUrl
+      else baseUrl + trimmedUrl
+    }
+
+    fullUrlCache.getOrElseUpdate(input, urlBuilder(input))
   }
 
   def requestEffectT[A: Show: Resolvable: Encoder](
@@ -230,7 +234,7 @@ object HttpService {
 
   def commonSessionExtraction(session: Session, response: CornichonHttpResponse): Either[CornichonError, Session] =
     session.addValues(
-      lastResponseStatusKey → response.status.intValue().toString,
+      lastResponseStatusKey → response.status.toString,
       lastResponseBodyKey → response.body,
       lastResponseHeadersKey → encodeSessionHeaders(response.headers)
     )

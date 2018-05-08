@@ -105,18 +105,18 @@ object JsonSteps {
             .map(ignoredPaths ⇒ (removeFieldsByPath(expected, ignoredPaths), removeFieldsByPath(actual, ignoredPaths)))
         else
           // nothing to prepare
-          Right((expected, actual))
+          (expected, actual).asRight
 
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
         action = s ⇒ Assertion.either {
           if (whitelist && ignoredKeys.nonEmpty)
-            Left(InvalidIgnoringConfigError)
+            InvalidIgnoringConfigError.asLeft
           else
             for {
               sessionValue ← s.get(sessionKey)
               sessionValueWithFocusJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
-              _ ← if (sessionValueWithFocusJson.isNull) Left(PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue))) else rightDone
+              _ ← if (sessionValueWithFocusJson.isNull) PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)).asLeft else rightDone
               withMatchers ← handleMatchers(s, sessionValueWithFocusJson)
               (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = withMatchers
               withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)

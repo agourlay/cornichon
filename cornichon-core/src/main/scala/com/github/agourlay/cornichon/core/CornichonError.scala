@@ -46,7 +46,7 @@ object CornichonError {
   }
 }
 
-case class StepExecutionError[A](e: Throwable) extends CornichonError {
+case class StepExecutionError(e: Throwable) extends CornichonError {
   lazy val baseErrorMessage = s"exception thrown ${CornichonError.genStacktrace(e)}"
 }
 

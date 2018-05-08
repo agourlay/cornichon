@@ -14,7 +14,7 @@ trait MatcherAssertion extends Assertion {
   val m: Matcher
   val input: Json
 
-  override def validated =
+  lazy val validated =
     Either.catchNonFatal(m.predicate(input))
       .leftMap(e ⇒ MatcherAssertionEvaluationError(m, input, e))
       .fold[ValidatedNel[CornichonError, Done]](

@@ -7,7 +7,6 @@ import com.github.agourlay.cornichon.http.{ CornichonHttpResponse, HttpRequest, 
 import io.circe.Json
 import monix.eval.Task
 
-import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class NoOpHttpClient extends HttpClient {

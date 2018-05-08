@@ -24,18 +24,23 @@ class MatcherParser(val input: ParserInput) extends Parser {
 
 object MatcherParser {
   val notAllowedInMatchers = "\r\n<>* "
+  private val noMatchers = Right(Nil)
 
-  def parse(input: String): Either[CornichonError, List[MatcherKey]] = {
-    val p = new MatcherParser(input)
-    p.matchersRule.run() match {
-      case Failure(e: ParseError) ⇒
-        Left(MatcherParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
-      case Failure(e: Throwable) ⇒
-        Left(MatcherError(input, e))
-      case Success(dt) ⇒
-        Right(dt.toList)
+  def parse(input: String): Either[CornichonError, List[MatcherKey]] =
+    if (!input.contains("*"))
+      // No need to parse the whole thing
+      noMatchers
+    else {
+      val p = new MatcherParser(input)
+      p.matchersRule.run() match {
+        case Failure(e: ParseError) ⇒
+          Left(MatcherParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
+        case Failure(e: Throwable) ⇒
+          Left(MatcherError(input, e))
+        case Success(dt) ⇒
+          Right(dt.toList)
+      }
     }
-  }
 }
 
 case class MatcherError(input: String, error: Throwable) extends CornichonError {

@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
 import monix.eval.Task
 

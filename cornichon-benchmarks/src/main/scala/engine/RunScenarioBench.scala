@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
-import engine.EngineBench._
+import engine.RunScenarioBench._
 import monix.execution.Scheduler
 
 import scala.concurrent.Await
@@ -25,9 +25,9 @@ import scala.concurrent.duration._
   "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
   "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
   "-Xmx1G"))
-class EngineBench {
+class RunScenarioBench {
 
-  //sbt:benchmarks> jmh:run .*Engine.* -prof gc -foe true -gc true -rf csv
+  //sbt:benchmarks> jmh:run .*RunScenario.* -prof gc -foe true -gc true -rf csv
 
   @Param(Array("10", "20", "50", "100", "200"))
   var stepsNumber: String = ""
@@ -70,7 +70,7 @@ class EngineBench {
   }
 }
 
-object EngineBench {
+object RunScenarioBench {
   val setupSession = EffectStep.fromSyncE("setup session", _.addValues("v1" -> "2", "v2" -> "1"))
   val assertStep = AssertStep(
     "addition step",

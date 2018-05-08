@@ -5,6 +5,7 @@ import java.util.UUID
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver._
 
 import scala.collection.concurrent.TrieMap
 
@@ -65,39 +66,31 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
     }
   }
 
-  def fillPlaceholders(input: String)(session: Session): Either[CornichonError, String] = {
-    def loop(placeholders: List[Placeholder], acc: String): Either[CornichonError, String] =
-      placeholders match {
-        case Nil ⇒ Right(acc)
-        case ph :: tail ⇒
-          for {
-            resolvedValue ← resolvePlaceholder(ph)(session)
-            res ← loop(tail, acc.replace(ph.fullKey, resolvedValue))
-          } yield res
+  def fillPlaceholders(input: String)(session: Session): Either[CornichonError, String] =
+    findPlaceholders(input).flatMap {
+      _.foldLeft[Either[CornichonError, String]](Right(input)) { (accE, ph) ⇒
+        for {
+          acc ← accE
+          resolvedValue ← resolvePlaceholder(ph)(session)
+        } yield acc.replace(ph.fullKey, resolvedValue)
       }
+    }
 
-    findPlaceholders(input).flatMap(loop(_, input))
-  }
+  def fillPlaceholders(params: Seq[(String, String)])(session: Session): Either[CornichonError, List[(String, String)]] =
+    params.foldRight[Either[CornichonError, List[(String, String)]]](rightNil) { (p, accE) ⇒
+      val (name, value) = p
+      for {
+        acc ← accE
+        resolvedName ← fillPlaceholders(name)(session)
+        resolvedValue ← fillPlaceholders(value)(session)
+      } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
+    }
 
-  def fillPlaceholders(params: List[(String, String)])(session: Session): Either[CornichonError, List[(String, String)]] = {
-    def loop(params: List[(String, String)], session: Session, acc: List[(String, String)]): Either[CornichonError, List[(String, String)]] =
-      params match {
-        case Nil ⇒ Right(acc.reverse)
-        case head :: tail ⇒
-          val (name, value) = head
-          for {
-            resolvedName ← fillPlaceholders(name)(session)
-            resolvedValue ← fillPlaceholders(value)(session)
-            res ← loop(tail, session, (resolvedName, resolvedValue) +: acc)
-          } yield res
-      }
-
-    loop(params, session, Nil)
-  }
 }
 
 object PlaceholderResolver {
   def withoutExtractor(): PlaceholderResolver = new PlaceholderResolver(Map.empty[String, Mapper])
+  private val rightNil = Right(Nil)
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {

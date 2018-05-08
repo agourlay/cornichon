@@ -7,7 +7,6 @@ import cats.syntax.apply._
 import cats.instances.list._
 import cats.data.NonEmptyList._
 import cats.data.Validated._
-
 import monix.eval.Task
 
 import scala.concurrent.duration.Duration
@@ -15,6 +14,7 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
+import scala.collection.breakOut
 import scala.util.control.NonFatal
 
 class Engine(stepPreparers: List[StepPreparer]) {
@@ -31,7 +31,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
         mainCleanupResult ← cleanupStage()
         finallyResult ← regularStage(context.finallySteps, finallyLog)
         finallyCleanupResult ← cleanupStage()
-      } yield Foldable[List].fold(List(beforeResult, mainResult, mainCleanupResult, finallyResult, finallyCleanupResult))
+      } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
 
       val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
       val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
@@ -57,7 +57,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
     else {
       // Cleanup steps are consumed to avoid double run
       val cleanupState = runState.resetCleanupSteps.appendLog(cleanupLog)
-      runStepsDontShortCircuit(runState.cleanupSteps, cleanupState).map {
+      runStepsDoNotShortCircuit(runState.cleanupSteps, cleanupState).map {
         case (resultState, resultReport) ⇒ (resultState, resultReport.toValidated)
       }
     }
@@ -74,7 +74,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
     }
 
   // run steps and aggregate failed steps
-  private def runStepsDontShortCircuit(steps: List[Step], runState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
+  private def runStepsDoNotShortCircuit(steps: List[Step], runState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
     steps.foldLeft(Task.now((runState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, _) }
@@ -86,7 +86,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
   private def prepareAndRunStepsAccumulatingErrors(currentStep: Step, failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
     val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
-    // Inject RunState into Either to align on aggreation shape
+    // Inject RunState into Either to align on aggregation shape
     val stepResult = prepareAndRunStep(currentStep, runState).map {
       case (r, Right(_))         ⇒ Right((r, Done))
       case (r, Left(failedStep)) ⇒ Left((r, failedStep))
@@ -116,13 +116,13 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
 object Engine {
 
-  val initMargin = 1
-  val beforeLog = InfoLogInstruction("before steps", initMargin + 1)
-  val mainLog = InfoLogInstruction("main steps", initMargin + 1)
-  val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
-  val cleanupLog = InfoLogInstruction("cleanup steps", initMargin + 1)
+  private val initMargin = 1
+  private val beforeLog = InfoLogInstruction("before steps", initMargin + 1)
+  private val mainLog = InfoLogInstruction("main steps", initMargin + 1)
+  private val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
+  private val cleanupLog = InfoLogInstruction("cleanup steps", initMargin + 1)
 
-  val noOpStage: StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { s ⇒ Task.now((s, validDone)) }
+  private val noOpStage: StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { s ⇒ Task.now((s, validDone)) }
 
   def withStepTitleResolver(resolver: PlaceholderResolver) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
@@ -141,19 +141,17 @@ object Engine {
 
   def handleErrors(currentStep: Step, runState: RunState, errors: NonEmptyList[CornichonError]): (RunState, FailedStep Either Done) = {
     val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, errors)
-    (runState.appendLogs(runLogs), Left(failedStep))
+    (runState.appendLogs(runLogs), failedStep.asLeft)
   }
 
   def handleThrowable(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) = {
     val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.one(CornichonError.fromThrowable(error)))
-    (runState.appendLogs(runLogs), Left(failedStep))
+    (runState.appendLogs(runLogs), failedStep.asLeft)
   }
 
   def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int): Vector[FailureLogInstruction] = {
-    val failureLog = FailureLogInstruction(s"$title *** FAILED ***", depth)
-    val logs = failureLog +: errors.toList.flatMap(_.renderedMessage.split('\n').map { m ⇒
-      FailureLogInstruction(m, depth)
-    })
-    logs.toVector
+    val failureLogTitle = FailureLogInstruction(s"$title *** FAILED ***", depth)
+    val errorLogs: Vector[FailureLogInstruction] = errors.toList.flatMap(_.renderedMessage.split('\n').map(m ⇒ FailureLogInstruction(m, depth)))(breakOut)
+    failureLogTitle +: errorLogs
   }
 }

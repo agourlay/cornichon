@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.core
 
+import scala.collection.immutable.StringOps
 import scala.concurrent.duration.Duration
 
 sealed trait LogInstruction {
@@ -7,9 +8,9 @@ sealed trait LogInstruction {
   def marginNb: Int
   def duration: Option[Duration]
   def colorized: String
+  lazy val fullMargin: String = LogInstruction.physicalMargin * marginNb
   lazy val completeMessage: String = {
 
-    val fullMargin = LogInstruction.physicalMargin * marginNb
     def withDuration(line: String) = fullMargin + line + duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
 
     // Inject duration at the end of the first line
@@ -24,15 +25,20 @@ sealed trait LogInstruction {
 }
 
 object LogInstruction {
-  val physicalMargin = "   "
-  def printLogs(logs: Seq[LogInstruction]): Unit = {
-    val acc = logs.foldLeft("")((acc, l) ⇒ acc + "\n" + l.colorized)
-    println(acc + "\n")
+  val physicalMargin: StringOps = "   "
+  def renderLogs(logs: Seq[LogInstruction]): String = {
+    // Logs can potentially be long
+    val acc = logs.foldLeft(StringBuilder.newBuilder)((acc, l) ⇒ acc.append("\n").append(l.colorized))
+    acc.append("\n").result()
   }
+
+  def printLogs(logs: Seq[LogInstruction]): Unit =
+    println(renderLogs(logs))
+
 }
 
 case class ScenarioTitleLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  lazy val colorized = fansi.Color.White(completeMessage).overlay(attrs = fansi.Underlined.On, start = (LogInstruction.physicalMargin * marginNb).length).render
+  lazy val colorized = fansi.Color.White(completeMessage).overlay(attrs = fansi.Underlined.On, start = fullMargin.length).render
 }
 
 case class InfoLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {

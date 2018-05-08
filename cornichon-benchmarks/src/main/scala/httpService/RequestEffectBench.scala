@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.core.{ Config, Session }
 import com.github.agourlay.cornichon.http.{ HttpMethods, HttpRequest, HttpService }
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import org.openjdk.jmh.annotations._
-import HttpServiceBench._
+import RequestEffectBench._
 import com.github.agourlay.cornichon.http.client.NoOpHttpClient
 import monix.execution.Scheduler
 
@@ -24,9 +24,9 @@ import scala.concurrent.duration._
   "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
   "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
   "-Xmx1G"))
-class HttpServiceBench {
+class RequestEffectBench {
 
-  //sbt:benchmarks> jmh:run .*HttpService.*
+  //sbt:benchmarks> jmh:run .*RequestEffect.*
 
   var es: ExecutorService = _
   val client = new NoOpHttpClient
@@ -45,7 +45,7 @@ class HttpServiceBench {
   }
 
   //  [info] Benchmark                                    Mode  Cnt      Score      Error  Units
-  //  [info] httpService.HttpServiceBench.singleRequest  thrpt   20  63073.377 ± 8119.694  ops/s
+  //  [info] httpService.RequestEffectBench.singleRequest  thrpt   20  320241.194 ± 9283.856  ops/s
   @Benchmark
   def singleRequest() = {
     val f = httpService.requestEffect(request)
@@ -54,7 +54,7 @@ class HttpServiceBench {
   }
 }
 
-object HttpServiceBench {
+object RequestEffectBench {
   val session = Session.newEmpty
   val request = HttpRequest[String](
     method = HttpMethods.GET,

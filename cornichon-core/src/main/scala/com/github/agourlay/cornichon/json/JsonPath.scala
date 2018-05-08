@@ -47,11 +47,14 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
       if (values.isEmpty)
         arrayFieldCursor :: Nil
       else {
+        // Better be fast here...
         val lb = ListBuffer.empty[ACursor]
         var arrayElementsCursor = arrayFieldCursor.downArray
-        for (_ ← values.seq) {
+        var i = 0
+        while (i < values.size) {
           lb += arrayElementsCursor
           arrayElementsCursor = arrayElementsCursor.right
+          i += 1
         }
         lb.toList
       }

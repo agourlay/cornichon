@@ -36,7 +36,7 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
       case (i, m) ⇒ i.replaceAll(Pattern.quote(m.fullKey), '"' + m.fullKey + '"')
     }
 
-  // Removes JSON fields targetted by matchers and builds corresponding matchers assertions
+  // Removes JSON fields targeted by matchers and builds corresponding matchers assertions
   def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, Seq[MatcherAssertion]) =
     if (matchers.isEmpty)
       (expected, actual, Nil)

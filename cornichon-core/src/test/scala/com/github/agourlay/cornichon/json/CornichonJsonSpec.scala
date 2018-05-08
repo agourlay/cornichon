@@ -11,10 +11,12 @@ import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import cats.instances.bigDecimal._
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import com.github.agourlay.cornichon.json.JsonPath._
+import io.circe.testing.ArbitraryInstances
 
 class CornichonJsonSpec extends WordSpec
   with Matchers
   with PropertyChecks
+  with ArbitraryInstances
   with CornichonJson
   with EitherValues
   with EitherMatchers
@@ -141,6 +143,12 @@ class CornichonJsonSpec extends WordSpec
         ) should beRight(List(
             Map("2LettersName" → "false"),
             Map("Age" → "11", "Name" → "Bob")))
+      }
+
+      "parse any Circe Json" ignore {
+        forAll { json: Json ⇒
+          parseJson(json.spaces2) should beRight(json)
+        }
       }
     }
 

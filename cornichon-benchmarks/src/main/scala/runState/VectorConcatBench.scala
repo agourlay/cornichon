@@ -13,7 +13,7 @@ import scala.collection.immutable.VectorBuilder
   "-XX:+FlightRecorder",
   "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
   "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"))
-class VectorBench {
+class VectorConcatBench {
 
   @Param(Array("10", "20", "50", "100", "200"))
   var vectorSize: String = _

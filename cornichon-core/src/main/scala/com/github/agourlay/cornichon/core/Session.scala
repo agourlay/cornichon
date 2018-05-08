@@ -11,19 +11,20 @@ import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
 import cats.kernel.Monoid
-
 import com.github.agourlay.cornichon.core.Session._
 import com.github.agourlay.cornichon.util.Strings
 
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.{ HashMap, StringOps }
 
 case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
+  //Specialised Option version to avoid Either.left creation through Either.toOption
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] =
-    get(key, stackingIndice).toOption
-
-  def getUnsafe(key: String, stackingIndice: Option[Int] = None): String =
-    get(key, stackingIndice).valueUnsafe
+    for {
+      values ← content.get(key)
+      indice = stackingIndice.getOrElse(values.size - 1)
+      value ← values.lift(indice)
+    } yield value
 
   def get(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
     for {
@@ -35,6 +36,9 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   def get(sessionKey: SessionKey): Either[CornichonError, String] =
     get(sessionKey.name, sessionKey.index)
 
+  def getUnsafe(key: String, stackingIndice: Option[Int] = None): String =
+    get(key, stackingIndice).valueUnsafe
+
   def getList(keys: Seq[String]): Either[CornichonError, List[String]] =
     keys.toList.traverse(get(_))
 
@@ -42,24 +46,40 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
     content.get(key).toRight(KeyNotFoundInSession(key, this))
 
   def addValue(key: String, value: String): Either[CornichonError, Session] = {
-    val trimmedKey = key.trim
-    if (trimmedKey.isEmpty)
-      Left(EmptyKey(this))
-    else if (Session.notAllowedInKey.exists(forbidden ⇒ trimmedKey.contains(forbidden)))
-      Left(IllegalKey(trimmedKey))
+
+    def validateKey(key: String): Either[CornichonError, String] = {
+      val trimmedKey = new StringOps(key.trim)
+      if (trimmedKey.isEmpty)
+        Left(EmptyKey(this))
+      else if (Session.notAllowedInKey.exists(forbidden ⇒ trimmedKey.contains(forbidden)))
+        Left(IllegalKey(key))
+      else
+        Right(key)
+    }
+
+    def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
+      c1.get(key) match {
+        case None         ⇒ c1 + (key → Vector(value))
+        case Some(values) ⇒ (c1 - key) + (key → values.:+(value))
+      }
+
+    if (knownKeysCache.contains(key))
+      Right(Session(updateContent(content)(key, value)))
     else
-      Right(
-        content.get(key).fold(Session(content + (key → Vector(value)))) { values ⇒
-          Session((content - key) + (key → values.:+(value)))
-        }
-      )
+      validateKey(key).map { key ⇒
+        knownKeysCache += key
+        Session(updateContent(content)(key, value))
+      }
   }
 
   def addValueUnsafe(key: String, value: String): Session =
     addValue(key, value).valueUnsafe
 
   def addValues(tuples: (String, String)*): Either[CornichonError, Session] =
-    tuples.foldLeft(this.asRight[CornichonError])((s, t) ⇒ s.flatMap(_.addValue(t._1, t._2)))
+    tuples match {
+      case t :: Nil ⇒ addValue(t._1, t._2)
+      case _        ⇒ tuples.foldLeft(this.asRight[CornichonError])((s, t) ⇒ s.flatMap(_.addValue(t._1, t._2)))
+    }
 
   def addValuesUnsafe(tuples: (String, String)*): Session =
     addValues(tuples: _*).valueUnsafe
@@ -82,7 +102,10 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 object Session {
   val newEmpty = Session(HashMap.empty)
 
-  val notAllowedInKey = "\r\n<>/[] "
+  // Saved as StringOps as it uses '.exists' extremely often
+  val notAllowedInKey: StringOps = new StringOps("\r\n<>/[] ")
+
+  private val knownKeysCache = scala.collection.mutable.HashSet.empty[String]
 
   implicit val monoidSession = new Monoid[Session] {
     def empty: Session = newEmpty

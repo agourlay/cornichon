@@ -26,17 +26,23 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 
 object PlaceholderParser {
 
-  def parse(input: String): Either[CornichonError, List[Placeholder]] = {
-    val p = new PlaceholderParser(input)
-    p.placeholdersRule.run() match {
-      case Failure(e: ParseError) ⇒
-        Left(PlaceholderParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
-      case Failure(e: Throwable) ⇒
-        Left(PlaceholderError(input, e))
-      case Success(dt) ⇒
-        Right(dt.toList)
+  private val noPlaceholders = Right(Nil)
+
+  def parse(input: String): Either[CornichonError, List[Placeholder]] =
+    if (!input.contains("<"))
+      // No need to parse the whole thing
+      noPlaceholders
+    else {
+      val p = new PlaceholderParser(input)
+      p.placeholdersRule.run() match {
+        case Failure(e: ParseError) ⇒
+          Left(PlaceholderParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
+        case Failure(e: Throwable) ⇒
+          Left(PlaceholderError(input, e))
+        case Success(dt) ⇒
+          Right(dt.toList)
+      }
     }
-  }
 }
 
 case class Placeholder(key: String, index: Option[Int]) {

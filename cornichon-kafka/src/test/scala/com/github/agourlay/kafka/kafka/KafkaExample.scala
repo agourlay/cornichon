@@ -8,7 +8,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
   def feature = Feature("Kafka DSL") {
 
-    Scenario("Can write and read arbitrary Strings to/from topic") {
+    Scenario("write and read arbitrary Strings to/from topic") {
       Given I put_topic(
         topic = "cornichon",
         key = "success",
@@ -23,7 +23,8 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
       Then assert kafka("cornichon").key_is("success")
       Then assert kafka("cornichon").message_value.is("I am a plain string")
     }
-    Scenario("Can use cornichon jsonAssertions on the message value") {
+
+    Scenario("use cornichon jsonAssertions on the message value") {
       Given I put_topic(
         topic = "cornichon",
         key = "json",
