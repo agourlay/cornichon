@@ -3,7 +3,6 @@ import sbt.{Developer, file}
 import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
-//-Xlint triggers a compilatio error https://github.com/scala/bug/issues/10448#issuecomment-359170583
 lazy val compilerOptions = Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
@@ -17,24 +16,24 @@ lazy val compilerOptions = Seq(
   "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
   //"-Xfatal-warnings",                  // Fail the compilation if there are any warnings. (too hardcore due to the 2.11 cross compilation Either madness)
   "-Xfuture",                          // Turn on future language features.
-  //"-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
-  //"-Xlint:by-name-right-associative",  // By-name parameter of right associative operator.
-  //"-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
-  //"-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
-  //"-Xlint:doc-detached",               // A Scaladoc comment appears to be detached from its element.
-  //"-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
-  //"-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
-  //"-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
-  //"-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
-  //"-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
-  //"-Xlint:option-implicit",            // Option.apply used implicit view.
-  //"-Xlint:package-object-classes",     // Class or object defined in package object. (got a macro there)
-  //"-Xlint:poly-implicit-overload",     // Parameterized overloaded implicit methods are not visible as view bounds.
-  //"-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
-  //"-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
-  //"-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
-  //"-Xlint:unsound-match",              // Pattern match may not be typesafe.
-  //"-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+  "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
+  "-Xlint:by-name-right-associative",  // By-name parameter of right associative operator.
+  "-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
+  "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
+  "-Xlint:doc-detached",               // A Scaladoc comment appears to be detached from its element.
+  "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
+  "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
+  "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
+  "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
+  "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
+  "-Xlint:option-implicit",            // Option.apply used implicit view.
+  "-Xlint:package-object-classes",     // Class or object defined in package object. (got a macro there)
+  "-Xlint:poly-implicit-overload",     // Parameterized overloaded implicit methods are not visible as view bounds.
+  "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
+  "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
+  "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
+  "-Xlint:unsound-match",              // Pattern match may not be typesafe.
+  "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
   "-Ypartial-unification",             // Enable partial unification in type constructor inference
   "-Ywarn-dead-code",                  // Warn when dead code is identified.
   //"-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined. (not for scala 2.11)
@@ -58,8 +57,8 @@ lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
-  scalaVersion := "2.12.4",
-  crossScalaVersions := Seq("2.11.12", "2.12.4"),
+  scalaVersion := "2.12.6",
+  crossScalaVersions := Seq("2.11.12", "2.12.6"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   fork in Test := true,
   scalacOptions ++= compilerOptions,
@@ -71,6 +70,11 @@ lazy val standardSettings = Seq(
     browseUrl = url("https://github.com/agourlay/cornichon.git"),
     connection = "scm:git:git@github.com:agourlay/cornichon.git"
   ))
+  // To chase down cyclic dependencies
+  //libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.7" % "provided",
+  //autoCompilerPlugins := true,
+  //scalacOptions += "-P:acyclic:force",
+  //addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.7"),
   // To profile tests execution
   //javaOptions in Test := Seq("-XX:+UnlockCommercialFeatures", "-XX:+FlightRecorder")
 )
@@ -124,6 +128,7 @@ lazy val core =
         library.http4sCirce,
         library.catsCore,
         library.catsMacro,
+        library.akkaStream,
         library.akkaHttp,
         library.ficus,
         library.parboiled,
@@ -138,7 +143,8 @@ lazy val core =
         library.monixReactive,
         library.scalatest % Test,
         library.scalacheck % Test,
-        library.catsScalatest % Test
+        library.catsScalatest % Test,
+        library.circeTesting % Test
       )
     )
 
@@ -271,22 +277,25 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.0.5"
-      val akkaHttp      = "10.0.11"
-      val cats          = "1.0.1"
+      val akkaHttp      = "10.1.1"
+      val akkaStream    = "2.5.12"
+      val cats          = "1.1.0"
       val parboiled     = "2.1.4"
-      val scalaCheck    = "1.13.5"
+      val scalaCheck    = "1.14.0"
       val sangriaCirce  = "1.2.1"
-      val circe         = "0.9.1"
-      val diffson       = "2.2.5"
+      val circe         = "0.10.0-M1"
+      val diffson       = "3.0.0"
       val sangria       = "1.4.0"
       val fansi         = "0.2.5"
       val catsScalaTest = "2.3.1"
       val ficus         = "1.4.3"
-      val monix         = "3.0.0-M3"
+      val monix         = "3.0.0-RC1"
       val sbtTest       = "1.0"
-      val http4s        = "0.18.0"
-      val kafkaVersion  = "1.0.0"
+      val http4s        = "0.18.10"
+      val embeddedKafka = "1.1.0" //uses kafka 1.0.1
+      val kafkaClient   = "1.0.1"
     }
+    val akkaStream    = "com.typesafe.akka"   %% "akka-stream"              % Version.akkaStream
     val akkaHttp      = "com.typesafe.akka"   %% "akka-http"                % Version.akkaHttp
     val catsMacro     = "org.typelevel"       %% "cats-macros"              % Version.cats
     val catsCore      = "org.typelevel"       %% "cats-core"                % Version.cats
@@ -299,6 +308,7 @@ lazy val library =
     val circeCore     = "io.circe"            %% "circe-core"               % Version.circe
     val circeGeneric  = "io.circe"            %% "circe-generic"            % Version.circe
     val circeParser   = "io.circe"            %% "circe-parser"             % Version.circe
+    val circeTesting  = "io.circe"            %% "circe-testing"            % Version.circe
     val diffsonCirce  = "org.gnieh"           %% "diffson-circe"            % Version.diffson
     val scalacheck    = "org.scalacheck"      %% "scalacheck"               % Version.scalaCheck
     val catsScalatest = "com.ironcorelabs"    %% "cats-scalatest"           % Version.catsScalaTest
@@ -309,6 +319,6 @@ lazy val library =
     val http4sServer  = "org.http4s"          %% "http4s-blaze-server"      % Version.http4s
     val http4sCirce   = "org.http4s"          %% "http4s-circe"             % Version.http4s
     val http4sDsl     = "org.http4s"          %% "http4s-dsl"               % Version.http4s
-    val kafkaClient   = "org.apache.kafka"    %  "kafka-clients"            % Version.kafkaVersion
-    val kafkaBroker   = "net.manub"           %% "scalatest-embedded-kafka" % Version.kafkaVersion
+    val kafkaClient   = "org.apache.kafka"    %  "kafka-clients"            % Version.kafkaClient
+    val kafkaBroker   = "net.manub"           %% "scalatest-embedded-kafka" % Version.embeddedKafka
   }
