@@ -10,25 +10,25 @@ The library is composed of several modules with different purposes to enable use
 
 Experimental modules are likely to be subject to important changes in the future.
 
-## Cornichon
+## Cornichon-scalatest
 
-```cornichon``` exposes the cornichon features through an integration with ```Scalatest```. (might be renamed to ```cornichon-scalatest``` later)
+`cornichon-scalatest` exposes the cornichon features through an integration with `Scalatest`.
 
 
-## Cornichon without Scalatest (experimental)
+## Cornichon-test-framework
 
-```cornichon-experimental``` exposes Cornichon's feature through a direct integration with ```SBT test-interface```.
+`cornichon-test-framework` exposes Cornichon's feature through a direct integration with `SBT test-interface`.
 
 This requires a special configuration in the build.sbt file to use the right `TestFramework`:
 
-`testFrameworks += new TestFramework("com.github.agourlay.cornichon.experimental.sbtinterface.CornichonFramework")`
+`testFrameworks += new TestFramework("com.github.agourlay.cornichon.sbtinterface.CornichonFramework")`
 
-Moreover `CornichonFeature` lives under `com.github.agourlay.cornichon.experimental`.
+Moreover `CornichonFeature` lives under `com.github.agourlay.cornichon.framework`.
 
 
 ## Http Mock (experimental)
 
-```cornichon-http-mock``` contains the ```ListenTo``` DSL and infrastructure to build tests relying on mocked endpoints.
+`cornichon-http-mock` contains the `ListenTo` DSL and infrastructure to build tests relying on mocked endpoints.
 
 ```
  Scenario("reply to POST request with 201 and assert on received bodies") {
@@ -136,7 +136,7 @@ Moreover `CornichonFeature` lives under `com.github.agourlay.cornichon.experimen
 
 ### Description
 
-```cornichon-kafka``` offers a support for [Kafka](https://kafka.apache.org) v1.0.0
+`cornichon-kafka` offers a support for [Kafka](https://kafka.apache.org) v1.0.0
 
 Due to the architecture of kafka and the handling of consumers offsets, **the default execution of
 scenarios and features is sequential**.
