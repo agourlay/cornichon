@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.framework.sbtinterface
+package com.github.agourlay.cornichon.framework
 
 import cats.syntax.either._
 

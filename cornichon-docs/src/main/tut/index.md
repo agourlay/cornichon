@@ -9,9 +9,9 @@ section: "home"
 [![Join the chat at https://gitter.im/agourlay/cornichon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
-<a name="quick-start"></a>
+<a name="overview"></a>
 
-{% include_relative quickstart.md %}
+{% include_relative overview.md %}
 
 ## License
 

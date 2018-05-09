@@ -1,5 +1,11 @@
 options:
 
+  - title: Installation
+    url: installation.html
+
+  - title: Basics
+    url: basics.html
+
   - title: DSL
     url: dsl.html
 

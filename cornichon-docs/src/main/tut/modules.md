@@ -6,8 +6,6 @@ position: 6
 
 # Modules
 
-The library is composed of several modules with different purposes to enable users to pick and choose according to their needs:
-
 Experimental modules are likely to be subject to important changes in the future.
 
 
