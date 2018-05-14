@@ -285,13 +285,13 @@ lazy val library =
       val sangriaCirce  = "1.2.1"
       val circe         = "0.10.0-M1"
       val diffson       = "3.0.0"
-      val sangria       = "1.4.0"
+      val sangria       = "1.4.1"
       val fansi         = "0.2.5"
       val catsScalaTest = "2.3.1"
       val ficus         = "1.4.3"
       val monix         = "3.0.0-RC1"
       val sbtTest       = "1.0"
-      val http4s        = "0.18.10"
+      val http4s        = "0.18.11"
       val embeddedKafka = "1.1.0" //uses kafka 1.0.1
       val kafkaClient   = "1.0.1"
     }
