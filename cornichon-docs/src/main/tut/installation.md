@@ -1,4 +1,10 @@
-## Installation
+---
+layout: docs
+title:  "Installation"
+position: 1
+---
+
+# Installation
 
 Cornichon is cross-built for Scala 2.11, and 2.12.
 

@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "DSL"
-position: 1
+position: 3
 ---
 
 # DSL

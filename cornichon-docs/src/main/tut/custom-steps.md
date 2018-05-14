@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Custom steps"
-position: 3
+position: 4
 ---
 
 # Custom steps

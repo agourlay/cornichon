@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Modules"
-position: 6
+position: 8
 ---
 
 # Modules

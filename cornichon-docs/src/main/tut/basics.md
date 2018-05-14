@@ -1,4 +1,10 @@
-## Basics
+---
+layout: docs
+title:  "Basics"
+position: 2
+---
+
+# Basics
 
 A Cornichon test is the definition of a so-called `feature`.
 

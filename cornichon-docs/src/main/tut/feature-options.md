@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Feature options"
-position: 4
+position: 6
 ---
 
 # Feature options
