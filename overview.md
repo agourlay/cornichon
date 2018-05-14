@@ -1,14 +1,4 @@
-## Quick start
-
-cornichon is cross-built for Scala 2.11, and 2.12 so you can just add the following to your build:
-
-``` scala
-libraryDependencies += "com.github.agourlay" %% "cornichon" % "0.15.3" % Test
-```
-
-Cornichon is currently integrated with [ScalaTest](http://www.scalatest.org/), place your ```Feature``` files inside ```src/test/scala``` and run them using ```sbt test```.
-
-A ```Feature``` is a class extending ```CornichonFeature``` and implementing the required ```feature``` function.
+## Overview
 
 How does it look like?
 
@@ -104,38 +94,3 @@ For more examples see the following files which are part of the test pipeline:
 - [Math Operations](https://github.com/agourlay/cornichon/blob/master/cornichon-scalatest/src/test/scala/com/github/agourlay/cornichon/examples/math/MathScenario.scala).
 
 And if you enjoy slides, you might like [this presentation](https://speakerdeck.com/agourlay/cornichon-a-scala-dsl-for-testing-http-json-api) given at the [Berlin Scala User Group](https://www.meetup.com/Scala-Berlin-Brandenburg/events/235779912/) which gives more context regarding the creation and usage of this library.
-
-## Structure
-
-A Cornichon test is the definition of a so-called ```feature```.
-
-A ```feature``` can have several ```scenarios``` which in turn can have several ```steps```.
-
-The example below contains one ```feature``` with one ```scenario``` with two ```steps```.
-
-```scala
-import com.github.agourlay.cornichon.CornichonFeature
-
-class CornichonExamplesSpec extends CornichonFeature {
-
-  def feature = Feature("Checking google"){
-
-    Scenario("Google is up and running"){
-
-      When I get("http://google.com")
-
-      Then assert status.is(302)
-    }
-  }
-}
-```
-
-The failure modes are the following:
-
-
-- A ```feature``` fails if one or more ```scenarios``` fail.
-
-- A ```scenario``` fails if at least one ```step``` fails.
-
-- A ```scenario``` will stop at the first failed step encountered and ignore the remaining ```steps```.
-
