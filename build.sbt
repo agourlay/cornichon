@@ -176,7 +176,7 @@ lazy val testFramework =
     .settings(formattingSettings)
     .settings(
       name := "cornichon-test-framework",
-      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.sbtinterface.CornichonFramework"),
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.sbtTest
       )
