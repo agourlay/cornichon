@@ -463,6 +463,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         And assert session_value("batman-city").isPresent
 
+        Then assert session_value("batman-city").isNot("Metropolis")
+
         Then assert session_value("batman-city").is("Gotham city")
 
         Then assert body.ignoring("hasSuperpowers", "publisher").is(

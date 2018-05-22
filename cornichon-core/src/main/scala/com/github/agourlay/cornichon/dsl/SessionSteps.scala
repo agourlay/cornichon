@@ -21,13 +21,17 @@ object SessionSteps {
 
     def atIndex(indice: Int) = copy(indice = Some(indice))
 
-    def is(expected: String) = AssertStep(
-      title = s"session key '$key' is '$expected'",
+    def is(expected: String): AssertStep = isImpl(expected, negate = false)
+
+    def isNot(expected: String): AssertStep = isImpl(expected, negate = true)
+
+    private def isImpl(expected: String, negate: Boolean) = AssertStep(
+      title = s"session key '$key' ${if (negate) "is not" else "is"} '$expected'",
       action = s ⇒ Assertion.either {
         for {
           filledPlaceholders ← placeholderResolver.fillPlaceholders(expected)(s)
           keyValue ← s.get(key, indice)
-        } yield GenericEqualityAssertion(filledPlaceholders, keyValue)
+        } yield GenericEqualityAssertion(filledPlaceholders, keyValue, negate = negate)
       }
     )
 
