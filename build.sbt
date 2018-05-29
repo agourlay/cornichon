@@ -291,7 +291,7 @@ lazy val library =
       val ficus         = "1.4.3"
       val monix         = "3.0.0-RC1"
       val sbtTest       = "1.0"
-      val http4s        = "0.18.11"
+      val http4s        = "0.18.12"
       val embeddedKafka = "1.1.0" //uses kafka 1.0.1
       val kafkaClient   = "1.0.1"
     }
