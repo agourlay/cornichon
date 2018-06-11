@@ -12,8 +12,9 @@ class HandlingPDF extends CornichonFeature with BinaryDSL{
 
        Then assert status.is(200)
 
-       Then assert binaryBody.asPDF.hasPages(2)
+       Then assert binaryBody.as(PDF).hasPages(2)
 
+       Then assert binaryBody.asPDF.hasPages(2)
     }
   }
 }

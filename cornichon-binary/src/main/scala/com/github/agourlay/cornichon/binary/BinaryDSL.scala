@@ -1,38 +1,22 @@
 package main.scala.com.github.agourlay.cornichon.binary
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Session }
-import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.feature.BaseFeature
-import com.github.agourlay.cornichon.http.HttpService
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.binary.PdfStepBuilder
 
-import cats.instances.either._ //scala 2.11
+trait BinaryDSL { this: BaseFeature ⇒
 
-import org.apache.pdfbox.pdmodel.PDDocument
-
-trait BinaryDSL extends ProvidedInstances { this: BaseFeature ⇒
-
-  case object BinaryBodyBuilder
-
-  implicit class asPdfBuilder(val bd: BinaryBodyBuilder.type) {
-    def asPDF: PdfStepBuilder.type = PdfStepBuilder
+  object PDF extends DslBinaryContent[PdfStepBuilder] {
+    val builder: PdfStepBuilder = PdfStepBuilder
   }
 
-  case object PdfStepBuilder {
+  trait DslBinaryContent[STEPBUILDER] {
+    val builder: STEPBUILDER
+  }
 
-    private def makePdfFromSession(s: Session): Either[CornichonError, PDDocument] =
-      for {
-        bodyS ← s.get(HttpService.SessionKeys.lastResponseBodyKey)
-        pdf ← CornichonError.catchThrowable(PDDocument.load(bodyS.getBytes))
-      } yield pdf
+  case object BinaryBodyBuilder {
+    def as[B](bc: DslBinaryContent[B]): B = bc.builder
 
-    def hasPages(expectedPageNumber: Int) = AssertStep(
-      title = s"body is a PDF with '$expectedPageNumber' pages",
-      action = s ⇒ Assertion.either {
-        makePdfFromSession(s).map { pdf ⇒
-          GenericEqualityAssertion(pdf.getNumberOfPages, expectedPageNumber)
-        }
-      })
+    def asPDF: PdfStepBuilder.type = PdfStepBuilder
   }
 
   def binaryBody: BinaryBodyBuilder.type = BinaryBodyBuilder
