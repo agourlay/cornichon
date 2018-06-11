@@ -6,14 +6,16 @@ import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 
+import cats.instances.either._ //scala 2.11
+
 import org.apache.pdfbox.pdmodel.PDDocument
 
 trait BinaryDSL extends ProvidedInstances { this: BaseFeature ⇒
 
-  case object BinaryBodyBuilder {
+  case object BinaryBodyBuilder
 
+  implicit class asPdfBuilder(val bd: BinaryBodyBuilder.type) {
     def asPDF: PdfStepBuilder.type = PdfStepBuilder
-
   }
 
   case object PdfStepBuilder {
@@ -25,7 +27,7 @@ trait BinaryDSL extends ProvidedInstances { this: BaseFeature ⇒
       } yield pdf
 
     def hasPages(expectedPageNumber: Int) = AssertStep(
-      title = s"body is a PDF with $expectedPageNumber pages",
+      title = s"body is a PDF with '$expectedPageNumber' pages",
       action = s ⇒ Assertion.either {
         makePdfFromSession(s).map { pdf ⇒
           GenericEqualityAssertion(pdf.getNumberOfPages, expectedPageNumber)
