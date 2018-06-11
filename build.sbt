@@ -106,7 +106,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka)
+    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka, binary)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -213,6 +213,22 @@ lazy val httpMock =
       )
     )
 
+lazy val binary =
+  project
+    .in(file("./cornichon-binary"))
+    .dependsOn(core, scalatest % IntegrationTest)
+    .enablePlugins(SbtScalariform)
+    .configs(IntegrationTest)
+    .settings(Defaults.itSettings : _*)
+    .settings(commonSettings)
+    .settings(formattingSettings)
+    .settings(
+      name := "cornichon-binary",
+      libraryDependencies ++= Seq(
+        library.pdfBox
+      )
+    )
+
 lazy val benchmarks =
   project
     .in(file("./cornichon-benchmarks"))
@@ -294,6 +310,7 @@ lazy val library =
       val http4s        = "0.18.12"
       val embeddedKafka = "1.1.0" //uses kafka 1.0.1
       val kafkaClient   = "1.0.1"
+      val pdfBox        = "2.0.9"
     }
     val akkaStream    = "com.typesafe.akka"   %% "akka-stream"              % Version.akkaStream
     val akkaHttp      = "com.typesafe.akka"   %% "akka-http"                % Version.akkaHttp
@@ -321,4 +338,5 @@ lazy val library =
     val http4sDsl     = "org.http4s"          %% "http4s-dsl"               % Version.http4s
     val kafkaClient   = "org.apache.kafka"    %  "kafka-clients"            % Version.kafkaClient
     val kafkaBroker   = "net.manub"           %% "scalatest-embedded-kafka" % Version.embeddedKafka
+    val pdfBox        = "org.apache.pdfbox"   %  "pdfbox"                   % Version.pdfBox
   }
