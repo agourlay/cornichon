@@ -152,7 +152,7 @@ case class EmptyKey(s: Session) extends CornichonError {
 }
 
 case class IllegalKey(key: String) extends CornichonError {
-  lazy val baseErrorMessage = s"error for key '$key' - session key can not contain chars '${Session.notAllowedInKey}'"
+  lazy val baseErrorMessage = s"Illegal session key '$key'\nsession key can not contain the following chars ${Session.notAllowedInKey.mkString(" ")}"
 }
 
 case class IndiceNotFoundForKey(key: String, indice: Int, values: Vector[String]) extends CornichonError {
