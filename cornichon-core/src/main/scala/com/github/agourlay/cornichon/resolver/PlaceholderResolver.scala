@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
 
-import cats.data.NonEmptyList
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
@@ -102,7 +101,7 @@ case class AmbiguousKeyDefinition(key: String) extends CornichonError {
 
 case class JsonMapperKeyNotFoundInSession(key: String, jsonPath: String, underlyingError: CornichonError) extends CornichonError {
   lazy val baseErrorMessage = s"Error occured while running JsonMapper on key '$key' with path '$jsonPath'"
-  override val causedBy = Some(NonEmptyList.of(underlyingError))
+  override val causedBy = underlyingError :: Nil
 }
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {

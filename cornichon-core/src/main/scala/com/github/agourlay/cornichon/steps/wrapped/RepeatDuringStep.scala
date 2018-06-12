@@ -65,5 +65,5 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
 
 case class RepeatDuringBlockContainFailedSteps(duration: FiniteDuration, errors: NonEmptyList[CornichonError]) extends CornichonError {
   val baseErrorMessage = s"RepeatDuring block failed before '$duration'"
-  override val causedBy = Some(errors)
+  override val causedBy = errors.toList
 }

@@ -71,5 +71,5 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
 
 case class WithDataInputBlockFailedStep(failedInputs: List[(String, String)], errors: NonEmptyList[CornichonError]) extends CornichonError {
   val baseErrorMessage = s"WithDataInput block failed for inputs ${printArrowPairs(failedInputs)}"
-  override val causedBy = Some(errors)
+  override val causedBy = errors.toList
 }

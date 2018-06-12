@@ -56,5 +56,5 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
 case class RetryMaxBlockReachedLimit(limit: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
   val baseErrorMessage = s"Retry max block failed '$limit' times"
-  override val causedBy = Some(errors)
+  override val causedBy = errors.toList
 }

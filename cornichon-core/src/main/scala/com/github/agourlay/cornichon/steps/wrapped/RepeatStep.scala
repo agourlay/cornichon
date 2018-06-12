@@ -59,5 +59,5 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
 
 case class RepeatBlockContainFailedSteps(failedOccurence: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
   val baseErrorMessage = s"Repeat block failed at occurence $failedOccurence"
-  override val causedBy = Some(errors)
+  override val causedBy = errors.toList
 }

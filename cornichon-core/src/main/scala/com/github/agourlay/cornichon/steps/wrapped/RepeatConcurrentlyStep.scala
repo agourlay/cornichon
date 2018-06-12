@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import cats.data.NonEmptyList
 import cats.instances.list._
 import cats.syntax.foldable._
 
@@ -68,5 +67,5 @@ case class RepeatConcurrentlyTimeout(factor: Int, success: Int) extends Cornicho
 
 case class RepeatConcurrentlyError(cause: Throwable) extends CornichonError {
   lazy val baseErrorMessage = "Repeat concurrently block has thrown an error"
-  override val causedBy = Some(NonEmptyList.one(CornichonError.fromThrowable(cause)))
+  override val causedBy = CornichonError.fromThrowable(cause) :: Nil
 }

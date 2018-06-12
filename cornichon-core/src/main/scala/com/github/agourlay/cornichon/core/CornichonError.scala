@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import java.io.{ PrintWriter, StringWriter }
 
-import cats.data.{ EitherT, NonEmptyList }
+import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
 
@@ -11,12 +11,15 @@ import scala.util.control.NoStackTrace
 
 trait CornichonError {
   def baseErrorMessage: String
-  val causedBy: Option[NonEmptyList[CornichonError]] = None
+  val causedBy: List[CornichonError] = Nil
 
-  lazy val renderedMessage: String = causedBy.fold(baseErrorMessage) { causes ⇒
-    s"""$baseErrorMessage
-       |caused by:
-       |${causes.toList.map(c ⇒ c.renderedMessage).mkString("\nand\n")}""".stripMargin
+  lazy val renderedMessage: String = {
+    if (causedBy.isEmpty)
+      baseErrorMessage
+    else
+      s"""$baseErrorMessage
+      |caused by:
+      |${causedBy.map(c ⇒ c.renderedMessage).mkString("\nand\n")}""".stripMargin
   }
 
   def toException = CornichonException(renderedMessage)
