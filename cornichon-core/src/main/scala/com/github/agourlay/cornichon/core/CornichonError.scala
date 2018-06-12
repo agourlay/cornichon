@@ -16,8 +16,7 @@ trait CornichonError {
   lazy val renderedMessage: String = causedBy.fold(baseErrorMessage) { causes ⇒
     s"""$baseErrorMessage
        |caused by:
-       |${causes.toList.map(c ⇒ c.renderedMessage).mkString("\nand\n")}
-     """.stripMargin
+       |${causes.toList.map(c ⇒ c.renderedMessage).mkString("\nand\n")}""".stripMargin
   }
 
   def toException = CornichonException(renderedMessage)

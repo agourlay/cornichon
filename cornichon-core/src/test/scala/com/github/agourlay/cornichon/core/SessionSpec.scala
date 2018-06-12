@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.core
 
 import cats.scalatest.{ EitherMatchers, EitherValues }
-import com.github.agourlay.cornichon.core.Session.KeyNotFoundInSession
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Gen
 import org.scalatest.{ Matchers, WordSpec }
@@ -79,7 +78,7 @@ class SessionSpec extends WordSpec
 
       "propose similar keys in Session in case of a missing key" in {
         val s = Session.newEmpty.addValuesUnsafe("my-key" -> "blah", "my_keys" -> "bloh", "not-my-key" -> "blih")
-        s.get("my_key").leftValue.renderedMessage should be("key 'my_key' can not be found in session maybe you meant 'my-key' or 'my_keys' \nmy-key -> Values(blah)\nmy_keys -> Values(bloh)\nnot-my-key -> Values(blih)")
+        s.get("my_key").leftValue.renderedMessage should be("key 'my_key' can not be found in session maybe you meant 'my-key' or 'my_keys'\nmy-key -> Values(blah)\nmy_keys -> Values(bloh)\nnot-my-key -> Values(blih)")
       }
     }
 

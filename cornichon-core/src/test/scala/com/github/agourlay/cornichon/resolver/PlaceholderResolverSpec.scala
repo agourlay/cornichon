@@ -5,8 +5,7 @@ import java.util.UUID
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.SessionSpec._
-import com.github.agourlay.cornichon.core.Session
-import com.github.agourlay.cornichon.core.Session.KeyNotFoundInSession
+import com.github.agourlay.cornichon.core.{ KeyNotFoundInSession, Session }
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
@@ -147,6 +146,20 @@ class PlaceholderResolverSpec extends WordSpec
         val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
         val s = Session.newEmpty.addValueUnsafe("customer-id", "12345")
         resolverWithExt.fillPlaceholders("<customer-id>")(s).leftValue should be(AmbiguousKeyDefinition("customer-id"))
+      }
+
+      "fail with clear error message if key defined in the extractor is not in Session" in {
+        val extractor = JsonMapper("customer", "id")
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
+        val s = Session.newEmpty
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).leftValue.renderedMessage should be("Error occured while running JsonMapper on key 'customer' with path 'id'\ncaused by:\nkey 'customer' can not be found in session \nempty")
+      }
+
+      "use JsonMapper" in {
+        val extractor = JsonMapper("customer", "id")
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
+        val s = Session.newEmpty.addValueUnsafe("customer", """{"id" : "122"}""")
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).value should be("122")
       }
     }
   }

@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
 
+import cats.data.NonEmptyList
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
@@ -47,12 +48,14 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
     case TextMapper(key, transform) ⇒
       session.get(key, ph.index).map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
-      session.get(key, ph.index).flatMap { sessionValue ⇒
-        // No placeholders in JsonMapper to avoid accidental infinite recursions.
-        JsonPath.run(jsonPath, sessionValue)
-          .map(CornichonJson.jsonStringValue)
-          .map(transform)
-      }
+      session.get(key, ph.index)
+        .leftMap { o: CornichonError ⇒ JsonMapperKeyNotFoundInSession(key, jsonPath, o) }
+        .flatMap { sessionValue ⇒
+          // No placeholders in JsonMapper to avoid accidental infinite recursions.
+          JsonPath.run(jsonPath, sessionValue)
+            .map(CornichonJson.jsonStringValue)
+            .map(transform)
+        }
   }
 
   def fillPlaceholders[A: Resolvable](input: A)(session: Session): Either[CornichonError, A] = {
@@ -95,6 +98,11 @@ object PlaceholderResolver {
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {
   lazy val baseErrorMessage = s"ambiguous definition of key '$key' - it is present in both session and extractors"
+}
+
+case class JsonMapperKeyNotFoundInSession(key: String, jsonPath: String, underlyingError: CornichonError) extends CornichonError {
+  lazy val baseErrorMessage = s"Error occured while running JsonMapper on key '$key' with path '$jsonPath'"
+  override val causedBy = Some(NonEmptyList.of(underlyingError))
 }
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {

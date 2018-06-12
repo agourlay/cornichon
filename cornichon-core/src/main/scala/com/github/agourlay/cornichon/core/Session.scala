@@ -122,18 +122,6 @@ object Session {
         .map(pair ⇒ pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
         .mkString("\n")
   }
-
-  // In companion object to access 'content'
-  case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
-    lazy val similarKeysMsg = {
-      val similar = s.content.keys.filter(Strings.levenshtein(_, key) == 1)
-      if (similar.isEmpty)
-        ""
-      else
-        s"maybe you meant ${similar.map(s ⇒ s"'$s'").mkString(" or ")}"
-    }
-    lazy val baseErrorMessage = s"key '$key' can not be found in session $similarKeysMsg \n${s.show}"
-  }
 }
 
 case class SessionKey(name: String, index: Option[Int] = None) {
@@ -146,6 +134,17 @@ object SessionKey {
     val indice = sk.index
     s"$key${indice.map(i ⇒ s"[$i]").getOrElse("")}"
   }
+}
+
+case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
+  lazy val similarKeysMsg = {
+    val similar = s.content.keys.filter(Strings.levenshtein(_, key) == 1)
+    if (similar.isEmpty)
+      ""
+    else
+      s"maybe you meant ${similar.map(s ⇒ s"'$s'").mkString(" or ")}"
+  }
+  lazy val baseErrorMessage = s"key '$key' can not be found in session $similarKeysMsg\n${s.show}"
 }
 
 case class EmptyKey(s: Session) extends CornichonError {
