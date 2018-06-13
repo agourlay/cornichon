@@ -39,6 +39,32 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       }
     }
 
+    "replay eventually handle hanging wrapped steps" in {
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      val nested = AssertStep(
+        "slow always true step", s ⇒ {
+          Thread.sleep(100000)
+          Assertion.alwaysValid
+        }
+      ) :: Nil
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf)
+      val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
+      engine.runScenario(Session.newEmpty)(s).map {
+        case f: FailureScenarioReport ⇒
+          f.isSuccess should be(false)
+          f.msg should be("""Scenario 'scenario with eventually that fails' failed:
+                            |
+                            |at step:
+                            |Eventually block with maxDuration = 1 second and interval = 100 milliseconds
+                            |
+                            |with error(s):
+                            |Eventually block is interrupted due to a long period of inactivity
+                            |""".stripMargin)
+        case other @ _ ⇒
+          fail(s"should have failed but got $other")
+      }
+    }
+
   }
 
 }

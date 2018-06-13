@@ -1,8 +1,11 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
+import cats.syntax.either._
+
 import monix.eval.Task
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
@@ -48,8 +51,15 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
       }
     }
 
+    def timeoutFailedResult: Task[(Long, RunState, Either[FailedStep, Done])] = {
+      val fs = FailedStep(this, NonEmptyList.of(EventuallyBlockMaxInactivity))
+      Task.delay((0, initialRunState.nestedContext, fs.asLeft[Done]))
+    }
+
     withDuration {
-      retryEventuallySteps(initialRunState.nestedContext, conf, 0)
+      val eventually = retryEventuallySteps(initialRunState.nestedContext, conf, 0)
+      // make sure that the inner block does not run forever
+      eventually.timeoutTo(after = conf.maxTime * 2, backup = timeoutFailedResult)
     }.map {
       case (run, executionTime) ⇒
         val (retries, retriedRunState, report) = run
@@ -83,4 +93,8 @@ object EventuallyConf {
 
 case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
   lazy val baseErrorMessage = "Eventually block succeeded after 'maxDuration'"
+}
+
+case object EventuallyBlockMaxInactivity extends CornichonError {
+  lazy val baseErrorMessage = "Eventually block is interrupted due to a long period of inactivity"
 }
