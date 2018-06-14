@@ -152,7 +152,7 @@ class PlaceholderResolverSpec extends WordSpec
         val extractor = JsonMapper("customer", "id")
         val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
         val s = Session.newEmpty
-        resolverWithExt.fillPlaceholders("<customer-id>")(s).leftValue.renderedMessage should be("Error occured while running JsonMapper on key 'customer' with path 'id'\ncaused by:\nkey 'customer' can not be found in session \nempty")
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).leftValue.renderedMessage should be("Error occurred while running Mapper attached to key 'customer-id'\ncaused by:\nkey 'customer' can not be found in session \nempty")
       }
 
       "use JsonMapper" in {

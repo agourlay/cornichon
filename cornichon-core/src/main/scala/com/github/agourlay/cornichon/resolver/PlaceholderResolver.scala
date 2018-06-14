@@ -26,7 +26,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
       val otherKeyIndice = ph.index
       (session.get(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
         case (v, None)               ⇒ v
-        case (Left(_), Some(mapper)) ⇒ applyMapper(mapper, session, ph)
+        case (Left(_), Some(mapper)) ⇒ applyMapper(otherKeyName, mapper, session, ph)
         case (Right(_), Some(_))     ⇒ Left(AmbiguousKeyDefinition(otherKeyName))
       }
     }
@@ -41,14 +41,16 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
     case "current-timestamp"       ⇒ (System.currentTimeMillis / 1000).toString
   }
 
-  def applyMapper(m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
+  def applyMapper(bindingKey: String, m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) ⇒
       Either.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
     case TextMapper(key, transform) ⇒
-      session.get(key, ph.index).map(transform)
+      session.get(key, ph.index)
+        .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
+        .map(transform)
     case JsonMapper(key, jsonPath, transform) ⇒
       session.get(key, ph.index)
-        .leftMap { o: CornichonError ⇒ JsonMapperKeyNotFoundInSession(key, jsonPath, o) }
+        .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
         .flatMap { sessionValue ⇒
           // No placeholders in JsonMapper to avoid accidental infinite recursions.
           JsonPath.run(jsonPath, sessionValue)
@@ -99,8 +101,8 @@ case class AmbiguousKeyDefinition(key: String) extends CornichonError {
   lazy val baseErrorMessage = s"ambiguous definition of key '$key' - it is present in both session and extractors"
 }
 
-case class JsonMapperKeyNotFoundInSession(key: String, jsonPath: String, underlyingError: CornichonError) extends CornichonError {
-  lazy val baseErrorMessage = s"Error occured while running JsonMapper on key '$key' with path '$jsonPath'"
+case class MapperKeyNotFoundInSession(key: String, underlyingError: CornichonError) extends CornichonError {
+  lazy val baseErrorMessage = s"Error occurred while running Mapper attached to key '$key'"
   override val causedBy = underlyingError :: Nil
 }
 
