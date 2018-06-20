@@ -17,14 +17,14 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
-        val nestedTask = engine.runSteps(nested, runState.resetLogs)
+        val nestedTask = engine.runSteps(nested, runState)
         if (retriesNumber == 0) nestedTask else nestedTask.delayExecution(conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime
           res.fold(
             failedStep ⇒ {
-              // Check that it could go through another loop ather the interval
+              // Check that it could go through another loop after the interval
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
                 // Only cleanup steps are propagated
                 val nextRetryState = runState.prependCleanupStepsFrom(newRunState)
