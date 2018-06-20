@@ -17,9 +17,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
-        // reset logs at each loop to have the possibility to not aggregate in failure case
-        val retryRunState = runState.resetLogs
-        val nestedTask = engine.runSteps(nested, retryRunState)
+        val nestedTask = engine.runSteps(nested, runState.resetLogs)
         if (retriesNumber == 0) nestedTask else nestedTask.delayExecution(conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
@@ -28,8 +26,8 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
             failedStep ⇒ {
               // Check that it could go through another loop ather the interval
               if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-                // Session is not being propagated
-                val nextRetryState = runState.appendLogsFrom(newRunState).prependCleanupStepsFrom(newRunState)
+                // Only cleanup steps are propagated
+                val nextRetryState = runState.prependCleanupStepsFrom(newRunState)
                 retryEventuallySteps(nextRetryState, conf.consume(executionTime), retriesNumber + 1)
               } else {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
