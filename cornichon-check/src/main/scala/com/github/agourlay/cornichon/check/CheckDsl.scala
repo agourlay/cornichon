@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.core.Step
 
 trait CheckDsl {
 
-  def checkModel(model: Model): Step =
-    CheckStep(model)
+  def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int)(modelRunner: ModelRunner[A, B, C, D, E, F]): Step =
+    CheckStep(maxNumberOfRuns, maxNumberOfTransitions, modelRunner)
 
 }

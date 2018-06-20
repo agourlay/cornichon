@@ -45,6 +45,13 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   def getHistory(key: String): Either[KeyNotFoundInSession, Vector[String]] =
     content.get(key).toRight(KeyNotFoundInSession(key, this))
 
+  def getPrevious(key: String): Either[CornichonError, Option[String]] =
+    for {
+      values ← content.get(key).toRight(KeyNotFoundInSession(key, this))
+      indice = values.size - 2
+      value ← values.lift(indice).asRight
+    } yield value
+
   def addValue(key: String, value: String): Either[CornichonError, Session] = {
 
     def validateKey(key: String): Either[CornichonError, String] = {

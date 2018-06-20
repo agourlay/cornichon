@@ -44,6 +44,12 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
   def applyMapper(bindingKey: String, m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) ⇒
       Either.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
+    case SessionMapper(gen) ⇒
+      Either.catchNonFatal(gen(session)).leftMap(SessionMapperError(ph.fullKey, _))
+    case HistoryMapper(key, transform) ⇒
+      session.getHistory(key)
+        .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
+        .map(transform)
     case TextMapper(key, transform) ⇒
       session.get(key, ph.index)
         .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
@@ -108,4 +114,8 @@ case class MapperKeyNotFoundInSession(key: String, underlyingError: CornichonErr
 
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
   lazy val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
+}
+
+case class SessionMapperError[A](key: String, e: Throwable) extends CornichonError {
+  lazy val baseErrorMessage = s"exception thrown in SessionMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
 }
