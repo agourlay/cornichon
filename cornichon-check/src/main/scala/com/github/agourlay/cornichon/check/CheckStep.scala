@@ -13,42 +13,47 @@ import com.github.agourlay.cornichon.util.Timing._
 
 case class CheckStep[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, modelRunner: ModelRunner[A, B, C, D, E, F]) extends WrapperStep {
 
-  val model = modelRunner.model
-  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns amd maxNumberOfTransitions=$maxNumberOfTransitions"
+  private val model = modelRunner.model
+  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions"
 
   private def repeatSuccessModel(runNumber: Int)(engine: Engine, initialRunState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)
       Task.now((initialRunState, rightDone))
     else {
       val checkEngine = new CheckEngine(engine, this, modelRunner, maxNumberOfTransitions)
-      checkEngine.run(initialRunState).flatMap {
+      val preRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
+      val checkEngineRunState = initialRunState.appendLog(preRunLog)
+      checkEngine.run(checkEngineRunState.goDeeper).flatMap {
         case (newState, res) ⇒
           res match {
             case Left(fs) ⇒
-              Task.now((newState, fs.asLeft))
+              val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
+              Task.now((newState.appendLog(postRunLog), fs.asLeft))
             case Right(endOfRun) ⇒
-              // success case we are propagating the logs but the not Session itself
-              val nextRunState = newState.withSession(initialRunState.session)
-              val runLog = buildInfoRunLog(runNumber, endOfRun, initialRunState.depth)
-              repeatSuccessModel(runNumber + 1)(engine, nextRunState.appendLog(runLog))
+              // success case we are mot propagating the Session so runs do not interfere with each-others
+              val nextRunState = initialRunState.appendLogsFrom(newState).prependCleanupStepsFrom(newState)
+              val postRunLog = buildInfoRunLog(runNumber, endOfRun, initialRunState.depth)
+              repeatSuccessModel(runNumber + 1)(engine, nextRunState.appendLog(postRunLog))
           }
       }
     }
 
   private def buildInfoRunLog(runNumber: Int, endOfRun: SuccessEndOfRun, depth: Int): LogInstruction = {
     val reason = endOfRun match {
-      case EndStateReached(state, numberOfTransitions) ⇒ s"End state reached on state $state after $numberOfTransitions transitions"
-      case MaxTransitionReached(_)                     ⇒ "Max transitions number per run reached"
+      case EndActionReached(action, numberOfTransitions) ⇒
+        s"End reached on action '$action' after $numberOfTransitions transitions"
+      case MaxTransitionReached(_) ⇒
+        "Max transitions number per run reached"
     }
     InfoLogInstruction(s"Run #$runNumber - $reason", depth)
   }
 
-  private def validateTransitions(transitions: Map[State[A, B, C, D, E, F], List[(Double, State[A, B, C, D, E, F])]]): ValidatedNel[CornichonError, Done] = {
+  private def validateTransitions(transitions: Map[ActionN[A, B, C, D, E, F], List[(Double, ActionN[A, B, C, D, E, F])]]): ValidatedNel[CornichonError, Done] = {
     val emptyTransitionForState: ValidatedNel[CornichonError, Done] = transitions.find(_._2.isEmpty)
-      .map(s ⇒ EmptyTransitionsDefinitionForState(s._1.description)).toInvalidNel(Done)
+      .map(s ⇒ EmptyTransitionsDefinitionForAction(s._1.description)).toInvalidNel(Done)
 
-    val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (transitions.get(model.startingState).isEmpty)
-      NoTransitionsDefinitionForStartingState(model.startingState.description).invalidNel
+    val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (transitions.get(model.startingAction).isEmpty)
+      NoTransitionsDefinitionForStartingAction(model.startingAction.description).invalidNel
     else Done.validDone
 
     val duplicateEntries: ValidatedNel[CornichonError, Done] = transitions.find { e ⇒
@@ -58,7 +63,7 @@ case class CheckStep[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransiti
 
     val sumOfWeightIsCorrect: ValidatedNel[CornichonError, Done] = transitions.find { e ⇒
       e._2.map(_._1).sum != 1.0d
-    }.map(_._1.description).map(IncorrectTransitionsWeightDefinitionForState).toInvalidNel(Done)
+    }.map(_._1.description).map(IncorrectTransitionsWeightDefinitionForAction).toInvalidNel(Done)
 
     emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> sumOfWeightIsCorrect
   }
@@ -90,24 +95,24 @@ case class CheckStep[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransiti
     }
 }
 
-case class EmptyTransitionsDefinitionForState(stateDescription: String) extends CornichonError {
-  def baseErrorMessage: String = s"Empty outgoing transitions definition found '$stateDescription'"
+case class EmptyTransitionsDefinitionForAction(actionDescription: String) extends CornichonError {
+  def baseErrorMessage: String = s"Empty outgoing transitions definition found '$actionDescription'"
 }
 
-case class DuplicateTransitionsDefinitionForState(stateDescription: String) extends CornichonError {
-  def baseErrorMessage: String = s"Transitions definition from '$stateDescription' contains duplicates target state"
+case class DuplicateTransitionsDefinitionForState(actionDescription: String) extends CornichonError {
+  def baseErrorMessage: String = s"Transitions definition from '$actionDescription' contains duplicates target action"
 }
 
-case class IncorrectTransitionsWeightDefinitionForState(stateDescription: String) extends CornichonError {
-  def baseErrorMessage: String = s"Transitions definition from '$stateDescription' contains incorrect weight definition (above 1.0)"
+case class IncorrectTransitionsWeightDefinitionForAction(actionDescription: String) extends CornichonError {
+  def baseErrorMessage: String = s"Transitions definition from '$actionDescription' contains incorrect weight definition (above 1.0)"
 }
 
-case class NoTransitionsDefinitionForStartingState(stateDescription: String) extends CornichonError {
-  def baseErrorMessage: String = s"No outgoing transitions definition found for starting state $stateDescription"
+case class NoTransitionsDefinitionForStartingAction(actionDescription: String) extends CornichonError {
+  def baseErrorMessage: String = s"No outgoing transitions definition found for starting action '$actionDescription'"
 }
 
-case class InvalidTransitionDefinitionForState(stateDescription: String) extends CornichonError {
-  def baseErrorMessage: String = s"Invalid transition definition for state '$stateDescription'"
+case class InvalidTransitionDefinitionForAction(actionDescription: String) extends CornichonError {
+  def baseErrorMessage: String = s"Invalid transition definition for action '$actionDescription'"
 }
 
 case class CheckBlockContainFailedSteps(errors: NonEmptyList[CornichonError]) extends CornichonError {
