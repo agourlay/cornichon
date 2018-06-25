@@ -43,8 +43,8 @@ case class CheckStep[A, B, C, D, E, F](
       Task.now((initialRunState, rightDone))
     else {
       val preRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
-      val checkEngineRunState = initialRunState.appendLog(preRunLog)
-      checkEngine.run(engine, checkEngineRunState.goDeeper).flatMap {
+      val checkEngineRunState = initialRunState.nestedContext.appendLog(preRunLog)
+      checkEngine.run(engine, checkEngineRunState).flatMap {
         case (newState, res) ⇒
           res match {
             case Left(fs) ⇒
