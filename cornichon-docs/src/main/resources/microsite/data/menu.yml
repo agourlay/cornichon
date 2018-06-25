@@ -12,8 +12,11 @@ options:
   - title: Custom steps
     url: custom-steps.html
 
-  - title: Placeholders & matchers
-    url: placeholders-matchers.html
+  - title: Placeholders
+    url: placeholders.html
+
+  - title: JSON matchers
+    url: json-matchers.html
 
   - title: Feature options
     url: feature-options.html
@@ -22,7 +25,7 @@ options:
     url: misc.html
 
   - title: Modules
-    url: modules/module-mock.html
+    url: modules.html
     menu_section: modules
 
     nested_options:
