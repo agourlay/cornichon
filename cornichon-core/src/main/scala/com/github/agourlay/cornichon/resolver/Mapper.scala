@@ -2,13 +2,13 @@ package com.github.agourlay.cornichon.resolver
 
 import com.github.agourlay.cornichon.core.Session
 
+import scala.util.Random
+
 sealed trait Mapper
 
 case class SimpleMapper(generator: () ⇒ String) extends Mapper
 
-object SimpleMapper {
-  implicit def fromFct(generator: () ⇒ String): SimpleMapper = SimpleMapper(generator)
-}
+case class RandomMapper(generator: Random ⇒ String) extends Mapper
 
 case class SessionMapper(generator: Session ⇒ String) extends Mapper
 

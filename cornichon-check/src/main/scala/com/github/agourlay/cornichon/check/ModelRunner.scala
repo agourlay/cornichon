@@ -2,15 +2,20 @@ package com.github.agourlay.cornichon.check
 
 import com.github.agourlay.cornichon.core.Step
 import com.github.agourlay.cornichon.steps.regular.assertStep.AssertStep
+import com.github.agourlay.cornichon.check.NoValue.seededNoValueGenerator
+
+import scala.util.Random
 
 case class ModelRunner[A, B, C, D, E, F](
-    generatorA: Generator[A],
-    generatorB: Generator[B],
-    generatorC: Generator[C],
-    generatorD: Generator[D],
-    generatorE: Generator[E],
-    generatorF: Generator[F],
+    generatorA: RandomContext ⇒ Generator[A],
+    generatorB: RandomContext ⇒ Generator[B],
+    generatorC: RandomContext ⇒ Generator[C],
+    generatorD: RandomContext ⇒ Generator[D],
+    generatorE: RandomContext ⇒ Generator[E],
+    generatorF: RandomContext ⇒ Generator[F],
     model: Model[A, B, C, D, E, F])
+
+case class RandomContext(seed: Long, seededRandom: Random)
 
 case class Model[A, B, C, D, E, F](
     description: String,
@@ -89,22 +94,22 @@ case class Action0[A](
 
 object ModelRunner {
 
-  def make[A](genA: Generator[A])(model: Model[A, NoValue, NoValue, NoValue, NoValue, NoValue]): ModelRunner[A, NoValue, NoValue, NoValue, NoValue, NoValue] =
-    ModelRunner(genA, NoValueGenerator, NoValueGenerator, NoValueGenerator, NoValueGenerator, NoValueGenerator, model)
+  def make[A](genA: RandomContext ⇒ Generator[A])(model: Model[A, NoValue, NoValue, NoValue, NoValue, NoValue]): ModelRunner[A, NoValue, NoValue, NoValue, NoValue, NoValue] =
+    ModelRunner(genA, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, model)
 
-  def make[A, B](genA: Generator[A], genB: Generator[B])(model: Model[A, B, NoValue, NoValue, NoValue, NoValue]) =
-    ModelRunner(genA, genB, NoValueGenerator, NoValueGenerator, NoValueGenerator, NoValueGenerator, model)
+  def make[A, B](genA: RandomContext ⇒ Generator[A], genB: RandomContext ⇒ Generator[B])(model: Model[A, B, NoValue, NoValue, NoValue, NoValue]) =
+    ModelRunner(genA, genB, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, model)
 
-  def make[A, B, C](genA: Generator[A], genB: Generator[B], genC: Generator[C])(model: Model[A, B, C, NoValue, NoValue, NoValue]) =
-    ModelRunner(genA, genB, genC, NoValueGenerator, NoValueGenerator, NoValueGenerator, model)
+  def make[A, B, C](genA: RandomContext ⇒ Generator[A], genB: RandomContext ⇒ Generator[B], genC: RandomContext ⇒ Generator[C])(model: Model[A, B, C, NoValue, NoValue, NoValue]) =
+    ModelRunner(genA, genB, genC, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, model)
 
-  def make[A, B, C, D](genA: Generator[A], genB: Generator[B], genC: Generator[C], genD: Generator[D])(model: Model[A, B, C, D, NoValue, NoValue]) =
-    ModelRunner(genA, genB, genC, genD, NoValueGenerator, NoValueGenerator, model)
+  def make[A, B, C, D](genA: RandomContext ⇒ Generator[A], genB: RandomContext ⇒ Generator[B], genC: RandomContext ⇒ Generator[C], genD: RandomContext ⇒ Generator[D])(model: Model[A, B, C, D, NoValue, NoValue]) =
+    ModelRunner(genA, genB, genC, genD, seededNoValueGenerator, seededNoValueGenerator, model)
 
-  def make[A, B, C, D, E](genA: Generator[A], genB: Generator[B], genC: Generator[C], genD: Generator[D], genE: Generator[E])(model: Model[A, B, C, D, E, NoValue]) =
-    ModelRunner(genA, genB, genC, genD, genE, NoValueGenerator, model)
+  def make[A, B, C, D, E](genA: RandomContext ⇒ Generator[A], genB: RandomContext ⇒ Generator[B], genC: RandomContext ⇒ Generator[C], genD: RandomContext ⇒ Generator[D], genE: RandomContext ⇒ Generator[E])(model: Model[A, B, C, D, E, NoValue]) =
+    ModelRunner(genA, genB, genC, genD, genE, seededNoValueGenerator, model)
 
-  def make[A, B, C, D, E, F](genA: Generator[A], genB: Generator[B], genC: Generator[C], genD: Generator[D], genE: Generator[E], genF: Generator[F])(model: Model[A, B, C, D, E, F]) =
+  def make[A, B, C, D, E, F](genA: RandomContext ⇒ Generator[A], genB: RandomContext ⇒ Generator[B], genC: RandomContext ⇒ Generator[C], genD: RandomContext ⇒ Generator[D], genE: RandomContext ⇒ Generator[E], genF: RandomContext ⇒ Generator[F])(model: Model[A, B, C, D, E, F]) =
     ModelRunner(genA, genB, genC, genD, genE, genF, model)
 
 }

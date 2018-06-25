@@ -20,7 +20,9 @@ trait Generator[A] {
 }
 
 trait NoValue
-case object NoValue extends NoValue
+case object NoValue extends NoValue {
+  val seededNoValueGenerator: RandomContext ⇒ Generator[NoValue] = _ ⇒ NoValueGenerator
+}
 
 case object NoValueGenerator extends Generator[NoValue] {
   val name = "NoValueGenerator"

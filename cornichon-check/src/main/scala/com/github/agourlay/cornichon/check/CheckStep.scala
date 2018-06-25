@@ -11,19 +11,40 @@ import com.github.agourlay.cornichon.core._
 import monix.eval.Task
 import com.github.agourlay.cornichon.util.Timing._
 
-case class CheckStep[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, modelRunner: ModelRunner[A, B, C, D, E, F]) extends WrapperStep {
+import scala.util.Random
+
+case class CheckStep[A, B, C, D, E, F](
+    maxNumberOfRuns: Int,
+    maxNumberOfTransitions: Int,
+    modelRunner: ModelRunner[A, B, C, D, E, F],
+    withSeed: Option[Long]) extends WrapperStep {
+
+  private val randomContext = {
+    val seed = withSeed.getOrElse(System.currentTimeMillis())
+    val rd = new Random(new java.util.Random(seed))
+    RandomContext(seed, rd)
+  }
+
+  private val genA = modelRunner.generatorA(randomContext)
+  private val genB = modelRunner.generatorB(randomContext)
+  private val genC = modelRunner.generatorC(randomContext)
+  private val genD = modelRunner.generatorD(randomContext)
+  private val genE = modelRunner.generatorE(randomContext)
+  private val genF = modelRunner.generatorF(randomContext)
 
   private val model = modelRunner.model
-  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions"
+
+  private val checkEngine = new CheckEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
+
+  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions and seed=${randomContext.seed}"
 
   private def repeatSuccessModel(runNumber: Int)(engine: Engine, initialRunState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)
       Task.now((initialRunState, rightDone))
     else {
-      val checkEngine = new CheckEngine(engine, this, modelRunner, maxNumberOfTransitions)
       val preRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
       val checkEngineRunState = initialRunState.appendLog(preRunLog)
-      checkEngine.run(checkEngineRunState.goDeeper).flatMap {
+      checkEngine.run(engine, checkEngineRunState.goDeeper).flatMap {
         case (newState, res) ⇒
           res match {
             case Left(fs) ⇒

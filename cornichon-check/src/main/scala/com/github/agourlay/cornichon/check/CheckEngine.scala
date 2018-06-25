@@ -12,17 +12,17 @@ import com.github.agourlay.cornichon.util.Printing
 import collection.JavaConverters._
 import scala.util.Random
 
-class CheckEngine[A, B, C, D, E, F](engine: Engine, cs: CheckStep[A, B, C, D, E, F], modelRunner: ModelRunner[A, B, C, D, E, F], maxNumberOfTransitions: Int) {
-
-  private val model = modelRunner.model
-  private val genA = modelRunner.generatorA
-  private val genB = modelRunner.generatorB
-  private val genC = modelRunner.generatorC
-  private val genD = modelRunner.generatorD
-  private val genE = modelRunner.generatorE
-  private val genF = modelRunner.generatorF
-
-  private val rd = Random
+class CheckEngine[A, B, C, D, E, F](
+    cs: CheckStep[A, B, C, D, E, F],
+    model: Model[A, B, C, D, E, F],
+    maxNumberOfTransitions: Int,
+    rd: Random,
+    genA: Generator[A],
+    genB: Generator[B],
+    genC: Generator[C],
+    genD: Generator[D],
+    genE: Generator[E],
+    genF: Generator[F]) {
 
   private def checkAssertions(initialRunState: RunState, assertions: List[AssertStep]): Task[List[Either[NonEmptyList[CornichonError], Done]]] =
     Task.gather(assertions.map(_.run(initialRunState)))
@@ -37,7 +37,7 @@ class CheckEngine[A, B, C, D, E, F](engine: Engine, cs: CheckStep[A, B, C, D, E,
       }
     }
 
-  def run(initialRunState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  def run(engine: Engine, initialRunState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting action
     checkAssertions(initialRunState, model.startingAction.preConditions).flatMap { startingIsValid ⇒
       startingIsValid.collect { case Left(e) ⇒ e }.flatMap(_.toList) match {
@@ -46,15 +46,15 @@ class CheckEngine[A, B, C, D, E, F](engine: Engine, cs: CheckStep[A, B, C, D, E,
           Task.now((initialRunState, FailedStep(cs, errors).asLeft))
         case Nil ⇒
           // run first state
-          loopRun(initialRunState, model.startingAction, 0)
+          loopRun(engine, initialRunState, model.startingAction, 0)
       }
     }
 
-  private def loopRun(initialRunState: RunState, action: ActionN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  private def loopRun(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     if (currentNumberOfTransitions > maxNumberOfTransitions)
       Task.delay((initialRunState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else {
-      runActionAndValidatePostConditions(initialRunState, action).flatMap {
+      runActionAndValidatePostConditions(engine, initialRunState, action).flatMap {
         case (newState, res) ⇒
           res.fold(
             fs ⇒ Task.delay((newState, fs.asLeft)),
@@ -73,7 +73,7 @@ class CheckEngine[A, B, C, D, E, F](engine: Engine, cs: CheckStep[A, B, C, D, E,
                     } else {
                       // pick one transition according to the weight
                       val nextState = pickTransitionAccordingToProbability(rd, validNext)
-                      loopRun(newState, nextState, currentNumberOfTransitions + 1)
+                      loopRun(engine, newState, nextState, currentNumberOfTransitions + 1)
                     }
                   }
               }
@@ -83,7 +83,7 @@ class CheckEngine[A, B, C, D, E, F](engine: Engine, cs: CheckStep[A, B, C, D, E,
     }
 
   // Assumes valid pre-conditions
-  private def runActionAndValidatePostConditions(initialRunState: RunState, action: ActionN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
+  private def runActionAndValidatePostConditions(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
     val s = initialRunState.session
     // Init Gens
     val logQueue = new ConcurrentLinkedQueue[(String, String)]
