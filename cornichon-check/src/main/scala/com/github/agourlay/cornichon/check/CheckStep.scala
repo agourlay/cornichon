@@ -49,7 +49,8 @@ case class CheckStep[A, B, C, D, E, F](
           res match {
             case Left(fs) ⇒
               val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
-              Task.now((newState.appendLog(postRunLog), fs.asLeft))
+              val failedState = initialRunState.mergeNested(newState).appendLog(postRunLog)
+              Task.now((failedState, fs.asLeft))
             case Right(endOfRun) ⇒
               // success case we are mot propagating the Session so runs do not interfere with each-others
               val nextRunState = initialRunState.appendLogsFrom(newState).prependCleanupStepsFrom(newState)
