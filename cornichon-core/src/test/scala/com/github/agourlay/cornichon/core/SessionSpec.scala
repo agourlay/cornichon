@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Gen
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import com.github.agourlay.cornichon.core.SessionSpec._
 
 import scala.util.Random
@@ -11,6 +11,7 @@ import scala.util.Random
 class SessionSpec extends WordSpec
   with Matchers
   with PropertyChecks
+  with OptionValues
   with EitherValues
   with EitherMatchers {
 
@@ -79,6 +80,22 @@ class SessionSpec extends WordSpec
       "propose similar keys in Session in case of a missing key" in {
         val s = Session.newEmpty.addValuesUnsafe("my-key" -> "blah", "my_keys" -> "bloh", "not-my-key" -> "blih")
         s.get("my_key").leftValue.renderedMessage should be("key 'my_key' can not be found in session maybe you meant 'my-key' or 'my_keys'\nmy-key -> Values(blah)\nmy_keys -> Values(bloh)\nnot-my-key -> Values(blih)")
+      }
+    }
+
+    "getPrevious" must {
+      "return None if the key has only one value" in {
+        forAll(keyGen, valueGen) { (key, firstValue) ⇒
+          val s = Session.newEmpty.addValueUnsafe(key, firstValue)
+          s.getPrevious(key).value should be(None)
+        }
+      }
+
+      "return an Option of the previous value in session" in {
+        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+          val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
+          s.getPrevious(key).value should be(Some(firstValue))
+        }
       }
     }
 
