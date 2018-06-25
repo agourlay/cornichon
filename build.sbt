@@ -226,7 +226,8 @@ lazy val docs =
     .in(file("./cornichon-docs"))
     .settings(
       name := "cornichon-docs",
-      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks, scalatest)
+      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks, scalatest),
+      micrositeDocumentationLabelDescription := "Scaladoc"
     )
     .dependsOn(core, scalatest, kafka)
     .enablePlugins(MicrositesPlugin)
