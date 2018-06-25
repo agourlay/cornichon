@@ -84,52 +84,6 @@
   <li><code class="highlighter-rouge">&lt;name[0]&gt;</code> uses the first value taken by the key</li>
   <li><code class="highlighter-rouge">&lt;name[1]&gt;</code> uses the second element taken by the key</li>
 </ul>
-
-<h1 id="json-matchers">JSON matchers</h1>
-
-<p>If the exact value of a field is unknown, you can use JSON matchers to make sure it has a certain property or shape.</p>
-
-<p>JSON matchers work more or less like placeholders in practice.</p>
-
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">ignoring</span><span class="o">(</span><span class="s">"city"</span><span class="o">,</span> <span class="s">"realName"</span><span class="o">,</span> <span class="s">"publisher.location"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
-  <span class="s">"""
-  {
-    "name": "&lt;favorite-superhero&gt;",
-    "hasSuperpowers": *any-boolean*,
-    "publisher": {
-      "name": *any-string*,
-      "foundationYear": *any-positive-integer*
-    }
-  }
-  """</span>
-<span class="o">)</span>
-</code></pre></div></div>
-
-<p>You just need to replace the value of the field by one of the built-in JSON matchers <em>without</em> quotes.</p>
-
-<p>Here are the available matchers:</p>
-
-<ul>
-  <li><code class="highlighter-rouge">*is-present*</code> : checks if the field is defined</li>
-  <li><code class="highlighter-rouge">*any-string*</code> : checks if the field is a String</li>
-  <li><code class="highlighter-rouge">*any-array*</code> : checks if the field is an Array</li>
-  <li><code class="highlighter-rouge">*any-object*</code> : checks if the field is an Object</li>
-  <li><code class="highlighter-rouge">*any-integer*</code> : checks if the field is an Integer</li>
-  <li><code class="highlighter-rouge">*any-positive-integer*</code> : checks if the field is a positive Integer</li>
-  <li><code class="highlighter-rouge">*any-negative-integer*</code> : checks if the field is a negative Integer</li>
-  <li><code class="highlighter-rouge">*any-uuid*</code> : checks if the field is a valid UUID</li>
-  <li><code class="highlighter-rouge">*any-boolean*</code> : checks if the field is a boolean</li>
-  <li><code class="highlighter-rouge">*any-alphanum-string*</code> : checks if the field is an alpha-numeric String</li>
-  <li><code class="highlighter-rouge">*any-date*</code> : checks if the field is a ‘yyyy-MM-dd’ date</li>
-  <li><code class="highlighter-rouge">*any-date-time*</code> : checks if the field is a ‘yyyy-MM-dd’T’HH:mm:ss.SSS’Z’’ datetime</li>
-  <li><code class="highlighter-rouge">*any-time*</code> : checks if the field is a ‘HH:mm:ss.SSS’ time”</li>
-</ul>
-
-<p>This feature is still fresh and under experimentation therefore it comes with a couple of limitations:</p>
-<ul>
-  <li>it is not yet possible to register custom JSON matchers</li>
-  <li>matchers are not supported for JSON arrays assertions</li>
-</ul>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
