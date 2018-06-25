@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.resolver
 
-import com.github.agourlay.cornichon.core.Session
+import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 
 import scala.util.Random
 
@@ -10,7 +10,7 @@ case class SimpleMapper(generator: () ⇒ String) extends Mapper
 
 case class RandomMapper(generator: Random ⇒ String) extends Mapper
 
-case class SessionMapper(generator: Session ⇒ String) extends Mapper
+case class SessionMapper(generator: Session ⇒ Either[CornichonError, String]) extends Mapper
 
 case class TextMapper(key: String, transform: String ⇒ String = identity) extends Mapper
 
