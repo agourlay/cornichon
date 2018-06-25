@@ -22,4 +22,13 @@ options:
     url: misc.html
 
   - title: Modules
-    url: modules.html
+    url: modules/module-mock.html
+    menu_section: modules
+
+    nested_options:
+    - title: HTTP mock
+      url: modules/module-mock.html
+      menu_section: modules
+    - title: Kafka support
+      url: modules/module-kafka.html
+      menu_section: modules
