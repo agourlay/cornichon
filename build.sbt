@@ -106,7 +106,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka)
+    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka, tcp)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -195,6 +195,17 @@ lazy val kafka =
         library.kafkaClient,
         library.kafkaBroker % Test
       )
+    )
+
+lazy val tcp =
+  project
+    .in(file("./cornichon-tcp"))
+    .dependsOn(core, scalatest % Test)
+    .enablePlugins(SbtScalariform)
+    .settings(commonSettings)
+    .settings(formattingSettings)
+    .settings(
+      name := "cornichon-tcp" // add appropriate tcp lib
     )
 
 lazy val httpMock =
