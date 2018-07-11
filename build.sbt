@@ -294,7 +294,7 @@ lazy val library =
       val sbtTest       = "1.0"
       val http4s        = "0.18.15"
       val embeddedKafka = "1.1.0" //uses kafka 1.0.1
-      val kafkaClient   = "1.0.1"
+      val kafkaClient   = "1.0.2"
     }
     val akkaStream    = "com.typesafe.akka"   %% "akka-stream"              % Version.akkaStream
     val akkaHttp      = "com.typesafe.akka"   %% "akka-http"                % Version.akkaHttp
