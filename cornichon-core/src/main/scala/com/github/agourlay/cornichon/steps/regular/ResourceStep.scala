@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.steps.wrapped.AttachAsStep
 
 import scala.concurrent.duration.Duration
 
-case class ResourceStep[R](title: String, acquire: Step, release: Step) extends SimpleWrapperStep {
+case class ResourceStep(title: String, acquire: Step, release: Step) extends SimpleWrapperStep {
   override val nestedToRun = AttachAsStep(s"$title - acquire step", acquire :: Nil) :: Nil
   override val indentLog = false
 
