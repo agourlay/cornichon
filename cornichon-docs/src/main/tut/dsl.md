@@ -165,6 +165,13 @@ body.path("`message.en`").isPresent
 body.path("`message.fr`").isAbsent
 ```
 
+To address a root array use `$` followed by the index the access.
+
+```scala
+
+body.path("$[2].name")
+```
+
 If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
