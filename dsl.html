@@ -157,6 +157,12 @@
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"`message.fr`"</span><span class="o">).</span><span class="n">isAbsent</span>
 </code></pre></div></div>
 
+<p>To address a root array use <code class="highlighter-rouge">$</code> followed by the index the access.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"$[2].name"</span><span class="o">)</span>
+</code></pre></div></div>
+
 <p>If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">asArray</span><span class="o">.</span><span class="n">inOrder</span><span class="o">.</span><span class="n">ignoringEach</span><span class="o">(</span><span class="s">"city"</span><span class="o">,</span> <span class="s">"hasSuperpowers"</span><span class="o">,</span> <span class="s">"publisher"</span><span class="o">).</span><span class="n">is</span><span class="o">(</span>
