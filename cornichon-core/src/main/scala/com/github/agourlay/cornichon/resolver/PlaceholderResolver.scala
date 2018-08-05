@@ -11,6 +11,7 @@ import scala.collection.concurrent.TrieMap
 
 class PlaceholderResolver(extractors: Map[String, Mapper]) {
 
+  // FIXME - should be globally seeded to reproduce tests
   val r = new scala.util.Random()
 
   // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for placeholders.
@@ -44,6 +45,14 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
   def applyMapper(bindingKey: String, m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) ⇒
       Either.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
+    case SessionMapper(gen) ⇒
+      gen(session).leftMap(SessionMapperError(ph.fullKey, _))
+    case RandomMapper(gen) ⇒
+      Either.catchNonFatal(gen(r)).leftMap(RandomMapperError(ph.fullKey, _))
+    case HistoryMapper(key, transform) ⇒
+      session.getHistory(key)
+        .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
+        .map(transform)
     case TextMapper(key, transform) ⇒
       session.get(key, ph.index)
         .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
@@ -106,6 +115,15 @@ case class MapperKeyNotFoundInSession(key: String, underlyingError: CornichonErr
   override val causedBy = underlyingError :: Nil
 }
 
+case class RandomMapperError[A](key: String, e: Throwable) extends CornichonError {
+  lazy val baseErrorMessage = s"exception thrown in RandomMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
+}
+
 case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
   lazy val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
+}
+
+case class SessionMapperError[A](key: String, underlyingError: CornichonError) extends CornichonError {
+  lazy val baseErrorMessage = s"Error thrown in SessionMapper '$key')'"
+  override val causedBy = underlyingError :: Nil
 }

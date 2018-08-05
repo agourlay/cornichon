@@ -155,7 +155,44 @@ class PlaceholderResolverSpec extends WordSpec
         resolverWithExt.fillPlaceholders("<customer-id>")(s).leftValue.renderedMessage should be("Error occurred while running Mapper attached to key 'customer-id'\ncaused by:\nkey 'customer' can not be found in session \nempty")
       }
 
-      "use JsonMapper" in {
+      "use registered SimpleMapper" in {
+        val extractor = SimpleMapper(() ⇒ "magic!")
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
+        val s = Session.newEmpty
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).value should be("magic!")
+      }
+
+      "use registered TextMapper" in {
+        val extractor = TextMapper("customer", customerString ⇒ customerString.length.toString)
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
+        val s = Session.newEmpty.addValueUnsafe("customer", "my-customer-name-of-great-length")
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).value should be("32")
+      }
+
+      "use registered HistoryMapper" in {
+        val extractor = HistoryMapper("customer", customers ⇒ customers.length.toString)
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
+        val s = Session.newEmpty.addValueUnsafe("customer", "customer1")
+          .addValueUnsafe("customer", "customer2")
+          .addValueUnsafe("customer", "customer3")
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).value should be("3")
+      }
+
+      "use registered SessionMapper" in {
+        val extractor = SessionMapper(s ⇒ s.get("other-thing"))
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
+        val s = Session.newEmpty.addValueUnsafe("other-thing", "other unrelated value")
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).value should be("other unrelated value")
+      }
+
+      "use registered RandomMapper" in {
+        val extractor = RandomMapper(rd ⇒ rd.alphanumeric.take(5).mkString("").length.toString)
+        val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
+        val s = Session.newEmpty
+        resolverWithExt.fillPlaceholders("<customer-id>")(s).value should be("5")
+      }
+
+      "use registered JsonMapper" in {
         val extractor = JsonMapper("customer", "id")
         val resolverWithExt = new PlaceholderResolver(Map("customer-id" → extractor))
         val s = Session.newEmpty.addValueUnsafe("customer", """{"id" : "122"}""")
