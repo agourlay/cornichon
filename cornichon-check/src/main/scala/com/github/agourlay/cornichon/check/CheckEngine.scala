@@ -27,20 +27,21 @@ class CheckEngine[A, B, C, D, E, F](
   private def checkAssertions(initialRunState: RunState, assertions: List[AssertStep]): Task[List[Either[NonEmptyList[CornichonError], Done]]] =
     Task.gather(assertions.map(_.run(initialRunState)))
 
-  private def returnValidTransitions(initialRunState: RunState)(transitions: List[(Double, ActionN[A, B, C, D, E, F])]): Task[List[(Double, ActionN[A, B, C, D, E, F], Boolean)]] =
+  private def validTransitions(initialRunState: RunState)(transitions: List[(Double, ActionN[A, B, C, D, E, F])]): Task[List[(Double, ActionN[A, B, C, D, E, F], Boolean)]] =
     Task.gather {
-      transitions.map { t ⇒
-        checkAssertions(initialRunState, t._2.preConditions).map { preConditionsRes ⇒
-          val failedConditions = preConditionsRes.collect { case Left(e) ⇒ e.toList }.flatten
-          (t._1, t._2, failedConditions.isEmpty)
-        }
+      transitions.map {
+        case (weight, actions) ⇒
+          checkAssertions(initialRunState, actions.preConditions).map { preConditionsRes ⇒
+            val failedConditions = preConditionsRes.collect { case Left(e) ⇒ e.toList }.flatten
+            (weight, actions, failedConditions.isEmpty)
+          }
       }
     }
 
   def run(engine: Engine, initialRunState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting action
-    checkAssertions(initialRunState, model.startingAction.preConditions).flatMap { startingIsValid ⇒
-      startingIsValid.collect { case Left(e) ⇒ e }.flatMap(_.toList) match {
+    checkAssertions(initialRunState, model.startingAction.preConditions).flatMap { startingPreConditions ⇒
+      startingPreConditions.collect { case Left(e) ⇒ e.toList }.flatten match {
         case firstFailure :: others ⇒
           val errors = NonEmptyList.of(firstFailure, others: _*)
           Task.now((initialRunState, FailedStep(cs, errors).asLeft))
@@ -65,8 +66,8 @@ class CheckEngine[A, B, C, D, E, F](
                   // No transitions defined -> end of run
                   Task.delay((newState, EndActionReached(action.description, currentNumberOfTransitions).asRight))
                 case Some(transitions) ⇒
-                  returnValidTransitions(newState)(transitions).flatMap { possibleNextStates ⇒
-                    val (validNext, _) = possibleNextStates.partition(_._3)
+                  validTransitions(newState)(transitions).flatMap { possibleNextStates ⇒
+                    val validNext = possibleNextStates.filter(_._3)
                     if (validNext.isEmpty) {
                       val error = NoValidTransitionAvailableForState(action.description)
                       Task.delay((newState, FailedStep(cs, NonEmptyList.one(error)).asLeft))
@@ -109,7 +110,7 @@ class CheckEngine[A, B, C, D, E, F](
               // check post-conditions
               checkAssertions(newState, action.postConditions)
                 .flatMap { afterConditionIsValid ⇒
-                  val failures = afterConditionIsValid.collect { case Left(e) ⇒ e }.flatMap(_.toList)
+                  val failures = afterConditionIsValid.collect { case Left(e) ⇒ e.toList }.flatten
                   failures match {
                     case firstFailure :: others ⇒
                       val errors = NonEmptyList.of(firstFailure, others: _*)
