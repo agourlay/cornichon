@@ -12,6 +12,7 @@ import monix.eval.Task
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.Engine._
+import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.collection.breakOut
@@ -64,7 +65,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
   }
 
   // run steps and short-circuit on Task[Either]
-  final def runSteps(remainingSteps: List[Step], initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
+  final def runSteps(remainingSteps: List[Step], initialRunState: RunState): StepResult =
     remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.now((initialRunState, Done.asRight[FailedStep]))) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap {

@@ -10,6 +10,6 @@ sealed trait StepPreparer {
 }
 
 case class StepPreparerTitleResolver(resolver: PlaceholderResolver) extends StepPreparer {
-  def run(session: Session)(step: Step) = resolver.fillPlaceholders(step.title)(session).map(step.setTitle)
+  def run(session: Session)(step: Step): Either[CornichonError, Step] = resolver.fillPlaceholders(step.title)(session).map(step.setTitle)
 }
 
