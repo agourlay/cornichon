@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.resolver
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
+import com.github.agourlay.cornichon.resolver.PlaceholderParser._
 import org.parboiled2._
 
 import scala.util.{ Failure, Success }
@@ -15,7 +16,7 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 
   def optIndex = rule(optional('[' ~ Number ~ ']'))
 
-  def PlaceholderTXT = rule(capture(oneOrMore(CharPredicate.Visible -- Session.notAllowedInKey)))
+  def PlaceholderTXT = rule(capture(oneOrMore(allowedCharsInPlaceholdersPredicate)))
 
   def Ignore = rule { zeroOrMore(!PlaceholderRule ~ ANY) }
 
@@ -27,6 +28,7 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 object PlaceholderParser {
 
   private val noPlaceholders = Right(Nil)
+  private val allowedCharsInPlaceholdersPredicate: CharPredicate = CharPredicate.Visible -- Session.notAllowedInKey
 
   def parse(input: String): Either[CornichonError, List[Placeholder]] =
     if (!input.contains("<"))

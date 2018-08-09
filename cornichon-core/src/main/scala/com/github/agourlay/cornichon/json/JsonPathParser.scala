@@ -19,9 +19,9 @@ class JsonPathParser(val input: ParserInput) extends Parser {
 
   def optIndex = rule(optional('[' ~ (Number | capture('*')) ~ ']'))
 
-  def Field = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField -- '.')))
+  def Field = rule(capture(oneOrMore(allowedInFieldPredicate)))
 
-  def FieldWithDot = rule(capture(oneOrMore(CharPredicate.Visible -- notAllowedInField)))
+  def FieldWithDot = rule(capture(oneOrMore(allowedInFieldWithDotPredicate)))
 
   def Number = rule { capture(Digits) ~> (_.toInt) }
 
@@ -42,8 +42,10 @@ class JsonPathParser(val input: ParserInput) extends Parser {
 
 object JsonPathParser {
 
-  val someStar = Some("*")
   val notAllowedInField = "\r\n[]` "
+
+  private val allowedInFieldWithDotPredicate: CharPredicate = CharPredicate.Visible -- notAllowedInField
+  private val allowedInFieldPredicate = allowedInFieldWithDotPredicate -- '.'
 
   def parseJsonPath(input: String): Either[CornichonError, List[JsonPathOperation]] = {
     val p = new JsonPathParser(input)

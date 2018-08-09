@@ -58,9 +58,16 @@ class PlaceholderResolverSpec extends WordSpec
       }
 
       "find placeholder in random content containing a placeholder with index" in {
-        forAll(keyGen, indiceGen) { (key, indice) ⇒
-          val content1 = Gen.alphaStr
-          resolver.findPlaceholders(s"$content1<$key[$indice]>$content1").value should be(List(Placeholder(key, Some(indice))))
+        forAll(keyGen, indiceGen, Gen.alphaStr) { (key, indice, content) ⇒
+          resolver.findPlaceholders(s"$content<$key[$indice]>$content").value should be(List(Placeholder(key, Some(indice))))
+        }
+      }
+
+      // FIXME for some reason '<' is always accepted inside the key, maybe the parser backtracks and consum it twice??
+      "do not accept placeholders containing forbidden char" ignore {
+        val genInvalidChar = Gen.oneOf(Session.notAllowedInKey.toList)
+        forAll(keyGen, indiceGen, Gen.alphaStr, genInvalidChar) { (key, indice, content, invalid) ⇒
+          resolver.findPlaceholders(s"$content<$invalid$key[$indice]>$content").value should be(Nil)
         }
       }
     }
@@ -94,7 +101,7 @@ class PlaceholderResolverSpec extends WordSpec
         resolver.fillPlaceholders(content)(session).value should be("3.15 > 3.14")
       }
 
-      "not be confused by markup langage" in {
+      "not be confused by markup language" in {
         val session = Session.newEmpty.addValueUnsafe("pi", "3.14")
         val content = "PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT <pi>"
         resolver.fillPlaceholders(content)(session).value should be("PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT 3.14")
