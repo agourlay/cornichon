@@ -4,7 +4,6 @@ import cats.scalatest.EitherMatchers
 import io.circe.Json
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import com.github.agourlay.cornichon.json.CornichonJson.parseDataTable
-import cats.syntax.either._
 
 class DataTableSpec extends WordSpec
   with Matchers

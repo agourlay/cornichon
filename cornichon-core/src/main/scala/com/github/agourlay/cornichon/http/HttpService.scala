@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.data.EitherT
-import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.syntax.show._
 import cats.instances.int._
@@ -85,7 +84,7 @@ class HttpService(
       else baseUrl + trimmedUrl
     }
 
-    fullUrlCache.get(input, (k: String) ⇒ urlBuilder(k))
+    fullUrlCache.get(input, k ⇒ urlBuilder(k))
   }
 
   def requestEffectT[A: Show: Resolvable: Encoder](

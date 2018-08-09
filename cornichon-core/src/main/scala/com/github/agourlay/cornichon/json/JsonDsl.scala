@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.json
 
 import cats.syntax.show._
-import cats.syntax.either._
 
 import com.github.agourlay.cornichon.core.Step
 import com.github.agourlay.cornichon.dsl.CoreDsl

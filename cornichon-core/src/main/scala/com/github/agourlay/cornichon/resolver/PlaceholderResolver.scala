@@ -18,7 +18,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
   private val placeholdersCache = Caching.buildCache[String, Either[CornichonError, List[Placeholder]]]()
 
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
-    placeholdersCache.get(input, (k: String) ⇒ PlaceholderParser.parse(k))
+    placeholdersCache.get(input, k ⇒ PlaceholderParser.parse(k))
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
     builtInPlaceholders.lift(ph.key).map(Right(_)).getOrElse {

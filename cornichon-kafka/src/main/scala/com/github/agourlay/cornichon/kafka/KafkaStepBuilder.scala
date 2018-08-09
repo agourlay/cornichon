@@ -7,7 +7,6 @@ import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import cats.instances.string._
-import cats.syntax.either._
 
 case class KafkaStepBuilder(
     sessionKey: String,

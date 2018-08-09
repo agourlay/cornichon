@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.NonEmptyList
-import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.Engine._

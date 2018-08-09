@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular
 
 import cats.instances.future._
-import cats.instances.either._
 import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._

@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.http.steps
 
-import cats.syntax.either._
 import cats.instances.int._
 import cats.instances.string._
 

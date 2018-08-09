@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.http.steps
 import cats.instances.list._
 import cats.instances.boolean._
 import cats.instances.string._
-import cats.syntax.either._
 
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.http.HttpService._
