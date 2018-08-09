@@ -114,6 +114,6 @@ class Http4sClient(scheduler: Scheduler) extends HttpClient {
       rightNil
 
   private def parseUri(uri: String): Either[CornichonError, Uri] =
-    uriCache.get(uri, u ⇒ Uri.fromString(u).leftMap(e ⇒ MalformedUriError(u, e.message)))
+    uriCache.get(uri, (u: String) ⇒ Uri.fromString(u).leftMap(e ⇒ MalformedUriError(u, e.message)))
 
 }

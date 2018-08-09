@@ -82,7 +82,7 @@ object JsonPath {
     if (path == root)
       rightEmptyJsonPath
     else
-      operationsCache.get(path, p ⇒ JsonPathParser.parseJsonPath(p)).map(JsonPath(_))
+      operationsCache.get(path, (p: String) ⇒ JsonPathParser.parseJsonPath(p)).map(JsonPath(_))
 
   def run(path: String, json: Json): Either[CornichonError, Json] =
     JsonPath.parse(path).map(_.run(json))

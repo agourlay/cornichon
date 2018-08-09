@@ -85,7 +85,7 @@ class HttpService(
       else baseUrl + trimmedUrl
     }
 
-    fullUrlCache.get(input, k ⇒ urlBuilder(k))
+    fullUrlCache.get(input, (k: String) ⇒ urlBuilder(k))
   }
 
   def requestEffectT[A: Show: Resolvable: Encoder](
