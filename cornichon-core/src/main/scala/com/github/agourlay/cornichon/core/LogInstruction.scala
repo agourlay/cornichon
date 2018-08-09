@@ -26,10 +26,17 @@ sealed trait LogInstruction {
 
 object LogInstruction {
   val physicalMargin: StringOps = "   "
-  def renderLogs(logs: Seq[LogInstruction]): String = {
-    // Logs can potentially be long
-    val acc = logs.foldLeft(StringBuilder.newBuilder)((acc, l) ⇒ acc.append("\n").append(l.colorized))
-    acc.append("\n").result()
+  def renderLogs(logs: Seq[LogInstruction], colorized: Boolean = true): String = {
+    // Logs can potentially be really long - enable imperative mode
+    val b = StringBuilder.newBuilder
+    var i = 0
+    val logNb = logs.size
+    while (i < logNb) {
+      val l = logs(i)
+      b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
+      i += 1
+    }
+    b.append("\n").result()
   }
 
   def printLogs(logs: Seq[LogInstruction]): Unit =

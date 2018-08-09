@@ -65,6 +65,48 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       }
     }
 
+    "report distinct errors in the logs and only final error in the report" in {
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      var counter = 0
+      val nested = AssertStep(
+        "Fail differently", s ⇒ {
+          if (counter == 0 || counter == 1 || counter == 2) {
+            counter += 1
+            Assertion.failWith(s"Failing $counter")
+          } else
+            Assertion.failWith("Failing forever")
+        }
+      ) :: Nil
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf)
+      val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
+      engine.runScenario(Session.newEmpty)(s).map {
+        case f: FailureScenarioReport ⇒
+          f.isSuccess should be(false)
+          f.msg should be("""Scenario 'scenario with different failures' failed:
+                            |
+                            |at step:
+                            |Fail differently
+                            |
+                            |with error(s):
+                            |Failing forever
+                            |""".stripMargin)
+          val logs = LogInstruction.renderLogs(f.logs.drop(2).dropRight(1), colorized = false)
+          logs should be("""
+                           |      Eventually block with maxDuration = 1 second and interval = 100 milliseconds
+                           |         Fail differently *** FAILED ***
+                           |         Failing 1
+                           |         Fail differently *** FAILED ***
+                           |         Failing 2
+                           |         Fail differently *** FAILED ***
+                           |         Failing 3
+                           |         Fail differently *** FAILED ***
+                           |         Failing forever
+                           |""".stripMargin)
+        case other @ _ ⇒
+          fail(s"should have failed but got $other")
+      }
+    }
+
   }
 
 }

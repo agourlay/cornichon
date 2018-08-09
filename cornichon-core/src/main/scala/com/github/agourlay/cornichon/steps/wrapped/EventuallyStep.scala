@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 import cats.syntax.either._
-
+import com.github.agourlay.cornichon.core.core.StepResult
 import monix.eval.Task
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
@@ -13,9 +13,19 @@ import scala.concurrent.duration.{ Duration, FiniteDuration }
 case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine)(initialRunState: RunState) = {
+  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: Set[FailedStep]): Task[(Long, RunState, Either[FailedStep, Done])] = {
+
+      // Propagate the logs only if it is a new error
+      def handleFailureLogsPropagation(failedStep: FailedStep, previousRs: RunState, nextRunState: RunState): RunState =
+        if (knownErrors.contains(failedStep))
+          previousRs
+        else {
+          val logsToAdd = nextRunState.logs.diff(previousRs.logs)
+          previousRs.appendLogs(logsToAdd)
+        }
+
       withDuration {
         val nestedTask = engine.runSteps(nested, runState)
         if (retriesNumber == 0) nestedTask else nestedTask.delayExecution(conf.interval)
@@ -24,15 +34,15 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
           val remainingTime = conf.maxTime - executionTime
           res.fold(
             failedStep ⇒ {
+              // Propagate cleanup steps and session
+              val mergedState = runState.prependCleanupStepsFrom(newRunState).withSession(newRunState.session)
+              val propagatedState = handleFailureLogsPropagation(failedStep, mergedState, newRunState)
+
               // Check that it could go through another loop after the interval
-              if ((remainingTime - conf.interval).gt(Duration.Zero)) {
-                // Only cleanup steps are propagated
-                val nextRetryState = runState.prependCleanupStepsFrom(newRunState)
-                retryEventuallySteps(nextRetryState, conf.consume(executionTime), retriesNumber + 1)
-              } else {
-                // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Task.now((retriesNumber, newRunState, Left(failedStep)))
-              }
+              if ((remainingTime - conf.interval).gt(Duration.Zero))
+                retryEventuallySteps(propagatedState, conf.consume(executionTime), retriesNumber + 1, knownErrors + failedStep)
+              else
+                Task.now((retriesNumber, propagatedState, Left(failedStep)))
             },
             _ ⇒ {
               val state = runState.mergeNested(newRunState)
@@ -55,7 +65,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
     }
 
     withDuration {
-      val eventually = retryEventuallySteps(initialRunState.nestedContext, conf, 0)
+      val eventually = retryEventuallySteps(initialRunState.nestedContext, conf, 0, Set.empty)
       // make sure that the inner block does not run forever
       eventually.timeoutTo(after = conf.maxTime * 2, backup = timeoutFailedResult)
     }.map {
