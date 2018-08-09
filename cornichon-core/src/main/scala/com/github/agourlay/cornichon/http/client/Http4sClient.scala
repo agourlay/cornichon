@@ -4,18 +4,15 @@ import java.util.concurrent.TimeUnit.SECONDS
 
 import cats.data.EitherT
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpService._
-
+import com.github.agourlay.cornichon.util.Caching
 import io.circe.Json
-
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
-
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.blaze.{ BlazeClientConfig, Http1Client }
@@ -23,7 +20,6 @@ import org.http4s.client.blaze.{ BlazeClientConfig, Http1Client }
 import scala.concurrent.Await
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.collection.breakOut
-import scala.collection.concurrent.TrieMap
 
 // TODO Gzip support https://github.com/http4s/http4s/issues/1327
 // TODO SSE support https://github.com/http4s/http4s/issues/619
@@ -31,7 +27,7 @@ class Http4sClient(scheduler: Scheduler) extends HttpClient {
   implicit val s = scheduler
 
   // Lives for the duration of the test run
-  private val uriCache = TrieMap.empty[String, Either[CornichonError, Uri]]
+  private val uriCache = Caching.buildCache[String, Either[CornichonError, Uri]]()
 
   // Not sure it is the right way to do
   private val httpClient = Await.result(Http1Client[Task](
@@ -107,7 +103,7 @@ class Http4sClient(scheduler: Scheduler) extends HttpClient {
   def shutdown(): Task[Done] =
     httpClient.shutdown
       .map { _ ⇒
-        uriCache.clear()
+        uriCache.cleanUp()
         Done
       }
 
@@ -118,6 +114,6 @@ class Http4sClient(scheduler: Scheduler) extends HttpClient {
       rightNil
 
   private def parseUri(uri: String): Either[CornichonError, Uri] =
-    uriCache.getOrElseUpdate(uri, Uri.fromString(uri).leftMap(e ⇒ MalformedUriError(uri, e.message)))
+    uriCache.get(uri, u ⇒ Uri.fromString(u).leftMap(e ⇒ MalformedUriError(u, e.message)))
 
 }

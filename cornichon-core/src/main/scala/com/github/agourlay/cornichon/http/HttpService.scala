@@ -17,12 +17,12 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpRequest._
+import com.github.agourlay.cornichon.util.Caching
 import io.circe.Encoder
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
 
-import scala.collection.concurrent.TrieMap
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -33,7 +33,7 @@ class HttpService(
     resolver: PlaceholderResolver,
     config: Config)(implicit ec: Scheduler) {
 
-  private val fullUrlCache = TrieMap.empty[String, String]
+  private val fullUrlCache = Caching.buildCache[String, String]()
 
   private def resolveRequestParts[A: Show: Resolvable: Encoder](
     url: String,
@@ -85,7 +85,7 @@ class HttpService(
       else baseUrl + trimmedUrl
     }
 
-    fullUrlCache.getOrElseUpdate(input, urlBuilder(input))
+    fullUrlCache.get(input, k ⇒ urlBuilder(k))
   }
 
   def requestEffectT[A: Show: Resolvable: Encoder](

@@ -112,6 +112,7 @@ object Session {
   // Saved as StringOps as it uses '.exists' extremely often
   val notAllowedInKey: StringOps = new StringOps("\r\n<>/[] ")
 
+  //FIXME this is outbounded
   private val knownKeysCache = scala.collection.mutable.HashSet.empty[String]
 
   implicit val monoidSession = new Monoid[Session] {

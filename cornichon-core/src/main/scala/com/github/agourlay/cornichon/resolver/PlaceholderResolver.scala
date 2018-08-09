@@ -6,8 +6,7 @@ import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver._
-
-import scala.collection.concurrent.TrieMap
+import com.github.agourlay.cornichon.util.Caching
 
 class PlaceholderResolver(extractors: Map[String, Mapper]) {
 
@@ -16,10 +15,10 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
 
   // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for placeholders.
   // There is one resolver per Feature so the cache is not living too long.
-  private val placeholdersCache = TrieMap.empty[String, Either[CornichonError, List[Placeholder]]]
+  private val placeholdersCache = Caching.buildCache[String, Either[CornichonError, List[Placeholder]]]()
 
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
-    placeholdersCache.getOrElseUpdate(input, PlaceholderParser.parse(input))
+    placeholdersCache.get(input, k ⇒ PlaceholderParser.parse(k))
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
     builtInPlaceholders.lift(ph.key).map(Right(_)).getOrElse {
