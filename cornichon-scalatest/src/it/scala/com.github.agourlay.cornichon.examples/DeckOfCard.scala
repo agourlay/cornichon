@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.examples
 
-import cats.syntax.either._
-
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 
