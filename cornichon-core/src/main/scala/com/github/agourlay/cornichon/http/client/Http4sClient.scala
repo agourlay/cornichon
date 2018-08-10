@@ -103,7 +103,7 @@ class Http4sClient(scheduler: Scheduler) extends HttpClient {
   def shutdown(): Task[Done] =
     httpClient.shutdown
       .map { _ ⇒
-        uriCache.cleanUp()
+        uriCache.invalidateAll()
         Done
       }
 
