@@ -226,7 +226,7 @@ lazy val check =
 
 lazy val benchmarks =
   project
-    .in(file("./cornichon-benchmarks"))
+    .in(file("./benchmarks"))
     .settings(commonSettings)
     .dependsOn(core)
     .settings(noPublishSettings)
