@@ -304,8 +304,8 @@ lazy val library =
       val monix         = "3.0.0-RC1"
       val sbtTest       = "1.0"
       val http4s        = "0.18.15"
-      val embeddedKafka = "1.1.1"
-      val kafkaClient   = "1.1.1"
+      val embeddedKafka = "2.0.0"
+      val kafkaClient   = "2.0.0"
       val caffeine      = "2.6.2"
     }
     val akkaStream    = "com.typesafe.akka"             %% "akka-stream"              % Version.akkaStream

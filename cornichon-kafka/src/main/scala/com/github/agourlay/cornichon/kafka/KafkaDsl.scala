@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.kafka
 
+import java.time.Duration
+
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.CoreDsl
 import com.github.agourlay.cornichon.feature.BaseFeature
@@ -43,8 +45,9 @@ trait KafkaDsl {
       consumer.subscribe(Seq(topic).asJava)
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
+      val pollDuration = Duration.ofMillis(timeout.toLong)
       while (!nothingNewAnymore) {
-        val newMessages = consumer.poll(timeout.toLong)
+        val newMessages = consumer.poll(pollDuration)
         val collectionOfNewMessages = newMessages.iterator().asScala.toList
         messages ++= collectionOfNewMessages
         nothingNewAnymore = newMessages.isEmpty
