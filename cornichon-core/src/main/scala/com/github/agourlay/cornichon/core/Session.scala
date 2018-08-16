@@ -12,7 +12,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
-import com.github.agourlay.cornichon.util.Strings
+import com.github.agourlay.cornichon.util.{ Caching, Strings }
 
 import scala.collection.immutable.{ HashMap, StringOps }
 
@@ -54,14 +54,15 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   def addValue(key: String, value: String): Either[CornichonError, Session] = {
 
-    def validateKey(key: String): Either[CornichonError, String] = {
+    // Not returning the same key wrapped to avoid allocations
+    def validateKey(key: String): Either[CornichonError, Done] = {
       val trimmedKey = new StringOps(key.trim)
       if (trimmedKey.isEmpty)
-        Left(EmptyKey(this))
+        Left(EmptyKey)
       else if (Session.notAllowedInKey.exists(forbidden ⇒ trimmedKey.contains(forbidden)))
         Left(IllegalKey(key))
       else
-        Right(key)
+        Done.rightDone
     }
 
     def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
@@ -70,13 +71,9 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
         case Some(values) ⇒ (c1 - key) + (key → values.:+(value))
       }
 
-    if (knownKeysCache.contains(key))
-      Right(Session(updateContent(content)(key, value)))
-    else
-      validateKey(key).map { key ⇒
-        knownKeysCache += key
-        Session(updateContent(content)(key, value))
-      }
+    knownKeysCache.get(key, k ⇒ validateKey(k)).map { _ ⇒
+      Session(updateContent(content)(key, value))
+    }
   }
 
   def addValueUnsafe(key: String, value: String): Session =
@@ -112,8 +109,7 @@ object Session {
   // Saved as StringOps as it uses '.exists' extremely often
   val notAllowedInKey: StringOps = new StringOps("\r\n<>/[] ")
 
-  //FIXME this is outbounded
-  private val knownKeysCache = scala.collection.mutable.HashSet.empty[String]
+  private val knownKeysCache = Caching.buildCache[String, Either[CornichonError, Done]]()
 
   implicit val monoidSession = new Monoid[Session] {
     def empty: Session = newEmpty
@@ -155,8 +151,8 @@ case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError 
   lazy val baseErrorMessage = s"key '$key' can not be found in session $similarKeysMsg\n${s.show}"
 }
 
-case class EmptyKey(s: Session) extends CornichonError {
-  lazy val baseErrorMessage = s"key can not be empty - session is \n${s.show}"
+case object EmptyKey extends CornichonError {
+  lazy val baseErrorMessage = s"key can not be empty"
 }
 
 case class IllegalKey(key: String) extends CornichonError {
