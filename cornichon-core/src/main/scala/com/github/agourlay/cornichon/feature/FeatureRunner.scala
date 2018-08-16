@@ -24,7 +24,8 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
     // Run 'before feature' hooks
     baseFeature.beforeFeature.foreach(f ⇒ f())
     val scenariosToRun = featureDef.scenarios.filter(filterScenario)
-    val parallelism = if (baseFeature.executeScenariosInParallel) scenariosToRun.size else 1
+    // parallelism is limited to avoid spawing too much work at once
+    val parallelism = if (baseFeature.executeScenariosInParallel) Math.min(scenariosToRun.size, Runtime.getRuntime.availableProcessors() * 2) else 1
     Observable.fromIterable(scenariosToRun)
       .mapParallelUnordered(parallelism)(runScenario(_).map(scenarioResultHandler))
       .toListL
