@@ -71,9 +71,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
         case Some(values) ⇒ (c1 - key) + (key → values.:+(value))
       }
 
-    knownKeysCache.get(key, k ⇒ validateKey(k)).map { _ ⇒
-      Session(updateContent(content)(key, value))
-    }
+    knownKeysCache.get(key, k ⇒ validateKey(k)).map(_ ⇒ Session(updateContent(content)(key, value)))
   }
 
   def addValueUnsafe(key: String, value: String): Session =
@@ -152,7 +150,7 @@ case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError 
 }
 
 case object EmptyKey extends CornichonError {
-  lazy val baseErrorMessage = s"key can not be empty"
+  lazy val baseErrorMessage = "key can not be empty"
 }
 
 case class IllegalKey(key: String) extends CornichonError {

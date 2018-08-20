@@ -21,7 +21,7 @@ class HttpServiceSpec extends WordSpec
   with EitherMatchers {
 
   val client = new NoOpHttpClient
-  val service = new HttpService("", 2000 millis, client, PlaceholderResolver.withoutExtractor(), Config())
+  val service = new HttpService("", 2000.millis, client, PlaceholderResolver.withoutExtractor(), Config())
   val dummyRequest = HttpRequest[String](GET, "", None, Nil, Nil)
 
   "HttpService" when {

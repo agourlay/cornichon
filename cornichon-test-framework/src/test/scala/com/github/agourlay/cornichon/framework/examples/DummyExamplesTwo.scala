@@ -22,7 +22,7 @@ class DummyExamplesTwo extends CornichonFeature {
 
     }
 
-    Scenario("TODO") pending
+    Scenario("pending scenario") pending
 
   }
 
