@@ -5,7 +5,7 @@ title:  "Kafka support"
 
 # Kafka support
 
-`cornichon-kafka` offers a support for [Kafka](https://kafka.apache.org) v1.0.0
+`cornichon-kafka` offers a support for [Kafka](https://kafka.apache.org) v2.0.0
 
 Due to the architecture of kafka and the handling of consumers offsets, **the default execution of
 scenarios and features is sequential**.
