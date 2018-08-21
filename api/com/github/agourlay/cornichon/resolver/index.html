@@ -133,6 +133,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="com.github.agourlay">agourlay</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.check" visbl="pub" class="indented5 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="check"></a><a id="check:check"></a>
+      <span class="permalink">
+      <a href="../../../../com/github/agourlay/cornichon/index.html#check" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../check/index.html"><span class="name">check</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.github.agourlay.cornichon">cornichon</a></dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.core" visbl="pub" class="indented5 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="core"></a><a id="core:core"></a>
       <span class="permalink">
@@ -299,6 +315,10 @@
                         <a href="AmbiguousKeyDefinition.html" title="">AmbiguousKeyDefinition</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="class" href="HistoryMapper.html" title=""></a>
+                        <a href="HistoryMapper.html" title="">HistoryMapper</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="class" href="JsonMapper.html" title=""></a>
                         <a href="JsonMapper.html" title="">JsonMapper</a>
                       </li><li class="current-entities indented5">
@@ -330,11 +350,27 @@
                         <a class="class" href="PlaceholderResolver.html" title=""></a>
                         <a href="PlaceholderResolver.html" title="">PlaceholderResolver</a>
                       </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="RandomMapper.html" title=""></a>
+                        <a href="RandomMapper.html" title="">RandomMapper</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="RandomMapperError.html" title=""></a>
+                        <a href="RandomMapperError.html" title="">RandomMapperError</a>
+                      </li><li class="current-entities indented5">
                         <a class="object" href="Resolvable$.html" title=""></a>
                         <a class="trait" href="Resolvable.html" title=""></a>
                         <a href="Resolvable.html" title="">Resolvable</a>
                       </li><li class="current-entities indented5">
-                        <a class="object" href="SimpleMapper$.html" title=""></a>
+                        <span class="separator"></span>
+                        <a class="class" href="SessionMapper.html" title=""></a>
+                        <a href="SessionMapper.html" title="">SessionMapper</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="SessionMapperError.html" title=""></a>
+                        <a href="SessionMapperError.html" title="">SessionMapperError</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="class" href="SimpleMapper.html" title=""></a>
                         <a href="SimpleMapper.html" title="">SimpleMapper</a>
                       </li><li class="current-entities indented5">
@@ -453,6 +489,22 @@
       </span>
       <span class="symbol">
         <a title="" href="AmbiguousKeyDefinition.html"><span class="name">AmbiguousKeyDefinition</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.resolver.HistoryMapper" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HistoryMapperextendsMapperwithProductwithSerializable"></a><a id="HistoryMapper:HistoryMapper"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/resolver/index.html#HistoryMapperextendsMapperwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="HistoryMapper.html"><span class="name">HistoryMapper</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="transform">transform: (<span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="Mapper.html" class="extype" name="com.github.agourlay.cornichon.resolver.Mapper">Mapper</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -584,6 +636,38 @@
       </span>
       
       
+    </li><li name="com.github.agourlay.cornichon.resolver.RandomMapper" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RandomMapperextendsMapperwithProductwithSerializable"></a><a id="RandomMapper:RandomMapper"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/resolver/index.html#RandomMapperextendsMapperwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="RandomMapper.html"><span class="name">RandomMapper</span></a><span class="params">(<span name="generator">generator: (<a href="http://www.scala-lang.org/api/2.12.6/scala/util/Random.html#scala.util.Random" class="extype" name="scala.util.Random">Random</a>) ⇒ <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="Mapper.html" class="extype" name="com.github.agourlay.cornichon.resolver.Mapper">Mapper</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.resolver.RandomMapperError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RandomMapperError[A]extendsCornichonErrorwithProductwithSerializable"></a><a id="RandomMapperError[A]:RandomMapperError[A]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/resolver/index.html#RandomMapperError[A]extendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="RandomMapperError.html"><span class="name">RandomMapperError</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="e">e: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.resolver.Resolvable" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="Resolvable[A]extendsAnyRef"></a><a id="Resolvable[A]:Resolvable[A]"></a>
       <span class="permalink">
@@ -606,6 +690,38 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.resolver.SessionMapper" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SessionMapperextendsMapperwithProductwithSerializable"></a><a id="SessionMapper:SessionMapper"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/resolver/index.html#SessionMapperextendsMapperwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="SessionMapper.html"><span class="name">SessionMapper</span></a><span class="params">(<span name="generator">generator: (<a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="scala.Either">Either</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="Mapper.html" class="extype" name="com.github.agourlay.cornichon.resolver.Mapper">Mapper</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.resolver.SessionMapperError" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SessionMapperError[A]extendsCornichonErrorwithProductwithSerializable"></a><a id="SessionMapperError[A]:SessionMapperError[A]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/resolver/index.html#SessionMapperError[A]extendsCornichonErrorwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="SessionMapperError.html"><span class="name">SessionMapperError</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="underlyingError">underlyingError: <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.6/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.resolver.SimpleMapper" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SimpleMapperextendsMapperwithProductwithSerializable"></a><a id="SimpleMapper:SimpleMapper"></a>
       <span class="permalink">
@@ -707,22 +823,6 @@
       </span>
       <span class="symbol">
         <a title="" href="Resolvable$.html"><span class="name">Resolvable</span></a>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.resolver.SimpleMapper" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="SimpleMapper"></a><a id="SimpleMapper:SimpleMapper"></a>
-      <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/resolver/index.html#SimpleMapper" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="SimpleMapper$.html"><span class="name">SimpleMapper</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.6/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
