@@ -148,7 +148,7 @@ body.path("publisher.name").is("DC")
 
 body.path("city").containsString("Gotham")
 
-body.path("superheroes[*].name").is("[ "Spiderman", "IronMan", "Superman", "GreenLantern", "Batman" ]")
+body.path("superheroes[*].name").is("""[ "Spiderman", "IronMan", "Superman", "GreenLantern", "Batman" ]""")
 
 body.path("publisher.foundationYear").is(1934)
 
