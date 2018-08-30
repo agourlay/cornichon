@@ -1,6 +1,6 @@
 import scalariform.formatter.preferences._
 import sbt.{Developer, file}
-import sbt.Keys.{crossScalaVersions, developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
+import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
 lazy val compilerOptions = Seq(
@@ -288,7 +288,7 @@ lazy val library =
     object Version {
       val scalaTest     = "3.0.5"
       val akkaHttp      = "10.1.4"
-      val akkaStream    = "2.5.14"
+      val akkaStream    = "2.5.16"
       val cats          = "1.2.0"
       val parboiled     = "2.1.4"
       val scalaCheck    = "1.14.0"
