@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.examples.math
+package com.github.agourlay.cornichon.framework.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep._

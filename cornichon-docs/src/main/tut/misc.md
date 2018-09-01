@@ -34,21 +34,21 @@ For instance if you wish to use the ```JsObject``` from ```play-json``` as HTTP 
 ```
 
 
-# ScalaTest integration
+# SBT integration
 
-As Cornichon uses Scalatest it is possible to use all the nice CLI from SBT + ScalaTest to trigger tests:
+It is recommended to use the nice CLI from SBT to trigger tests:
 
-- ```~test``` tilde to re-run a command on change.
-- ```testOnly *CornichonExamplesSpec``` to run only the feature CornichonExamplesSpec.
-- ```testOnly *CornichonExamplesSpec -- -t "Cornichon feature example should CRUD Feature demo"``` to run only the scenario ```CRUD Feature demo``` from the feature ```Cornichon feature example```.
+- `~test` tilde to re-run a command on change.
+- `testOnly *CornichonExamplesSpec` to run only the feature CornichonExamplesSpec.
+- `testOnly *CornichonExamplesSpec -- "Cornichon feature example should CRUD Feature demo"` to run only the scenario `CRUD Feature demo` from the feature `Cornichon feature example`.
 
-The full name of a scenario is ```feature-name should scenario-name```.
+The full name of a scenario is `feature-name should scenario-name`.
 
-See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) and [ScalaTest doc](http://www.scalatest.org/user_guide/using_the_runner) for more information.
+See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) for more information.
 
-The ```steps``` execution logs will only be shown if:
+The `steps` execution logs will only be shown if:
 - the scenario fails
-- the scenario succeeded and contains at least one ```DebugStep``` such as ```And I show_last_status```
+- the scenario succeeded and contains at least one `DebugStep` such as `And I show_last_status`
 
 
 ## SSL configuration
@@ -65,7 +65,7 @@ akka {
 }
 ```
 
-# Packaging features
+# Packaging features (only for cornichon-scalatest)
 
 When integrating cornichon features in a build pipeline, it can be interesting to package those features in a runnable forms to avoid the cost of recompilation.
 

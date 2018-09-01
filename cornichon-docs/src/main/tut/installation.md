@@ -6,18 +6,9 @@ position: 1
 
 # Installation
 
-Cornichon is available for Scala 2.12.
+Cornichon is only available for Scala 2.12.
 
-- For the [ScalaTest](http://www.scalatest.org/) flavor which integrates nicely with various build tools and CI pipeline:
-
-``` scala
-// SBT
-libraryDependencies += "com.github.agourlay" %% "cornichon-scalatest" % "0.16.2" % Test
-```
-
-And Maven through the [ScalaTest Maven plugin](http://www.scalatest.org/user_guide/using_the_scalatest_maven_plugin).
-
-- For a more lightweight version without ScalaTest which works only with SBT and [Mill](http://www.lihaoyi.com/mill/):
+It is recommended to use Cornichon with `cornichon-test-framework` via `SBT` or `Mill`.
 
 ``` scala
 // SBT
@@ -31,4 +22,11 @@ object test extends Tests{
   def ivyDeps = Agg(ivy"com.github.agourlay::cornichon-test-framework:0.16.2")
   def testFrameworks = Seq("com.github.agourlay.cornichon.framework.CornichonFramework")
 }
+```
+
+If you need to integrate with other build tools or want to run the `feature` from your IDE, you can use the the [ScalaTest](http://www.scalatest.org/) flavor.
+
+``` scala
+// SBT
+libraryDependencies += "com.github.agourlay" %% "cornichon-scalatest" % "0.16.2" % Test
 ```

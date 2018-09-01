@@ -1,10 +1,10 @@
-package com.github.agourlay.cornichon.examples.superHeroes
+package com.github.agourlay.cornichon.framework.examples.superHeroes
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.examples.superHeroes.server.{ HttpAPI, HttpServer }
+import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ HttpAPI, HttpServer }
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper

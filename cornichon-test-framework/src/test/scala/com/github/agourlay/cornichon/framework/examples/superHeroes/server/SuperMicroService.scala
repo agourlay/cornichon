@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.examples.superHeroes.server
+package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }

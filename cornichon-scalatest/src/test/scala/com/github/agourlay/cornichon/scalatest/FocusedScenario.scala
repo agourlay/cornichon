@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon.scalatest
 
 import com.github.agourlay.cornichon.CornichonFeature
 

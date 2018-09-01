@@ -151,17 +151,12 @@ lazy val scalatest =
     .in(file("./cornichon-scalatest"))
     .dependsOn(core)
     .enablePlugins(SbtScalariform)
-    .configs(IntegrationTest)
-    .settings(Defaults.itSettings : _*)
     .settings(commonSettings)
     .settings(formattingSettings)
     .settings(
       name := "cornichon-scalatest",
       libraryDependencies ++= Seq(
-        library.scalatest,
-        library.http4sServer % Test,
-        library.http4sCirce % Test,
-        library.http4sDsl % Test
+        library.scalatest
       )
     )
 
@@ -169,6 +164,8 @@ lazy val testFramework =
   project
     .in(file("./cornichon-test-framework"))
     .dependsOn(core)
+    .configs(IntegrationTest)
+    .settings(Defaults.itSettings : _*)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(formattingSettings)
@@ -176,7 +173,10 @@ lazy val testFramework =
       name := "cornichon-test-framework",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
-        library.sbtTest
+        library.sbtTest,
+        library.http4sServer % Test,
+        library.http4sCirce % Test,
+        library.http4sDsl % Test
       )
     )
 

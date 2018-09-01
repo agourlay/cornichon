@@ -1,6 +1,7 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon.framework.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
+
 import scala.concurrent.duration._
 
 class Options extends CornichonFeature {

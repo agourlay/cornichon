@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.examples
+package com.github.agourlay.cornichon.framework.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
 
