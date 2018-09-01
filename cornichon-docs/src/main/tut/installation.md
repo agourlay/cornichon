@@ -24,9 +24,14 @@ object test extends Tests{
 }
 ```
 
-If you need to integrate with other build tools or want to run the `feature` from your IDE, you can use the the [ScalaTest](http://www.scalatest.org/) flavor.
+The alternative way is to use the [ScalaTest](http://www.scalatest.org/) flavor if you need to:
+- use other build tools (Maven with [ScalaTest Maven plugin](http://www.scalatest.org/user_guide/using_the_scalatest_maven_plugin))
+- run the `Feature` from your IDE
+- package features in an executable jars
 
 ``` scala
 // SBT
 libraryDependencies += "com.github.agourlay" %% "cornichon-scalatest" % "0.16.2" % Test
 ```
+
+note: `cornichon-test-framework` will eventually support those additional use cases and `cornichon-scalatest` will be discontinued.
