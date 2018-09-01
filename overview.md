@@ -83,14 +83,14 @@ class ReadmeExample extends CornichonFeature {
 
 For more examples see the following files which are part of the test pipeline:
 
-- [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/cornichon-scalatest/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala).
+- [Embedded Superheroes API](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/superHeroes/SuperHeroesScenario.scala).
 
-- [OpenMovieDatabase API](https://github.com/agourlay/cornichon/blob/master/cornichon-scalatest/src/it/scala/com.github.agourlay.cornichon.examples/OpenMovieDatabase.scala).
+- [OpenMovieDatabase API](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/it/scala/com/github/agourlay/cornichon/framework/examples/OpenMovieDatabase.scala).
 
-- [DeckOfCard API](https://github.com/agourlay/cornichon/blob/master/cornichon-scalatest/src/it/scala/com.github.agourlay.cornichon.examples/DeckOfCard.scala).
+- [DeckOfCard API](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/it/scala/com/github/agourlay/cornichon/framework/examples/DeckOfCard.scala).
 
-- [Star Wars API](https://github.com/agourlay/cornichon/blob/master/cornichon-scalatest/src/it/scala/com.github.agourlay.cornichon.examples/StarWars.scala).
+- [Star Wars API](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/it/scala/com/github/agourlay/cornichon/framework/examples/StarWars.scala).
 
-- [Math Operations](https://github.com/agourlay/cornichon/blob/master/cornichon-scalatest/src/test/scala/com/github/agourlay/cornichon/examples/math/MathScenario.scala).
+- [Math Operations](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/math/MathScenario.scala).
 
 And if you enjoy slides, you might like [this presentation](https://speakerdeck.com/agourlay/cornichon-a-scala-dsl-for-testing-http-json-api) given at the [Berlin Scala User Group](https://www.meetup.com/Scala-Berlin-Brandenburg/events/235779912/) which gives more context regarding the creation and usage of this library.

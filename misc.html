@@ -28,19 +28,19 @@
 
 </code></pre></div></div>
 
-<h1 id="scalatest-integration">ScalaTest integration</h1>
+<h1 id="sbt-integration">SBT integration</h1>
 
-<p>As Cornichon uses Scalatest it is possible to use all the nice CLI from SBT + ScalaTest to trigger tests:</p>
+<p>It is recommended to use the nice CLI from SBT to trigger tests:</p>
 
 <ul>
   <li><code class="highlighter-rouge">~test</code> tilde to re-run a command on change.</li>
   <li><code class="highlighter-rouge">testOnly *CornichonExamplesSpec</code> to run only the feature CornichonExamplesSpec.</li>
-  <li><code class="highlighter-rouge">testOnly *CornichonExamplesSpec -- -t "Cornichon feature example should CRUD Feature demo"</code> to run only the scenario <code class="highlighter-rouge">CRUD Feature demo</code> from the feature <code class="highlighter-rouge">Cornichon feature example</code>.</li>
+  <li><code class="highlighter-rouge">testOnly *CornichonExamplesSpec -- "Cornichon feature example should CRUD Feature demo"</code> to run only the scenario <code class="highlighter-rouge">CRUD Feature demo</code> from the feature <code class="highlighter-rouge">Cornichon feature example</code>.</li>
 </ul>
 
 <p>The full name of a scenario is <code class="highlighter-rouge">feature-name should scenario-name</code>.</p>
 
-<p>See <a href="http://www.scala-sbt.org/0.13/docs/Testing.html">SBT doc</a> and <a href="http://www.scalatest.org/user_guide/using_the_runner">ScalaTest doc</a> for more information.</p>
+<p>See <a href="http://www.scala-sbt.org/0.13/docs/Testing.html">SBT doc</a> for more information.</p>
 
 <p>The <code class="highlighter-rouge">steps</code> execution logs will only be shown if:</p>
 <ul>
@@ -61,7 +61,7 @@
 }
 </code></pre></div></div>
 
-<h1 id="packaging-features">Packaging features</h1>
+<h1 id="packaging-features-only-for-cornichon-scalatest">Packaging features (only for cornichon-scalatest)</h1>
 
 <p>When integrating cornichon features in a build pipeline, it can be interesting to package those features in a runnable forms to avoid the cost of recompilation.</p>
 
