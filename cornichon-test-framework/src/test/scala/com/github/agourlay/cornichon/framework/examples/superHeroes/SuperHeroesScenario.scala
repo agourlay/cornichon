@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.core.Step
 import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ HttpAPI, HttpServer }
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -259,8 +260,6 @@ class SuperHeroesScenario extends CornichonFeature {
         Then assert status.is(404)
 
         Then assert status.isClientError
-
-        And I show_last_status
       }
 
       Scenario("demonstrate Gzip support") {
@@ -420,8 +419,6 @@ class SuperHeroesScenario extends CornichonFeature {
           }
           """
         )
-
-        And I show_last_status
       }
 
       Scenario("demonstrate session features") {
@@ -554,8 +551,6 @@ class SuperHeroesScenario extends CornichonFeature {
           }
           """
         )
-
-        And I show_last_status
       }
 
       Scenario("demonstrate wrapping DSL blocks") {
@@ -706,8 +701,6 @@ class SuperHeroesScenario extends CornichonFeature {
             )
           }
         }
-
-        And I show_last_status
       }
 
       Scenario("demonstrate streaming support") {
@@ -730,8 +723,6 @@ class SuperHeroesScenario extends CornichonFeature {
             | "superhero name" |    "IronMan"   | null | null  |
            """
         )
-
-        And I show_last_status
       }
 
       Scenario("demonstrate DSL composition") {
@@ -740,7 +731,6 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert random_superheroes_until("Batman")
 
-        And I show_last_status
       }
 
       Scenario("demonstrate matchers features") {
@@ -768,14 +758,14 @@ class SuperHeroesScenario extends CornichonFeature {
       }
     }
 
-  def superhero_exists(name: String) =
+  def superhero_exists(name: String): Step =
     AttachAs("superhero exists") {
       When I get(s"/superheroes/$name").withParams("sessionId" → "<session-id>")
       Then assert status.is(200)
     }
 
-  def random_superheroes_until(name: String) =
-    Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
+  def random_superheroes_until(name: String): Step =
+    Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
       When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
       Then assert body.path("name").is(name)
       Then I print_step("bingo!")
@@ -787,18 +777,18 @@ class SuperHeroesScenario extends CornichonFeature {
   override lazy val baseUrl = s"http://localhost:$port"
 
   //Travis CI struggles by default
-  override lazy val requestTimeout = 5 second
+  override lazy val requestTimeout = 5.second
 
   var server: HttpServer = _
 
   // Starts up test server
   beforeFeature {
-    server = Await.result(new HttpAPI().start(port), 5 second)
+    server = Await.result(new HttpAPI().start(port), 5.second)
   }
 
   // Stops test server
   afterFeature {
-    Await.result(server.shutdown(), 5 second)
+    Await.result(server.shutdown(), 5.second)
   }
 
   def session_resource = ResourceStep(
@@ -823,11 +813,11 @@ class SuperHeroesScenario extends CornichonFeature {
   }
 
   // Step to be executed after each scenario
-  afterEachScenario {
-
-    Then I print_step("done!")
-
-  }
+  //afterEachScenario {
+  //
+  //  Then I print_step("done!")
+  //
+  //}
 
   override def registerExtractors = Map(
     "name" → JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "name")
