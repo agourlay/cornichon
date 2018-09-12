@@ -183,12 +183,13 @@ lazy val testFramework =
 lazy val kafka =
   project
     .in(file("./cornichon-kafka"))
-    .dependsOn(core, scalatest % Test)
+    .dependsOn(core, testFramework % Test)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(formattingSettings)
     .settings(
       name := "cornichon-kafka",
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.kafkaClient,
         library.kafkaBroker % Test
@@ -198,12 +199,13 @@ lazy val kafka =
 lazy val httpMock =
   project
     .in(file("./cornichon-http-mock"))
-    .dependsOn(core, scalatest % Test)
+    .dependsOn(core, testFramework % Test)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(formattingSettings)
     .settings(
       name := "cornichon-http-mock",
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.http4sServer,
         library.http4sCirce,
@@ -214,12 +216,13 @@ lazy val httpMock =
 lazy val check =
   project
     .in(file("./cornichon-check"))
-    .dependsOn(core, scalatest % Test)
+    .dependsOn(core, testFramework % Test)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(formattingSettings)
     .settings(
-      name := "cornichon-check"
+      name := "cornichon-check",
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework")
     )
 
 lazy val benchmarks =
@@ -238,7 +241,7 @@ lazy val docs =
       unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks, scalatest),
       micrositeDocumentationLabelDescription := "Scaladoc"
     )
-    .dependsOn(core, scalatest, kafka)
+    .dependsOn(core, testFramework, kafka, check, httpMock)
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(ScalaUnidocPlugin)
     .enablePlugins(GhpagesPlugin)

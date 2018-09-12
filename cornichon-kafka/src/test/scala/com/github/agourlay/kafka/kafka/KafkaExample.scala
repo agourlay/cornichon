@@ -46,15 +46,17 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
     }
 
   }
-  override def beforeAll() = {
-    EmbeddedKafka.start()(EmbeddedKafkaConfig(
+
+  beforeFeature {
+    implicit val kafkaConfig: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
       kafkaPort = 9092,
-      customBrokerProperties = Map(
-        "group.initial.rebalance.delay.ms" -> "10"
-      )
-    ))
+      customBrokerProperties = Map("group.initial.rebalance.delay.ms" -> "10")
+    )
+    EmbeddedKafka.start()
+    ()
   }
-  override def afterAll() = {
+
+  afterFeature {
     EmbeddedKafka.stop()
   }
 

@@ -129,8 +129,6 @@ class MockServerExample extends CornichonFeature with HttpMockDsl {
           }
           """
         )
-
-        And I show_session
       }
 
       Scenario("reset registered requests") {
