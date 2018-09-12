@@ -4,11 +4,9 @@ import java.net.NetworkInterface
 
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.CloseableResource
-
 import monix.eval.Task
 import monix.execution.Scheduler
-
-import org.http4s.HttpService
+import org.http4s.{HttpRoutes, HttpService}
 import org.http4s.server.blaze.BlazeBuilder
 
 import scala.collection.JavaConverters._
@@ -17,10 +15,10 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 class MockHttpServer(
-    interface: Option[String],
-    port: Option[Range],
-    mockService: HttpService[Task],
-    maxRetries: Int = 5)(implicit scheduler: Scheduler) extends HttpServer {
+  interface: Option[String],
+  port: Option[Range],
+  mockService: HttpRoutes[Task],
+  maxRetries: Int = 5)(implicit scheduler: Scheduler) extends HttpServer {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r ⇒ Random.shuffle(r.toList))

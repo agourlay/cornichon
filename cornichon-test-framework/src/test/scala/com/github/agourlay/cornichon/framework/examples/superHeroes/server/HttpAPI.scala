@@ -3,23 +3,20 @@ package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
 import cats.implicits._
-
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._
 import io.circe.syntax._
 import monix.eval.Task
 import monix.eval.Task._
-
-import monix.execution.Scheduler
-import org.http4s.server.{ AuthMiddleware, Server }
-import org.http4s.server.blaze.BlazeBuilder
+import monix.execution.{ CancelableFuture, Scheduler }
+import org.http4s.server.{ AuthMiddleware, Router, Server }
+import org.http4s.server.blaze.{ BlazeServerBuilder }
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl._
 import org.http4s.server.middleware.GZip
-
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
@@ -39,13 +36,13 @@ class HttpAPI() extends Http4sDsl[Task] {
   object ProtectIdentityQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("protectIdentity")
   object JustNameQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("justName")
 
-  def validatedJsonResponse[A: Encoder](s: Json ⇒ Task[Response[Task]])(v: Validated[ApiError, A]): Task[Response[Task]] =
+  private def validatedJsonResponse[A: Encoder](s: Json ⇒ Task[Response[Task]])(v: Validated[ApiError, A]): Task[Response[Task]] =
     v match {
       case Valid(a)   ⇒ s(a.asJson)
       case Invalid(e) ⇒ apiErrorResponse(e)
     }
 
-  def apiErrorResponse(e: ApiError): Task[Response[Task]] =
+  private def apiErrorResponse(e: ApiError): Task[Response[Task]] =
     e match {
       case SessionNotFound(_)        ⇒ NotFound(HttpError(e.msg).asJson)
       case PublisherNotFound(_)      ⇒ NotFound(HttpError(e.msg).asJson)
@@ -54,7 +51,7 @@ class HttpAPI() extends Http4sDsl[Task] {
       case SuperHeroAlreadyExists(_) ⇒ Conflict(HttpError(e.msg).asJson)
     }
 
-  val sessionService: HttpService[Task] = HttpService[Task] {
+  private val sessionService = HttpRoutes.of[Task] {
     case POST -> Root / "session" ⇒
       val sessionId = sm.createSession()
       Created(sessionId)
@@ -65,7 +62,7 @@ class HttpAPI() extends Http4sDsl[Task] {
       }
   }
 
-  val publishersService: HttpService[Task] = HttpService[Task] {
+  private val publishersService = HttpRoutes.of[Task] {
     case GET -> Root / "publishers" :? SessionIdQueryParamMatcher(sessionId) ⇒
       Ok(sm.allPublishers(sessionId).asJson)
 
@@ -80,7 +77,7 @@ class HttpAPI() extends Http4sDsl[Task] {
       } yield resp
   }
 
-  val superHeroesService: HttpService[Task] = HttpService[Task] {
+  private val superHeroesService = HttpRoutes.of[Task] {
     case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) ⇒
       Ok(sm.allSuperheroes(sessionId).asJson)
 
@@ -91,15 +88,15 @@ class HttpAPI() extends Http4sDsl[Task] {
       validatedJsonResponse(Ok(_))(sm.deleteSuperhero(sessionId, name))
   }
 
-  val authStore: BasicAuthenticator[Task, String] = (creds: BasicCredentials) ⇒
+  private val authStore: BasicAuthenticator[Task, String] = (creds: BasicCredentials) ⇒
     if (creds.username == "admin" && creds.password == "cornichon")
       Task.now(Some(creds.username))
     else
       Task.now(None)
 
-  val authMiddleware: AuthMiddleware[Task, String] = BasicAuth("secure site", authStore)
+  private val authMiddleware: AuthMiddleware[Task, String] = BasicAuth("secure site", authStore)
 
-  val securedSuperHeroesService = authMiddleware {
+  private val securedSuperHeroesService = authMiddleware {
     AuthedService[String, Task] {
       case req @ POST -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
         for {
@@ -117,7 +114,7 @@ class HttpAPI() extends Http4sDsl[Task] {
     }
   }
 
-  val gqlService: HttpService[Task] = HttpService[Task] {
+  private val gqlService = HttpRoutes.of[Task] {
     case req @ POST -> Root ⇒
       req.as[Json].flatMap { requestJson ⇒
 
@@ -153,7 +150,7 @@ class HttpAPI() extends Http4sDsl[Task] {
       }
   }
 
-  val sseSuperHeroesService: HttpService[Task] = HttpService[Task] {
+  private val sseSuperHeroesService = HttpRoutes.of[Task] {
     case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) :? JustNameQueryParamMatcher(justNameOpt) ⇒
       val superheroes = sm.allSuperheroes(sessionId)
       val sse = if (justNameOpt.getOrElse(false))
@@ -163,14 +160,16 @@ class HttpAPI() extends Http4sDsl[Task] {
       Ok(fs2.Stream.fromIterator[Task, ServerSentEvent](sse.toIterator))
   }
 
-  val services = GZip[Task](sessionService <+> publishersService <+> superHeroesService <+> securedSuperHeroesService)
+  private val routes = Router(
+    "/" -> (sessionService <+> publishersService <+> superHeroesService <+> securedSuperHeroesService),
+    "/sseStream" -> sseSuperHeroesService,
+    "/graphql" -> gqlService
+  )
 
-  def start(httpPort: Int) =
-    BlazeBuilder[Task]
+  def start(httpPort: Int): CancelableFuture[HttpServer] =
+    BlazeServerBuilder[Task]
       .bindHttp(httpPort, "localhost")
-      .mountService(services, "/")
-      .mountService(sseSuperHeroesService, "/sseStream")
-      .mountService(gqlService, "/graphql")
+      .withHttpApp(GZip(routes.orNotFound))
       .start
       .map(new HttpServer(_))
       .runAsync
