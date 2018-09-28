@@ -6,13 +6,11 @@ import cats.syntax.show._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
-
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
-
 import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
@@ -23,6 +21,13 @@ import scala.concurrent.duration.FiniteDuration
 
 trait CoreDsl extends ProvidedInstances {
   this: BaseFeature ⇒
+
+  // `true` predicate means the feature must be ignored
+  def FeatureToggle(name: String, predicate: (String, Boolean)): FeatureBuilder =
+    if (!predicate._2)
+      Feature(name)
+    else
+      Feature(name).ignoredBecause(predicate._1)
 
   def Feature(name: String) = FeatureBuilder(name)
 
