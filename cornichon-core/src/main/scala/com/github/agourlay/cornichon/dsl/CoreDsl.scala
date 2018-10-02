@@ -26,8 +26,9 @@ trait CoreDsl extends ProvidedInstances {
 
   def Feature(name: String) = FeatureBuilder(name)
 
-  private[dsl] case class FeatureBuilder(name: String, ignored: Boolean = false) {
-    def ignoredBecause(reason: String) = copy(ignored = true)
+  private[dsl] case class FeatureBuilder(name: String, ignored: Option[String] = None) {
+    def ignoredBecause(reason: String): FeatureBuilder = copy(ignored = Some(reason))
+    def ignoredIfDefined(reason: Option[String]): FeatureBuilder = copy(ignored = reason)
   }
 
   implicit final def featureBuilder(f: FeatureBuilder): BodyElementCollector[ScenarioDef, FeatureDef] =
@@ -35,10 +36,11 @@ trait CoreDsl extends ProvidedInstances {
 
   def Scenario(name: String) = ScenarioBuilder(name)
 
-  private[dsl] case class ScenarioBuilder(name: String, ignored: Boolean = false, focus: Boolean = false) {
-    def ignoredBecause(reason: String) = copy(ignored = true)
+  private[dsl] case class ScenarioBuilder(name: String, ignored: Option[String] = None, focus: Boolean = false) {
+    def ignoredBecause(reason: String): ScenarioBuilder = copy(ignored = Some(reason))
+    def ignoredIfDefined(reason: Option[String]): ScenarioBuilder = copy(ignored = reason)
     /** Focus on this scenario ignoring all other scenarios withing a `Feature` */
-    def focused = copy(focus = true)
+    def focused: ScenarioBuilder = copy(focus = true)
     def pending = ScenarioDef(name, Nil, pending = true)
   }
 

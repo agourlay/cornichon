@@ -21,26 +21,27 @@ import scala.util.control.NonFatal
 class Engine(stepPreparers: List[StepPreparer]) {
 
   final def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
-    if (context isIgnored scenario)
-      Task.now(IgnoreScenarioReport(scenario.name, session))
-    else if (context isPending scenario)
-      Task.now(PendingScenarioReport(scenario.name, session))
-    else {
-      val stages = for {
-        beforeResult ← regularStage(context.beforeSteps, beforeLog)
-        mainResult ← if (beforeResult.isValid) regularStage(scenario.steps, mainLog) else noOpStage
-        mainCleanupResult ← cleanupStage()
-        finallyResult ← regularStage(context.finallySteps, finallyLog)
-        finallyCleanupResult ← cleanupStage()
-      } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
+    context.isIgnored(scenario) match {
+      case Some(reason) ⇒
+        Task.now(IgnoreScenarioReport(scenario.name, reason, session))
+      case None if context isPending scenario ⇒
+        Task.now(PendingScenarioReport(scenario.name, session))
+      case _ ⇒
+        val stages = for {
+          beforeResult ← regularStage(context.beforeSteps, beforeLog)
+          mainResult ← if (beforeResult.isValid) regularStage(scenario.steps, mainLog) else noOpStage
+          mainCleanupResult ← cleanupStage()
+          finallyResult ← regularStage(context.finallySteps, finallyLog)
+          finallyCleanupResult ← cleanupStage()
+        } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
 
-      val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-      val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
-      val now = System.nanoTime
-      stages.run(initialRunState).map {
-        case (lastState, aggregatedResult) ⇒
-          ScenarioReport.build(scenario.name, lastState, aggregatedResult, Duration.fromNanos(System.nanoTime - now))
-      }
+        val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
+        val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
+        val now = System.nanoTime
+        stages.run(initialRunState).map {
+          case (lastState, aggregatedResult) ⇒
+            ScenarioReport.build(scenario.name, lastState, aggregatedResult, Duration.fromNanos(System.nanoTime - now))
+        }
     }
 
   private def regularStage(steps: List[Step], stageTitle: InfoLogInstruction): StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { runState ⇒

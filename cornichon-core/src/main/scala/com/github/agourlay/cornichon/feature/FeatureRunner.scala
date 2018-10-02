@@ -11,7 +11,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
   private val featureContext = FeatureExecutionContext(
     beforeSteps = baseFeature.beforeEachScenario.toList,
     finallySteps = baseFeature.afterEachScenario.toList,
-    featureIgnored = featureDef.ignored,
+    featureIgnored = featureDef.ignored.isDefined,
     focusedScenarios = featureDef.focusedScenarios
   )
 
