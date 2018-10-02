@@ -28,6 +28,7 @@ The alternative way is to use the [ScalaTest](http://www.scalatest.org/) flavor 
 - use other build tools (Maven with [ScalaTest Maven plugin](http://www.scalatest.org/user_guide/using_the_scalatest_maven_plugin))
 - run the `Feature` from your IDE
 - package features in an executable jars
+- have `HTML` reports
 
 ``` scala
 // SBT
