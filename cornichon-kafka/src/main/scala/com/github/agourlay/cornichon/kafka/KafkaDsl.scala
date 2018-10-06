@@ -6,11 +6,11 @@ import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.dsl.CoreDsl
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.regular.EffectStep
-import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
+import pureconfig.{ CamelCase, ConfigFieldMapping, ProductHint }
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -76,12 +76,10 @@ trait KafkaDsl {
 }
 
 object KafkaDsl {
-
-  import net.ceedubs.ficus.Ficus._
-  import net.ceedubs.ficus.readers.ArbitraryTypeReader._
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val kafkaConfig = ConfigFactory.load().as[KafkaConfig]("kafka")
+  // if the config does not exist we use the default values
+  lazy val kafkaConfig = pureconfig.loadConfigOrThrow[Option[KafkaConfig]]("kafka").getOrElse(KafkaConfig())
 
   lazy val producer = {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
@@ -117,7 +115,7 @@ object KafkaDsl {
   def buildProducerRecord(topic: String, key: String, message: String): ProducerRecord[String, String] =
     new ProducerRecord[String, String](topic, key, message)
 
-  def buildConsumerRecordJsonProjection(f: String ⇒ String)(record: ConsumerRecord[String, String]) =
+  def buildConsumerRecordJsonProjection(f: String ⇒ String)(record: ConsumerRecord[String, String]): String =
     s"""{
        |  "key": "${record.key()}",
        |  "topic": "${record.topic()}",
@@ -128,10 +126,14 @@ object KafkaDsl {
 }
 
 case class KafkaConfig(
-    bootstrapServers: String,
-    producer: KafkaProducerConfig,
-    consumer: KafkaConsumerConfig)
+    bootstrapServers: String = "localhost:9092",
+    producer: KafkaProducerConfig = KafkaProducerConfig(),
+    consumer: KafkaConsumerConfig = KafkaConsumerConfig())
 
-case class KafkaProducerConfig(ack: String = "all", batchSizeInBytes: Int = 1, retriesConfig: Option[Int])
+object KafkaConfig {
+  implicit val hint = ProductHint[KafkaConfig](allowUnknownKeys = false, fieldMapping = ConfigFieldMapping(CamelCase, CamelCase))
+}
+
+case class KafkaProducerConfig(ack: String = "all", batchSizeInBytes: Int = 1, retriesConfig: Option[Int] = None)
 
 case class KafkaConsumerConfig(groupId: String = s"cornichon-groupId")

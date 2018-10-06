@@ -127,7 +127,7 @@ lazy val core =
         library.catsMacro,
         library.akkaStream,
         library.akkaHttp,
-        library.ficus,
+        library.pureConfig,
         library.parboiled,
         library.fansi,
         library.sangria,
@@ -301,7 +301,7 @@ lazy val library =
       val sangria       = "1.4.2"
       val fansi         = "0.2.5"
       val catsScalaTest = "2.3.1"
-      val ficus         = "1.4.3"
+      val pureConfig    = "0.9.2"
       val monix         = "3.0.0-RC1"
       val sbtTest       = "1.0"
       val http4s        = "0.18.19"
@@ -314,7 +314,7 @@ lazy val library =
     val catsMacro     = "org.typelevel"                 %% "cats-macros"              % Version.cats
     val catsCore      = "org.typelevel"                 %% "cats-core"                % Version.cats
     val scalatest     = "org.scalatest"                 %% "scalatest"                % Version.scalaTest
-    val ficus         = "com.iheart"                    %% "ficus"                    % Version.ficus
+    val pureConfig    = "com.github.pureconfig"         %% "pureconfig"               % Version.pureConfig
     val parboiled     = "org.parboiled"                 %% "parboiled"                % Version.parboiled
     val fansi         = "com.lihaoyi"                   %% "fansi"                    % Version.fansi
     val sangria       = "org.sangria-graphql"           %% "sangria"                  % Version.sangria
