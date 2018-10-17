@@ -49,7 +49,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
       }
 
     case Success(feat) ⇒
-      s"${feat.name}${feat.ignored.fold("")(r ⇒ s" ignored beause $r")}" should {
+      s"${feat.name}${feat.ignored.fold("")(r ⇒ s" ignored because $r")}" should {
         feat.scenarios.foreach { s ⇒
           if (s.ignored.isDefined)
             s"${s.name}${s.ignored.fold("")(r ⇒ s" ($r)")}" ignore Future.successful(Succeeded)
