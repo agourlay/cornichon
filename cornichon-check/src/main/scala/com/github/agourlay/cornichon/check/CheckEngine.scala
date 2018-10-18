@@ -52,7 +52,7 @@ class CheckEngine[A, B, C, D, E, F](
     }
 
   private def loopRun(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
-    if (currentNumberOfTransitions > maxNumberOfTransitions)
+    if (currentNumberOfTransitions >= maxNumberOfTransitions)
       Task.delay((initialRunState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else {
       runActionAndValidatePostConditions(engine, initialRunState, action).flatMap {
@@ -111,13 +111,13 @@ class CheckEngine[A, B, C, D, E, F](
               checkAssertions(newState, action.postConditions)
                 .flatMap { afterConditionIsValid ⇒
                   val failures = afterConditionIsValid.collect { case Left(e) ⇒ e.toList }.flatten
-                  failures match {
-                    case firstFailure :: others ⇒
-                      val errors = NonEmptyList.of(firstFailure, others: _*)
-                      Task.now((initialRunState, FailedStep(cs, errors).asLeft))
-                    case Nil ⇒
-                      // run first state
-                      Task.delay((newState, res))
+                  if (failures.nonEmpty) {
+                    val error = PostConditionBroken(action.description, failures)
+                    val errors = NonEmptyList.one(error)
+                    Task.now((initialRunState, FailedStep(cs, errors).asLeft))
+                  } else {
+                    // run first state
+                    Task.delay((newState, res))
                   }
                 }
             }
@@ -145,8 +145,13 @@ class CheckEngine[A, B, C, D, E, F](
 
 }
 
+case class PostConditionBroken(actionDescription: String, errors: List[CornichonError]) extends CornichonError {
+  def baseErrorMessage: String = s"A post-condition was broken for `$actionDescription`"
+  override val causedBy: List[CornichonError] = errors
+}
+
 case class NoValidTransitionAvailableForState(actionDescription: String) extends CornichonError {
-  def baseErrorMessage: String = s"No outgoing transition found from $actionDescription to another action with valid pre-conditions"
+  def baseErrorMessage: String = s"No outgoing transition found from `$actionDescription` to another action with valid pre-conditions"
 }
 
 sealed trait SuccessEndOfRun

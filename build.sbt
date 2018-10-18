@@ -222,7 +222,10 @@ lazy val check =
     .settings(formattingSettings)
     .settings(
       name := "cornichon-check",
-      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework")
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
+      libraryDependencies ++= Seq(
+        library.scalatest % Test
+      )
     )
 
 lazy val benchmarks =

@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.check
 
 import cats.data.Validated.Invalid
-import cats.data.{ NonEmptyList, ValidatedNel }
+import cats.data.ValidatedNel
 import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.validated._
@@ -105,8 +105,7 @@ case class CheckStep[A, B, C, D, E, F](
         val (fullLogs, xor) = report.fold(
           failedStep ⇒ {
             val fullLogs = failedTitleLog(depth) +: checkState.logs :+ FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime))
-            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, CheckBlockContainFailedSteps(failedStep.errors))
-            (fullLogs, Left(artificialFailedStep))
+            (fullLogs, Left(failedStep))
           },
           _ ⇒ {
             val fullLogs = successTitleLog(depth) +: checkState.logs :+ SuccessLogInstruction(s"Check block succeeded", depth, Some(executionTime))
@@ -135,9 +134,4 @@ case class NoTransitionsDefinitionForStartingAction(actionDescription: String) e
 
 case class InvalidTransitionDefinitionForAction(actionDescription: String) extends CornichonError {
   def baseErrorMessage: String = s"Invalid transition definition for action '$actionDescription'"
-}
-
-case class CheckBlockContainFailedSteps(errors: NonEmptyList[CornichonError]) extends CornichonError {
-  val baseErrorMessage = s"Check block failed"
-  override val causedBy = errors.toList
 }
