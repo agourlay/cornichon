@@ -21,9 +21,13 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
   val resolver = PlaceholderResolver.withoutExtractor()
   val engine = Engine.withStepTitleResolver(resolver)
 
-  def integerGen(rc: RandomContext) = ValueGenerator(
+  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
     genFct = () ⇒ rc.seededRandom.nextInt(10000))
+
+  def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
+    name = "integer",
+    genFct = () ⇒ throw new RuntimeException("boom gen!"))
 
   val identityEffect: EffectStep = EffectStep.fromSync("identity", identity)
 
@@ -31,11 +35,11 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
 
-  def dummyAction1(name: String, preNeverValid: Boolean = false, postNeverValid: Boolean = false, effectStep: EffectStep = identityEffect): ActionN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
+  def dummyAction1(name: String, preNeverValid: Boolean = false, postNeverValid: Boolean = false, effectStep: EffectStep = identityEffect, callGen: Boolean = false): ActionN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Action1(
       description = name,
       preConditions = if (preNeverValid) neverValidAssertStep :: Nil else Nil,
-      effect = _ ⇒ effectStep,
+      effect = g ⇒ if (callGen) { g(); effectStep } else effectStep,
       postConditions = if (postNeverValid) neverValidAssertStep :: Nil else Nil)
 
   "CheckStep" when {
@@ -178,16 +182,6 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
       }
     }
 
-    "honor withSeed" must {
-      "generate seed if not provided" ignore {
-        ???
-      }
-
-      "use given seed" ignore {
-        ???
-      }
-    }
-
     "report failure" must {
 
       "an action explodes" in {
@@ -279,12 +273,46 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
 
     "generators" must {
 
-      "not using a generator should really not call it" ignore {
-        ???
+      "not using a generator should really not call it" in {
+        val starting = dummyAction1("starting action")
+        val otherAction = dummyAction1("other action")
+        val transitions = Map(
+          starting -> ((1.0, otherAction) :: Nil),
+          otherAction -> ((1.0, starting) :: Nil))
+        val model = Model("model with empty transition for starting", starting, transitions)
+        // passing a broken gen but the actions are not calling it...should be good!
+        val modelRunner = ModelRunner.make(brokenIntGen)(model)
+        val seed = 1L
+        val checkStep = CheckStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val s = Scenario("scenario with checkStep", checkStep :: Nil)
+
+        engine.runScenario(Session.newEmpty)(s).map {
+          case f: SuccessScenarioReport ⇒
+            f.isSuccess should be(true)
+
+          case other @ _ ⇒
+            fail(s"should have succeeded but got $other")
+        }
       }
 
-      "fail the test if they throw" ignore {
-        ???
+      "fail the test if the gen throws" in {
+        val starting = dummyAction1("starting action")
+        val otherAction = dummyAction1("other action", callGen = true)
+        val transitions = Map(
+          starting -> ((1.0, otherAction) :: Nil),
+          otherAction -> ((1.0, starting) :: Nil))
+        val model = Model("model with empty transition for starting", starting, transitions)
+        val modelRunner = ModelRunner.make(brokenIntGen)(model)
+        val seed = 1L
+        val checkStep = CheckStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val s = Scenario("scenario with checkStep", checkStep :: Nil)
+
+        engine.runScenario(Session.newEmpty)(s).map {
+          case f: FailureScenarioReport ⇒
+            f.isSuccess should be(false)
+          case other @ _ ⇒
+            fail(s"should have failed but got $other")
+        }
       }
     }
   }
