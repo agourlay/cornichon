@@ -183,10 +183,6 @@
                         <a href="ActionN.html" title="">ActionN</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">CheckBlockContainFailedSteps</a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
                         <a class="trait" href="CheckDsl.html" title=""></a>
                         <a href="CheckDsl.html" title="">CheckDsl</a>
                       </li><li class="current-entities indented5">
@@ -251,6 +247,10 @@
                         <a href="NoValueGenerator$.html" title="">NoValueGenerator</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="class" href="" title=""></a>
+                        <a href="" title="">PostConditionBroken</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="class" href="RandomContext.html" title=""></a>
                         <a href="RandomContext.html" title="">RandomContext</a>
                       </li><li class="current-entities indented5">
@@ -274,8 +274,8 @@
       <div id="definition">
         <div class="big-circle class">c</div>
         <p id="owner"><a href="../../../../index.html" class="extype" name="com">com</a>.<a href="../../../index.html" class="extype" name="com.github">github</a>.<a href="../../index.html" class="extype" name="com.github.agourlay">agourlay</a>.<a href="../index.html" class="extype" name="com.github.agourlay.cornichon">cornichon</a>.<a href="index.html" class="extype" name="com.github.agourlay.cornichon.check">check</a></p>
-        <h1>CheckBlockContainFailedSteps<span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html" title="Permalink">
+        <h1>PostConditionBroken<span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
@@ -288,7 +288,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">CheckBlockContainFailedSteps</span><span class="params">(<span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <span class="name">PostConditionBroken</span><span class="params">(<span name="actionDescription">actionDescription: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="errors">errors: <span class="extype" name="scala.List">List</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       </h4>
 
@@ -323,7 +323,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps"><span>CheckBlockContainFailedSteps</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.core.CornichonError"><span>CornichonError</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="com.github.agourlay.cornichon.check.PostConditionBroken"><span>PostConditionBroken</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.core.CornichonError"><span>CornichonError</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -343,10 +343,10 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]):com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps"></a><a id="&lt;init&gt;:CheckBlockContainFailedSteps"></a>
+              <ol><li name="com.github.agourlay.cornichon.check.PostConditionBroken#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(actionDescription:String,errors:List[com.github.agourlay.cornichon.core.CornichonError]):com.github.agourlay.cornichon.check.PostConditionBroken"></a><a id="&lt;init&gt;:PostConditionBroken"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#&lt;init&gt;(errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]):com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#&lt;init&gt;(actionDescription:String,errors:List[com.github.agourlay.cornichon.core.CornichonError]):com.github.agourlay.cornichon.check.PostConditionBroken" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -355,7 +355,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">CheckBlockContainFailedSteps</span><span class="params">(<span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span>
+        <span class="name">PostConditionBroken</span><span class="params">(<span name="actionDescription">actionDescription: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="errors">errors: <span class="extype" name="scala.List">List</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span>
       </span>
       
       
@@ -372,7 +372,7 @@
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -388,7 +388,7 @@
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html###():Int" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -404,7 +404,7 @@
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -417,10 +417,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.check.PostConditionBroken#actionDescription" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="actionDescription:String"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#actionDescription:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">actionDescription</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -433,26 +449,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps#baseErrorMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.github.agourlay.cornichon.check.PostConditionBroken#baseErrorMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="baseErrorMessage:String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#baseErrorMessage:String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#baseErrorMessage:String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
         <span class="name">baseErrorMessage</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps">CheckBlockContainFailedSteps</a> → <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps#causedBy" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.PostConditionBroken">PostConditionBroken</a> → <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.check.PostConditionBroken#causedBy" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="causedBy:List[com.github.agourlay.cornichon.core.CornichonError]"></a><a id="causedBy:List[CornichonError]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#causedBy:List[com.github.agourlay.cornichon.core.CornichonError]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#causedBy:List[com.github.agourlay.cornichon.core.CornichonError]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -464,11 +480,11 @@
         <span class="name">causedBy</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps">CheckBlockContainFailedSteps</a> → <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.PostConditionBroken">PostConditionBroken</a> → <a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#clone():Object" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -492,7 +508,7 @@
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -505,10 +521,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.check.CheckBlockContainFailedSteps#errors" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]"></a><a id="errors:NonEmptyList[CornichonError]"></a>
+    </li><li name="com.github.agourlay.cornichon.check.PostConditionBroken#errors" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="errors:List[com.github.agourlay.cornichon.core.CornichonError]"></a><a id="errors:List[CornichonError]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#errors:cats.data.NonEmptyList[com.github.agourlay.cornichon.core.CornichonError]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#errors:List[com.github.agourlay.cornichon.core.CornichonError]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -517,14 +533,14 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">errors</span><span class="result">: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>
+        <span class="name">errors</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="../core/CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>
       </span>
       
       
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#finalize():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -546,7 +562,7 @@
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#getClass():Class[_]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -565,7 +581,7 @@
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -581,7 +597,7 @@
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -597,7 +613,7 @@
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#notify():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -616,7 +632,7 @@
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#notifyAll():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -635,7 +651,7 @@
     </li><li name="com.github.agourlay.cornichon.core.CornichonError#renderedMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="renderedMessage:String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#renderedMessage:String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#renderedMessage:String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -651,7 +667,7 @@
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -667,7 +683,7 @@
     </li><li name="com.github.agourlay.cornichon.core.CornichonError#toException" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toException:com.github.agourlay.cornichon.core.CornichonException"></a><a id="toException:CornichonException"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#toException:com.github.agourlay.cornichon.core.CornichonException" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#toException:com.github.agourlay.cornichon.core.CornichonException" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -683,7 +699,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#wait():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -705,7 +721,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -727,7 +743,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/CheckBlockContainFailedSteps.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/PostConditionBroken.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
