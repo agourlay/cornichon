@@ -48,3 +48,6 @@ options:
     - title: Kafka support
       url: modules/module-kafka.html
       menu_section: modules
+    - title: Property testing support
+      url: modules/module-check.html
+      menu_section: modules
