@@ -1,9 +1,9 @@
 ---
 layout: docs
-title:  "Kafka support"
+title:  "Kafka integration"
 ---
 
-# Kafka support
+# Kafka integration
 
 `cornichon-kafka` offers a support for [Kafka](https://kafka.apache.org) v2.0.0
 

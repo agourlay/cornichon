@@ -1,10 +1,10 @@
 ---
 layout: docs
-title:  "Property testing support"
+title:  "Property based testing support"
 ---
 
-# Property testing support
+# Property based testing support
 
-There is a support for property testing through the `cornichon-check` module.
+There is a support for property based testing through the `cornichon-check` module.
 
 TODO

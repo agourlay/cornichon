@@ -45,9 +45,9 @@ options:
     - title: HTTP mock
       url: modules/module-mock.html
       menu_section: modules
-    - title: Kafka support
+    - title: Kafka integration
       url: modules/module-kafka.html
       menu_section: modules
-    - title: Property testing support
+    - title: Property based testing
       url: modules/module-check.html
       menu_section: modules
