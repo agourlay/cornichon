@@ -33,7 +33,7 @@ case class SuccessScenarioReport(scenarioName: String, session: Session, logs: V
   val shouldShowLogs: Boolean = logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty
 }
 
-case class IgnoreScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
+case class IgnoreScenarioReport(scenarioName: String, reason: String, session: Session) extends ScenarioReport {
   val logs = emptyLogs
   val isSuccess = false
   val duration = Duration.Zero

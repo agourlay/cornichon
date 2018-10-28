@@ -55,7 +55,7 @@ lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
-  scalaVersion := "2.12.6",
+  scalaVersion := "2.12.7",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   fork in Test := true,
   scalacOptions ++= compilerOptions,
@@ -127,7 +127,7 @@ lazy val core =
         library.catsMacro,
         library.akkaStream,
         library.akkaHttp,
-        library.ficus,
+        library.pureConfig,
         library.parboiled,
         library.fansi,
         library.sangria,
@@ -222,7 +222,10 @@ lazy val check =
     .settings(formattingSettings)
     .settings(
       name := "cornichon-check",
-      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework")
+      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
+      libraryDependencies ++= Seq(
+        library.scalatest % Test
+      )
     )
 
 lazy val benchmarks =
@@ -291,17 +294,17 @@ lazy val library =
     object Version {
       val scalaTest     = "3.0.5"
       val akkaHttp      = "10.1.5"
-      val akkaStream    = "2.5.16"
-      val cats          = "1.3.1"
-      val parboiled     = "2.1.4"
+      val akkaStream    = "2.5.17"
+      val cats          = "1.4.0"
+      val parboiled     = "2.1.5"
       val scalaCheck    = "1.14.0"
       val sangriaCirce  = "1.2.1"
-      val circe         = "0.10.0-M2"
-      val diffson       = "3.0.0"
+      val circe         = "0.10.0"
+      val diffson       = "3.1.0"
       val sangria       = "1.4.2"
       val fansi         = "0.2.5"
       val catsScalaTest = "2.3.1"
-      val ficus         = "1.4.3"
+      val pureConfig    = "0.9.2"
       val monix         = "3.0.0-RC2-d0feeba"
       val sbtTest       = "1.0"
       val http4s        = "0.19.0-M2"
@@ -314,7 +317,7 @@ lazy val library =
     val catsMacro     = "org.typelevel"                 %% "cats-macros"              % Version.cats
     val catsCore      = "org.typelevel"                 %% "cats-core"                % Version.cats
     val scalatest     = "org.scalatest"                 %% "scalatest"                % Version.scalaTest
-    val ficus         = "com.iheart"                    %% "ficus"                    % Version.ficus
+    val pureConfig    = "com.github.pureconfig"         %% "pureconfig"               % Version.pureConfig
     val parboiled     = "org.parboiled"                 %% "parboiled"                % Version.parboiled
     val fansi         = "com.lihaoyi"                   %% "fansi"                    % Version.fansi
     val sangria       = "org.sangria-graphql"           %% "sangria"                  % Version.sangria

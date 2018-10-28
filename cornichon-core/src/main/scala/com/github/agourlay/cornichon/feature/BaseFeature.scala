@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
-import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler
 
 import scala.annotation.tailrec
@@ -50,10 +49,9 @@ trait BaseFeature {
 
 // Protect and free resources
 object BaseFeature {
-  import net.ceedubs.ficus.Ficus._
-  import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
-  lazy val config = ConfigFactory.load().as[Config]("cornichon")
+  // if the config does not exist we use the default values
+  lazy val config = pureconfig.loadConfigOrThrow[Option[Config]]("cornichon").getOrElse(Config())
 
   private val hooks = new ConcurrentLinkedDeque[() ⇒ Future[_]]()
 

@@ -42,7 +42,14 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
         Done.taskDone
       },
       feature ⇒ {
-        println(SuccessLogInstruction(s"${feature.name}:", 0).colorized)
+        val featureLog = feature.ignored match {
+          case Some(reason) ⇒
+            val msg = s"${feature.name}: ignored because $reason"
+            WarningLogInstruction(msg, 0).colorized
+          case None ⇒
+            SuccessLogInstruction(s"${feature.name}:", 0).colorized
+        }
+        println(featureLog)
         FeatureRunner(feature, baseFeature)
           .runFeature(filterScenarios)(generateResultEvent(eventHandler))
           .map { results ⇒
@@ -79,7 +86,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
       LogInstruction.printLogs(f.logs)
 
     case i: IgnoreScenarioReport ⇒
-      val msg = s"- **ignored** ${i.scenarioName} "
+      val msg = s"- **ignored** ${i.scenarioName} (${i.reason}) "
       println(WarningLogInstruction(msg, 0).colorized)
 
     case p: PendingScenarioReport ⇒

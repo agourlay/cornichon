@@ -1,17 +1,16 @@
 package com.github.agourlay.cornichon.scalatest
 
 import com.github.agourlay.cornichon.CornichonFeature
-
 import scala.concurrent.duration._
 
-class FocusedScenario extends CornichonFeature {
-  def feature = Feature("feature with scenario focus") {
+class IgnoredFeature extends CornichonFeature {
+  def feature = Feature("feature").ignoredBecause("it takes too long!") {
     Scenario("Scenario 1") {
       Given I wait(10.hours)
       And I print_step("Scenario 1 is finished")
     }
 
-    Scenario("Scenario 2").focused {
+    Scenario("Scenario 2") {
       And I print_step("Scenario 2 is finished")
     }
 
@@ -20,7 +19,7 @@ class FocusedScenario extends CornichonFeature {
       And I print_step("Scenario 3 is finished")
     }
 
-    Scenario("Scenario 4").focused {
+    Scenario("Scenario 4") {
       And I print_step("Scenario 4 is finished")
     }
   }

@@ -34,7 +34,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
   Try { feature } match {
     case Failure(e) ⇒
       "Cornichon" should {
-        "bootstrap" in {
+        "load feature definition" in {
           val msg = e match {
             case c: CornichonError ⇒ c.renderedMessage
             case e: Throwable      ⇒ e.getMessage
@@ -49,10 +49,14 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
       }
 
     case Success(feat) ⇒
-      feat.name should {
+      s"${feat.name}${feat.ignored.fold("")(r ⇒ s" ignored because $r")}" should {
         feat.scenarios.foreach { s ⇒
-          if (feat.ignored || s.ignored || (feat.focusedScenarios.nonEmpty && !feat.focusedScenarios.contains(s.name)))
-            s.name ignore Future.successful(Succeeded)
+          if (s.ignored.isDefined)
+            s"${s.name}${s.ignored.fold("")(r ⇒ s" ($r)")}" ignore Future.successful(Succeeded)
+          else if (feat.ignored.isDefined)
+            s"${s.name}${feat.ignored.fold("")(_ ⇒ s" (feature ignored)")}" ignore Future.successful(Succeeded)
+          else if (feat.focusedScenarios.nonEmpty && !feat.focusedScenarios.contains(s.name))
+            s"${s.name} (no focus)" ignore Future.successful(Succeeded)
           else if (s.pending)
             s.name in pending
           else

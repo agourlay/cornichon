@@ -9,7 +9,7 @@ An `EffectStep` can be understood as the following function `Session => Future[E
 
 This means that an `EffectStep` runs a side effect and populates the `Session` with potential result values or returns an error.
 
-A ``ession` is a Map-like object used to propagate state throughout a `scenario`. It is used to resolve [placeholders](#placeholders) and save the result computations for later assertions.
+A `Session` is a Map-like object used to propagate state throughout a `scenario`. It is used to resolve [placeholders](#placeholders) and save the result computations for later assertions.
 
 Here is the most simple `EffectStep`:
 

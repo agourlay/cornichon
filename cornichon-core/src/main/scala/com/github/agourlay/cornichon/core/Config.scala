@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.core
 
+import pureconfig.{ CamelCase, ConfigFieldMapping, ProductHint }
+
 import scala.concurrent.duration._
 
 case class Config(
@@ -12,3 +14,7 @@ case class Config(
     failOnDuplicateHeaders: Boolean = false,
     addAcceptGzipByDefault: Boolean = false
 )
+
+object Config {
+  implicit val hint = ProductHint[Config](allowUnknownKeys = false, fieldMapping = ConfigFieldMapping(CamelCase, CamelCase))
+}
