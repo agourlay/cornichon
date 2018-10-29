@@ -2,11 +2,8 @@ package com.github.agourlay.cornichon.http.server
 
 import java.net.NetworkInterface
 
-import cats.effect.ExitCode
-import cats.effect.concurrent.Ref
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.dsl.CloseableResource
-import fs2.concurrent.SignallingRef
 import monix.eval.Task
 import monix.execution.Scheduler
 import org.http4s.HttpRoutes
@@ -38,35 +35,19 @@ class MockHttpServer(interface: Option[String], port: Option[Range], mockService
     }
 
   private def startBlazeServer(port: Int): Task[(String, CloseableResource)] =
-    SignallingRef[Task, Boolean](false).flatMap { signal ⇒
-
-      val server = BlazeBuilder[Task]
-        .bindHttp(port, selectedInterface)
-        .mountService(mockService, "/")
-        .serveWhile(signal, Ref.unsafe(ExitCode.Success))
-        .compile
-        .drain
-        .uncancelable // we do not want the Racing trick below to stop the server
-
-      val shutdownHook = {
+    BlazeBuilder[Task]
+      .bindHttp(port, selectedInterface)
+      .mountService(mockService, "/")
+      .resource
+      .use(_ ⇒ Task.never)
+      .start
+      .map { fiber ⇒
         val fullAddress = s"http://$selectedInterface:$port"
         val closeable = new CloseableResource {
-          def stopResource(): Task[Unit] = signal.set(true)
+          def stopResource(): Task[Unit] = fiber.cancel
         }
-        Task.now(fullAddress -> closeable)
+        fullAddress -> closeable
       }
-
-      // We need to use `serveWhile` because of the explicit lifecycle
-      // this means the Tasks is not returning until the server is shutdown
-      // the problem is that we need:
-      // - to retry in case of error
-      // - succeed ASAP
-      // Having the `allocate` pattern on the server could cleanup this mess
-      Task.race(server, shutdownHook.delayExecution(200.millis)) map {
-        case Left(_)   ⇒ throw new IllegalStateException("The server returned with a success too quickly")
-        case Right(ss) ⇒ ss
-      }
-    }
 
   private def bestInterface(): String =
     NetworkInterface.getNetworkInterfaces.asScala
