@@ -125,7 +125,7 @@ trait CoreDsl extends ProvidedInstances {
 
   def wait(duration: FiniteDuration): Step = EffectStep.fromAsync(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ Task.delay(s).delayExecution(duration).runAsync
+    effect = s ⇒ Task.delay(s).delayExecution(duration).runToFuture
   )
 
   def save(input: (String, String)) = {

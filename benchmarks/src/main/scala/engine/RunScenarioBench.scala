@@ -52,11 +52,11 @@ class RunScenarioBench {
   }
 
   //    [info] Benchmark                (stepsNumber)   Mode  Cnt       Score      Error  Units
-  //    [info] EngineBench.lotsOfSteps             10  thrpt   20  135244.457 ± 2127.784  ops/s
-  //    [info] EngineBench.lotsOfSteps             20  thrpt   20   84864.965 ±  867.803  ops/s
-  //    [info] EngineBench.lotsOfSteps             50  thrpt   20   40197.461 ±  867.660  ops/s
-  //    [info] EngineBench.lotsOfSteps            100  thrpt   20   21889.245 ±  297.937  ops/s
-  //    [info] EngineBench.lotsOfSteps            200  thrpt   20   11245.964 ±  136.507  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps             10  thrpt   20  163803.211 ± 596.201  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps             20  thrpt   20  101749.604 ± 181.777  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps             50  thrpt   20   47216.722 ±  72.985  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps            100  thrpt   20   23834.687 ±  35.344  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps            200  thrpt   20   12273.652 ±  12.322  ops/s
   @Benchmark
   def lotsOfSteps() = {
     val half = stepsNumber.toInt / 2
@@ -64,7 +64,7 @@ class RunScenarioBench {
     val effectSteps = List.fill(half)(effectStep)
     val scenario = Scenario("test scenario", setupSession +: (assertSteps ++ effectSteps))
     val f = engine.runScenario(Session.newEmpty)(scenario)
-    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
+    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 }

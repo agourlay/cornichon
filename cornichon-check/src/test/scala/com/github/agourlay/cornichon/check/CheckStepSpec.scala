@@ -15,7 +15,7 @@ import scala.concurrent.Future
 class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
 
   implicit def taskToFuture[A](t: Task[A])(implicit s: Scheduler): Future[A] =
-    t.runAsync(s)
+    t.runToFuture(s)
 
   implicit val scheduler = Scheduler.Implicits.global
   val resolver = PlaceholderResolver.withoutExtractor()

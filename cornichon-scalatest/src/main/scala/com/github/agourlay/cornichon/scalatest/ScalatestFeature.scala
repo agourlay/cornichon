@@ -76,7 +76,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
                   throw new RuntimeException(s"Scalatest filters ignored scenario upstream, this should never happen\n$i")
                 case p: PendingScenarioReport ⇒
                   throw new RuntimeException(s"Scalatest filters pending scenario upstream, this should never happen\n$p")
-              }.runAsync
+              }.runToFuture
             }
         }
       }

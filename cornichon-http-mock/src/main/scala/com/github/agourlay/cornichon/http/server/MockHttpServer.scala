@@ -13,7 +13,6 @@ import org.http4s.HttpRoutes
 import org.http4s.server.blaze.BlazeBuilder
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Random
 
@@ -22,11 +21,11 @@ class MockHttpServer(interface: Option[String], port: Option[Range], mockService
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r ⇒ Random.shuffle(r.toList))
 
-  def startServer(): Future[(String, CloseableResource)] =
+  def startServer(): Task[(String, CloseableResource)] =
     if (randomPortOrder.isEmpty)
-      Future.failed(MockHttpServerError.toException)
+      Task.raiseError(MockHttpServerError.toException)
     else
-      startServerTryPorts(randomPortOrder).runAsync
+      startServerTryPorts(randomPortOrder)
 
   private def startServerTryPorts(ports: List[Int], retry: Int = 0): Task[(String, CloseableResource)] =
     startBlazeServer(ports.head).onErrorHandleWith {

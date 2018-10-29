@@ -22,7 +22,7 @@ case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: Fini
     val nestedRunState = initialRunState.nestedContext
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
-    Observable.fromIterator(List.fill(factor)(()).iterator)
+    Observable.fromIterable(List.fill(factor)(()))
       .mapParallelUnordered(factor)(_ ⇒ engine.runSteps(nested, nestedRunState))
       .takeUntil(Observable.evalDelayed(maxTime, ()))
       .toListL

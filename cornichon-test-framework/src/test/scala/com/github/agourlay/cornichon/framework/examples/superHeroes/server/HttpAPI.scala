@@ -179,12 +179,12 @@ class HttpAPI() extends Http4sDsl[Task] {
         .serveWhile(signal, Ref.unsafe(ExitCode.Success))
         .compile
         .drain
-        .runAsync
+        .runToFuture
 
       new HttpServer(signal)
-    }.runAsync(s)
+    }.runToFuture(s)
 }
 
 class HttpServer(signal: SignallingRef[Task, Boolean])(implicit s: Scheduler) {
-  def shutdown(): CancelableFuture[Unit] = signal.set(true).runAsync
+  def shutdown(): CancelableFuture[Unit] = signal.set(true).runToFuture
 }

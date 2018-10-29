@@ -18,7 +18,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
   override def taskDef(): TaskDef = task
 
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
-    Await.result(loadAndExecuteFeature(eventHandler).runAsync, Duration.Inf)
+    Await.result(loadAndExecuteFeature(eventHandler).runToFuture, Duration.Inf)
     Array.empty
   }
 

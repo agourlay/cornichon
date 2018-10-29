@@ -112,11 +112,11 @@ class HttpService(
     ignoreFromWithHeaders: HeaderSelection = SelectNone): Session ⇒ Future[Either[CornichonError, Session]] =
     s ⇒ {
       val effect = requestEffectTask(request, extractor, expectedStatus, ignoreFromWithHeaders)
-      effect(s).runAsync
+      effect(s).runToFuture
     }
 
   def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): Session ⇒ Future[Either[CornichonError, Session]] =
-    s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).value.runAsync
+    s ⇒ runStreamRequest(request, expectedStatus, extractor)(s).value.runToFuture
 
   def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
