@@ -23,7 +23,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
 
   private val mockState = new MockServerStateHolder()
 
-  def fetchRecordedRequestsAsJson() = mockState.getReceivedRequest.map { req ⇒
+  def fetchRecordedRequestsAsJson(): Vector[Json] = mockState.getReceivedRequest.map { req ⇒
     Json.fromFields(
       Seq(
         "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
@@ -35,7 +35,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
     )
   }
 
-  val mockService = HttpService[Task] {
+  val mockService = HttpRoutes.of[Task] {
     case GET -> Root / "requests-received" ⇒
       val reqs = fetchRecordedRequestsAsJson()
       val body = Json.fromValues(reqs)
