@@ -83,14 +83,13 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
           .withHeaders(buildHeaders(cReq.headers))
           .withUri(addQueryParams(uri, cReq.params))
 
-        val resp = cReq.body
-          .fold(Task.now(req))(b ⇒ req.withBody(b))
-          .flatMap(r ⇒ httpClient.fetch(r)(handleResponse))
-          .map(_.asRight[CornichonError])
+        val completeRequest = cReq.body.fold(req)(b ⇒ req.withEntity(b))
+
+        val response = httpClient.fetch(completeRequest)(handleResponse).map(_.asRight[CornichonError])
 
         val timeout = Task.delay(TimeoutErrorAfter(cReq, t).asLeft).delayExecution(t)
 
-        Task.race(resp, timeout)
+        Task.race(response, timeout)
           .map(_.fold(identity, identity))
           .onErrorRecover { case t: Throwable ⇒ RequestError(cReq, t).asLeft }
       }
