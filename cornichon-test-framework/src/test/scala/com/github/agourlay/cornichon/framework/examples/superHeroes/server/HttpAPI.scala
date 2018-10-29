@@ -2,15 +2,18 @@ package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
+import cats.effect.ExitCode
+import cats.effect.concurrent.Ref
 import cats.implicits._
+import fs2.concurrent.SignallingRef
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._
 import io.circe.syntax._
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.{ CancelableFuture, Scheduler }
-import org.http4s.server.{ AuthMiddleware, Router, Server }
-import org.http4s.server.blaze.{ BlazeServerBuilder }
+import org.http4s.server.{ AuthMiddleware, Router }
+import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
@@ -167,14 +170,21 @@ class HttpAPI() extends Http4sDsl[Task] {
   )
 
   def start(httpPort: Int): CancelableFuture[HttpServer] =
-    BlazeServerBuilder[Task]
-      .bindHttp(httpPort, "localhost")
-      .withHttpApp(GZip(routes.orNotFound))
-      .start
-      .map(new HttpServer(_))
-      .runAsync
+    SignallingRef(false).map { signal ⇒
+
+      // The process is started without binding and shutdown through a Signal
+      BlazeServerBuilder[Task]
+        .bindHttp(httpPort, "localhost")
+        .withHttpApp(GZip(routes.orNotFound))
+        .serveWhile(signal, Ref.unsafe(ExitCode.Success))
+        .compile
+        .drain
+        .runAsync
+
+      new HttpServer(signal)
+    }.runAsync(s)
 }
 
-class HttpServer(server: Server[Task])(implicit s: Scheduler) {
-  def shutdown() = server.shutdown.runAsync
+class HttpServer(signal: SignallingRef[Task, Boolean])(implicit s: Scheduler) {
+  def shutdown(): CancelableFuture[Unit] = signal.set(true).runAsync
 }

@@ -187,7 +187,7 @@ object HttpDsl {
   lazy val globalHttpClient: HttpClient = {
     val c = {
       if (BaseFeature.config.useExperimentalHttp4sClient)
-        new Http4sClient(Scheduler.Implicits.global)
+        new Http4sClient(Scheduler.Implicits.global, scala.concurrent.ExecutionContext.global)
       else
         new AkkaHttpClient(scala.concurrent.ExecutionContext.global)
     }
