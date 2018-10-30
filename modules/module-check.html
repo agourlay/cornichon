@@ -18,7 +18,7 @@
 
 <p>Each action has a set of pre-conditions and a set of post-conditions that are checked automatically.</p>
 
-<p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API to reverse a string (this is obviously a silly example as one would never use <code class="highlighter-rouge">cornichon-check</code>).</p>
+<p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API to reverse a string (this is obviously a silly example as one would simply use <code class="highlighter-rouge">Scalacheck</code> for it).</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
@@ -72,6 +72,58 @@
 <span class="o">}</span>
 
 </code></pre></div></div>
+
+<p>To understand what is going on, we can have a look at the logs produced by this scenario (sadly without colors here).</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
+Starting scenario 'reverse string'
+- reverse string (44 millis)
+
+   Scenario : reverse string
+      main steps
+      Checking model 'reversing a string' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1540908528908
+         Run #1
+            generate a string with values ['String' -&gt; 'QcPcVIYl06vqtqHbcMCh']
+            save random string (1 millis)
+            reverse a string
+            save reversed random string (4 millis)
+         Run #1 - End reached on action 'reverse a string' after 1 transitions
+         Run #2
+            generate a string with values ['String' -&gt; 'V3gRTwpsyhIQz5YNQjvC']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #2 - End reached on action 'reverse a string' after 1 transitions
+         Run #3
+            generate a string with values ['String' -&gt; 'fjUXGjqi9rB5Erjqn3jB']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #3 - End reached on action 'reverse a string' after 1 transitions
+         Run #4
+            generate a string with values ['String' -&gt; '8kWVTB7kbia67cc6m6DP']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #4 - End reached on action 'reverse a string' after 1 transitions
+         Run #5
+            generate a string with values ['String' -&gt; 'xOFnSeuBRWsePMKlFWlG']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #5 - End reached on action 'reverse a string' after 1 transitions
+      Check block succeeded (41 millis)
+
+</code></pre></div></div>
+
+<p>We can see that:</p>
+<ul>
+  <li>we have performed 5 runs of 1 transition each through the state machine</li>
+  <li>each run called <code class="highlighter-rouge">generateAction</code> followed by <code class="highlighter-rouge">reverseAction</code></li>
+  <li>each run stopped because no other transitions are left to explore from <code class="highlighter-rouge">reverseAction</code></li>
+  <li>the string generator has been called for each run</li>
+  <li>no post-condition has been broken</li>
+</ul>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
