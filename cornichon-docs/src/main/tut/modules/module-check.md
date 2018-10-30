@@ -80,7 +80,7 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
 
 ```
 
-To understand what is going on, we can have a look at the logs produced by this scenario (sadly without colors here).
+To understand what is going on, we can have a look at the logs produced by this scenario.
 
 ```
 Basic examples of checks:
@@ -126,7 +126,7 @@ Starting scenario 'reverse string'
 
 We can see that:
   - we have performed 5 runs of 1 transition each through the state machine
-  - each run called `generateAction` followed by `reverseAction`
+  - each run called `generateStringAction` followed by `reverseAction`
   - each run stopped because no other transitions are left to explore from `reverseAction`
   - the string generator has been called for each run
   - no post-condition has been broken
