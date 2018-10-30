@@ -160,11 +160,13 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         var uglyCounter = 0
         val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
-        val starting = dummyAction1("starting action", effectStep = incrementEffect)
+        val starting = dummyAction1("starting action")
         val otherAction = dummyAction1("other action", effectStep = incrementEffect)
+        val otherActionTwo = dummyAction1("other action two ", effectStep = incrementEffect)
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, starting) :: Nil))
+          otherAction -> ((1.0, otherActionTwo) :: Nil),
+          otherActionTwo -> ((1.0, otherAction) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L

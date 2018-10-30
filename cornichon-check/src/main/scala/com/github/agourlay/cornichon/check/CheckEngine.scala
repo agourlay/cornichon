@@ -52,7 +52,7 @@ class CheckEngine[A, B, C, D, E, F](
     }
 
   private def loopRun(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
-    if (currentNumberOfTransitions >= maxNumberOfTransitions)
+    if (currentNumberOfTransitions > maxNumberOfTransitions)
       Task.delay((initialRunState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else {
       runActionAndValidatePostConditions(engine, initialRunState, action).flatMap {
