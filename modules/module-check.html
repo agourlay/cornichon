@@ -73,7 +73,7 @@
 
 </code></pre></div></div>
 
-<p>To understand what is going on, we can have a look at the logs produced by this scenario (sadly without colors here).</p>
+<p>To understand what is going on, we can have a look at the logs produced by this scenario.</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
 Starting scenario 'reverse string'
@@ -119,7 +119,7 @@ Starting scenario 'reverse string'
 <p>We can see that:</p>
 <ul>
   <li>we have performed 5 runs of 1 transition each through the state machine</li>
-  <li>each run called <code class="highlighter-rouge">generateAction</code> followed by <code class="highlighter-rouge">reverseAction</code></li>
+  <li>each run called <code class="highlighter-rouge">generateStringAction</code> followed by <code class="highlighter-rouge">reverseAction</code></li>
   <li>each run stopped because no other transitions are left to explore from <code class="highlighter-rouge">reverseAction</code></li>
   <li>the string generator has been called for each run</li>
   <li>no post-condition has been broken</li>
