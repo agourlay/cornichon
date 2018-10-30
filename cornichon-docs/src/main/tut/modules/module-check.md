@@ -24,7 +24,7 @@ Such state machine wires together a set of actions that relate to each others th
 
 Each action has a set of pre-conditions and a set of post-conditions that are checked automatically.
 
-Below is an example presenting the current `cornichon-check` API to reverse a string (this is obviously a silly example as one would never use `cornichon-check`).
+Below is an example presenting the current `cornichon-check` API to reverse a string (this is obviously a silly example as one would simply use `Scalacheck` for it).
 
 ```tut:silent
 import com.github.agourlay.cornichon.CornichonFeature
@@ -79,3 +79,54 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
 }
 
 ```
+
+To understand what is going on, we can have a look at the logs produced by this scenario (sadly without colors here).
+
+```
+Basic examples of checks:
+Starting scenario 'reverse string'
+- reverse string (44 millis)
+
+   Scenario : reverse string
+      main steps
+      Checking model 'reversing a string' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1540908528908
+         Run #1
+            generate a string with values ['String' -> 'QcPcVIYl06vqtqHbcMCh']
+            save random string (1 millis)
+            reverse a string
+            save reversed random string (4 millis)
+         Run #1 - End reached on action 'reverse a string' after 1 transitions
+         Run #2
+            generate a string with values ['String' -> 'V3gRTwpsyhIQz5YNQjvC']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #2 - End reached on action 'reverse a string' after 1 transitions
+         Run #3
+            generate a string with values ['String' -> 'fjUXGjqi9rB5Erjqn3jB']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #3 - End reached on action 'reverse a string' after 1 transitions
+         Run #4
+            generate a string with values ['String' -> '8kWVTB7kbia67cc6m6DP']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #4 - End reached on action 'reverse a string' after 1 transitions
+         Run #5
+            generate a string with values ['String' -> 'xOFnSeuBRWsePMKlFWlG']
+            save random string (0 millis)
+            reverse a string
+            save reversed random string (0 millis)
+         Run #5 - End reached on action 'reverse a string' after 1 transitions
+      Check block succeeded (41 millis)
+
+```
+
+We can see that:
+  - we have performed 5 runs of 1 transition each through the state machine
+  - each run called `generateAction` followed by `reverseAction`
+  - each run stopped because no other transitions are left to explore from `reverseAction`
+  - the string generator has been called for each run
+  - no post-condition has been broken
