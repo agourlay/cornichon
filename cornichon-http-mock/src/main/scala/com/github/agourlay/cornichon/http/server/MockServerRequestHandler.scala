@@ -64,11 +64,11 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
       }
 
     case POST -> Root / "toggle-error-mode" ⇒
-      mockState.toggleErrorMode
+      mockState.toggleErrorMode()
       Ok()
 
     case POST -> Root / "toggle-bad-request-mode" ⇒
-      mockState.toggleBadRequestMode
+      mockState.toggleBadRequestMode()
       Ok()
 
     case _ if mockState.getErrorMode ⇒
@@ -109,7 +109,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
       .map { decodedBody ⇒
         val req = HttpRequest[String](
           method = httpMethodMapper(rawReq.method),
-          url = rawReq.uri.path.toString(),
+          url = rawReq.uri.path.toString,
           body = Some(decodedBody),
           params = rawReq.params.toList,
           headers = rawReq.headers.map(h ⇒ (h.name.value, h.value))(breakOut)
