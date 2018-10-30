@@ -49,6 +49,7 @@ trait BaseFeature {
 
 // Protect and free resources
 object BaseFeature {
+  import pureconfig.generic.auto._
 
   // if the config does not exist we use the default values
   lazy val config = pureconfig.loadConfigOrThrow[Option[Config]]("cornichon").getOrElse(Config())

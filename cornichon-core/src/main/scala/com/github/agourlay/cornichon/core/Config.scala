@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.core
 
-import pureconfig.{ CamelCase, ConfigFieldMapping, ProductHint }
+import pureconfig.generic.ProductHint
+import pureconfig.{ CamelCase, ConfigFieldMapping }
 
 import scala.concurrent.duration._
 
