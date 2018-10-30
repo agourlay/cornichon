@@ -6,7 +6,72 @@
 
 <p>Although the implementations are clearly different due to the <code class="highlighter-rouge">cornichon</code> and Scala concepts; this article remains a great introduction to the problem we are trying to solve with <code class="highlighter-rouge">cornichon-check</code>.</p>
 
-<p>TODO</p>
+<h2 id="concept">Concept</h2>
+
+<p>Performing property based testing of a pure function is quite easy, for <code class="highlighter-rouge">all</code> possible values, check that a given invariant is valid.</p>
+
+<p>In the case of an HTTP API, it is more difficult to perform such operations, you are more often than not testing that a set of invariants are valid throughout a workflow.</p>
+
+<p>The key idea is to describe the possible interactions with the API as a state machine which can be automatically explored.</p>
+
+<p>Such state machine wires together a set of actions that relate to each others through transitions.</p>
+
+<p>Each action has a set of pre-conditions and a set of post-conditions that are checked automatically.</p>
+
+<p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API to reverse a string (this is obviously a silly example as one would never use <code class="highlighter-rouge">cornichon-check</code>).</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.steps.regular.EffectStep</span>
+
+<span class="k">class</span> <span class="nc">BasicExampleChecks</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="k">with</span> <span class="nc">CheckDsl</span> <span class="o">{</span>
+
+  <span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+    <span class="n">name</span> <span class="k">=</span> <span class="s">"String"</span><span class="o">,</span>
+    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+
+  <span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Basic examples of checks"</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"reverse string"</span><span class="o">)</span> <span class="o">{</span>
+      <span class="nc">Given</span> <span class="n">I</span> <span class="n">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">5</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">1</span><span class="o">)(</span>
+        <span class="n">modelRunner</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="n">stringGen</span><span class="o">)(</span>
+          <span class="n">model</span> <span class="k">=</span> <span class="o">{</span>
+            <span class="k">val</span> <span class="n">generateStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
+              <span class="n">description</span> <span class="k">=</span> <span class="s">"generate a string"</span><span class="o">,</span>
+              <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+              <span class="n">effect</span> <span class="k">=</span> <span class="n">g</span> <span class="k">⇒</span> <span class="o">{</span>
+                <span class="k">val</span> <span class="n">randomString</span> <span class="k">=</span> <span class="n">g</span><span class="o">()</span>
+                <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="s">"save random string"</span><span class="o">,</span> <span class="k">_</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">,</span> <span class="n">randomString</span><span class="o">))</span>
+              <span class="o">},</span>
+              <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+            <span class="k">val</span> <span class="n">reverseAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
+              <span class="n">description</span> <span class="k">=</span> <span class="s">"reverse a string"</span><span class="o">,</span>
+              <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"reversed-random-input"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+              <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="s">"save reversed random string"</span><span class="o">,</span> <span class="n">s</span> <span class="k">⇒</span> <span class="o">{</span>
+                <span class="k">for</span> <span class="o">{</span>
+                  <span class="n">value</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">)</span>
+                  <span class="n">reversed</span> <span class="k">=</span> <span class="n">value</span><span class="o">.</span><span class="n">reverse</span>
+                  <span class="n">s1</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"reversed-random-input"</span><span class="o">,</span> <span class="n">reversed</span><span class="o">)</span>
+                <span class="o">}</span> <span class="k">yield</span> <span class="n">s1</span>
+              <span class="o">}),</span>
+              <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"reversed-random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+            <span class="nc">Model</span><span class="o">(</span>
+              <span class="n">description</span> <span class="k">=</span> <span class="s">"reversing a string"</span><span class="o">,</span>
+              <span class="n">startingAction</span> <span class="k">=</span> <span class="n">generateStringAction</span><span class="o">,</span>
+              <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
+                <span class="n">generateStringAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">1.0</span> <span class="o">-&gt;</span> <span class="n">reverseAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+              <span class="o">)</span>
+            <span class="o">)</span>
+          <span class="o">}</span>
+        <span class="o">)</span>
+      <span class="o">)</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
