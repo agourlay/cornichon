@@ -171,10 +171,6 @@
                         <a href="" title="">HttpMockServerResource</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="trait" href="HttpServer.html" title=""></a>
-                        <a href="HttpServer.html" title="">HttpServer</a>
-                      </li><li class="current-entities indented6">
-                        <span class="separator"></span>
                         <a class="class" href="MockHttpServer.html" title=""></a>
                         <a href="MockHttpServer.html" title="">MockHttpServer</a>
                       </li><li class="current-entities indented6">
@@ -606,6 +602,22 @@
       </span>
       
       
+    </li><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#scheduler" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="scheduler:monix.execution.Scheduler"></a><a id="scheduler:Scheduler"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#scheduler:monix.execution.Scheduler" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scheduler</span><span class="result">: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>
+      </span>
+      
+      
     </li><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#sessionTarget" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sessionTarget:String"></a>
       <span class="permalink">
@@ -619,22 +631,6 @@
       </span>
       <span class="symbol">
         <span class="name">sessionTarget</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.server.HttpMockServerResource">HttpMockServerResource</a> → <a href="../../dsl/BlockScopedResource.html" class="extype" name="com.github.agourlay.cornichon.dsl.BlockScopedResource">BlockScopedResource</a></dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#startResource" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="startResource():monix.eval.Task[com.github.agourlay.cornichon.dsl.ResourceHandle]"></a><a id="startResource():Task[ResourceHandle]"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#startResource():monix.eval.Task[com.github.agourlay.cornichon.dsl.ResourceHandle]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">startResource</span><span class="params">()</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<a href="../../dsl/ResourceHandle.html" class="extype" name="com.github.agourlay.cornichon.dsl.ResourceHandle">ResourceHandle</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.server.HttpMockServerResource">HttpMockServerResource</a> → <a href="../../dsl/BlockScopedResource.html" class="extype" name="com.github.agourlay.cornichon.dsl.BlockScopedResource">BlockScopedResource</a></dd></dl></div>
@@ -654,6 +650,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.http.server.HttpMockServerResource#use" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="use[A](outsideRunState:com.github.agourlay.cornichon.core.RunState)(f:com.github.agourlay.cornichon.core.RunState=&gt;monix.eval.Task[A]):monix.eval.Task[(com.github.agourlay.cornichon.core.Session,A)]"></a><a id="use[A](RunState)((RunState)⇒Task[A]):Task[(Session,A)]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/HttpMockServerResource.html#use[A](outsideRunState:com.github.agourlay.cornichon.core.RunState)(f:com.github.agourlay.cornichon.core.RunState=&gt;monix.eval.Task[A]):monix.eval.Task[(com.github.agourlay.cornichon.core.Session,A)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">use</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="outsideRunState">outsideRunState: <a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a></span>)</span><span class="params">(<span name="f">f: (<a href="../../core/RunState.html" class="extype" name="com.github.agourlay.cornichon.core.RunState">RunState</a>) ⇒ <span class="extype" name="monix.eval.Task">Task</span>[<span class="extype" name="com.github.agourlay.cornichon.http.server.HttpMockServerResource.use.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[(<a href="../../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>, <span class="extype" name="com.github.agourlay.cornichon.http.server.HttpMockServerResource.use.A">A</span>)]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.server.HttpMockServerResource">HttpMockServerResource</a> → <a href="../../dsl/BlockScopedResource.html" class="extype" name="com.github.agourlay.cornichon.dsl.BlockScopedResource">BlockScopedResource</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">

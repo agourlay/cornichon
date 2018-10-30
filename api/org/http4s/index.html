@@ -293,10 +293,10 @@
       </span>
       
       
-    </li><li name="org.http4s.HttpService" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="HttpService[F[_]]=cats.data.Kleisli[[β$0$]cats.data.OptionT[F,β$0$],org.http4s.Request[F],org.http4s.Response[F]]"></a><a id="HttpService[F[_]]:HttpService[F]"></a>
+    </li><li name="org.http4s.Http" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Http[F[_],G[_]]=cats.data.Kleisli[F,org.http4s.Request[G],org.http4s.Response[G]]"></a><a id="Http[F[_],G[_]]:Http[F,G]"></a>
       <span class="permalink">
-      <a href="../../org/http4s/index.html#HttpService[F[_]]=cats.data.Kleisli[[β$0$]cats.data.OptionT[F,β$0$],org.http4s.Request[F],org.http4s.Response[F]]" title="Permalink">
+      <a href="../../org/http4s/index.html#Http[F[_],G[_]]=cats.data.Kleisli[F,org.http4s.Request[G],org.http4s.Response[G]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -305,7 +305,39 @@
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span class="name">HttpService</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result alias"> = <a href="http://typelevel.org/cats/api/cats/data/Kleisli.html#cats.data.Kleisli" class="extype" name="cats.data.Kleisli">Kleisli</a>[[β$0$]<span class="extype" name="cats.data.OptionT">OptionT</span>[<span class="extype" name="org.http4s.HttpService.F">F</span>, <span class="extype" name="org.http4s.&lt;refinement&gt;.Λ$.β$0$">β$0$</span>], <span class="extype" name="org.http4s.Request">Request</span>[<span class="extype" name="org.http4s.HttpService.F">F</span>], <span class="extype" name="org.http4s.Response">Response</span>[<span class="extype" name="org.http4s.HttpService.F">F</span>]]</span>
+        <span class="name">Http</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="G">G<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result alias"> = <a href="http://typelevel.org/cats/api/cats/data/Kleisli.html#cats.data.Kleisli" class="extype" name="cats.data.Kleisli">Kleisli</a>[<span class="extype" name="org.http4s.Http.F">F</span>, <span class="extype" name="org.http4s.Request">Request</span>[<span class="extype" name="org.http4s.Http.G">G</span>], <span class="extype" name="org.http4s.Response">Response</span>[<span class="extype" name="org.http4s.Http.G">G</span>]]</span>
+      </span>
+      
+      
+    </li><li name="org.http4s.HttpApp" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HttpApp[F[_]]=org.http4s.package.Http[F,F]"></a><a id="HttpApp[F[_]]:HttpApp[F]"></a>
+      <span class="permalink">
+      <a href="../../org/http4s/index.html#HttpApp[F[_]]=org.http4s.package.Http[F,F]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">HttpApp</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result alias"> = <a href="http://typelevel.org/cats/api/cats/data/Kleisli.html#cats.data.Kleisli" class="extype" name="cats.data.Kleisli">Kleisli</a>[<span class="extype" name="org.http4s.HttpApp.F">F</span>, <span class="extype" name="org.http4s.Request">Request</span>[<span class="extype" name="org.http4s.HttpApp.F">F</span>], <span class="extype" name="org.http4s.Response">Response</span>[<span class="extype" name="org.http4s.HttpApp.F">F</span>]]</span>
+      </span>
+      
+      
+    </li><li name="org.http4s.HttpRoutes" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HttpRoutes[F[_]]=org.http4s.package.Http[[β$0$]cats.data.OptionT[F,β$0$],F]"></a><a id="HttpRoutes[F[_]]:HttpRoutes[F]"></a>
+      <span class="permalink">
+      <a href="../../org/http4s/index.html#HttpRoutes[F[_]]=org.http4s.package.Http[[β$0$]cats.data.OptionT[F,β$0$],F]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">HttpRoutes</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result alias"> = <a href="http://typelevel.org/cats/api/cats/data/Kleisli.html#cats.data.Kleisli" class="extype" name="cats.data.Kleisli">Kleisli</a>[[β$0$]<span class="extype" name="cats.data.OptionT">OptionT</span>[<span class="extype" name="org.http4s.HttpRoutes.F">F</span>, <span class="extype" name="org.http4s.&lt;refinement&gt;.Λ$.β$0$">β$0$</span>], <span class="extype" name="org.http4s.Request">Request</span>[<span class="extype" name="org.http4s.HttpRoutes.F">F</span>], <span class="extype" name="org.http4s.Response">Response</span>[<span class="extype" name="org.http4s.HttpRoutes.F">F</span>]]</span>
       </span>
       
       
@@ -344,6 +376,25 @@
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.16)</i> Moved to org.http4s.syntax.AllSyntax</p></dd></dl></div>
+    </li><li name="org.http4s.HttpService" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="HttpService[F[_]]=org.http4s.package.HttpRoutes[F]"></a><a id="HttpService[F[_]]:HttpService[F]"></a>
+      <span class="permalink">
+      <a href="../../org/http4s/index.html#HttpService[F[_]]=org.http4s.package.HttpRoutes[F]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 0.19) Deprecated in favor of HttpRoutes">HttpService</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result alias"> = <a href="http://typelevel.org/cats/api/cats/data/Kleisli.html#cats.data.Kleisli" class="extype" name="cats.data.Kleisli">Kleisli</a>[[β$0$]<span class="extype" name="cats.data.OptionT">OptionT</span>[<span class="extype" name="org.http4s.HttpService.F">F</span>, <span class="extype" name="org.http4s.&lt;refinement&gt;.Λ$.β$0$">β$0$</span>], <span class="extype" name="org.http4s.Request">Request</span>[<span class="extype" name="org.http4s.HttpService.F">F</span>], <span class="extype" name="org.http4s.Response">Response</span>[<span class="extype" name="org.http4s.HttpService.F">F</span>]]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.19)</i> Deprecated in favor of HttpRoutes</p></dd></dl></div>
     </li><li name="org.http4s.Service" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Service[F[_],A,B]=cats.data.Kleisli[F,A,B]"></a><a id="Service[F[_],A,B]:Service[F,A,B]"></a>
       <span class="permalink">

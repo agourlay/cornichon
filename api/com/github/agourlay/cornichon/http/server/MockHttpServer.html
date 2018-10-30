@@ -171,10 +171,6 @@
                         <a href="HttpMockServerResource.html" title="">HttpMockServerResource</a>
                       </li><li class="current-entities indented6">
                         <span class="separator"></span>
-                        <a class="trait" href="HttpServer.html" title=""></a>
-                        <a href="HttpServer.html" title="">HttpServer</a>
-                      </li><li class="current-entities indented6">
-                        <span class="separator"></span>
                         <a class="class" href="" title=""></a>
                         <a href="" title="">MockHttpServer</a>
                       </li><li class="current-entities indented6">
@@ -212,7 +208,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">MockHttpServer</span><span class="result"> extends <a href="HttpServer.html" class="extype" name="com.github.agourlay.cornichon.http.server.HttpServer">HttpServer</a></span>
+        <span class="name">MockHttpServer</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
 
@@ -221,7 +217,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="HttpServer.html" class="extype" name="com.github.agourlay.cornichon.http.server.HttpServer">HttpServer</a>, <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
         </div></div>
         
 
@@ -247,7 +243,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="com.github.agourlay.cornichon.http.server.MockHttpServer"><span>MockHttpServer</span></li><li class="in" name="com.github.agourlay.cornichon.http.server.HttpServer"><span>HttpServer</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="com.github.agourlay.cornichon.http.server.MockHttpServer"><span>MockHttpServer</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -268,9 +264,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.http.server.MockHttpServer#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpService[monix.eval.Task],maxRetries:Int)(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer"></a><a id="&lt;init&gt;:MockHttpServer"></a>
+      <a id="&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpRoutes[monix.eval.Task],maxRetries:Int)(useFromAddress:String=&gt;monix.eval.Task[A])(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer[A]"></a><a id="&lt;init&gt;:MockHttpServer[A]"></a>
       <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockHttpServer.html#&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpService[monix.eval.Task],maxRetries:Int)(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer" title="Permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockHttpServer.html#&lt;init&gt;(interface:Option[String],port:Option[Range],mockService:org.http4s.HttpRoutes[monix.eval.Task],maxRetries:Int)(useFromAddress:String=&gt;monix.eval.Task[A])(implicitscheduler:monix.execution.Scheduler):com.github.agourlay.cornichon.http.server.MockHttpServer[A]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -279,7 +275,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MockHttpServer</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="port">port: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>, <span name="mockService">mockService: <a href="../../../../../../org/http4s/index.html#HttpService[F[_]]=cats.data.Kleisli[[β$0$]cats.data.OptionT[F,β$0$],org.http4s.Request[F],org.http4s.Response[F]]" class="extmbr" name="org.http4s.HttpService">org.http4s.HttpService</a>[<span class="extype" name="monix.eval.Task">Task</span>]</span>, <span name="maxRetries">maxRetries: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">5</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="scheduler">scheduler: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>)</span>
+        <span class="name">MockHttpServer</span><span class="params">(<span name="interface">interface: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="port">port: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Range">Range</span>]</span>, <span name="mockService">mockService: <a href="../../../../../../org/http4s/index.html#HttpRoutes[F[_]]=org.http4s.package.Http[[β$0$]cats.data.OptionT[F,β$0$],F]" class="extmbr" name="org.http4s.HttpRoutes">HttpRoutes</a>[<span class="extype" name="monix.eval.Task">Task</span>]</span>, <span name="maxRetries">maxRetries: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">5</span></span>)</span><span class="params">(<span name="useFromAddress">useFromAddress: (<span class="extype" name="scala.Predef.String">String</span>) ⇒ <span class="extype" name="monix.eval.Task">Task</span>[<span class="extype" name="com.github.agourlay.cornichon.http.server.MockHttpServer.A">A</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="scheduler">scheduler: <span class="extype" name="monix.execution.Scheduler">Scheduler</span></span>)</span>
       </span>
       
       
@@ -543,22 +539,6 @@
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.http.server.MockHttpServer#startServer" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="startServer():scala.concurrent.Future[(String,com.github.agourlay.cornichon.dsl.CloseableResource)]"></a><a id="startServer():Future[(String,CloseableResource)]"></a>
-      <span class="permalink">
-      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockHttpServer.html#startServer():scala.concurrent.Future[(String,com.github.agourlay.cornichon.dsl.CloseableResource)]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">startServer</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[(<span class="extype" name="scala.Predef.String">String</span>, <a href="../../dsl/CloseableResource.html" class="extype" name="com.github.agourlay.cornichon.dsl.CloseableResource">CloseableResource</a>)]</span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.http.server.MockHttpServer">MockHttpServer</a> → <a href="HttpServer.html" class="extype" name="com.github.agourlay.cornichon.http.server.HttpServer">HttpServer</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
@@ -591,6 +571,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.github.agourlay.cornichon.http.server.MockHttpServer#useServer" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="useServer():monix.eval.Task[A]"></a><a id="useServer():Task[A]"></a>
+      <span class="permalink">
+      <a href="../../../../../../com/github/agourlay/cornichon/http/server/MockHttpServer.html#useServer():monix.eval.Task[A]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">useServer</span><span class="params">()</span><span class="result">: <span class="extype" name="monix.eval.Task">Task</span>[<span class="extype" name="com.github.agourlay.cornichon.http.server.MockHttpServer.A">A</span>]</span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
@@ -669,9 +665,7 @@
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="com.github.agourlay.cornichon.http.server.HttpServer">
-              <h3>Inherited from <a href="HttpServer.html" class="extype" name="com.github.agourlay.cornichon.http.server.HttpServer">HttpServer</a></h3>
-            </div><div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.7/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></h3>
