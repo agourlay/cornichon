@@ -14,11 +14,27 @@
 
 <p>The key idea is to describe the possible interactions with the API as a state machine which can be automatically explored.</p>
 
-<p>Such state machine wires together a set of actions that relate to each others through transitions.</p>
+<p>Such state machine wires together a set of <code class="highlighter-rouge">actions</code> that relate to each others through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code>.</p>
 
-<p>Each action has a set of pre-conditions and a set of post-conditions that are checked automatically.</p>
+<p>Each <code class="highlighter-rouge">action</code> has a set of <code class="highlighter-rouge">pre-conditions</code> and a set of <code class="highlighter-rouge">post-conditions</code> that are checked automatically.</p>
 
-<p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API to reverse a string (this is obviously a silly example as one would simply use <code class="highlighter-rouge">Scalacheck</code> for it).</p>
+<p>A <code class="highlighter-rouge">run</code> terminates if one the following condition is met:</p>
+<ul>
+  <li>one post-condition was broken</li>
+  <li>max number of transition reached</li>
+  <li>error thrown from an <code class="highlighter-rouge">action</code></li>
+  <li>no <code class="highlighter-rouge">actions</code> with valid <code class="highlighter-rouge">pre-conditions</code> can be found</li>
+</ul>
+
+<p>A <code class="highlighter-rouge">model</code> exploration terminates if one the following condition is met:</p>
+<ul>
+  <li>max number of run reached</li>
+  <li>a run terminates with an error</li>
+</ul>
+
+<p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API by checking that reversing a string twice yields the same string.</p>
+
+<p>This is obviously a silly example as one would simply use <code class="highlighter-rouge">Scalacheck</code> for it but it has the merit of being well known.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
@@ -26,49 +42,54 @@
 
 <span class="k">class</span> <span class="nc">BasicExampleChecks</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="k">with</span> <span class="nc">CheckDsl</span> <span class="o">{</span>
 
-  <span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
-    <span class="n">name</span> <span class="k">=</span> <span class="s">"String"</span><span class="o">,</span>
-    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
-
   <span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Basic examples of checks"</span><span class="o">)</span> <span class="o">{</span>
 
-    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"reverse string"</span><span class="o">)</span> <span class="o">{</span>
-      <span class="nc">Given</span> <span class="n">I</span> <span class="n">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">5</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">1</span><span class="o">)(</span>
-        <span class="n">modelRunner</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="n">stringGen</span><span class="o">)(</span>
-          <span class="n">model</span> <span class="k">=</span> <span class="o">{</span>
-            <span class="k">val</span> <span class="n">generateStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
-              <span class="n">description</span> <span class="k">=</span> <span class="s">"generate a string"</span><span class="o">,</span>
-              <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
-              <span class="n">effect</span> <span class="k">=</span> <span class="n">g</span> <span class="k">⇒</span> <span class="o">{</span>
-                <span class="k">val</span> <span class="n">randomString</span> <span class="k">=</span> <span class="n">g</span><span class="o">()</span>
-                <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="s">"save random string"</span><span class="o">,</span> <span class="k">_</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">,</span> <span class="n">randomString</span><span class="o">))</span>
-              <span class="o">},</span>
-              <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"reverse a string twice yields the same results"</span><span class="o">)</span> <span class="o">{</span>
 
-            <span class="k">val</span> <span class="n">reverseAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
-              <span class="n">description</span> <span class="k">=</span> <span class="s">"reverse a string"</span><span class="o">,</span>
-              <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"reversed-random-input"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
-              <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="s">"save reversed random string"</span><span class="o">,</span> <span class="n">s</span> <span class="k">⇒</span> <span class="o">{</span>
-                <span class="k">for</span> <span class="o">{</span>
-                  <span class="n">value</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">)</span>
-                  <span class="n">reversed</span> <span class="k">=</span> <span class="n">value</span><span class="o">.</span><span class="n">reverse</span>
-                  <span class="n">s1</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"reversed-random-input"</span><span class="o">,</span> <span class="n">reversed</span><span class="o">)</span>
-                <span class="o">}</span> <span class="k">yield</span> <span class="n">s1</span>
-              <span class="o">}),</span>
-              <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"reversed-random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+      <span class="nc">Given</span> <span class="n">I</span> <span class="n">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">5</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">1</span><span class="o">)(</span><span class="n">doubleReverseModel</span><span class="o">)</span>
 
-            <span class="nc">Model</span><span class="o">(</span>
-              <span class="n">description</span> <span class="k">=</span> <span class="s">"reversing a string"</span><span class="o">,</span>
-              <span class="n">startingAction</span> <span class="k">=</span> <span class="n">generateStringAction</span><span class="o">,</span>
-              <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
-                <span class="n">generateStringAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">1.0</span> <span class="o">-&gt;</span> <span class="n">reverseAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
-              <span class="o">)</span>
-            <span class="o">)</span>
-          <span class="o">}</span>
-        <span class="o">)</span>
-      <span class="o">)</span>
     <span class="o">}</span>
   <span class="o">}</span>
+
+  <span class="c1">//Model definition usually in another trait
+</span>
+  <span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+    <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String (20)"</span><span class="o">,</span>
+    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+
+  <span class="k">val</span> <span class="n">randomInputKey</span> <span class="k">=</span> <span class="s">"random-input"</span>
+  <span class="k">val</span> <span class="n">doubleReversedKey</span> <span class="k">=</span> <span class="s">"reversed-twice-random-input"</span>
+
+  <span class="k">private</span> <span class="k">val</span> <span class="n">generateStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
+    <span class="n">description</span> <span class="k">=</span> <span class="s">"generate and save string"</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="n">generator</span> <span class="k">⇒</span> <span class="o">{</span>
+      <span class="k">val</span> <span class="n">randomString</span> <span class="k">=</span> <span class="n">generator</span><span class="o">()</span>
+      <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="n">s</span><span class="s">"save random string '$randomString'"</span><span class="o">,</span> <span class="k">_</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">randomString</span><span class="o">))</span>
+    <span class="o">},</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+  <span class="k">private</span> <span class="k">val</span> <span class="n">reverseStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
+    <span class="n">description</span> <span class="k">=</span> <span class="s">"retrieve and reverse a string twice yields the same value"</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="s">"save reversed twice string"</span><span class="o">,</span> <span class="n">s</span> <span class="k">⇒</span> <span class="o">{</span>
+      <span class="k">for</span> <span class="o">{</span>
+        <span class="n">value</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">)</span>
+        <span class="n">reversedTwice</span> <span class="k">=</span> <span class="n">value</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">reverse</span>
+        <span class="n">s1</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="n">doubleReversedKey</span><span class="o">,</span> <span class="n">reversedTwice</span><span class="o">)</span>
+      <span class="o">}</span> <span class="k">yield</span> <span class="n">s1</span>
+    <span class="o">}),</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">doubleReversedKey</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+  <span class="k">val</span> <span class="n">doubleReverseModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="n">stringGen</span><span class="o">)(</span>
+    <span class="nc">Model</span><span class="o">(</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"reversing a string twice yields same value"</span><span class="o">,</span>
+      <span class="n">startingAction</span> <span class="k">=</span> <span class="n">generateStringAction</span><span class="o">,</span>
+      <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
+        <span class="n">generateStringAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">1.0</span><span class="o">,</span> <span class="n">reverseStringAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+      <span class="o">)</span>
+    <span class="o">)</span>
+  <span class="o">)</span>
 <span class="o">}</span>
 
 </code></pre></div></div>
@@ -76,44 +97,43 @@
 <p>To understand what is going on, we can have a look at the logs produced by this scenario.</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
-Starting scenario 'reverse string'
-- reverse string (44 millis)
+Starting scenario 'reverse a string twice yields the same results'
+- reverse a string twice yields the same results (36 millis)
 
-   Scenario : reverse string
+   Scenario : reverse a string twice yields the same results
       main steps
-      Checking model 'reversing a string' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1540908528908
+      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1540964994856
          Run #1
-            generate a string with values ['String' -&gt; 'QcPcVIYl06vqtqHbcMCh']
-            save random string (1 millis)
-            reverse a string
-            save reversed random string (4 millis)
-         Run #1 - End reached on action 'reverse a string' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'QhKJha33C3dWhkhMJI3m']
+            save random string 'QhKJha33C3dWhkhMJI3m' (1 millis)
+            retrieve and reverse a string twice yields the same value
+            save reversed twice string (3 millis)
+         Run #1 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
          Run #2
-            generate a string with values ['String' -&gt; 'V3gRTwpsyhIQz5YNQjvC']
-            save random string (0 millis)
-            reverse a string
-            save reversed random string (0 millis)
-         Run #2 - End reached on action 'reverse a string' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'qTsf1o8WTDXdl6tqZEgb']
+            save random string 'qTsf1o8WTDXdl6tqZEgb' (0 millis)
+            retrieve and reverse a string twice yields the same value
+            save reversed twice string (0 millis)
+         Run #2 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
          Run #3
-            generate a string with values ['String' -&gt; 'fjUXGjqi9rB5Erjqn3jB']
-            save random string (0 millis)
-            reverse a string
-            save reversed random string (0 millis)
-         Run #3 - End reached on action 'reverse a string' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'dDbT8wTgXCsfxNYcDE3l']
+            save random string 'dDbT8wTgXCsfxNYcDE3l' (0 millis)
+            retrieve and reverse a string twice yields the same value
+            save reversed twice string (0 millis)
+         Run #3 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
          Run #4
-            generate a string with values ['String' -&gt; '8kWVTB7kbia67cc6m6DP']
-            save random string (0 millis)
-            reverse a string
-            save reversed random string (0 millis)
-         Run #4 - End reached on action 'reverse a string' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'j4nYw07FqHdHAZdBXGR6']
+            save random string 'j4nYw07FqHdHAZdBXGR6' (0 millis)
+            retrieve and reverse a string twice yields the same value
+            save reversed twice string (0 millis)
+         Run #4 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
          Run #5
-            generate a string with values ['String' -&gt; 'xOFnSeuBRWsePMKlFWlG']
-            save random string (0 millis)
-            reverse a string
-            save reversed random string (0 millis)
-         Run #5 - End reached on action 'reverse a string' after 1 transitions
-      Check block succeeded (41 millis)
-
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'dLoQ4OgEYyJLLDxluUaW']
+            save random string 'dLoQ4OgEYyJLLDxluUaW' (0 millis)
+            retrieve and reverse a string twice yields the same value
+            save reversed twice string (0 millis)
+         Run #5 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+      Check block succeeded (34 millis)
 </code></pre></div></div>
 
 <p>We can see that:</p>
