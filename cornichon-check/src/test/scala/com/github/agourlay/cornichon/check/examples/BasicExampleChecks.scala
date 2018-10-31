@@ -4,49 +4,56 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-class BasicExampleChecks extends CornichonFeature with CheckDsl {
-
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "String",
-    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+class BasicExampleChecks extends CornichonFeature with CheckDsl with CheckModel {
 
   def feature = Feature("Basic examples of checks") {
 
-    Scenario("reverse string") {
-      Given I check_model(maxNumberOfRuns = 5, maxNumberOfTransitions = 1)(
-        modelRunner = ModelRunner.make[String](stringGen)(
-          model = {
-            val generateStringAction = Action1[String](
-              description = "generate a string",
-              preConditions = session_value("random-input").isAbsent :: Nil,
-              effect = g ⇒ {
-                val randomString = g()
-                EffectStep.fromSyncE("save random string", _.addValue("random-input", randomString))
-              },
-              postConditions = session_value("random-input").isPresent :: Nil)
+    Scenario("reverse a string twice yields the same results") {
 
-            val reverseAction = Action1[String](
-              description = "reverse a string",
-              preConditions = session_value("random-input").isPresent :: session_value("reversed-random-input").isAbsent :: Nil,
-              effect = _ ⇒ EffectStep.fromSyncE("save reversed random string", s ⇒ {
-                for {
-                  value ← s.get("random-input")
-                  reversed = value.reverse
-                  s1 ← s.addValue("reversed-random-input", reversed)
-                } yield s1
-              }),
-              postConditions = session_value("reversed-random-input").isPresent :: Nil)
+      Given I check_model(maxNumberOfRuns = 5, maxNumberOfTransitions = 1)(doubleReverseModel)
 
-            Model(
-              description = "reversing a string",
-              startingAction = generateStringAction,
-              transitions = Map(
-                generateStringAction -> ((1.0 -> reverseAction) :: Nil)
-              )
-            )
-          }
-        )
-      )
     }
   }
+}
+
+trait CheckModel {
+  this: CornichonFeature ⇒
+
+  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+    name = "an alphanumeric String (20)",
+    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+
+  val randomInputKey = "random-input"
+  val doubleReversedKey = "reversed-twice-random-input"
+
+  private val generateStringAction = Action1[String](
+    description = "generate and save string",
+    preConditions = session_value(randomInputKey).isAbsent :: Nil,
+    effect = generator ⇒ {
+      val randomString = generator()
+      EffectStep.fromSyncE(s"save random string '$randomString'", _.addValue(randomInputKey, randomString))
+    },
+    postConditions = session_value(randomInputKey).isPresent :: Nil)
+
+  private val reverseStringAction = Action1[String](
+    description = "retrieve and reverse a string twice yields the same value",
+    preConditions = session_value(randomInputKey).isPresent :: Nil,
+    effect = _ ⇒ EffectStep.fromSyncE("save reversed twice string", s ⇒ {
+      for {
+        value ← s.get(randomInputKey)
+        reversedTwice = value.reverse.reverse
+        s1 ← s.addValue(doubleReversedKey, reversedTwice)
+      } yield s1
+    }),
+    postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
+
+  val doubleReverseModel = ModelRunner.make[String](stringGen)(
+    Model(
+      description = "reversing a string twice yields same value",
+      startingAction = generateStringAction,
+      transitions = Map(
+        generateStringAction -> ((1.0, reverseStringAction) :: Nil)
+      )
+    )
+  )
 }

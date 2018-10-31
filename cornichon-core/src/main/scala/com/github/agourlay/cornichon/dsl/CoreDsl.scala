@@ -6,13 +6,11 @@ import cats.syntax.show._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
-
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
-import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
+import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.regular._
 import com.github.agourlay.cornichon.steps.wrapped._
-
 import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
@@ -159,6 +157,9 @@ trait CoreDsl extends ProvidedInstances {
 
   def session_value(key: String): SessionStepBuilder =
     SessionStepBuilder(placeholderResolver, matcherResolver, key)
+
+  def session_values(k1: String, k2: String): SessionValuesStepBuilder =
+    SessionValuesStepBuilder(placeholderResolver, k1, k2)
 
   def show_session: Step =
     DebugStep(s ⇒ s"Session content is\n${s.show}".asRight)
