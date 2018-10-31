@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-class BasicExampleChecks extends CornichonFeature with CheckDsl with CheckModel {
+class BasicExampleChecks extends CornichonFeature with CheckDsl {
 
   def feature = Feature("Basic examples of checks") {
 
@@ -14,10 +14,8 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl with CheckModel 
 
     }
   }
-}
 
-trait CheckModel {
-  this: CornichonFeature ⇒
+  //Model definition usually in another trait
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "an alphanumeric String (20)",
