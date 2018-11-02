@@ -4,6 +4,9 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 class BasicExampleChecks extends CornichonFeature with CheckDsl {
 
   def feature = Feature("Basic examples of checks") {
@@ -13,6 +16,23 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
       Given I check_model(maxNumberOfRuns = 5, maxNumberOfTransitions = 1)(doubleReverseModel)
 
     }
+  }
+
+  lazy val port = 8080
+
+  // Base url used for all HTTP steps
+  override lazy val baseUrl = s"http://localhost:$port"
+
+  var server: HttpServer = _
+
+  // Starts up test server
+  beforeFeature {
+    server = Await.result(new ReverseAPI().start(port), 5.second)
+  }
+
+  // Stops test server
+  afterFeature {
+    Await.result(server.shutdown(), 5.second)
   }
 
   //Model definition usually in another trait
@@ -34,15 +54,13 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
     postConditions = session_value(randomInputKey).isPresent :: Nil)
 
   private val reverseStringAction = Action1[String](
-    description = "retrieve and reverse a string twice yields the same value",
+    description = "reverse a string twice yields the same value",
     preConditions = session_value(randomInputKey).isPresent :: Nil,
-    effect = _ ⇒ EffectStep.fromSyncE("save reversed twice string", s ⇒ {
-      for {
-        value ← s.get(randomInputKey)
-        reversedTwice = value.reverse.reverse
-        s1 ← s.addValue(doubleReversedKey, reversedTwice)
-      } yield s1
-    }),
+    effect = _ ⇒ Attach {
+      Given I post("/double-reverse").withParams("word" -> "<random-input>")
+      Then assert status.is(200)
+      And I save_body(doubleReversedKey)
+    },
     postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
 
   val doubleReverseModel = ModelRunner.make[String](stringGen)(

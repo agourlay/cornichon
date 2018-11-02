@@ -20,23 +20,41 @@ In the case of an HTTP API, it is more difficult to perform such operations, you
 
 The key idea is to describe the possible interactions with the API as a state machine which can be automatically explored.
 
+The entry point of the `cornichon-check` DSL is reached by mixing the trait `CheckDsl` which exposes the following:
+
+`def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, seed: Option[Long] = None)(modelRunner: ModelRunner[A, B, C, D, E, F])`
+
+Let's unpack this signature:
+
+- `maxNumberOfRuns` refers to maximum number of attempt to traverse the state machine and find a case that breaks an invariant
+- `maxNumberOfTransition` is useful when the state machine contains cycles in order to ensure termination
+- `seed` can be provided in order to trigger a deterministic run
+- `modelRunner` is that actual definition of the state machine
+- `A B C D E F` refers to the type of the `generators` used in the state machine definition (maximum 6 for the moment)
+
 Such state machine wires together a set of `actions` that relate to each others through `transitions` which are chosen according to a given `probability`.
 
 Each `action` has a set of `pre-conditions` and a set of `post-conditions` that are checked automatically.
 
-A `run` terminates if one the following condition is met:
-- one post-condition was broken
-- max number of transition reached
+A `run` terminates successfully if the following conditions is met:
+- max number of transition reached (i.e we were not able to break any invariants)
+
+A `run` fails if one the following conditions is met:
+- one `post-condition` was broken
 - error thrown from an `action`
-- no `actions` with valid `pre-conditions` can be found
+- no `actions` with valid `pre-conditions` can be found, this is generally of a badly formed state machine
 
-A `model` exploration terminates if one the following condition is met:
-- max number of run reached
-- a run terminates with an error
+A `model` exploration terminates:
+ - successfully if the max number of run is reached
+ - with an error if a run fails
 
-Below is an example presenting the current `cornichon-check` API by checking that reversing a string twice yields the same string.
+Below is an example presenting the current `cornichon-check` API by checking the contract of HTTP API reversing twice a string.
 
-This is obviously a silly example as one would simply use `Scalacheck` for it but it has the merit of being well known.
+We want to enforce the invariant that for any string, reversing the string twice should yield the same value.
+
+The implementation under test is a server acceptiong a `POST` request to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
+
+This is silly because the state machine has only a single transition but it is still a good first example to get to know the API.
 
 ```tut:silent
 import com.github.agourlay.cornichon.CornichonFeature
@@ -73,16 +91,14 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
     postConditions = session_value(randomInputKey).isPresent :: Nil)
 
   private val reverseStringAction = Action1[String](
-    description = "retrieve and reverse a string twice yields the same value",
-    preConditions = session_value(randomInputKey).isPresent :: Nil,
-    effect = _ ⇒ EffectStep.fromSyncE("save reversed twice string", s ⇒ {
-      for {
-        value ← s.get(randomInputKey)
-        reversedTwice = value.reverse.reverse
-        s1 ← s.addValue(doubleReversedKey, reversedTwice)
-      } yield s1
-    }),
-    postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
+      description = "reverse a string twice yields the same value",
+      preConditions = session_value(randomInputKey).isPresent :: Nil,
+      effect = _ ⇒ Attach {
+        Given I post("/double-reverse").withParams("word" -> "<random-input>")
+        Then assert status.is(200)
+        And I save_body(doubleReversedKey)
+      },
+      postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
 
   val doubleReverseModel = ModelRunner.make[String](stringGen)(
     Model(
@@ -100,49 +116,58 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
 To understand what is going on, we can have a look at the logs produced by this scenario.
 
 ```
-Basic examples of checks:
 Starting scenario 'reverse a string twice yields the same results'
-- reverse a string twice yields the same results (36 millis)
+- reverse a string twice yields the same results (2087 millis)
 
    Scenario : reverse a string twice yields the same results
       main steps
-      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1540964994856
+      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1541177654821
          Run #1
-            generate and save string with values ['an alphanumeric String (20)' -> 'QhKJha33C3dWhkhMJI3m']
-            save random string 'QhKJha33C3dWhkhMJI3m' (1 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (3 millis)
-         Run #1 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -> 'zCFAPwANfohFhQx4h6Pl']
+            save random string 'zCFAPwANfohFhQx4h6Pl' (6 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -> 'zCFAPwANfohFhQx4h6Pl' (1328 millis)
+            Then assert status is '200' (2 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (23 millis)
+         Run #1 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #2
-            generate and save string with values ['an alphanumeric String (20)' -> 'qTsf1o8WTDXdl6tqZEgb']
-            save random string 'qTsf1o8WTDXdl6tqZEgb' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #2 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -> 'jfQadaz86jXxP7AoBNST']
+            save random string 'jfQadaz86jXxP7AoBNST' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -> 'jfQadaz86jXxP7AoBNST' (6 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #2 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #3
-            generate and save string with values ['an alphanumeric String (20)' -> 'dDbT8wTgXCsfxNYcDE3l']
-            save random string 'dDbT8wTgXCsfxNYcDE3l' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #3 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -> 'O6SVBD9CQxUXN2Ag1mL3']
+            save random string 'O6SVBD9CQxUXN2Ag1mL3' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -> 'O6SVBD9CQxUXN2Ag1mL3' (5 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #3 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #4
-            generate and save string with values ['an alphanumeric String (20)' -> 'j4nYw07FqHdHAZdBXGR6']
-            save random string 'j4nYw07FqHdHAZdBXGR6' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #4 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -> '0nbLBgwP4eE9QqOeCbOn']
+            save random string '0nbLBgwP4eE9QqOeCbOn' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -> '0nbLBgwP4eE9QqOeCbOn' (4 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #4 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #5
-            generate and save string with values ['an alphanumeric String (20)' -> 'dLoQ4OgEYyJLLDxluUaW']
-            save random string 'dLoQ4OgEYyJLLDxluUaW' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #5 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
-      Check block succeeded (34 millis)
+            generate and save string with values ['an alphanumeric String (20)' -> '1RgTnx5ohrjhnZHKDHZO']
+            save random string '1RgTnx5ohrjhnZHKDHZO' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -> '1RgTnx5ohrjhnZHKDHZO' (4 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #5 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
+      Check block succeeded (2002 millis)
 ```
 
 We can see that:
   - we have performed 5 runs of 1 transition each through the state machine
-  - each run called `generateStringAction` followed by `reverseAction`
-  - each run stopped because no other transitions are left to explore from `reverseAction`
+  - each run called `generateStringAction` followed by `reverseStringAction` which is the only transition defined
+  - each run stopped because no other transitions are left to explore from `reverseStringAction`
   - the string generator has been called for each run
   - no post-condition has been broken
