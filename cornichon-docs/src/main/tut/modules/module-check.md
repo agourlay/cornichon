@@ -56,7 +56,7 @@ We want to enforce the invariant that for any string, if we reverse it twice, it
 
 The implementation under test is a server accepting a `POST` request to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
 
-This is silly because the state machine has only a single transition but it is still a good first example to get to know the API.
+This is silly because the state machine has only a single transition but it is still a good first example to show to create a `modelRunner`.
 
 ```tut:silent
 import com.github.agourlay.cornichon.CornichonFeature
@@ -93,14 +93,14 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
     postConditions = session_value(randomInputKey).isPresent :: Nil)
 
   private val reverseStringAction = Action1[String](
-      description = "reverse a string twice yields the same value",
-      preConditions = session_value(randomInputKey).isPresent :: Nil,
-      effect = _ ⇒ Attach {
-        Given I post("/double-reverse").withParams("word" -> "<random-input>")
-        Then assert status.is(200)
-        And I save_body(doubleReversedKey)
-      },
-      postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
+    description = "reverse a string twice yields the same value",
+    preConditions = session_value(randomInputKey).isPresent :: Nil,
+    effect = _ ⇒ Attach {
+      Given I post("/double-reverse").withParams("word" -> "<random-input>")
+      Then assert status.is(200)
+      And I save_body(doubleReversedKey)
+    },
+    postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
 
   val doubleReverseModel = ModelRunner.make[String](stringGen)(
     Model(
@@ -167,9 +167,23 @@ Starting scenario 'reverse a string twice yields the same results'
       Check block succeeded (2002 millis)
 ```
 
-We can see that:
+The logs show that:
   - we have performed 5 runs of 1 transition each through the state machine
   - each run called `generateStringAction` followed by `reverseStringAction` which is the only transition defined
   - each run stopped because no other transitions are left to explore from `reverseStringAction`
   - the string generator has been called for each run
   - no post-condition has been broken
+
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples).
+
+## An example with more transitions
+
+Having `cornichon-check` freely explore the `transitions` of a state machine can create some interesting configurations.
+
+// TODO use the example of a turnstile?
+
+## Caveats
+
+- the API has a few rough edges, especially regarding type inference for the `modelRunner` definition
+- placeholders generating random data such as `<random-string` and `random-uuid` are not yet using the correct `seed`
+- the max number of `generators` is hard-coded to 6
