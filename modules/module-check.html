@@ -50,11 +50,13 @@
   <li>with an error if a run fails</li>
 </ul>
 
+<h1 id="a-first-example">A first example</h1>
+
 <p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API by checking the contract of HTTP API reversing twice a string.</p>
 
-<p>We want to enforce the invariant that for any string, reversing the string twice should yield the same value.</p>
+<p>We want to enforce the invariant that for any string, if we reverse it twice, it should yield the same value.</p>
 
-<p>The implementation under test is a server acceptiong a <code class="highlighter-rouge">POST</code> request to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
+<p>The implementation under test is a server accepting a <code class="highlighter-rouge">POST</code> request to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
 
 <p>This is silly because the state machine has only a single transition but it is still a good first example to get to know the API.</p>
 
