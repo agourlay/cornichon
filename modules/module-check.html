@@ -56,7 +56,7 @@
 
 <p>The implementation under test is a server accepting a <code class="highlighter-rouge">POST</code> request to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
 
-<p>This is silly because the state machine has only a single transition but it is still a good first example to get to know the API.</p>
+<p>This is silly because the state machine has only a single transition but it is still a good first example to show to create a <code class="highlighter-rouge">modelRunner</code>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
@@ -92,14 +92,14 @@
     <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">private</span> <span class="k">val</span> <span class="n">reverseStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
-      <span class="n">description</span> <span class="k">=</span> <span class="s">"reverse a string twice yields the same value"</span><span class="o">,</span>
-      <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
-      <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
-        <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/double-reverse"</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"word"</span> <span class="o">-&gt;</span> <span class="s">"&lt;random-input&gt;"</span><span class="o">)</span>
-        <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
-        <span class="nc">And</span> <span class="n">I</span> <span class="n">save_body</span><span class="o">(</span><span class="n">doubleReversedKey</span><span class="o">)</span>
-      <span class="o">},</span>
-      <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">doubleReversedKey</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">description</span> <span class="k">=</span> <span class="s">"reverse a string twice yields the same value"</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+      <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/double-reverse"</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"word"</span> <span class="o">-&gt;</span> <span class="s">"&lt;random-input&gt;"</span><span class="o">)</span>
+      <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+      <span class="nc">And</span> <span class="n">I</span> <span class="n">save_body</span><span class="o">(</span><span class="n">doubleReversedKey</span><span class="o">)</span>
+    <span class="o">},</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">doubleReversedKey</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">val</span> <span class="n">doubleReverseModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="n">stringGen</span><span class="o">)(</span>
     <span class="nc">Model</span><span class="o">(</span>
@@ -165,13 +165,29 @@
       Check block succeeded (2002 millis)
 </code></pre></div></div>
 
-<p>We can see that:</p>
+<p>The logs show that:</p>
 <ul>
   <li>we have performed 5 runs of 1 transition each through the state machine</li>
   <li>each run called <code class="highlighter-rouge">generateStringAction</code> followed by <code class="highlighter-rouge">reverseStringAction</code> which is the only transition defined</li>
   <li>each run stopped because no other transitions are left to explore from <code class="highlighter-rouge">reverseStringAction</code></li>
   <li>the string generator has been called for each run</li>
   <li>no post-condition has been broken</li>
+</ul>
+
+<p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples">here</a>.</p>
+
+<h2 id="an-example-with-more-transitions">An example with more transitions</h2>
+
+<p>Having <code class="highlighter-rouge">cornichon-check</code> freely explore the <code class="highlighter-rouge">transitions</code> of a state machine can create some interesting configurations.</p>
+
+<p>// TODO use the example of a turnstile?</p>
+
+<h2 id="caveats">Caveats</h2>
+
+<ul>
+  <li>the API has a few rough edges, especially regarding type inference for the <code class="highlighter-rouge">modelRunner</code> definition</li>
+  <li>placeholders generating random data such as <code class="highlighter-rouge">&lt;random-string</code> and <code class="highlighter-rouge">random-uuid</code> are not yet using the correct <code class="highlighter-rouge">seed</code></li>
+  <li>the max number of <code class="highlighter-rouge">generators</code> is hard-coded to 6</li>
 </ul>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
