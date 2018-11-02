@@ -23,6 +23,9 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
   // Base url used for all HTTP steps
   override lazy val baseUrl = s"http://localhost:$port"
 
+  //Travis CI struggles with default value `2.seconds`
+  override lazy val requestTimeout = 5.second
+
   var server: HttpServer = _
 
   // Starts up test server
