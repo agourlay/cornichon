@@ -14,27 +14,49 @@
 
 <p>The key idea is to describe the possible interactions with the API as a state machine which can be automatically explored.</p>
 
+<p>The entry point of the <code class="highlighter-rouge">cornichon-check</code> DSL is reached by mixing the trait <code class="highlighter-rouge">CheckDsl</code> which exposes the following:</p>
+
+<p><code class="highlighter-rouge">def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, seed: Option[Long] = None)(modelRunner: ModelRunner[A, B, C, D, E, F])</code></p>
+
+<p>Let’s unpack this signature:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">maxNumberOfRuns</code> refers to maximum number of attempt to traverse the state machine and find a case that breaks an invariant</li>
+  <li><code class="highlighter-rouge">maxNumberOfTransition</code> is useful when the state machine contains cycles in order to ensure termination</li>
+  <li><code class="highlighter-rouge">seed</code> can be provided in order to trigger a deterministic run</li>
+  <li><code class="highlighter-rouge">modelRunner</code> is that actual definition of the state machine</li>
+  <li><code class="highlighter-rouge">A B C D E F</code> refers to the type of the <code class="highlighter-rouge">generators</code> used in the state machine definition (maximum 6 for the moment)</li>
+</ul>
+
 <p>Such state machine wires together a set of <code class="highlighter-rouge">actions</code> that relate to each others through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code>.</p>
 
 <p>Each <code class="highlighter-rouge">action</code> has a set of <code class="highlighter-rouge">pre-conditions</code> and a set of <code class="highlighter-rouge">post-conditions</code> that are checked automatically.</p>
 
-<p>A <code class="highlighter-rouge">run</code> terminates if one the following condition is met:</p>
+<p>A <code class="highlighter-rouge">run</code> terminates successfully if the following conditions is met:</p>
 <ul>
-  <li>one post-condition was broken</li>
-  <li>max number of transition reached</li>
+  <li>max number of transition reached (i.e we were not able to break any invariants)</li>
+</ul>
+
+<p>A <code class="highlighter-rouge">run</code> fails if one the following conditions is met:</p>
+<ul>
+  <li>one <code class="highlighter-rouge">post-condition</code> was broken</li>
   <li>error thrown from an <code class="highlighter-rouge">action</code></li>
-  <li>no <code class="highlighter-rouge">actions</code> with valid <code class="highlighter-rouge">pre-conditions</code> can be found</li>
+  <li>no <code class="highlighter-rouge">actions</code> with valid <code class="highlighter-rouge">pre-conditions</code> can be found, this is generally of a badly formed state machine</li>
 </ul>
 
-<p>A <code class="highlighter-rouge">model</code> exploration terminates if one the following condition is met:</p>
+<p>A <code class="highlighter-rouge">model</code> exploration terminates:</p>
 <ul>
-  <li>max number of run reached</li>
-  <li>a run terminates with an error</li>
+  <li>successfully if the max number of run is reached</li>
+  <li>with an error if a run fails</li>
 </ul>
 
-<p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API by checking that reversing a string twice yields the same string.</p>
+<p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API by checking the contract of HTTP API reversing twice a string.</p>
 
-<p>This is obviously a silly example as one would simply use <code class="highlighter-rouge">Scalacheck</code> for it but it has the merit of being well known.</p>
+<p>We want to enforce the invariant that for any string, reversing the string twice should yield the same value.</p>
+
+<p>The implementation under test is a server acceptiong a <code class="highlighter-rouge">POST</code> request to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
+
+<p>This is silly because the state machine has only a single transition but it is still a good first example to get to know the API.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
@@ -70,16 +92,14 @@
     <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">private</span> <span class="k">val</span> <span class="n">reverseStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
-    <span class="n">description</span> <span class="k">=</span> <span class="s">"retrieve and reverse a string twice yields the same value"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="s">"save reversed twice string"</span><span class="o">,</span> <span class="n">s</span> <span class="k">⇒</span> <span class="o">{</span>
-      <span class="k">for</span> <span class="o">{</span>
-        <span class="n">value</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">)</span>
-        <span class="n">reversedTwice</span> <span class="k">=</span> <span class="n">value</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">reverse</span>
-        <span class="n">s1</span> <span class="k">←</span> <span class="n">s</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="n">doubleReversedKey</span><span class="o">,</span> <span class="n">reversedTwice</span><span class="o">)</span>
-      <span class="o">}</span> <span class="k">yield</span> <span class="n">s1</span>
-    <span class="o">}),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">doubleReversedKey</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"reverse a string twice yields the same value"</span><span class="o">,</span>
+      <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+      <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+        <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/double-reverse"</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"word"</span> <span class="o">-&gt;</span> <span class="s">"&lt;random-input&gt;"</span><span class="o">)</span>
+        <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+        <span class="nc">And</span> <span class="n">I</span> <span class="n">save_body</span><span class="o">(</span><span class="n">doubleReversedKey</span><span class="o">)</span>
+      <span class="o">},</span>
+      <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">doubleReversedKey</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">val</span> <span class="n">doubleReverseModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="n">stringGen</span><span class="o">)(</span>
     <span class="nc">Model</span><span class="o">(</span>
@@ -96,51 +116,60 @@
 
 <p>To understand what is going on, we can have a look at the logs produced by this scenario.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
-Starting scenario 'reverse a string twice yields the same results'
-- reverse a string twice yields the same results (36 millis)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'reverse a string twice yields the same results'
+- reverse a string twice yields the same results (2087 millis)
 
    Scenario : reverse a string twice yields the same results
       main steps
-      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1540964994856
+      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1541177654821
          Run #1
-            generate and save string with values ['an alphanumeric String (20)' -&gt; 'QhKJha33C3dWhkhMJI3m']
-            save random string 'QhKJha33C3dWhkhMJI3m' (1 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (3 millis)
-         Run #1 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'zCFAPwANfohFhQx4h6Pl']
+            save random string 'zCFAPwANfohFhQx4h6Pl' (6 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'zCFAPwANfohFhQx4h6Pl' (1328 millis)
+            Then assert status is '200' (2 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (23 millis)
+         Run #1 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #2
-            generate and save string with values ['an alphanumeric String (20)' -&gt; 'qTsf1o8WTDXdl6tqZEgb']
-            save random string 'qTsf1o8WTDXdl6tqZEgb' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #2 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'jfQadaz86jXxP7AoBNST']
+            save random string 'jfQadaz86jXxP7AoBNST' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'jfQadaz86jXxP7AoBNST' (6 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #2 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #3
-            generate and save string with values ['an alphanumeric String (20)' -&gt; 'dDbT8wTgXCsfxNYcDE3l']
-            save random string 'dDbT8wTgXCsfxNYcDE3l' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #3 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; 'O6SVBD9CQxUXN2Ag1mL3']
+            save random string 'O6SVBD9CQxUXN2Ag1mL3' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'O6SVBD9CQxUXN2Ag1mL3' (5 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #3 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #4
-            generate and save string with values ['an alphanumeric String (20)' -&gt; 'j4nYw07FqHdHAZdBXGR6']
-            save random string 'j4nYw07FqHdHAZdBXGR6' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #4 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
+            generate and save string with values ['an alphanumeric String (20)' -&gt; '0nbLBgwP4eE9QqOeCbOn']
+            save random string '0nbLBgwP4eE9QqOeCbOn' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -&gt; '0nbLBgwP4eE9QqOeCbOn' (4 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #4 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #5
-            generate and save string with values ['an alphanumeric String (20)' -&gt; 'dLoQ4OgEYyJLLDxluUaW']
-            save random string 'dLoQ4OgEYyJLLDxluUaW' (0 millis)
-            retrieve and reverse a string twice yields the same value
-            save reversed twice string (0 millis)
-         Run #5 - End reached on action 'retrieve and reverse a string twice yields the same value' after 1 transitions
-      Check block succeeded (34 millis)
+            generate and save string with values ['an alphanumeric String (20)' -&gt; '1RgTnx5ohrjhnZHKDHZO']
+            save random string '1RgTnx5ohrjhnZHKDHZO' (0 millis)
+            reverse a string twice yields the same value
+            Given I POST /double-reverse with query parameters 'word' -&gt; '1RgTnx5ohrjhnZHKDHZO' (4 millis)
+            Then assert status is '200' (0 millis)
+            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+         Run #5 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
+      Check block succeeded (2002 millis)
 </code></pre></div></div>
 
 <p>We can see that:</p>
 <ul>
   <li>we have performed 5 runs of 1 transition each through the state machine</li>
-  <li>each run called <code class="highlighter-rouge">generateStringAction</code> followed by <code class="highlighter-rouge">reverseAction</code></li>
-  <li>each run stopped because no other transitions are left to explore from <code class="highlighter-rouge">reverseAction</code></li>
+  <li>each run called <code class="highlighter-rouge">generateStringAction</code> followed by <code class="highlighter-rouge">reverseStringAction</code> which is the only transition defined</li>
+  <li>each run stopped because no other transitions are left to explore from <code class="highlighter-rouge">reverseStringAction</code></li>
   <li>the string generator has been called for each run</li>
   <li>no post-condition has been broken</li>
 </ul>
