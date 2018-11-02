@@ -36,19 +36,19 @@ Such state machine wires together a set of `actions` that relate to each others 
 
 Each `action` has a set of `pre-conditions` and a set of `post-conditions` that are checked automatically.
 
-A `run` terminates successfully if the following conditions is met:
-- max number of transition reached (i.e we were not able to break any invariants)
+A `run` terminates successfully if the max number of transition reached; i.e we were not able to break any invariants.
 
 A `run` fails if one the following conditions is met:
 - one `post-condition` was broken
 - error thrown from an `action`
-- no `actions` with valid `pre-conditions` can be found, this is generally of a badly formed state machine
+- no `actions` with valid `pre-conditions` can be found, this is generally a sign of a malformed state machine
+- a `generator` throws an error
 
 A `model` exploration terminates:
- - successfully if the max number of run is reached
- - with an error if a run fails
+- successfully if the max number of run is reached
+- with an error if a run fails
 
-# A first example
+## A first example
 
 Below is an example presenting the current `cornichon-check` API by checking the contract of HTTP API reversing twice a string.
 
@@ -74,7 +74,7 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
     }
   }
 
-  //Model definition usually in another trait
+  //The model definition usually lives in another trait
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "an alphanumeric String (20)",
