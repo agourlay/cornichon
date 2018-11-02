@@ -48,11 +48,13 @@ A `model` exploration terminates:
  - successfully if the max number of run is reached
  - with an error if a run fails
 
+# A first example
+
 Below is an example presenting the current `cornichon-check` API by checking the contract of HTTP API reversing twice a string.
 
-We want to enforce the invariant that for any string, reversing the string twice should yield the same value.
+We want to enforce the invariant that for any string, if we reverse it twice, it should yield the same value.
 
-The implementation under test is a server acceptiong a `POST` request to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
+The implementation under test is a server accepting a `POST` request to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
 
 This is silly because the state machine has only a single transition but it is still a good first example to get to know the API.
 
