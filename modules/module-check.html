@@ -4,7 +4,7 @@
 
 <p>The initial inspiration came after reading the following article <a href="https://functional.works-hub.com/learn/property-based-integration-testing-using-haskell-6c25c">Property based integration testing using Haskell!</a> which describes a way to tackle the problem of property based testing for HTTP APIs.</p>
 
-<p>Although the implementations are clearly different due to the <code class="highlighter-rouge">cornichon</code> and Scala concepts; this article remains a great introduction to the problem we are trying to solve with <code class="highlighter-rouge">cornichon-check</code>.</p>
+<p>It is still a great introduction to the problem we are trying to solve although the implementations are significantly different.</p>
 
 <h2 id="concept">Concept</h2>
 
@@ -12,25 +12,33 @@
 
 <p>In the case of an HTTP API, it is more difficult to perform such operations, you are more often than not testing that a set of invariants are valid throughout a workflow.</p>
 
-<p>The key idea is to describe the possible interactions with the API as a state machine which can be automatically explored.</p>
+<p>The key idea is to describe the possible interactions with the API as <a href="https://en.wikipedia.org/wiki/Markov_chain">Markov chains</a> which can be automatically explored.</p>
 
-<p>The entry point of the <code class="highlighter-rouge">cornichon-check</code> DSL is reached by mixing the trait <code class="highlighter-rouge">CheckDsl</code> which exposes the following:</p>
+<p>The entry point of the <code class="highlighter-rouge">cornichon-check</code> DSL is reached by mixing the trait <code class="highlighter-rouge">CheckDsl</code> which exposes the following function:</p>
 
 <p><code class="highlighter-rouge">def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, seed: Option[Long] = None)(modelRunner: ModelRunner[A, B, C, D, E, F])</code></p>
 
 <p>Let’s unpack this signature:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">maxNumberOfRuns</code> refers to maximum number of attempt to traverse the state machine and find a case that breaks an invariant</li>
-  <li><code class="highlighter-rouge">maxNumberOfTransition</code> is useful when the state machine contains cycles in order to ensure termination</li>
+  <li><code class="highlighter-rouge">maxNumberOfRuns</code> refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant</li>
+  <li><code class="highlighter-rouge">maxNumberOfTransition</code> is useful when the <code class="highlighter-rouge">model</code> contains cycles in order to ensure termination</li>
   <li><code class="highlighter-rouge">seed</code> can be provided in order to trigger a deterministic run</li>
-  <li><code class="highlighter-rouge">modelRunner</code> is that actual definition of the state machine</li>
-  <li><code class="highlighter-rouge">A B C D E F</code> refers to the types of the <code class="highlighter-rouge">generators</code> used in the state machine definition (maximum 6 for the moment)</li>
+  <li><code class="highlighter-rouge">modelRunner</code> is the actual definition of the <code class="highlighter-rouge">model</code></li>
+  <li><code class="highlighter-rouge">A B C D E F</code> refers to the types of the <code class="highlighter-rouge">generators</code> used in <code class="highlighter-rouge">model</code> definition (maximum 6 for the moment)</li>
 </ul>
 
-<p>Such state machine wires together a set of <code class="highlighter-rouge">actions</code> that relate to each others through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code>.</p>
+<p>Such Markov chain wires together a set of <code class="highlighter-rouge">actions</code> that relate to each others through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code>.</p>
 
 <p>Each <code class="highlighter-rouge">action</code> has a set of <code class="highlighter-rouge">pre-conditions</code> and a set of <code class="highlighter-rouge">post-conditions</code> that are checked automatically.</p>
+
+<p>Concretely it means that:</p>
+<ul>
+  <li><code class="highlighter-rouge">pre-conditions</code> and <code class="highlighter-rouge">post-conditions</code> are <code class="highlighter-rouge">AssertSteps</code></li>
+  <li>the <code class="highlighter-rouge">action</code> itself is a function from a bunch of <code class="highlighter-rouge">Generators</code> to an <code class="highlighter-rouge">EffectStep</code></li>
+</ul>
+
+<p>Having <code class="highlighter-rouge">generators</code> as input enables the <code class="highlighter-rouge">action</code> to introduce some randomness in its effect.</p>
 
 <p>A <code class="highlighter-rouge">run</code> terminates successfully if the max number of transition reached, this means we were not able to break any invariants.</p>
 
@@ -38,13 +46,15 @@
 <ul>
   <li>a <code class="highlighter-rouge">post-condition</code> was broken</li>
   <li>an error is thrown from an <code class="highlighter-rouge">action</code></li>
-  <li>no <code class="highlighter-rouge">actions</code> with valid <code class="highlighter-rouge">pre-conditions</code> can be found, this is generally a sign of a malformed state machine</li>
+  <li>no <code class="highlighter-rouge">actions</code> with valid <code class="highlighter-rouge">pre-conditions</code> can be found, this is generally a sign of a malformed <code class="highlighter-rouge">model</code></li>
   <li>a <code class="highlighter-rouge">generator</code> throws an error</li>
 </ul>
 
 <p>A <code class="highlighter-rouge">model</code> exploration terminates successfully if the max number of run is reached or with an error if a run fails.</p>
 
 <h2 id="examples">Examples</h2>
+
+<p>Now that we have a common understanding of the concepts and their semantics, it is time to dive into some examples!</p>
 
 <h3 id="reversing-strings-one-generator-and-one-transition">Reversing strings (one generator and one transition)</h3>
 
@@ -54,7 +64,7 @@
 
 <p>The implementation under test is a server accepting a <code class="highlighter-rouge">POST</code> request to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
 
-<p>This is silly because the state machine has only a single transition but it is still a good first example to show to create a <code class="highlighter-rouge">modelRunner</code>.</p>
+<p>This is silly because the Markov chain has only a single transition but it is still a good first example to show to create a <code class="highlighter-rouge">modelRunner</code>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
@@ -162,7 +172,7 @@
 
 <p>The logs show that:</p>
 <ul>
-  <li>we have performed 5 runs of 1 transition each through the state machine</li>
+  <li>we have performed 5 runs of 1 transition each through the <code class="highlighter-rouge">model</code></li>
   <li>each run called <code class="highlighter-rouge">generateStringAction</code> followed by <code class="highlighter-rouge">reverseStringAction</code> which is the only transition defined</li>
   <li>each run stopped because no other transitions are left to explore from <code class="highlighter-rouge">reverseStringAction</code></li>
   <li>the string generator has been called for each run</li>
@@ -173,7 +183,7 @@
 
 <h3 id="turnstile-no-generator-and-cyclic-transitions">Turnstile (no generator and cyclic transitions)</h3>
 
-<p>Having <code class="highlighter-rouge">cornichon-check</code> freely explore the <code class="highlighter-rouge">transitions</code> of a state machine can create some interesting configurations.</p>
+<p>Having <code class="highlighter-rouge">cornichon-check</code> freely explore the <code class="highlighter-rouge">transitions</code> of a <code class="highlighter-rouge">model</code> can create some interesting configurations.</p>
 
 <p>In this example we are going to test an HTTP API implementing a basic turnstile.</p>
 
@@ -373,9 +383,9 @@ Starting scenario 'Turnstile acts according to model'
 
 <p>It is possible to replay exactly this run in a deterministic fashion by using the <code class="highlighter-rouge">seed</code> printed in the logs and feed it to the DSL.</p>
 
-<p><code class="highlighter-rouge"> Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)</code></p>
+<p><code class="highlighter-rouge">Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)</code></p>
 
-<p>This example shows that designing test case with <code class="highlighter-rouge">cornichon-check</code> is sometimes challenging in the case of shared mutable state.</p>
+<p>This example shows that designing test scenarios with <code class="highlighter-rouge">cornichon-check</code> is sometimes challenging in the case of shared mutable state.</p>
 
 <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile">here</a>.</p>
 
