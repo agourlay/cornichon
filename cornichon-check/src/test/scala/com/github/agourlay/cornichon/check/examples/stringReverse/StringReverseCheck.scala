@@ -45,27 +45,24 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
     name = "an alphanumeric String (20)",
     genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
-  val randomInputKey = "random-input"
-  val doubleReversedKey = "reversed-twice-random-input"
-
   private val generateStringAction = Action1[String](
     description = "generate and save string",
-    preConditions = session_value(randomInputKey).isAbsent :: Nil,
-    effect = generator ⇒ {
-      val randomString = generator()
-      EffectStep.fromSyncE(s"save random string '$randomString'", _.addValue(randomInputKey, randomString))
+    preConditions = session_value("random-input").isAbsent :: Nil,
+    effect = stringGenerator ⇒ {
+      val randomString = stringGenerator()
+      EffectStep.fromSyncE(s"save random string '$randomString'", _.addValue("random-input", randomString))
     },
-    postConditions = session_value(randomInputKey).isPresent :: Nil)
+    postConditions = session_value("random-input").isPresent :: Nil)
 
   private val reverseStringAction = Action1[String](
     description = "reverse a string twice yields the same value",
-    preConditions = session_value(randomInputKey).isPresent :: Nil,
+    preConditions = session_value("random-input").isPresent :: Nil,
     effect = _ ⇒ Attach {
       Given I post("/double-reverse").withParams("word" -> "<random-input>")
       Then assert status.is(200)
-      And I save_body(doubleReversedKey)
+      And I save_body("reversed-twice-random-input")
     },
-    postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
+    postConditions = session_values("random-input", "reversed-twice-random-input").areEquals :: Nil)
 
   val doubleReverseModel = ModelRunner.make[String](stringGen)(
     Model(

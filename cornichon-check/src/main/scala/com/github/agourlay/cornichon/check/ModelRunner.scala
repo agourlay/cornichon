@@ -32,7 +32,7 @@ trait ActionN[A, B, C, D, E, F] {
 
 case class Action6[A, B, C, D, E, F](
     description: String,
-    preConditions: List[AssertStep],
+    preConditions: List[AssertStep] = Nil,
     effect: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ D, () ⇒ E, () ⇒ F) ⇒ Step,
     postConditions: List[AssertStep]) extends ActionN[A, B, C, D, E, F] {
   override val effectN: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ D, () ⇒ E, () ⇒ F) ⇒ Step = effect
@@ -40,7 +40,7 @@ case class Action6[A, B, C, D, E, F](
 
 case class Action5[A, B, C, D, E](
     description: String,
-    preConditions: List[AssertStep],
+    preConditions: List[AssertStep] = Nil,
     effect: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ D, () ⇒ E) ⇒ Step,
     postConditions: List[AssertStep]) extends ActionN[A, B, C, D, E, NoValue] {
   override val effectN: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ D, () ⇒ E, () ⇒ NoValue) ⇒ Step =
@@ -49,7 +49,7 @@ case class Action5[A, B, C, D, E](
 
 case class Action4[A, B, C, D](
     description: String,
-    preConditions: List[AssertStep],
+    preConditions: List[AssertStep] = Nil,
     effect: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ D) ⇒ Step,
     postConditions: List[AssertStep]) extends ActionN[A, B, C, D, NoValue, NoValue] {
   override val effectN: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ D, () ⇒ NoValue, () ⇒ NoValue) ⇒ Step =
@@ -58,7 +58,7 @@ case class Action4[A, B, C, D](
 
 case class Action3[A, B, C](
     description: String,
-    preConditions: List[AssertStep],
+    preConditions: List[AssertStep] = Nil,
     effect: (() ⇒ A, () ⇒ B, () ⇒ C) ⇒ Step,
     postConditions: List[AssertStep]) extends ActionN[A, B, C, NoValue, NoValue, NoValue] {
   override val effectN: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue) ⇒ Step =
@@ -67,7 +67,7 @@ case class Action3[A, B, C](
 
 case class Action2[A, B](
     description: String,
-    preConditions: List[AssertStep],
+    preConditions: List[AssertStep] = Nil,
     effect: (() ⇒ A, () ⇒ B) ⇒ Step,
     postConditions: List[AssertStep]) extends ActionN[A, B, NoValue, NoValue, NoValue, NoValue] {
   override val effectN: (() ⇒ A, () ⇒ B, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue) ⇒ Step =
@@ -76,7 +76,7 @@ case class Action2[A, B](
 
 case class Action1[A](
     description: String,
-    preConditions: List[AssertStep],
+    preConditions: List[AssertStep] = Nil,
     effect: (() ⇒ A) ⇒ Step,
     postConditions: List[AssertStep]) extends ActionN[A, NoValue, NoValue, NoValue, NoValue, NoValue] {
   override val effectN: (() ⇒ A, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue) ⇒ Step =
@@ -85,7 +85,7 @@ case class Action1[A](
 
 case class Action0(
     description: String,
-    preConditions: List[AssertStep],
+    preConditions: List[AssertStep] = Nil,
     effect: () ⇒ Step,
     postConditions: List[AssertStep]) extends ActionN[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue] {
   override val effectN: (() ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue) ⇒ Step =

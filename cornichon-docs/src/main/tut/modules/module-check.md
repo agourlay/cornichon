@@ -46,7 +46,9 @@ A `run` fails if one the following conditions is met:
 
 A `model` exploration terminates successfully if the max number of run is reached or with an error if a run fails.
 
-## A first example
+## Examples
+
+### Reversing strings (one generator and one transition)
 
 Below is an example presenting the current `cornichon-check` API by checking the contract of HTTP API reversing twice a string.
 
@@ -78,27 +80,24 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
     name = "an alphanumeric String (20)",
     genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
-  val randomInputKey = "random-input"
-  val doubleReversedKey = "reversed-twice-random-input"
-
   private val generateStringAction = Action1[String](
     description = "generate and save string",
-    preConditions = session_value(randomInputKey).isAbsent :: Nil,
-    effect = generator ⇒ {
-      val randomString = generator()
-      EffectStep.fromSyncE(s"save random string '$randomString'", _.addValue(randomInputKey, randomString))
+    preConditions = session_value("random-input").isAbsent :: Nil,
+    effect = stringGenerator ⇒ {
+      val randomString = stringGenerator()
+      EffectStep.fromSyncE(s"save random string '$randomString'", _.addValue("random-input", randomString))
     },
-    postConditions = session_value(randomInputKey).isPresent :: Nil)
+    postConditions = session_value("random-input").isPresent :: Nil)
 
   private val reverseStringAction = Action1[String](
     description = "reverse a string twice yields the same value",
-    preConditions = session_value(randomInputKey).isPresent :: Nil,
+    preConditions = session_value("random-input").isPresent :: Nil,
     effect = _ ⇒ Attach {
       Given I post("/double-reverse").withParams("word" -> "<random-input>")
       Then assert status.is(200)
-      And I save_body(doubleReversedKey)
+      And I save_body("reversed-twice-random-input")
     },
-    postConditions = session_values(randomInputKey, doubleReversedKey).areEquals :: Nil)
+    postConditions = session_values("random-input", "reversed-twice-random-input").areEquals :: Nil)
 
   val doubleReverseModel = ModelRunner.make[String](stringGen)(
     Model(
@@ -174,7 +173,7 @@ The logs show that:
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse).
 
-## An example with more transitions
+### Turnstile (no generator and cyclic transitions)
 
 Having `cornichon-check` freely explore the `transitions` of a state machine can create some interesting configurations.
 
@@ -205,27 +204,23 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   private val pushCoinAction = Action0(
     description = "push a coin",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(200) :: Nil)
+    postConditions = status.is(200) :: body.is("payment accepted") :: Nil)
 
   private val pushCoinBlockedAction = Action0(
     description = "push a coin is a blocked",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(400) :: Nil)
+    postConditions = status.is(400) :: body.is("payment refused") :: Nil)
 
   private val walkThroughOkAction = Action0(
     description = "walk through ok",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(200) :: Nil)
+    postConditions = status.is(200) :: body.is("door turns") :: Nil)
 
   private val walkThroughBlockedAction = Action0(
     description = "walk through blocked",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(400) :: Nil)
+    postConditions = status.is(400) :: body.is("door blocked") :: Nil)
 
   val turnstileModel = ModelRunner.makeNoGen(
     Model(
@@ -289,43 +284,58 @@ Let's try to the same model with more run to see if it breaks!
 ```
 Basic examples of checks:
 Starting scenario 'Turnstile acts according to model'
-- **failed** Turnstile acts according to model (73 millis)
+- **failed** Turnstile acts according to model (132 millis)
 
   Scenario 'Turnstile acts according to model' failed:
 
   at step:
-  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
 
   with error(s):
   A post-condition was broken for `push a coin`
   caused by:
   expected status code '200' but '400' was received with body:
-  ""
+  "payment refused"
   and with headers:
-  'Date' -> 'Sat, 03 Nov 2018 06:13:54 GMT'
+  'Date' -> 'Sat, 03 Nov 2018 13:28:14 GMT'
+  and
+  expected result was:
+  '"payment accepted"'
+  but actual result is:
+  '"payment refused"'
+
+  JSON patch between actual result and expected result is :
+  [
+    {
+      "op" : "replace",
+      "path" : "",
+      "value" : "payment refused",
+      "old" : "payment accepted"
+    }
+  ]
 
   replay only this scenario with the command:
   testOnly *TurnstileCheck -- "Turnstile acts according to model"
 
    Scenario : Turnstile acts according to model
       main steps
-      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
          Run #1
             push a coin
-            Given I POST /push-coin (10 millis)
+            Given I POST /push-coin (9 millis)
             walk through ok
             Given I POST /walk-through (4 millis)
-            walk through blocked
-            Given I POST /walk-through (4 millis)
-            walk through blocked
+            push a coin
+            Given I POST /push-coin (4 millis)
+            walk through ok
             Given I POST /walk-through (4 millis)
             push a coin
-            Given I POST /push-coin (3 millis)
+            Given I POST /push-coin (4 millis)
             walk through ok
             Given I POST /walk-through (3 millis)
-            push a coin
-            Given I POST /push-coin (3 millis)
-            walk through ok
+            walk through blocked
+            Given I POST /walk-through (4 millis)
+            walk through blocked
             Given I POST /walk-through (3 millis)
             push a coin
             Given I POST /push-coin (3 millis)
@@ -335,18 +345,50 @@ Starting scenario 'Turnstile acts according to model'
             Given I POST /push-coin (4 millis)
          Run #1 - Max transitions number per run reached
          Run #2
+            push a coin
+            Given I POST /push-coin (3 millis)
+            A post-condition was broken for `push a coin`
+            caused by:
+            expected status code '200' but '400' was received with body:
+            "payment refused"
+            and with headers:
+            'Date' -> 'Sat, 03 Nov 2018 13:28:14 GMT'
+            and
+            expected result was:
+            '"payment accepted"'
+            but actual result is:
+            '"payment refused"'
+
+            JSON patch between actual result and expected result is :
+            [
+              {
+                "op" : "replace",
+                "path" : "",
+                "value" : "payment refused",
+                "old" : "payment accepted"
+              }
+            ]
          Run #2 - Failed
-      Check model block failed  (73 millis)
+      Check model block failed  (131 millis)
 ```
 
 Using 2 runs, we found already the problem because the first run finished by introducing a coin.
+
+It is possible to replay exactly this run in a deterministic fashion by using the `seed` printed in the logs and feed it to the DSL.
+
+` Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)`
 
 This example shows that designing test case with `cornichon-check` is sometimes challenging in the case of shared mutable state.
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile).
 
+### Web shop Admin (several generators and cyclic transitions)
+
+// TODO
+
 ## Caveats
 
+- all actions must have the same types within a `model` definition
 - the API has a few rough edges, especially regarding type inference for the `modelRunner` definition
 - placeholders generating random data such as `<random-string` and `random-uuid` are not yet using the correct `seed`
 - the max number of `generators` is hard-coded to 6

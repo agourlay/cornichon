@@ -22,16 +22,16 @@ class TurnstileAPI extends Http4sDsl[Task] {
     case POST -> Root / "push-coin" ⇒
       if (turnstileLocked.get()) {
         turnstileLocked.set(false)
-        Ok()
+        Ok("payment accepted")
       } else
-        BadRequest()
+        BadRequest("payment refused")
 
     case POST -> Root / "walk-through" ⇒
       if (turnstileLocked.get())
-        BadRequest()
+        BadRequest("door blocked")
       else {
         turnstileLocked.set(true)
-        Ok()
+        Ok("door turns")
       }
   }
 

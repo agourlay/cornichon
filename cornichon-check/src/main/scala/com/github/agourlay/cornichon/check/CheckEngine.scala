@@ -70,11 +70,12 @@ class CheckEngine[A, B, C, D, E, F](
                     val validNext = possibleNextStates.filter(_._3)
                     if (validNext.isEmpty) {
                       val error = NoValidTransitionAvailableForState(action.description)
-                      Task.delay((newState, FailedStep(cs, NonEmptyList.one(error)).asLeft))
+                      val noTransitionLog = FailureLogInstruction(error.baseErrorMessage, initialRunState.depth)
+                      Task.delay((newState.appendLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
                     } else {
                       // pick one transition according to the weight
-                      val nextState = pickTransitionAccordingToProbability(rd, validNext)
-                      loopRun(engine, newState, nextState, currentNumberOfTransitions + 1)
+                      val nextAction = pickTransitionAccordingToProbability(rd, validNext)
+                      loopRun(engine, newState, nextAction, currentNumberOfTransitions + 1)
                     }
                   }
               }
@@ -101,11 +102,12 @@ class CheckEngine[A, B, C, D, E, F](
     val generatedValuesLog = Printing.printArrowPairs(generatedValues)
     val fullMessage = s"${action.description} ${if (generatedValuesLog.isEmpty) "" else s"with values [$generatedValuesLog]"}"
     val actionNameLog = InfoLogInstruction(fullMessage, initialRunState.depth)
+    //TODO the log line should be actually appended after the run if the generators are called inside the steps
     effect.run(engine)(initialRunState.appendLog(actionNameLog))
       .flatMap {
         case (newState, res) ⇒
           res.fold(
-            fs ⇒ Task.delay((newState, res)),
+            _ ⇒ Task.delay((newState, res)),
             _ ⇒ {
               // check post-conditions
               checkAssertions(newState, action.postConditions)
@@ -114,7 +116,8 @@ class CheckEngine[A, B, C, D, E, F](
                   if (failures.nonEmpty) {
                     val error = PostConditionBroken(action.description, failures)
                     val errors = NonEmptyList.one(error)
-                    Task.now((initialRunState, FailedStep(cs, errors).asLeft))
+                    val postConditionLog = FailureLogInstruction(error.renderedMessage, initialRunState.depth)
+                    Task.now((newState.appendLog(postConditionLog), FailedStep(cs, errors).asLeft))
                   } else {
                     // run first state
                     Task.delay((newState, res))

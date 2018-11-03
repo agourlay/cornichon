@@ -42,27 +42,23 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   private val pushCoinAction = Action0(
     description = "push a coin",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(200) :: Nil)
+    postConditions = status.is(200) :: body.is("payment accepted") :: Nil)
 
   private val pushCoinBlockedAction = Action0(
     description = "push a coin is a blocked",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(400) :: Nil)
+    postConditions = status.is(400) :: body.is("payment refused") :: Nil)
 
   private val walkThroughOkAction = Action0(
     description = "walk through ok",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(200) :: Nil)
+    postConditions = status.is(200) :: body.is("door turns") :: Nil)
 
   private val walkThroughBlockedAction = Action0(
     description = "walk through blocked",
-    preConditions = Nil,
     effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(400) :: Nil)
+    postConditions = status.is(400) :: body.is("door blocked") :: Nil)
 
   val turnstileModel = ModelRunner.makeNoGen(
     Model(
