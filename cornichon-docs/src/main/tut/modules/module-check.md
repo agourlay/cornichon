@@ -9,7 +9,7 @@ There is a support for property based testing through the `cornichon-check` modu
 
 The initial inspiration came after reading the following article [Property based integration testing using Haskell!](https://functional.works-hub.com/learn/property-based-integration-testing-using-haskell-6c25c) which describes a way to tackle the problem of property based testing for HTTP APIs.
 
-Although the implementations are clearly different due to the `cornichon` and Scala concepts; this article remains a great introduction to the problem we are trying to solve with `cornichon-check`.
+It is still a great introduction to the problem we are trying to solve although the implementations are significantly different.
 
 
 ## Concept
@@ -18,35 +18,43 @@ Performing property based testing of a pure function is quite easy, for `all` po
 
 In the case of an HTTP API, it is more difficult to perform such operations, you are more often than not testing that a set of invariants are valid throughout a workflow.
 
-The key idea is to describe the possible interactions with the API as a state machine which can be automatically explored.
+The key idea is to describe the possible interactions with the API as [Markov chains](https://en.wikipedia.org/wiki/Markov_chain) which can be automatically explored.
 
-The entry point of the `cornichon-check` DSL is reached by mixing the trait `CheckDsl` which exposes the following:
+The entry point of the `cornichon-check` DSL is reached by mixing the trait `CheckDsl` which exposes the following function:
 
 `def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, seed: Option[Long] = None)(modelRunner: ModelRunner[A, B, C, D, E, F])`
 
 Let's unpack this signature:
 
-- `maxNumberOfRuns` refers to maximum number of attempt to traverse the state machine and find a case that breaks an invariant
-- `maxNumberOfTransition` is useful when the state machine contains cycles in order to ensure termination
+- `maxNumberOfRuns` refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant
+- `maxNumberOfTransition` is useful when the `model` contains cycles in order to ensure termination
 - `seed` can be provided in order to trigger a deterministic run
-- `modelRunner` is that actual definition of the state machine
-- `A B C D E F` refers to the types of the `generators` used in the state machine definition (maximum 6 for the moment)
+- `modelRunner` is the actual definition of the `model`
+- `A B C D E F` refers to the types of the `generators` used in `model` definition (maximum 6 for the moment)
 
-Such state machine wires together a set of `actions` that relate to each others through `transitions` which are chosen according to a given `probability`.
+Such Markov chain wires together a set of `actions` that relate to each others through `transitions` which are chosen according to a given `probability`.
 
 Each `action` has a set of `pre-conditions` and a set of `post-conditions` that are checked automatically.
+
+Concretely it means that:
+- `pre-conditions` and `post-conditions` are `AssertSteps`
+- the `action` itself is a function from a bunch of `Generators` to an `EffectStep`
+
+Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
 A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
 
 A `run` fails if one the following conditions is met:
 - a `post-condition` was broken
 - an error is thrown from an `action`
-- no `actions` with valid `pre-conditions` can be found, this is generally a sign of a malformed state machine
+- no `actions` with valid `pre-conditions` can be found, this is generally a sign of a malformed `model`
 - a `generator` throws an error
 
 A `model` exploration terminates successfully if the max number of run is reached or with an error if a run fails.
 
 ## Examples
+
+Now that we have a common understanding of the concepts and their semantics, it is time to dive into some examples!
 
 ### Reversing strings (one generator and one transition)
 
@@ -56,7 +64,7 @@ We want to enforce the invariant that for any string, if we reverse it twice, it
 
 The implementation under test is a server accepting a `POST` request to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
 
-This is silly because the state machine has only a single transition but it is still a good first example to show to create a `modelRunner`.
+This is silly because the Markov chain has only a single transition but it is still a good first example to show to create a `modelRunner`.
 
 ```tut:silent
 import com.github.agourlay.cornichon.CornichonFeature
@@ -165,7 +173,7 @@ Starting scenario 'reverse a string twice yields the same results'
 ```
 
 The logs show that:
-  - we have performed 5 runs of 1 transition each through the state machine
+  - we have performed 5 runs of 1 transition each through the `model`
   - each run called `generateStringAction` followed by `reverseStringAction` which is the only transition defined
   - each run stopped because no other transitions are left to explore from `reverseStringAction`
   - the string generator has been called for each run
@@ -175,7 +183,7 @@ The source for the test and the server are available [here](https://github.com/a
 
 ### Turnstile (no generator and cyclic transitions)
 
-Having `cornichon-check` freely explore the `transitions` of a state machine can create some interesting configurations.
+Having `cornichon-check` freely explore the `transitions` of a `model` can create some interesting configurations.
 
 In this example we are going to test an HTTP API implementing a basic turnstile.
 
@@ -376,9 +384,9 @@ Using 2 runs, we found already the problem because the first run finished by int
 
 It is possible to replay exactly this run in a deterministic fashion by using the `seed` printed in the logs and feed it to the DSL.
 
-` Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)`
+`Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)`
 
-This example shows that designing test case with `cornichon-check` is sometimes challenging in the case of shared mutable state.
+This example shows that designing test scenarios with `cornichon-check` is sometimes challenging in the case of shared mutable state.
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile).
 

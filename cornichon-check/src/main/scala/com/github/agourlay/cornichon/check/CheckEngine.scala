@@ -54,35 +54,31 @@ class CheckEngine[A, B, C, D, E, F](
   private def loopRun(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     if (currentNumberOfTransitions > maxNumberOfTransitions)
       Task.delay((initialRunState, MaxTransitionReached(maxNumberOfTransitions).asRight))
-    else {
+    else
       runActionAndValidatePostConditions(engine, initialRunState, action).flatMap {
-        case (newState, res) ⇒
-          res.fold(
-            fs ⇒ Task.delay((newState, fs.asLeft)),
-            _ ⇒ {
-              // check available outgoing transitions
-              model.transitions.get(action) match {
-                case None ⇒
-                  // No transitions defined -> end of run
-                  Task.delay((newState, EndActionReached(action.description, currentNumberOfTransitions).asRight))
-                case Some(transitions) ⇒
-                  validTransitions(newState)(transitions).flatMap { possibleNextStates ⇒
-                    val validNext = possibleNextStates.filter(_._3)
-                    if (validNext.isEmpty) {
-                      val error = NoValidTransitionAvailableForState(action.description)
-                      val noTransitionLog = FailureLogInstruction(error.baseErrorMessage, initialRunState.depth)
-                      Task.delay((newState.appendLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
-                    } else {
-                      // pick one transition according to the weight
-                      val nextAction = pickTransitionAccordingToProbability(rd, validNext)
-                      loopRun(engine, newState, nextAction, currentNumberOfTransitions + 1)
-                    }
-                  }
+        case (newState, Left(fs)) ⇒
+          Task.delay((newState, fs.asLeft))
+        case (newState, Right(_)) ⇒
+          // check available outgoing transitions
+          model.transitions.get(action) match {
+            case None ⇒
+              // No transitions defined -> end of run
+              Task.delay((newState, EndActionReached(action.description, currentNumberOfTransitions).asRight))
+            case Some(transitions) ⇒
+              validTransitions(newState)(transitions).flatMap { possibleNextStates ⇒
+                val validNext = possibleNextStates.filter(_._3)
+                if (validNext.isEmpty) {
+                  val error = NoValidTransitionAvailableForState(action.description)
+                  val noTransitionLog = FailureLogInstruction(error.baseErrorMessage, initialRunState.depth)
+                  Task.delay((newState.appendLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
+                } else {
+                  // pick one transition according to the weight
+                  val nextAction = pickTransitionAccordingToProbability(rd, validNext)
+                  loopRun(engine, newState, nextAction, currentNumberOfTransitions + 1)
+                }
               }
-            }
-          )
+          }
       }
-    }
 
   // Assumes valid pre-conditions
   private def runActionAndValidatePostConditions(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
@@ -105,27 +101,25 @@ class CheckEngine[A, B, C, D, E, F](
     //TODO the log line should be actually appended after the run if the generators are called inside the steps
     effect.run(engine)(initialRunState.appendLog(actionNameLog))
       .flatMap {
-        case (newState, res) ⇒
-          res.fold(
-            _ ⇒ Task.delay((newState, res)),
-            _ ⇒ {
-              // check post-conditions
-              checkAssertions(newState, action.postConditions)
-                .flatMap { afterConditionIsValid ⇒
-                  val failures = afterConditionIsValid.collect { case Left(e) ⇒ e.toList }.flatten
-                  if (failures.nonEmpty) {
-                    val error = PostConditionBroken(action.description, failures)
-                    val errors = NonEmptyList.one(error)
-                    val postConditionLog = FailureLogInstruction(error.renderedMessage, initialRunState.depth)
-                    Task.now((newState.appendLog(postConditionLog), FailedStep(cs, errors).asLeft))
-                  } else {
-                    // run first state
-                    Task.delay((newState, res))
-                  }
-                }
+        case (newState, res @ Left(_)) ⇒
+          Task.delay((newState, res))
+        case (newState, res @ Right(_)) ⇒
+          // check post-conditions
+          checkAssertions(newState, action.postConditions)
+            .flatMap { afterConditionIsValid ⇒
+              val failures = afterConditionIsValid.collect { case Left(e) ⇒ e.toList }.flatten
+              if (failures.nonEmpty) {
+                val error = PostConditionBroken(action.description, failures)
+                val errors = NonEmptyList.one(error)
+                val postConditionLog = FailureLogInstruction(error.renderedMessage, initialRunState.depth)
+                Task.now((newState.appendLog(postConditionLog), FailedStep(cs, errors).asLeft))
+              } else {
+                // run first state
+                Task.delay((newState, res))
+              }
             }
-          )
       }
+
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability
