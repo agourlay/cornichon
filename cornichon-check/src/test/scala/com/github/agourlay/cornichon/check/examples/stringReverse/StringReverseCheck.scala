@@ -1,13 +1,14 @@
-package com.github.agourlay.cornichon.check.examples
+package com.github.agourlay.cornichon.check.examples.stringReverse
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
+import com.github.agourlay.cornichon.check.examples.HttpServer
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class BasicExampleChecks extends CornichonFeature with CheckDsl {
+class StringReverseCheck extends CornichonFeature with CheckDsl {
 
   def feature = Feature("Basic examples of checks") {
 

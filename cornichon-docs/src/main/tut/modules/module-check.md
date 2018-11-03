@@ -30,23 +30,21 @@ Let's unpack this signature:
 - `maxNumberOfTransition` is useful when the state machine contains cycles in order to ensure termination
 - `seed` can be provided in order to trigger a deterministic run
 - `modelRunner` is that actual definition of the state machine
-- `A B C D E F` refers to the type of the `generators` used in the state machine definition (maximum 6 for the moment)
+- `A B C D E F` refers to the types of the `generators` used in the state machine definition (maximum 6 for the moment)
 
 Such state machine wires together a set of `actions` that relate to each others through `transitions` which are chosen according to a given `probability`.
 
 Each `action` has a set of `pre-conditions` and a set of `post-conditions` that are checked automatically.
 
-A `run` terminates successfully if the max number of transition reached; i.e we were not able to break any invariants.
+A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
 
 A `run` fails if one the following conditions is met:
-- one `post-condition` was broken
-- error thrown from an `action`
+- a `post-condition` was broken
+- an error is thrown from an `action`
 - no `actions` with valid `pre-conditions` can be found, this is generally a sign of a malformed state machine
 - a `generator` throws an error
 
-A `model` exploration terminates:
-- successfully if the max number of run is reached
-- with an error if a run fails
+A `model` exploration terminates successfully if the max number of run is reached or with an error if a run fails.
 
 ## A first example
 
@@ -174,13 +172,178 @@ The logs show that:
   - the string generator has been called for each run
   - no post-condition has been broken
 
-The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples).
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse).
 
 ## An example with more transitions
 
 Having `cornichon-check` freely explore the `transitions` of a state machine can create some interesting configurations.
 
-// TODO use the example of a turnstile?
+In this example we are going to test an HTTP API implementing a basic turnstile.
+
+This is a rotating gate that let people pass one at the time after payment. In our simplified model it is not possible to pay for several people to pass in advance.
+
+The server exposed two endpoints:
+- a `POST` request on `/push-coin` to unlock the gate
+- a `POST` request on `/walk-through` to turn the gate
+
+```tut:silent
+import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.check._
+
+class TurnstileCheck extends CornichonFeature with CheckDsl {
+
+  def feature = Feature("Basic examples of checks") {
+
+    Scenario("Turnstile acts according to model") {
+
+      Given I check_model(maxNumberOfRuns = 1, maxNumberOfTransitions = 10)(turnstileModel)
+
+    }
+  }
+
+  //Model definition usually in another trait
+
+  private val pushCoinAction = Action0(
+    description = "push a coin",
+    preConditions = Nil,
+    effect = () ⇒ Given I post("/push-coin"),
+    postConditions = status.is(200) :: Nil)
+
+  private val pushCoinBlockedAction = Action0(
+    description = "push a coin is a blocked",
+    preConditions = Nil,
+    effect = () ⇒ Given I post("/push-coin"),
+    postConditions = status.is(400) :: Nil)
+
+  private val walkThroughOkAction = Action0(
+    description = "walk through ok",
+    preConditions = Nil,
+    effect = () ⇒ Given I post("/walk-through"),
+    postConditions = status.is(200) :: Nil)
+
+  private val walkThroughBlockedAction = Action0(
+    description = "walk through blocked",
+    preConditions = Nil,
+    effect = () ⇒ Given I post("/walk-through"),
+    postConditions = status.is(400) :: Nil)
+
+  val turnstileModel = ModelRunner.makeNoGen(
+    Model(
+      description = "Turnstile acts according to model",
+      startingAction = pushCoinAction,
+      transitions = Map(
+        pushCoinAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
+        pushCoinBlockedAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
+        walkThroughOkAction -> ((0.7, pushCoinAction) :: (0.3, walkThroughBlockedAction) :: Nil),
+        walkThroughBlockedAction -> ((0.9, pushCoinAction) :: (0.1, walkThroughBlockedAction) :: Nil)
+      )
+    )
+  )
+}
+
+```
+
+Again let's have a look at the logs to see how things go.
+
+```
+Basic examples of checks:
+Starting scenario 'Turnstile acts according to model'
+- Turnstile acts according to model (59 millis)
+
+   Scenario : Turnstile acts according to model
+      main steps
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=1 and maxNumberOfTransitions=10 and seed=1541225049797
+         Run #1
+            push a coin
+            Given I POST /push-coin (9 millis)
+            walk through ok
+            Given I POST /walk-through (4 millis)
+            push a coin
+            Given I POST /push-coin (4 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            walk through blocked
+            Given I POST /walk-through (3 millis)
+            walk through blocked
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            push a coin is a blocked
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (4 millis)
+         Run #1 - Max transitions number per run reached
+      Check block succeeded (56 millis)
+```
+
+It is interesting to note that we are executing a single run on purpose, as the server is stateful, the run would share the global state of the turnstile.
+
+This is an issue because we are starting our model with `pushCoinAction` which is always expected to succeed.
+
+Let's try to the same model with more run to see if it breaks!
+
+```
+Basic examples of checks:
+Starting scenario 'Turnstile acts according to model'
+- **failed** Turnstile acts according to model (73 millis)
+
+  Scenario 'Turnstile acts according to model' failed:
+
+  at step:
+  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+
+  with error(s):
+  A post-condition was broken for `push a coin`
+  caused by:
+  expected status code '200' but '400' was received with body:
+  ""
+  and with headers:
+  'Date' -> 'Sat, 03 Nov 2018 06:13:54 GMT'
+
+  replay only this scenario with the command:
+  testOnly *TurnstileCheck -- "Turnstile acts according to model"
+
+   Scenario : Turnstile acts according to model
+      main steps
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+         Run #1
+            push a coin
+            Given I POST /push-coin (10 millis)
+            walk through ok
+            Given I POST /walk-through (4 millis)
+            walk through blocked
+            Given I POST /walk-through (4 millis)
+            walk through blocked
+            Given I POST /walk-through (4 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (4 millis)
+         Run #1 - Max transitions number per run reached
+         Run #2
+         Run #2 - Failed
+      Check model block failed  (73 millis)
+```
+
+Using 2 runs, we found already the problem because the first run finished by introducing a coin.
+
+This example shows that designing test case with `cornichon-check` is sometimes challenging in the case of shared mutable state.
+
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile).
 
 ## Caveats
 

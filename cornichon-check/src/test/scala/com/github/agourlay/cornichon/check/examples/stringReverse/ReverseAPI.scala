@@ -1,7 +1,8 @@
-package com.github.agourlay.cornichon.check.examples
+package com.github.agourlay.cornichon.check.examples.stringReverse
 
 import cats.effect.ExitCode
 import cats.effect.concurrent.Ref
+import com.github.agourlay.cornichon.check.examples.HttpServer
 import fs2.concurrent.SignallingRef
 import monix.eval.Task
 import monix.execution.{ CancelableFuture, Scheduler }
@@ -39,9 +40,5 @@ class ReverseAPI extends Http4sDsl[Task] {
 
       new HttpServer(signal)
     }.runToFuture(s)
-}
-
-class HttpServer(signal: SignallingRef[Task, Boolean])(implicit s: Scheduler) {
-  def shutdown(): CancelableFuture[Unit] = signal.set(true).runToFuture
 }
 

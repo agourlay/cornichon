@@ -83,7 +83,7 @@ case class Action1[A](
     (a, _, _, _, _, _) ⇒ effect(a)
 }
 
-case class Action0[A](
+case class Action0(
     description: String,
     preConditions: List[AssertStep],
     effect: () ⇒ Step,
@@ -93,6 +93,9 @@ case class Action0[A](
 }
 
 object ModelRunner {
+
+  def makeNoGen(model: Model[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue]): ModelRunner[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue] =
+    ModelRunner(seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, model)
 
   def make[A](genA: RandomContext ⇒ Generator[A])(model: Model[A, NoValue, NoValue, NoValue, NoValue, NoValue]): ModelRunner[A, NoValue, NoValue, NoValue, NoValue, NoValue] =
     ModelRunner(genA, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, seededNoValueGenerator, model)
