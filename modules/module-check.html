@@ -44,7 +44,9 @@
 
 <p>A <code class="highlighter-rouge">model</code> exploration terminates successfully if the max number of run is reached or with an error if a run fails.</p>
 
-<h2 id="a-first-example">A first example</h2>
+<h2 id="examples">Examples</h2>
+
+<h3 id="reversing-strings-one-generator-and-one-transition">Reversing strings (one generator and one transition)</h3>
 
 <p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API by checking the contract of HTTP API reversing twice a string.</p>
 
@@ -75,27 +77,24 @@
     <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String (20)"</span><span class="o">,</span>
     <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
 
-  <span class="k">val</span> <span class="n">randomInputKey</span> <span class="k">=</span> <span class="s">"random-input"</span>
-  <span class="k">val</span> <span class="n">doubleReversedKey</span> <span class="k">=</span> <span class="s">"reversed-twice-random-input"</span>
-
   <span class="k">private</span> <span class="k">val</span> <span class="n">generateStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"generate and save string"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="n">generator</span> <span class="k">⇒</span> <span class="o">{</span>
-      <span class="k">val</span> <span class="n">randomString</span> <span class="k">=</span> <span class="n">generator</span><span class="o">()</span>
-      <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="n">s</span><span class="s">"save random string '$randomString'"</span><span class="o">,</span> <span class="k">_</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">randomString</span><span class="o">))</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="n">stringGenerator</span> <span class="k">⇒</span> <span class="o">{</span>
+      <span class="k">val</span> <span class="n">randomString</span> <span class="k">=</span> <span class="n">stringGenerator</span><span class="o">()</span>
+      <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="n">s</span><span class="s">"save random string '$randomString'"</span><span class="o">,</span> <span class="k">_</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">,</span> <span class="n">randomString</span><span class="o">))</span>
     <span class="o">},</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">private</span> <span class="k">val</span> <span class="n">reverseStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"reverse a string twice yields the same value"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
     <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
       <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/double-reverse"</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"word"</span> <span class="o">-&gt;</span> <span class="s">"&lt;random-input&gt;"</span><span class="o">)</span>
       <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
-      <span class="nc">And</span> <span class="n">I</span> <span class="n">save_body</span><span class="o">(</span><span class="n">doubleReversedKey</span><span class="o">)</span>
+      <span class="nc">And</span> <span class="n">I</span> <span class="n">save_body</span><span class="o">(</span><span class="s">"reversed-twice-random-input"</span><span class="o">)</span>
     <span class="o">},</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="n">randomInputKey</span><span class="o">,</span> <span class="n">doubleReversedKey</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">,</span> <span class="s">"reversed-twice-random-input"</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">val</span> <span class="n">doubleReverseModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="n">stringGen</span><span class="o">)(</span>
     <span class="nc">Model</span><span class="o">(</span>
@@ -172,7 +171,7 @@
 
 <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse">here</a>.</p>
 
-<h2 id="an-example-with-more-transitions">An example with more transitions</h2>
+<h3 id="turnstile-no-generator-and-cyclic-transitions">Turnstile (no generator and cyclic transitions)</h3>
 
 <p>Having <code class="highlighter-rouge">cornichon-check</code> freely explore the <code class="highlighter-rouge">transitions</code> of a state machine can create some interesting configurations.</p>
 
@@ -204,27 +203,23 @@
 </span>
   <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
     <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"payment accepted"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinBlockedAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin is a blocked"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
     <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"payment refused"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughOkAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through ok"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
     <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"door turns"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughBlockedAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through blocked"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
     <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"door blocked"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
 
   <span class="k">val</span> <span class="n">turnstileModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">makeNoGen</span><span class="o">(</span>
     <span class="nc">Model</span><span class="o">(</span>
@@ -286,43 +281,58 @@ Starting scenario 'Turnstile acts according to model'
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
 Starting scenario 'Turnstile acts according to model'
-- **failed** Turnstile acts according to model (73 millis)
+- **failed** Turnstile acts according to model (132 millis)
 
   Scenario 'Turnstile acts according to model' failed:
 
   at step:
-  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
 
   with error(s):
   A post-condition was broken for `push a coin`
   caused by:
   expected status code '200' but '400' was received with body:
-  ""
+  "payment refused"
   and with headers:
-  'Date' -&gt; 'Sat, 03 Nov 2018 06:13:54 GMT'
+  'Date' -&gt; 'Sat, 03 Nov 2018 13:28:14 GMT'
+  and
+  expected result was:
+  '"payment accepted"'
+  but actual result is:
+  '"payment refused"'
+
+  JSON patch between actual result and expected result is :
+  [
+    {
+      "op" : "replace",
+      "path" : "",
+      "value" : "payment refused",
+      "old" : "payment accepted"
+    }
+  ]
 
   replay only this scenario with the command:
   testOnly *TurnstileCheck -- "Turnstile acts according to model"
 
    Scenario : Turnstile acts according to model
       main steps
-      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
          Run #1
             push a coin
-            Given I POST /push-coin (10 millis)
+            Given I POST /push-coin (9 millis)
             walk through ok
             Given I POST /walk-through (4 millis)
-            walk through blocked
-            Given I POST /walk-through (4 millis)
-            walk through blocked
+            push a coin
+            Given I POST /push-coin (4 millis)
+            walk through ok
             Given I POST /walk-through (4 millis)
             push a coin
-            Given I POST /push-coin (3 millis)
+            Given I POST /push-coin (4 millis)
             walk through ok
             Given I POST /walk-through (3 millis)
-            push a coin
-            Given I POST /push-coin (3 millis)
-            walk through ok
+            walk through blocked
+            Given I POST /walk-through (4 millis)
+            walk through blocked
             Given I POST /walk-through (3 millis)
             push a coin
             Given I POST /push-coin (3 millis)
@@ -332,19 +342,51 @@ Starting scenario 'Turnstile acts according to model'
             Given I POST /push-coin (4 millis)
          Run #1 - Max transitions number per run reached
          Run #2
+            push a coin
+            Given I POST /push-coin (3 millis)
+            A post-condition was broken for `push a coin`
+            caused by:
+            expected status code '200' but '400' was received with body:
+            "payment refused"
+            and with headers:
+            'Date' -&gt; 'Sat, 03 Nov 2018 13:28:14 GMT'
+            and
+            expected result was:
+            '"payment accepted"'
+            but actual result is:
+            '"payment refused"'
+
+            JSON patch between actual result and expected result is :
+            [
+              {
+                "op" : "replace",
+                "path" : "",
+                "value" : "payment refused",
+                "old" : "payment accepted"
+              }
+            ]
          Run #2 - Failed
-      Check model block failed  (73 millis)
+      Check model block failed  (131 millis)
 </code></pre></div></div>
 
 <p>Using 2 runs, we found already the problem because the first run finished by introducing a coin.</p>
+
+<p>It is possible to replay exactly this run in a deterministic fashion by using the <code class="highlighter-rouge">seed</code> printed in the logs and feed it to the DSL.</p>
+
+<p><code class="highlighter-rouge"> Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)</code></p>
 
 <p>This example shows that designing test case with <code class="highlighter-rouge">cornichon-check</code> is sometimes challenging in the case of shared mutable state.</p>
 
 <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile">here</a>.</p>
 
+<h3 id="web-shop-admin-several-generators-and-cyclic-transitions">Web shop Admin (several generators and cyclic transitions)</h3>
+
+<p>// TODO</p>
+
 <h2 id="caveats">Caveats</h2>
 
 <ul>
+  <li>all actions must have the same types within a <code class="highlighter-rouge">model</code> definition</li>
   <li>the API has a few rough edges, especially regarding type inference for the <code class="highlighter-rouge">modelRunner</code> definition</li>
   <li>placeholders generating random data such as <code class="highlighter-rouge">&lt;random-string</code> and <code class="highlighter-rouge">random-uuid</code> are not yet using the correct <code class="highlighter-rouge">seed</code></li>
   <li>the max number of <code class="highlighter-rouge">generators</code> is hard-coded to 6</li>
