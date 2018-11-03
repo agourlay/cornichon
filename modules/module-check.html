@@ -25,28 +25,24 @@
   <li><code class="highlighter-rouge">maxNumberOfTransition</code> is useful when the state machine contains cycles in order to ensure termination</li>
   <li><code class="highlighter-rouge">seed</code> can be provided in order to trigger a deterministic run</li>
   <li><code class="highlighter-rouge">modelRunner</code> is that actual definition of the state machine</li>
-  <li><code class="highlighter-rouge">A B C D E F</code> refers to the type of the <code class="highlighter-rouge">generators</code> used in the state machine definition (maximum 6 for the moment)</li>
+  <li><code class="highlighter-rouge">A B C D E F</code> refers to the types of the <code class="highlighter-rouge">generators</code> used in the state machine definition (maximum 6 for the moment)</li>
 </ul>
 
 <p>Such state machine wires together a set of <code class="highlighter-rouge">actions</code> that relate to each others through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code>.</p>
 
 <p>Each <code class="highlighter-rouge">action</code> has a set of <code class="highlighter-rouge">pre-conditions</code> and a set of <code class="highlighter-rouge">post-conditions</code> that are checked automatically.</p>
 
-<p>A <code class="highlighter-rouge">run</code> terminates successfully if the max number of transition reached; i.e we were not able to break any invariants.</p>
+<p>A <code class="highlighter-rouge">run</code> terminates successfully if the max number of transition reached, this means we were not able to break any invariants.</p>
 
 <p>A <code class="highlighter-rouge">run</code> fails if one the following conditions is met:</p>
 <ul>
-  <li>one <code class="highlighter-rouge">post-condition</code> was broken</li>
-  <li>error thrown from an <code class="highlighter-rouge">action</code></li>
+  <li>a <code class="highlighter-rouge">post-condition</code> was broken</li>
+  <li>an error is thrown from an <code class="highlighter-rouge">action</code></li>
   <li>no <code class="highlighter-rouge">actions</code> with valid <code class="highlighter-rouge">pre-conditions</code> can be found, this is generally a sign of a malformed state machine</li>
   <li>a <code class="highlighter-rouge">generator</code> throws an error</li>
 </ul>
 
-<p>A <code class="highlighter-rouge">model</code> exploration terminates:</p>
-<ul>
-  <li>successfully if the max number of run is reached</li>
-  <li>with an error if a run fails</li>
-</ul>
+<p>A <code class="highlighter-rouge">model</code> exploration terminates successfully if the max number of run is reached or with an error if a run fails.</p>
 
 <h2 id="a-first-example">A first example</h2>
 
@@ -174,13 +170,177 @@
   <li>no post-condition has been broken</li>
 </ul>
 
-<p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples">here</a>.</p>
+<p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse">here</a>.</p>
 
 <h2 id="an-example-with-more-transitions">An example with more transitions</h2>
 
 <p>Having <code class="highlighter-rouge">cornichon-check</code> freely explore the <code class="highlighter-rouge">transitions</code> of a state machine can create some interesting configurations.</p>
 
-<p>// TODO use the example of a turnstile?</p>
+<p>In this example we are going to test an HTTP API implementing a basic turnstile.</p>
+
+<p>This is a rotating gate that let people pass one at the time after payment. In our simplified model it is not possible to pay for several people to pass in advance.</p>
+
+<p>The server exposed two endpoints:</p>
+<ul>
+  <li>a <code class="highlighter-rouge">POST</code> request on <code class="highlighter-rouge">/push-coin</code> to unlock the gate</li>
+  <li>a <code class="highlighter-rouge">POST</code> request on <code class="highlighter-rouge">/walk-through</code> to turn the gate</li>
+</ul>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
+
+<span class="k">class</span> <span class="nc">TurnstileCheck</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="k">with</span> <span class="nc">CheckDsl</span> <span class="o">{</span>
+
+  <span class="k">def</span> <span class="n">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Basic examples of checks"</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"Turnstile acts according to model"</span><span class="o">)</span> <span class="o">{</span>
+
+      <span class="nc">Given</span> <span class="n">I</span> <span class="n">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">1</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">10</span><span class="o">)(</span><span class="n">turnstileModel</span><span class="o">)</span>
+
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="c1">//Model definition usually in another trait
+</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
+    <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin"</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">),</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+  <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinBlockedAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
+    <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin is a blocked"</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">),</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+  <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughOkAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
+    <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through ok"</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">),</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+  <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughBlockedAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
+    <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through blocked"</span><span class="o">,</span>
+    <span class="n">preConditions</span> <span class="k">=</span> <span class="nc">Nil</span><span class="o">,</span>
+    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">),</span>
+    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+
+  <span class="k">val</span> <span class="n">turnstileModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">makeNoGen</span><span class="o">(</span>
+    <span class="nc">Model</span><span class="o">(</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"Turnstile acts according to model"</span><span class="o">,</span>
+      <span class="n">startingAction</span> <span class="k">=</span> <span class="n">pushCoinAction</span><span class="o">,</span>
+      <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
+        <span class="n">pushCoinAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">walkThroughOkAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">pushCoinBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+        <span class="n">pushCoinBlockedAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">walkThroughOkAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">pushCoinBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+        <span class="n">walkThroughOkAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.7</span><span class="o">,</span> <span class="n">pushCoinAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.3</span><span class="o">,</span> <span class="n">walkThroughBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+        <span class="n">walkThroughBlockedAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pushCoinAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">walkThroughBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+      <span class="o">)</span>
+    <span class="o">)</span>
+  <span class="o">)</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>Again let’s have a look at the logs to see how things go.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
+Starting scenario 'Turnstile acts according to model'
+- Turnstile acts according to model (59 millis)
+
+   Scenario : Turnstile acts according to model
+      main steps
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=1 and maxNumberOfTransitions=10 and seed=1541225049797
+         Run #1
+            push a coin
+            Given I POST /push-coin (9 millis)
+            walk through ok
+            Given I POST /walk-through (4 millis)
+            push a coin
+            Given I POST /push-coin (4 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            walk through blocked
+            Given I POST /walk-through (3 millis)
+            walk through blocked
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            push a coin is a blocked
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (4 millis)
+         Run #1 - Max transitions number per run reached
+      Check block succeeded (56 millis)
+</code></pre></div></div>
+
+<p>It is interesting to note that we are executing a single run on purpose, as the server is stateful, the run would share the global state of the turnstile.</p>
+
+<p>This is an issue because we are starting our model with <code class="highlighter-rouge">pushCoinAction</code> which is always expected to succeed.</p>
+
+<p>Let’s try to the same model with more run to see if it breaks!</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
+Starting scenario 'Turnstile acts according to model'
+- **failed** Turnstile acts according to model (73 millis)
+
+  Scenario 'Turnstile acts according to model' failed:
+
+  at step:
+  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+
+  with error(s):
+  A post-condition was broken for `push a coin`
+  caused by:
+  expected status code '200' but '400' was received with body:
+  ""
+  and with headers:
+  'Date' -&gt; 'Sat, 03 Nov 2018 06:13:54 GMT'
+
+  replay only this scenario with the command:
+  testOnly *TurnstileCheck -- "Turnstile acts according to model"
+
+   Scenario : Turnstile acts according to model
+      main steps
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541225634602
+         Run #1
+            push a coin
+            Given I POST /push-coin (10 millis)
+            walk through ok
+            Given I POST /walk-through (4 millis)
+            walk through blocked
+            Given I POST /walk-through (4 millis)
+            walk through blocked
+            Given I POST /walk-through (4 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            push a coin
+            Given I POST /push-coin (4 millis)
+         Run #1 - Max transitions number per run reached
+         Run #2
+         Run #2 - Failed
+      Check model block failed  (73 millis)
+</code></pre></div></div>
+
+<p>Using 2 runs, we found already the problem because the first run finished by introducing a coin.</p>
+
+<p>This example shows that designing test case with <code class="highlighter-rouge">cornichon-check</code> is sometimes challenging in the case of shared mutable state.</p>
+
+<p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile">here</a>.</p>
 
 <h2 id="caveats">Caveats</h2>
 
