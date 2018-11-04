@@ -42,6 +42,14 @@ Concretely it means that:
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
+A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating strings.
+
+```
+def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+  name = "an alphanumeric String (20)",
+  genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+```
+
 A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
 
 A `run` fails if one the following conditions is met:
@@ -130,7 +138,7 @@ Starting scenario 'reverse a string twice yields the same results'
       main steps
       Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1541177654821
          Run #1
-            generate and save string with values ['an alphanumeric String (20)' -> 'zCFAPwANfohFhQx4h6Pl']
+            generate and save string ['an alphanumeric String (20)' -> 'zCFAPwANfohFhQx4h6Pl']
             save random string 'zCFAPwANfohFhQx4h6Pl' (6 millis)
             reverse a string twice yields the same value
             Given I POST /double-reverse with query parameters 'word' -> 'zCFAPwANfohFhQx4h6Pl' (1328 millis)
@@ -138,7 +146,7 @@ Starting scenario 'reverse a string twice yields the same results'
             And I save path '$' from body to key 'reversed-twice-random-input' (23 millis)
          Run #1 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #2
-            generate and save string with values ['an alphanumeric String (20)' -> 'jfQadaz86jXxP7AoBNST']
+            generate and save string ['an alphanumeric String (20)' -> 'jfQadaz86jXxP7AoBNST']
             save random string 'jfQadaz86jXxP7AoBNST' (0 millis)
             reverse a string twice yields the same value
             Given I POST /double-reverse with query parameters 'word' -> 'jfQadaz86jXxP7AoBNST' (6 millis)
@@ -146,7 +154,7 @@ Starting scenario 'reverse a string twice yields the same results'
             And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
          Run #2 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #3
-            generate and save string with values ['an alphanumeric String (20)' -> 'O6SVBD9CQxUXN2Ag1mL3']
+            generate and save string ['an alphanumeric String (20)' -> 'O6SVBD9CQxUXN2Ag1mL3']
             save random string 'O6SVBD9CQxUXN2Ag1mL3' (0 millis)
             reverse a string twice yields the same value
             Given I POST /double-reverse with query parameters 'word' -> 'O6SVBD9CQxUXN2Ag1mL3' (5 millis)
@@ -154,7 +162,7 @@ Starting scenario 'reverse a string twice yields the same results'
             And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
          Run #3 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #4
-            generate and save string with values ['an alphanumeric String (20)' -> '0nbLBgwP4eE9QqOeCbOn']
+            generate and save string ['an alphanumeric String (20)' -> '0nbLBgwP4eE9QqOeCbOn']
             save random string '0nbLBgwP4eE9QqOeCbOn' (0 millis)
             reverse a string twice yields the same value
             Given I POST /double-reverse with query parameters 'word' -> '0nbLBgwP4eE9QqOeCbOn' (4 millis)
@@ -162,7 +170,7 @@ Starting scenario 'reverse a string twice yields the same results'
             And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
          Run #4 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #5
-            generate and save string with values ['an alphanumeric String (20)' -> '1RgTnx5ohrjhnZHKDHZO']
+            generate and save string ['an alphanumeric String (20)' -> '1RgTnx5ohrjhnZHKDHZO']
             save random string '1RgTnx5ohrjhnZHKDHZO' (0 millis)
             reverse a string twice yields the same value
             Given I POST /double-reverse with query parameters 'word' -> '1RgTnx5ohrjhnZHKDHZO' (4 millis)

@@ -28,6 +28,7 @@ case class RunState(
   def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
   def appendLogsFrom(from: RunState) = appendLogs(from.logs)
   def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
+  def prependLogs(add: Vector[LogInstruction]) = copy(logs = add ++ logs)
 
   // Cleanups steps are added in the opposite order
   def prependCleanupStep(add: Step) = copy(cleanupSteps = add :: cleanupSteps)
