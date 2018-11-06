@@ -28,7 +28,7 @@ import sangria.marshalling.circe._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success }
 
-class HttpAPI() extends Http4sDsl[Task] {
+class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
 
   val sm = new SuperMicroService()
   implicit val s = Scheduler.Implicits.global
