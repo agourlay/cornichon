@@ -17,6 +17,7 @@ import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
+import org.http4s.implicits._
 import org.http4s.circe._
 import org.http4s.dsl._
 import org.http4s.server.middleware.GZip

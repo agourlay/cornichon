@@ -7,6 +7,7 @@ import fs2.concurrent.SignallingRef
 import monix.eval.Task
 import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s._
+import org.http4s.implicits._
 import org.http4s.dsl._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
