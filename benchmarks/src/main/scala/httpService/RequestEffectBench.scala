@@ -45,7 +45,7 @@ class RequestEffectBench {
   }
 
   //  [info] Benchmark                                    Mode  Cnt      Score      Error  Units
-  //  [info] httpService.RequestEffectBench.singleRequest  thrpt   20  320241.194 ± 9283.856  ops/s
+  //  [info] httpService.RequestEffectBench.singleRequest  thrpt   20  378779.214 ± 2373.514  ops/s
   @Benchmark
   def singleRequest() = {
     val f = httpService.requestEffect(request)
