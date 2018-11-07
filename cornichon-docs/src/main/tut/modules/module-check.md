@@ -37,8 +37,8 @@ Such Markov chain wires together a set of `actions` that relate to each others t
 Each `action` has a set of `pre-conditions` and a set of `post-conditions` that are checked automatically.
 
 Concretely it means that:
-- `pre-conditions` and `post-conditions` are `AssertSteps`
-- the `action` itself is a function from a bunch of `Generators` to an `EffectStep`
+- `pre-conditions` and `post-conditions` are `Steps`, they are executed sequentially and the resulting `Session` is not propagated.
+- the `action` itself is a function from a bunch of `Generators` to a `Step`
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
