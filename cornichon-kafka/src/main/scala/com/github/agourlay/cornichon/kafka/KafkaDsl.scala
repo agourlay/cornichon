@@ -10,7 +10,8 @@ import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
-import pureconfig.{ CamelCase, ConfigFieldMapping, ProductHint }
+import pureconfig.generic.ProductHint
+import pureconfig.{ CamelCase, ConfigFieldMapping }
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -77,6 +78,7 @@ trait KafkaDsl {
 
 object KafkaDsl {
   import scala.concurrent.ExecutionContext.Implicits.global
+  import pureconfig.generic.auto._
 
   // if the config does not exist we use the default values
   lazy val kafkaConfig = pureconfig.loadConfigOrThrow[Option[KafkaConfig]]("kafka").getOrElse(KafkaConfig())
