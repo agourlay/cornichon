@@ -34,8 +34,8 @@
 
 <p>Concretely it means that:</p>
 <ul>
-  <li><code class="highlighter-rouge">pre-conditions</code> and <code class="highlighter-rouge">post-conditions</code> are <code class="highlighter-rouge">AssertSteps</code></li>
-  <li>the <code class="highlighter-rouge">action</code> itself is a function from a bunch of <code class="highlighter-rouge">Generators</code> to an <code class="highlighter-rouge">EffectStep</code></li>
+  <li><code class="highlighter-rouge">pre-conditions</code> and <code class="highlighter-rouge">post-conditions</code> are <code class="highlighter-rouge">Steps</code>, they are executed sequentially and the resulting <code class="highlighter-rouge">Session</code> is not propagated.</li>
+  <li>the <code class="highlighter-rouge">action</code> itself is a function from a bunch of <code class="highlighter-rouge">Generators</code> to a <code class="highlighter-rouge">Step</code></li>
 </ul>
 
 <p>Having <code class="highlighter-rouge">generators</code> as input enables the <code class="highlighter-rouge">action</code> to introduce some randomness in its effect.</p>
