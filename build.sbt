@@ -235,7 +235,7 @@ lazy val benchmarks =
   project
     .in(file("./benchmarks"))
     .settings(commonSettings)
-    .dependsOn(core)
+    .dependsOn(core, check)
     .settings(noPublishSettings)
     .enablePlugins(JmhPlugin)
 
