@@ -5,7 +5,7 @@ import java.util.Base64
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.Step
-import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ HttpAPI, HttpServer }
+import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ SuperHeroesHttpAPI, HttpServer }
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper
@@ -783,7 +783,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
   // Starts up test server
   beforeFeature {
-    server = Await.result(new HttpAPI().start(port), 5.second)
+    server = Await.result(new SuperHeroesHttpAPI().start(port), 5.second)
   }
 
   // Stops test server

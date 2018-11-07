@@ -224,7 +224,10 @@ lazy val check =
       name := "cornichon-check",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
-        library.scalatest % Test
+        library.scalatest % Test,
+        library.http4sServer % Test,
+        library.http4sCirce % Test,
+        library.http4sDsl % Test
       )
     )
 
@@ -232,7 +235,7 @@ lazy val benchmarks =
   project
     .in(file("./benchmarks"))
     .settings(commonSettings)
-    .dependsOn(core)
+    .dependsOn(core, check)
     .settings(noPublishSettings)
     .enablePlugins(JmhPlugin)
 
@@ -299,15 +302,15 @@ lazy val library =
       val parboiled     = "2.1.5"
       val scalaCheck    = "1.14.0"
       val sangriaCirce  = "1.2.1"
-      val circe         = "0.10.0"
+      val circe         = "0.10.1"
       val diffson       = "3.1.0"
       val sangria       = "1.4.2"
       val fansi         = "0.2.5"
       val catsScalaTest = "2.3.1"
       val pureConfig    = "0.10.0"
-      val monix         = "3.0.0-RC2-c84f485"
+      val monix         = "3.0.0-RC2"
       val sbtTest       = "1.0"
-      val http4s        = "0.20.0-M1"
+      val http4s        = "0.20.0-M2"
       val embeddedKafka = "2.0.0"
       val kafkaClient   = "2.0.0"
       val caffeine      = "2.6.2"

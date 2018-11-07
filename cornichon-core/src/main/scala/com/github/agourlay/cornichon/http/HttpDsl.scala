@@ -191,7 +191,7 @@ object HttpDsl {
       else
         new AkkaHttpClient(scala.concurrent.ExecutionContext.global)
     }
-    BaseFeature.addShutdownHook(() ⇒ c.shutdown().runAsync(Scheduler.Implicits.global))
+    BaseFeature.addShutdownHook(() ⇒ c.shutdown().runToFuture(Scheduler.Implicits.global))
     c
   }
 }

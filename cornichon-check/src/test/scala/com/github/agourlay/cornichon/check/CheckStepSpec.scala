@@ -156,25 +156,27 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
       }
 
       "with maxNumberOfTransitions (even with cyclic model)" in {
-        val maxRun = 100
+        val maxTransition = 100
         var uglyCounter = 0
         val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
-        val starting = dummyAction1("starting action", effectStep = incrementEffect)
+        val starting = dummyAction1("starting action")
         val otherAction = dummyAction1("other action", effectStep = incrementEffect)
+        val otherActionTwo = dummyAction1("other action two ", effectStep = incrementEffect)
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, starting) :: Nil))
+          otherAction -> ((1.0, otherActionTwo) :: Nil),
+          otherActionTwo -> ((1.0, otherAction) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = 1, maxRun, modelRunner, Some(seed))
+        val checkStep = CheckStep(maxNumberOfRuns = 1, maxTransition, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
           case f: SuccessScenarioReport ⇒
             f.isSuccess should be(true)
-            uglyCounter should be(maxRun)
+            uglyCounter should be(maxTransition)
 
           case other @ _ ⇒
             fail(s"should have succeeded but got $other")

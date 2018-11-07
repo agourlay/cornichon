@@ -64,7 +64,7 @@ class JsonStepBench {
     val step = jsonStepBuilder.is(json)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = engine.runScenario(session)(s)
-    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
+    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -94,7 +94,7 @@ class JsonStepBench {
       """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = engine.runScenario(s2)(s)
-    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
+    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -116,7 +116,7 @@ class JsonStepBench {
       """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = engine.runScenario(session)(s)
-    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
+    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -133,7 +133,7 @@ class JsonStepBench {
     """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = engine.runScenario(session)(s)
-    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
+    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -142,7 +142,7 @@ class JsonStepBench {
     val step = jsonStepBuilder.path("publisher.name").is("DC")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = engine.runScenario(session)(s)
-    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
+    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -151,7 +151,7 @@ class JsonStepBench {
     val step = jsonStepBuilder.whitelisting.is("""{"hasSuperpowers": false}""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = engine.runScenario(session)(s)
-    val res = Await.result(f.runAsync(scheduler), Duration.Inf)
+    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
 }

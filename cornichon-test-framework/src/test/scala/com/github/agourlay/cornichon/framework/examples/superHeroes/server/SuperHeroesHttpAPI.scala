@@ -17,6 +17,7 @@ import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
+import org.http4s.implicits._
 import org.http4s.circe._
 import org.http4s.dsl._
 import org.http4s.server.middleware.GZip
@@ -27,7 +28,7 @@ import sangria.marshalling.circe._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success }
 
-class HttpAPI() extends Http4sDsl[Task] {
+class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
 
   val sm = new SuperMicroService()
   implicit val s = Scheduler.Implicits.global

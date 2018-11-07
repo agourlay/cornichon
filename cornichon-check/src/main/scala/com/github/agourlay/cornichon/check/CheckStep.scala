@@ -38,25 +38,22 @@ case class CheckStep[A, B, C, D, E, F](
 
   val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions and seed=${randomContext.seed}"
 
-  private def repeatSuccessModel(runNumber: Int)(engine: Engine, initialRunState: RunState): Task[(RunState, Either[FailedStep, Done])] =
+  private def repeatModelOnSuccess(runNumber: Int)(engine: Engine, initialRunState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)
       Task.now((initialRunState, rightDone))
     else {
       val preRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
       val checkEngineRunState = initialRunState.nestedContext.appendLog(preRunLog)
       checkEngine.run(engine, checkEngineRunState).flatMap {
-        case (newState, res) ⇒
-          res match {
-            case Left(fs) ⇒
-              val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
-              val failedState = initialRunState.mergeNested(newState).appendLog(postRunLog)
-              Task.now((failedState, fs.asLeft))
-            case Right(endOfRun) ⇒
-              // success case we are mot propagating the Session so runs do not interfere with each-others
-              val nextRunState = initialRunState.appendLogsFrom(newState).prependCleanupStepsFrom(newState)
-              val postRunLog = buildInfoRunLog(runNumber, endOfRun, initialRunState.depth)
-              repeatSuccessModel(runNumber + 1)(engine, nextRunState.appendLog(postRunLog))
-          }
+        case (newState, Left(fs)) ⇒
+          val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
+          val failedState = initialRunState.mergeNested(newState).appendLog(postRunLog)
+          Task.now((failedState, fs.asLeft))
+        case (newState, Right(endOfRun)) ⇒
+          // success case we are mot propagating the Session so runs do not interfere with each-others
+          val nextRunState = initialRunState.appendLogsFrom(newState).prependCleanupStepsFrom(newState)
+          val postRunLog = buildInfoRunLog(runNumber, endOfRun, initialRunState.depth)
+          repeatModelOnSuccess(runNumber + 1)(engine, nextRunState.appendLog(postRunLog))
       }
     }
 
@@ -94,25 +91,22 @@ case class CheckStep[A, B, C, D, E, F](
     withDuration {
       validateTransitions(model.transitions) match {
         case Invalid(ce) ⇒
-          Task.delay((initialRunState, FailedStep(this, ce).asLeft))
+          Task.now((initialRunState, FailedStep(this, ce).asLeft))
         case _ ⇒
-          repeatSuccessModel(1)(engine: Engine, initialRunState.nestedContext)
+          repeatModelOnSuccess(runNumber = 1)(engine: Engine, initialRunState.nestedContext)
       }
     }.map {
       case (run, executionTime) ⇒
-        val (checkState, report) = run
         val depth = initialRunState.depth
-        val (fullLogs, xor) = report.fold(
-          failedStep ⇒ {
-            val fullLogs = failedTitleLog(depth) +: checkState.logs :+ FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime))
-            (fullLogs, Left(failedStep))
-          },
-          _ ⇒ {
-            val fullLogs = successTitleLog(depth) +: checkState.logs :+ SuccessLogInstruction(s"Check block succeeded", depth, Some(executionTime))
-            (fullLogs, rightDone)
-          }
-        )
-        (initialRunState.mergeNested(checkState, fullLogs), xor)
+        val (checkState, res) = run
+        val fullLogs = res match {
+          case Left(_) ⇒
+            failedTitleLog(depth) +: checkState.logs :+ FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime))
+
+          case _ ⇒
+            successTitleLog(depth) +: checkState.logs :+ SuccessLogInstruction(s"Check block succeeded", depth, Some(executionTime))
+        }
+        (initialRunState.mergeNested(checkState, fullLogs), res)
     }
 }
 
