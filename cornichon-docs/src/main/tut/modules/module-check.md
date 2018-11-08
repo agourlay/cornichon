@@ -100,50 +100,50 @@ The type inference is sometimes not detecting properly the action type, so it is
 
 ```scala
 
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "an alphanumeric String",
-    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+  name = "an alphanumeric String",
+  genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
-  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    genFct = () ⇒ rc.seededRandom.nextInt(10000))
+def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
+  name = "integer",
+  genFct = () ⇒ rc.seededRandom.nextInt(10000))
 
-  val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
+val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 
-    val entryPoint = Action2[String, Int](
-      description = "Entry point",
-      effect = (stringGen, intGen) ⇒ print_step("Start game"),
-      postConditions = Nil
+   val entryPoint = Action2[String, Int](
+    description = "Entry point",
+    effect = (stringGen, intGen) ⇒ print_step("Start game"),
+    postConditions = Nil
+  )
+
+  val pingString = Action2[String, Int](
+    description = "Ping String",
+    effect = (stringGen, intGen) ⇒ print_step(s"Ping ${stringGen()}"),
+    postConditions = Nil
+  )
+
+  val pongInt = Action2[String, Int](
+    description = "Pong Int",
+    effect = (stringGen, intGen) ⇒ print_step(s"Pong ${intGen()}"),
+    postConditions = Nil
+  )
+
+  val exitPoint = Action2[String, Int](
+    description = "Exit point",
+    effect = (stringGen, intGen) ⇒ print_step("End of game"),
+    postConditions = Nil
+  )
+
+  Model(
+    description = "ping pong model",
+    startingAction = entryPoint,
+    transitions = Map(
+      entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
+      pingString -> ((0.9, pongInt) :: (0.1, exitPoint) :: Nil),
+      pongInt -> ((0.9, pingString) :: (0.1, exitPoint) :: Nil)
     )
-
-    val pingString = Action2[String, Int](
-      description = "Ping String",
-      effect = (stringGen, intGen) ⇒ print_step(s"Ping ${stringGen()}"),
-      postConditions = Nil
-    )
-
-    val pongInt = Action2[String, Int](
-      description = "Pong Int",
-      effect = (stringGen, intGen) ⇒ print_step(s"Pong ${intGen()}"),
-      postConditions = Nil
-    )
-
-    val exitPoint = Action2[String, Int](
-      description = "Exit point",
-      effect = (stringGen, intGen) ⇒ print_step("End of game"),
-      postConditions = Nil
-    )
-
-    Model(
-      description = "our first model",
-      startingAction = entryPoint,
-      transitions = Map(
-        entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
-        pingString -> ((0.9, pongInt) :: (0.1, exitPoint) :: Nil),
-        pongInt -> ((0.9, pingString) :: (0.1, exitPoint) :: Nil)
-      )
-    )
-  }
+  )
+}
 ```
 
 
@@ -151,7 +151,7 @@ Which gives us the following scenario
 
 ```
 
-Scenario("My first model") {
+Scenario("ping pong check) {
 
   Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(myModelRunner)
 
@@ -166,7 +166,7 @@ Starting scenario 'ping pong check'
 
    Scenario : ping pong check
       main steps
-      Checking model 'our first model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541683429241
+      Checking model 'ping pong model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541683429241
          Run #1
             Entry point
             Start game

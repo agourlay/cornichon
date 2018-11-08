@@ -49,7 +49,7 @@ class PingPongCheck extends CornichonFeature with CheckDsl {
     )
 
     Model(
-      description = "our first model",
+      description = "ping pong model",
       startingAction = entryPoint,
       transitions = Map(
         entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
