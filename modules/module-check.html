@@ -6,7 +6,7 @@
 
 <p>It is still a great introduction to the problem we are trying to solve although the implementations are significantly different.</p>
 
-<h2 id="concept">Concept</h2>
+<h2 id="concepts">Concepts</h2>
 
 <p>Performing property based testing of a pure function is quite easy, for <code class="highlighter-rouge">all</code> possible values, check that a given invariant is valid.</p>
 
@@ -34,17 +34,41 @@
 
 <p>Concretely it means that:</p>
 <ul>
-  <li><code class="highlighter-rouge">pre-conditions</code> and <code class="highlighter-rouge">post-conditions</code> are <code class="highlighter-rouge">Steps</code>, they are executed sequentially and the resulting <code class="highlighter-rouge">Session</code> is not propagated.</li>
-  <li>the <code class="highlighter-rouge">action</code> itself is a function from a bunch of <code class="highlighter-rouge">Generators</code> to a <code class="highlighter-rouge">Step</code></li>
+  <li>
+    <p><code class="highlighter-rouge">pre-conditions</code> are <code class="highlighter-rouge">Steps</code> (they are checked in parallel and the resulting <code class="highlighter-rouge">Sessions</code> are not propagated)</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">post-conditions</code> are <code class="highlighter-rouge">Steps</code> (they are checked in parallel and the resulting <code class="highlighter-rouge">Sessions</code> are not propagated)</p>
+  </li>
+  <li>
+    <p>the <code class="highlighter-rouge">action</code> itself is a function from a number of generators to a <code class="highlighter-rouge">Step</code> (the resulting <code class="highlighter-rouge">Session</code> is propagated)</p>
+  </li>
 </ul>
+
+<p>The number of generators is defined in the <code class="highlighter-rouge">action</code> type:</p>
+<ul>
+  <li><code class="highlighter-rouge">Action0</code> an action which accepts a function from <code class="highlighter-rouge">() =&gt; Step</code></li>
+  <li><code class="highlighter-rouge">Action1[A]</code> an action which accepts a function from <code class="highlighter-rouge">() ⇒ A =&gt; Step</code></li>
+  <li><code class="highlighter-rouge">Action2[A, B]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B) =&gt; Step</code></li>
+  <li><code class="highlighter-rouge">Action3[A, B, C]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B, () =&gt; C) =&gt; Step</code></li>
+  <li>up to <code class="highlighter-rouge">Action6[A, B, C, D, E, F]</code></li>
+</ul>
+
+<p>It is of course not required to call a generator when building a <code class="highlighter-rouge">Step</code>.</p>
+
+<p><em>However it is required to have the same <code class="highlighter-rouge">Action</code> type for all actions within a <code class="highlighter-rouge">model</code> definition.</em></p>
 
 <p>Having <code class="highlighter-rouge">generators</code> as input enables the <code class="highlighter-rouge">action</code> to introduce some randomness in its effect.</p>
 
-<p>A <code class="highlighter-rouge">generator</code> is simply a function that accepts a <code class="highlighter-rouge">RandomContext</code> which is propagated throughout the execution, for instance below is an example generating strings.</p>
+<p>A <code class="highlighter-rouge">generator</code> is simply a function that accepts a <code class="highlighter-rouge">RandomContext</code> which is propagated throughout the execution, for instance below is an example generating Strings and Ints.</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
   genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+
+def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
+  name = "integer",
+  genFct = () ⇒ rc.seededRandom.nextInt(10000))
 </code></pre></div></div>
 
 <p>A <code class="highlighter-rouge">run</code> terminates successfully if the max number of transition reached, this means we were not able to break any invariants.</p>
@@ -59,17 +83,154 @@
 
 <p>A <code class="highlighter-rouge">model</code> exploration terminates successfully if the max number of run is reached or with an error if a run fails.</p>
 
+<p>Let’s create our first <code class="highlighter-rouge">model</code>!</p>
+
+<p>It will be a basic chain which will not enforce any invariants; it will have:</p>
+
+<ul>
+  <li>an entry point</li>
+  <li>a ping action printing a random String</li>
+  <li>a pong action printing a random Int</li>
+  <li>an exit point</li>
+</ul>
+
+<p>We will define the transitions such that:</p>
+
+<ul>
+  <li>there is 50% chance to start with ping or pong following the entry point</li>
+  <li>there is 90% to go from a ping/pong to a pong/ping</li>
+  <li>there is no loop from any action</li>
+  <li>there is a 10% chance to exit the game after a ping or a pong</li>
+</ul>
+
+<p>Also the DSL is asking for a <code class="highlighter-rouge">modelRunner</code> which is a little helper connecting a <code class="highlighter-rouge">model</code> to its <code class="highlighter-rouge">generators</code>.</p>
+
+<p>The type inference is sometimes not detecting properly the action type, so it is recommended to define the <code class="highlighter-rouge">modelRunner</code> and the <code class="highlighter-rouge">model</code> as a single expression to help the typechecker.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+  <span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+    <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String"</span><span class="o">,</span>
+    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+
+  <span class="k">def</span> <span class="n">integerGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+    <span class="n">name</span> <span class="k">=</span> <span class="s">"integer"</span><span class="o">,</span>
+    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
+
+  <span class="k">val</span> <span class="n">myModelRunner</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">integerGen</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="k">val</span> <span class="n">entryPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"Entry point"</span><span class="o">,</span>
+      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"Start game"</span><span class="o">),</span>
+      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="o">)</span>
+
+    <span class="k">val</span> <span class="n">pingString</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"Ping String"</span><span class="o">,</span>
+      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Ping ${stringGen()}"</span><span class="o">),</span>
+      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="o">)</span>
+
+    <span class="k">val</span> <span class="n">pongInt</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"Pong Int"</span><span class="o">,</span>
+      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Pong ${intGen()}"</span><span class="o">),</span>
+      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="o">)</span>
+
+    <span class="k">val</span> <span class="n">exitPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"Exit point"</span><span class="o">,</span>
+      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"End of game"</span><span class="o">),</span>
+      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="o">)</span>
+
+    <span class="nc">Model</span><span class="o">(</span>
+      <span class="n">description</span> <span class="k">=</span> <span class="s">"our first model"</span><span class="o">,</span>
+      <span class="n">startingAction</span> <span class="k">=</span> <span class="n">entryPoint</span><span class="o">,</span>
+      <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
+        <span class="n">entryPoint</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pingString</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+        <span class="n">pingString</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">exitPoint</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+        <span class="n">pongInt</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pingString</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">exitPoint</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+      <span class="o">)</span>
+    <span class="o">)</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<p>Which gives us the following scenario</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+Scenario("My first model") {
+
+  Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(myModelRunner)
+
+}
+</code></pre></div></div>
+
+<p>Running this scenario outputs:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'ping pong check'
+- ping pong check (15 millis)
+
+   Scenario : ping pong check
+      main steps
+      Checking model 'our first model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541683429241
+         Run #1
+            Entry point
+            Start game
+            Ping String ['an alphanumeric String' -&gt; 'GX2A0MYmkXsjO2wVQwfV']
+            Ping GX2A0MYmkXsjO2wVQwfV
+            Pong Int ['integer' -&gt; '9009']
+            Pong 9009
+            Ping String ['an alphanumeric String' -&gt; 'eRaUV0kwKvVLkzQDni9Z']
+            Ping eRaUV0kwKvVLkzQDni9Z
+            Pong Int ['integer' -&gt; '4674']
+            Pong 4674
+            Ping String ['an alphanumeric String' -&gt; 'qB2lrppZJ5SGoK7j0suP']
+            Ping qB2lrppZJ5SGoK7j0suP
+            Pong Int ['integer' -&gt; '6587']
+            Pong 6587
+            Ping String ['an alphanumeric String' -&gt; 'dutwDNaXZitiaOfa6N2X']
+            Ping dutwDNaXZitiaOfa6N2X
+            Exit point
+            End of game
+         Run #1 - End reached on action 'Exit point' after 8 transitions
+         Run #2
+            Entry point
+            Start game
+            Pong Int ['integer' -&gt; '1786']
+            Pong 1786
+            Ping String ['an alphanumeric String' -&gt; 'AFGueoVgwvv8j5ouOt5K']
+            Ping AFGueoVgwvv8j5ouOt5K
+            Pong Int ['integer' -&gt; '7556']
+            Pong 7556
+            Ping String ['an alphanumeric String' -&gt; 'hr36TFnvv5v3vT09tHrM']
+            Ping hr36TFnvv5v3vT09tHrM
+            Pong Int ['integer' -&gt; '8657']
+            Pong 8657
+            Ping String ['an alphanumeric String' -&gt; 'm2n9YSDLvKcZSwJh8JRe']
+            Ping m2n9YSDLvKcZSwJh8JRe
+            Pong Int ['integer' -&gt; '1705']
+            Pong 1705
+            Ping String ['an alphanumeric String' -&gt; 'dW5LYKnKbvRnaFop3NPi']
+            Ping dW5LYKnKbvRnaFop3NPi
+            Pong Int ['integer' -&gt; '9670']
+            Pong 9670
+            Ping String ['an alphanumeric String' -&gt; 'NcMUhBBIrrwSkDchcNHA']
+            Ping NcMUhBBIrrwSkDchcNHA
+         Run #2 - Max transitions number per run reached
+      Check block succeeded (15 millis)
+
+</code></pre></div></div>
+
 <h2 id="examples">Examples</h2>
 
-<p>Now that we have a common understanding of the concepts and their semantics, it is time to dive into some examples!</p>
+<p>Now that we have an understanding of the concepts and their semantics, it is time to dive into some concrete examples!</p>
 
 <h3 id="reversing-strings-one-generator-and-one-transition">Reversing strings (one generator and one transition)</h3>
 
 <p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API by checking the contract of HTTP API reversing twice a string.</p>
 
-<p>We want to enforce the invariant that for any string, if we reverse it twice, it should yield the same value.</p>
+<p>We want to enforce the following invariant <code class="highlighter-rouge">for any string, if we reverse it twice, it should yield the same value</code>.</p>
 
-<p>The implementation under test is a server accepting a <code class="highlighter-rouge">POST</code> request to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
+<p>The implementation under test is a server accepting <code class="highlighter-rouge">POST</code> requests to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
 
 <p>This is silly because the Markov chain has only a single transition but it is still a good first example to show to create a <code class="highlighter-rouge">modelRunner</code>.</p>
 
