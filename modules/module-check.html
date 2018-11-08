@@ -108,56 +108,55 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
 <p>The type inference is sometimes not detecting properly the action type, so it is recommended to define the <code class="highlighter-rouge">modelRunner</code> and the <code class="highlighter-rouge">model</code> as a single expression to help the typechecker.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-  <span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
-    <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String"</span><span class="o">,</span>
-    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+<span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+  <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String"</span><span class="o">,</span>
+  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
 
-  <span class="k">def</span> <span class="n">integerGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
-    <span class="n">name</span> <span class="k">=</span> <span class="s">"integer"</span><span class="o">,</span>
-    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
+<span class="k">def</span> <span class="n">integerGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+  <span class="n">name</span> <span class="k">=</span> <span class="s">"integer"</span><span class="o">,</span>
+  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
 
-  <span class="k">val</span> <span class="n">myModelRunner</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">integerGen</span><span class="o">)</span> <span class="o">{</span>
+<span class="k">val</span> <span class="n">myModelRunner</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">integerGen</span><span class="o">)</span> <span class="o">{</span>
 
-    <span class="k">val</span> <span class="n">entryPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
-      <span class="n">description</span> <span class="k">=</span> <span class="s">"Entry point"</span><span class="o">,</span>
-      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"Start game"</span><span class="o">),</span>
-      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
-    <span class="o">)</span>
+<span class="k">val</span> <span class="n">entryPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="n">description</span> <span class="k">=</span> <span class="s">"Entry point"</span><span class="o">,</span>
+  <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"Start game"</span><span class="o">),</span>
+  <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+<span class="o">)</span>
 
-    <span class="k">val</span> <span class="n">pingString</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
-      <span class="n">description</span> <span class="k">=</span> <span class="s">"Ping String"</span><span class="o">,</span>
-      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Ping ${stringGen()}"</span><span class="o">),</span>
-      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
-    <span class="o">)</span>
+<span class="k">val</span> <span class="n">pingString</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="n">description</span> <span class="k">=</span> <span class="s">"Ping String"</span><span class="o">,</span>
+  <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Ping ${stringGen()}"</span><span class="o">),</span>
+  <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+<span class="o">)</span>
 
-    <span class="k">val</span> <span class="n">pongInt</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
-      <span class="n">description</span> <span class="k">=</span> <span class="s">"Pong Int"</span><span class="o">,</span>
-      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Pong ${intGen()}"</span><span class="o">),</span>
-      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
-    <span class="o">)</span>
+<span class="k">val</span> <span class="n">pongInt</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="n">description</span> <span class="k">=</span> <span class="s">"Pong Int"</span><span class="o">,</span>
+  <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Pong ${intGen()}"</span><span class="o">),</span>
+  <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+<span class="o">)</span>
 
-    <span class="k">val</span> <span class="n">exitPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
-      <span class="n">description</span> <span class="k">=</span> <span class="s">"Exit point"</span><span class="o">,</span>
-      <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"End of game"</span><span class="o">),</span>
-      <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
-    <span class="o">)</span>
+<span class="k">val</span> <span class="n">exitPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="n">description</span> <span class="k">=</span> <span class="s">"Exit point"</span><span class="o">,</span>
+  <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"End of game"</span><span class="o">),</span>
+  <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+<span class="o">)</span>
 
-    <span class="nc">Model</span><span class="o">(</span>
-      <span class="n">description</span> <span class="k">=</span> <span class="s">"our first model"</span><span class="o">,</span>
-      <span class="n">startingAction</span> <span class="k">=</span> <span class="n">entryPoint</span><span class="o">,</span>
-      <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
-        <span class="n">entryPoint</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pingString</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
-        <span class="n">pingString</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">exitPoint</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
-        <span class="n">pongInt</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pingString</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">exitPoint</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
-      <span class="o">)</span>
-    <span class="o">)</span>
-  <span class="o">}</span>
+<span class="nc">Model</span><span class="o">(</span>
+  <span class="n">description</span> <span class="k">=</span> <span class="s">"ping pong model"</span><span class="o">,</span>
+  <span class="n">startingAction</span> <span class="k">=</span> <span class="n">entryPoint</span><span class="o">,</span>
+  <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
+    <span class="n">entryPoint</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pingString</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+    <span class="n">pingString</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">exitPoint</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+    <span class="n">pongInt</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pingString</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">exitPoint</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+  <span class="o">)</span>
+<span class="o">)</span>
 </code></pre></div></div>
 
 <p>Which gives us the following scenario</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-Scenario("My first model") {
+Scenario("ping pong check) {
 
   Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(myModelRunner)
 
@@ -171,7 +170,7 @@ Scenario("My first model") {
 
    Scenario : ping pong check
       main steps
-      Checking model 'our first model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541683429241
+      Checking model 'ping pong model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541683429241
          Run #1
             Entry point
             Start game
