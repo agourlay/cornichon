@@ -12,7 +12,7 @@ The initial inspiration came after reading the following article [Property based
 It is still a great introduction to the problem we are trying to solve although the implementations are significantly different.
 
 
-## Concept
+## Concepts
 
 Performing property based testing of a pure function is quite easy, for `all` possible values, check that a given invariant is valid.
 
@@ -37,17 +37,35 @@ Such Markov chain wires together a set of `actions` that relate to each others t
 Each `action` has a set of `pre-conditions` and a set of `post-conditions` that are checked automatically.
 
 Concretely it means that:
-- `pre-conditions` and `post-conditions` are `Steps`, they are executed sequentially and the resulting `Session` is not propagated.
-- the `action` itself is a function from a bunch of `Generators` to a `Step`
+- `pre-conditions` are `Steps` (they are checked in parallel and the resulting `Sessions` are not propagated)
+
+- `post-conditions` are `Steps` (they are checked in parallel and the resulting `Sessions` are not propagated)
+
+- the `action` itself is a function from a number of generators to a `Step` (the resulting `Session` is propagated)
+
+The number of generators is defined in the `action` type:
+- `Action0` an action which accepts a function from `() => Step`
+- `Action1[A]` an action which accepts a function from `() ⇒ A => Step`
+- `Action2[A, B]` an action which accepts a function from `(() ⇒ A, () => B) => Step`
+- `Action3[A, B, C]` an action which accepts a function from `(() ⇒ A, () => B, () => C) => Step`
+- up to `Action6[A, B, C, D, E, F]`
+
+It is of course not required to call a generator when building a `Step`.
+
+*However it is required to have the same `Action` type for all actions within a `model` definition.*
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
-A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating strings.
+A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Ints.
 
 ```
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
   genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+
+def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
+  name = "integer",
+  genFct = () ⇒ rc.seededRandom.nextInt(10000))
 ```
 
 A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
@@ -60,17 +78,154 @@ A `run` fails if one the following conditions is met:
 
 A `model` exploration terminates successfully if the max number of run is reached or with an error if a run fails.
 
+Let's create our first `model`!
+
+It will be a basic chain which will not enforce any invariants; it will have:
+
+- an entry point
+- a ping action printing a random String
+- a pong action printing a random Int
+- an exit point
+
+We will define the transitions such that:
+
+- there is 50% chance to start with ping or pong following the entry point
+- there is 90% to go from a ping/pong to a pong/ping
+- there is no loop from any action
+- there is a 10% chance to exit the game after a ping or a pong
+
+Also the DSL is asking for a `modelRunner` which is a little helper connecting a `model` to its `generators`.
+
+The type inference is sometimes not detecting properly the action type, so it is recommended to define the `modelRunner` and the `model` as a single expression to help the typechecker.
+
+```scala
+
+  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+    name = "an alphanumeric String",
+    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+
+  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
+    name = "integer",
+    genFct = () ⇒ rc.seededRandom.nextInt(10000))
+
+  val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
+
+    val entryPoint = Action2[String, Int](
+      description = "Entry point",
+      effect = (stringGen, intGen) ⇒ print_step("Start game"),
+      postConditions = Nil
+    )
+
+    val pingString = Action2[String, Int](
+      description = "Ping String",
+      effect = (stringGen, intGen) ⇒ print_step(s"Ping ${stringGen()}"),
+      postConditions = Nil
+    )
+
+    val pongInt = Action2[String, Int](
+      description = "Pong Int",
+      effect = (stringGen, intGen) ⇒ print_step(s"Pong ${intGen()}"),
+      postConditions = Nil
+    )
+
+    val exitPoint = Action2[String, Int](
+      description = "Exit point",
+      effect = (stringGen, intGen) ⇒ print_step("End of game"),
+      postConditions = Nil
+    )
+
+    Model(
+      description = "our first model",
+      startingAction = entryPoint,
+      transitions = Map(
+        entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
+        pingString -> ((0.9, pongInt) :: (0.1, exitPoint) :: Nil),
+        pongInt -> ((0.9, pingString) :: (0.1, exitPoint) :: Nil)
+      )
+    )
+  }
+```
+
+
+Which gives us the following scenario
+
+```
+
+Scenario("My first model") {
+
+  Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(myModelRunner)
+
+}
+```
+
+Running this scenario outputs:
+
+```
+Starting scenario 'ping pong check'
+- ping pong check (15 millis)
+
+   Scenario : ping pong check
+      main steps
+      Checking model 'our first model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541683429241
+         Run #1
+            Entry point
+            Start game
+            Ping String ['an alphanumeric String' -> 'GX2A0MYmkXsjO2wVQwfV']
+            Ping GX2A0MYmkXsjO2wVQwfV
+            Pong Int ['integer' -> '9009']
+            Pong 9009
+            Ping String ['an alphanumeric String' -> 'eRaUV0kwKvVLkzQDni9Z']
+            Ping eRaUV0kwKvVLkzQDni9Z
+            Pong Int ['integer' -> '4674']
+            Pong 4674
+            Ping String ['an alphanumeric String' -> 'qB2lrppZJ5SGoK7j0suP']
+            Ping qB2lrppZJ5SGoK7j0suP
+            Pong Int ['integer' -> '6587']
+            Pong 6587
+            Ping String ['an alphanumeric String' -> 'dutwDNaXZitiaOfa6N2X']
+            Ping dutwDNaXZitiaOfa6N2X
+            Exit point
+            End of game
+         Run #1 - End reached on action 'Exit point' after 8 transitions
+         Run #2
+            Entry point
+            Start game
+            Pong Int ['integer' -> '1786']
+            Pong 1786
+            Ping String ['an alphanumeric String' -> 'AFGueoVgwvv8j5ouOt5K']
+            Ping AFGueoVgwvv8j5ouOt5K
+            Pong Int ['integer' -> '7556']
+            Pong 7556
+            Ping String ['an alphanumeric String' -> 'hr36TFnvv5v3vT09tHrM']
+            Ping hr36TFnvv5v3vT09tHrM
+            Pong Int ['integer' -> '8657']
+            Pong 8657
+            Ping String ['an alphanumeric String' -> 'm2n9YSDLvKcZSwJh8JRe']
+            Ping m2n9YSDLvKcZSwJh8JRe
+            Pong Int ['integer' -> '1705']
+            Pong 1705
+            Ping String ['an alphanumeric String' -> 'dW5LYKnKbvRnaFop3NPi']
+            Ping dW5LYKnKbvRnaFop3NPi
+            Pong Int ['integer' -> '9670']
+            Pong 9670
+            Ping String ['an alphanumeric String' -> 'NcMUhBBIrrwSkDchcNHA']
+            Ping NcMUhBBIrrwSkDchcNHA
+         Run #2 - Max transitions number per run reached
+      Check block succeeded (15 millis)
+
+```
+
 ## Examples
 
-Now that we have a common understanding of the concepts and their semantics, it is time to dive into some examples!
+Now that we have an understanding of the concepts and their semantics, it is time to dive into some concrete examples!
 
 ### Reversing strings (one generator and one transition)
 
 Below is an example presenting the current `cornichon-check` API by checking the contract of HTTP API reversing twice a string.
 
-We want to enforce the invariant that for any string, if we reverse it twice, it should yield the same value.
+We want to enforce the following invariant `for any string, if we reverse it twice, it should yield the same value`.
 
-The implementation under test is a server accepting a `POST` request to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
+The implementation under test is a server accepting `POST` requests to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
 
 This is silly because the Markov chain has only a single transition but it is still a good first example to show to create a `modelRunner`.
 
