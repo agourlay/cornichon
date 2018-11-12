@@ -24,33 +24,29 @@ class PingPongCheck extends CornichonFeature with CheckDsl {
 
   val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 
-    val entryPoint = Action2[String, Int](
+    val entryPoint = Property2[String, Int](
       description = "Entry point",
-      effect = (stringGen, intGen) ⇒ print_step("Start game"),
-      postConditions = Nil
+      invariant = (_, _) ⇒ print_step("Start game")
     )
 
-    val pingString = Action2[String, Int](
+    val pingString = Property2[String, Int](
       description = "Ping String",
-      effect = (stringGen, intGen) ⇒ print_step(s"Ping ${stringGen()}"),
-      postConditions = Nil
+      invariant = (stringGen, _) ⇒ print_step(s"Ping ${stringGen()}")
     )
 
-    val pongInt = Action2[String, Int](
+    val pongInt = Property2[String, Int](
       description = "Pong Int",
-      effect = (stringGen, intGen) ⇒ print_step(s"Pong ${intGen()}"),
-      postConditions = Nil
+      invariant = (_, intGen) ⇒ print_step(s"Pong ${intGen()}")
     )
 
-    val exitPoint = Action2[String, Int](
+    val exitPoint = Property2[String, Int](
       description = "Exit point",
-      effect = (stringGen, intGen) ⇒ print_step("End of game"),
-      postConditions = Nil
+      invariant = (_, _) ⇒ print_step("End of game")
     )
 
     Model(
       description = "ping pong model",
-      startingAction = entryPoint,
+      entryPoint = entryPoint,
       transitions = Map(
         entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
         pingString -> ((0.9, pongInt) :: (0.1, exitPoint) :: Nil),

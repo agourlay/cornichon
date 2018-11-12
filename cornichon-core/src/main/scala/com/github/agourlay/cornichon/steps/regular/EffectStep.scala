@@ -63,4 +63,6 @@ object EffectStep {
     val effectF: Session ⇒ Future[Either[CornichonError, Session]] = s ⇒ effect(s).map(Right(_))
     EffectStep(title, effectF, show)
   }
+
+  val identityStep = EffectStep.fromSync("identity", identity)
 }

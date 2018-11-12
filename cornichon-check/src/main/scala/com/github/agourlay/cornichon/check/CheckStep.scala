@@ -67,12 +67,12 @@ case class CheckStep[A, B, C, D, E, F](
     InfoLogInstruction(s"Run #$runNumber - $reason", depth)
   }
 
-  private def validateTransitions(transitions: Map[ActionN[A, B, C, D, E, F], List[(Double, ActionN[A, B, C, D, E, F])]]): ValidatedNel[CornichonError, Done] = {
+  private def validateTransitions(transitions: Map[PropertyN[A, B, C, D, E, F], List[(Double, PropertyN[A, B, C, D, E, F])]]): ValidatedNel[CornichonError, Done] = {
     val emptyTransitionForState: ValidatedNel[CornichonError, Done] = transitions.find(_._2.isEmpty)
       .map(s ⇒ EmptyTransitionsDefinitionForAction(s._1.description)).toInvalidNel(Done)
 
-    val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (transitions.get(model.startingAction).isEmpty)
-      NoTransitionsDefinitionForStartingAction(model.startingAction.description).invalidNel
+    val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (transitions.get(model.entryPoint).isEmpty)
+      NoTransitionsDefinitionForStartingAction(model.entryPoint.description).invalidNel
     else Done.validDone
 
     val duplicateEntries: ValidatedNel[CornichonError, Done] = transitions.find { e ⇒

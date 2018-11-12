@@ -30,29 +30,25 @@ Let's unpack this signature:
 - `maxNumberOfTransition` is useful when the `model` contains cycles in order to ensure termination
 - `seed` can be provided in order to trigger a deterministic run
 - `modelRunner` is the actual definition of the `model`
-- `A B C D E F` refers to the types of the `generators` used in `model` definition (maximum 6 for the moment)
+- `A B C D E F` refers to the types of the `generators` used in `model` definition (maximum of 6 for the moment)
 
-Such Markov chain wires together a set of `actions` that relate to each others through `transitions` which are chosen according to a given `probability`.
+Such Markov chain wires together a set of `properties` that relate to each others through `transitions` which are chosen according to a given `probability`.
 
-Each `action` has a set of `pre-conditions` and a set of `post-conditions` that are checked automatically.
+A `property` is composed of:
+- a description
+- an optional `pre-condition` which is a `step` checking that the `property` can be run (sometimes useful to target error cases)
+- an `invariant` which is a function from a number of `generators` to a `step` performing whatever side effect and assertions necessary
 
-Concretely it means that:
-- `pre-conditions` are `Steps` (they are checked in parallel and the resulting `Sessions` are not propagated)
-
-- `post-conditions` are `Steps` (they are checked in parallel and the resulting `Sessions` are not propagated)
-
-- the `action` itself is a function from a number of generators to a `Step` (the resulting `Session` is propagated)
-
-The number of generators is defined in the `action` type:
-- `Action0` an action which accepts a function from `() => Step`
-- `Action1[A]` an action which accepts a function from `() ⇒ A => Step`
-- `Action2[A, B]` an action which accepts a function from `(() ⇒ A, () => B) => Step`
-- `Action3[A, B, C]` an action which accepts a function from `(() ⇒ A, () => B, () => C) => Step`
-- up to `Action6[A, B, C, D, E, F]`
+The number of generators is defined in the `property` type:
+- `Property0` an action which accepts a function from `() => Step`
+- `Property1[A]` an action which accepts a function from `() ⇒ A => Step`
+- `Property2[A, B]` an action which accepts a function from `(() ⇒ A, () => B) => Step`
+- `Property3[A, B, C]` an action which accepts a function from `(() ⇒ A, () => B, () => C) => Step`
+- up to `Property6[A, B, C, D, E, F]`
 
 It is of course not required to call a generator when building a `Step`.
 
-*However it is required to have the same `Action` type for all actions within a `model` definition.*
+*However it is required to have the same `Property` type for all properties within a `model` definition.*
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
@@ -68,12 +64,34 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   genFct = () ⇒ rc.seededRandom.nextInt(10000))
 ```
 
+This approach also supports embedding `Scalacheck's Gen` into `ValueGenerator` by propagating the seed.
+
+```scala
+import org.scalacheck.Gen
+import org.scalacheck.rng.Seed
+
+sealed trait Coin
+case object Head extends Coin
+case object Tail extends Coin
+
+object ScalacheckExample {
+
+  def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
+    name = "a Coin",
+    genFct = () ⇒ {
+      val params = Gen.Parameters.default.withInitialSeed(rc.seed)
+      val coin = for (c ← Gen.oneOf[Coin](Head, Tail)) yield c
+      coin(params, Seed(rc.seed)).get
+    }
+  )
+}
+```
+
 A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
 
 A `run` fails if one the following conditions is met:
-- a `post-condition` was broken
-- an error is thrown from an `action`
-- no `actions` with valid `pre-conditions` can be found, this is generally a sign of a malformed `model`
+- an error is thrown from a `property`
+- no `properties` with a valid `pre-condition` can be found, this is generally a sign of a malformed `model`
 - a `generator` throws an error
 
 A `model` exploration terminates successfully if the max number of run is reached or with an error if a run fails.
@@ -83,15 +101,15 @@ Let's create our first `model`!
 It will be a basic chain which will not enforce any invariants; it will have:
 
 - an entry point
-- a ping action printing a random String
-- a pong action printing a random Int
+- a ping `property` printing a random String
+- a pong `property` printing a random Int
 - an exit point
 
 We will define the transitions such that:
 
 - there is 50% chance to start with ping or pong following the entry point
 - there is 90% to go from a ping/pong to a pong/ping
-- there is no loop from any action
+- there is no loop from any `property`
 - there is a 10% chance to exit the game after a ping or a pong
 
 Also the DSL is asking for a `modelRunner` which is a little helper connecting a `model` to its `generators`.
@@ -110,33 +128,29 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
 
 val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 
-   val entryPoint = Action2[String, Int](
+  val entryPoint = Property2[String, Int](
     description = "Entry point",
-    effect = (stringGen, intGen) ⇒ print_step("Start game"),
-    postConditions = Nil
+    invariant = (_, _) ⇒ print_step("Start game")
   )
 
-  val pingString = Action2[String, Int](
+  val pingString = Property2[String, Int](
     description = "Ping String",
-    effect = (stringGen, intGen) ⇒ print_step(s"Ping ${stringGen()}"),
-    postConditions = Nil
+    invariant = (stringGen, _) ⇒ print_step(s"Ping ${stringGen()}")
   )
 
-  val pongInt = Action2[String, Int](
+  val pongInt = Property2[String, Int](
     description = "Pong Int",
-    effect = (stringGen, intGen) ⇒ print_step(s"Pong ${intGen()}"),
-    postConditions = Nil
+    invariant = (_, intGen) ⇒ print_step(s"Pong ${intGen()}")
   )
 
-  val exitPoint = Action2[String, Int](
+  val exitPoint = Property2[String, Int](
     description = "Exit point",
-    effect = (stringGen, intGen) ⇒ print_step("End of game"),
-    postConditions = Nil
+    invariant = (_, _) ⇒ print_step("End of game")
   )
 
   Model(
     description = "ping pong model",
-    startingAction = entryPoint,
+    entryPoint = entryPoint,
     transitions = Map(
       entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
       pingString -> ((0.9, pongInt) :: (0.1, exitPoint) :: Nil),
@@ -215,11 +229,15 @@ Starting scenario 'ping pong check'
 
 ```
 
+// TODO talk about fixing seed to fix generators and transitions
+
 ## Examples
 
 Now that we have an understanding of the concepts and their semantics, it is time to dive into some concrete examples!
 
 ### Reversing strings (one generator and one transition)
+
+// TODO move this example for the new `for_all` DSL
 
 Below is an example presenting the current `cornichon-check` API by checking the contract of HTTP API reversing twice a string.
 
@@ -251,29 +269,26 @@ class BasicExampleChecks extends CornichonFeature with CheckDsl {
     name = "an alphanumeric String (20)",
     genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
-  private val generateStringAction = Action1[String](
+  private val generateStringAction = Property1[String](
     description = "generate and save string",
-    preConditions = session_value("random-input").isAbsent :: Nil,
-    effect = stringGenerator ⇒ {
-      val randomString = stringGenerator()
-      EffectStep.fromSyncE(s"save random string '$randomString'", _.addValue("random-input", randomString))
-    },
-    postConditions = session_value("random-input").isPresent :: Nil)
+    preCondition = session_value("random-input").isAbsent,
+    invariant = stringGenerator ⇒ Attach {
+      Given I save("random-input" -> stringGenerator())
+    })
 
-  private val reverseStringAction = Action1[String](
+  private val reverseStringAction = Property1[String](
     description = "reverse a string twice yields the same value",
-    preConditions = session_value("random-input").isPresent :: Nil,
-    effect = _ ⇒ Attach {
+    preCondition = session_value("random-input").isPresent,
+    invariant = _ ⇒ Attach {
       Given I post("/double-reverse").withParams("word" -> "<random-input>")
       Then assert status.is(200)
-      And I save_body("reversed-twice-random-input")
-    },
-    postConditions = session_values("random-input", "reversed-twice-random-input").areEquals :: Nil)
+      Then assert body.is("<random-input>")
+    })
 
   val doubleReverseModel = ModelRunner.make[String](stringGen)(
     Model(
       description = "reversing a string twice yields same value",
-      startingAction = generateStringAction,
+      entryPoint = generateStringAction,
       transitions = Map(
         generateStringAction -> ((1.0, reverseStringAction) :: Nil)
       )
@@ -287,52 +302,52 @@ To understand what is going on, we can have a look at the logs produced by this 
 
 ```
 Starting scenario 'reverse a string twice yields the same results'
-- reverse a string twice yields the same results (2087 millis)
+- reverse a string twice yields the same results (1810 millis)
 
    Scenario : reverse a string twice yields the same results
       main steps
-      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1541177654821
+      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1542020784226
          Run #1
-            generate and save string ['an alphanumeric String (20)' -> 'zCFAPwANfohFhQx4h6Pl']
-            save random string 'zCFAPwANfohFhQx4h6Pl' (6 millis)
+            generate and save string ['an alphanumeric String (20)' -> 'AmAE409fbMaOzBm5j5Ur']
+            Given I add value 'AmAE409fbMaOzBm5j5Ur' to session under key 'random-input'  (1 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'zCFAPwANfohFhQx4h6Pl' (1328 millis)
-            Then assert status is '200' (2 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (23 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'AmAE409fbMaOzBm5j5Ur' (1245 millis)
+            Then assert status is '200' (1 millis)
+            Then assert response body is AmAE409fbMaOzBm5j5Ur (27 millis)
          Run #1 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #2
-            generate and save string ['an alphanumeric String (20)' -> 'jfQadaz86jXxP7AoBNST']
-            save random string 'jfQadaz86jXxP7AoBNST' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -> 'kB0GxeJDk8BhLIuwTx6g']
+            Given I add value 'kB0GxeJDk8BhLIuwTx6g' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'jfQadaz86jXxP7AoBNST' (6 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'kB0GxeJDk8BhLIuwTx6g' (6 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is kB0GxeJDk8BhLIuwTx6g (0 millis)
          Run #2 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #3
-            generate and save string ['an alphanumeric String (20)' -> 'O6SVBD9CQxUXN2Ag1mL3']
-            save random string 'O6SVBD9CQxUXN2Ag1mL3' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -> 'eZsDi9vG2RHAMpxaRf6P']
+            Given I add value 'eZsDi9vG2RHAMpxaRf6P' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'O6SVBD9CQxUXN2Ag1mL3' (5 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'eZsDi9vG2RHAMpxaRf6P' (5 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is eZsDi9vG2RHAMpxaRf6P (0 millis)
          Run #3 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #4
-            generate and save string ['an alphanumeric String (20)' -> '0nbLBgwP4eE9QqOeCbOn']
-            save random string '0nbLBgwP4eE9QqOeCbOn' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -> 'FztFcP9NYQtSlpuBAxfP']
+            Given I add value 'FztFcP9NYQtSlpuBAxfP' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> '0nbLBgwP4eE9QqOeCbOn' (4 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'FztFcP9NYQtSlpuBAxfP' (4 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is FztFcP9NYQtSlpuBAxfP (0 millis)
          Run #4 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #5
-            generate and save string ['an alphanumeric String (20)' -> '1RgTnx5ohrjhnZHKDHZO']
-            save random string '1RgTnx5ohrjhnZHKDHZO' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -> 'xkJgU8rlLeArwXRnsoAQ']
+            Given I add value 'xkJgU8rlLeArwXRnsoAQ' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> '1RgTnx5ohrjhnZHKDHZO' (4 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'xkJgU8rlLeArwXRnsoAQ' (4 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is xkJgU8rlLeArwXRnsoAQ (0 millis)
          Run #5 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
-      Check block succeeded (2002 millis)
+      Check block succeeded (1808 millis)
 ```
 
 The logs show that:
@@ -340,7 +355,7 @@ The logs show that:
   - each run called `generateStringAction` followed by `reverseStringAction` which is the only transition defined
   - each run stopped because no other transitions are left to explore from `reverseStringAction`
   - the string generator has been called for each run
-  - no post-condition has been broken
+  - no invariants has been broken
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse).
 
@@ -373,38 +388,50 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   //Model definition usually in another trait
 
-  private val pushCoinAction = Action0(
-    description = "push a coin",
-    effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(200) :: body.is("payment accepted") :: Nil)
+   private val pushCoinAction = Property0(
+     description = "push a coin",
+     invariant = () ⇒ Attach {
+       Given I post("/push-coin")
+       Then assert status.is(200)
+       And assert body.is("payment accepted")
+     })
 
-  private val pushCoinBlockedAction = Action0(
-    description = "push a coin is a blocked",
-    effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(400) :: body.is("payment refused") :: Nil)
+   private val pushCoinBlockedAction = Property0(
+     description = "push a coin is a blocked",
+     invariant = () ⇒ Attach {
+       Given I post("/push-coin")
+       Then assert status.is(400)
+       And assert body.is("payment refused")
+     })
 
-  private val walkThroughOkAction = Action0(
-    description = "walk through ok",
-    effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(200) :: body.is("door turns") :: Nil)
+   private val walkThroughOkAction = Property0(
+     description = "walk through ok",
+     invariant = () ⇒ Attach {
+       Given I post("/walk-through")
+       Then assert status.is(200)
+       And assert body.is("door turns")
+     })
 
-  private val walkThroughBlockedAction = Action0(
-    description = "walk through blocked",
-    effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(400) :: body.is("door blocked") :: Nil)
+   private val walkThroughBlockedAction = Property0(
+     description = "walk through blocked",
+     invariant = () ⇒ Attach {
+       Given I post("/walk-through")
+       Then assert status.is(400)
+       And assert body.is("door blocked")
+     })
 
-  val turnstileModel = ModelRunner.makeNoGen(
-    Model(
-      description = "Turnstile acts according to model",
-      startingAction = pushCoinAction,
-      transitions = Map(
-        pushCoinAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
-        pushCoinBlockedAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
-        walkThroughOkAction -> ((0.7, pushCoinAction) :: (0.3, walkThroughBlockedAction) :: Nil),
-        walkThroughBlockedAction -> ((0.9, pushCoinAction) :: (0.1, walkThroughBlockedAction) :: Nil)
-      )
-    )
-  )
+   val turnstileModel = ModelRunner.makeNoGen(
+     Model(
+       description = "Turnstile acts according to model",
+       entryPoint = pushCoinAction,
+       transitions = Map(
+         pushCoinAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
+         pushCoinBlockedAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
+         walkThroughOkAction -> ((0.7, pushCoinAction) :: (0.3, walkThroughBlockedAction) :: Nil),
+         walkThroughBlockedAction -> ((0.9, pushCoinAction) :: (0.1, walkThroughBlockedAction) :: Nil)
+       )
+     )
+   )
 }
 
 ```
@@ -412,142 +439,151 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 Again let's have a look at the logs to see how things go.
 
 ```
-Basic examples of checks:
 Starting scenario 'Turnstile acts according to model'
-- Turnstile acts according to model (59 millis)
+- Turnstile acts according to model (55 millis)
 
    Scenario : Turnstile acts according to model
       main steps
-      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=1 and maxNumberOfTransitions=10 and seed=1541225049797
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=1 and maxNumberOfTransitions=10 and seed=1542021399582
          Run #1
             push a coin
             Given I POST /push-coin (9 millis)
-            walk through ok
-            Given I POST /walk-through (4 millis)
-            push a coin
-            Given I POST /push-coin (4 millis)
-            walk through ok
-            Given I POST /walk-through (3 millis)
-            walk through blocked
-            Given I POST /walk-through (3 millis)
-            walk through blocked
-            Given I POST /walk-through (3 millis)
-            push a coin
-            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             push a coin is a blocked
-            Given I POST /push-coin (3 millis)
+            Given I POST /push-coin (5 millis)
+            Then assert status is '400' (0 millis)
+            And assert response body is payment refused (0 millis)
             walk through ok
             Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
             push a coin
             Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             walk through ok
-            Given I POST /walk-through (4 millis)
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            walk through blocked
+            Given I POST /walk-through (3 millis)
+            Then assert status is '400' (0 millis)
+            And assert response body is door blocked (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
          Run #1 - Max transitions number per run reached
-      Check block succeeded (56 millis)
+      Check block succeeded (54 millis)
 ```
 
-It is interesting to note that we are executing a single run on purpose, as the server is stateful, the run would share the global state of the turnstile.
+It is interesting to note that we are executing a single run on purpose, as the server is stateful, any subsequent runs would share the global state of the turnstile.
 
 This is an issue because we are starting our model with `pushCoinAction` which is always expected to succeed.
 
 Let's try to the same model with more run to see if it breaks!
 
 ```
-Basic examples of checks:
 Starting scenario 'Turnstile acts according to model'
-- **failed** Turnstile acts according to model (132 millis)
+- **failed** Turnstile acts according to model (74 millis)
 
   Scenario 'Turnstile acts according to model' failed:
 
   at step:
-  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
+  Then assert status is '200'
 
   with error(s):
-  A post-condition was broken for `push a coin`
-  caused by:
   expected status code '200' but '400' was received with body:
   "payment refused"
   and with headers:
-  'Date' -> 'Sat, 03 Nov 2018 13:28:14 GMT'
-  and
-  expected result was:
-  '"payment accepted"'
-  but actual result is:
-  '"payment refused"'
-
-  JSON patch between actual result and expected result is :
-  [
-    {
-      "op" : "replace",
-      "path" : "",
-      "value" : "payment refused",
-      "old" : "payment accepted"
-    }
-  ]
+  'Date' -> 'Mon, 12 Nov 2018 11:18:03 GMT'
 
   replay only this scenario with the command:
   testOnly *TurnstileCheck -- "Turnstile acts according to model"
 
    Scenario : Turnstile acts according to model
       main steps
-      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1542021482941
          Run #1
             push a coin
-            Given I POST /push-coin (9 millis)
+            Given I POST /push-coin (11 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             walk through ok
             Given I POST /walk-through (4 millis)
-            push a coin
-            Given I POST /push-coin (4 millis)
-            walk through ok
-            Given I POST /walk-through (4 millis)
-            push a coin
-            Given I POST /push-coin (4 millis)
-            walk through ok
-            Given I POST /walk-through (3 millis)
-            walk through blocked
-            Given I POST /walk-through (4 millis)
-            walk through blocked
-            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
             push a coin
             Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             walk through ok
             Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
             push a coin
             Given I POST /push-coin (4 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
          Run #1 - Max transitions number per run reached
          Run #2
             push a coin
             Given I POST /push-coin (3 millis)
-            A post-condition was broken for `push a coin`
-            caused by:
+            Then assert status is '200' *** FAILED ***
             expected status code '200' but '400' was received with body:
             "payment refused"
             and with headers:
-            'Date' -> 'Sat, 03 Nov 2018 13:28:14 GMT'
-            and
-            expected result was:
-            '"payment accepted"'
-            but actual result is:
-            '"payment refused"'
-
-            JSON patch between actual result and expected result is :
-            [
-              {
-                "op" : "replace",
-                "path" : "",
-                "value" : "payment refused",
-                "old" : "payment accepted"
-              }
-            ]
+            'Date' -> 'Mon, 12 Nov 2018 11:18:03 GMT'
          Run #2 - Failed
-      Check model block failed  (131 millis)
+      Check model block failed  (74 millis)
 ```
 
 Using 2 runs, we found already the problem because the first run finished by introducing a coin.
 
 It is possible to replay exactly this run in a deterministic fashion by using the `seed` printed in the logs and feed it to the DSL.
 
-`Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)`
+`Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1542021482941L))(turnstileModel)`
 
 This example shows that designing test scenarios with `cornichon-check` is sometimes challenging in the case of shared mutable state.
 
@@ -559,7 +595,7 @@ The source for the test and the server are available [here](https://github.com/a
 
 ## Caveats
 
-- all actions must have the same types within a `model` definition
+- all `properties` must have the same types within a `model` definition
 - the API has a few rough edges, especially regarding type inference for the `modelRunner` definition
 - placeholders generating random data such as `<random-string` and `random-uuid` are not yet using the correct `seed`
 - the max number of `generators` is hard-coded to 6

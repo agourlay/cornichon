@@ -20,6 +20,12 @@ object Step {
     AttachStep(steps)
 }
 
+object NoOpStep extends Step {
+  def title: String = "noOp"
+  def setTitle(newTitle: String): Step = this
+  def run(engine: Engine)(initialRunState: RunState): StepResult = Task.now(initialRunState -> rightDone)
+}
+
 //Step that produces a value
 trait ValueStep[A] extends Step {
 

@@ -29,26 +29,23 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
     name = "integer",
     genFct = () ⇒ throw new RuntimeException("boom gen!"))
 
-  val identityEffect: EffectStep = EffectStep.fromSync("identity", identity)
-
   val brokenEffect: EffectStep = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
 
-  def dummyAction1(name: String, preNeverValid: Boolean = false, postNeverValid: Boolean = false, effectStep: EffectStep = identityEffect, callGen: Boolean = false): ActionN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
-    Action1(
+  def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = EffectStep.identityStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
+    Property1(
       description = name,
-      preConditions = if (preNeverValid) neverValidAssertStep :: Nil else Nil,
-      effect = g ⇒ if (callGen) { g(); effectStep } else effectStep,
-      postConditions = if (postNeverValid) neverValidAssertStep :: Nil else Nil)
+      preCondition = if (preNeverValid) neverValidAssertStep else EffectStep.identityStep,
+      invariant = g ⇒ if (callGen) { g(); step } else step)
 
   "CheckStep" when {
 
     "validate transitions definition" must {
 
       "detect empty transition for starting action" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action")
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action")
         val transitions = Map(otherAction -> ((1.0, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
@@ -73,8 +70,8 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
       }
 
       "detect duplicate transition to target" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action")
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action")
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
           otherAction -> ((0.8, starting) :: (0.2, starting) :: Nil))
@@ -101,8 +98,8 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
       }
 
       "detect incorrect weigh definition" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action")
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action")
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
           otherAction -> ((1.1, starting) :: Nil))
@@ -136,8 +133,8 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         var uglyCounter = 0
         val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
-        val starting = dummyAction1("starting action", effectStep = incrementEffect)
-        val otherAction = dummyAction1("other action")
+        val starting = dummyProperty1("starting action", step = incrementEffect)
+        val otherAction = dummyProperty1("other action")
         val transitions = Map(starting -> ((1.0, otherAction) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
@@ -160,9 +157,9 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         var uglyCounter = 0
         val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action", effectStep = incrementEffect)
-        val otherActionTwo = dummyAction1("other action two ", effectStep = incrementEffect)
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action", step = incrementEffect)
+        val otherActionTwo = dummyProperty1("other action two ", step = incrementEffect)
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
           otherAction -> ((1.0, otherActionTwo) :: Nil),
@@ -187,8 +184,8 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
     "report failure" must {
 
       "an action explodes" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action", effectStep = brokenEffect)
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action", step = brokenEffect)
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
           otherAction -> ((1.0, starting) :: Nil))
@@ -214,39 +211,9 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         }
       }
 
-      "a post condition is broken" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action", postNeverValid = true)
-        val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, starting) :: Nil))
-        val model = Model("model with empty transition for starting", starting, transitions)
-        val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
-        val s = Scenario("scenario with checkStep", checkStep :: Nil)
-
-        engine.runScenario(Session.newEmpty)(s).map {
-          case f: FailureScenarioReport ⇒
-            f.isSuccess should be(false)
-            f.msg should be("""Scenario 'scenario with checkStep' failed:
-                              |
-                              |at step:
-                              |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10 and seed=1
-                              |
-                              |with error(s):
-                              |A post-condition was broken for `other action`
-                              |caused by:
-                              |never valid!
-                              |""".stripMargin)
-          case other @ _ ⇒
-            fail(s"should have failed but got $other")
-        }
-      }
-
       "no pre conditions are valid" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action", preNeverValid = true)
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action", preNeverValid = true)
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
           otherAction -> ((1.0, starting) :: Nil))
@@ -276,8 +243,8 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
     "generators" must {
 
       "not using a generator should really not call it" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action")
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action")
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
           otherAction -> ((1.0, starting) :: Nil))
@@ -298,8 +265,8 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
       }
 
       "fail the test if the gen throws" in {
-        val starting = dummyAction1("starting action")
-        val otherAction = dummyAction1("other action", callGen = true)
+        val starting = dummyProperty1("starting action")
+        val otherAction = dummyProperty1("other action", callGen = true)
         val transitions = Map(
           starting -> ((1.0, otherAction) :: Nil),
           otherAction -> ((1.0, starting) :: Nil))

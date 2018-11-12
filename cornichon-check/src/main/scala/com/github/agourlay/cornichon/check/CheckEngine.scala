@@ -24,35 +24,29 @@ class CheckEngine[A, B, C, D, E, F](
     genF: Generator[F]) {
 
   // Assertions do not propagate their Session!
-  private def checkStepConditions(engine: Engine, initialRunState: RunState)(assertions: List[Step]): Task[List[Either[FailedStep, Done]]] =
-    Task.gather(assertions.map(_.run(engine)(initialRunState).map(_._2)))
+  private def checkStepConditions(engine: Engine, initialRunState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
+    assertion.run(engine)(initialRunState).map(_._2)
 
-  private def validTransitions(engine: Engine, initialRunState: RunState)(transitions: List[(Double, ActionN[A, B, C, D, E, F])]): Task[List[(Double, ActionN[A, B, C, D, E, F], Boolean)]] =
+  private def validTransitions(engine: Engine, initialRunState: RunState)(transitions: List[(Double, PropertyN[A, B, C, D, E, F])]): Task[List[(Double, PropertyN[A, B, C, D, E, F], Boolean)]] =
     Task.gather {
       transitions.map {
         case (weight, actions) ⇒
-          checkStepConditions(engine, initialRunState)(actions.preConditions).map { preConditionsRes ⇒
-            val failedConditions = preConditionsRes.collect { case Left(e) ⇒ e }
-            (weight, actions, failedConditions.isEmpty)
-          }
+          checkStepConditions(engine, initialRunState)(actions.preCondition)
+            .map(preConditionsRes ⇒ (weight, actions, preConditionsRes.isRight))
       }
     }
 
   def run(engine: Engine, initialRunState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting action
-    checkStepConditions(engine, initialRunState)(model.startingAction.preConditions).flatMap { startingPreConditions ⇒
-      val errors = startingPreConditions.collect { case Left(e) ⇒ e }
-      NonEmptyList.fromList(errors) match {
-        case None ⇒
-          // run first state
-          loopRun(engine, initialRunState, model.startingAction, 0)
-        case Some(failures) ⇒
-          val errors = failures.flatMap(_.errors)
-          Task.now((initialRunState, FailedStep(cs, errors).asLeft))
-      }
+    checkStepConditions(engine, initialRunState)(model.entryPoint.preCondition).flatMap {
+      case Right(_) ⇒
+        // run first state
+        loopRun(engine, initialRunState, model.entryPoint, 0)
+      case Left(failedStep) ⇒
+        Task.now((initialRunState, FailedStep(cs, failedStep.errors).asLeft))
     }
 
-  private def loopRun(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  private def loopRun(engine: Engine, initialRunState: RunState, action: PropertyN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     if (currentNumberOfTransitions > maxNumberOfTransitions)
       Task.now((initialRunState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else
@@ -82,7 +76,7 @@ class CheckEngine[A, B, C, D, E, F](
       }
 
   // Assumes valid pre-conditions
-  private def runActionAndValidatePostConditions(engine: Engine, initialRunState: RunState, action: ActionN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
+  private def runActionAndValidatePostConditions(engine: Engine, initialRunState: RunState, action: PropertyN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
     val s = initialRunState.session
     // Init Gens
     val logQueue = new ConcurrentLinkedQueue[(String, String)]
@@ -93,29 +87,12 @@ class CheckEngine[A, B, C, D, E, F](
     val ge = genE.valueWithLog(logQueue, s)
     val gf = genF.valueWithLog(logQueue, s)
     // Generate effect
-    val effect = action.effectN(ga, gb, gc, gd, ge, gf)
-    effect.run(engine)(initialRunState.resetLogs).flatMap {
+    val invariantStep = action.invariantN(ga, gb, gc, gd, ge, gf)
+    invariantStep.run(engine)(initialRunState.resetLogs).flatMap {
       case (ns, res) ⇒
         // Generators are called inside the `Steps`, so we need to call them to generate the log
         val newState = injectActionLogWithGeneratedValue(logQueue, action.description, initialRunState.logs, ns)
-        res match {
-          case Left(_) ⇒
-            Task.now(newState -> res)
-          case Right(_) ⇒
-            // check post-conditions
-            checkStepConditions(engine, newState)(action.postConditions)
-              .flatMap { afterConditionIsValid ⇒
-                val failures = afterConditionIsValid.collect { case Left(e) ⇒ e }
-                NonEmptyList.fromList(failures) match {
-                  case None ⇒
-                    Task.now(newState -> res)
-                  case Some(errors) ⇒
-                    val error = PostConditionBroken(action.description, errors.flatMap(_.errors))
-                    val postConditionLog = FailureLogInstruction(error.renderedMessage, initialRunState.depth)
-                    Task.now((newState.appendLog(postConditionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
-                }
-              }
-        }
+        Task.now(newState -> res)
     }
   }
 
@@ -150,11 +127,6 @@ class CheckEngine[A, B, C, D, E, F](
     }
   }
 
-}
-
-case class PostConditionBroken(actionDescription: String, errors: NonEmptyList[CornichonError]) extends CornichonError {
-  def baseErrorMessage: String = s"A post-condition was broken for `$actionDescription`"
-  override val causedBy: List[CornichonError] = errors.toList
 }
 
 case class NoValidTransitionAvailableForState(actionDescription: String) extends CornichonError {

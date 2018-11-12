@@ -78,15 +78,14 @@ object CheckStepBench {
     name = "integer",
     genFct = () ⇒ rc.seededRandom.nextInt(10000))
 
-  def dummyAction1(name: String): ActionN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
-    Action1(
+  def dummyProperty1(name: String): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
+    Property1(
       description = name,
-      effect = g ⇒ EffectStep.fromSyncE("add generated", _.addValue("generated", g().toString)),
-      postConditions = Nil)
+      invariant = g ⇒ EffectStep.fromSyncE("add generated", _.addValue("generated", g().toString)))
 
-  val starting = dummyAction1("starting action")
-  val otherAction = dummyAction1("other action")
-  val otherActionTwo = dummyAction1("other action two ")
+  val starting = dummyProperty1("starting action")
+  val otherAction = dummyProperty1("other action")
+  val otherActionTwo = dummyProperty1("other action two ")
   val transitions = Map(
     starting -> ((1.0, otherAction) :: Nil),
     otherAction -> ((1.0, otherActionTwo) :: Nil),

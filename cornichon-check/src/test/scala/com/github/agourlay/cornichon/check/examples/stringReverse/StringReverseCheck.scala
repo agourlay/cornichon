@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.check.examples.stringReverse
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.check.examples.HttpServer
-import com.github.agourlay.cornichon.steps.regular.EffectStep
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -45,29 +44,26 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
     name = "an alphanumeric String (20)",
     genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
-  private val generateStringAction = Action1[String](
+  private val generateStringAction = Property1[String](
     description = "generate and save string",
-    preConditions = session_value("random-input").isAbsent :: Nil,
-    effect = stringGenerator ⇒ {
-      val randomString = stringGenerator()
-      EffectStep.fromSyncE(s"save random string '$randomString'", _.addValue("random-input", randomString))
-    },
-    postConditions = session_value("random-input").isPresent :: Nil)
+    preCondition = session_value("random-input").isAbsent,
+    invariant = stringGenerator ⇒ Attach {
+      Given I save("random-input" -> stringGenerator())
+    })
 
-  private val reverseStringAction = Action1[String](
+  private val reverseStringAction = Property1[String](
     description = "reverse a string twice yields the same value",
-    preConditions = session_value("random-input").isPresent :: Nil,
-    effect = _ ⇒ Attach {
+    preCondition = session_value("random-input").isPresent,
+    invariant = _ ⇒ Attach {
       Given I post("/double-reverse").withParams("word" -> "<random-input>")
       Then assert status.is(200)
-      And I save_body("reversed-twice-random-input")
-    },
-    postConditions = session_values("random-input", "reversed-twice-random-input").areEquals :: Nil)
+      Then assert body.is("<random-input>")
+    })
 
   val doubleReverseModel = ModelRunner.make[String](stringGen)(
     Model(
       description = "reversing a string twice yields same value",
-      startingAction = generateStringAction,
+      entryPoint = generateStringAction,
       transitions = Map(
         generateStringAction -> ((1.0, reverseStringAction) :: Nil)
       )

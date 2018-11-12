@@ -40,30 +40,42 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   //Model definition usually in another trait
 
-  private val pushCoinAction = Action0(
+  private val pushCoinAction = Property0(
     description = "push a coin",
-    effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(200) :: body.is("payment accepted") :: Nil)
+    invariant = () ⇒ Attach {
+      Given I post("/push-coin")
+      Then assert status.is(200)
+      And assert body.is("payment accepted")
+    })
 
-  private val pushCoinBlockedAction = Action0(
+  private val pushCoinBlockedAction = Property0(
     description = "push a coin is a blocked",
-    effect = () ⇒ Given I post("/push-coin"),
-    postConditions = status.is(400) :: body.is("payment refused") :: Nil)
+    invariant = () ⇒ Attach {
+      Given I post("/push-coin")
+      Then assert status.is(400)
+      And assert body.is("payment refused")
+    })
 
-  private val walkThroughOkAction = Action0(
+  private val walkThroughOkAction = Property0(
     description = "walk through ok",
-    effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(200) :: body.is("door turns") :: Nil)
+    invariant = () ⇒ Attach {
+      Given I post("/walk-through")
+      Then assert status.is(200)
+      And assert body.is("door turns")
+    })
 
-  private val walkThroughBlockedAction = Action0(
+  private val walkThroughBlockedAction = Property0(
     description = "walk through blocked",
-    effect = () ⇒ Given I post("/walk-through"),
-    postConditions = status.is(400) :: body.is("door blocked") :: Nil)
+    invariant = () ⇒ Attach {
+      Given I post("/walk-through")
+      Then assert status.is(400)
+      And assert body.is("door blocked")
+    })
 
   val turnstileModel = ModelRunner.makeNoGen(
     Model(
       description = "Turnstile acts according to model",
-      startingAction = pushCoinAction,
+      entryPoint = pushCoinAction,
       transitions = Map(
         pushCoinAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
         pushCoinBlockedAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
