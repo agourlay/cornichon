@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.check
+package com.github.agourlay.cornichon.check.checkModel
 
 import cats.data.Validated.Invalid
 import cats.data.ValidatedNel
@@ -6,6 +6,7 @@ import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.validated._
 import cats.syntax.apply._
+import com.github.agourlay.cornichon.check.RandomContext
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
@@ -13,7 +14,7 @@ import com.github.agourlay.cornichon.util.Timing._
 
 import scala.util.Random
 
-case class CheckStep[A, B, C, D, E, F](
+case class CheckModelStep[A, B, C, D, E, F](
     maxNumberOfRuns: Int,
     maxNumberOfTransitions: Int,
     modelRunner: ModelRunner[A, B, C, D, E, F],
@@ -34,7 +35,7 @@ case class CheckStep[A, B, C, D, E, F](
 
   private val model = modelRunner.model
 
-  private val checkEngine = new CheckEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
+  private val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
 
   val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions and seed=${randomContext.seed}"
 

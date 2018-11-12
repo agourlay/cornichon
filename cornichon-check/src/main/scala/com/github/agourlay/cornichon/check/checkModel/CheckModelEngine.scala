@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.check
+package com.github.agourlay.cornichon.check.checkModel
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -6,13 +6,14 @@ import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
 import cats.syntax.either._
+import com.github.agourlay.cornichon.check.Generator
 import com.github.agourlay.cornichon.util.Printing
 
 import collection.JavaConverters._
 import scala.util.Random
 
-class CheckEngine[A, B, C, D, E, F](
-    cs: CheckStep[A, B, C, D, E, F],
+class CheckModelEngine[A, B, C, D, E, F](
+    cs: CheckModelStep[A, B, C, D, E, F],
     model: Model[A, B, C, D, E, F],
     maxNumberOfTransitions: Int,
     rd: Random,

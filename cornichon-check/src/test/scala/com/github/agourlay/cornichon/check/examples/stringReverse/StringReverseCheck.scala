@@ -13,10 +13,19 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
 
     Scenario("reverse a string twice yields the same results") {
 
-      Given I check_model(maxNumberOfRuns = 5, maxNumberOfTransitions = 1)(doubleReverseModel)
-
+      Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString ⇒
+        Attach {
+          Given I post("/double-reverse").withParams("word" -> randomString)
+          Then assert status.is(200)
+          Then assert body.is(randomString)
+        }
+      }
     }
   }
+
+  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+    name = "alphanumeric String (20)",
+    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
   lazy val port = 8080
 
@@ -37,36 +46,4 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
   afterFeature {
     Await.result(server.shutdown(), 5.second)
   }
-
-  //Model definition usually in another trait
-
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "an alphanumeric String (20)",
-    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
-
-  private val generateStringAction = Property1[String](
-    description = "generate and save string",
-    preCondition = session_value("random-input").isAbsent,
-    invariant = stringGenerator ⇒ Attach {
-      Given I save("random-input" -> stringGenerator())
-    })
-
-  private val reverseStringAction = Property1[String](
-    description = "reverse a string twice yields the same value",
-    preCondition = session_value("random-input").isPresent,
-    invariant = _ ⇒ Attach {
-      Given I post("/double-reverse").withParams("word" -> "<random-input>")
-      Then assert status.is(200)
-      Then assert body.is("<random-input>")
-    })
-
-  val doubleReverseModel = ModelRunner.make[String](stringGen)(
-    Model(
-      description = "reversing a string twice yields same value",
-      entryPoint = generateStringAction,
-      transitions = Map(
-        generateStringAction -> ((1.0, reverseStringAction) :: Nil)
-      )
-    )
-  )
 }

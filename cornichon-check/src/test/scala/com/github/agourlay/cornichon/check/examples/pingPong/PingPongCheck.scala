@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.check.examples.pingPong
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
+import com.github.agourlay.cornichon.check.checkModel.{ Model, ModelRunner, Property2 }
 
 class PingPongCheck extends CornichonFeature with CheckDsl {
 

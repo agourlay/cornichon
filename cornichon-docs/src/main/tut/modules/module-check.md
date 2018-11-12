@@ -7,12 +7,147 @@ title:  "Property based testing support"
 
 There is a support for property based testing through the `cornichon-check` module.
 
+It offers two flavours of testing which can be used in different situations, both are available when mixing the `CheckCheck` trait.
+
+At the center of property based testing lies the capacity to generate arbitrary values that will be used to verify if a given invariant holds.
+
+## Generators
+
+A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Ints.
+
+```
+def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+  name = "an alphanumeric String (20)",
+  genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+
+def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
+  name = "integer",
+  genFct = () ⇒ rc.seededRandom.nextInt(10000))
+```
+
+This approach also supports embedding `Scalacheck's Gen` into `ValueGenerator` by propagating the seed.
+
+```scala
+import org.scalacheck.Gen
+import org.scalacheck.rng.Seed
+
+sealed trait Coin
+case object Head extends Coin
+case object Tail extends Coin
+
+object ScalacheckExample {
+
+  def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
+    name = "a Coin",
+    genFct = () ⇒ {
+      val params = Gen.Parameters.default.withInitialSeed(rc.seed)
+      val coin = for (c ← Gen.oneOf[Coin](Head, Tail)) yield c
+      coin(params, Seed(rc.seed)).get
+    }
+  )
+}
+```
+
+## First flavour - ForAll
+
+The first flavour follows the classical approach found in many testing libraries. That is for any values from a set of generators, we will validate that a given invariant holds.
+
+Here is the `API` available when using a single `generator`
+
+`def for_all[A](description: String, ga: RandomContext ⇒ Generator[A])(f: A ⇒ Step): Step`
+
+Let's use an example to see how to use it!
+
+We want to enforce the following invariant `for any string, if we reverse it twice, it should yield the same value`.
+
+The implementation under test is a server accepting `POST` requests to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
+
+```tut:silent
+import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.check._
+import com.github.agourlay.cornichon.steps.regular.EffectStep
+
+class BasicExampleChecks extends CornichonFeature with CheckDsl {
+
+  def feature = Feature("Basic examples of checks") {
+
+    Scenario("reverse a string twice yields the same results") {
+ 
+      Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString ⇒
+        Attach {
+          Given I post("/double-reverse").withParams("word" -> randomString)
+          Then assert status.is(200)
+          Then assert body.is(randomString)
+        }
+      }
+    }
+  }
+
+  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+    name = "alphanumeric String (20)",
+    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+  }
+
+```
+
+To understand what is going on, we can have a look at the logs produced by this scenario.
+
+```
+Starting scenario 'reverse a string twice yields the same results'
+- reverse a string twice yields the same results (1838 millis)
+
+   Scenario : reverse a string twice yields the same results
+      main steps
+      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' with maxNumberOfRuns=5 and seed=1542035406913
+         Run #0 [alphanumeric String (20) -> 3LLR2xRRqM0pUzsKbV1P]
+            Given I POST /double-reverse with query parameters 'word' -> '3LLR2xRRqM0pUzsKbV1P' (1277 millis)
+            Then assert status is '200' (8 millis)
+            Then assert response body is 3LLR2xRRqM0pUzsKbV1P (29 millis)
+         Run #0
+         Run #1 [alphanumeric String (20) -> Wfs4OhcWKhIMjsGYoV01]
+            Given I POST /double-reverse with query parameters 'word' -> 'Wfs4OhcWKhIMjsGYoV01' (6 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is Wfs4OhcWKhIMjsGYoV01 (0 millis)
+         Run #1
+         Run #2 [alphanumeric String (20) -> OOT6irbIkG3b3HBuQ8sj]
+            Given I POST /double-reverse with query parameters 'word' -> 'OOT6irbIkG3b3HBuQ8sj' (5 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is OOT6irbIkG3b3HBuQ8sj (0 millis)
+         Run #2
+         Run #3 [alphanumeric String (20) -> xXY3JzcTf9NCCu8a0uxM]
+            Given I POST /double-reverse with query parameters 'word' -> 'xXY3JzcTf9NCCu8a0uxM' (4 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is xXY3JzcTf9NCCu8a0uxM (0 millis)
+         Run #3
+         Run #4 [alphanumeric String (20) -> ouXR8W5akYsy5WMcvpEi]
+            Given I POST /double-reverse with query parameters 'word' -> 'ouXR8W5akYsy5WMcvpEi' (4 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is ouXR8W5akYsy5WMcvpEi (0 millis)
+         Run #4
+         Run #5 [alphanumeric String (20) -> nNueIFZYHaIMu27XvibM]
+            Given I POST /double-reverse with query parameters 'word' -> 'nNueIFZYHaIMu27XvibM' (4 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is nNueIFZYHaIMu27XvibM (0 millis)
+         Run #5
+      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' block succeeded (1835 millis)
+```
+
+The logs show that:
+
+- the string generator has been called for each run
+- no invariants have been broken
+
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse).
+
+More often that not, using `forAll` is enough to cover the most common use cases. But sometimes, we want not only to have random values generated but also random interactions with the system under tests.
+
+## Second flavour - Random model exploration
+
 The initial inspiration came after reading the following article [Property based integration testing using Haskell!](https://functional.works-hub.com/learn/property-based-integration-testing-using-haskell-6c25c) which describes a way to tackle the problem of property based testing for HTTP APIs.
 
 It is still a great introduction to the problem we are trying to solve although the implementations are significantly different.
 
-
-## Concepts
+### Concepts
 
 Performing property based testing of a pure function is quite easy, for `all` possible values, check that a given invariant is valid.
 
@@ -51,41 +186,6 @@ It is of course not required to call a generator when building a `Step`.
 *However it is required to have the same `Property` type for all properties within a `model` definition.*
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
-
-A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Ints.
-
-```
-def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-  name = "an alphanumeric String (20)",
-  genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
-
-def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-  name = "integer",
-  genFct = () ⇒ rc.seededRandom.nextInt(10000))
-```
-
-This approach also supports embedding `Scalacheck's Gen` into `ValueGenerator` by propagating the seed.
-
-```scala
-import org.scalacheck.Gen
-import org.scalacheck.rng.Seed
-
-sealed trait Coin
-case object Head extends Coin
-case object Tail extends Coin
-
-object ScalacheckExample {
-
-  def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
-    name = "a Coin",
-    genFct = () ⇒ {
-      val params = Gen.Parameters.default.withInitialSeed(rc.seed)
-      val coin = for (c ← Gen.oneOf[Coin](Head, Tail)) yield c
-      coin(params, Seed(rc.seed)).get
-    }
-  )
-}
-```
 
 A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
 
@@ -231,135 +331,11 @@ Starting scenario 'ping pong check'
 
 // TODO talk about fixing seed to fix generators and transitions
 
-## Examples
+### Examples
 
 Now that we have an understanding of the concepts and their semantics, it is time to dive into some concrete examples!
 
-### Reversing strings (one generator and one transition)
-
-// TODO move this example for the new `for_all` DSL
-
-Below is an example presenting the current `cornichon-check` API by checking the contract of HTTP API reversing twice a string.
-
-We want to enforce the following invariant `for any string, if we reverse it twice, it should yield the same value`.
-
-The implementation under test is a server accepting `POST` requests to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
-
-This is silly because the Markov chain has only a single transition but it is still a good first example to show to create a `modelRunner`.
-
-```tut:silent
-import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.check._
-import com.github.agourlay.cornichon.steps.regular.EffectStep
-
-class BasicExampleChecks extends CornichonFeature with CheckDsl {
-
-  def feature = Feature("Basic examples of checks") {
-
-    Scenario("reverse a string twice yields the same results") {
-
-      Given I check_model(maxNumberOfRuns = 5, maxNumberOfTransitions = 1)(doubleReverseModel)
-
-    }
-  }
-
-  //The model definition usually lives in another trait
-
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "an alphanumeric String (20)",
-    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
-
-  private val generateStringAction = Property1[String](
-    description = "generate and save string",
-    preCondition = session_value("random-input").isAbsent,
-    invariant = stringGenerator ⇒ Attach {
-      Given I save("random-input" -> stringGenerator())
-    })
-
-  private val reverseStringAction = Property1[String](
-    description = "reverse a string twice yields the same value",
-    preCondition = session_value("random-input").isPresent,
-    invariant = _ ⇒ Attach {
-      Given I post("/double-reverse").withParams("word" -> "<random-input>")
-      Then assert status.is(200)
-      Then assert body.is("<random-input>")
-    })
-
-  val doubleReverseModel = ModelRunner.make[String](stringGen)(
-    Model(
-      description = "reversing a string twice yields same value",
-      entryPoint = generateStringAction,
-      transitions = Map(
-        generateStringAction -> ((1.0, reverseStringAction) :: Nil)
-      )
-    )
-  )
-}
-
-```
-
-To understand what is going on, we can have a look at the logs produced by this scenario.
-
-```
-Starting scenario 'reverse a string twice yields the same results'
-- reverse a string twice yields the same results (1810 millis)
-
-   Scenario : reverse a string twice yields the same results
-      main steps
-      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1542020784226
-         Run #1
-            generate and save string ['an alphanumeric String (20)' -> 'AmAE409fbMaOzBm5j5Ur']
-            Given I add value 'AmAE409fbMaOzBm5j5Ur' to session under key 'random-input'  (1 millis)
-            reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'AmAE409fbMaOzBm5j5Ur' (1245 millis)
-            Then assert status is '200' (1 millis)
-            Then assert response body is AmAE409fbMaOzBm5j5Ur (27 millis)
-         Run #1 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
-         Run #2
-            generate and save string ['an alphanumeric String (20)' -> 'kB0GxeJDk8BhLIuwTx6g']
-            Given I add value 'kB0GxeJDk8BhLIuwTx6g' to session under key 'random-input'  (0 millis)
-            reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'kB0GxeJDk8BhLIuwTx6g' (6 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is kB0GxeJDk8BhLIuwTx6g (0 millis)
-         Run #2 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
-         Run #3
-            generate and save string ['an alphanumeric String (20)' -> 'eZsDi9vG2RHAMpxaRf6P']
-            Given I add value 'eZsDi9vG2RHAMpxaRf6P' to session under key 'random-input'  (0 millis)
-            reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'eZsDi9vG2RHAMpxaRf6P' (5 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is eZsDi9vG2RHAMpxaRf6P (0 millis)
-         Run #3 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
-         Run #4
-            generate and save string ['an alphanumeric String (20)' -> 'FztFcP9NYQtSlpuBAxfP']
-            Given I add value 'FztFcP9NYQtSlpuBAxfP' to session under key 'random-input'  (0 millis)
-            reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'FztFcP9NYQtSlpuBAxfP' (4 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is FztFcP9NYQtSlpuBAxfP (0 millis)
-         Run #4 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
-         Run #5
-            generate and save string ['an alphanumeric String (20)' -> 'xkJgU8rlLeArwXRnsoAQ']
-            Given I add value 'xkJgU8rlLeArwXRnsoAQ' to session under key 'random-input'  (0 millis)
-            reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -> 'xkJgU8rlLeArwXRnsoAQ' (4 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is xkJgU8rlLeArwXRnsoAQ (0 millis)
-         Run #5 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
-      Check block succeeded (1808 millis)
-```
-
-The logs show that:
-  - we have performed 5 runs of 1 transition each through the `model`
-  - each run called `generateStringAction` followed by `reverseStringAction` which is the only transition defined
-  - each run stopped because no other transitions are left to explore from `reverseStringAction`
-  - the string generator has been called for each run
-  - no invariants has been broken
-
-The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse).
-
-### Turnstile (no generator and cyclic transitions)
+#### Turnstile (no generator and cyclic transitions)
 
 Having `cornichon-check` freely explore the `transitions` of a `model` can create some interesting configurations.
 
@@ -373,6 +349,7 @@ The server exposed two endpoints:
 
 ```tut:silent
 import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.check.checkModel._
 import com.github.agourlay.cornichon.check._
 
 class TurnstileCheck extends CornichonFeature with CheckDsl {
@@ -388,50 +365,50 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   //Model definition usually in another trait
 
-   private val pushCoinAction = Property0(
-     description = "push a coin",
-     invariant = () ⇒ Attach {
-       Given I post("/push-coin")
-       Then assert status.is(200)
-       And assert body.is("payment accepted")
-     })
+  private val pushCoin = Property0(
+    description = "push a coin",
+    invariant = () ⇒ Attach {
+      Given I post("/push-coin")
+      Then assert status.is(200)
+      And assert body.is("payment accepted")
+    })
 
-   private val pushCoinBlockedAction = Property0(
-     description = "push a coin is a blocked",
-     invariant = () ⇒ Attach {
-       Given I post("/push-coin")
-       Then assert status.is(400)
-       And assert body.is("payment refused")
-     })
+  private val pushCoinBlocked = Property0(
+    description = "push a coin is a blocked",
+    invariant = () ⇒ Attach {
+      Given I post("/push-coin")
+      Then assert status.is(400)
+      And assert body.is("payment refused")
+    })
 
-   private val walkThroughOkAction = Property0(
-     description = "walk through ok",
-     invariant = () ⇒ Attach {
-       Given I post("/walk-through")
-       Then assert status.is(200)
-       And assert body.is("door turns")
-     })
+  private val walkThroughOk = Property0(
+    description = "walk through ok",
+    invariant = () ⇒ Attach {
+      Given I post("/walk-through")
+      Then assert status.is(200)
+      And assert body.is("door turns")
+    })
 
-   private val walkThroughBlockedAction = Property0(
-     description = "walk through blocked",
-     invariant = () ⇒ Attach {
-       Given I post("/walk-through")
-       Then assert status.is(400)
-       And assert body.is("door blocked")
-     })
+  private val walkThroughBlocked = Property0(
+    description = "walk through blocked",
+    invariant = () ⇒ Attach {
+      Given I post("/walk-through")
+      Then assert status.is(400)
+      And assert body.is("door blocked")
+    })
 
-   val turnstileModel = ModelRunner.makeNoGen(
-     Model(
-       description = "Turnstile acts according to model",
-       entryPoint = pushCoinAction,
-       transitions = Map(
-         pushCoinAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
-         pushCoinBlockedAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
-         walkThroughOkAction -> ((0.7, pushCoinAction) :: (0.3, walkThroughBlockedAction) :: Nil),
-         walkThroughBlockedAction -> ((0.9, pushCoinAction) :: (0.1, walkThroughBlockedAction) :: Nil)
-       )
-     )
-   )
+  val turnstileModel = ModelRunner.makeNoGen(
+    Model(
+      description = "Turnstile acts according to model",
+      entryPoint = pushCoin,
+      transitions = Map(
+        pushCoin -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
+        pushCoinBlocked -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
+        walkThroughOk -> ((0.7, pushCoin) :: (0.3, walkThroughBlocked) :: Nil),
+        walkThroughBlocked -> ((0.9, pushCoin) :: (0.1, walkThroughBlocked) :: Nil)
+      )
+    )
+  )
 }
 
 ```
@@ -589,11 +566,11 @@ This example shows that designing test scenarios with `cornichon-check` is somet
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile).
 
-### Web shop Admin (several generators and cyclic transitions)
+#### Web shop Admin (several generators and cyclic transitions)
 
 // TODO
 
-## Caveats
+### Caveats
 
 - all `properties` must have the same types within a `model` definition
 - the API has a few rough edges, especially regarding type inference for the `modelRunner` definition

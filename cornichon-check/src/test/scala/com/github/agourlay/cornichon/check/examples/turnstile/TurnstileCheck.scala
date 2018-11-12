@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.check.examples.turnstile
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
+import com.github.agourlay.cornichon.check.checkModel.{ Model, ModelRunner, Property0 }
 import com.github.agourlay.cornichon.check.examples.HttpServer
 
 import scala.concurrent.Await
@@ -40,7 +41,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   //Model definition usually in another trait
 
-  private val pushCoinAction = Property0(
+  private val pushCoin = Property0(
     description = "push a coin",
     invariant = () ⇒ Attach {
       Given I post("/push-coin")
@@ -48,7 +49,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
       And assert body.is("payment accepted")
     })
 
-  private val pushCoinBlockedAction = Property0(
+  private val pushCoinBlocked = Property0(
     description = "push a coin is a blocked",
     invariant = () ⇒ Attach {
       Given I post("/push-coin")
@@ -56,7 +57,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
       And assert body.is("payment refused")
     })
 
-  private val walkThroughOkAction = Property0(
+  private val walkThroughOk = Property0(
     description = "walk through ok",
     invariant = () ⇒ Attach {
       Given I post("/walk-through")
@@ -64,7 +65,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
       And assert body.is("door turns")
     })
 
-  private val walkThroughBlockedAction = Property0(
+  private val walkThroughBlocked = Property0(
     description = "walk through blocked",
     invariant = () ⇒ Attach {
       Given I post("/walk-through")
@@ -75,12 +76,12 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
   val turnstileModel = ModelRunner.makeNoGen(
     Model(
       description = "Turnstile acts according to model",
-      entryPoint = pushCoinAction,
+      entryPoint = pushCoin,
       transitions = Map(
-        pushCoinAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
-        pushCoinBlockedAction -> ((0.9, walkThroughOkAction) :: (0.1, pushCoinBlockedAction) :: Nil),
-        walkThroughOkAction -> ((0.7, pushCoinAction) :: (0.3, walkThroughBlockedAction) :: Nil),
-        walkThroughBlockedAction -> ((0.9, pushCoinAction) :: (0.1, walkThroughBlockedAction) :: Nil)
+        pushCoin -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
+        pushCoinBlocked -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
+        walkThroughOk -> ((0.7, pushCoin) :: (0.3, walkThroughBlocked) :: Nil),
+        walkThroughBlocked -> ((0.9, pushCoin) :: (0.1, walkThroughBlocked) :: Nil)
       )
     )
   )

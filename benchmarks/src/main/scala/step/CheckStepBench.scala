@@ -8,6 +8,7 @@ import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import monix.execution.Scheduler
 import org.openjdk.jmh.annotations._
 import com.github.agourlay.cornichon.check._
+import com.github.agourlay.cornichon.check.checkModel._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
 import scala.concurrent.Await
@@ -61,7 +62,7 @@ class CheckStepBench {
 
   @Benchmark
   def runModel() = {
-    val checkStep = CheckStep(maxNumberOfRuns = 1, maxNumberOfTransitions = transitionNumber.toInt, CheckStepBench.modelRunner, None)
+    val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxNumberOfTransitions = transitionNumber.toInt, CheckStepBench.modelRunner, None)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
     val f = engine.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)

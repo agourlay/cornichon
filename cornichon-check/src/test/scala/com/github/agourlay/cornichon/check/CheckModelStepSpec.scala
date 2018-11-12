@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.check
 
+import com.github.agourlay.cornichon.check.checkModel._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
@@ -12,7 +13,7 @@ import org.scalatest.{ AsyncWordSpec, Matchers }
 import scala.concurrent.Future
 
 // TODO use StepUtilSpec through some kind of common-testing
-class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
+class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
 
   implicit def taskToFuture[A](t: Task[A])(implicit s: Scheduler): Future[A] =
     t.runToFuture(s)
@@ -39,7 +40,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
       preCondition = if (preNeverValid) neverValidAssertStep else EffectStep.identityStep,
       invariant = g ⇒ if (callGen) { g(); step } else step)
 
-  "CheckStep" when {
+  "CheckModelStep" when {
 
     "validate transitions definition" must {
 
@@ -50,7 +51,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -78,7 +79,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -106,7 +107,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -139,7 +140,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = maxRun, 1, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = maxRun, 1, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -167,7 +168,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = 1, maxTransition, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxTransition, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -192,7 +193,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -220,7 +221,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -252,7 +253,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         // passing a broken gen but the actions are not calling it...should be good!
         val modelRunner = ModelRunner.make(brokenIntGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
@@ -273,7 +274,7 @@ class CheckStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances {
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(brokenIntGen)(model)
         val seed = 1L
-        val checkStep = CheckStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         engine.runScenario(Session.newEmpty)(s).map {
