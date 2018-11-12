@@ -247,6 +247,10 @@
                         <a href="LogInstruction.html" title="">LogInstruction</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="object" href="NoOpStep$.html" title=""></a>
+                        <a href="NoOpStep$.html" title="">NoOpStep</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="class" href="PendingScenarioReport.html" title=""></a>
                         <a href="PendingScenarioReport.html" title="">PendingScenarioReport</a>
                       </li><li class="current-entities indented5">
@@ -676,7 +680,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="FailedStep.html"><span class="name">FailedStep</span></a><span class="params">(<span name="step">step: <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="errors">errors: <span class="extype" name="cats.data.NonEmptyList">NonEmptyList</span>[<a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FailedStep.html"><span class="name">FailedStep</span></a><span class="params">(<span name="step">step: <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -708,7 +712,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="FailureScenarioReport.html"><span class="name">FailureScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="failedSteps">failedSteps: <span class="extype" name="cats.data.NonEmptyList">NonEmptyList</span>[<a href="FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>]</span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logs">logs: <span class="extype" name="scala.Vector">Vector</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FailureScenarioReport.html"><span class="name">FailureScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="failedSteps">failedSteps: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>]</span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logs">logs: <span class="extype" name="scala.Vector">Vector</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1261,6 +1265,22 @@
       </span>
       <span class="symbol">
         <a title="" href="LogInstruction$.html"><span class="name">LogInstruction</span></a>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.core.NoOpStep" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NoOpStep"></a><a id="NoOpStep:NoOpStep"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/index.html#NoOpStep" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="NoOpStep$.html"><span class="name">NoOpStep</span></a><span class="result"> extends <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
       </span>
       
       

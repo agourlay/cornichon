@@ -25,38 +25,30 @@
   <li><code class="highlighter-rouge">maxNumberOfTransition</code> is useful when the <code class="highlighter-rouge">model</code> contains cycles in order to ensure termination</li>
   <li><code class="highlighter-rouge">seed</code> can be provided in order to trigger a deterministic run</li>
   <li><code class="highlighter-rouge">modelRunner</code> is the actual definition of the <code class="highlighter-rouge">model</code></li>
-  <li><code class="highlighter-rouge">A B C D E F</code> refers to the types of the <code class="highlighter-rouge">generators</code> used in <code class="highlighter-rouge">model</code> definition (maximum 6 for the moment)</li>
+  <li><code class="highlighter-rouge">A B C D E F</code> refers to the types of the <code class="highlighter-rouge">generators</code> used in <code class="highlighter-rouge">model</code> definition (maximum of 6 for the moment)</li>
 </ul>
 
-<p>Such Markov chain wires together a set of <code class="highlighter-rouge">actions</code> that relate to each others through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code>.</p>
+<p>Such Markov chain wires together a set of <code class="highlighter-rouge">properties</code> that relate to each others through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code>.</p>
 
-<p>Each <code class="highlighter-rouge">action</code> has a set of <code class="highlighter-rouge">pre-conditions</code> and a set of <code class="highlighter-rouge">post-conditions</code> that are checked automatically.</p>
-
-<p>Concretely it means that:</p>
+<p>A <code class="highlighter-rouge">property</code> is composed of:</p>
 <ul>
-  <li>
-    <p><code class="highlighter-rouge">pre-conditions</code> are <code class="highlighter-rouge">Steps</code> (they are checked in parallel and the resulting <code class="highlighter-rouge">Sessions</code> are not propagated)</p>
-  </li>
-  <li>
-    <p><code class="highlighter-rouge">post-conditions</code> are <code class="highlighter-rouge">Steps</code> (they are checked in parallel and the resulting <code class="highlighter-rouge">Sessions</code> are not propagated)</p>
-  </li>
-  <li>
-    <p>the <code class="highlighter-rouge">action</code> itself is a function from a number of generators to a <code class="highlighter-rouge">Step</code> (the resulting <code class="highlighter-rouge">Session</code> is propagated)</p>
-  </li>
+  <li>a description</li>
+  <li>an optional <code class="highlighter-rouge">pre-condition</code> which is a <code class="highlighter-rouge">step</code> checking that the <code class="highlighter-rouge">property</code> can be run (sometimes useful to target error cases)</li>
+  <li>an <code class="highlighter-rouge">invariant</code> which is a function from a number of <code class="highlighter-rouge">generators</code> to a <code class="highlighter-rouge">step</code> performing whatever side effect and assertions necessary</li>
 </ul>
 
-<p>The number of generators is defined in the <code class="highlighter-rouge">action</code> type:</p>
+<p>The number of generators is defined in the <code class="highlighter-rouge">property</code> type:</p>
 <ul>
-  <li><code class="highlighter-rouge">Action0</code> an action which accepts a function from <code class="highlighter-rouge">() =&gt; Step</code></li>
-  <li><code class="highlighter-rouge">Action1[A]</code> an action which accepts a function from <code class="highlighter-rouge">() ⇒ A =&gt; Step</code></li>
-  <li><code class="highlighter-rouge">Action2[A, B]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B) =&gt; Step</code></li>
-  <li><code class="highlighter-rouge">Action3[A, B, C]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B, () =&gt; C) =&gt; Step</code></li>
-  <li>up to <code class="highlighter-rouge">Action6[A, B, C, D, E, F]</code></li>
+  <li><code class="highlighter-rouge">Property0</code> an action which accepts a function from <code class="highlighter-rouge">() =&gt; Step</code></li>
+  <li><code class="highlighter-rouge">Property1[A]</code> an action which accepts a function from <code class="highlighter-rouge">() ⇒ A =&gt; Step</code></li>
+  <li><code class="highlighter-rouge">Property2[A, B]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B) =&gt; Step</code></li>
+  <li><code class="highlighter-rouge">Property3[A, B, C]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B, () =&gt; C) =&gt; Step</code></li>
+  <li>up to <code class="highlighter-rouge">Property6[A, B, C, D, E, F]</code></li>
 </ul>
 
 <p>It is of course not required to call a generator when building a <code class="highlighter-rouge">Step</code>.</p>
 
-<p><em>However it is required to have the same <code class="highlighter-rouge">Action</code> type for all actions within a <code class="highlighter-rouge">model</code> definition.</em></p>
+<p><em>However it is required to have the same <code class="highlighter-rouge">Property</code> type for all properties within a <code class="highlighter-rouge">model</code> definition.</em></p>
 
 <p>Having <code class="highlighter-rouge">generators</code> as input enables the <code class="highlighter-rouge">action</code> to introduce some randomness in its effect.</p>
 
@@ -71,13 +63,34 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   genFct = () ⇒ rc.seededRandom.nextInt(10000))
 </code></pre></div></div>
 
+<p>This approach also supports embedding <code class="highlighter-rouge">Scalacheck's Gen</code> into <code class="highlighter-rouge">ValueGenerator</code> by propagating the seed.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">org.scalacheck.Gen</span>
+<span class="k">import</span> <span class="nn">org.scalacheck.rng.Seed</span>
+
+<span class="k">sealed</span> <span class="k">trait</span> <span class="nc">Coin</span>
+<span class="k">case</span> <span class="k">object</span> <span class="nc">Head</span> <span class="k">extends</span> <span class="nc">Coin</span>
+<span class="k">case</span> <span class="k">object</span> <span class="nc">Tail</span> <span class="k">extends</span> <span class="nc">Coin</span>
+
+<span class="k">object</span> <span class="nc">ScalacheckExample</span> <span class="o">{</span>
+
+  <span class="k">def</span> <span class="n">coinGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Coin</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+    <span class="n">name</span> <span class="k">=</span> <span class="s">"a Coin"</span><span class="o">,</span>
+    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="o">{</span>
+      <span class="k">val</span> <span class="n">params</span> <span class="k">=</span> <span class="nc">Gen</span><span class="o">.</span><span class="nc">Parameters</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">withInitialSeed</span><span class="o">(</span><span class="n">rc</span><span class="o">.</span><span class="n">seed</span><span class="o">)</span>
+      <span class="k">val</span> <span class="n">coin</span> <span class="k">=</span> <span class="k">for</span> <span class="o">(</span><span class="n">c</span> <span class="k">←</span> <span class="nc">Gen</span><span class="o">.</span><span class="n">oneOf</span><span class="o">[</span><span class="kt">Coin</span><span class="o">](</span><span class="nc">Head</span><span class="o">,</span> <span class="nc">Tail</span><span class="o">))</span> <span class="k">yield</span> <span class="n">c</span>
+      <span class="n">coin</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="nc">Seed</span><span class="o">(</span><span class="n">rc</span><span class="o">.</span><span class="n">seed</span><span class="o">)).</span><span class="n">get</span>
+    <span class="o">}</span>
+  <span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
 <p>A <code class="highlighter-rouge">run</code> terminates successfully if the max number of transition reached, this means we were not able to break any invariants.</p>
 
 <p>A <code class="highlighter-rouge">run</code> fails if one the following conditions is met:</p>
 <ul>
-  <li>a <code class="highlighter-rouge">post-condition</code> was broken</li>
-  <li>an error is thrown from an <code class="highlighter-rouge">action</code></li>
-  <li>no <code class="highlighter-rouge">actions</code> with valid <code class="highlighter-rouge">pre-conditions</code> can be found, this is generally a sign of a malformed <code class="highlighter-rouge">model</code></li>
+  <li>an error is thrown from a <code class="highlighter-rouge">property</code></li>
+  <li>no <code class="highlighter-rouge">properties</code> with a valid <code class="highlighter-rouge">pre-condition</code> can be found, this is generally a sign of a malformed <code class="highlighter-rouge">model</code></li>
   <li>a <code class="highlighter-rouge">generator</code> throws an error</li>
 </ul>
 
@@ -89,8 +102,8 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
 
 <ul>
   <li>an entry point</li>
-  <li>a ping action printing a random String</li>
-  <li>a pong action printing a random Int</li>
+  <li>a ping <code class="highlighter-rouge">property</code> printing a random String</li>
+  <li>a pong <code class="highlighter-rouge">property</code> printing a random Int</li>
   <li>an exit point</li>
 </ul>
 
@@ -99,7 +112,7 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
 <ul>
   <li>there is 50% chance to start with ping or pong following the entry point</li>
   <li>there is 90% to go from a ping/pong to a pong/ping</li>
-  <li>there is no loop from any action</li>
+  <li>there is no loop from any <code class="highlighter-rouge">property</code></li>
   <li>there is a 10% chance to exit the game after a ping or a pong</li>
 </ul>
 
@@ -118,33 +131,29 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
 
 <span class="k">val</span> <span class="n">myModelRunner</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">integerGen</span><span class="o">)</span> <span class="o">{</span>
 
-  <span class="k">val</span> <span class="n">entryPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="k">val</span> <span class="n">entryPoint</span> <span class="k">=</span> <span class="nc">Property2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"Entry point"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"Start game"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="n">invariant</span> <span class="k">=</span> <span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"Start game"</span><span class="o">)</span>
   <span class="o">)</span>
 
-  <span class="k">val</span> <span class="n">pingString</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="k">val</span> <span class="n">pingString</span> <span class="k">=</span> <span class="nc">Property2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"Ping String"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Ping ${stringGen()}"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="n">invariant</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Ping ${stringGen()}"</span><span class="o">)</span>
   <span class="o">)</span>
 
-  <span class="k">val</span> <span class="n">pongInt</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="k">val</span> <span class="n">pongInt</span> <span class="k">=</span> <span class="nc">Property2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"Pong Int"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Pong ${intGen()}"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="n">invariant</span> <span class="k">=</span> <span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="n">s</span><span class="s">"Pong ${intGen()}"</span><span class="o">)</span>
   <span class="o">)</span>
 
-  <span class="k">val</span> <span class="n">exitPoint</span> <span class="k">=</span> <span class="nc">Action2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
+  <span class="k">val</span> <span class="n">exitPoint</span> <span class="k">=</span> <span class="nc">Property2</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"Exit point"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">(</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">intGen</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"End of game"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="nc">Nil</span>
+    <span class="n">invariant</span> <span class="k">=</span> <span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">⇒</span> <span class="n">print_step</span><span class="o">(</span><span class="s">"End of game"</span><span class="o">)</span>
   <span class="o">)</span>
 
   <span class="nc">Model</span><span class="o">(</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"ping pong model"</span><span class="o">,</span>
-    <span class="n">startingAction</span> <span class="k">=</span> <span class="n">entryPoint</span><span class="o">,</span>
+    <span class="n">entryPoint</span> <span class="k">=</span> <span class="n">entryPoint</span><span class="o">,</span>
     <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
       <span class="n">entryPoint</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pingString</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
       <span class="n">pingString</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pongInt</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">exitPoint</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
@@ -220,11 +229,15 @@ Scenario("ping pong check) {
 
 </code></pre></div></div>
 
+<p>// TODO talk about fixing seed to fix generators and transitions</p>
+
 <h2 id="examples">Examples</h2>
 
 <p>Now that we have an understanding of the concepts and their semantics, it is time to dive into some concrete examples!</p>
 
 <h3 id="reversing-strings-one-generator-and-one-transition">Reversing strings (one generator and one transition)</h3>
+
+<p>// TODO move this example for the new <code class="highlighter-rouge">for_all</code> DSL</p>
 
 <p>Below is an example presenting the current <code class="highlighter-rouge">cornichon-check</code> API by checking the contract of HTTP API reversing twice a string.</p>
 
@@ -255,29 +268,26 @@ Scenario("ping pong check) {
     <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String (20)"</span><span class="o">,</span>
     <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
 
-  <span class="k">private</span> <span class="k">val</span> <span class="n">generateStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="n">generateStringAction</span> <span class="k">=</span> <span class="nc">Property1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"generate and save string"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="n">stringGenerator</span> <span class="k">⇒</span> <span class="o">{</span>
-      <span class="k">val</span> <span class="n">randomString</span> <span class="k">=</span> <span class="n">stringGenerator</span><span class="o">()</span>
-      <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSyncE</span><span class="o">(</span><span class="n">s</span><span class="s">"save random string '$randomString'"</span><span class="o">,</span> <span class="k">_</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">,</span> <span class="n">randomString</span><span class="o">))</span>
-    <span class="o">},</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+    <span class="n">preCondition</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isAbsent</span><span class="o">,</span>
+    <span class="n">invariant</span> <span class="k">=</span> <span class="n">stringGenerator</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+      <span class="nc">Given</span> <span class="n">I</span> <span class="n">save</span><span class="o">(</span><span class="s">"random-input"</span> <span class="o">-&gt;</span> <span class="n">stringGenerator</span><span class="o">())</span>
+    <span class="o">})</span>
 
-  <span class="k">private</span> <span class="k">val</span> <span class="n">reverseStringAction</span> <span class="k">=</span> <span class="nc">Action1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="n">reverseStringAction</span> <span class="k">=</span> <span class="nc">Property1</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span>
     <span class="n">description</span> <span class="k">=</span> <span class="s">"reverse a string twice yields the same value"</span><span class="o">,</span>
-    <span class="n">preConditions</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+    <span class="n">preCondition</span> <span class="k">=</span> <span class="n">session_value</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">).</span><span class="n">isPresent</span><span class="o">,</span>
+    <span class="n">invariant</span> <span class="k">=</span> <span class="k">_</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
       <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/double-reverse"</span><span class="o">).</span><span class="n">withParams</span><span class="o">(</span><span class="s">"word"</span> <span class="o">-&gt;</span> <span class="s">"&lt;random-input&gt;"</span><span class="o">)</span>
       <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
-      <span class="nc">And</span> <span class="n">I</span> <span class="n">save_body</span><span class="o">(</span><span class="s">"reversed-twice-random-input"</span><span class="o">)</span>
-    <span class="o">},</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">session_values</span><span class="o">(</span><span class="s">"random-input"</span><span class="o">,</span> <span class="s">"reversed-twice-random-input"</span><span class="o">).</span><span class="n">areEquals</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+      <span class="nc">Then</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"&lt;random-input&gt;"</span><span class="o">)</span>
+    <span class="o">})</span>
 
   <span class="k">val</span> <span class="n">doubleReverseModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="n">stringGen</span><span class="o">)(</span>
     <span class="nc">Model</span><span class="o">(</span>
       <span class="n">description</span> <span class="k">=</span> <span class="s">"reversing a string twice yields same value"</span><span class="o">,</span>
-      <span class="n">startingAction</span> <span class="k">=</span> <span class="n">generateStringAction</span><span class="o">,</span>
+      <span class="n">entryPoint</span> <span class="k">=</span> <span class="n">generateStringAction</span><span class="o">,</span>
       <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
         <span class="n">generateStringAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">1.0</span><span class="o">,</span> <span class="n">reverseStringAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
       <span class="o">)</span>
@@ -290,52 +300,52 @@ Scenario("ping pong check) {
 <p>To understand what is going on, we can have a look at the logs produced by this scenario.</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'reverse a string twice yields the same results'
-- reverse a string twice yields the same results (2087 millis)
+- reverse a string twice yields the same results (1810 millis)
 
    Scenario : reverse a string twice yields the same results
       main steps
-      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1541177654821
+      Checking model 'reversing a string twice yields same value' with maxNumberOfRuns=5 and maxNumberOfTransitions=1 and seed=1542020784226
          Run #1
-            generate and save string ['an alphanumeric String (20)' -&gt; 'zCFAPwANfohFhQx4h6Pl']
-            save random string 'zCFAPwANfohFhQx4h6Pl' (6 millis)
+            generate and save string ['an alphanumeric String (20)' -&gt; 'AmAE409fbMaOzBm5j5Ur']
+            Given I add value 'AmAE409fbMaOzBm5j5Ur' to session under key 'random-input'  (1 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -&gt; 'zCFAPwANfohFhQx4h6Pl' (1328 millis)
-            Then assert status is '200' (2 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (23 millis)
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'AmAE409fbMaOzBm5j5Ur' (1245 millis)
+            Then assert status is '200' (1 millis)
+            Then assert response body is AmAE409fbMaOzBm5j5Ur (27 millis)
          Run #1 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #2
-            generate and save string ['an alphanumeric String (20)' -&gt; 'jfQadaz86jXxP7AoBNST']
-            save random string 'jfQadaz86jXxP7AoBNST' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -&gt; 'kB0GxeJDk8BhLIuwTx6g']
+            Given I add value 'kB0GxeJDk8BhLIuwTx6g' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -&gt; 'jfQadaz86jXxP7AoBNST' (6 millis)
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'kB0GxeJDk8BhLIuwTx6g' (6 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is kB0GxeJDk8BhLIuwTx6g (0 millis)
          Run #2 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #3
-            generate and save string ['an alphanumeric String (20)' -&gt; 'O6SVBD9CQxUXN2Ag1mL3']
-            save random string 'O6SVBD9CQxUXN2Ag1mL3' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -&gt; 'eZsDi9vG2RHAMpxaRf6P']
+            Given I add value 'eZsDi9vG2RHAMpxaRf6P' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -&gt; 'O6SVBD9CQxUXN2Ag1mL3' (5 millis)
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'eZsDi9vG2RHAMpxaRf6P' (5 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is eZsDi9vG2RHAMpxaRf6P (0 millis)
          Run #3 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #4
-            generate and save string ['an alphanumeric String (20)' -&gt; '0nbLBgwP4eE9QqOeCbOn']
-            save random string '0nbLBgwP4eE9QqOeCbOn' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -&gt; 'FztFcP9NYQtSlpuBAxfP']
+            Given I add value 'FztFcP9NYQtSlpuBAxfP' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -&gt; '0nbLBgwP4eE9QqOeCbOn' (4 millis)
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'FztFcP9NYQtSlpuBAxfP' (4 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is FztFcP9NYQtSlpuBAxfP (0 millis)
          Run #4 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
          Run #5
-            generate and save string ['an alphanumeric String (20)' -&gt; '1RgTnx5ohrjhnZHKDHZO']
-            save random string '1RgTnx5ohrjhnZHKDHZO' (0 millis)
+            generate and save string ['an alphanumeric String (20)' -&gt; 'xkJgU8rlLeArwXRnsoAQ']
+            Given I add value 'xkJgU8rlLeArwXRnsoAQ' to session under key 'random-input'  (0 millis)
             reverse a string twice yields the same value
-            Given I POST /double-reverse with query parameters 'word' -&gt; '1RgTnx5ohrjhnZHKDHZO' (4 millis)
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'xkJgU8rlLeArwXRnsoAQ' (4 millis)
             Then assert status is '200' (0 millis)
-            And I save path '$' from body to key 'reversed-twice-random-input' (0 millis)
+            Then assert response body is xkJgU8rlLeArwXRnsoAQ (0 millis)
          Run #5 - End reached on action 'reverse a string twice yields the same value' after 1 transitions
-      Check block succeeded (2002 millis)
+      Check block succeeded (1808 millis)
 </code></pre></div></div>
 
 <p>The logs show that:</p>
@@ -344,7 +354,7 @@ Scenario("ping pong check) {
   <li>each run called <code class="highlighter-rouge">generateStringAction</code> followed by <code class="highlighter-rouge">reverseStringAction</code> which is the only transition defined</li>
   <li>each run stopped because no other transitions are left to explore from <code class="highlighter-rouge">reverseStringAction</code></li>
   <li>the string generator has been called for each run</li>
-  <li>no post-condition has been broken</li>
+  <li>no invariants has been broken</li>
 </ul>
 
 <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse">here</a>.</p>
@@ -379,179 +389,200 @@ Scenario("ping pong check) {
 
   <span class="c1">//Model definition usually in another trait
 </span>
-  <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
-    <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"payment accepted"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+   <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinAction</span> <span class="k">=</span> <span class="nc">Property0</span><span class="o">(</span>
+     <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin"</span><span class="o">,</span>
+     <span class="n">invariant</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+       <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">)</span>
+       <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+       <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"payment accepted"</span><span class="o">)</span>
+     <span class="o">})</span>
 
-  <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinBlockedAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
-    <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin is a blocked"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"payment refused"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+   <span class="k">private</span> <span class="k">val</span> <span class="n">pushCoinBlockedAction</span> <span class="k">=</span> <span class="nc">Property0</span><span class="o">(</span>
+     <span class="n">description</span> <span class="k">=</span> <span class="s">"push a coin is a blocked"</span><span class="o">,</span>
+     <span class="n">invariant</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+       <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/push-coin"</span><span class="o">)</span>
+       <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span>
+       <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"payment refused"</span><span class="o">)</span>
+     <span class="o">})</span>
 
-  <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughOkAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
-    <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through ok"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"door turns"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+   <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughOkAction</span> <span class="k">=</span> <span class="nc">Property0</span><span class="o">(</span>
+     <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through ok"</span><span class="o">,</span>
+     <span class="n">invariant</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+       <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">)</span>
+       <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+       <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"door turns"</span><span class="o">)</span>
+     <span class="o">})</span>
 
-  <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughBlockedAction</span> <span class="k">=</span> <span class="nc">Action0</span><span class="o">(</span>
-    <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through blocked"</span><span class="o">,</span>
-    <span class="n">effect</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">),</span>
-    <span class="n">postConditions</span> <span class="k">=</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span> <span class="o">::</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"door blocked"</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+   <span class="k">private</span> <span class="k">val</span> <span class="n">walkThroughBlockedAction</span> <span class="k">=</span> <span class="nc">Property0</span><span class="o">(</span>
+     <span class="n">description</span> <span class="k">=</span> <span class="s">"walk through blocked"</span><span class="o">,</span>
+     <span class="n">invariant</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nc">Attach</span> <span class="o">{</span>
+       <span class="nc">Given</span> <span class="n">I</span> <span class="n">post</span><span class="o">(</span><span class="s">"/walk-through"</span><span class="o">)</span>
+       <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">400</span><span class="o">)</span>
+       <span class="nc">And</span> <span class="n">assert</span> <span class="n">body</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="s">"door blocked"</span><span class="o">)</span>
+     <span class="o">})</span>
 
-  <span class="k">val</span> <span class="n">turnstileModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">makeNoGen</span><span class="o">(</span>
-    <span class="nc">Model</span><span class="o">(</span>
-      <span class="n">description</span> <span class="k">=</span> <span class="s">"Turnstile acts according to model"</span><span class="o">,</span>
-      <span class="n">startingAction</span> <span class="k">=</span> <span class="n">pushCoinAction</span><span class="o">,</span>
-      <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
-        <span class="n">pushCoinAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">walkThroughOkAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">pushCoinBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
-        <span class="n">pushCoinBlockedAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">walkThroughOkAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">pushCoinBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
-        <span class="n">walkThroughOkAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.7</span><span class="o">,</span> <span class="n">pushCoinAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.3</span><span class="o">,</span> <span class="n">walkThroughBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
-        <span class="n">walkThroughBlockedAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pushCoinAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">walkThroughBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
-      <span class="o">)</span>
-    <span class="o">)</span>
-  <span class="o">)</span>
+   <span class="k">val</span> <span class="n">turnstileModel</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">makeNoGen</span><span class="o">(</span>
+     <span class="nc">Model</span><span class="o">(</span>
+       <span class="n">description</span> <span class="k">=</span> <span class="s">"Turnstile acts according to model"</span><span class="o">,</span>
+       <span class="n">entryPoint</span> <span class="k">=</span> <span class="n">pushCoinAction</span><span class="o">,</span>
+       <span class="n">transitions</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span>
+         <span class="n">pushCoinAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">walkThroughOkAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">pushCoinBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+         <span class="n">pushCoinBlockedAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">walkThroughOkAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">pushCoinBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+         <span class="n">walkThroughOkAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.7</span><span class="o">,</span> <span class="n">pushCoinAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.3</span><span class="o">,</span> <span class="n">walkThroughBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">),</span>
+         <span class="n">walkThroughBlockedAction</span> <span class="o">-&gt;</span> <span class="o">((</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">pushCoinAction</span><span class="o">)</span> <span class="o">::</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">walkThroughBlockedAction</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+       <span class="o">)</span>
+     <span class="o">)</span>
+   <span class="o">)</span>
 <span class="o">}</span>
 
 </code></pre></div></div>
 
 <p>Again let’s have a look at the logs to see how things go.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
-Starting scenario 'Turnstile acts according to model'
-- Turnstile acts according to model (59 millis)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'Turnstile acts according to model'
+- Turnstile acts according to model (55 millis)
 
    Scenario : Turnstile acts according to model
       main steps
-      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=1 and maxNumberOfTransitions=10 and seed=1541225049797
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=1 and maxNumberOfTransitions=10 and seed=1542021399582
          Run #1
             push a coin
             Given I POST /push-coin (9 millis)
-            walk through ok
-            Given I POST /walk-through (4 millis)
-            push a coin
-            Given I POST /push-coin (4 millis)
-            walk through ok
-            Given I POST /walk-through (3 millis)
-            walk through blocked
-            Given I POST /walk-through (3 millis)
-            walk through blocked
-            Given I POST /walk-through (3 millis)
-            push a coin
-            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             push a coin is a blocked
-            Given I POST /push-coin (3 millis)
+            Given I POST /push-coin (5 millis)
+            Then assert status is '400' (0 millis)
+            And assert response body is payment refused (0 millis)
             walk through ok
             Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
             push a coin
             Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             walk through ok
-            Given I POST /walk-through (4 millis)
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            walk through blocked
+            Given I POST /walk-through (3 millis)
+            Then assert status is '400' (0 millis)
+            And assert response body is door blocked (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
          Run #1 - Max transitions number per run reached
-      Check block succeeded (56 millis)
+      Check block succeeded (54 millis)
 </code></pre></div></div>
 
-<p>It is interesting to note that we are executing a single run on purpose, as the server is stateful, the run would share the global state of the turnstile.</p>
+<p>It is interesting to note that we are executing a single run on purpose, as the server is stateful, any subsequent runs would share the global state of the turnstile.</p>
 
 <p>This is an issue because we are starting our model with <code class="highlighter-rouge">pushCoinAction</code> which is always expected to succeed.</p>
 
 <p>Let’s try to the same model with more run to see if it breaks!</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Basic examples of checks:
-Starting scenario 'Turnstile acts according to model'
-- **failed** Turnstile acts according to model (132 millis)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'Turnstile acts according to model'
+- **failed** Turnstile acts according to model (74 millis)
 
   Scenario 'Turnstile acts according to model' failed:
 
   at step:
-  Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
+  Then assert status is '200'
 
   with error(s):
-  A post-condition was broken for `push a coin`
-  caused by:
   expected status code '200' but '400' was received with body:
   "payment refused"
   and with headers:
-  'Date' -&gt; 'Sat, 03 Nov 2018 13:28:14 GMT'
-  and
-  expected result was:
-  '"payment accepted"'
-  but actual result is:
-  '"payment refused"'
-
-  JSON patch between actual result and expected result is :
-  [
-    {
-      "op" : "replace",
-      "path" : "",
-      "value" : "payment refused",
-      "old" : "payment accepted"
-    }
-  ]
+  'Date' -&gt; 'Mon, 12 Nov 2018 11:18:03 GMT'
 
   replay only this scenario with the command:
   testOnly *TurnstileCheck -- "Turnstile acts according to model"
 
    Scenario : Turnstile acts according to model
       main steps
-      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541251694854
+      Checking model 'Turnstile acts according to model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1542021482941
          Run #1
             push a coin
-            Given I POST /push-coin (9 millis)
+            Given I POST /push-coin (11 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             walk through ok
             Given I POST /walk-through (4 millis)
-            push a coin
-            Given I POST /push-coin (4 millis)
-            walk through ok
-            Given I POST /walk-through (4 millis)
-            push a coin
-            Given I POST /push-coin (4 millis)
-            walk through ok
-            Given I POST /walk-through (3 millis)
-            walk through blocked
-            Given I POST /walk-through (4 millis)
-            walk through blocked
-            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
             push a coin
             Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
             walk through ok
             Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
             push a coin
             Given I POST /push-coin (4 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
+            walk through ok
+            Given I POST /walk-through (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is door turns (0 millis)
+            push a coin
+            Given I POST /push-coin (3 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is payment accepted (0 millis)
          Run #1 - Max transitions number per run reached
          Run #2
             push a coin
             Given I POST /push-coin (3 millis)
-            A post-condition was broken for `push a coin`
-            caused by:
+            Then assert status is '200' *** FAILED ***
             expected status code '200' but '400' was received with body:
             "payment refused"
             and with headers:
-            'Date' -&gt; 'Sat, 03 Nov 2018 13:28:14 GMT'
-            and
-            expected result was:
-            '"payment accepted"'
-            but actual result is:
-            '"payment refused"'
-
-            JSON patch between actual result and expected result is :
-            [
-              {
-                "op" : "replace",
-                "path" : "",
-                "value" : "payment refused",
-                "old" : "payment accepted"
-              }
-            ]
+            'Date' -&gt; 'Mon, 12 Nov 2018 11:18:03 GMT'
          Run #2 - Failed
-      Check model block failed  (131 millis)
+      Check model block failed  (74 millis)
 </code></pre></div></div>
 
 <p>Using 2 runs, we found already the problem because the first run finished by introducing a coin.</p>
 
 <p>It is possible to replay exactly this run in a deterministic fashion by using the <code class="highlighter-rouge">seed</code> printed in the logs and feed it to the DSL.</p>
 
-<p><code class="highlighter-rouge">Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1541251694854L))(turnstileModel)</code></p>
+<p><code class="highlighter-rouge">Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1542021482941L))(turnstileModel)</code></p>
 
 <p>This example shows that designing test scenarios with <code class="highlighter-rouge">cornichon-check</code> is sometimes challenging in the case of shared mutable state.</p>
 
@@ -564,7 +595,7 @@ Starting scenario 'Turnstile acts according to model'
 <h2 id="caveats">Caveats</h2>
 
 <ul>
-  <li>all actions must have the same types within a <code class="highlighter-rouge">model</code> definition</li>
+  <li>all <code class="highlighter-rouge">properties</code> must have the same types within a <code class="highlighter-rouge">model</code> definition</li>
   <li>the API has a few rough edges, especially regarding type inference for the <code class="highlighter-rouge">modelRunner</code> definition</li>
   <li>placeholders generating random data such as <code class="highlighter-rouge">&lt;random-string</code> and <code class="highlighter-rouge">random-uuid</code> are not yet using the correct <code class="highlighter-rouge">seed</code></li>
   <li>the max number of <code class="highlighter-rouge">generators</code> is hard-coded to 6</li>
