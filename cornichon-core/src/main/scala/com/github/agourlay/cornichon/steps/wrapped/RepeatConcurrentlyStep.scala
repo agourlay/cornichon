@@ -2,33 +2,32 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.instances.list._
 import cats.syntax.foldable._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-
+import com.github.agourlay.cornichon.core.core.StepResult
 import monix.eval.Task
 import monix.reactive.Observable
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.util.control.NonFatal
 
-case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: FiniteDuration) extends WrapperStep {
+case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: Int, maxTime: FiniteDuration) extends WrapperStep {
+  require(parallelism > 0, "repeat concurrently block must contain a positive 'parallelism' factor")
+  require(times > 0, "repeat concurrently block must contain a positive 'times' factor")
 
-  require(factor > 0, "repeat concurrently block must contain a positive factor")
+  val title = s"Repeat concurrently block '$times' times with parallel factor '$parallelism' and maxTime '$maxTime'"
 
-  val title = s"Repeat concurrently block with factor '$factor' and maxTime '$maxTime'"
-
-  override def run(engine: Engine)(initialRunState: RunState) = {
+  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
     val nestedRunState = initialRunState.nestedContext
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
-    Observable.fromIterable(List.fill(factor)(()))
-      .mapParallelUnordered(factor)(_ ⇒ engine.runSteps(nested, nestedRunState))
+    Observable.fromIterable(List.fill(times)(()))
+      .mapParallelUnordered(parallelism)(_ ⇒ engine.runSteps(nested, nestedRunState))
       .takeUntil(Observable.evalDelayed(maxTime, ()))
       .toListL
       .flatMap { results ⇒
-        if (results.size != factor) {
-          val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyTimeout(factor, results.size))
+        if (results.size != times) {
+          val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyTimeout(times, results.size))
           Task.now((nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep)))
         } else {
           val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
@@ -37,9 +36,9 @@ case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: Fini
             val successStepsRun = results.collect { case (s, r @ Right(_)) ⇒ (s, r) }
             val allRunStates = successStepsRun.map(_._1)
             //TODO all logs should be merged?
-            // all runs were successfull, we pick the first one for the logs
+            // all runs were successful, we pick the first one for the logs
             val firstStateLog = allRunStates.head.logs
-            val updatedLogs = successTitleLog(initialDepth) +: firstStateLog :+ SuccessLogInstruction(s"Repeat concurrently block with factor '$factor' succeeded", initialDepth, Some(executionTime))
+            val updatedLogs = successTitleLog(initialDepth) +: firstStateLog :+ SuccessLogInstruction(s"Repeat concurrently block succeeded", initialDepth, Some(executionTime))
             // TODO merge all sessions together - require diffing Sessions or it produces a huge map full of duplicate as they all started from the same.
             val updatedSession = allRunStates.head.session
             // merge all cleanups steps
@@ -48,7 +47,7 @@ case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: Fini
             Task.now((successState, rightDone))
           } {
             case (s, failedXor) ⇒
-              val ratio = s"'${failedStepRuns.size}/$factor' run(s)"
+              val ratio = s"'${failedStepRuns.size}/$times' run(s)"
               val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Repeat concurrently block failed for $ratio", initialDepth)
               Task.now((initialRunState.mergeNested(s, updatedLogs), failedXor))
           }
@@ -61,8 +60,8 @@ case class RepeatConcurrentlyStep(nested: List[Step], factor: Int, maxTime: Fini
   }
 }
 
-case class RepeatConcurrentlyTimeout(factor: Int, success: Int) extends CornichonError {
-  lazy val baseErrorMessage = s"Repeat concurrently block did not reach completion in time: $success/$factor finished"
+case class RepeatConcurrentlyTimeout(times: Int, success: Int) extends CornichonError {
+  lazy val baseErrorMessage = s"Repeat concurrently block did not reach completion in time: $success/$times finished"
 }
 
 case class RepeatConcurrentlyError(cause: Throwable) extends CornichonError {
