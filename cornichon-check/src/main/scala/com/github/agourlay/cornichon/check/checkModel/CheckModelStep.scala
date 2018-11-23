@@ -20,11 +20,8 @@ case class CheckModelStep[A, B, C, D, E, F](
     modelRunner: ModelRunner[A, B, C, D, E, F],
     withSeed: Option[Long]) extends WrapperStep {
 
-  private val randomContext = {
-    val seed = withSeed.getOrElse(System.currentTimeMillis())
-    val rd = new Random(new java.util.Random(seed))
-    RandomContext(seed, rd)
-  }
+  private val initialSeed = withSeed.getOrElse(System.currentTimeMillis())
+  private val randomContext = RandomContext(new Random(new java.util.Random(initialSeed)))
 
   private val genA = modelRunner.generatorA(randomContext)
   private val genB = modelRunner.generatorB(randomContext)
@@ -37,7 +34,7 @@ case class CheckModelStep[A, B, C, D, E, F](
 
   private val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
 
-  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions and seed=${randomContext.seed}"
+  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions and seed=$initialSeed"
 
   private def repeatModelOnSuccess(runNumber: Int)(engine: Engine, initialRunState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)

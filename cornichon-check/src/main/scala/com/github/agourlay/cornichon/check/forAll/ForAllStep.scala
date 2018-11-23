@@ -11,11 +11,8 @@ import scala.util.Random
 
 class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, withSeed: Option[Long] = None)(ga: RandomContext ⇒ Generator[A], gb: RandomContext ⇒ Generator[B], gc: RandomContext ⇒ Generator[C], gd: RandomContext ⇒ Generator[D], ge: RandomContext ⇒ Generator[E], gf: RandomContext ⇒ Generator[F])(f: A ⇒ B ⇒ C ⇒ D ⇒ E ⇒ F ⇒ Step) extends WrapperStep {
 
-  private val randomContext = {
-    val seed = withSeed.getOrElse(System.currentTimeMillis())
-    val rd = new Random(new java.util.Random(seed))
-    RandomContext(seed, rd)
-  }
+  private val initialSeed = withSeed.getOrElse(System.currentTimeMillis())
+  private val randomContext = RandomContext(new Random(new java.util.Random(initialSeed)))
 
   val genA = ga(randomContext)
   val genB = gb(randomContext)
@@ -27,7 +24,7 @@ class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, wi
   val concreteGens = List(genA, genB, genC, genD, genE, genF).filter(_ != NoValueGenerator)
 
   val baseTitle = s"ForAll '${concreteGens.map(_.name).mkString(",")}' check '$description'"
-  val title = s"$baseTitle with maxNumberOfRuns=$maxNumberOfRuns and seed=${randomContext.seed}"
+  val title = s"$baseTitle with maxNumberOfRuns=$maxNumberOfRuns and seed=$initialSeed"
 
   private def repeatModelOnSuccess(runNumber: Int)(engine: Engine, initialRunState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)

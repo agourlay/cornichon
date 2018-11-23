@@ -225,6 +225,7 @@ lazy val check =
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.scalatest % Test,
+        library.scalacheck % Test,
         library.http4sServer % Test,
         library.http4sCirce % Test,
         library.http4sDsl % Test

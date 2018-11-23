@@ -37,14 +37,15 @@ case object Tail extends Coin
 
 object ScalacheckExample {
 
-  def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
-    name = "a Coin",
-    genFct = () ⇒ {
-      val params = Gen.Parameters.default.withInitialSeed(rc.seed)
-      val coin = for (c ← Gen.oneOf[Coin](Head, Tail)) yield c
-      coin(params, Seed(rc.seed)).get
-    }
-  )
+    def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
+      name = "a Coin",
+      genFct = () ⇒ {
+        val nextSeed = rc.seededRandom.nextLong()
+        val params = Gen.Parameters.default.withInitialSeed(nextSeed)
+        val coin = Gen.oneOf[Coin](Head, Tail)
+        coin(params, Seed(nextSeed)).get
+      }
+    )
 }
 ```
 
