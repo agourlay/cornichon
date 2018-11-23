@@ -15,7 +15,11 @@ At the center of property based testing lies the capacity to generate arbitrary 
 
 A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Ints.
 
-```
+There are two concrete instances of `generators`:
+- `ValueGenerator`
+- `ValueFromSessionGenerator` which provide additionally the `Session`
+
+```scala
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
   genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
@@ -25,7 +29,7 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   genFct = () ⇒ rc.seededRandom.nextInt(10000))
 ```
 
-This approach also supports embedding `Scalacheck's Gen` into `ValueGenerator` by propagating the seed.
+This approach also supports embedding `Scalacheck's Gen` into a `Generator` by propagating the initial seed.
 
 ```scala
 import org.scalacheck.Gen
@@ -37,19 +41,22 @@ case object Tail extends Coin
 
 object ScalacheckExample {
 
-    def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
-      name = "a Coin",
-      genFct = () ⇒ {
-        val nextSeed = rc.seededRandom.nextLong()
-        val params = Gen.Parameters.default.withInitialSeed(nextSeed)
-        val coin = Gen.oneOf[Coin](Head, Tail)
-        coin(params, Seed(nextSeed)).get
-      }
-    )
+  def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
+    name = "a Coin",
+    genFct = () ⇒ {
+      val nextSeed = rc.seededRandom.nextLong()
+      val params = Gen.Parameters.default.withInitialSeed(nextSeed)
+      val coin = Gen.oneOf[Coin](Head, Tail)
+      coin(params, Seed(nextSeed)).get
+    }
+  )
+
 }
 ```
 
-## First flavour - for_all
+Those are `ValueGenerators`
+
+## First flavour - ∀
 
 The first flavour follows the classical approach found in many testing libraries. That is for any values from a set of generators, we will validate that a given invariant holds.
 

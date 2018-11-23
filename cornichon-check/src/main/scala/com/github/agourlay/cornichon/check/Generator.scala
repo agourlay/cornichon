@@ -4,11 +4,7 @@ import com.github.agourlay.cornichon.core.Session
 
 trait Generator[A] {
   def name: String
-
   def value(session: Session): () ⇒ A
-
-  // FIXME: don't use context bound for now as it would make the type definition crazy in the engine
-  def show(a: A): String = a.toString
 }
 
 trait NoValue
@@ -18,13 +14,13 @@ case object NoValue extends NoValue {
 
 case object NoValueGenerator extends Generator[NoValue] {
   val name = "NoValueGenerator"
-  def value(session: Session) = () ⇒ NoValue
+  def value(session: Session): () ⇒ NoValue.type = () ⇒ NoValue
 }
 
 case class ValueGenerator[A](name: String, genFct: () ⇒ A) extends Generator[A] {
-  override def value(session: Session) = genFct
+  override def value(session: Session): () ⇒ A = genFct
 }
 
 case class ValueFromSessionGenerator[A](name: String, genFct: Session ⇒ A) extends Generator[A] {
-  override def value(session: Session) = () ⇒ genFct(session)
+  override def value(session: Session): () ⇒ A = () ⇒ genFct(session)
 }
