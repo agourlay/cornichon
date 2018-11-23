@@ -270,12 +270,12 @@
 
 <p>Which gives us the following scenario</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-Scenario("ping pong check) {
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nc">Scenario</span><span class="o">(</span><span class="err">"</span><span class="n">ping</span> <span class="n">pong</span> <span class="n">check</span><span class="o">)</span> <span class="o">{</span>
 
-  Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(myModelRunner)
+  <span class="nc">Given</span> <span class="n">I</span> <span class="n">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">2</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">10</span><span class="o">)(</span><span class="n">myModelRunner</span><span class="o">)</span>
 
-}
+<span class="o">}</span>
 </code></pre></div></div>
 
 <p>Running this scenario outputs:</p>
@@ -338,7 +338,16 @@ Scenario("ping pong check) {
 
 </code></pre></div></div>
 
-<p>// TODO talk about fixing seed to fix generators and transitions</p>
+<p>The logs give us:</p>
+<ul>
+  <li>a detailed description of the runs execution</li>
+  <li>the seed used to create the <code class="highlighter-rouge">Generators</code></li>
+</ul>
+
+<p>It is possible to replay exactly the same run by passing the seed as a parameter.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nc">Given</span> <span class="n">I</span> <span class="n">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">2</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">10</span><span class="o">,</span> <span class="n">seed</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="mi">1542986106586</span><span class="o">))(</span><span class="n">myModelRunner</span><span class="o">)</span>
+</code></pre></div></div>
 
 <h3 id="examples">Examples</h3>
 
