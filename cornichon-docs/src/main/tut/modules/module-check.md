@@ -17,7 +17,7 @@ A `generator` is simply a function that accepts a `RandomContext` which is propa
 
 There are two concrete instances of `generators`:
 - `ValueGenerator`
-- `ValueFromSessionGenerator` which provide additionally the `Session`
+- `ValueFromSessionGenerator` which provides additionally the `Session`
 
 ```scala
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
@@ -39,22 +39,16 @@ sealed trait Coin
 case object Head extends Coin
 case object Tail extends Coin
 
-object ScalacheckExample {
-
-  def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
-    name = "a Coin",
-    genFct = () ⇒ {
-      val nextSeed = rc.seededRandom.nextLong()
-      val params = Gen.Parameters.default.withInitialSeed(nextSeed)
-      val coin = Gen.oneOf[Coin](Head, Tail)
-      coin(params, Seed(nextSeed)).get
-    }
-  )
-
-}
+def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
+  name = "a Coin",
+  genFct = () ⇒ {
+    val nextSeed = rc.seededRandom.nextLong()
+    val params = Gen.Parameters.default.withInitialSeed(nextSeed)
+    val coin = Gen.oneOf[Coin](Head, Tail)
+    coin(params, Seed(nextSeed)).get
+  }
+)
 ```
-
-Those are `ValueGenerators`
 
 ## First flavour - ∀
 
