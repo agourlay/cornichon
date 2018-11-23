@@ -10,16 +10,22 @@
 
 <p>A <code class="highlighter-rouge">generator</code> is simply a function that accepts a <code class="highlighter-rouge">RandomContext</code> which is propagated throughout the execution, for instance below is an example generating Strings and Ints.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-  name = "an alphanumeric String (20)",
-  genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+<p>There are two concrete instances of <code class="highlighter-rouge">generators</code>:</p>
+<ul>
+  <li><code class="highlighter-rouge">ValueGenerator</code></li>
+  <li><code class="highlighter-rouge">ValueFromSessionGenerator</code> which provides additionally the <code class="highlighter-rouge">Session</code></li>
+</ul>
 
-def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-  name = "integer",
-  genFct = () ⇒ rc.seededRandom.nextInt(10000))
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+  <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String (20)"</span><span class="o">,</span>
+  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+
+<span class="k">def</span> <span class="n">integerGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+  <span class="n">name</span> <span class="k">=</span> <span class="s">"integer"</span><span class="o">,</span>
+  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
 </code></pre></div></div>
 
-<p>This approach also supports embedding <code class="highlighter-rouge">Scalacheck's Gen</code> into <code class="highlighter-rouge">ValueGenerator</code> by propagating the seed.</p>
+<p>This approach also supports embedding <code class="highlighter-rouge">Scalacheck's Gen</code> into a <code class="highlighter-rouge">Generator</code> by propagating the initial seed.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">org.scalacheck.Gen</span>
 <span class="k">import</span> <span class="nn">org.scalacheck.rng.Seed</span>
@@ -28,21 +34,18 @@ def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
 <span class="k">case</span> <span class="k">object</span> <span class="nc">Head</span> <span class="k">extends</span> <span class="nc">Coin</span>
 <span class="k">case</span> <span class="k">object</span> <span class="nc">Tail</span> <span class="k">extends</span> <span class="nc">Coin</span>
 
-<span class="k">object</span> <span class="nc">ScalacheckExample</span> <span class="o">{</span>
-
-    <span class="k">def</span> <span class="n">coinGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Coin</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
-      <span class="n">name</span> <span class="k">=</span> <span class="s">"a Coin"</span><span class="o">,</span>
-      <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="o">{</span>
-        <span class="k">val</span> <span class="n">nextSeed</span> <span class="k">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextLong</span><span class="o">()</span>
-        <span class="k">val</span> <span class="n">params</span> <span class="k">=</span> <span class="nc">Gen</span><span class="o">.</span><span class="nc">Parameters</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">withInitialSeed</span><span class="o">(</span><span class="n">nextSeed</span><span class="o">)</span>
-        <span class="k">val</span> <span class="n">coin</span> <span class="k">=</span> <span class="nc">Gen</span><span class="o">.</span><span class="n">oneOf</span><span class="o">[</span><span class="kt">Coin</span><span class="o">](</span><span class="nc">Head</span><span class="o">,</span> <span class="nc">Tail</span><span class="o">)</span>
-        <span class="n">coin</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="nc">Seed</span><span class="o">(</span><span class="n">nextSeed</span><span class="o">)).</span><span class="n">get</span>
-      <span class="o">}</span>
-    <span class="o">)</span>
-<span class="o">}</span>
+<span class="k">def</span> <span class="n">coinGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Coin</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+  <span class="n">name</span> <span class="k">=</span> <span class="s">"a Coin"</span><span class="o">,</span>
+  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="n">nextSeed</span> <span class="k">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextLong</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">params</span> <span class="k">=</span> <span class="nc">Gen</span><span class="o">.</span><span class="nc">Parameters</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">withInitialSeed</span><span class="o">(</span><span class="n">nextSeed</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">coin</span> <span class="k">=</span> <span class="nc">Gen</span><span class="o">.</span><span class="n">oneOf</span><span class="o">[</span><span class="kt">Coin</span><span class="o">](</span><span class="nc">Head</span><span class="o">,</span> <span class="nc">Tail</span><span class="o">)</span>
+    <span class="n">coin</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="nc">Seed</span><span class="o">(</span><span class="n">nextSeed</span><span class="o">)).</span><span class="n">get</span>
+  <span class="o">}</span>
+<span class="o">)</span>
 </code></pre></div></div>
 
-<h2 id="first-flavour---for_all">First flavour - for_all</h2>
+<h2 id="first-flavour---">First flavour - ∀</h2>
 
 <p>The first flavour follows the classical approach found in many testing libraries. That is for any values from a set of generators, we will validate that a given invariant holds.</p>
 
