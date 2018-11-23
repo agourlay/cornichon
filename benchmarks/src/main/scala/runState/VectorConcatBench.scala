@@ -6,13 +6,13 @@ import scala.collection.immutable.VectorBuilder
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
-@Warmup(iterations = 20)
-@Measurement(iterations = 20)
+@Warmup(iterations = 10)
+@Measurement(iterations = 10)
 @Fork(value = 1, jvmArgsAppend = Array(
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
   "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
-  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"))
+  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true"))
 class VectorConcatBench {
 
   @Param(Array("10", "20", "50", "100", "200"))

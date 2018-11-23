@@ -33,12 +33,13 @@ class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, wi
     if (runNumber > maxNumberOfRuns)
       Task.now((initialRunState, rightDone))
     else {
-      val generatedA = genA.value(initialRunState.session)()
-      val generatedB = genB.value(initialRunState.session)()
-      val generatedC = genC.value(initialRunState.session)()
-      val generatedD = genD.value(initialRunState.session)()
-      val generatedE = genE.value(initialRunState.session)()
-      val generatedF = genF.value(initialRunState.session)()
+      val s = initialRunState.session
+      val generatedA = genA.value(s)()
+      val generatedB = genB.value(s)()
+      val generatedC = genC.value(s)()
+      val generatedD = genD.value(s)()
+      val generatedE = genE.value(s)()
+      val generatedF = genF.value(s)()
 
       val preRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
       val invariantRunState = initialRunState.nestedContext.appendLog(preRunLog)
@@ -49,11 +50,11 @@ class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, wi
           val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
           val failedState = initialRunState.mergeNested(newState).appendLog(postRunLog)
           Task.now((failedState, l))
-        case (newState, Right(_)) ⇒
-          // success case we are mot propagating the Session so runs do not interfere with each-others
-          val nextRunState = initialRunState.appendLogsFrom(newState).prependCleanupStepsFrom(newState)
+        case (newState, _) ⇒
           val postRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
-          repeatModelOnSuccess(runNumber + 1)(engine, nextRunState.appendLog(postRunLog))
+          // success case we are not propagating the Session so runs do not interfere with each-others
+          val nextRunState = initialRunState.appendLogsFrom(newState).appendLog(postRunLog).prependCleanupStepsFrom(newState)
+          repeatModelOnSuccess(runNumber + 1)(engine, nextRunState)
       }
     }
 
