@@ -1,15 +1,11 @@
 package com.github.agourlay.cornichon.check.checkModel
 
-import java.util.concurrent.ConcurrentLinkedQueue
-
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
 import cats.syntax.either._
 import com.github.agourlay.cornichon.check.Generator
-import com.github.agourlay.cornichon.util.Printing
 
-import collection.JavaConverters._
 import scala.util.Random
 
 class CheckModelEngine[A, B, C, D, E, F](
@@ -80,34 +76,16 @@ class CheckModelEngine[A, B, C, D, E, F](
   private def runActionAndValidatePostConditions(engine: Engine, initialRunState: RunState, action: PropertyN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
     val s = initialRunState.session
     // Init Gens
-    val logQueue = new ConcurrentLinkedQueue[(String, String)]
-    val ga = genA.valueWithLog(logQueue, s)
-    val gb = genB.valueWithLog(logQueue, s)
-    val gc = genC.valueWithLog(logQueue, s)
-    val gd = genD.valueWithLog(logQueue, s)
-    val ge = genE.valueWithLog(logQueue, s)
-    val gf = genF.valueWithLog(logQueue, s)
+    val ga = genA.value(s)
+    val gb = genB.value(s)
+    val gc = genC.value(s)
+    val gd = genD.value(s)
+    val ge = genE.value(s)
+    val gf = genF.value(s)
     // Generate effect
     val invariantStep = action.invariantN(ga, gb, gc, gd, ge, gf)
-    invariantStep.run(engine)(initialRunState.resetLogs).flatMap {
-      case (ns, res) ⇒
-        // Generators are called inside the `Steps`, so we need to call them to generate the log
-        val newState = injectActionLogWithGeneratedValue(logQueue, action.description, initialRunState.logs, ns)
-        Task.now(newState -> res)
-    }
-  }
-
-  private def injectActionLogWithGeneratedValue(queue: ConcurrentLinkedQueue[(String, String)], actionDescription: String, previousLogs: Vector[LogInstruction], newState: RunState): RunState = {
-    val valuesLabel = {
-      if (queue.isEmpty) ""
-      else {
-        val generatedValues = queue.asScala.toList.sortBy(_._1)
-        val generatedValuesLog = Printing.printArrowPairs(generatedValues)
-        s" [$generatedValuesLog]"
-      }
-    }
-    val actionNameLog = InfoLogInstruction(s"$actionDescription$valuesLabel", newState.depth)
-    newState.prependLogs(previousLogs :+ actionNameLog)
+    val actionNameLog = InfoLogInstruction(s"${action.description}", initialRunState.depth)
+    invariantStep.run(engine)(initialRunState.appendLog(actionNameLog))
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability

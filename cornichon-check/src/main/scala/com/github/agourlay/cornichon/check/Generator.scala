@@ -1,17 +1,9 @@
 package com.github.agourlay.cornichon.check
 
-import java.util.concurrent.ConcurrentLinkedQueue
-
 import com.github.agourlay.cornichon.core.Session
 
 trait Generator[A] {
   def name: String
-
-  def valueWithLog(logQueue: ConcurrentLinkedQueue[(String, String)], session: Session): () ⇒ A = () ⇒ {
-    val generated = value(session)()
-    logQueue.add((name, show(generated)))
-    generated
-  }
 
   def value(session: Session): () ⇒ A
 
