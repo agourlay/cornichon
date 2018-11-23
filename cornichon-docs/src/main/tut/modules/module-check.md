@@ -48,7 +48,7 @@ object ScalacheckExample {
 }
 ```
 
-## First flavour - ForAll
+## First flavour - for_all
 
 The first flavour follows the classical approach found in many testing libraries. That is for any values from a set of generators, we will validate that a given invariant holds.
 
@@ -67,7 +67,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-class BasicExampleChecks extends CornichonFeature with CheckDsl {
+class StringReverseCheck extends CornichonFeature with CheckDsl {
 
   def feature = Feature("Basic examples of checks") {
 
@@ -94,42 +94,42 @@ To understand what is going on, we can have a look at the logs produced by this 
 
 ```
 Starting scenario 'reverse a string twice yields the same results'
-- reverse a string twice yields the same results (1838 millis)
+- reverse a string twice yields the same results (1848 millis)
 
    Scenario : reverse a string twice yields the same results
       main steps
-      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' with maxNumberOfRuns=5 and seed=1542035406913
-         Run #0 [alphanumeric String (20) -> 3LLR2xRRqM0pUzsKbV1P]
-            Given I POST /double-reverse with query parameters 'word' -> '3LLR2xRRqM0pUzsKbV1P' (1277 millis)
-            Then assert status is '200' (8 millis)
-            Then assert response body is 3LLR2xRRqM0pUzsKbV1P (29 millis)
+      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' with maxNumberOfRuns=5 and seed=1542985803071
          Run #0
-         Run #1 [alphanumeric String (20) -> Wfs4OhcWKhIMjsGYoV01]
-            Given I POST /double-reverse with query parameters 'word' -> 'Wfs4OhcWKhIMjsGYoV01' (6 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is Wfs4OhcWKhIMjsGYoV01 (0 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'vtKxhkCJaVlAOzhdSCwD' (1257 millis)
+            Then assert status is '200' (7 millis)
+            Then assert response body is vtKxhkCJaVlAOzhdSCwD (32 millis)
+         Run #0
          Run #1
-         Run #2 [alphanumeric String (20) -> OOT6irbIkG3b3HBuQ8sj]
-            Given I POST /double-reverse with query parameters 'word' -> 'OOT6irbIkG3b3HBuQ8sj' (5 millis)
+            Given I POST /double-reverse with query parameters 'word' -> '1bmmb2urTfJy59J2gGtI' (5 millis)
             Then assert status is '200' (0 millis)
-            Then assert response body is OOT6irbIkG3b3HBuQ8sj (0 millis)
+            Then assert response body is 1bmmb2urTfJy59J2gGtI (0 millis)
+         Run #1
          Run #2
-         Run #3 [alphanumeric String (20) -> xXY3JzcTf9NCCu8a0uxM]
-            Given I POST /double-reverse with query parameters 'word' -> 'xXY3JzcTf9NCCu8a0uxM' (4 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'Fg3Dzp61as7Pkvvj49ub' (5 millis)
             Then assert status is '200' (0 millis)
-            Then assert response body is xXY3JzcTf9NCCu8a0uxM (0 millis)
+            Then assert response body is Fg3Dzp61as7Pkvvj49ub (0 millis)
+         Run #2
          Run #3
-         Run #4 [alphanumeric String (20) -> ouXR8W5akYsy5WMcvpEi]
-            Given I POST /double-reverse with query parameters 'word' -> 'ouXR8W5akYsy5WMcvpEi' (4 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'bDLbxzMjMgVUP1iRLu4c' (5 millis)
             Then assert status is '200' (0 millis)
-            Then assert response body is ouXR8W5akYsy5WMcvpEi (0 millis)
+            Then assert response body is bDLbxzMjMgVUP1iRLu4c (0 millis)
+         Run #3
          Run #4
-         Run #5 [alphanumeric String (20) -> nNueIFZYHaIMu27XvibM]
-            Given I POST /double-reverse with query parameters 'word' -> 'nNueIFZYHaIMu27XvibM' (4 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'byV6Azexsl1AcdatquSJ' (5 millis)
             Then assert status is '200' (0 millis)
-            Then assert response body is nNueIFZYHaIMu27XvibM (0 millis)
+            Then assert response body is byV6Azexsl1AcdatquSJ (0 millis)
+         Run #4
          Run #5
-      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' block succeeded (1835 millis)
+            Given I POST /double-reverse with query parameters 'word' -> 'pKGqRrbjUV7oMaPJzTJS' (4 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is pKGqRrbjUV7oMaPJzTJS (0 millis)
+         Run #5
+      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' block succeeded (1846 millis)
 ```
 
 The logs show that:
@@ -276,56 +276,60 @@ Running this scenario outputs:
 
 ```
 Starting scenario 'ping pong check'
-- ping pong check (15 millis)
+- ping pong check (10 millis)
 
    Scenario : ping pong check
       main steps
-      Checking model 'ping pong model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1541683429241
+      Checking model 'ping pong model' with maxNumberOfRuns=2 and maxNumberOfTransitions=10 and seed=1542986106586
          Run #1
             Entry point
             Start game
-            Ping String ['an alphanumeric String' -> 'GX2A0MYmkXsjO2wVQwfV']
-            Ping GX2A0MYmkXsjO2wVQwfV
-            Pong Int ['integer' -> '9009']
-            Pong 9009
-            Ping String ['an alphanumeric String' -> 'eRaUV0kwKvVLkzQDni9Z']
-            Ping eRaUV0kwKvVLkzQDni9Z
-            Pong Int ['integer' -> '4674']
-            Pong 4674
-            Ping String ['an alphanumeric String' -> 'qB2lrppZJ5SGoK7j0suP']
-            Ping qB2lrppZJ5SGoK7j0suP
-            Pong Int ['integer' -> '6587']
-            Pong 6587
-            Ping String ['an alphanumeric String' -> 'dutwDNaXZitiaOfa6N2X']
-            Ping dutwDNaXZitiaOfa6N2X
-            Exit point
-            End of game
-         Run #1 - End reached on action 'Exit point' after 8 transitions
+            Ping String
+            Ping 7HjRBzlyjULWQlV1SQeN
+            Pong Int
+            Pong 3549
+            Ping String
+            Ping SbL4blEMtwweAqm9bfP0
+            Pong Int
+            Pong 1464
+            Ping String
+            Ping BoZwLouAaXVayxXajSXV
+            Pong Int
+            Pong 161
+            Ping String
+            Ping BOCm8OyLL2zgpPCoYnTJ
+            Pong Int
+            Pong 687
+            Ping String
+            Ping d9ZRN1HuBhVwFKXBzlUh
+            Pong Int
+            Pong 1892
+         Run #1 - Max transitions number per run reached
          Run #2
             Entry point
             Start game
-            Pong Int ['integer' -> '1786']
-            Pong 1786
-            Ping String ['an alphanumeric String' -> 'AFGueoVgwvv8j5ouOt5K']
-            Ping AFGueoVgwvv8j5ouOt5K
-            Pong Int ['integer' -> '7556']
-            Pong 7556
-            Ping String ['an alphanumeric String' -> 'hr36TFnvv5v3vT09tHrM']
-            Ping hr36TFnvv5v3vT09tHrM
-            Pong Int ['integer' -> '8657']
-            Pong 8657
-            Ping String ['an alphanumeric String' -> 'm2n9YSDLvKcZSwJh8JRe']
-            Ping m2n9YSDLvKcZSwJh8JRe
-            Pong Int ['integer' -> '1705']
-            Pong 1705
-            Ping String ['an alphanumeric String' -> 'dW5LYKnKbvRnaFop3NPi']
-            Ping dW5LYKnKbvRnaFop3NPi
-            Pong Int ['integer' -> '9670']
-            Pong 9670
-            Ping String ['an alphanumeric String' -> 'NcMUhBBIrrwSkDchcNHA']
-            Ping NcMUhBBIrrwSkDchcNHA
-         Run #2 - Max transitions number per run reached
-      Check block succeeded (15 millis)
+            Ping String
+            Ping oHARiIS8570hOHbkpu6b
+            Pong Int
+            Pong 743
+            Ping String
+            Ping Ijq1xltbS2fGIVJ0h3ty
+            Pong Int
+            Pong 7575
+            Ping String
+            Ping 15DDNEIATOrbKnDQi9QI
+            Pong Int
+            Pong 4674
+            Ping String
+            Ping YNvchmkwK7owS95YeyXr
+            Pong Int
+            Pong 3758
+            Ping String
+            Ping DavIeJhxwOpgmqXZrzOU
+            Exit point
+            End of game
+         Run #2 - End reached on property 'Exit point' after 10 transitions
+      Check block succeeded (10 millis)
 
 ```
 
