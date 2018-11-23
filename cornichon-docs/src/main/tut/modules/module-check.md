@@ -265,7 +265,7 @@ val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 
 Which gives us the following scenario
 
-```
+```scala
 
 Scenario("ping pong check) {
 
@@ -335,7 +335,15 @@ Starting scenario 'ping pong check'
 
 ```
 
-// TODO talk about fixing seed to fix generators and transitions
+The logs give us:
+- a detailed description of the runs execution
+- the seed used to create the `Generators`
+
+It is possible to replay exactly the same run by passing the seed as a parameter.
+
+```scala
+ Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1542986106586))(myModelRunner)
+```
 
 ### Examples
 
