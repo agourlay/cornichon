@@ -17,11 +17,11 @@ class PingPongCheck extends CornichonFeature with CheckDsl {
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "an alphanumeric String",
-    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+    gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    genFct = () ⇒ rc.seededRandom.nextInt(10000))
+    gen = () ⇒ rc.seededRandom.nextInt(10000))
 
   val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 

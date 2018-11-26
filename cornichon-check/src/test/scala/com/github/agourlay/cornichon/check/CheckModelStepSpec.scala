@@ -24,11 +24,11 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    genFct = () ⇒ rc.seededRandom.nextInt(10000))
+    gen = () ⇒ rc.seededRandom.nextInt(10000))
 
   def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    genFct = () ⇒ throw new RuntimeException("boom gen!"))
+    gen = () ⇒ throw new RuntimeException("boom gen!"))
 
   val brokenEffect: EffectStep = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
 

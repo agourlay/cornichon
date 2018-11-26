@@ -15,18 +15,19 @@ At the center of property based testing lies the capacity to generate arbitrary 
 
 A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Ints.
 
-There are two concrete instances of `generators`:
+There are tree concrete instances of `generators`:
 - `ValueGenerator`
-- `ValueFromSessionGenerator` which provides additionally the `Session`
+- `SessionValueGenerator` which provides additionally the `Session`
+- `OptionalValueGenerator` to fail in a controlled fashion
 
 ```scala
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
-  genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+  gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
 def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   name = "integer",
-  genFct = () ⇒ rc.seededRandom.nextInt(10000))
+  gen = () ⇒ rc.seededRandom.nextInt(10000))
 ```
 
 This approach also supports embedding `Scalacheck's Gen` into a `Generator` by propagating the initial seed.
@@ -39,13 +40,13 @@ sealed trait Coin
 case object Head extends Coin
 case object Tail extends Coin
 
-def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
+def coinGen(rc: RandomContext): Generator[Coin] = OptionalValueGenerator(
   name = "a Coin",
-  genFct = () ⇒ {
+  gen = () ⇒ {
     val nextSeed = rc.seededRandom.nextLong()
     val params = Gen.Parameters.default.withInitialSeed(nextSeed)
     val coin = Gen.oneOf[Coin](Head, Tail)
-    coin(params, Seed(nextSeed)).get
+    coin(params, Seed(nextSeed))
   }
 )
 ```
@@ -87,7 +88,7 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "alphanumeric String (20)",
-    genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+    gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
   }
 
 ```
@@ -222,11 +223,11 @@ The type inference is sometimes not detecting properly the action type, so it is
 
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String",
-  genFct = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+  gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 
 def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   name = "integer",
-  genFct = () ⇒ rc.seededRandom.nextInt(10000))
+  gen = () ⇒ rc.seededRandom.nextInt(10000))
 
 val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 

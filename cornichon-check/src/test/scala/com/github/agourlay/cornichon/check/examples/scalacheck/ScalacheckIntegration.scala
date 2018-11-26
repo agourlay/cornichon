@@ -21,13 +21,13 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
   case object Head extends Coin
   case object Tail extends Coin
 
-  def coinGen(rc: RandomContext): ValueGenerator[Coin] = ValueGenerator(
+  def coinGen(rc: RandomContext): Generator[Coin] = OptionalValueGenerator(
     name = "a Coin",
-    genFct = () ⇒ {
+    gen = () ⇒ {
       val nextSeed = rc.seededRandom.nextLong()
       val params = Gen.Parameters.default.withInitialSeed(nextSeed)
       val coin = Gen.oneOf[Coin](Head, Tail)
-      coin(params, Seed(nextSeed)).get
+      coin(params, Seed(nextSeed))
     }
   )
 

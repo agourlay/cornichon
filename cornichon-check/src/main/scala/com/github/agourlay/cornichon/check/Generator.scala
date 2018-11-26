@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.check
 
-import com.github.agourlay.cornichon.core.Session
+import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 
 trait Generator[A] {
   def name: String
@@ -17,10 +17,14 @@ case object NoValueGenerator extends Generator[NoValue] {
   def value(session: Session): () ⇒ NoValue.type = () ⇒ NoValue
 }
 
-case class ValueGenerator[A](name: String, genFct: () ⇒ A) extends Generator[A] {
-  override def value(session: Session): () ⇒ A = genFct
+case class ValueGenerator[A](name: String, gen: () ⇒ A) extends Generator[A] {
+  override def value(session: Session): () ⇒ A = gen
 }
 
-case class ValueFromSessionGenerator[A](name: String, genFct: Session ⇒ A) extends Generator[A] {
-  override def value(session: Session): () ⇒ A = () ⇒ genFct(session)
+case class OptionalValueGenerator[A](name: String, gen: () ⇒ Option[A]) extends Generator[A] {
+  override def value(session: Session): () ⇒ A = () ⇒ gen().fold(throw CornichonError.fromString(s"generator '$name' did not generate a value").toException)(identity)
+}
+
+case class SessionValueGenerator[A](name: String, gen: Session ⇒ A) extends Generator[A] {
+  override def value(session: Session): () ⇒ A = () ⇒ gen(session)
 }
