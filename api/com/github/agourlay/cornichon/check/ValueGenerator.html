@@ -199,12 +199,16 @@
                         <a href="NoValueGenerator$.html" title="">NoValueGenerator</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="class" href="OptionalValueGenerator.html" title=""></a>
+                        <a href="OptionalValueGenerator.html" title="">OptionalValueGenerator</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="class" href="RandomContext.html" title=""></a>
                         <a href="RandomContext.html" title="">RandomContext</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
-                        <a class="class" href="ValueFromSessionGenerator.html" title=""></a>
-                        <a href="ValueFromSessionGenerator.html" title="">ValueFromSessionGenerator</a>
+                        <a class="class" href="SessionValueGenerator.html" title=""></a>
+                        <a href="SessionValueGenerator.html" title="">SessionValueGenerator</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="class" href="" title=""></a>
@@ -232,7 +236,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">ValueGenerator</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="genFct">genFct: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span></span>)</span><span class="result"> extends <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span>] with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <span class="name">ValueGenerator</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="gen">gen: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span></span>)</span><span class="result"> extends <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span>] with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       </h4>
 
@@ -288,9 +292,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.github.agourlay.cornichon.check.ValueGenerator#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(name:String,genFct:()=&gt;A):com.github.agourlay.cornichon.check.ValueGenerator[A]"></a><a id="&lt;init&gt;:ValueGenerator[A]"></a>
+      <a id="&lt;init&gt;(name:String,gen:()=&gt;A):com.github.agourlay.cornichon.check.ValueGenerator[A]"></a><a id="&lt;init&gt;:ValueGenerator[A]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueGenerator.html#&lt;init&gt;(name:String,genFct:()=&gt;A):com.github.agourlay.cornichon.check.ValueGenerator[A]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/ValueGenerator.html#&lt;init&gt;(name:String,gen:()=&gt;A):com.github.agourlay.cornichon.check.ValueGenerator[A]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -299,7 +303,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ValueGenerator</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="genFct">genFct: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span></span>)</span>
+        <span class="name">ValueGenerator</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="gen">gen: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span></span>)</span>
       </span>
       
       
@@ -439,10 +443,10 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.check.ValueGenerator#genFct" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="genFct:()=&gt;A"></a><a id="genFct:()⇒A"></a>
+    </li><li name="com.github.agourlay.cornichon.check.ValueGenerator#gen" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="gen:()=&gt;A"></a><a id="gen:()⇒A"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueGenerator.html#genFct:()=&gt;A" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/ValueGenerator.html#gen:()=&gt;A" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -451,7 +455,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">genFct</span><span class="result">: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span></span>
+        <span class="name">gen</span><span class="result">: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueGenerator.A">A</span></span>
       </span>
       
       

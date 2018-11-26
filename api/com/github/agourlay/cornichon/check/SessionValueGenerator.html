@@ -199,12 +199,16 @@
                         <a href="NoValueGenerator$.html" title="">NoValueGenerator</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="class" href="OptionalValueGenerator.html" title=""></a>
+                        <a href="OptionalValueGenerator.html" title="">OptionalValueGenerator</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="class" href="RandomContext.html" title=""></a>
                         <a href="RandomContext.html" title="">RandomContext</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="class" href="" title=""></a>
-                        <a href="" title="">ValueFromSessionGenerator</a>
+                        <a href="" title="">SessionValueGenerator</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="class" href="ValueGenerator.html" title=""></a>
@@ -218,8 +222,8 @@
       <div id="definition">
         <div class="big-circle class">c</div>
         <p id="owner"><a href="../../../../index.html" class="extype" name="com">com</a>.<a href="../../../index.html" class="extype" name="com.github">github</a>.<a href="../../index.html" class="extype" name="com.github.agourlay">agourlay</a>.<a href="../index.html" class="extype" name="com.github.agourlay.cornichon">cornichon</a>.<a href="index.html" class="extype" name="com.github.agourlay.cornichon.check">check</a></p>
-        <h1>ValueFromSessionGenerator<span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html" title="Permalink">
+        <h1>SessionValueGenerator<span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
@@ -232,7 +236,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">ValueFromSessionGenerator</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="genFct">genFct: (<a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator.A">A</span></span>)</span><span class="result"> extends <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator.A">A</span>] with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <span class="name">SessionValueGenerator</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="gen">gen: (<a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator.A">A</span></span>)</span><span class="result"> extends <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator.A">A</span>] with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       </h4>
 
@@ -241,7 +245,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator.A">A</span>], <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator.A">A</span>], <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.7/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
         </div></div>
         
 
@@ -267,7 +271,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator"><span>ValueFromSessionGenerator</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.check.Generator"><span>Generator</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="com.github.agourlay.cornichon.check.SessionValueGenerator"><span>SessionValueGenerator</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.github.agourlay.cornichon.check.Generator"><span>Generator</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -287,10 +291,10 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(name:String,genFct:com.github.agourlay.cornichon.core.Session=&gt;A):com.github.agourlay.cornichon.check.ValueFromSessionGenerator[A]"></a><a id="&lt;init&gt;:ValueFromSessionGenerator[A]"></a>
+              <ol><li name="com.github.agourlay.cornichon.check.SessionValueGenerator#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(name:String,gen:com.github.agourlay.cornichon.core.Session=&gt;A):com.github.agourlay.cornichon.check.SessionValueGenerator[A]"></a><a id="&lt;init&gt;:SessionValueGenerator[A]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#&lt;init&gt;(name:String,genFct:com.github.agourlay.cornichon.core.Session=&gt;A):com.github.agourlay.cornichon.check.ValueFromSessionGenerator[A]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#&lt;init&gt;(name:String,gen:com.github.agourlay.cornichon.core.Session=&gt;A):com.github.agourlay.cornichon.check.SessionValueGenerator[A]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -299,7 +303,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ValueFromSessionGenerator</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="genFct">genFct: (<a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator.A">A</span></span>)</span>
+        <span class="name">SessionValueGenerator</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="gen">gen: (<a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator.A">A</span></span>)</span>
       </span>
       
       
@@ -316,7 +320,7 @@
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -332,7 +336,7 @@
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html###():Int" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -348,7 +352,7 @@
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -364,7 +368,7 @@
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -380,7 +384,7 @@
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#clone():Object" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -404,7 +408,7 @@
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -420,7 +424,7 @@
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#finalize():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -439,10 +443,10 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator#genFct" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="genFct:com.github.agourlay.cornichon.core.Session=&gt;A"></a><a id="genFct:(Session)⇒A"></a>
+    </li><li name="com.github.agourlay.cornichon.check.SessionValueGenerator#gen" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="gen:com.github.agourlay.cornichon.core.Session=&gt;A"></a><a id="gen:(Session)⇒A"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#genFct:com.github.agourlay.cornichon.core.Session=&gt;A" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#gen:com.github.agourlay.cornichon.core.Session=&gt;A" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -451,14 +455,14 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">genFct</span><span class="result">: (<a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator.A">A</span></span>
+        <span class="name">gen</span><span class="result">: (<a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a>) ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator.A">A</span></span>
       </span>
       
       
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#getClass():Class[_]" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -477,7 +481,7 @@
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -490,10 +494,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator#name" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.github.agourlay.cornichon.check.SessionValueGenerator#name" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="name:String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#name:String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#name:String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -505,11 +509,11 @@
         <span class="name">name</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator">ValueFromSessionGenerator</a> → <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator">SessionValueGenerator</a> → <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -525,7 +529,7 @@
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#notify():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -544,7 +548,7 @@
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#notifyAll():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -563,7 +567,7 @@
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -576,10 +580,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator#value" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.github.agourlay.cornichon.check.SessionValueGenerator#value" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="value(session:com.github.agourlay.cornichon.core.Session):()=&gt;A"></a><a id="value(Session):()⇒A"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#value(session:com.github.agourlay.cornichon.core.Session):()=&gt;A" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#value(session:com.github.agourlay.cornichon.core.Session):()=&gt;A" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -588,14 +592,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">value</span><span class="params">(<span name="session">session: <a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result">: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator.A">A</span></span>
+        <span class="name">value</span><span class="params">(<span name="session">session: <a href="../core/Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result">: () ⇒ <span class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator.A">A</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator">ValueFromSessionGenerator</a> → <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator">SessionValueGenerator</a> → <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#wait():Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -617,7 +621,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -639,7 +643,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/check/ValueFromSessionGenerator.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/check/SessionValueGenerator.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -679,7 +683,7 @@
             </div><div class="parent" name="scala.Equals">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.7/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a></h3>
             </div><div class="parent" name="com.github.agourlay.cornichon.check.Generator">
-              <h3>Inherited from <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.ValueFromSessionGenerator.A">A</span>]</h3>
+              <h3>Inherited from <a href="Generator.html" class="extype" name="com.github.agourlay.cornichon.check.Generator">Generator</a>[<span class="extype" name="com.github.agourlay.cornichon.check.SessionValueGenerator.A">A</span>]</h3>
             </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">

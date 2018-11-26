@@ -10,19 +10,20 @@
 
 <p>A <code class="highlighter-rouge">generator</code> is simply a function that accepts a <code class="highlighter-rouge">RandomContext</code> which is propagated throughout the execution, for instance below is an example generating Strings and Ints.</p>
 
-<p>There are two concrete instances of <code class="highlighter-rouge">generators</code>:</p>
+<p>There are tree concrete instances of <code class="highlighter-rouge">generators</code>:</p>
 <ul>
   <li><code class="highlighter-rouge">ValueGenerator</code></li>
-  <li><code class="highlighter-rouge">ValueFromSessionGenerator</code> which provides additionally the <code class="highlighter-rouge">Session</code></li>
+  <li><code class="highlighter-rouge">SessionValueGenerator</code> which provides additionally the <code class="highlighter-rouge">Session</code></li>
+  <li><code class="highlighter-rouge">OptionalValueGenerator</code> to fail in a controlled fashion</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
   <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String (20)"</span><span class="o">,</span>
-  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+  <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
 
 <span class="k">def</span> <span class="n">integerGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
   <span class="n">name</span> <span class="k">=</span> <span class="s">"integer"</span><span class="o">,</span>
-  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
+  <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
 </code></pre></div></div>
 
 <p>This approach also supports embedding <code class="highlighter-rouge">Scalacheck's Gen</code> into a <code class="highlighter-rouge">Generator</code> by propagating the initial seed.</p>
@@ -34,13 +35,13 @@
 <span class="k">case</span> <span class="k">object</span> <span class="nc">Head</span> <span class="k">extends</span> <span class="nc">Coin</span>
 <span class="k">case</span> <span class="k">object</span> <span class="nc">Tail</span> <span class="k">extends</span> <span class="nc">Coin</span>
 
-<span class="k">def</span> <span class="n">coinGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Coin</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+<span class="k">def</span> <span class="n">coinGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Generator</span><span class="o">[</span><span class="kt">Coin</span><span class="o">]</span> <span class="k">=</span> <span class="nc">OptionalValueGenerator</span><span class="o">(</span>
   <span class="n">name</span> <span class="k">=</span> <span class="s">"a Coin"</span><span class="o">,</span>
-  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="o">{</span>
+  <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="o">{</span>
     <span class="k">val</span> <span class="n">nextSeed</span> <span class="k">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextLong</span><span class="o">()</span>
     <span class="k">val</span> <span class="n">params</span> <span class="k">=</span> <span class="nc">Gen</span><span class="o">.</span><span class="nc">Parameters</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">withInitialSeed</span><span class="o">(</span><span class="n">nextSeed</span><span class="o">)</span>
     <span class="k">val</span> <span class="n">coin</span> <span class="k">=</span> <span class="nc">Gen</span><span class="o">.</span><span class="n">oneOf</span><span class="o">[</span><span class="kt">Coin</span><span class="o">](</span><span class="nc">Head</span><span class="o">,</span> <span class="nc">Tail</span><span class="o">)</span>
-    <span class="n">coin</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="nc">Seed</span><span class="o">(</span><span class="n">nextSeed</span><span class="o">)).</span><span class="n">get</span>
+    <span class="n">coin</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="nc">Seed</span><span class="o">(</span><span class="n">nextSeed</span><span class="o">))</span>
   <span class="o">}</span>
 <span class="o">)</span>
 </code></pre></div></div>
@@ -81,7 +82,7 @@
 
   <span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
     <span class="n">name</span> <span class="k">=</span> <span class="s">"alphanumeric String (20)"</span><span class="o">,</span>
-    <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+    <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
   <span class="o">}</span>
 
 </code></pre></div></div>
@@ -228,11 +229,11 @@
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
 <span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
   <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String"</span><span class="o">,</span>
-  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
+  <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
 
 <span class="k">def</span> <span class="n">integerGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
   <span class="n">name</span> <span class="k">=</span> <span class="s">"integer"</span><span class="o">,</span>
-  <span class="n">genFct</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
+  <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
 
 <span class="k">val</span> <span class="n">myModelRunner</span> <span class="k">=</span> <span class="nc">ModelRunner</span><span class="o">.</span><span class="n">make</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Int</span><span class="o">](</span><span class="n">stringGen</span><span class="o">,</span> <span class="n">integerGen</span><span class="o">)</span> <span class="o">{</span>
 
