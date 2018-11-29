@@ -86,7 +86,7 @@ object CheckStepBench {
 
   val starting = dummyProperty1("starting action")
   val otherAction = dummyProperty1("other action")
-  val otherActionTwo = dummyProperty1("other action two ")
+  val otherActionTwo = dummyProperty1("other action two")
   val transitions = Map(
     starting -> ((1.0, otherAction) :: Nil),
     otherAction -> ((1.0, otherActionTwo) :: Nil),
