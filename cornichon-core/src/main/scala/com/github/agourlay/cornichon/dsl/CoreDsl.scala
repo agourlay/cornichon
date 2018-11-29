@@ -106,6 +106,11 @@ trait CoreDsl extends ProvidedInstances {
       RepeatConcurrentlyStep(times, steps, parallelism, maxTime)
     }
 
+  def Concurrently(maxTime: FiniteDuration): BodyElementCollector[Step, Step] =
+    BodyElementCollector[Step, Step] { steps ⇒
+      ConcurrentlyStep(steps, maxTime)
+    }
+
   def Within(maxDuration: FiniteDuration): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
       WithinStep(steps, maxDuration)
