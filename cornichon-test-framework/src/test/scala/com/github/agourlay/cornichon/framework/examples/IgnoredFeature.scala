@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 import scala.concurrent.duration._
 
 class IgnoredFeature extends CornichonFeature {
-  def feature = Feature("feature").ignoredBecause("it takes too long!") {
+  def feature = Feature("feature testing ignore flag").ignoredBecause("it takes too long!") {
     Scenario("Scenario 1") {
       Given I wait(10.hours)
       And I print_step("Scenario 1 is finished")

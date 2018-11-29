@@ -1,12 +1,10 @@
 package com.github.agourlay.cornichon.framework
 
 import cats.syntax.either._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.feature.{ BaseFeature, FeatureRunner }
-
+import monix.eval
 import monix.execution.Scheduler.Implicits.global
-
 import sbt.testing._
 
 import scala.concurrent.duration.Duration
@@ -22,7 +20,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
     Array.empty
   }
 
-  private def loadAndExecuteFeature(eventHandler: EventHandler) = {
+  private def loadAndExecuteFeature(eventHandler: EventHandler): eval.Task[Done] = {
     val featureClass = Class.forName(task.fullyQualifiedName())
     val baseFeature = featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
@@ -42,20 +40,24 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
         Done.taskDone
       },
       feature ⇒ {
-        val featureLog = feature.ignored match {
+        val (featureLog, featureRun) = feature.ignored match {
           case Some(reason) ⇒
+            // Early detection of ignored feature to not generate logs for each scenario
+            // This is not emitting the SBT `Status.Ignored` that counts tests.
             val msg = s"${feature.name}: ignored because $reason"
-            WarningLogInstruction(msg, 0).colorized
+            val featureLog = WarningLogInstruction(msg, 0).colorized
+            (featureLog, Done.taskDone)
           case None ⇒
-            SuccessLogInstruction(s"${feature.name}:", 0).colorized
+            val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
+            val featureRunner = FeatureRunner(feature, baseFeature)
+            val run = featureRunner.runFeature(filterScenarios)(generateResultEvent(eventHandler)).map { results ⇒
+              results.foreach(printResultLogs(featureClass))
+              Done
+            }
+            (featureLog, run)
         }
         println(featureLog)
-        FeatureRunner(feature, baseFeature)
-          .runFeature(filterScenarios)(generateResultEvent(eventHandler))
-          .map { results ⇒
-            results.foreach(printResultLogs(featureClass))
-            Done
-          }
+        featureRun
       }
     )
   }
