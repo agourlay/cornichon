@@ -14,6 +14,7 @@ import scala.util.control.NonFatal
 case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: Int, maxTime: FiniteDuration) extends WrapperStep {
   require(parallelism > 0, "repeat concurrently block must contain a positive 'parallelism' factor")
   require(times > 0, "repeat concurrently block must contain a positive 'times' factor")
+  require(times >= parallelism, "repeat concurrently block must contain a 'parallelism' factor <= to the number of repeat 'times'")
 
   val title = s"Repeat concurrently block '$times' times with parallel factor '$parallelism' and maxTime '$maxTime'"
 
