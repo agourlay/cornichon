@@ -21,7 +21,7 @@ import scala.concurrent.duration._
 @Fork(value = 1, jvmArgsAppend = Array(
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
+  "-XX:StartFlightRecording=duration=60s,filename=./RequestEffectBench-profiling-data.jfr,name=profile,settings=profile",
   "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
   "-Xmx1G"))
 class RequestEffectBench {
@@ -44,8 +44,8 @@ class RequestEffectBench {
     es.shutdown()
   }
 
-  //  [info] Benchmark                                    Mode  Cnt      Score      Error  Units
-  //  [info] httpService.RequestEffectBench.singleRequest  thrpt   20  378779.214 ± 2373.514  ops/s
+  //  [info] Benchmark                                      Mode  Cnt          Score      Error  Units
+  //  [info] httpService.RequestEffectBench.singleRequest  thrpt   20   408210.256 ±   1724.048  ops/s
   @Benchmark
   def singleRequest() = {
     val f = httpService.requestEffect(request)

@@ -21,7 +21,7 @@ import scala.concurrent.duration._
 @Fork(value = 1, jvmArgsAppend = Array(
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
+  "-XX:StartFlightRecording=duration=60s,filename=./RunScenarioBench-profiling-data.jfr,name=profile,settings=profile",
   "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
   "-Xmx1G"))
 class RunScenarioBench {

@@ -22,7 +22,7 @@ import step.JsonStepBench._
 @Fork(value = 1, jvmArgsAppend = Array(
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=duration=60s,filename=./profiling-data.jfr,name=profile,settings=profile",
+  "-XX:StartFlightRecording=duration=60s,filename=./CheckStepBench-profiling-data.jfr,name=profile,settings=profile",
   "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
   "-Xmx1G"))
 class CheckStepBench {
@@ -53,12 +53,12 @@ class CheckStepBench {
     es.shutdown()
   }
 
-  //  [info] Benchmark                (transitionNumber)   Mode  Cnt      Score      Error  Units
-  //  [info] CheckStepBench.runModel                  10  thrpt   20  13062.534 ± 1852.842  ops/s
-  //  [info] CheckStepBench.runModel                  20  thrpt   20   7002.733 ±  572.661  ops/s
-  //  [info] CheckStepBench.runModel                  50  thrpt   20   3850.483 ±  242.907  ops/s
-  //  [info] CheckStepBench.runModel                 100  thrpt   20   2282.660 ±   30.482  ops/s
-  //  [info] CheckStepBench.runModel                 200  thrpt   20   1385.677 ±  166.518  ops/s
+  //  [info] Benchmark                    (transitionNumber)   Mode  Cnt         Score      Error  Units
+  //  [info] step.CheckStepBench.runModel                10   thrpt   10   31847.091 ±     45.086  ops/s
+  //  [info] step.CheckStepBench.runModel                20   thrpt   10   22956.375 ±     79.546  ops/s
+  //  [info] step.CheckStepBench.runModel                50   thrpt   10   11996.932 ±   1643.129  ops/s
+  //  [info] step.CheckStepBench.runModel               100   thrpt   10    6282.851 ±    256.187  ops/s
+  //  [info] step.CheckStepBench.runModel               200   thrpt   10    3198.990 ±     39.565  ops/s
 
   @Benchmark
   def runModel() = {
