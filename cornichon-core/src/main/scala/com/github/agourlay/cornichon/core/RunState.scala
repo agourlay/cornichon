@@ -1,31 +1,31 @@
 package com.github.agourlay.cornichon.core
 
+import cats.data.Chain
 import cats.syntax.monoid._
 
 case class RunState(
     session: Session,
-    logs: Vector[LogInstruction],
+    logs: Chain[LogInstruction],
     depth: Int,
     cleanupSteps: List[Step]
 ) {
 
   lazy val goDeeper = copy(depth = depth + 1)
-  lazy val resetLogs = copy(logs = Vector.empty)
+  lazy val resetLogs = copy(logs = Chain.empty)
 
   // Helper fct to setup up a child nested context for a run which result must be merged back in using 'mergeNested'.
   // Only the session is propagated downstream as it is.
-  lazy val nestedContext = copy(depth = depth + 1, logs = Vector.empty, cleanupSteps = Nil)
-  lazy val sameLevelContext = copy(logs = Vector.empty, cleanupSteps = Nil)
+  lazy val nestedContext = copy(depth = depth + 1, logs = Chain.empty, cleanupSteps = Nil)
+  lazy val sameLevelContext = copy(logs = Chain.empty, cleanupSteps = Nil)
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValuesUnsafe(tuples: _*))
   def addToSession(key: String, value: String) = withSession(session.addValueUnsafe(key, value))
   def mergeSessions(other: Session) = copy(session = session.combine(other))
 
-  def withLog(log: LogInstruction) = copy(logs = Vector(log))
+  def withLog(log: LogInstruction) = copy(logs = Chain.one(log))
 
-  // Vector concat. is not great, maybe change logs data structure
-  def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
+  def appendLogs(add: Chain[LogInstruction]) = copy(logs = logs ++ add)
   def appendLogsFrom(from: RunState) = appendLogs(from.logs)
   def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
 
@@ -37,7 +37,7 @@ case class RunState(
 
   // Helpers to propagate info from nested computation
   def mergeNested(r: RunState): RunState = mergeNested(r, r.logs)
-  def mergeNested(r: RunState, computationLogs: Vector[LogInstruction]): RunState =
+  def mergeNested(r: RunState, computationLogs: Chain[LogInstruction]): RunState =
     this.copy(
       session = r.session, // no need to combine, nested session is built on top of the initial one
       cleanupSteps = r.cleanupSteps ::: this.cleanupSteps, // prepend cleanup steps

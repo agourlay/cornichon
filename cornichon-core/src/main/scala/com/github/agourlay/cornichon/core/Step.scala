@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.NonEmptyList
+import cats.data.{ Chain, NonEmptyList }
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
@@ -31,7 +31,7 @@ trait ValueStep[A] extends Step {
 
   def run(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either A]
 
-  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
+  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Chain[LogInstruction], FailedStep)
 
   def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (Option[LogInstruction], Option[Session])
 
@@ -57,9 +57,9 @@ trait LogDecoratorStep extends Step {
 
   def nestedToRun: List[Step]
 
-  def onNestedError(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration): Vector[LogInstruction]
+  def onNestedError(resultLogs: Chain[LogInstruction], depth: Int, executionTime: Duration): Chain[LogInstruction]
 
-  def onNestedSuccess(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration): Vector[LogInstruction]
+  def onNestedSuccess(resultLogs: Chain[LogInstruction], depth: Int, executionTime: Duration): Chain[LogInstruction]
 
   def run(engine: Engine)(initialRunState: RunState): StepResult = {
     val now = System.nanoTime

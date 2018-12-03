@@ -30,7 +30,7 @@ class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         val qName = report.session.get("the-queue").right.get
         queueResource.actionsFor(qName) should be(List(CreateQueue(qName), DeleteQueue(qName)))
         report should not be 'success
-        report.logs should contain(InfoLogInstruction("cleanup steps", 2))
+        report.logs.toList should contain(InfoLogInstruction("cleanup steps", 2))
         report.logs.find { case SuccessLogInstruction("delete the queue: the-queue", _, _) ⇒ true; case _ ⇒ false } should be('defined)
       }
     }

@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import cats.Foldable
-import cats.data.{ NonEmptyList, StateT, ValidatedNel }
+import cats.data.{ Chain, NonEmptyList, StateT, ValidatedNel }
 import cats.syntax.either._
 import cats.syntax.apply._
 import cats.instances.list._
@@ -15,7 +15,6 @@ import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
-import scala.collection.breakOut
 import scala.util.control.NonFatal
 
 class Engine(stepPreparers: List[StepPreparer]) {
@@ -36,7 +35,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
         } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
 
         val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-        val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
+        val initialRunState = RunState(session, Chain.one(titleLog), initMargin + 1, Nil)
         val now = System.nanoTime
         stages.run(initialRunState).map {
           case (lastState, aggregatedResult) ⇒
@@ -135,7 +134,7 @@ object Engine {
     else
       None
 
-  def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (Vector[LogInstruction], FailedStep) = {
+  def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (Chain[LogInstruction], FailedStep) = {
     val runLogs = errorLogs(currentStep.title, errors, depth)
     val failedStep = FailedStep(currentStep, errors)
     (runLogs, failedStep)
@@ -151,9 +150,9 @@ object Engine {
     (runState.appendLogs(runLogs), failedStep.asLeft)
   }
 
-  def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int): Vector[FailureLogInstruction] = {
+  def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int): Chain[FailureLogInstruction] = {
     val failureLogTitle = FailureLogInstruction(s"$title *** FAILED ***", depth)
-    val errorLogs: Vector[FailureLogInstruction] = errors.toList.flatMap(_.renderedMessage.split('\n').map(m ⇒ FailureLogInstruction(m, depth)))(breakOut)
-    failureLogTitle +: errorLogs
+    val errorLogs = errors.toList.flatMap(_.renderedMessage.split('\n').map(m ⇒ FailureLogInstruction(m, depth)))
+    Chain.fromSeq(failureLogTitle :: errorLogs)
   }
 }

@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.core
 
+import cats.data.Chain
+
 import scala.collection.immutable.StringOps
 import scala.concurrent.duration.Duration
 
@@ -26,20 +28,13 @@ sealed trait LogInstruction {
 
 object LogInstruction {
   val physicalMargin: StringOps = "   "
-  def renderLogs(logs: Seq[LogInstruction], colorized: Boolean = true): String = {
-    // Logs can potentially be really long - enable imperative mode
-    val b = StringBuilder.newBuilder
-    var i = 0
-    val logNb = logs.size
-    while (i < logNb) {
-      val l = logs(i)
-      b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
-      i += 1
-    }
-    b.append("\n").result()
-  }
 
-  def printLogs(logs: Seq[LogInstruction]): Unit =
+  def renderLogs(logs: Chain[LogInstruction], colorized: Boolean = true): String =
+    logs.foldLeft(StringBuilder.newBuilder) { (b, l) ⇒
+      b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
+    }.append("\n").result()
+
+  def printLogs(logs: Chain[LogInstruction]): Unit =
     println(renderLogs(logs))
 
 }

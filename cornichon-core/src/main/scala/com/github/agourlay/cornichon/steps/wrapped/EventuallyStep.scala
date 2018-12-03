@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import cats.data.NonEmptyList
+import cats.data.{ Chain, NonEmptyList }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
@@ -22,8 +22,8 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
         if (knownErrors.contains(failedStep))
           previousRs
         else {
-          val logsToAdd = nextRunState.logs.diff(previousRs.logs)
-          previousRs.appendLogs(logsToAdd)
+          val logsToAdd = nextRunState.logs.toList.diff(previousRs.logs.toList)
+          previousRs.appendLogs(Chain.fromSeq(logsToAdd))
         }
 
       withDuration {

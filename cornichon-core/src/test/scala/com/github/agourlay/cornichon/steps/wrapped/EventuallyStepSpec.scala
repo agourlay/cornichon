@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.data.Chain
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
@@ -90,7 +91,8 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
                             |with error(s):
                             |Failing forever
                             |""".stripMargin)
-          val logs = LogInstruction.renderLogs(f.logs.drop(2).dropRight(1), colorized = false)
+          val focusLogs = f.logs.toVector.drop(2).dropRight(1)
+          val logs = LogInstruction.renderLogs(Chain.fromSeq(focusLogs), colorized = false)
           logs should be("""
                            |      Eventually block with maxDuration = 1 second and interval = 100 milliseconds
                            |         Fail differently *** FAILED ***
