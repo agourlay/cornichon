@@ -26,7 +26,7 @@ sealed trait LogInstruction {
 
 object LogInstruction {
   val physicalMargin: StringOps = "   "
-  def renderLogs(logs: Seq[LogInstruction], colorized: Boolean = true): String = {
+  def renderLogs(logs: Vector[LogInstruction], colorized: Boolean = true): String = {
     // Logs can potentially be really long - enable imperative mode
     val b = StringBuilder.newBuilder
     var i = 0
@@ -39,7 +39,7 @@ object LogInstruction {
     b.append("\n").result()
   }
 
-  def printLogs(logs: Seq[LogInstruction]): Unit =
+  def printLogs(logs: Vector[LogInstruction]): Unit =
     println(renderLogs(logs))
 
 }
