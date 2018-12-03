@@ -27,14 +27,12 @@ sealed trait LogInstruction {
 object LogInstruction {
   val physicalMargin: StringOps = "   "
   def renderLogs(logs: Vector[LogInstruction], colorized: Boolean = true): String = {
-    // Logs can potentially be really long - enable imperative mode
     val b = StringBuilder.newBuilder
-    var i = 0
-    val logNb = logs.size
-    while (i < logNb) {
-      val l = logs(i)
-      b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
-      i += 1
+    logs.foreach {
+      case NoShowLogInstruction(_, _, _) ⇒
+        ()
+      case l: LogInstruction ⇒
+        b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
     }
     b.append("\n").result()
   }
@@ -66,4 +64,8 @@ case class FailureLogInstruction(message: String, marginNb: Int, duration: Optio
 
 case class DebugLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
   lazy val colorized = fansi.Color.Cyan(completeMessage).render
+}
+
+case class NoShowLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
+  lazy val colorized = fansi.Color.Black(completeMessage).render
 }

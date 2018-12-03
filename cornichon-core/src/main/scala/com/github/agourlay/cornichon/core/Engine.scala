@@ -129,11 +129,11 @@ object Engine {
   def withStepTitleResolver(resolver: PlaceholderResolver) =
     new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
 
-  def successLog(title: String, depth: Int, show: Boolean, duration: Duration): Option[SuccessLogInstruction] =
+  def successLog(title: String, depth: Int, show: Boolean, duration: Duration): LogInstruction =
     if (show)
-      Some(SuccessLogInstruction(title, depth, Some(duration)))
+      SuccessLogInstruction(title, depth, Some(duration))
     else
-      None
+      NoShowLogInstruction(title, depth, Some(duration))
 
   def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (Vector[LogInstruction], FailedStep) = {
     val runLogs = errorLogs(currentStep.title, errors, depth)

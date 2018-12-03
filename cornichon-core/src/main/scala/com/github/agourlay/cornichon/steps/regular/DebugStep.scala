@@ -25,5 +25,5 @@ case class DebugStep(message: Session ⇒ Either[CornichonError, String], title:
   }
 
   override def onSuccess(result: String, initialRunState: RunState, executionTime: Duration) =
-    (Some(DebugLogInstruction(result, initialRunState.depth)), None)
+    (DebugLogInstruction(result, initialRunState.depth), None)
 }

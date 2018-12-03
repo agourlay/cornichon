@@ -33,7 +33,7 @@ trait ValueStep[A] extends Step {
 
   def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
 
-  def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (Option[LogInstruction], Option[Session])
+  def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (LogInstruction, Option[Session])
 
   def run(engine: Engine)(initialRunState: RunState): StepResult = {
     val now = System.nanoTime
@@ -45,7 +45,7 @@ trait ValueStep[A] extends Step {
       case Right(value) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val (log, session) = onSuccess(value, initialRunState, executionTime)
-        val logState = log.map(initialRunState.appendLog).getOrElse(initialRunState)
+        val logState = initialRunState.appendLog(log)
         val logSessionState = session.map(logState.withSession).getOrElse(logState)
         (logSessionState, rightDone)
     }
