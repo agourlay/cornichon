@@ -30,7 +30,7 @@ case class SuccessScenarioReport(scenarioName: String, session: Session, logs: V
   val isSuccess = true
 
   // In case of success, logs are only shown if the scenario contains DebugLogInstruction
-  val shouldShowLogs: Boolean = logs.collect { case d: DebugLogInstruction ⇒ d }.nonEmpty
+  lazy val shouldShowLogs: Boolean = logs.exists(_.isInstanceOf[DebugLogInstruction])
 }
 
 case class IgnoreScenarioReport(scenarioName: String, reason: String, session: Session) extends ScenarioReport {
