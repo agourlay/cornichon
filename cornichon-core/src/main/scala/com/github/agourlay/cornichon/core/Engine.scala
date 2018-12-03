@@ -15,7 +15,6 @@ import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
-import scala.collection.breakOut
 import scala.util.control.NonFatal
 
 class Engine(stepPreparers: List[StepPreparer]) {
@@ -153,7 +152,8 @@ object Engine {
 
   def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int): Vector[FailureLogInstruction] = {
     val failureLogTitle = FailureLogInstruction(s"$title *** FAILED ***", depth)
-    val errorLogs: Vector[FailureLogInstruction] = errors.toList.flatMap(_.renderedMessage.split('\n').map(m ⇒ FailureLogInstruction(m, depth)))(breakOut)
-    failureLogTitle +: errorLogs
+    val errorLogs = errors.toList.flatMap(_.renderedMessage.split('\n').map(m ⇒ FailureLogInstruction(m, depth)))
+    val allLogs = failureLogTitle :: errorLogs
+    allLogs.toVector
   }
 }
