@@ -10,18 +10,20 @@ import monix.eval.Task
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
 
-case class EffectStep(title: String, effect: Session ⇒ Future[Either[CornichonError, Session]], show: Boolean = true) extends ValueStep[Session] {
+case class EffectStep(title: String, effect: Session ⇒ Future[Either[CornichonError, Session]], show: Boolean = true) extends SessionValueStep[Session] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(initialRunState: RunState) =
+  override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
     Task.deferFuture(effect(initialRunState.session)).map(_.leftMap(NonEmptyList.one))
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =
+  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep) =
     errorsToFailureStep(this, initialRunState.depth, errors)
 
-  override def onSuccess(result: Session, initialRunState: RunState, executionTime: Duration) =
-    (successLog(title, initialRunState.depth, show, executionTime), Some(result))
+  override def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction =
+    successLog(title, initialRunState.depth, show, executionTime)
+
+  def resultToSession(result: Session): Session = result
 
   //Does not propagate the second step title
   def chain(secondEffect: EffectStep)(implicit ec: ExecutionContext) =
@@ -35,7 +37,6 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
 
   def chainSync(chainedEffect: Session ⇒ Session)(implicit ec: ExecutionContext) =
     copy(effect = s ⇒ EitherT(effect(s)).map(chainedEffect).value)
-
 }
 
 object EffectStep {

@@ -10,16 +10,18 @@ import scala.concurrent.duration.Duration
 
 // Check how to not hard-code monix.Task using cats-effect to make it public
 // https://github.com/agourlay/cornichon/issues/145
-private[cornichon] case class TaskStep(title: String, effect: Session ⇒ Task[Either[CornichonError, Session]], show: Boolean = true) extends ValueStep[Session] {
+private[cornichon] case class TaskStep(title: String, effect: Session ⇒ Task[Either[CornichonError, Session]], show: Boolean = true) extends SessionValueStep[Session] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(initialRunState: RunState) =
+  override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
     effect(initialRunState.session).map(_.leftMap(NonEmptyList.one))
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState) =
+  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep) =
     errorsToFailureStep(this, initialRunState.depth, errors)
 
-  override def onSuccess(result: Session, initialRunState: RunState, executionTime: Duration) =
-    (successLog(title, initialRunState.depth, show, executionTime), Some(result))
+  override def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction =
+    successLog(title, initialRunState.depth, show, executionTime)
+
+  override def resultToSession(result: Session): Session = result
 }

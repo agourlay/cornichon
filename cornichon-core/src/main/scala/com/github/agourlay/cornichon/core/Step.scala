@@ -26,14 +26,16 @@ object NoOpStep extends Step {
   def run(engine: Engine)(initialRunState: RunState): StepResult = Task.now(initialRunState -> rightDone)
 }
 
-//Step that produces a value
-trait ValueStep[A] extends Step {
+//Step that produces a value and returns a Session
+trait SessionValueStep[A] extends Step {
 
   def run(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either A]
 
   def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
 
-  def onSuccess(result: A, initialRunState: RunState, executionTime: Duration): (LogInstruction, Option[Session])
+  def resultToSession(result: A): Session
+
+  def logOnSuccess(result: A, initialRunState: RunState, executionTime: Duration): LogInstruction
 
   def run(engine: Engine)(initialRunState: RunState): StepResult = {
     val now = System.nanoTime
@@ -44,10 +46,36 @@ trait ValueStep[A] extends Step {
 
       case Right(value) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
-        val (log, session) = onSuccess(value, initialRunState, executionTime)
+        val log = logOnSuccess(value, initialRunState, executionTime)
         val logState = initialRunState.appendLog(log)
-        val logSessionState = session.map(logState.withSession).getOrElse(logState)
+        val session = resultToSession(value)
+        val logSessionState = logState.withSession(session)
         (logSessionState, rightDone)
+    }
+  }
+}
+
+//Step that produces a value but does not return a Session
+trait NoSessionValueStep[A] extends Step {
+
+  def run(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either A]
+
+  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
+
+  def logOnSuccess(result: A, initialRunState: RunState, executionTime: Duration): LogInstruction
+
+  def run(engine: Engine)(initialRunState: RunState): StepResult = {
+    val now = System.nanoTime
+    run(initialRunState).map {
+      case Left(errors) ⇒
+        val (logs, failedStep) = onError(errors, initialRunState)
+        (initialRunState.appendLogs(logs), Left(failedStep))
+
+      case Right(value) ⇒
+        val executionTime = Duration.fromNanos(System.nanoTime - now)
+        val log = logOnSuccess(value, initialRunState, executionTime)
+        val logState = initialRunState.appendLog(log)
+        (logState, rightDone)
     }
   }
 }
