@@ -17,7 +17,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         s ⇒ GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
       ) :: Nil
 
-      val steps = EventuallyStep(nested, eventuallyConf) :: Nil
+      val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true) :: Nil
       val s = Scenario("scenario with eventually", steps)
       engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
     }
@@ -31,7 +31,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
           Assertion.failWith("nop!")
         }
       ) :: Nil
-      val eventuallyStep = EventuallyStep(nested, eventuallyConf)
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(false)
@@ -47,7 +47,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
           Assertion.alwaysValid
         }
       ) :: Nil
-      val eventuallyStep = EventuallyStep(nested, eventuallyConf)
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
@@ -77,7 +77,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
             Assertion.failWith("Failing forever")
         }
       ) :: Nil
-      val eventuallyStep = EventuallyStep(nested, eventuallyConf)
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
       engine.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
@@ -101,6 +101,56 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
                            |         Failing 3
                            |         Fail differently *** FAILED ***
                            |         Failing forever
+                           |""".stripMargin)
+        case other @ _ ⇒
+          fail(s"should have failed but got $other")
+      }
+    }
+
+    "detect oscillation in wrapped step" in {
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      var counter = 1
+      val nested = AssertStep(
+        "Fail with oscillation", s ⇒ {
+          if (counter == 1) {
+            counter += 1
+            Assertion.failWith(s"Failure mode one")
+          } else if (counter == 2) {
+            counter += 1
+            Assertion.failWith(s"Failure mode two")
+          } else
+            Assertion.failWith("Failure mode one")
+        }
+      ) :: Nil
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = false)
+      val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
+      engine.runScenario(Session.newEmpty)(s).map {
+        case f: FailureScenarioReport ⇒
+          f.isSuccess should be(false)
+          f.msg should be("""Scenario 'scenario with different failures' failed:
+                            |
+                            |at step:
+                            |Eventually block with maxDuration = 1 second and interval = 100 milliseconds
+                            |
+                            |with error(s):
+                            |Eventually block failed because it detected an oscillation of errors
+                            |
+                            |at step:
+                            |Fail with oscillation
+                            |
+                            |with error(s):
+                            |Failure mode one
+                            |
+                            |""".stripMargin)
+          val logs = LogInstruction.renderLogs(f.logs.drop(2).dropRight(1), colorized = false)
+          logs should be("""
+                           |      Eventually block with maxDuration = 1 second and interval = 100 milliseconds
+                           |         Fail with oscillation *** FAILED ***
+                           |         Failure mode one
+                           |         Fail with oscillation *** FAILED ***
+                           |         Failure mode two
+                           |         Fail with oscillation *** FAILED ***
+                           |         Failure mode one
                            |""".stripMargin)
         case other @ _ ⇒
           fail(s"should have failed but got $other")

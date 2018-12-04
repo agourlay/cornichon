@@ -10,21 +10,27 @@ import monix.eval.Task
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
+case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationAllowed: Boolean) extends WrapperStep {
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
   override def run(engine: Engine)(initialRunState: RunState): StepResult = {
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: Set[FailedStep]): Task[(Long, RunState, Either[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, RunState, Either[FailedStep, Done])] = {
 
-      // Propagate the logs only if it is a new error
-      def handleFailureLogsPropagation(failedStep: FailedStep, previousRs: RunState, nextRunState: RunState): RunState =
-        if (knownErrors.contains(failedStep))
+      // Propagate the logs only if it is a new error OR not the case of an oscillation we want to report
+      def handleFailureLogsPropagation(failedStep: FailedStep, previousRs: RunState, nextRunState: RunState, oscillationDetected: Boolean): RunState =
+        if (oscillationDetected)
+          nextRunState
+        else if (knownErrors.contains(failedStep))
           previousRs
         else {
           val logsToAdd = nextRunState.logs.diff(previousRs.logs)
           previousRs.appendLogs(logsToAdd)
         }
+
+      // Error already seen in the past with another error in between
+      def oscillationDetectedForFailedStep(fs: FailedStep): Boolean =
+        knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
 
       withDuration {
         val nestedTask = engine.runSteps(nested, runState)
@@ -34,13 +40,16 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
           val remainingTime = conf.maxTime - executionTime
           res.fold(
             failedStep ⇒ {
+              val oscillationDetected = !oscillationAllowed && oscillationDetectedForFailedStep(failedStep)
               // Propagate cleanup steps and session
               val mergedState = runState.prependCleanupStepsFrom(newRunState).withSession(newRunState.session)
-              val propagatedState = handleFailureLogsPropagation(failedStep, mergedState, newRunState)
+              val propagatedState = handleFailureLogsPropagation(failedStep, mergedState, newRunState, oscillationDetected)
 
-              // Check that it could go through another loop after the interval
-              if ((remainingTime - conf.interval).gt(Duration.Zero))
-                retryEventuallySteps(propagatedState, conf.consume(executionTime), retriesNumber + 1, knownErrors + failedStep)
+              if (oscillationDetected) {
+                val fsOscillation = FailedStep.fromSingle(this, EventuallyBlockOscillationDetected(failedStep))
+                Task.now((retriesNumber, propagatedState, Left(fsOscillation)))
+              } else if ((remainingTime - conf.interval).gt(Duration.Zero)) // Check that it could go through another loop after the interval
+                retryEventuallySteps(propagatedState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors)
               else
                 Task.now((retriesNumber, propagatedState, Left(failedStep)))
             },
@@ -65,7 +74,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
     }
 
     withDuration {
-      val eventually = retryEventuallySteps(initialRunState.nestedContext, conf, 0, Set.empty)
+      val eventually = retryEventuallySteps(initialRunState.nestedContext, conf, 0, Nil)
       // make sure that the inner block does not run forever
       eventually.timeoutTo(after = conf.maxTime * 2, backup = timeoutFailedResult)
     }.map {
@@ -105,4 +114,8 @@ case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
 
 case object EventuallyBlockMaxInactivity extends CornichonError {
   lazy val baseErrorMessage = "Eventually block is interrupted due to a long period of inactivity"
+}
+
+case class EventuallyBlockOscillationDetected(failedStep: FailedStep) extends CornichonError {
+  lazy val baseErrorMessage = s"Eventually block failed because it detected an oscillation of errors\n${failedStep.messageForFailedStep}"
 }

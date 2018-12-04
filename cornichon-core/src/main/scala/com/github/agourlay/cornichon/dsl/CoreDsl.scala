@@ -95,10 +95,10 @@ trait CoreDsl extends ProvidedInstances {
       RepeatDuringStep(steps, duration)
     }
 
-  def Eventually(maxDuration: FiniteDuration, interval: FiniteDuration): BodyElementCollector[Step, Step] =
+  def Eventually(maxDuration: FiniteDuration, interval: FiniteDuration, oscillationAllowed: Boolean = true): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
       val conf = EventuallyConf(maxDuration, interval)
-      EventuallyStep(steps, conf)
+      EventuallyStep(steps, conf, oscillationAllowed)
     }
 
   def RepeatConcurrently(times: Int, parallelism: Int, maxTime: FiniteDuration): BodyElementCollector[Step, Step] =
