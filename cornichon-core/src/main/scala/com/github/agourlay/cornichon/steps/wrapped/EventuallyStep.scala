@@ -17,7 +17,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, RunState, Either[FailedStep, Done])] = {
 
-      // Propagate the logs only if it is a new error OR not the case of an oscillation we want to report
+      // Propagate the logs only if it is a new error OR if it's an oscillation we want to report
       def handleFailureLogsPropagation(failedStep: FailedStep, previousRs: RunState, nextRunState: RunState, oscillationDetected: Boolean): RunState =
         if (oscillationDetected)
           nextRunState
@@ -81,17 +81,14 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
       case (run, executionTime) ⇒
         val (retries, retriedRunState, report) = run
         val initialDepth = initialRunState.depth
-        val (fullLogs, xor) = report.fold(
-          failedStep ⇒ {
-            val fullLogs = failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
-            (fullLogs, Left(failedStep))
-          },
-          _ ⇒ {
-            val fullLogs = successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
-            (fullLogs, rightDone)
-          }
-        )
-        (initialRunState.mergeNested(retriedRunState, fullLogs), xor)
+        val fullLogs = report match {
+          case Left(_) ⇒
+            failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
+
+          case _ ⇒
+            successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
+        }
+        (initialRunState.mergeNested(retriedRunState, fullLogs), report)
     }
   }
 }
