@@ -11,31 +11,29 @@ sealed trait LogInstruction {
   lazy val fullMargin: String = LogInstruction.physicalMargin * marginNb
   lazy val completeMessage: String = {
 
-    def withDuration(line: String) = fullMargin + line + duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
+    def withMarginAndDuration(line: String): String =
+      fullMargin + line + duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
 
     // Inject duration at the end of the first line
     message.split('\n').toList match {
       case head :: Nil ⇒
-        withDuration(head)
+        withMarginAndDuration(head)
       case head :: tail ⇒
-        (withDuration(head) :: tail.map(l ⇒ fullMargin + l)).mkString("\n")
-      case _ ⇒ withDuration("")
+        (withMarginAndDuration(head) :: tail.map(l ⇒ fullMargin + l)).mkString("\n")
     }
   }
 }
 
 object LogInstruction {
   val physicalMargin: StringOps = "   "
-  def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String = {
-    val b = StringBuilder.newBuilder
-    logs.foreach {
-      case NoShowLogInstruction(_, _, _) ⇒
-        ()
-      case l: LogInstruction ⇒
-        b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
-    }
-    b.append("\n").result()
-  }
+
+  def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String =
+    logs.foldLeft(StringBuilder.newBuilder) { (b, l) ⇒
+      l match {
+        case NoShowLogInstruction(_, _, _) ⇒ b
+        case l: LogInstruction             ⇒ b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
+      }
+    }.append("\n").result()
 
   def printLogs(logs: List[LogInstruction]): Unit =
     println(renderLogs(logs))

@@ -66,7 +66,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
   // run steps and short-circuit on Task[Either]
   final def runSteps(remainingSteps: List[Step], initialRunState: RunState): StepResult =
-    remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.now((initialRunState, Done.asRight[FailedStep]))) {
+    remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.now((initialRunState, Done.rightDone))) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap {
           case (runState, Right(_))    ⇒ prepareAndRunStep(currentStep, runState)
@@ -77,15 +77,14 @@ class Engine(stepPreparers: List[StepPreparer]) {
   // run steps and aggregate failed steps
   private def runStepsDoNotShortCircuit(steps: List[Step], runState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
     steps.foldLeft(Task.now((runState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
-      case (runStateF, currentStep) ⇒
-        runStateF.flatMap { prepareAndRunStepsAccumulatingErrors(currentStep, _) }
+      case (runStateF, currentStep) ⇒ runStateF.flatMap(prepareAndRunStepsAccumulatingErrors(currentStep))
     }.map(_.fold(
       { errors ⇒ (errors.head._1, Left(errors.map(_._2))) },
       { case (r, _) ⇒ (r, rightDone) }
     ))
   }
 
-  private def prepareAndRunStepsAccumulatingErrors(currentStep: Step, failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
+  private def prepareAndRunStepsAccumulatingErrors(currentStep: Step)(failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
     val runState = failureOrDoneWithRunState.fold(_.head._1, _._1)
     // Inject RunState into Either to align on aggregation shape
     val stepResult = prepareAndRunStep(currentStep, runState).map {
@@ -102,7 +101,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
     stepPreparers.foldLeft[CornichonError Either Step](currentStep.asRight) {
       (stepOrError, stepPreparer) ⇒ stepOrError.flatMap(stepPreparer.run(runState.session))
     }.fold(
-      ce ⇒ Task.now(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
+      ce ⇒ Task.now(Engine.handleErrors(currentStep, runState, NonEmptyList.one(ce))),
       ps ⇒ runStep(runState, ps)
     )
 
