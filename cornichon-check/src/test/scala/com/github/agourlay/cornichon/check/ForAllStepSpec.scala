@@ -4,7 +4,8 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.wrapped.AttachStep
 import monix.eval.Task
 import monix.execution.Scheduler
 import org.scalatest.{ AsyncWordSpec, Matchers }
@@ -25,6 +26,10 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
     name = "integer",
     gen = () ⇒ rc.seededRandom.nextInt(10000))
 
+  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+    name = "integer",
+    gen = () ⇒ rc.seededRandom.nextString(10))
+
   def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
     gen = () ⇒ throw new RuntimeException("boom gen!"))
@@ -32,8 +37,58 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
   val brokenEffect: EffectStep = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
+  val alwaysalidAssertStep = AssertStep("valid", _ ⇒ Assertion.alwaysValid)
 
   "ForAllStep" when {
+
+    "validate invariant" must {
+
+      "correct case" in {
+        val maxRun = 10
+
+        val forAllStep = for_all("double reverse", maxNumberOfRuns = maxRun, stringGen) { s ⇒
+          AssertStep("double reverse string", _ ⇒ GenericEqualityAssertion(s, s.reverse.reverse))
+        }
+        val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
+
+        engine.runScenario(Session.newEmpty)(s).map {
+          case f: SuccessScenarioReport ⇒
+            f.isSuccess should be(true)
+
+          case other @ _ ⇒
+            fail(s"should have succeeded but got $other")
+        }
+      }
+
+      "incorrect case" in {
+        val maxRun = 10
+        var uglyCounter = 0
+        val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+
+        val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ ⇒
+          val assert = if (uglyCounter < 5) alwaysalidAssertStep else brokenEffect
+          AttachStep(incrementEffect :: assert :: Nil)
+        }
+        val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
+
+        engine.runScenario(Session.newEmpty)(s).map {
+          case f: FailureScenarioReport ⇒
+            f.isSuccess should be(false)
+            uglyCounter should be(6)
+            f.msg should be("""Scenario 'scenario with forAllStep' failed:
+                              |
+                              |at step:
+                              |always boom
+                              |
+                              |with error(s):
+                              |boom!
+                              |""".stripMargin)
+          case other @ _ ⇒
+            fail(s"should have failed but got $other")
+        }
+      }
+
+    }
 
     "always terminates" must {
 
