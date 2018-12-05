@@ -9,7 +9,7 @@ import monix.eval.Task
 
 import scala.util.Random
 
-class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, withSeed: Option[Long] = None)(ga: RandomContext ⇒ Generator[A], gb: RandomContext ⇒ Generator[B], gc: RandomContext ⇒ Generator[C], gd: RandomContext ⇒ Generator[D], ge: RandomContext ⇒ Generator[E], gf: RandomContext ⇒ Generator[F])(f: A ⇒ B ⇒ C ⇒ D ⇒ E ⇒ F ⇒ Step) extends WrapperStep {
+case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, withSeed: Option[Long] = None)(ga: RandomContext ⇒ Generator[A], gb: RandomContext ⇒ Generator[B], gc: RandomContext ⇒ Generator[C], gd: RandomContext ⇒ Generator[D], ge: RandomContext ⇒ Generator[E], gf: RandomContext ⇒ Generator[F])(f: A ⇒ B ⇒ C ⇒ D ⇒ E ⇒ F ⇒ Step) extends WrapperStep {
 
   private val initialSeed = withSeed.getOrElse(System.currentTimeMillis())
   private val randomContext = RandomContext(new Random(new java.util.Random(initialSeed)))
@@ -57,7 +57,7 @@ class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, wi
 
   def run(engine: Engine)(initialRunState: RunState): StepResult =
     withDuration {
-      repeatModelOnSuccess(0)(engine, initialRunState.nestedContext)
+      repeatModelOnSuccess(1)(engine, initialRunState.nestedContext)
     }.map {
       case (run, executionTime) ⇒
         val depth = initialRunState.depth
