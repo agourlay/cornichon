@@ -19,7 +19,7 @@ class MathScenario extends CornichonFeature with MathSteps {
 
     }
 
-    Scenario("Random draw should eventually be identical").focused {
+    Scenario("Random draw should eventually be identical") {
 
       When I generate_random_int("random-1")
 
