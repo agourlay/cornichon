@@ -24,8 +24,9 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
         else if (knownErrors.contains(failedStep))
           previousRs
         else {
-          val logsToAdd = nextRunState.logs.diff(previousRs.logs)
-          previousRs.appendLogs(logsToAdd)
+          val logsToAdd = nextRunState.logStack.diff(previousRs.logStack)
+          //LogInstruction.printLogs(logsToAdd)
+          previousRs.recordLogStack(logsToAdd)
         }
 
       // Error already seen in the past with another error in between
@@ -42,7 +43,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
             failedStep ⇒ {
               val oscillationDetected = !oscillationAllowed && oscillationDetectedForFailedStep(failedStep)
               // Propagate cleanup steps and session
-              val mergedState = runState.prependCleanupStepsFrom(newRunState).withSession(newRunState.session)
+              val mergedState = runState.registerCleanupSteps(newRunState.cleanupSteps).withSession(newRunState.session)
               val propagatedState = handleFailureLogsPropagation(failedStep, mergedState, newRunState, oscillationDetected)
 
               if (oscillationDetected) {
@@ -81,14 +82,13 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
       case (run, executionTime) ⇒
         val (retries, retriedRunState, report) = run
         val initialDepth = initialRunState.depth
-        val fullLogs = report match {
+        val wrappedLogStack = report match {
           case Left(_) ⇒
-            failedTitleLog(initialDepth) +: retriedRunState.logs :+ FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime))
-
+            FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
           case _ ⇒
-            successTitleLog(initialDepth) +: retriedRunState.logs :+ SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime))
+            SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ successTitleLog(initialDepth)
         }
-        (initialRunState.mergeNested(retriedRunState, fullLogs), report)
+        (initialRunState.mergeNested(retriedRunState, wrappedLogStack), report)
     }
   }
 }

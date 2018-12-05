@@ -29,7 +29,7 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
       .flatMap { results ⇒
         if (results.size != times) {
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyTimeout(times, results.size))
-          Task.now((nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep)))
+          Task.now((nestedRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep)))
         } else {
           val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
           failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
@@ -38,25 +38,25 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
             val allRunStates = successStepsRun.map(_._1)
             //TODO all logs should be merged?
             // all runs were successful, we pick the first one for the logs
-            val firstStateLog = allRunStates.head.logs
-            val updatedLogs = successTitleLog(initialDepth) +: firstStateLog :+ SuccessLogInstruction(s"Repeat concurrently block succeeded", initialDepth, Some(executionTime))
+            val firstStateLog = allRunStates.head.logStack
+            val wrappedLogStack = SuccessLogInstruction(s"Repeat concurrently block succeeded", initialDepth, Some(executionTime)) +: firstStateLog :+ successTitleLog(initialDepth)
             // TODO merge all sessions together - require diffing Sessions or it produces a huge map full of duplicate as they all started from the same.
             val updatedSession = allRunStates.head.session
             // merge all cleanups steps
             val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
-            val successState = initialRunState.withSession(updatedSession).appendLogs(updatedLogs).prependCleanupSteps(allCleanupSteps)
+            val successState = initialRunState.withSession(updatedSession).recordLogStack(wrappedLogStack).registerCleanupSteps(allCleanupSteps)
             Task.now((successState, rightDone))
           } {
-            case (s, failedXor) ⇒
+            case (s, failedStep) ⇒
               val ratio = s"'${failedStepRuns.size}/$times' run(s)"
-              val updatedLogs = failedTitleLog(initialDepth) +: s.logs :+ FailureLogInstruction(s"Repeat concurrently block failed for $ratio", initialDepth)
-              Task.now((initialRunState.mergeNested(s, updatedLogs), failedXor))
+              val wrapLogStack = FailureLogInstruction(s"Repeat concurrently block failed for $ratio", initialDepth) +: s.logStack :+ failedTitleLog(initialDepth)
+              Task.now((initialRunState.mergeNested(s, wrapLogStack), failedStep))
           }
         }
       }.onErrorRecover {
         case NonFatal(e) ⇒
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyError(e))
-          (nestedRunState.appendLog(failedTitleLog(initialDepth)), Left(failedStep))
+          (nestedRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
       }
   }
 }

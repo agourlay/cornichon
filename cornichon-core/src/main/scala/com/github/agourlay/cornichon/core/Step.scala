@@ -26,41 +26,37 @@ object NoOpStep extends Step {
   def run(engine: Engine)(initialRunState: RunState): StepResult = Task.now(initialRunState -> rightDone)
 }
 
-//Step that produces a value and returns a Session
-trait SessionValueStep[A] extends Step {
+//Step that produces a Session
+trait SessionValueStep extends Step {
 
-  def run(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either A]
+  def run(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either Session]
 
-  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
+  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep)
 
-  def resultToSession(result: A): Session
-
-  def logOnSuccess(result: A, initialRunState: RunState, executionTime: Duration): LogInstruction
+  def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction
 
   def run(engine: Engine)(initialRunState: RunState): StepResult = {
     val now = System.nanoTime
     run(initialRunState).map {
       case Left(errors) ⇒
         val (logs, failedStep) = onError(errors, initialRunState)
-        (initialRunState.appendLogs(logs), Left(failedStep))
+        (initialRunState.recordLogStack(logs), Left(failedStep))
 
-      case Right(value) ⇒
+      case Right(session) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
-        val log = logOnSuccess(value, initialRunState, executionTime)
-        val logState = initialRunState.appendLog(log)
-        val session = resultToSession(value)
-        val logSessionState = logState.withSession(session)
+        val log = logOnSuccess(session, initialRunState, executionTime)
+        val logSessionState = initialRunState.recordLog(log).withSession(session)
         (logSessionState, rightDone)
     }
   }
 }
 
-//Step that produces a value but does not return a Session
-trait NoSessionValueStep[A] extends Step {
+//Step that produces a value to create a log
+trait LogValueStep[A] extends Step {
 
   def run(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either A]
 
-  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep)
+  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep)
 
   def logOnSuccess(result: A, initialRunState: RunState, executionTime: Duration): LogInstruction
 
@@ -68,13 +64,13 @@ trait NoSessionValueStep[A] extends Step {
     val now = System.nanoTime
     run(initialRunState).map {
       case Left(errors) ⇒
-        val (logs, failedStep) = onError(errors, initialRunState)
-        (initialRunState.appendLogs(logs), Left(failedStep))
+        val (logStack, failedStep) = onError(errors, initialRunState)
+        (initialRunState.recordLogStack(logStack), Left(failedStep))
 
       case Right(value) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val log = logOnSuccess(value, initialRunState, executionTime)
-        val logState = initialRunState.appendLog(log)
+        val logState = initialRunState.recordLog(log)
         (logState, rightDone)
     }
   }
@@ -85,21 +81,21 @@ trait LogDecoratorStep extends Step {
 
   def nestedToRun: List[Step]
 
-  def onNestedError(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration): Vector[LogInstruction]
+  def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction]
 
-  def onNestedSuccess(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration): Vector[LogInstruction]
+  def logStackOnNestedSuccess(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction]
 
   def run(engine: Engine)(initialRunState: RunState): StepResult = {
     val now = System.nanoTime
     engine.runSteps(nestedToRun, initialRunState.nestedContext).map {
       case (resState, l @ Left(_)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
-        val decoratedLogs = onNestedError(resState.logs, initialRunState.depth, executionTime)
+        val decoratedLogs = logStackOnNestedError(resState.logStack, initialRunState.depth, executionTime)
         (initialRunState.mergeNested(resState, decoratedLogs), l)
 
       case (resState, r @ Right(_)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
-        val decoratedLogs = onNestedSuccess(resState.logs, initialRunState.depth, executionTime)
+        val decoratedLogs = logStackOnNestedSuccess(resState.logStack, initialRunState.depth, executionTime)
         (initialRunState.mergeNested(resState, decoratedLogs), r)
     }
   }

@@ -26,7 +26,7 @@ sealed trait LogInstruction {
 
 object LogInstruction {
   val physicalMargin: StringOps = "   "
-  def renderLogs(logs: Vector[LogInstruction], colorized: Boolean = true): String = {
+  def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String = {
     val b = StringBuilder.newBuilder
     logs.foreach {
       case NoShowLogInstruction(_, _, _) ⇒
@@ -37,7 +37,7 @@ object LogInstruction {
     b.append("\n").result()
   }
 
-  def printLogs(logs: Vector[LogInstruction]): Unit =
+  def printLogs(logs: List[LogInstruction]): Unit =
     println(renderLogs(logs))
 
 }

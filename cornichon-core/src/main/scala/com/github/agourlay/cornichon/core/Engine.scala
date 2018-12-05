@@ -35,7 +35,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
         } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
 
         val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-        val initialRunState = RunState(session, Vector(titleLog), initMargin + 1, Nil)
+        val initialRunState = RunState(session, titleLog :: Nil, initMargin + 1, Nil)
         val now = System.nanoTime
         stages.run(initialRunState).map {
           case (lastState, aggregatedResult) ⇒
@@ -47,7 +47,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
     if (steps.isEmpty)
       Task.now((runState, validDone))
     else
-      runSteps(steps, runState.appendLog(stageTitle)).map {
+      runSteps(steps, runState.recordLog(stageTitle)).map {
         case (resultState, resultReport) ⇒ (resultState, resultReport.toValidatedNel)
       }
   }
@@ -57,7 +57,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
       Task.now((runState, validDone))
     else {
       // Cleanup steps are consumed to avoid double run
-      val cleanupState = runState.resetCleanupSteps.appendLog(cleanupLog)
+      val cleanupState = runState.resetCleanupSteps.recordLog(cleanupLog)
       runStepsDoNotShortCircuit(runState.cleanupSteps, cleanupState).map {
         case (resultState, resultReport) ⇒ (resultState, resultReport.toValidated)
       }
@@ -100,7 +100,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
 
   private def prepareAndRunStep(currentStep: Step, runState: RunState): Task[(RunState, FailedStep Either Done)] =
     stepPreparers.foldLeft[CornichonError Either Step](currentStep.asRight) {
-      (xorStep, stepPreparer) ⇒ xorStep.flatMap(stepPreparer.run(runState.session))
+      (stepOrError, stepPreparer) ⇒ stepOrError.flatMap(stepPreparer.run(runState.session))
     }.fold(
       ce ⇒ Task.now(Engine.handleErrors(currentStep, runState, NonEmptyList.of(ce))),
       ps ⇒ runStep(runState, ps)
@@ -134,26 +134,25 @@ object Engine {
     else
       NoShowLogInstruction(title, depth, Some(duration))
 
-  def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (Vector[LogInstruction], FailedStep) = {
-    val runLogs = errorLogs(currentStep.title, errors, depth)
+  def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (List[LogInstruction], FailedStep) = {
+    val runLogs = errorLogStack(currentStep.title, errors, depth)
     val failedStep = FailedStep(currentStep, errors)
     (runLogs, failedStep)
   }
 
   def handleErrors(currentStep: Step, runState: RunState, errors: NonEmptyList[CornichonError]): (RunState, FailedStep Either Done) = {
-    val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, errors)
-    (runState.appendLogs(runLogs), failedStep.asLeft)
+    val (errorLogStack, failedStep) = errorsToFailureStep(currentStep, runState.depth, errors)
+    (runState.recordLogStack(errorLogStack), failedStep.asLeft)
   }
 
   def handleThrowable(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) = {
-    val (runLogs, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.one(CornichonError.fromThrowable(error)))
-    (runState.appendLogs(runLogs), failedStep.asLeft)
+    val (errorLogStack, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.one(CornichonError.fromThrowable(error)))
+    (runState.recordLogStack(errorLogStack), failedStep.asLeft)
   }
 
-  def errorLogs(title: String, errors: NonEmptyList[CornichonError], depth: Int): Vector[FailureLogInstruction] = {
+  def errorLogStack(title: String, errors: NonEmptyList[CornichonError], depth: Int): List[FailureLogInstruction] = {
     val failureLogTitle = FailureLogInstruction(s"$title *** FAILED ***", depth)
-    val errorLogs = errors.toList.flatMap(_.renderedMessage.split('\n').map(m ⇒ FailureLogInstruction(m, depth)))
-    val allLogs = failureLogTitle :: errorLogs
-    allLogs.toVector
+    val errorLogs = errors.toList.map(e ⇒ FailureLogInstruction(e.renderedMessage, depth)).reverse
+    errorLogs :+ failureLogTitle
   }
 }

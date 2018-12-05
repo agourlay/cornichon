@@ -9,7 +9,7 @@ import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 
-case class DebugStep(message: Session ⇒ Either[CornichonError, String], title: String = "Debug step") extends NoSessionValueStep[String] {
+case class DebugStep(message: Session ⇒ Either[CornichonError, String], title: String = "Debug step") extends LogValueStep[String] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
@@ -18,11 +18,8 @@ case class DebugStep(message: Session ⇒ Either[CornichonError, String], title:
       message(initialRunState.session).leftMap(NonEmptyList.one)
     }
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[FailureLogInstruction], FailedStep) = {
-    val debugErrorLogs = errorLogs(title, errors, initialRunState.depth)
-    val failedStep = FailedStep(this, errors)
-    (debugErrorLogs, failedStep)
-  }
+  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep) =
+    errorsToFailureStep(this, initialRunState.depth, errors)
 
   override def logOnSuccess(result: String, initialRunState: RunState, executionTime: Duration): LogInstruction =
     DebugLogInstruction(result, initialRunState.depth)

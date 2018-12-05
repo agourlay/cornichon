@@ -5,6 +5,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.util.Timing._
 import com.github.agourlay.cornichon.util.Printing._
@@ -14,9 +15,9 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
 
   val title = s"With data input block $where"
 
-  override def run(engine: Engine)(initialRunState: RunState) = {
+  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
 
-    def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] = {
+    def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] =
       if (inputs.isEmpty) Task.now((runState, rightDone))
       else {
         val currentInputs = inputs.head
@@ -31,12 +32,11 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
               },
               _ ⇒ {
                 // Logs are propagated but not the session
-                runInputs(inputs.tail, runState.appendLogsFrom(filledState))
+                runInputs(inputs.tail, runState.recordLogStack(filledState.logStack))
               }
             )
         }
       }
-    }
 
     r.fillPlaceholders(where)(initialRunState.session)
       .flatMap(CornichonJson.parseDataTable)
@@ -52,16 +52,16 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
           }.map {
             case ((inputsState, inputsRes), executionTime) ⇒
               val initialDepth = initialRunState.depth
-              val (fullLogs, xor) = inputsRes match {
+              val (logStack, res) = inputsRes match {
                 case Right(_) ⇒
-                  val fullLogs = successTitleLog(initialDepth) +: inputsState.logs :+ SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime))
-                  (fullLogs, rightDone)
+                  val wrappedLogStack = SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime)) +: inputsState.logStack :+ successTitleLog(initialDepth)
+                  (wrappedLogStack, rightDone)
                 case Left((failedInputs, failedStep)) ⇒
-                  val fullLogs = failedTitleLog(initialDepth) +: inputsState.logs :+ FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime))
+                  val wrappedLogStack = FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime)) +: inputsState.logStack :+ failedTitleLog(initialDepth)
                   val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
-                  (fullLogs, Left(artificialFailedStep))
+                  (wrappedLogStack, Left(artificialFailedStep))
               }
-              (initialRunState.mergeNested(inputsState, fullLogs), xor)
+              (initialRunState.mergeNested(inputsState, logStack), res)
           }
         }
       )

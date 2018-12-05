@@ -11,9 +11,9 @@ case class AttachAsStep(title: String, nested: List[Step]) extends LogDecoratorS
 
   val nestedToRun = nested
 
-  override def onNestedError(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration) =
-    failedTitleLog(depth) +: resultLogs :+ FailureLogInstruction(s"$title - Failed", depth)
+  override def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] =
+    failedTitleLog(depth) +: resultLogStack :+ FailureLogInstruction(s"$title - Failed", depth, Some(executionTime))
 
-  override def onNestedSuccess(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration) =
-    successTitleLog(depth) +: resultLogs :+ SuccessLogInstruction(s"$title - Succeeded", depth, Some(executionTime))
+  override def logStackOnNestedSuccess(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] =
+    successTitleLog(depth) +: resultLogStack :+ SuccessLogInstruction(s"$title - Succeeded", depth, Some(executionTime))
 }

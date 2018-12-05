@@ -11,7 +11,7 @@ import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 
-case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends NoSessionValueStep[Done] {
+case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends LogValueStep[Done] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
@@ -20,7 +20,7 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
     Task.now(assertion.validated.toEither)
   }
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (Vector[LogInstruction], FailedStep) =
+  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep) =
     errorsToFailureStep(this, initialRunState.depth, errors)
 
   override def logOnSuccess(result: Done, initialRunState: RunState, executionTime: Duration): LogInstruction =

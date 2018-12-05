@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.util.Timing.withDuration
 import monix.eval.Task
 
@@ -13,7 +14,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
   val printElements = s"[${elements.mkString(", ")}]"
   val title = s"RepeatWith block with elements $printElements"
 
-  override def run(engine: Engine)(initialRunState: RunState) = {
+  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
 
     def repeatSuccessSteps(remainingElements: List[String], runState: RunState): Task[(RunState, Either[(String, FailedStep), Done])] =
       remainingElements match {
@@ -21,7 +22,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
           Task.now((runState, rightDone))
         case element :: tail ⇒
           // reset logs at each loop to have the possibility to not aggregate in failure case
-          val rs = runState.resetLogs
+          val rs = runState.resetLogStack
           val runStateWithIndex = rs.addToSession(elementName, element)
           engine.runSteps(nested, runStateWithIndex).flatMap {
             case (onceMoreRunState, stepResult) ⇒
@@ -43,16 +44,16 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
     }.map {
       case ((repeatedState, report), executionTime) ⇒
         val depth = initialRunState.depth
-        val (fullLogs, xor) = report match {
+        val (logStack, res) = report match {
           case Right(_) ⇒
-            val fullLogs = successTitleLog(depth) +: repeatedState.logs :+ SuccessLogInstruction(s"RepeatWith block with elements $printElements succeeded", depth, Some(executionTime))
-            (fullLogs, rightDone)
+            val wrappedLogStack = SuccessLogInstruction(s"RepeatWith block with elements $printElements succeeded", depth, Some(executionTime)) +: repeatedState.logStack :+ successTitleLog(depth)
+            (wrappedLogStack, rightDone)
           case Left((failedElement, failedStep)) ⇒
-            val fullLogs = failedTitleLog(depth) +: repeatedState.logs :+ FailureLogInstruction(s"RepeatWith block with elements $printElements failed at element '$failedElement'", depth, Some(executionTime))
+            val wrappedLogStack = FailureLogInstruction(s"RepeatWith block with elements $printElements failed at element '$failedElement'", depth, Some(executionTime)) +: repeatedState.logStack :+ failedTitleLog(depth)
             val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement, failedStep.errors))
-            (fullLogs, Left(artificialFailedStep))
+            (wrappedLogStack, Left(artificialFailedStep))
         }
-        (initialRunState.mergeNested(repeatedState, fullLogs), xor)
+        (initialRunState.mergeNested(repeatedState, logStack), res)
     }
   }
 }

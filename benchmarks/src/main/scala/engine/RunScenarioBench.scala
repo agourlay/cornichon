@@ -51,12 +51,12 @@ class RunScenarioBench {
     es.shutdown()
   }
 
-  //    [info] Benchmark                (stepsNumber)   Mode  Cnt       Score      Error  Units
-  //    [info] RunScenarioBench.lotsOfSteps             10  thrpt   20  163803.211 ± 596.201  ops/s
-  //    [info] RunScenarioBench.lotsOfSteps             20  thrpt   20  101749.604 ± 181.777  ops/s
-  //    [info] RunScenarioBench.lotsOfSteps             50  thrpt   20   47216.722 ±  72.985  ops/s
-  //    [info] RunScenarioBench.lotsOfSteps            100  thrpt   20   23834.687 ±  35.344  ops/s
-  //    [info] RunScenarioBench.lotsOfSteps            200  thrpt   20   12273.652 ±  12.322  ops/s
+  //    [info] Benchmark                      (stepsNumber)   Mode  Cnt       Score      Error  Units
+  //    [info] RunScenarioBench.lotsOfSteps             10  thrpt   20  195879.681 ±   844.652  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps             20  thrpt   20  120285.792 ±   356.489  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps             50  thrpt   20   54335.137 ±   173.681  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps            100  thrpt   20   29342.949 ±    92.296  ops/s
+  //    [info] RunScenarioBench.lotsOfSteps            200  thrpt   20   14558.981 ±    79.542  ops/s
   @Benchmark
   def lotsOfSteps() = {
     val half = stepsNumber.toInt / 2

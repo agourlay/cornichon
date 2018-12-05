@@ -10,13 +10,13 @@ case class LogDurationStep(nested: List[Step], label: String) extends LogDecorat
 
   val nestedToRun = nested
 
-  override def onNestedError(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration) = {
+  override def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] = {
     val titleLog = DebugLogInstruction(title, depth)
-    titleLog +: resultLogs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime))
+    DebugLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime)) +: resultLogStack :+ titleLog
   }
 
-  override def onNestedSuccess(resultLogs: Vector[LogInstruction], depth: Int, executionTime: Duration) = {
+  override def logStackOnNestedSuccess(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] = {
     val titleLog = DebugLogInstruction(title, depth)
-    titleLog +: resultLogs :+ DebugLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime))
+    DebugLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime)) +: resultLogStack :+ titleLog
   }
 }

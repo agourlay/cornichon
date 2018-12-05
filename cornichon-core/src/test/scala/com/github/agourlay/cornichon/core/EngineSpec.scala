@@ -46,7 +46,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
                   |'5'"""
                     .stripMargin.trim
                 )
-                f.logs.size should be(8)
+                f.logs.size should be(5)
               case _ ⇒ fail(s"Should be a FailedScenarioReport but got \n${res.logs}")
             }
           }
@@ -85,7 +85,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
                 |""".
                   stripMargin
               )
-              f.logs.size should be(13)
+              f.logs.size should be(7)
             }
           case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
         }

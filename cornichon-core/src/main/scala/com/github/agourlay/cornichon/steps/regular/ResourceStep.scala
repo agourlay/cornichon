@@ -13,5 +13,5 @@ case class ResourceStep(title: String, acquire: Step, release: Step) extends Sim
     (initialRunState.mergeNested(resultRunState), failedStep)
 
   def onNestedSuccess(resultRunState: RunState, initialRunState: RunState, executionTime: Duration) =
-    initialRunState.mergeNested(resultRunState).prependCleanupStep(AttachAsStep(s"$title - release step", release :: Nil))
+    initialRunState.mergeNested(resultRunState).registerCleanupStep(AttachAsStep(s"$title - release step", release :: Nil))
 }

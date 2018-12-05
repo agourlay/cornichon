@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
 
@@ -12,24 +13,22 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   val title = s"RetryMax block with limit '$limit'"
 
-  override def run(engine: Engine)(initialRunState: RunState) = {
+  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
 
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
-      engine.runSteps(nested, runState.resetLogs).flatMap {
-        case (retriedState, stepsResult) ⇒
-          stepsResult.fold(
-            failedStep ⇒
-              if (limit > 0)
-                // In case of success all logs are returned but they are not printed by default.
-                retryMaxSteps(runState.appendLogs(retriedState.logs), limit - 1, retriesNumber + 1)
-              else
-                // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Task.now((retriesNumber, retriedState, Left(failedStep))),
-            _ ⇒ {
-              val successState = runState.withSession(retriedState.session).appendLogs(retriedState.logs)
-              Task.now((retriesNumber, successState, rightDone))
-            }
-          )
+      engine.runSteps(nested, runState.resetLogStack).flatMap {
+        case (retriedState, l @ Left(_)) if limit > 0 ⇒
+          // In case of success all logs are returned but they are not printed by default.
+          retryMaxSteps(runState.recordLogStack(retriedState.logStack), limit - 1, retriesNumber + 1)
+
+        case (retriedState, l @ Left(_)) ⇒
+          // In case of failure only the logs of the last run are shown to avoid giant traces.
+          Task.now((retriesNumber, retriedState, l))
+
+        case (retriedState, _) ⇒
+          val successState = runState.withSession(retriedState.session).recordLogStack(retriedState.logStack)
+          Task.now((retriesNumber, successState, rightDone))
+
       }
 
     withDuration {
@@ -38,18 +37,18 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
       case (run, executionTime) ⇒
         val (retries, retriedState, report) = run
         val depth = initialRunState.depth
-        val (fullLogs, xor) = report.fold(
+        val (logStack, res) = report.fold(
           failedStep ⇒ {
-            val fullLogs = failedTitleLog(depth) +: retriedState.logs :+ FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime))
+            val wrappedLogStack = FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime)) +: retriedState.logStack :+ failedTitleLog(depth)
             val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RetryMaxBlockReachedLimit(limit, failedStep.errors))
-            (fullLogs, Left(artificialFailedStep))
+            (wrappedLogStack, Left(artificialFailedStep))
           },
           _ ⇒ {
-            val fullLogs = successTitleLog(depth) +: retriedState.logs :+ SuccessLogInstruction(s"RetryMax block with limit '$limit' succeeded after '$retries' retries", depth, Some(executionTime))
-            (fullLogs, rightDone)
+            val wrappedLogStack = SuccessLogInstruction(s"RetryMax block with limit '$limit' succeeded after '$retries' retries", depth, Some(executionTime)) +: retriedState.logStack :+ successTitleLog(depth)
+            (wrappedLogStack, rightDone)
           }
         )
-        (initialRunState.mergeNested(retriedState, fullLogs), xor)
+        (initialRunState.mergeNested(retriedState, logStack), res)
     }
   }
 }

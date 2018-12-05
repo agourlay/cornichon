@@ -62,7 +62,7 @@ class CheckModelEngine[A, B, C, D, E, F](
                 if (validNext.isEmpty) {
                   val error = NoValidTransitionAvailableForState(property.description)
                   val noTransitionLog = FailureLogInstruction(error.baseErrorMessage, initialRunState.depth)
-                  Task.now((newState.appendLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
+                  Task.now((newState.recordLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
                 } else {
                   // pick one transition according to the weight
                   val nextProperty = pickTransitionAccordingToProbability(rd, validNext)
@@ -85,7 +85,7 @@ class CheckModelEngine[A, B, C, D, E, F](
     // Generate effect
     val invariantStep = property.invariantN(ga, gb, gc, gd, ge, gf)
     val propertyNameLog = InfoLogInstruction(s"${property.description}", initialRunState.depth)
-    invariantStep.run(engine)(initialRunState.appendLog(propertyNameLog))
+    invariantStep.run(engine)(initialRunState.recordLog(propertyNameLog))
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability

@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.syntax.monoid._
-import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
@@ -10,28 +9,17 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
 
   val title = resource.openingTitle
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
-
-    for {
-      resTuple ← resource.use(initialRunState.nestedContext) { engine.runSteps(nested, _) }
-      (results, (resourcedState, resourcedRes)) = resTuple
-      (fullLogs, xor) = {
-        val nestedLogs = resourcedState.logs
-        val initialDepth = initialRunState.depth
-        resourcedRes.fold(
-          failedStep ⇒ {
-            val failureLogs = failedTitleLog(initialDepth) +: nestedLogs :+ FailureLogInstruction(resource.closingTitle, initialDepth)
-            (failureLogs, Left(failedStep))
-          },
-          _ ⇒ {
-            val successLogs = successTitleLog(initialDepth) +: nestedLogs :+ SuccessLogInstruction(resource.closingTitle, initialDepth, None)
-            (successLogs, rightDone)
-          }
-        )
+  override def run(engine: Engine)(initialRunState: RunState): StepResult =
+    resource.use(initialRunState.nestedContext)(engine.runSteps(nested, _)).map { resTuple ⇒
+      val (results, (resourcedState, resourcedRes)) = resTuple
+      val initialDepth = initialRunState.depth
+      val closingTitle = resource.closingTitle
+      val logStack = resourcedRes match {
+        case Left(_) ⇒ FailureLogInstruction(closingTitle, initialDepth) +: resourcedState.logStack :+ failedTitleLog(initialDepth)
+        case _       ⇒ SuccessLogInstruction(closingTitle, initialDepth) +: resourcedState.logStack :+ successTitleLog(initialDepth)
       }
-    } yield {
       val completeSession = resourcedState.session.combine(results)
-      (initialRunState.withSession(completeSession).appendLogs(fullLogs).prependCleanupStepsFrom(initialRunState), xor)
+      // Manual nested merge
+      (initialRunState.withSession(completeSession).recordLogStack(logStack).registerCleanupSteps(initialRunState.cleanupSteps), resourcedRes)
     }
-  }
 }

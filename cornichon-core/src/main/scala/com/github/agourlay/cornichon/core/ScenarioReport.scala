@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.core
 import cats.data.Validated.Valid
 import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.kernel.Monoid
-import com.github.agourlay.cornichon.core.ScenarioReport._
 import monix.eval.Task
 
 import scala.concurrent.Future
@@ -13,7 +12,7 @@ sealed trait ScenarioReport {
   def isSuccess: Boolean
   def scenarioName: String
   def session: Session
-  def logs: Vector[LogInstruction]
+  def logs: List[LogInstruction]
   def duration: FiniteDuration
 }
 
@@ -23,10 +22,9 @@ object ScenarioReport {
       failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logs, duration),
       _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logs, duration)
     )
-  val emptyLogs = Vector.empty[LogInstruction]
 }
 
-case class SuccessScenarioReport(scenarioName: String, session: Session, logs: Vector[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
+case class SuccessScenarioReport(scenarioName: String, session: Session, logs: List[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
   val isSuccess = true
 
   // In case of success, logs are only shown if the scenario contains DebugLogInstruction
@@ -34,18 +32,18 @@ case class SuccessScenarioReport(scenarioName: String, session: Session, logs: V
 }
 
 case class IgnoreScenarioReport(scenarioName: String, reason: String, session: Session) extends ScenarioReport {
-  val logs = emptyLogs
+  val logs = Nil
   val isSuccess = false
   val duration = Duration.Zero
 }
 
 case class PendingScenarioReport(scenarioName: String, session: Session) extends ScenarioReport {
-  val logs = emptyLogs
+  val logs = Nil
   val isSuccess = false
   val duration = Duration.Zero
 }
 
-case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logs: Vector[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
+case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logs: List[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
   val isSuccess = false
 
   val msg =

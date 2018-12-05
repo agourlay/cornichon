@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
+import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.duration.Duration
@@ -10,34 +11,32 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
 
   val title = s"Within block with max duration '$maxDuration'"
 
-  override def run(engine: Engine)(initialRunState: RunState) = {
+  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
 
     val initialDepth = initialRunState.depth
 
     withDuration {
       engine.runSteps(nested, initialRunState.nestedContext)
     }.map {
-      case ((withinState, res), executionTime) ⇒
-        val (fullLogs, xor) = res.fold(
-          failedStep ⇒ {
+      case ((withinState, inputRes), executionTime) ⇒
+        val (logStack, res) = inputRes match {
+          case l @ Left(_) ⇒
             // Failure of the nested steps have a higher priority
-            val fullLogs = failedTitleLog(initialDepth) +: withinState.logs
-            (fullLogs, Left(failedStep))
-          },
-          _ ⇒ {
-            val successLogs = successTitleLog(initialDepth) +: withinState.logs
+            val fullLogs = withinState.logStack :+ failedTitleLog(initialDepth)
+            (fullLogs, l)
+
+          case Right(_) ⇒
             if (executionTime.gt(maxDuration)) {
-              val fullLogs = successLogs :+ FailureLogInstruction("Within block did not complete in time", initialDepth, Some(executionTime))
+              val wrappedLogStack = FailureLogInstruction("Within block did not complete in time", initialDepth, Some(executionTime)) +: withinState.logStack :+ successTitleLog(initialDepth)
               // The nested steps were successful but the did not finish in time, the last step is picked as failed step
-              val failedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
-              (fullLogs, Left(failedStep))
+              val artificialFailedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
+              (wrappedLogStack, Left(artificialFailedStep))
             } else {
-              val fullLogs = successLogs :+ SuccessLogInstruction("Within block succeeded", initialDepth, Some(executionTime))
-              (fullLogs, rightDone)
+              val wrappedLogStack = SuccessLogInstruction("Within block succeeded", initialDepth, Some(executionTime)) +: withinState.logStack :+ successTitleLog(initialDepth)
+              (wrappedLogStack, rightDone)
             }
-          }
-        )
-        (initialRunState.mergeNested(withinState, fullLogs), xor)
+        }
+        (initialRunState.mergeNested(withinState, logStack), res)
 
     }
   }

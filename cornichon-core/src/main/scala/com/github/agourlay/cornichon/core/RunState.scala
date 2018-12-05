@@ -4,43 +4,41 @@ import cats.syntax.monoid._
 
 case class RunState(
     session: Session,
-    logs: Vector[LogInstruction],
+    logStack: List[LogInstruction], // reversed for fast appending
     depth: Int,
     cleanupSteps: List[Step]
 ) {
-
+  lazy val logs = logStack.reverse
   lazy val goDeeper = copy(depth = depth + 1)
-  lazy val resetLogs = copy(logs = Vector.empty)
+  lazy val resetLogStack = copy(logStack = Nil)
 
   // Helper fct to setup up a child nested context for a run which result must be merged back in using 'mergeNested'.
   // Only the session is propagated downstream as it is.
-  lazy val nestedContext = copy(depth = depth + 1, logs = Vector.empty, cleanupSteps = Nil)
-  lazy val sameLevelContext = copy(logs = Vector.empty, cleanupSteps = Nil)
+  lazy val nestedContext = copy(depth = depth + 1, logStack = Nil, cleanupSteps = Nil)
+  lazy val sameLevelContext = copy(logStack = Nil, cleanupSteps = Nil)
 
   def withSession(s: Session) = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]) = withSession(session.addValuesUnsafe(tuples: _*))
   def addToSession(key: String, value: String) = withSession(session.addValueUnsafe(key, value))
   def mergeSessions(other: Session) = copy(session = session.combine(other))
 
-  def withLog(log: LogInstruction) = copy(logs = Vector(log))
+  def withLog(log: LogInstruction) = copy(logStack = log :: Nil)
 
-  // Vector concat. is not great, maybe change logs data structure
-  def appendLogs(add: Vector[LogInstruction]) = copy(logs = logs ++ add)
-  def appendLogsFrom(from: RunState) = appendLogs(from.logs)
-  def appendLog(add: LogInstruction) = copy(logs = logs :+ add)
+  def recordLogStack(add: List[LogInstruction]) = copy(logStack = add ++ logStack)
+  def recordLog(add: LogInstruction) = copy(logStack = add :: logStack)
 
   // Cleanups steps are added in the opposite order
-  def prependCleanupStep(add: Step) = copy(cleanupSteps = add :: cleanupSteps)
-  def prependCleanupSteps(add: List[Step]) = copy(cleanupSteps = add ::: cleanupSteps)
-  def prependCleanupStepsFrom(from: RunState) = copy(cleanupSteps = from.cleanupSteps ::: cleanupSteps)
+  def registerCleanupStep(add: Step) = copy(cleanupSteps = add :: cleanupSteps)
+  def registerCleanupSteps(add: List[Step]) = copy(cleanupSteps = add ::: cleanupSteps)
   lazy val resetCleanupSteps = copy(cleanupSteps = Nil)
 
   // Helpers to propagate info from nested computation
-  def mergeNested(r: RunState): RunState = mergeNested(r, r.logs)
-  def mergeNested(r: RunState, computationLogs: Vector[LogInstruction]): RunState =
-    this.copy(
+  def mergeNested(r: RunState): RunState = mergeNested(r, r.logStack)
+
+  def mergeNested(r: RunState, extraLogStack: List[LogInstruction]): RunState =
+    copy(
       session = r.session, // no need to combine, nested session is built on top of the initial one
       cleanupSteps = r.cleanupSteps ::: this.cleanupSteps, // prepend cleanup steps
-      logs = this.logs ++ computationLogs // logs are often built manually and not extracted from RunState
+      logStack = extraLogStack ++ this.logStack // logs are often built manually and not extracted from RunState
     )
 }

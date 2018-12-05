@@ -19,11 +19,13 @@ class MathScenario extends CornichonFeature with MathSteps {
 
     }
 
-    Scenario("Random draw should eventually be identical") {
+    Scenario("Random draw should eventually be identical").focused {
 
       When I generate_random_int("random-1")
 
-      Eventually(maxDuration = 3 seconds, interval = 1 millis) {
+      Then I print_step("picked <random-1>")
+
+      Eventually(maxDuration = 3.seconds, interval = 1.millis) {
 
         When I generate_random_int("random-2")
 

@@ -41,17 +41,17 @@ case class CheckModelStep[A, B, C, D, E, F](
       Task.now((initialRunState, rightDone))
     else {
       val preRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
-      val checkEngineRunState = initialRunState.nestedContext.appendLog(preRunLog)
+      val checkEngineRunState = initialRunState.nestedContext.recordLog(preRunLog)
       checkEngine.run(engine, checkEngineRunState).flatMap {
         case (newState, Left(fs)) ⇒
           val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
-          val failedState = initialRunState.mergeNested(newState).appendLog(postRunLog)
+          val failedState = initialRunState.mergeNested(newState).recordLog(postRunLog)
           Task.now((failedState, fs.asLeft))
         case (newState, Right(endOfRun)) ⇒
           // success case we are mot propagating the Session so runs do not interfere with each-others
-          val nextRunState = initialRunState.appendLogsFrom(newState).prependCleanupStepsFrom(newState)
+          val nextRunState = initialRunState.recordLogStack(newState.logStack).registerCleanupSteps(newState.cleanupSteps)
           val postRunLog = buildInfoRunLog(runNumber, endOfRun, initialRunState.depth)
-          repeatModelOnSuccess(runNumber + 1)(engine, nextRunState.appendLog(postRunLog))
+          repeatModelOnSuccess(runNumber + 1)(engine, nextRunState.recordLog(postRunLog))
       }
     }
 
@@ -99,10 +99,10 @@ case class CheckModelStep[A, B, C, D, E, F](
         val (checkState, res) = run
         val fullLogs = res match {
           case Left(_) ⇒
-            failedTitleLog(depth) +: checkState.logs :+ FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime))
+            FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
 
           case _ ⇒
-            successTitleLog(depth) +: checkState.logs :+ SuccessLogInstruction(s"Check block succeeded", depth, Some(executionTime))
+            SuccessLogInstruction(s"Check block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
         }
         (initialRunState.mergeNested(checkState, fullLogs), res)
     }
