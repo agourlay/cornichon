@@ -3,11 +3,12 @@ package com.github.agourlay.cornichon.http.server
 import java.net.NetworkInterface
 
 import com.github.agourlay.cornichon.core.CornichonError
-
 import monix.eval.Task
 import monix.execution.Scheduler
 import org.http4s.HttpRoutes
-import org.http4s.server.blaze.BlazeBuilder
+import org.http4s.server.Router
+import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.implicits._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
@@ -35,9 +36,9 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
     }
 
   private def startBlazeServer(port: Int): Task[A] =
-    BlazeBuilder[Task]
+    BlazeServerBuilder[Task]
       .bindHttp(port, selectedInterface)
-      .mountService(mockService, "/")
+      .withHttpApp(Router("/" -> mockService).orNotFound)
       .resource
       .use(server ⇒ useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
 
