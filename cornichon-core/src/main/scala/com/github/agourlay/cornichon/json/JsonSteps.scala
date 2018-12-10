@@ -76,7 +76,7 @@ object JsonSteps {
     private def isImpl[A: Show: Resolvable: Encoder](expected: A, negate: Boolean = false): AssertStep = {
       val expectedShow = expected.show
       val isOrNot = if (negate) "is not" else "is"
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target $isOrNot $expectedShow" else s"$target's field '$jsonPath' $isOrNot $expectedShow"
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target $isOrNot\n$expectedShow" else s"$target's field '$jsonPath' $isOrNot\n$expectedShow"
 
       def handleMatchers(session: Session, sessionValueWithFocusJson: Json) =
         matcherResolver.findAllMatchers(expectedShow).flatMap { matchers ⇒
@@ -287,7 +287,7 @@ object JsonSteps {
     def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
       val assertionTitle = {
         val expectedShow = expected.show
-        val expectedSentence = if (ordered) s"in order is $expectedShow" else s"is $expectedShow"
+        val expectedSentence = if (ordered) s"in order is\n$expectedShow" else s"is\n$expectedShow"
         val titleString = if (jsonPath == JsonPath.root)
           s"$target array $expectedSentence"
         else

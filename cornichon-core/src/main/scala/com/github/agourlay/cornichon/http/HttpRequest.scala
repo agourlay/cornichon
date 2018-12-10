@@ -46,7 +46,7 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
   lazy val compactDescription: String = {
     val base = s"${method.name} $url"
-    val payloadTitle = body.fold("")(p ⇒ s" with body ${p.show}")
+    val payloadTitle = body.fold("")(p ⇒ s" with body\n${p.show}")
     base + payloadTitle + paramsTitle + headersTitle
   }
 }

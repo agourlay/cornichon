@@ -23,7 +23,7 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
     }
   }
 
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
+  def stringGen(rc: RandomContext): Generator[String] = ValueGenerator(
     name = "alphanumeric String (20)",
     gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
 

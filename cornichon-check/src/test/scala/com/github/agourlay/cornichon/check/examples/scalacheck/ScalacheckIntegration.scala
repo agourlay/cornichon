@@ -47,8 +47,8 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
       description = "Flipping a coin model",
       entryPoint = entryPoint,
       transitions = Map(
-        entryPoint -> ((1.0, flipCoin) :: Nil),
-        flipCoin -> ((1.0, flipCoin) :: Nil)
+        entryPoint -> ((100, flipCoin) :: Nil),
+        flipCoin -> ((100, flipCoin) :: Nil)
       )
     )
   }

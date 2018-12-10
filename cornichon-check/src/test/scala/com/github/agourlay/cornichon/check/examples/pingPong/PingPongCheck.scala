@@ -49,9 +49,9 @@ class PingPongCheck extends CornichonFeature with CheckDsl {
       description = "ping pong model",
       entryPoint = entryPoint,
       transitions = Map(
-        entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
-        pingString -> ((0.9, pongInt) :: (0.1, exitPoint) :: Nil),
-        pongInt -> ((0.9, pingString) :: (0.1, exitPoint) :: Nil)
+        entryPoint -> ((50, pingString) :: (50, pongInt) :: Nil),
+        pingString -> ((90, pongInt) :: (10, exitPoint) :: Nil),
+        pongInt -> ((90, pingString) :: (10, exitPoint) :: Nil)
       )
     )
   }

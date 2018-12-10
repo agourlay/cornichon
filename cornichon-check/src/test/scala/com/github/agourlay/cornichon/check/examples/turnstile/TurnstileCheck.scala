@@ -78,10 +78,10 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
       description = "Turnstile acts according to model",
       entryPoint = pushCoin,
       transitions = Map(
-        pushCoin -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
-        pushCoinBlocked -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
-        walkThroughOk -> ((0.7, pushCoin) :: (0.3, walkThroughBlocked) :: Nil),
-        walkThroughBlocked -> ((0.9, pushCoin) :: (0.1, walkThroughBlocked) :: Nil)
+        pushCoin -> ((90, walkThroughOk) :: (10, pushCoinBlocked) :: Nil),
+        pushCoinBlocked -> ((90, walkThroughOk) :: (10, pushCoinBlocked) :: Nil),
+        walkThroughOk -> ((70, pushCoin) :: (30, walkThroughBlocked) :: Nil),
+        walkThroughBlocked -> ((90, pushCoin) :: (10, walkThroughBlocked) :: Nil)
       )
     )
   )

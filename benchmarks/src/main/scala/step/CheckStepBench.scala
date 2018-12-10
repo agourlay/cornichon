@@ -88,9 +88,9 @@ object CheckStepBench {
   val otherAction = dummyProperty1("other action")
   val otherActionTwo = dummyProperty1("other action two")
   val transitions = Map(
-    starting -> ((1.0, otherAction) :: Nil),
-    otherAction -> ((1.0, otherActionTwo) :: Nil),
-    otherActionTwo -> ((1.0, otherAction) :: Nil))
+    starting -> ((100, otherAction) :: Nil),
+    otherAction -> ((100, otherActionTwo) :: Nil),
+    otherActionTwo -> ((100, otherAction) :: Nil))
   val model = Model("model with empty transition for starting", starting, transitions)
   val modelRunner = ModelRunner.make(integerGen)(model)
 

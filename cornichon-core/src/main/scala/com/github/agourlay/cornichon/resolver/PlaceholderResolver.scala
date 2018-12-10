@@ -11,7 +11,7 @@ import com.github.agourlay.cornichon.util.Caching
 class PlaceholderResolver(extractors: Map[String, Mapper]) {
 
   // FIXME - should be globally seeded to reproduce tests
-  val r = new scala.util.Random()
+  private val r = new scala.util.Random()
 
   // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for placeholders.
   // There is one resolver per Feature so the cache is not living too long.

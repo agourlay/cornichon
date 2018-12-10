@@ -44,6 +44,9 @@ import scala.util.{ Failure, Success }
 
 class AkkaHttpClient(ec: ExecutionContext) extends HttpClient {
 
+  // Prevent an internal log WARN from AKKA
+  java.security.Security.setProperty("networkaddress.cache.ttl", "30")
+
   implicit private val system = ActorSystem("cornichon-actor-system")
   implicit private val mat = ActorMaterializer()
   implicit private val iec = ec

@@ -47,7 +47,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
       "detect empty transition for starting property" in {
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property")
-        val transitions = Map(otherAction -> ((1.0, starting) :: Nil))
+        val transitions = Map(otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting property", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
@@ -74,8 +74,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property")
         val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((0.8, starting) :: (0.2, starting) :: Nil))
+          starting -> ((100, otherAction) :: Nil),
+          otherAction -> ((80, starting) :: (20, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
@@ -102,8 +102,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property")
         val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.1, starting) :: Nil))
+          starting -> ((100, otherAction) :: Nil),
+          otherAction -> ((101, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
@@ -119,7 +119,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
                               |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10 and seed=1
                               |
                               |with error(s):
-                              |Transitions definition from 'other property' contains incorrect weight definition (above 1.0)
+                              |Transitions definition from 'other property' contains incorrect weight definition (above 100)
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")
@@ -136,7 +136,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
 
         val starting = dummyProperty1("starting property", step = incrementEffect)
         val otherAction = dummyProperty1("other property")
-        val transitions = Map(starting -> ((1.0, otherAction) :: Nil))
+        val transitions = Map(starting -> ((100, otherAction) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
@@ -162,9 +162,9 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val otherAction = dummyProperty1("other property", step = incrementEffect)
         val otherActionTwo = dummyProperty1("other property two ", step = incrementEffect)
         val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, otherActionTwo) :: Nil),
-          otherActionTwo -> ((1.0, otherAction) :: Nil))
+          starting -> ((100, otherAction) :: Nil),
+          otherAction -> ((100, otherActionTwo) :: Nil),
+          otherActionTwo -> ((100, otherAction) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
@@ -188,8 +188,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property", step = brokenEffect)
         val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, starting) :: Nil))
+          starting -> ((100, otherAction) :: Nil),
+          otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
@@ -216,8 +216,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property", preNeverValid = true)
         val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, starting) :: Nil))
+          starting -> ((100, otherAction) :: Nil),
+          otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
         val seed = 1L
@@ -247,8 +247,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property")
         val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, starting) :: Nil))
+          starting -> ((100, otherAction) :: Nil),
+          otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         // passing a broken gen but the actions are not calling it...should be good!
         val modelRunner = ModelRunner.make(brokenIntGen)(model)
@@ -269,8 +269,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property", callGen = true)
         val transitions = Map(
-          starting -> ((1.0, otherAction) :: Nil),
-          otherAction -> ((1.0, starting) :: Nil))
+          starting -> ((100, otherAction) :: Nil),
+          otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(brokenIntGen)(model)
         val seed = 1L

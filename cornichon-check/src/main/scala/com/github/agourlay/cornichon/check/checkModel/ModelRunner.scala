@@ -15,7 +15,7 @@ case class ModelRunner[A, B, C, D, E, F](
 case class Model[A, B, C, D, E, F](
     description: String,
     entryPoint: PropertyN[A, B, C, D, E, F],
-    transitions: Map[PropertyN[A, B, C, D, E, F], List[(Double, PropertyN[A, B, C, D, E, F])]])
+    transitions: Map[PropertyN[A, B, C, D, E, F], List[(Int, PropertyN[A, B, C, D, E, F])]])
 
 object ModelRunner {
 

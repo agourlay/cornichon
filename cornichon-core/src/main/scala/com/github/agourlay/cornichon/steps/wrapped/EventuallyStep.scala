@@ -15,63 +15,60 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
   override def run(engine: Engine)(initialRunState: RunState): StepResult = {
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, RunState, Either[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
 
-      // Propagate the logs only if it is a new error OR if it's an oscillation we want to report
-      def handleFailureLogsPropagation(failedStep: FailedStep, previousRs: RunState, nextRunState: RunState, oscillationDetected: Boolean): RunState =
-        if (oscillationDetected)
-          nextRunState
-        else if (knownErrors.contains(failedStep))
-          previousRs
-        else {
-          val logsToAdd = nextRunState.logStack.diff(previousRs.logStack)
-          //LogInstruction.printLogs(logsToAdd)
-          previousRs.recordLogStack(logsToAdd)
-        }
+      def distinctErrorsWith(fs: FailedStep): Int =
+        (fs :: knownErrors).toSet.size
+
+      def distinctErrors: Int =
+        knownErrors.toSet.size
 
       // Error already seen in the past with another error in between
       def oscillationDetectedForFailedStep(fs: FailedStep): Boolean =
         knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
 
       withDuration {
-        val nestedTask = engine.runSteps(nested, runState)
-        if (retriesNumber == 0) nestedTask else nestedTask.delayExecution(conf.interval)
+        engine.runSteps(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime
-          res.fold(
-            failedStep ⇒ {
+          res match {
+            case Left(failedStep) ⇒
               val oscillationDetected = !oscillationAllowed && oscillationDetectedForFailedStep(failedStep)
-              // Propagate cleanup steps and session
-              val mergedState = runState.registerCleanupSteps(newRunState.cleanupSteps).withSession(newRunState.session)
-              val propagatedState = handleFailureLogsPropagation(failedStep, mergedState, newRunState, oscillationDetected)
+              val updatedRunState = {
+                if (oscillationDetected) //oscillation detected - return the whole thing
+                  newRunState
+                else if (!knownErrors.contains(failedStep)) //new error - return the whole thing
+                  newRunState
+                else // known error only propagate cleanup steps and session as we know the logs already
+                  runState.registerCleanupSteps(newRunState.cleanupSteps).withSession(newRunState.session)
+              }
 
               if (oscillationDetected) {
                 val fsOscillation = FailedStep.fromSingle(this, EventuallyBlockOscillationDetected(failedStep))
-                Task.now((retriesNumber, propagatedState, Left(fsOscillation)))
+                Task.now((retriesNumber, distinctErrors, updatedRunState, fsOscillation.asLeft))
               } else if ((remainingTime - conf.interval).gt(Duration.Zero)) // Check that it could go through another loop after the interval
-                retryEventuallySteps(propagatedState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors)
-              else
-                Task.now((retriesNumber, propagatedState, Left(failedStep)))
-            },
-            _ ⇒ {
-              val state = runState.mergeNested(newRunState)
+                retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors)
+              else {
+                Task.now((retriesNumber, distinctErrorsWith(failedStep), updatedRunState, failedStep.asLeft))
+              }
+
+            case Right(_) ⇒
               if (remainingTime.gt(Duration.Zero)) {
                 // In case of success all logs are returned but they are not printed by default.
-                Task.now((retriesNumber, state, rightDone))
+                Task.now((retriesNumber, distinctErrors, newRunState, rightDone))
               } else {
                 // Run was a success but the time is up.
                 val failedStep = FailedStep.fromSingle(nested.last, EventuallyBlockSucceedAfterMaxDuration)
-                Task.now((retriesNumber, state, Left(failedStep)))
+                Task.now((retriesNumber, distinctErrors, newRunState, failedStep.asLeft))
               }
-            }
-          )
+          }
       }
     }
 
-    def timeoutFailedResult: Task[(Long, RunState, Either[FailedStep, Done])] = {
+    def timeoutFailedResult: Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
       val fs = FailedStep(this, NonEmptyList.of(EventuallyBlockMaxInactivity))
-      Task.delay((0, initialRunState.nestedContext, fs.asLeft[Done]))
+      Task.delay((0, 0, initialRunState.nestedContext, fs.asLeft[Done]))
     }
 
     withDuration {
@@ -80,13 +77,13 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
       eventually.timeoutTo(after = conf.maxTime * 2, backup = timeoutFailedResult)
     }.map {
       case (run, executionTime) ⇒
-        val (retries, retriedRunState, report) = run
+        val (retries, distinctErrors, retriedRunState, report) = run
         val initialDepth = initialRunState.depth
         val wrappedLogStack = report match {
           case Left(_) ⇒
-            FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
+            FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
           case _ ⇒
-            SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ successTitleLog(initialDepth)
+            SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ successTitleLog(initialDepth)
         }
         (initialRunState.mergeNested(retriedRunState, wrappedLogStack), report)
     }

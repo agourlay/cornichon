@@ -24,7 +24,7 @@ class CheckModelEngine[A, B, C, D, E, F](
   private def checkStepConditions(engine: Engine, initialRunState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
     assertion.run(engine)(initialRunState).map(_._2)
 
-  private def validTransitions(engine: Engine, initialRunState: RunState)(transitions: List[(Double, PropertyN[A, B, C, D, E, F])]): Task[List[(Double, PropertyN[A, B, C, D, E, F], Boolean)]] =
+  private def validTransitions(engine: Engine, initialRunState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] =
     Task.gather {
       transitions.map {
         case (weight, properties) ⇒
@@ -89,9 +89,9 @@ class CheckModelEngine[A, B, C, D, E, F](
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability
-  private def pickTransitionAccordingToProbability[Z](rd: Random, inputs: List[(Double, Z, Boolean)]): Z = {
-    val weight = rd.nextDouble()
-    var cumulativeProbability = 0.0
+  private def pickTransitionAccordingToProbability[Z](rd: Random, inputs: List[(Int, Z, Boolean)]): Z = {
+    val weight = rd.nextInt(100)
+    var cumulativeProbability: Int = 0
     var selected: Option[Z] = None
 
     for (item ← inputs) {
