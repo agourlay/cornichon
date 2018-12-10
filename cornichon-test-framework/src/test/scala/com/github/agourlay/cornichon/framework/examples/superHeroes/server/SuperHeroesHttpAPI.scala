@@ -2,10 +2,7 @@ package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
-import cats.effect.ExitCode
-import cats.effect.concurrent.Ref
 import cats.implicits._
-import fs2.concurrent.SignallingRef
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -171,21 +168,14 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
   )
 
   def start(httpPort: Int): CancelableFuture[HttpServer] =
-    SignallingRef(false).map { signal ⇒
-
-      // The process is started without binding and shutdown through a Signal
-      BlazeServerBuilder[Task]
-        .bindHttp(httpPort, "localhost")
-        .withHttpApp(GZip(routes.orNotFound))
-        .serveWhile(signal, Ref.unsafe(ExitCode.Success))
-        .compile
-        .drain
-        .runToFuture
-
-      new HttpServer(signal)
-    }.runToFuture(s)
+    BlazeServerBuilder[Task]
+      .bindHttp(httpPort, "localhost")
+      .withHttpApp(GZip(routes.orNotFound))
+      .allocate
+      .map { case (_, stop) ⇒ new HttpServer(stop) }
+      .runToFuture
 }
 
-class HttpServer(signal: SignallingRef[Task, Boolean])(implicit s: Scheduler) {
-  def shutdown(): CancelableFuture[Unit] = signal.set(true).runToFuture
+class HttpServer(signal: Task[Unit])(implicit s: Scheduler) {
+  def shutdown(): CancelableFuture[Unit] = signal.runToFuture
 }

@@ -1,9 +1,6 @@
 package com.github.agourlay.cornichon.check.examples.stringReverse
 
-import cats.effect.ExitCode
-import cats.effect.concurrent.Ref
 import com.github.agourlay.cornichon.check.examples.HttpServer
-import fs2.concurrent.SignallingRef
 import monix.eval.Task
 import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s._
@@ -28,18 +25,11 @@ class ReverseAPI extends Http4sDsl[Task] {
   )
 
   def start(httpPort: Int): CancelableFuture[HttpServer] =
-    SignallingRef[Task, Boolean](false).map { signal ⇒
-
-      // The process is started without binding and shutdown through a Signal
-      BlazeServerBuilder[Task]
-        .bindHttp(httpPort, "localhost")
-        .withHttpApp(routes.orNotFound)
-        .serveWhile(signal, Ref.unsafe(ExitCode.Success))
-        .compile
-        .drain
-        .runToFuture
-
-      new HttpServer(signal)
-    }.runToFuture(s)
+    BlazeServerBuilder[Task]
+      .bindHttp(httpPort, "localhost")
+      .withHttpApp(routes.orNotFound)
+      .allocate
+      .map { case (_, stop) ⇒ new HttpServer(stop) }
+      .runToFuture
 }
 

@@ -1,9 +1,6 @@
 package com.github.agourlay.cornichon.check.examples.turnstile
 
-import cats.effect.ExitCode
-import cats.effect.concurrent.Ref
 import com.github.agourlay.cornichon.check.examples.HttpServer
-import fs2.concurrent.SignallingRef
 import monix.eval.Task
 import monix.execution.atomic.AtomicBoolean
 import monix.execution.{ CancelableFuture, Scheduler }
@@ -41,18 +38,12 @@ class TurnstileAPI extends Http4sDsl[Task] {
   )
 
   def start(httpPort: Int): CancelableFuture[HttpServer] =
-    SignallingRef[Task, Boolean](false).map { signal ⇒
+    BlazeServerBuilder[Task]
+      .bindHttp(httpPort, "localhost")
+      .withHttpApp(routes.orNotFound)
+      .allocate
+      .map { case (_, stop) ⇒ new HttpServer(stop) }
+      .runToFuture
 
-      // The process is started without binding and shutdown through a Signal
-      BlazeServerBuilder[Task]
-        .bindHttp(httpPort, "localhost")
-        .withHttpApp(routes.orNotFound)
-        .serveWhile(signal, Ref.unsafe(ExitCode.Success))
-        .compile
-        .drain
-        .runToFuture
-
-      new HttpServer(signal)
-    }.runToFuture(s)
 }
 
