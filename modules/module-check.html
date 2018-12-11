@@ -593,6 +593,7 @@
 <p>A product is defined by the following case class.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">Product</span><span class="o">(</span><span class="n">id</span><span class="k">:</span> <span class="kt">UUID</span><span class="o">,</span> <span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">description</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">price</span><span class="k">:</span> <span class="kt">BigInt</span><span class="o">)</span>
+
 <span class="k">case</span> <span class="k">class</span> <span class="nc">ProductDraft</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">description</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">price</span><span class="k">:</span> <span class="kt">BigInt</span><span class="o">)</span>
 </code></pre></div></div>
 
@@ -868,6 +869,8 @@ Starting scenario 'WebShop acts according to model'
          Run #1 - Max transitions number per run reached
       Check block succeeded (1687 millis)
 </code></pre></div></div>
+
+<p>We can see that we have been interacting with the <code class="highlighter-rouge">CRUD</code> API using randomly generated <code class="highlighter-rouge">ProductDraft</code> and that the eventually consistent contracts seems to hold.</p>
 
 <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/webShop">here</a>.</p>
 
