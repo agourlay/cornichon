@@ -348,17 +348,17 @@ It is possible to replay exactly the same run by passing the seed as a parameter
 
 ### Examples
 
-Now that we have an understanding of the concepts and their semantics, it is time to dive into some concrete examples!
-
-#### Turnstile (no generator and cyclic transitions)
+Now that we have a better understanding of the concepts and their semantics, it is time to dive into some concrete examples!
 
 Having `cornichon-check` freely explore the `transitions` of a `model` can create some interesting configurations.
+
+#### Turnstile
 
 In this example we are going to test an HTTP API implementing a basic turnstile.
 
 This is a rotating gate that let people pass one at the time after payment. In our simplified model it is not possible to pay for several people to pass in advance.
 
-The server exposed two endpoints:
+The server exposes two endpoints:
 - a `POST` request on `/push-coin` to unlock the gate
 - a `POST` request on `/walk-through` to turn the gate
 
@@ -581,9 +581,296 @@ This example shows that designing test scenarios with `cornichon-check` is somet
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile).
 
-#### Web shop Admin (several generators and cyclic transitions)
+#### Web shop Admin (advanced example)
 
-// TODO
+In this example we are going to test an HTTP API implementing a basic web shop.
+
+This web shop offers the possibility to `CRUD` products and to search them via an index that is eventually consistent.
+
+A product is defined by the following case class.
+
+```scala
+case class Product(id: UUID, name: String, description: String, price: BigInt)
+
+case class ProductDraft(name: String, description: String, price: BigInt)
+```
+
+The server exposes the following endpoint:
+- a `POST` request on `/products` to create a product via productDraft
+- a `POST` request on `/products/<id>` to update a product
+- a `DELETE` request on `/products/<id>` to delete a product
+- a `GET` request on `/products` to get all products
+- a `GET` request on `/products/<id>` to get a single product
+- a `GET` request on `products-search` to get all the products in the search index
+
+The contract is that the consistency delay should always be under 10 seconds for all operations being mirrored in the search index.
+
+Let's see if we can test it!
+
+```scala
+package com.github.agourlay.cornichon.check.examples.webShop
+
+import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.check._
+import com.github.agourlay.cornichon.check.checkModel.{ Model, ModelRunner, Property1 }
+
+import io.circe.syntax._
+import io.circe.generic.auto._
+import org.scalacheck.Gen
+import org.scalacheck.rng.Seed
+
+import scala.concurrent.duration._
+
+class WebShopCheck extends CornichonFeature with CheckDsl {
+
+  def feature = Feature("Advanced example of model checks") {
+
+    Scenario("WebShop acts according to model") {
+
+      Given I check_model(maxNumberOfRuns = 1, maxNumberOfTransitions = 5)(webShopModel)
+
+    }
+  }
+
+  val maxIndexSyncTimeout = 10.seconds
+
+  def productDraftGen(rc: RandomContext): Generator[ProductDraft] = OptionalValueGenerator(
+    name = "a product draft",
+    gen = () ⇒ {
+      val nextSeed = rc.seededRandom.nextLong()
+      val params = Gen.Parameters.default.withInitialSeed(nextSeed)
+      val gen =
+        for {
+          name ← Gen.alphaStr
+          description ← Gen.alphaStr
+          price ← Gen.posNum[Int]
+        } yield ProductDraft(name, description, price)
+      gen(params, Seed(nextSeed))
+    }
+  )
+
+  private val noProductsInDb = Property1[ProductDraft](
+    description = "no products in DB",
+    invariant = _ ⇒ Attach {
+      Given I get("/products")
+      Then assert status.is(200)
+      Then assert body.asArray.isEmpty
+    }
+  )
+
+  private val createProduct = Property1[ProductDraft](
+    description = "create a product",
+    invariant = pd ⇒ {
+      val productDraft = pd()
+      val productDraftJson = productDraft.asJson
+      Attach {
+        Given I post("/products").withBody(productDraftJson)
+        Then assert status.is(201)
+        And assert body.ignoring("id").is(productDraftJson)
+        Eventually(maxDuration = maxIndexSyncTimeout, interval = 10.millis) {
+          When I get("/products-search")
+          Then assert status.is(200)
+          And assert body.asArray.ignoringEach("id").contains(productDraftJson)
+        }
+      }
+    })
+
+  private val deleteProduct = Property1[ProductDraft](
+    description = "delete a product",
+    preCondition = Attach {
+      Given I get("/products")
+      Then assert body.asArray.isNotEmpty
+    },
+    invariant = _ ⇒ Attach {
+      Given I get("/products")
+      Then assert status.is(200)
+      Then I save_body_path("$[0].id" -> "id-to-delete")
+      Given I delete("/products/<id-to-delete>")
+      Then assert status.is(200)
+      And I get("/products/<id-to-delete>")
+      Then assert status.is(404)
+      Eventually(maxDuration = maxIndexSyncTimeout, interval = 10.millis) {
+        When I get("/products-search")
+        Then assert status.is(200)
+        And assert body.path("$[*].id").asArray.not_contains("<id-to-delete>")
+      }
+    }
+  )
+
+  private val updateProduct = Property1[ProductDraft](
+    description = "update a product",
+    preCondition = Attach {
+      Given I get("/products")
+      Then assert body.asArray.isNotEmpty
+    },
+    invariant = pd ⇒ {
+      val productDraft = pd()
+      val productDraftJson = productDraft.asJson
+      Attach {
+        Given I get("/products")
+        Then assert status.is(200)
+        Then I save_body_path("$[0].id" -> "id-to-update")
+        Given I post("/products/<id-to-update>").withBody(productDraftJson)
+        Then assert status.is(201)
+        And I get("/products/<id-to-update>")
+        Then assert status.is(200)
+        And assert body.ignoring("id").is(productDraftJson)
+        Eventually(maxDuration = maxIndexSyncTimeout, interval = 10.millis) {
+          When I get("/products-search")
+          Then assert status.is(200)
+          And assert body.asArray.ignoringEach("id").contains(productDraftJson)
+        }
+      }
+    }
+  )
+
+  val webShopModel = ModelRunner.make[ProductDraft](productDraftGen)(
+    Model(
+      description = "WebShop acts according to specification",
+      entryPoint = noProductsInDb,
+      transitions = Map(
+        noProductsInDb -> ((100, createProduct) :: Nil),
+        createProduct -> ((60, createProduct) :: (30, updateProduct) :: (10, deleteProduct) :: Nil),
+        deleteProduct -> ((60, createProduct) :: (30, updateProduct) :: (10, deleteProduct) :: Nil),
+        updateProduct -> ((60, createProduct) :: (30, updateProduct) :: (10, deleteProduct) :: Nil)
+      )
+    )
+  )
+}
+```
+
+Again let's have a look at the logs to see how things go.
+
+```
+Advanced example of model checks:
+Starting scenario 'WebShop acts according to model'
+- WebShop acts according to model (1773 millis)
+
+   Scenario : WebShop acts according to model
+      main steps
+      Checking model 'WebShop acts according to specification' with maxNumberOfRuns=1 and maxNumberOfTransitions=5 and seed=1544538461211
+         Run #1
+            no products in DB
+            Given I GET /products (1273 millis)
+            Then assert status is '200' (10 millis)
+            Then assert response body array size is '0' (16 millis)
+            create a product
+            Given I POST /products with body (57 millis)
+            {
+              "name" : "jXdutCkoyaixnklfwxkhkMgsTsbyPfociilvdJvpQwzphtiz",
+              "description" : "mzrxnejAtarqryivlcyxsxnsiejupevflqswmbrmqiwYzxqlGqRnxOTCJqnibdrYuuBkxg",
+              "price" : 59
+            }
+            Then assert status is '201' (0 millis)
+            And assert response body is (44 millis)
+            {
+              "name" : "jXdutCkoyaixnklfwxkhkMgsTsbyPfociilvdJvpQwzphtiz",
+              "description" : "mzrxnejAtarqryivlcyxsxnsiejupevflqswmbrmqiwYzxqlGqRnxOTCJqnibdrYuuBkxg",
+              "price" : 59
+            } ignoring keys id
+            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+               When I GET /products-search (9 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains { (7 millis)
+                 "name" : "jXdutCkoyaixnklfwxkhkMgsTsbyPfociilvdJvpQwzphtiz",
+                 "description" : "mzrxnejAtarqryivlcyxsxnsiejupevflqswmbrmqiwYzxqlGqRnxOTCJqnibdrYuuBkxg",
+                 "price" : 59
+               }
+            Eventually block succeeded after '0' retries with '0' distinct errors (23 millis)
+            create a product
+            Given I POST /products with body (7 millis)
+            {
+              "name" : "GpeyiwHjgvApjjdsnyaggchjbydhtotlnrkBjdyfNlkuzgaeknkkvcswhiavqapYqvXizYvvqtx",
+              "description" : "oVotxbGOjbzOtkij",
+              "price" : 4e1
+            }
+            Then assert status is '201' (0 millis)
+            And assert response body is (0 millis)
+            {
+              "name" : "GpeyiwHjgvApjjdsnyaggchjbydhtotlnrkBjdyfNlkuzgaeknkkvcswhiavqapYqvXizYvvqtx",
+              "description" : "oVotxbGOjbzOtkij",
+              "price" : 4e1
+            } ignoring keys id
+            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+               When I GET /products-search (4 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains { (0 millis)
+                 "name" : "GpeyiwHjgvApjjdsnyaggchjbydhtotlnrkBjdyfNlkuzgaeknkkvcswhiavqapYqvXizYvvqtx",
+                 "description" : "oVotxbGOjbzOtkij",
+                 "price" : 4e1
+               }
+            Eventually block succeeded after '0' retries with '0' distinct errors (5 millis)
+            delete a product
+            Given I GET /products (4 millis)
+            Then assert status is '200' (0 millis)
+            Then I save path '$[0].id' from body to key 'id-to-delete' (7 millis)
+            Given I DELETE /products/8d336c8b-401b-4026-a736-a417f0e61b24 (7 millis)
+            Then assert status is '200' (0 millis)
+            And I GET /products/8d336c8b-401b-4026-a736-a417f0e61b24 (5 millis)
+            Then assert status is '404' (0 millis)
+            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+               When I GET /products-search (3 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body's array '$[*].id' does not contain 8d336c8b-401b-4026-a736-a417f0e61b24 (3 millis)
+            Eventually block succeeded after '0' retries with '0' distinct errors (8 millis)
+            create a product
+            Given I POST /products with body (5 millis)
+            {
+              "name" : "sJwclYksNqkJLzzlBdfkiyahwnmphqnJdberltwqMqyrokookhnthmbzzwhtBjlzhmlml",
+              "description" : "lsxvnhLawsTjbiPjwolpkhvebsdMhlswRPnyhgfizrMaxwtRzbzfj",
+              "price" : 62
+            }
+            Then assert status is '201' (0 millis)
+            And assert response body is (0 millis)
+            {
+              "name" : "sJwclYksNqkJLzzlBdfkiyahwnmphqnJdberltwqMqyrokookhnthmbzzwhtBjlzhmlml",
+              "description" : "lsxvnhLawsTjbiPjwolpkhvebsdMhlswRPnyhgfizrMaxwtRzbzfj",
+              "price" : 62
+            } ignoring keys id
+            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+               When I GET /products-search (3 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains { (0 millis)
+                 "name" : "sJwclYksNqkJLzzlBdfkiyahwnmphqnJdberltwqMqyrokookhnthmbzzwhtBjlzhmlml",
+                 "description" : "lsxvnhLawsTjbiPjwolpkhvebsdMhlswRPnyhgfizrMaxwtRzbzfj",
+                 "price" : 62
+               }
+            Eventually block succeeded after '0' retries with '0' distinct errors (4 millis)
+            update a product
+            Given I GET /products (4 millis)
+            Then assert status is '200' (0 millis)
+            Then I save path '$[0].id' from body to key 'id-to-update' (0 millis)
+            Given I POST /products/94ceaa16-9a9a-47fd-9f4f-0a7a2d078a3b with body (10 millis)
+            {
+              "name" : "zalxuqZ",
+              "description" : "qktvGZalkbtxzcxad",
+              "price" : 42
+            }
+            Then assert status is '201' (0 millis)
+            And I GET /products/94ceaa16-9a9a-47fd-9f4f-0a7a2d078a3b (7 millis)
+            Then assert status is '200' (0 millis)
+            And assert response body is (0 millis)
+            {
+              "name" : "zalxuqZ",
+              "description" : "qktvGZalkbtxzcxad",
+              "price" : 42
+            } ignoring keys id
+            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+               When I GET /products-search (4 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains { (0 millis)
+                 "name" : "zalxuqZ",
+                 "description" : "qktvGZalkbtxzcxad",
+                 "price" : 42
+               }
+            Eventually block succeeded after '0' retries with '0' distinct errors (5 millis)
+         Run #1 - Max transitions number per run reached
+      Check block succeeded (1687 millis)
+```
+
+We can see that we have been interacting with the `CRUD` API using randomly generated `ProductDraft` and that the eventually consistent contracts seems to hold.
+
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/webShop).
 
 ### Caveats
 
