@@ -170,7 +170,7 @@ Let's unpack this signature:
 - `modelRunner` is the actual definition of the `model`
 - `A B C D E F` refers to the types of the `generators` used in `model` definition (maximum of 6 for the moment)
 
-Such Markov chain wires together a set of `properties` that relate to each others through `transitions` which are chosen according to a given `probability`.
+Such Markov chain wires together a set of `properties` that relate to each others through `transitions` which are chosen according to a given `probability` (between 0 and 100).
 
 A `property` is composed of:
 - a description
@@ -255,9 +255,9 @@ val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
     description = "ping pong model",
     entryPoint = entryPoint,
     transitions = Map(
-      entryPoint -> ((0.5, pingString) :: (0.5, pongInt) :: Nil),
-      pingString -> ((0.9, pongInt) :: (0.1, exitPoint) :: Nil),
-      pongInt -> ((0.9, pingString) :: (0.1, exitPoint) :: Nil)
+      entryPoint -> ((50, pingString) :: (50, pongInt) :: Nil),
+      pingString -> ((90, pongInt) :: (10, exitPoint) :: Nil),
+      pongInt -> ((90, pingString) :: (10, exitPoint) :: Nil)
     )
   )
 }
@@ -417,10 +417,10 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
       description = "Turnstile acts according to model",
       entryPoint = pushCoin,
       transitions = Map(
-        pushCoin -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
-        pushCoinBlocked -> ((0.9, walkThroughOk) :: (0.1, pushCoinBlocked) :: Nil),
-        walkThroughOk -> ((0.7, pushCoin) :: (0.3, walkThroughBlocked) :: Nil),
-        walkThroughBlocked -> ((0.9, pushCoin) :: (0.1, walkThroughBlocked) :: Nil)
+        pushCoin -> ((90, walkThroughOk) :: (10, pushCoinBlocked) :: Nil),
+        pushCoinBlocked -> ((90, walkThroughOk) :: (10, pushCoinBlocked) :: Nil),
+        walkThroughOk -> ((70, pushCoin) :: (30, walkThroughBlocked) :: Nil),
+        walkThroughBlocked -> ((90, pushCoin) :: (10, walkThroughBlocked) :: Nil)
       )
     )
   )
