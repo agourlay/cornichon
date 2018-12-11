@@ -317,13 +317,13 @@ object JsonSteps {
 
     def not_contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
       val prettyElements = elements.mkString(" and ")
-      val title = if (jsonPath == JsonPath.root) s"$target array does not contain $prettyElements" else s"$target's array '$jsonPath' does not contain $prettyElements"
+      val title = if (jsonPath == JsonPath.root) s"$target array does not contain\n$prettyElements" else s"$target's array '$jsonPath' does not contain\n$prettyElements"
       bodyContainsElmt(title, elements, expected = false)
     }
 
     def contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
       val prettyElements = elements.mkString(" and ")
-      val title = if (jsonPath == JsonPath.root) s"$target array contains $prettyElements" else s"$target's array '$jsonPath' contains $prettyElements"
+      val title = if (jsonPath == JsonPath.root) s"$target array contains\n$prettyElements" else s"$target's array '$jsonPath' contains\n$prettyElements"
       bodyContainsElmt(title, elements, expected = true)
     }
 
