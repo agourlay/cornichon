@@ -247,8 +247,16 @@
                         <a href="LogInstruction.html" title="">LogInstruction</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="trait" href="LogValueStep.html" title=""></a>
+                        <a href="LogValueStep.html" title="">LogValueStep</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="object" href="NoOpStep$.html" title=""></a>
                         <a href="NoOpStep$.html" title="">NoOpStep</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="NoShowLogInstruction.html" title=""></a>
+                        <a href="NoShowLogInstruction.html" title="">NoShowLogInstruction</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="class" href="PendingScenarioReport.html" title=""></a>
@@ -279,6 +287,10 @@
                         <a href="SessionKey.html" title="">SessionKey</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
+                        <a class="trait" href="SessionValueStep.html" title=""></a>
+                        <a href="SessionValueStep.html" title="">SessionValueStep</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
                         <a class="trait" href="SimpleWrapperStep.html" title=""></a>
                         <a href="SimpleWrapperStep.html" title="">SimpleWrapperStep</a>
                       </li><li class="current-entities indented5">
@@ -305,10 +317,6 @@
                         <span class="separator"></span>
                         <a class="class" href="SuccessScenarioReport.html" title=""></a>
                         <a href="SuccessScenarioReport.html" title="">SuccessScenarioReport</a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="trait" href="ValueStep.html" title=""></a>
-                        <a href="ValueStep.html" title="">ValueStep</a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="class" href="WarningLogInstruction.html" title=""></a>
@@ -568,7 +576,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="BasicError.html"><span class="name">BasicError</span></a><span class="params">(<span name="error">error: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="BasicError.html"><span class="name">BasicError</span></a><span class="params">(<span name="error">error: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -584,7 +592,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="Config.html"><span class="name">Config</span></a><span class="params">(<span name="executeScenariosInParallel">executeScenariosInParallel: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">true</span></span>, <span name="requestTimeout">requestTimeout: <a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a> = <span class="symbol">2000.millis</span></span>, <span name="baseUrl">baseUrl: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;&quot;</span></span>, <span name="traceRequests">traceRequests: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="useExperimentalHttp4sClient">useExperimentalHttp4sClient: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="warnOnDuplicateHeaders">warnOnDuplicateHeaders: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="failOnDuplicateHeaders">failOnDuplicateHeaders: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="addAcceptGzipByDefault">addAcceptGzipByDefault: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="Config.html"><span class="name">Config</span></a><span class="params">(<span name="executeScenariosInParallel">executeScenariosInParallel: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">true</span></span>, <span name="requestTimeout">requestTimeout: <a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a> = <span class="symbol">2000.millis</span></span>, <span name="baseUrl">baseUrl: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;&quot;</span></span>, <span name="traceRequests">traceRequests: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="useExperimentalHttp4sClient">useExperimentalHttp4sClient: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="warnOnDuplicateHeaders">warnOnDuplicateHeaders: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="failOnDuplicateHeaders">failOnDuplicateHeaders: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="addAcceptGzipByDefault">addAcceptGzipByDefault: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -600,7 +608,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="" href="CornichonError.html"><span class="name">CornichonError</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="CornichonError.html"><span class="name">CornichonError</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
@@ -616,7 +624,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="CornichonException.html"><span class="name">CornichonException</span></a><span class="params">(<span name="m">m: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Exception">Exception</span> with <a href="http://www.scala-lang.org/api/2.12.7/scala/util/control/NoStackTrace.html#scala.util.control.NoStackTrace" class="extype" name="scala.util.control.NoStackTrace">NoStackTrace</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="CornichonException.html"><span class="name">CornichonException</span></a><span class="params">(<span name="m">m: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Exception">Exception</span> with <a href="http://www.scala-lang.org/api/2.12.8/scala/util/control/NoStackTrace.html#scala.util.control.NoStackTrace" class="extype" name="scala.util.control.NoStackTrace">NoStackTrace</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -632,7 +640,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="DebugLogInstruction.html"><span class="name">DebugLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="DebugLogInstruction.html"><span class="name">DebugLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -648,7 +656,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="Done.html"><span class="name">Done</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="Done.html"><span class="name">Done</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
@@ -664,7 +672,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="Engine.html"><span class="name">Engine</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="Engine.html"><span class="name">Engine</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
@@ -680,7 +688,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="FailedStep.html"><span class="name">FailedStep</span></a><span class="params">(<span name="step">step: <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FailedStep.html"><span class="name">FailedStep</span></a><span class="params">(<span name="step">step: <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>, <span name="errors">errors: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a>]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -696,7 +704,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="FailureLogInstruction.html"><span class="name">FailureLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FailureLogInstruction.html"><span class="name">FailureLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -712,7 +720,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="FailureScenarioReport.html"><span class="name">FailureScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="failedSteps">failedSteps: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>]</span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logs">logs: <span class="extype" name="scala.Vector">Vector</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FailureScenarioReport.html"><span class="name">FailureScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="failedSteps">failedSteps: <a href="http://typelevel.org/cats/api/cats/data/NonEmptyList.html#cats.data.NonEmptyList" class="extype" name="cats.data.NonEmptyList">NonEmptyList</a>[<a href="FailedStep.html" class="extype" name="com.github.agourlay.cornichon.core.FailedStep">FailedStep</a>]</span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logs">logs: <span class="extype" name="scala.List">List</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -728,7 +736,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="FeatureDef.html"><span class="name">FeatureDef</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="scenarios">scenarios: <span class="extype" name="scala.List">List</span>[<a href="Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a>]</span>, <span name="ignored">ignored: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FeatureDef.html"><span class="name">FeatureDef</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="scenarios">scenarios: <span class="extype" name="scala.List">List</span>[<a href="Scenario.html" class="extype" name="com.github.agourlay.cornichon.core.Scenario">Scenario</a>]</span>, <span name="ignored">ignored: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -744,7 +752,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="FeatureExecutionContext.html"><span class="name">FeatureExecutionContext</span></a><span class="params">(<span name="beforeSteps">beforeSteps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>] = <span class="symbol">Nil</span></span>, <span name="finallySteps">finallySteps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>] = <span class="symbol">Nil</span></span>, <span name="featureIgnored">featureIgnored: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="focusedScenarios">focusedScenarios: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Set.empty</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FeatureExecutionContext.html"><span class="name">FeatureExecutionContext</span></a><span class="params">(<span name="beforeSteps">beforeSteps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>] = <span class="symbol">Nil</span></span>, <span name="finallySteps">finallySteps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>] = <span class="symbol">Nil</span></span>, <span name="featureIgnored">featureIgnored: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="focusedScenarios">focusedScenarios: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Set.empty</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -760,7 +768,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="IgnoreScenarioReport.html"><span class="name">IgnoreScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="reason">reason: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="IgnoreScenarioReport.html"><span class="name">IgnoreScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="reason">reason: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -776,7 +784,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="IllegalKey.html"><span class="name">IllegalKey</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="IllegalKey.html"><span class="name">IllegalKey</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -792,7 +800,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="IndiceNotFoundForKey.html"><span class="name">IndiceNotFoundForKey</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="indice">indice: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="values">values: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="IndiceNotFoundForKey.html"><span class="name">IndiceNotFoundForKey</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="indice">indice: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="values">values: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -808,7 +816,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="InfoLogInstruction.html"><span class="name">InfoLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="InfoLogInstruction.html"><span class="name">InfoLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -824,7 +832,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="KeyNotFoundInSession.html"><span class="name">KeyNotFoundInSession</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="s">s: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="KeyNotFoundInSession.html"><span class="name">KeyNotFoundInSession</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="s">s: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -856,7 +864,39 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="" href="LogInstruction.html"><span class="name">LogInstruction</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="LogInstruction.html"><span class="name">LogInstruction</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.core.LogValueStep" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LogValueStep[A]extendsStep"></a><a id="LogValueStep[A]:LogValueStep[A]"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/index.html#LogValueStep[A]extendsStep" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="LogValueStep.html"><span class="name">LogValueStep</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.core.NoShowLogInstruction" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NoShowLogInstructionextendsLogInstructionwithProductwithSerializable"></a><a id="NoShowLogInstruction:NoShowLogInstruction"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/index.html#NoShowLogInstructionextendsLogInstructionwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="NoShowLogInstruction.html"><span class="name">NoShowLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -872,7 +912,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="PendingScenarioReport.html"><span class="name">PendingScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="PendingScenarioReport.html"><span class="name">PendingScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -888,7 +928,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="RunState.html"><span class="name">RunState</span></a><span class="params">(<span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logs">logs: <span class="extype" name="scala.Vector">Vector</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="depth">depth: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="cleanupSteps">cleanupSteps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="RunState.html"><span class="name">RunState</span></a><span class="params">(<span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logStack">logStack: <span class="extype" name="scala.List">List</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="depth">depth: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="cleanupSteps">cleanupSteps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -904,7 +944,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="Scenario.html"><span class="name">Scenario</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="steps">steps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="ignored">ignored: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="pending">pending: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="focused">focused: <a href="http://www.scala-lang.org/api/2.12.7/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="Scenario.html"><span class="name">Scenario</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="steps">steps: <span class="extype" name="scala.List">List</span>[<a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a>]</span>, <span name="ignored">ignored: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="pending">pending: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>, <span name="focused">focused: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -920,7 +960,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="" href="ScenarioReport.html"><span class="name">ScenarioReport</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="ScenarioReport.html"><span class="name">ScenarioReport</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
@@ -936,7 +976,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="ScenarioTitleLogInstruction.html"><span class="name">ScenarioTitleLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="ScenarioTitleLogInstruction.html"><span class="name">ScenarioTitleLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -952,7 +992,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="Session.html"><span class="name">Session</span></a><span class="params">(<span name="content">content: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyVal.html#scala.AnyVal" class="extype" name="scala.AnyVal">AnyVal</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="Session.html"><span class="name">Session</span></a><span class="params">(<span name="content">content: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyVal.html#scala.AnyVal" class="extype" name="scala.AnyVal">AnyVal</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -968,7 +1008,23 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="SessionKey.html"><span class="name">SessionKey</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="index">index: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="SessionKey.html"><span class="name">SessionKey</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="index">index: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+      </span>
+      
+      
+    </li><li name="com.github.agourlay.cornichon.core.SessionValueStep" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="SessionValueStepextendsStep"></a><a id="SessionValueStep:SessionValueStep"></a>
+      <span class="permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/core/index.html#SessionValueStepextendsStep" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="SessionValueStep.html"><span class="name">SessionValueStep</span></a><span class="result"> extends <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
       </span>
       
       
@@ -1000,7 +1056,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="" href="Step.html"><span class="name">Step</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="Step.html"><span class="name">Step</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
@@ -1016,7 +1072,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="StepExecutionError.html"><span class="name">StepExecutionError</span></a><span class="params">(<span name="e">e: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="StepExecutionError.html"><span class="name">StepExecutionError</span></a><span class="params">(<span name="e">e: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1032,7 +1088,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="" href="StepPreparer.html"><span class="name">StepPreparer</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="StepPreparer.html"><span class="name">StepPreparer</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
@@ -1048,7 +1104,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="StepPreparerTitleResolver.html"><span class="name">StepPreparerTitleResolver</span></a><span class="params">(<span name="resolver">resolver: <a href="../resolver/PlaceholderResolver.html" class="extype" name="com.github.agourlay.cornichon.resolver.PlaceholderResolver">PlaceholderResolver</a></span>)</span><span class="result"> extends <a href="StepPreparer.html" class="extype" name="com.github.agourlay.cornichon.core.StepPreparer">StepPreparer</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="StepPreparerTitleResolver.html"><span class="name">StepPreparerTitleResolver</span></a><span class="params">(<span name="resolver">resolver: <a href="../resolver/PlaceholderResolver.html" class="extype" name="com.github.agourlay.cornichon.resolver.PlaceholderResolver">PlaceholderResolver</a></span>)</span><span class="result"> extends <a href="StepPreparer.html" class="extype" name="com.github.agourlay.cornichon.core.StepPreparer">StepPreparer</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1064,7 +1120,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="SuccessLogInstruction.html"><span class="name">SuccessLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="SuccessLogInstruction.html"><span class="name">SuccessLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1080,23 +1136,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="SuccessScenarioReport.html"><span class="name">SuccessScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logs">logs: <span class="extype" name="scala.Vector">Vector</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
-      </span>
-      
-      
-    </li><li name="com.github.agourlay.cornichon.core.ValueStep" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="ValueStep[A]extendsStep"></a><a id="ValueStep[A]:ValueStep[A]"></a>
-      <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/core/index.html#ValueStep[A]extendsStep" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="ValueStep.html"><span class="name">ValueStep</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <a href="Step.html" class="extype" name="com.github.agourlay.cornichon.core.Step">Step</a></span>
+        <a title="" href="SuccessScenarioReport.html"><span class="name">SuccessScenarioReport</span></a><span class="params">(<span name="scenarioName">scenarioName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="session">session: <a href="Session.html" class="extype" name="com.github.agourlay.cornichon.core.Session">Session</a></span>, <span name="logs">logs: <span class="extype" name="scala.List">List</span>[<a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a>]</span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="result"> extends <a href="ScenarioReport.html" class="extype" name="com.github.agourlay.cornichon.core.ScenarioReport">ScenarioReport</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1112,7 +1152,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="WarningLogInstruction.html"><span class="name">WarningLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.7/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.7/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.7/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="WarningLogInstruction.html"><span class="name">WarningLogInstruction</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="marginNb">marginNb: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="duration">duration: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/concurrent/duration/Duration.html#scala.concurrent.duration.Duration" class="extype" name="scala.concurrent.duration.Duration">Duration</a>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="LogInstruction.html" class="extype" name="com.github.agourlay.cornichon.core.LogInstruction">LogInstruction</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1152,7 +1192,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="Config$.html"><span class="name">Config</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="Config$.html"><span class="name">Config</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1184,7 +1224,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="Done$.html"><span class="name">Done</span></a><span class="result"> extends <a href="Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="Done$.html"><span class="name">Done</span></a><span class="result"> extends <a href="Done.html" class="extype" name="com.github.agourlay.cornichon.core.Done">Done</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1200,7 +1240,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="EmptyKey$.html"><span class="name">EmptyKey</span></a><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="EmptyKey$.html"><span class="name">EmptyKey</span></a><span class="result"> extends <a href="CornichonError.html" class="extype" name="com.github.agourlay.cornichon.core.CornichonError">CornichonError</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1232,7 +1272,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="FailedStep$.html"><span class="name">FailedStep</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FailedStep$.html"><span class="name">FailedStep</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1248,7 +1288,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="FeatureExecutionContext$.html"><span class="name">FeatureExecutionContext</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="FeatureExecutionContext$.html"><span class="name">FeatureExecutionContext</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1312,7 +1352,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="Session$.html"><span class="name">Session</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="Session$.html"><span class="name">Session</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
@@ -1328,7 +1368,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="SessionKey$.html"><span class="name">SessionKey</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.7/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <a title="" href="SessionKey$.html"><span class="name">SessionKey</span></a><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       
