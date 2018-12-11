@@ -11,8 +11,14 @@ sealed trait LogInstruction {
   lazy val fullMargin: String = LogInstruction.physicalMargin * marginNb
   lazy val completeMessage: String = {
 
-    def withMarginAndDuration(line: String): String =
-      fullMargin + line + duration.fold("")(d ⇒ s" (${d.toMillis} millis)")
+    def withMarginAndDuration(line: String): String = {
+      val d = duration match {
+        case None                           ⇒ ""
+        case Some(dur) if dur.toMillis == 0 ⇒ s" [${dur.toMicros} μs]"
+        case Some(dur)                      ⇒ s" [${dur.toMillis} ms]"
+      }
+      fullMargin + line + d
+    }
 
     // Inject duration at the end of the first line
     message.split('\n').toList match {
