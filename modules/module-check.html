@@ -746,128 +746,223 @@
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Advanced example of model checks:
 Starting scenario 'WebShop acts according to model'
-- WebShop acts according to model (1773 millis)
+- WebShop acts according to model (42747 millis)
 
    Scenario : WebShop acts according to model
       main steps
-      Checking model 'WebShop acts according to specification' with maxNumberOfRuns=1 and maxNumberOfTransitions=5 and seed=1544538461211
+      Checking model 'WebShop acts according to specification' with maxNumberOfRuns=1 and maxNumberOfTransitions=5 and seed=1544540492543
          Run #1
             no products in DB
-            Given I GET /products (1273 millis)
+            Given I GET /products (1328 millis)
             Then assert status is '200' (10 millis)
-            Then assert response body array size is '0' (16 millis)
+            Then assert response body array size is '0' (15 millis)
             create a product
-            Given I POST /products with body (57 millis)
+            Given I POST /products with body (59 millis)
             {
-              "name" : "jXdutCkoyaixnklfwxkhkMgsTsbyPfociilvdJvpQwzphtiz",
-              "description" : "mzrxnejAtarqryivlcyxsxnsiejupevflqswmbrmqiwYzxqlGqRnxOTCJqnibdrYuuBkxg",
-              "price" : 59
+              "name" : "rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz",
+              "description" : "flaukuIykZksgwsxznkayAiiojwgndtiffT",
+              "price" : 32
             }
             Then assert status is '201' (0 millis)
-            And assert response body is (44 millis)
+            And assert response body is (41 millis)
             {
-              "name" : "jXdutCkoyaixnklfwxkhkMgsTsbyPfociilvdJvpQwzphtiz",
-              "description" : "mzrxnejAtarqryivlcyxsxnsiejupevflqswmbrmqiwYzxqlGqRnxOTCJqnibdrYuuBkxg",
-              "price" : 59
+              "name" : "rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz",
+              "description" : "flaukuIykZksgwsxznkayAiiojwgndtiffT",
+              "price" : 32
             } ignoring keys id
-            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
                When I GET /products-search (9 millis)
                Then assert status is '200' (0 millis)
-               And assert response body array contains { (7 millis)
-                 "name" : "jXdutCkoyaixnklfwxkhkMgsTsbyPfociilvdJvpQwzphtiz",
-                 "description" : "mzrxnejAtarqryivlcyxsxnsiejupevflqswmbrmqiwYzxqlGqRnxOTCJqnibdrYuuBkxg",
-                 "price" : 59
-               }
-            Eventually block succeeded after '0' retries with '0' distinct errors (23 millis)
-            create a product
-            Given I POST /products with body (7 millis)
-            {
-              "name" : "GpeyiwHjgvApjjdsnyaggchjbydhtotlnrkBjdyfNlkuzgaeknkkvcswhiavqapYqvXizYvvqtx",
-              "description" : "oVotxbGOjbzOtkij",
-              "price" : 4e1
-            }
-            Then assert status is '201' (0 millis)
-            And assert response body is (0 millis)
-            {
-              "name" : "GpeyiwHjgvApjjdsnyaggchjbydhtotlnrkBjdyfNlkuzgaeknkkvcswhiavqapYqvXizYvvqtx",
-              "description" : "oVotxbGOjbzOtkij",
-              "price" : 4e1
-            } ignoring keys id
-            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-               When I GET /products-search (4 millis)
+               And assert response body array contains
+               {
+                 "name" : "rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz",
+                 "description" : "flaukuIykZksgwsxznkayAiiojwgndtiffT",
+                 "price" : 32
+               } *** FAILED ***
+               expected array to contain
+               '{
+                 "name" : "rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz",
+                 "description" : "flaukuIykZksgwsxznkayAiiojwgndtiffT",
+                 "price" : 32
+               }'
+               but it is not the case with array:
+               [
+               ]
+               When I GET /products-search (5 millis)
                Then assert status is '200' (0 millis)
-               And assert response body array contains { (0 millis)
-                 "name" : "GpeyiwHjgvApjjdsnyaggchjbydhtotlnrkBjdyfNlkuzgaeknkkvcswhiavqapYqvXizYvvqtx",
-                 "description" : "oVotxbGOjbzOtkij",
-                 "price" : 4e1
+               And assert response body array contains (0 millis)
+               {
+                 "name" : "rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz",
+                 "description" : "flaukuIykZksgwsxznkayAiiojwgndtiffT",
+                 "price" : 32
                }
-            Eventually block succeeded after '0' retries with '0' distinct errors (5 millis)
-            delete a product
-            Given I GET /products (4 millis)
-            Then assert status is '200' (0 millis)
-            Then I save path '$[0].id' from body to key 'id-to-delete' (7 millis)
-            Given I DELETE /products/8d336c8b-401b-4026-a736-a417f0e61b24 (7 millis)
-            Then assert status is '200' (0 millis)
-            And I GET /products/8d336c8b-401b-4026-a736-a417f0e61b24 (5 millis)
-            Then assert status is '404' (0 millis)
-            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-               When I GET /products-search (3 millis)
-               Then assert status is '200' (0 millis)
-               And assert response body's array '$[*].id' does not contain 8d336c8b-401b-4026-a736-a417f0e61b24 (3 millis)
-            Eventually block succeeded after '0' retries with '0' distinct errors (8 millis)
-            create a product
-            Given I POST /products with body (5 millis)
-            {
-              "name" : "sJwclYksNqkJLzzlBdfkiyahwnmphqnJdberltwqMqyrokookhnthmbzzwhtBjlzhmlml",
-              "description" : "lsxvnhLawsTjbiPjwolpkhvebsdMhlswRPnyhgfizrMaxwtRzbzfj",
-              "price" : 62
-            }
-            Then assert status is '201' (0 millis)
-            And assert response body is (0 millis)
-            {
-              "name" : "sJwclYksNqkJLzzlBdfkiyahwnmphqnJdberltwqMqyrokookhnthmbzzwhtBjlzhmlml",
-              "description" : "lsxvnhLawsTjbiPjwolpkhvebsdMhlswRPnyhgfizrMaxwtRzbzfj",
-              "price" : 62
-            } ignoring keys id
-            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-               When I GET /products-search (3 millis)
-               Then assert status is '200' (0 millis)
-               And assert response body array contains { (0 millis)
-                 "name" : "sJwclYksNqkJLzzlBdfkiyahwnmphqnJdberltwqMqyrokookhnthmbzzwhtBjlzhmlml",
-                 "description" : "lsxvnhLawsTjbiPjwolpkhvebsdMhlswRPnyhgfizrMaxwtRzbzfj",
-                 "price" : 62
-               }
-            Eventually block succeeded after '0' retries with '0' distinct errors (4 millis)
+            Eventually block succeeded after '552' retries with '1' distinct errors (8972 millis)
             update a product
-            Given I GET /products (4 millis)
+            Given I GET /products (2 millis)
             Then assert status is '200' (0 millis)
-            Then I save path '$[0].id' from body to key 'id-to-update' (0 millis)
-            Given I POST /products/94ceaa16-9a9a-47fd-9f4f-0a7a2d078a3b with body (10 millis)
+            Then I save path '$[0].id' from body to key 'id-to-update' (8 millis)
+            Given I POST /products/ee668765-b274-462d-ace8-73e2464286ca with body (11 millis)
             {
-              "name" : "zalxuqZ",
-              "description" : "qktvGZalkbtxzcxad",
-              "price" : 42
+              "name" : "usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn",
+              "description" : "wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva",
+              "price" : 46
             }
             Then assert status is '201' (0 millis)
-            And I GET /products/94ceaa16-9a9a-47fd-9f4f-0a7a2d078a3b (7 millis)
+            And I GET /products/ee668765-b274-462d-ace8-73e2464286ca (6 millis)
             Then assert status is '200' (0 millis)
             And assert response body is (0 millis)
             {
-              "name" : "zalxuqZ",
-              "description" : "qktvGZalkbtxzcxad",
-              "price" : 42
+              "name" : "usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn",
+              "description" : "wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva",
+              "price" : 46
             } ignoring keys id
-            Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-               When I GET /products-search (4 millis)
+            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
+               When I GET /products-search (2 millis)
                Then assert status is '200' (0 millis)
-               And assert response body array contains { (0 millis)
-                 "name" : "zalxuqZ",
-                 "description" : "qktvGZalkbtxzcxad",
-                 "price" : 42
+               And assert response body array contains
+               {
+                 "name" : "usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn",
+                 "description" : "wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva",
+                 "price" : 46
+               } *** FAILED ***
+               expected array to contain
+               '{
+                 "name" : "usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn",
+                 "description" : "wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva",
+                 "price" : 46
+               }'
+               but it is not the case with array:
+               [
+                 {
+                   "id" : "ee668765-b274-462d-ace8-73e2464286ca",
+                   "name" : "rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz",
+                   "description" : "flaukuIykZksgwsxznkayAiiojwgndtiffT",
+                   "price" : 32
+                 }
+               ]
+               When I GET /products-search (2 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains (0 millis)
+               {
+                 "name" : "usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn",
+                 "description" : "wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva",
+                 "price" : 46
                }
-            Eventually block succeeded after '0' retries with '0' distinct errors (5 millis)
+            Eventually block succeeded after '616' retries with '1' distinct errors (8996 millis)
+            delete a product
+            Given I GET /products (1 millis)
+            Then assert status is '200' (0 millis)
+            Then I save path '$[0].id' from body to key 'id-to-delete' (0 millis)
+            Given I DELETE /products/ee668765-b274-462d-ace8-73e2464286ca (2 millis)
+            Then assert status is '200' (0 millis)
+            And I GET /products/ee668765-b274-462d-ace8-73e2464286ca (1 millis)
+            Then assert status is '404' (0 millis)
+            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
+               When I GET /products-search (1 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body's array '$[*].id' does not contain
+               ee668765-b274-462d-ace8-73e2464286ca *** FAILED ***
+               expected array to not contain
+               '"ee668765-b274-462d-ace8-73e2464286ca"'
+               but it is not the case with array:
+               [
+                 "ee668765-b274-462d-ace8-73e2464286ca"
+               ]
+               When I GET /products-search (2 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body's array '$[*].id' does not contain (0 millis)
+               ee668765-b274-462d-ace8-73e2464286ca
+            Eventually block succeeded after '571' retries with '1' distinct errors (8001 millis)
+            create a product
+            Given I POST /products with body (2 millis)
+            {
+              "name" : "kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj",
+              "description" : "krrzzpmbwLyxsfiwxhdlnoycnfk",
+              "price" : 77
+            }
+            Then assert status is '201' (0 millis)
+            And assert response body is (0 millis)
+            {
+              "name" : "kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj",
+              "description" : "krrzzpmbwLyxsfiwxhdlnoycnfk",
+              "price" : 77
+            } ignoring keys id
+            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
+               When I GET /products-search (1 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains
+               {
+                 "name" : "kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj",
+                 "description" : "krrzzpmbwLyxsfiwxhdlnoycnfk",
+                 "price" : 77
+               } *** FAILED ***
+               expected array to contain
+               '{
+                 "name" : "kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj",
+                 "description" : "krrzzpmbwLyxsfiwxhdlnoycnfk",
+                 "price" : 77
+               }'
+               but it is not the case with array:
+               [
+               ]
+               When I GET /products-search (1 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains (0 millis)
+               {
+                 "name" : "kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj",
+                 "description" : "krrzzpmbwLyxsfiwxhdlnoycnfk",
+                 "price" : 77
+               }
+            Eventually block succeeded after '671' retries with '1' distinct errors (9003 millis)
+            create a product
+            Given I POST /products with body (2 millis)
+            {
+              "name" : "mrhwfmp",
+              "description" : "hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc",
+              "price" : 18
+            }
+            Then assert status is '201' (0 millis)
+            And assert response body is (0 millis)
+            {
+              "name" : "mrhwfmp",
+              "description" : "hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc",
+              "price" : 18
+            } ignoring keys id
+            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
+               When I GET /products-search (0 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains
+               {
+                 "name" : "mrhwfmp",
+                 "description" : "hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc",
+                 "price" : 18
+               } *** FAILED ***
+               expected array to contain
+               '{
+                 "name" : "mrhwfmp",
+                 "description" : "hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc",
+                 "price" : 18
+               }'
+               but it is not the case with array:
+               [
+                 {
+                   "id" : "acd3425c-08cb-4cb0-be11-1d3e4611c1fa",
+                   "name" : "kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj",
+                   "description" : "krrzzpmbwLyxsfiwxhdlnoycnfk",
+                   "price" : 77
+                 }
+               ]
+               When I GET /products-search (1 millis)
+               Then assert status is '200' (0 millis)
+               And assert response body array contains (0 millis)
+               {
+                 "name" : "mrhwfmp",
+                 "description" : "hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc",
+                 "price" : 18
+               }
+            Eventually block succeeded after '463' retries with '1' distinct errors (6001 millis)
          Run #1 - Max transitions number per run reached
-      Check block succeeded (1687 millis)
+      Check block succeeded (42662 millis)
 </code></pre></div></div>
 
 <p>We can see that we have been interacting with the <code class="highlighter-rouge">CRUD</code> API using randomly generated <code class="highlighter-rouge">ProductDraft</code> and that the eventually consistent contracts seems to hold.</p>
