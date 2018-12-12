@@ -26,7 +26,7 @@ case class ConcurrentlyStep(nested: List[Step], maxTime: FiniteDuration) extends
       .flatMap { results ⇒
         if (results.size != nested.size) {
           val failedStep = FailedStep.fromSingle(this, ConcurrentlyTimeout(nested.size, results.size))
-          Task.now((nestedRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep)))
+          Task.now((initialRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep)))
         } else {
           val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
           failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
@@ -53,7 +53,7 @@ case class ConcurrentlyStep(nested: List[Step], maxTime: FiniteDuration) extends
       }.onErrorRecover {
         case NonFatal(e) ⇒
           val failedStep = FailedStep.fromSingle(this, ConcurrentlyError(e))
-          (nestedRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
+          (initialRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
       }
   }
 }

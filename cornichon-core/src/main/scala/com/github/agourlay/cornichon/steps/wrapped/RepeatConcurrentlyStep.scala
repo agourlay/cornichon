@@ -29,7 +29,7 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
       .flatMap { results ⇒
         if (results.size != times) {
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyTimeout(times, results.size))
-          Task.now((nestedRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep)))
+          Task.now((initialRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep)))
         } else {
           val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
           failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
@@ -56,7 +56,7 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
       }.onErrorRecover {
         case NonFatal(e) ⇒
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyError(e))
-          (nestedRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
+          (initialRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
       }
   }
 }
