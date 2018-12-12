@@ -78,7 +78,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
 
   private def printResultLogs(featureClass: Class[_])(sr: ScenarioReport): Unit = sr match {
     case s: SuccessScenarioReport ⇒
-      val msg = s"- ${s.scenarioName} (${s.duration.toMillis} millis)"
+      val msg = s"- ${s.scenarioName} [${s.duration.toMillis} ms]"
       println(SuccessLogInstruction(msg, 0).colorized)
       if (s.shouldShowLogs) LogInstruction.printLogs(s.logs)
 
@@ -97,7 +97,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
   }
 
   private def failureErrorMessage(featureClass: Class[_], scenarioName: String, errorMessage: String, duration: Duration): String =
-    s"""|- **failed** $scenarioName (${duration.toMillis} millis)
+    s"""|- **failed** $scenarioName [${duration.toMillis} ms]
         |
         |  ${errorMessage.split('\n').toList.mkString("\n  ")}
         |
