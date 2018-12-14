@@ -36,9 +36,9 @@ case class Property4[A, B, C, D](
 case class Property3[A, B, C](
     description: String,
     preCondition: Step = NoOpStep,
-    effect: (() ⇒ A, () ⇒ B, () ⇒ C) ⇒ Step) extends PropertyN[A, B, C, NoValue, NoValue, NoValue] {
+    invariant: (() ⇒ A, () ⇒ B, () ⇒ C) ⇒ Step) extends PropertyN[A, B, C, NoValue, NoValue, NoValue] {
   override val invariantN: (() ⇒ A, () ⇒ B, () ⇒ C, () ⇒ NoValue, () ⇒ NoValue, () ⇒ NoValue) ⇒ Step =
-    (a, b, c, _, _, _) ⇒ effect(a, b, c)
+    (a, b, c, _, _, _) ⇒ invariant(a, b, c)
 }
 
 case class Property2[A, B](
