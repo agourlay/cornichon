@@ -18,6 +18,7 @@ import sangria.marshalling.queryAst._
 import sangria.marshalling.circe._
 
 import scala.util.{ Failure, Success }
+import scala.collection.breakOut
 
 trait CornichonJson {
 
@@ -120,32 +121,38 @@ trait CornichonJson {
       Left(WhitelistingError(forbiddenPatchOps.map(_.path.serialize), second))
   }
 
-  def findAllJsonWithValue(values: List[String], json: Json): Vector[JsonPath] = {
-    def keyValues(currentPath: String, json: Json, level: Int): Vector[(String, Json)] = {
+  def findAllJsonWithValue(values: List[String], json: Json): List[JsonPath] = {
+    def keyValues(currentPath: String, json: Json, level: Int): List[(String, Json)] = {
 
-      def leafValue() = if (level == 0) Vector((currentPath, json)) else Vector.empty
+      def leafValue(): List[(String, Json)] = if (level == 0) (currentPath -> json) :: Nil else Nil
+
+      def keyValuesHelper(key: String, value: Json, level: Int): List[(String, Json)] =
+        (key, value) :: keyValues(key, value, level + 1)
 
       // Use Json.Folder for performance https://github.com/circe/circe/pull/656
       json.foldWith(
-        new Json.Folder[Vector[(String, Json)]] {
-          def onNull = Vector.empty
-          def onBoolean(value: Boolean) = leafValue()
-          def onNumber(value: JsonNumber) = leafValue()
-          def onString(value: String) = leafValue()
-          def onArray(elems: Vector[Json]) = elems.zipWithIndex.flatMap { case (e, indice) ⇒ keyValuesHelper(s"$currentPath[$indice]", e, level) }
-          def onObject(elems: JsonObject) = elems.toVector.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v, level) }
+        new Json.Folder[List[(String, Json)]] {
+          def onNull: List[(String, Json)] =
+            Nil
+          def onBoolean(value: Boolean): List[(String, Json)] =
+            leafValue()
+          def onNumber(value: JsonNumber): List[(String, Json)] =
+            leafValue()
+          def onString(value: String): List[(String, Json)] =
+            leafValue()
+          def onArray(elems: Vector[Json]): List[(String, Json)] =
+            elems.zipWithIndex.flatMap { case (e, indice) ⇒ keyValuesHelper(s"$currentPath[$indice]", e, level) }(breakOut)
+          def onObject(elems: JsonObject): List[(String, Json)] =
+            elems.toIterable.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v, level) }(breakOut)
         }
       )
     }
-
-    def keyValuesHelper(key: String, value: Json, level: Int): Vector[(String, Json)] =
-      (key, value) +: keyValues(key, value, level + 1)
 
     // Do not traverse the JSON if there are no values to find
     if (values.nonEmpty)
       keyValues(JsonPath.root, json, level = 0).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k).valueUnsafe }
     else
-      Vector.empty
+      Nil
   }
 }
 

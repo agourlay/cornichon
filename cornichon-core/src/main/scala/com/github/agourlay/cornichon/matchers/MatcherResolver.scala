@@ -1,20 +1,22 @@
 package com.github.agourlay.cornichon.matchers
 
-import java.util.regex.Pattern
-
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
-
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.matchers.Matchers._
+import com.github.agourlay.cornichon.util.Caching
 import io.circe.Json
 
 case class MatcherResolver(matchers: List[Matcher] = Nil) {
 
   private val allMatchers = MatcherResolver.builtInMatchers ::: matchers
   private val allMatchersByKey = allMatchers.groupBy(_.key)
+
+  // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for matchers.
+  // There is one resolver per Feature so the cache is not living too long.
+  private val matchersCache = Caching.buildCache[String, Either[CornichonError, List[Matcher]]]()
 
   def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] =
     MatcherParser.parse(input)
@@ -28,16 +30,16 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
     }
 
   def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
-    findMatcherKeys(input).flatMap(_.traverse(resolveMatcherKeys))
+    matchersCache.get(input, i ⇒ findMatcherKeys(i).flatMap(_.traverse(resolveMatcherKeys)))
 
   // Add quotes around known matchers
-  def quoteMatchers(input: String): String =
-    allMatchers.foldLeft(input) {
-      case (i, m) ⇒ i.replaceAll(Pattern.quote(m.fullKey), '"' + m.fullKey + '"')
+  def quoteMatchers(input: String, matchersToQuote: List[Matcher]): String =
+    matchersToQuote.distinct.foldLeft(input) {
+      case (i, m) ⇒ m.pattern.matcher(i).replaceAll(m.quotedFullKey)
     }
 
   // Removes JSON fields targeted by matchers and builds corresponding matchers assertions
-  def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, Seq[MatcherAssertion]) =
+  def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, List[MatcherAssertion]) =
     if (matchers.isEmpty)
       (expected, actual, Nil)
     else {

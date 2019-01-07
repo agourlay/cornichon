@@ -52,13 +52,14 @@ class CheckStepBench {
     println("Shutting down ExecutionContext...")
     es.shutdown()
   }
-
-  //  [info] Benchmark                    (transitionNumber)   Mode  Cnt         Score      Error  Units
-  //  [info] step.CheckStepBench.runModel                10   thrpt   10   31847.091 ±     45.086  ops/s
-  //  [info] step.CheckStepBench.runModel                20   thrpt   10   22956.375 ±     79.546  ops/s
-  //  [info] step.CheckStepBench.runModel                50   thrpt   10   11996.932 ±   1643.129  ops/s
-  //  [info] step.CheckStepBench.runModel               100   thrpt   10    6282.851 ±    256.187  ops/s
-  //  [info] step.CheckStepBench.runModel               200   thrpt   10    3198.990 ±     39.565  ops/s
+  /*
+[info] Benchmark                (transitionNumber)   Mode  Cnt      Score     Error  Units
+[info] CheckStepBench.runModel                  10  thrpt   10  34418.304 ±  57.569  ops/s
+[info] CheckStepBench.runModel                  20  thrpt   10  25133.954 ± 616.993  ops/s
+[info] CheckStepBench.runModel                  50  thrpt   10  14485.608 ± 511.710  ops/s
+[info] CheckStepBench.runModel                 100  thrpt   10   6466.801 ±  37.639  ops/s
+[info] CheckStepBench.runModel                 200  thrpt   10   3341.684 ±  33.144  ops/s
+  */
 
   @Benchmark
   def runModel() = {

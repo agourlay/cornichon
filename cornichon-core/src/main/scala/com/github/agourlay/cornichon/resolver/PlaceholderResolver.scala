@@ -84,7 +84,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
         for {
           acc ← accE
           resolvedValue ← resolvePlaceholder(ph)(session)
-        } yield acc.replace(ph.fullKey, resolvedValue)
+        } yield ph.pattern.matcher(acc).replaceAll(resolvedValue)
       }
     }
 

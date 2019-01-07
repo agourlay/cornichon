@@ -84,7 +84,7 @@ object JsonSteps {
             val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected) { r ⇒
               // don't add quotes if is not a complex JsonObject otherwise it would produce a double quoted string
               if (isJsonString(r)) r
-              else matcherResolver.quoteMatchers(r)
+              else matcherResolver.quoteMatchers(r, matchers)
             }
             resolveAndParseJson(withQuotedMatchers, session, placeholderResolver).map {
               expectedJson ⇒ matcherResolver.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson, negate)

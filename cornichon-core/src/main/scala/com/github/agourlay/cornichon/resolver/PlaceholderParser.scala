@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.resolver
 
+import java.util.regex.Pattern
+
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.resolver.PlaceholderParser._
 import org.parboiled2._
@@ -42,13 +44,14 @@ object PlaceholderParser {
         case Failure(e: Throwable) ⇒
           Left(PlaceholderError(input, e))
         case Success(dt) ⇒
-          Right(dt.toList)
+          Right(dt.toList.distinct)
       }
     }
 }
 
 case class Placeholder(key: String, index: Option[Int]) {
   val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
+  lazy val pattern = Pattern.compile(Pattern.quote(fullKey))
 }
 
 case class PlaceholderError(input: String, error: Throwable) extends CornichonError {

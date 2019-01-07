@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.matchers
 
 import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.matchers.MatcherParser._
 import org.parboiled2._
 
 import scala.util.{ Failure, Success }
@@ -13,7 +14,7 @@ class MatcherParser(val input: ParserInput) extends Parser {
 
   def MatcherRule = rule("*" ~ MatcherTXT ~ "*" ~> MatcherKey)
 
-  def MatcherTXT = rule(capture(oneOrMore(CharPredicate.Visible -- MatcherParser.notAllowedInMatchers)))
+  def MatcherTXT = rule(capture(oneOrMore(allowedCharsInMatcher)))
 
   def Ignore = rule { zeroOrMore(!MatcherRule ~ ANY) }
 
@@ -25,6 +26,7 @@ class MatcherParser(val input: ParserInput) extends Parser {
 object MatcherParser {
   val notAllowedInMatchers = "\r\n<>* "
   private val noMatchers = Right(Nil)
+  private val allowedCharsInMatcher: CharPredicate = CharPredicate.Visible -- MatcherParser.notAllowedInMatchers
 
   def parse(input: String): Either[CornichonError, List[MatcherKey]] =
     if (!input.contains("*"))
