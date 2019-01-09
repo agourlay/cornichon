@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
+import java.util.regex.Matcher
 
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
@@ -84,7 +85,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
         for {
           acc ← accE
           resolvedValue ← resolvePlaceholder(ph)(session)
-        } yield ph.pattern.matcher(acc).replaceAll(resolvedValue)
+        } yield ph.pattern.matcher(acc).replaceAll(Matcher.quoteReplacement(resolvedValue))
       }
     }
 
