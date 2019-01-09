@@ -49,6 +49,8 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList
   val msg =
     s"""|Scenario '$scenarioName' failed:
         |${failedSteps.map(_.messageForFailedStep).toList.mkString("\nand\n")}""".stripMargin
+
+  lazy val renderedLogs = LogInstruction.renderLogs(logs)
 }
 
 sealed abstract class Done

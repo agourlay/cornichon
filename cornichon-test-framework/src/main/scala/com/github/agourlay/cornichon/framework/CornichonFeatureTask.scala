@@ -85,7 +85,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
     case f: FailureScenarioReport ⇒
       val msg = failureErrorMessage(featureClass, f.scenarioName, f.msg, f.duration)
       println(FailureLogInstruction(msg, 0).colorized)
-      LogInstruction.printLogs(f.logs)
+      println(f.renderedLogs)
 
     case i: IgnoreScenarioReport ⇒
       val msg = s"- **ignored** ${i.scenarioName} (${i.reason}) "
@@ -113,7 +113,8 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
     }
     val throwable = sr match {
       case f: FailureScenarioReport ⇒
-        new OptionalThrowable(new RuntimeException(f.msg))
+        val reporting = s"${f.msg}\n${f.renderedLogs}"
+        new OptionalThrowable(CornichonException(reporting))
       case _ ⇒
         new OptionalThrowable()
     }
