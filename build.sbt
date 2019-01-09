@@ -77,11 +77,7 @@ lazy val standardSettings = Seq(
 )
 
 lazy val publishingSettings = Seq(
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  useGpg := true,
-  pgpSecretRing := file("/Users/agourlay/.pgpKeys/agourlay-privkey.gpg"),
-  pgpPublicRing := file("/Users/agourlay/.pgpKeys/agourlay-pubkey.gpg"),
-  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray),
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value, //key and passphrase could be exported/encoded to enable someone else to do a release
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := (_ => false),
