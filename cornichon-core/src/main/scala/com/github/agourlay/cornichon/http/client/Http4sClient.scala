@@ -34,7 +34,9 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
       .withMaxTotalConnections(100)
       .withIdleTimeout(Duration.Inf)
       .withResponseHeaderTimeout(Duration.Inf)
-      .withRequestTimeout(Duration.Inf).allocate.runSyncUnsafe(10.seconds)
+      .withRequestTimeout(Duration.Inf)
+      .allocated
+      .runSyncUnsafe(10.seconds)
 
   private def httpMethodMapper(method: HttpMethod): Method = method match {
     case DELETE  ⇒ org.http4s.Method.DELETE
@@ -58,7 +60,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
     else {
       val q = Query.fromPairs(moreParams: _*)
       //Not sure it is not most efficient way
-      uri.copy(query = Query(uri.query.toVector ++ q.toVector: _*))
+      uri.copy(query = Query(uri.query ++ q: _*))
     }
 
   private def handleResponse[A](response: Response[Task]): Task[CornichonHttpResponse] = {

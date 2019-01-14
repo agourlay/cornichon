@@ -171,7 +171,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
     BlazeServerBuilder[Task]
       .bindHttp(httpPort, "localhost")
       .withHttpApp(GZip(routes.orNotFound))
-      .allocate
+      .allocated
       .map { case (_, stop) ⇒ new HttpServer(stop) }
       .runToFuture
 }

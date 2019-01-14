@@ -130,7 +130,7 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
     BlazeServerBuilder[Task]
       .bindHttp(httpPort, "localhost")
       .withHttpApp(routes.orNotFound)
-      .allocate
+      .allocated
       .map { case (_, stop) ⇒ new HttpServer(stop) }
       .runToFuture
 }
