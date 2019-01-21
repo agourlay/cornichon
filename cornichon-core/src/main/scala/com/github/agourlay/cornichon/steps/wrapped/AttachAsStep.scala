@@ -5,11 +5,9 @@ import com.github.agourlay.cornichon.core._
 import scala.concurrent.duration.Duration
 
 // Steps are wrapped/indented with a specific title
-case class AttachAsStep(title: String, nested: List[Step]) extends LogDecoratorStep {
+case class AttachAsStep(title: String, nestedToRun: Session ⇒ List[Step]) extends LogDecoratorStep {
 
   override def setTitle(newTitle: String) = copy(title = newTitle)
-
-  val nestedToRun = nested
 
   override def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] =
     failedTitleLog(depth) +: resultLogStack :+ FailureLogInstruction(s"$title - Failed", depth, Some(executionTime))

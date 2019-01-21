@@ -5,7 +5,9 @@ import com.github.agourlay.cornichon.core.core.StepResult
 import monix.eval.Task
 
 // Transparent wrapper - Steps are flatten in the main execution
-case class FlatMapStep(started: Step, nestedProducers: Session ⇒ List[Step], title: String = "") extends WrapperStep {
+case class FlatMapStep(started: Step, nestedProducers: Session ⇒ List[Step]) extends WrapperStep {
+
+  val title: String = ""
 
   override def run(engine: Engine)(initialRunState: RunState): StepResult =
     engine.runSteps(started :: Nil, initialRunState).flatMap {

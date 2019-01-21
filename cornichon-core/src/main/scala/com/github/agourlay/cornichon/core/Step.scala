@@ -17,7 +17,7 @@ sealed trait Step {
 
 object Step {
   def chain(steps: List[Step]): Step =
-    AttachStep(steps)
+    AttachStep(_ ⇒ steps)
 }
 
 object NoOpStep extends Step {
@@ -79,7 +79,7 @@ trait LogValueStep[A] extends Step {
 //Step that delegate the execution of nested steps and enable to decorate the nestedLogs
 trait LogDecoratorStep extends Step {
 
-  def nestedToRun: List[Step]
+  def nestedToRun: Session ⇒ List[Step]
 
   def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction]
 
@@ -87,7 +87,8 @@ trait LogDecoratorStep extends Step {
 
   def run(engine: Engine)(initialRunState: RunState): StepResult = {
     val now = System.nanoTime
-    engine.runSteps(nestedToRun, initialRunState.nestedContext).map {
+    val steps = nestedToRun(initialRunState.session)
+    engine.runSteps(steps, initialRunState.nestedContext).map {
       case (resState, l @ Left(_)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val decoratedLogs = logStackOnNestedError(resState.logStack, initialRunState.depth, executionTime)

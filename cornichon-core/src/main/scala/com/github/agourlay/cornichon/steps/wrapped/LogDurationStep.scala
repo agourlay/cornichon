@@ -8,7 +8,7 @@ case class LogDurationStep(nested: List[Step], label: String) extends LogDecorat
 
   val title = s"Log duration block with label '$label' started"
 
-  val nestedToRun = nested
+  val nestedToRun = _ ⇒ nested
 
   override def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] = {
     val titleLog = DebugLogInstruction(title, depth)

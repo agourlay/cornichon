@@ -67,7 +67,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
 
         val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ ⇒
           val assert = if (uglyCounter < 5) alwaysalidAssertStep else brokenEffect
-          AttachStep(incrementEffect :: assert :: Nil)
+          AttachStep(_ ⇒ incrementEffect :: assert :: Nil)
         }
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 

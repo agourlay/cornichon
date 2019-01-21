@@ -57,12 +57,12 @@ trait CoreDsl extends ProvidedInstances {
 
   def Attach: BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
-      AttachStep(nested = steps)
+      AttachStep(nested = _ ⇒ steps)
     }
 
   def AttachAs(title: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
-      AttachAsStep(title, steps)
+      AttachAsStep(title, _ ⇒ steps)
     }
 
   def Repeat(times: Int): BodyElementCollector[Step, Step] =
