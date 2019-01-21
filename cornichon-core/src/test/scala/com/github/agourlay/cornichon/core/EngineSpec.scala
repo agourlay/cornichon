@@ -20,7 +20,7 @@ class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
   "An engine" when {
     "runScenario" must {
       "executes all steps of a scenario" in {
-        val steps = AssertStep("first step", s ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val steps = AssertStep("first step", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
         val s = Scenario("test", steps)
         engine.runScenario(Session.newEmpty)(s).map { r ⇒
           r.isSuccess should be(true)
@@ -29,9 +29,9 @@ class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
       }
 
       "stops at first failed step" in {
-        val step1 = AssertStep("first step", s ⇒ GenericEqualityAssertion(2, 2))
-        val step2 = AssertStep("second step", s ⇒ GenericEqualityAssertion(4, 5))
-        val step3 = AssertStep("third step", s ⇒ GenericEqualityAssertion(1, 1))
+        val step1 = AssertStep("first step", _ ⇒ GenericEqualityAssertion(2, 2))
+        val step2 = AssertStep("second step", _ ⇒ GenericEqualityAssertion(4, 5))
+        val step3 = AssertStep("third step", _ ⇒ GenericEqualityAssertion(1, 1))
         val steps = step1 :: step2 :: step3 :: Nil
         val s = Scenario("test", steps)
         engine.runScenario(Session.newEmpty)(s).map { res ⇒
@@ -54,8 +54,8 @@ class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
       }
 
       "accumulates errors if 'main' and 'finally' fail" in {
-        val mainStep = AssertStep("main step", s ⇒ GenericEqualityAssertion(true, false))
-        val finalAssertion = AssertStep("finally step", s ⇒ GenericEqualityAssertion(true, false))
+        val mainStep = AssertStep("main step", _ ⇒ GenericEqualityAssertion(true, false))
+        val finalAssertion = AssertStep("finally step", _ ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
         engine.runScenario(Session.newEmpty, FeatureExecutionContext(finallySteps = finalAssertion :: Nil))(s).map {
           case f: FailureScenarioReport ⇒

@@ -10,15 +10,15 @@ import cats.syntax.validated._
 
 class SuperMicroService {
 
-  val publishersBySession = new TrieMap[String, Set[Publisher]]
-  val superheroesBySession = new TrieMap[String, Set[SuperHero]]
+  private val publishersBySession = new TrieMap[String, Set[Publisher]]
+  private val superheroesBySession = new TrieMap[String, Set[SuperHero]]
 
-  private def addBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]) =
+  private def addBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]): Unit =
     map.get(id).fold[Unit](map += ((id, Set(a)))) { set ⇒
       map.update(id, set + a)
     }
 
-  private def removeBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]) =
+  private def removeBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]): Unit =
     map.get(id).foreach[Unit] { set ⇒
       map.update(id, set - a)
     }
@@ -36,10 +36,10 @@ class SuperMicroService {
       .map(_ ⇒ ())
       .toValid(SessionNotFound(sessionId))
 
-  def publishersBySessionV(sessionId: String) =
+  def publishersBySessionV(sessionId: String): Validated[SessionNotFound, Set[Publisher]] =
     publishersBySession.get(sessionId).toValid(SessionNotFound(sessionId))
 
-  def superheroesBySessionV(sessionId: String) =
+  def superheroesBySessionV(sessionId: String): Validated[SessionNotFound, Set[SuperHero]] =
     superheroesBySession.get(sessionId).toValid(SessionNotFound(sessionId))
 
   def publisherByName(sessionId: String, name: String): Validated[ApiError, Publisher] =
@@ -63,7 +63,7 @@ class SuperMicroService {
     }
   }
 
-  def addPublisher(sessionId: String, p: Publisher) =
+  def addPublisher(sessionId: String, p: Publisher): Validated[PublisherAlreadyExists, Publisher] =
     publisherByName(sessionId, p.name) match {
       case Valid(_) ⇒
         Invalid(PublisherAlreadyExists(p.name))
@@ -81,8 +81,8 @@ class SuperMicroService {
       }
     }
 
-  def addSuperhero(sessionId: String, s: SuperHero) =
-    publisherByName(sessionId, s.publisher.name).andThen { p ⇒
+  def addSuperhero(sessionId: String, s: SuperHero): Validated[ApiError, SuperHero] =
+    publisherByName(sessionId, s.publisher.name).andThen { _ ⇒
       superheroByName(sessionId, s.name) match {
         case Valid(_) ⇒
           Invalid(SuperHeroAlreadyExists(s.name))
@@ -92,16 +92,16 @@ class SuperMicroService {
       }
     }
 
-  def deleteSuperhero(sessionId: String, name: String) =
+  def deleteSuperhero(sessionId: String, name: String): Validated[ApiError, SuperHero] =
     superheroByName(sessionId, name).map { sh ⇒
       removeBinding(sessionId, sh, superheroesBySession)
       sh
     }
 
-  def allPublishers(session: String) =
+  def allPublishers(session: String): Set[Publisher] =
     publishersBySession(session)
 
-  def allSuperheroes(session: String) =
+  def allSuperheroes(session: String): Set[SuperHero] =
     superheroesBySession(session)
 
   def randomSuperhero(session: String): SuperHero =

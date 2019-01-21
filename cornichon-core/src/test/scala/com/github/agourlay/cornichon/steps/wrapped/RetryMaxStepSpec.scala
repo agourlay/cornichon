@@ -13,7 +13,7 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val loop = 10
       val nested = AssertStep(
         "always fails",
-        s ⇒ {
+        _ ⇒ {
           uglyCounter = uglyCounter + 1
           GenericEqualityAssertion(true, false)
         }
@@ -32,7 +32,7 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val max = 10
       val nested = AssertStep(
         "always fails",
-        s ⇒ {
+        _ ⇒ {
           uglyCounter = uglyCounter + 1
           GenericEqualityAssertion(true, uglyCounter == max - 2)
         }

@@ -14,7 +14,7 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val d = 200.millis
       val nested = AssertStep(
         "possible random value step",
-        s ⇒ {
+        _ ⇒ {
           Thread.sleep(100)
           GenericEqualityAssertion(true, true)
         }
@@ -28,7 +28,7 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val d = 200.millis
       val nested = AssertStep(
         "possible random value step",
-        s ⇒ {
+        _ ⇒ {
           Thread.sleep(250)
           GenericEqualityAssertion(true, true)
         }

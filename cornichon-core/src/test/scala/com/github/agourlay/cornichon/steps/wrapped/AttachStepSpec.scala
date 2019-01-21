@@ -12,7 +12,7 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
 
   "AttachStep" must {
     "merge nested steps in the parent flow when first" in {
-      val nested = List.fill(5)(AssertStep("always true", s ⇒ Assertion.alwaysValid))
+      val nested = List.fill(5)(AssertStep("always true", _ ⇒ Assertion.alwaysValid))
       val steps = AttachStep(_ ⇒ nested) :: Nil
       val s = Scenario("scenario with Attach", steps)
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
@@ -23,7 +23,7 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
     }
 
     "merge nested steps in the parent flow when nested" in {
-      val nested = List.fill(5)(AssertStep("always true", s ⇒ Assertion.alwaysValid))
+      val nested = List.fill(5)(AssertStep("always true", _ ⇒ Assertion.alwaysValid))
       val steps = AttachStep(_ ⇒ nested) :: Nil
       val s = Scenario("scenario with Attach", RepeatStep(steps, 1, None) :: Nil)
       engine.runScenario(Session.newEmpty)(s).map { r ⇒

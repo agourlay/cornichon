@@ -11,7 +11,7 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "fail if 'repeat' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericEqualityAssertion(true, false)
+        _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatStep = RepeatStep(nested, 5, None)
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
@@ -23,7 +23,7 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val loop = 5
       val nested = AssertStep(
         "increment captured counter",
-        s ⇒ {
+        _ ⇒ {
           uglyCounter = uglyCounter + 1
           GenericEqualityAssertion(true, true)
         }

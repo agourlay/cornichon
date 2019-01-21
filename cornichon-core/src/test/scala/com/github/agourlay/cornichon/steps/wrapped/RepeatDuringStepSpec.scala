@@ -13,7 +13,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "fail if 'repeatDuring' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericEqualityAssertion(true, false)
+        _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatDuring = RepeatDuringStep(nested, 5.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuring :: Nil)
@@ -23,7 +23,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "repeat steps inside 'repeatDuring' for at least the duration param" in {
       val nested = AssertStep(
         "always valid",
-        s ⇒ {
+        _ ⇒ {
           Thread.sleep(1)
           GenericEqualityAssertion(true, true)
         }
@@ -45,7 +45,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "repeat steps inside 'repeatDuring' at least once if they take more time than the duration param" in {
       val nested = AssertStep(
         "always valid",
-        s ⇒ {
+        _ ⇒ {
           Thread.sleep(500)
           GenericEqualityAssertion(true, true)
         }

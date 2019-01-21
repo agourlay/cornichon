@@ -17,7 +17,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
       engine.runSteps(nested, runState.resetLogStack).flatMap {
-        case (retriedState, l @ Left(_)) if limit > 0 ⇒
+        case (retriedState, Left(_)) if limit > 0 ⇒
           // In case of success all logs are returned but they are not printed by default.
           retryMaxSteps(runState.recordLogStack(retriedState.logStack), limit - 1, retriesNumber + 1)
 

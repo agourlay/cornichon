@@ -2,8 +2,6 @@ package com.github.agourlay.cornichon
 
 import com.github.agourlay.cornichon.dsl.BodyElementCollector
 
-import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
-
 import scala.reflect.macros.{ TypecheckException, blackbox }
 
 package object macros {

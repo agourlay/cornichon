@@ -16,7 +16,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
     "fail if 'repeatConcurrently' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericEqualityAssertion(true, false)
+        _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val steps = RepeatConcurrentlyStep(times = 3, nested, parallelism = 1, 200.millis) :: Nil
       val s = Scenario("scenario with RepeatConcurrently", steps)
@@ -30,7 +30,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
     "fail if 'RepeatConcurrently' block does not complete within 'maxDuration because of a single step duration" in {
       val nested = AssertStep(
         "always succeed after 1000 ms",
-        s ⇒ {
+        _ ⇒ {
           Thread.sleep(1000)
           GenericEqualityAssertion(true, true)
         }
@@ -48,7 +48,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       val loop = 5
       val nested = AssertStep(
         "increment captured counter",
-        s ⇒ {
+        _ ⇒ {
           uglyCounter.incrementAndGet()
           GenericEqualityAssertion(true, true)
         }

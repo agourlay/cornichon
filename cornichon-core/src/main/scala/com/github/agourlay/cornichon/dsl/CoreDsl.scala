@@ -15,7 +15,6 @@ import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.breakOut
-import scala.language.experimental.{ macros ⇒ `scalac, please just let me do it!` }
 import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
 
@@ -131,7 +130,7 @@ trait CoreDsl extends ProvidedInstances {
     effect = s ⇒ Task.delay(s).delayExecution(duration).runToFuture
   )
 
-  def save(input: (String, String)) = {
+  def save(input: (String, String)): EffectStep = {
     val (key, value) = input
     EffectStep.fromSyncE(
       s"add value '$value' to session under key '$key' ",
@@ -139,12 +138,12 @@ trait CoreDsl extends ProvidedInstances {
     )
   }
 
-  def remove(key: String) = EffectStep.fromSync(
+  def remove(key: String): EffectStep = EffectStep.fromSync(
     title = s"remove '$key' from session",
     effect = _.removeKey(key)
   )
 
-  def rollback(key: String) = EffectStep.fromSyncE(
+  def rollback(key: String): EffectStep = EffectStep.fromSyncE(
     title = s"rollback '$key' in session",
     effect = _.rollbackKey(key)
   )

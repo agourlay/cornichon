@@ -12,7 +12,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
 
   "FlatMapStep" must {
     "merge nested steps in the parent flow when first" in {
-      val dummy = AssertStep("always true", s ⇒ Assertion.alwaysValid)
+      val dummy = AssertStep("always true", _ ⇒ Assertion.alwaysValid)
       val nested = List.fill(5)(dummy)
       val steps = FlatMapStep(dummy, _ ⇒ nested) :: Nil
       val s = Scenario("scenario with FlatMap", steps)
@@ -24,9 +24,9 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
     }
 
     "shortcut if starting step fails" in {
-      val dummy = AssertStep("always true", s ⇒ Assertion.alwaysValid)
+      val dummy = AssertStep("always true", _ ⇒ Assertion.alwaysValid)
       val nested = List.fill(5)(dummy)
-      val steps = FlatMapStep(AssertStep("always false", s ⇒ Assertion.failWith("Nop!")), _ ⇒ nested) :: Nil
+      val steps = FlatMapStep(AssertStep("always false", _ ⇒ Assertion.failWith("Nop!")), _ ⇒ nested) :: Nil
       val s = Scenario("scenario with FlatMap", steps)
       engine.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(false)
@@ -51,7 +51,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
       val e = EffectStep.fromSyncE("set session value", s ⇒ s.addValue("number-sub-steps", "5"))
       def nestedBuilder(s: Session): List[Step] = {
         val nb = s.get("number-sub-steps").valueUnsafe.toInt
-        val dummy = AssertStep("always true", s ⇒ Assertion.alwaysValid)
+        val dummy = AssertStep("always true", _ ⇒ Assertion.alwaysValid)
         List.fill(nb)(dummy)
       }
 
@@ -65,7 +65,7 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
     }
 
     "merge nested steps in the parent flow when nested" in {
-      val dummy = AssertStep("always true", s ⇒ Assertion.alwaysValid)
+      val dummy = AssertStep("always true", _ ⇒ Assertion.alwaysValid)
       val nested = List.fill(5)(dummy)
       val steps = FlatMapStep(dummy, _ ⇒ nested) :: Nil
       val s = Scenario("scenario with FlatMap", RepeatStep(steps, 1, None) :: Nil)

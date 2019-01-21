@@ -12,7 +12,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "fail if table is malformed" in {
       val nested = AssertStep(
         "always ok",
-        s ⇒ GenericEqualityAssertion(true, true)
+        _ ⇒ GenericEqualityAssertion(true, true)
       ) :: Nil
       val inputs =
         """
@@ -31,7 +31,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "fail at first failed input" in {
       val nested = AssertStep(
         "always fails",
-        s ⇒ GenericEqualityAssertion(true, false)
+        _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val inputs =
         """
@@ -50,7 +50,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
       var uglyCounter = 0
       val nested = AssertStep(
         "always ok",
-        s ⇒ {
+        _ ⇒ {
           uglyCounter = uglyCounter + 1
           GenericEqualityAssertion(true, true)
         }

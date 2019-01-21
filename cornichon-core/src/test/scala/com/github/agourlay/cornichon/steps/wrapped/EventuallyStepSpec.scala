@@ -14,7 +14,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
       val nested = AssertStep(
         "possible random value step",
-        s ⇒ GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
+        _ ⇒ GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
       ) :: Nil
 
       val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true) :: Nil
@@ -26,7 +26,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
       var counter = 0
       val nested = AssertStep(
-        "impossible random value step", s ⇒ {
+        "impossible random value step", _ ⇒ {
           counter = counter + 1
           Assertion.failWith("nop!")
         }
@@ -42,7 +42,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "replay eventually handle hanging wrapped steps" in {
       val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
       val nested = AssertStep(
-        "slow always true step", s ⇒ {
+        "slow always true step", _ ⇒ {
           Thread.sleep(100000)
           Assertion.alwaysValid
         }
@@ -69,7 +69,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
       var counter = 0
       val nested = AssertStep(
-        "Fail differently", s ⇒ {
+        "Fail differently", _ ⇒ {
           if (counter == 0 || counter == 1 || counter == 2) {
             counter += 1
             Assertion.failWith(s"Failing $counter")
@@ -111,7 +111,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
       var counter = 1
       val nested = AssertStep(
-        "Fail with oscillation", s ⇒ {
+        "Fail with oscillation", _ ⇒ {
           if (counter == 1) {
             counter += 1
             Assertion.failWith(s"Failure mode one")
