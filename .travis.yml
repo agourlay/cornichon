@@ -4,11 +4,12 @@ scala:
   - 2.12.8
 
 jdk:
-  - oraclejdk8
+  - openjdk11
 
 cache:
   directories:
     - $HOME/.ivy2/cache
+    - $HOME/.coursier/cache
     - $HOME/.sbt/boot/
 
 script: sbt ++$TRAVIS_SCALA_VERSION test it:test
