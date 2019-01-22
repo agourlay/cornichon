@@ -28,8 +28,10 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
       .toListL
       .flatMap { results ⇒
         if (results.size != times) {
-          val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyTimeout(times, results.size))
-          Task.now((initialRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep)))
+          val error = RepeatConcurrentlyTimeout(times, results.size)
+          val errorState = initialRunState.recordLog(failedTitleLog(initialDepth)).recordLog(FailureLogInstruction(error.renderedMessage, initialDepth))
+          val failedStep = FailedStep.fromSingle(this, error)
+          Task.now(errorState -> Left(failedStep))
         } else {
           val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
           failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
