@@ -23,25 +23,12 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
   override def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction =
     successLog(title, initialRunState.depth, show, executionTime)
 
-  //Does not propagate the second step title
-  def chain(secondEffect: EffectStep)(implicit ec: ExecutionContext) =
-    copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT(secondEffect.effect(s2))).value)
-
-  def chain(chainedEffect: Session ⇒ Future[Either[CornichonError, Session]])(implicit ec: ExecutionContext) =
-    copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT(chainedEffect(s2))).value)
-
-  def chainSyncE(chainedEffect: Session ⇒ Either[CornichonError, Session])(implicit ec: ExecutionContext) =
+  @deprecated("chain complete steps using AttachStep/AttachAsStep", "0.17.0")
+  def chainSyncE(chainedEffect: Session ⇒ Either[CornichonError, Session])(implicit ec: ExecutionContext): EffectStep =
     copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT.fromEither(chainedEffect(s2))).value)
-
-  def chainSync(chainedEffect: Session ⇒ Session)(implicit ec: ExecutionContext) =
-    copy(effect = s ⇒ EitherT(effect(s)).map(chainedEffect).value)
 }
 
 object EffectStep {
-
-  // Throws if empty list
-  def chainEffects(effectsStep: Seq[EffectStep])(implicit ec: ExecutionContext): EffectStep =
-    effectsStep.reduce((e1, e2) ⇒ e1.chain(e2))
 
   def fromEitherT(title: String, effect: Session ⇒ EitherT[Future, CornichonError, Session], show: Boolean = true): EffectStep = {
     val effectT: Session ⇒ Future[Either[CornichonError, Session]] = s ⇒ effect(s).value
@@ -63,5 +50,5 @@ object EffectStep {
     EffectStep(title, effectF, show)
   }
 
-  val identityStep = EffectStep.fromSync("identity", identity)
+  val identityStep: EffectStep = EffectStep.fromSync("identity effect step", identity)
 }

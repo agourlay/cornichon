@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import cats.data.NonEmptyList
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.core.StepResult
-import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
+import com.github.agourlay.cornichon.steps.wrapped.FlatMapStep
 import monix.eval.Task
 
 import scala.concurrent.duration.Duration
@@ -13,11 +13,6 @@ sealed trait Step {
   def setTitle(newTitle: String): Step
   def run(engine: Engine)(initialRunState: RunState): StepResult
   def chain(others: Session ⇒ List[Step]): Step = FlatMapStep(this, others)
-}
-
-object Step {
-  def chain(steps: List[Step]): Step =
-    AttachStep(_ ⇒ steps)
 }
 
 object NoOpStep extends Step {
