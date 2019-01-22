@@ -10,8 +10,8 @@ case class AttachAsStep(title: String, nestedToRun: Session ⇒ List[Step]) exte
   override def setTitle(newTitle: String) = copy(title = newTitle)
 
   override def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] =
-    failedTitleLog(depth) +: resultLogStack :+ FailureLogInstruction(s"$title - Failed", depth, Some(executionTime))
+    FailureLogInstruction(s"$title - Failed", depth, Some(executionTime)) +: resultLogStack :+ failedTitleLog(depth)
 
   override def logStackOnNestedSuccess(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] =
-    successTitleLog(depth) +: resultLogStack :+ SuccessLogInstruction(s"$title - Succeeded", depth, Some(executionTime))
+    SuccessLogInstruction(s"$title - Succeeded", depth, Some(executionTime)) +: resultLogStack :+ successTitleLog(depth)
 }
