@@ -85,7 +85,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
     case f: FailureScenarioReport ⇒
       val msg = failureErrorMessage(featureClass, f.scenarioName, f.msg, f.duration)
       println(FailureLogInstruction(msg, 0).colorized)
-      println(f.renderedLogs)
+      println(f.renderedColoredLogs)
 
     case i: IgnoreScenarioReport ⇒
       val msg = s"- **ignored** ${i.scenarioName} (${i.reason}) "
