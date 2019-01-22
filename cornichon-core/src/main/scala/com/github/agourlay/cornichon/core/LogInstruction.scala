@@ -22,6 +22,8 @@ sealed trait LogInstruction {
 
     // Inject duration at the end of the first line
     message.split('\n').toList match {
+      case Nil ⇒
+        withMarginAndDuration(message)
       case head :: Nil ⇒
         withMarginAndDuration(head)
       case head :: tail ⇒
@@ -47,7 +49,7 @@ object LogInstruction {
 }
 
 case class ScenarioTitleLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
-  lazy val colorized = fansi.Color.White(completeMessage).overlay(attrs = fansi.Underlined.On, start = fullMargin.length).render
+  lazy val colorized = fansi.Color.LightGray(completeMessage).overlay(attrs = fansi.Underlined.On, start = fullMargin.length).render
 }
 
 case class InfoLogInstruction(message: String, marginNb: Int, duration: Option[Duration] = None) extends LogInstruction {
