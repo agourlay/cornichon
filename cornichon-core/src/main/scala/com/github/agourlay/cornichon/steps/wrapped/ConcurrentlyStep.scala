@@ -25,8 +25,10 @@ case class ConcurrentlyStep(nested: List[Step], maxTime: FiniteDuration) extends
       .toListL
       .flatMap { results ⇒
         if (results.size != nested.size) {
-          val failedStep = FailedStep.fromSingle(this, ConcurrentlyTimeout(nested.size, results.size))
-          Task.now((initialRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep)))
+          val error = ConcurrentlyTimeout(nested.size, results.size)
+          val errorState = initialRunState.recordLog(failedTitleLog(initialDepth)).recordLog(FailureLogInstruction(error.renderedMessage, initialDepth))
+          val failedStep = FailedStep.fromSingle(this, error)
+          Task.now(errorState -> Left(failedStep))
         } else {
           val failedStepRuns = results.collect { case (s, r @ Left(_)) ⇒ (s, r) }
           failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
