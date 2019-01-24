@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
-import cats.data.Validated.{Invalid, Valid}
+import cats.data.Validated.{ Invalid, Valid }
 
 import scala.collection.concurrent.TrieMap
 import scala.util.Random
