@@ -47,5 +47,9 @@ case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, 
 }
 
 case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customMessage: () ⇒ String, negate: Boolean = false) extends EqualityAssertion[A] {
-  lazy val assertionError = CornichonError.fromString(customMessage())
+  lazy val assertionError = CustomMessageAssertionError(expected, actual, customMessage)
+}
+
+case class CustomMessageAssertionError[A](expected: A, actual: A, customMessage: () ⇒ String) extends CornichonError {
+  lazy val baseErrorMessage = customMessage()
 }
