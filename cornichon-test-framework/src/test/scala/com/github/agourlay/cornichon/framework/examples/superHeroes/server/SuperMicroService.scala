@@ -1,12 +1,13 @@
 package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
-import cats.data.Validated.{ Invalid, Valid }
+import cats.data.Validated.{Invalid, Valid}
 
 import scala.collection.concurrent.TrieMap
 import scala.util.Random
 import cats.syntax.option._
 import cats.syntax.validated._
+import com.github.agourlay.cornichon.core.Done
 
 class SuperMicroService {
 
@@ -30,10 +31,10 @@ class SuperMicroService {
     newSessionId
   }
 
-  def deleteSession(sessionId: String): Validated[ApiError, Unit] =
+  def deleteSession(sessionId: String): Validated[ApiError, Done] =
     publishersBySession.remove(sessionId)
       .flatMap(_ ⇒ superheroesBySession.remove(sessionId))
-      .map(_ ⇒ ())
+      .map(_ ⇒ Done)
       .toValid(SessionNotFound(sessionId))
 
   def publishersBySessionV(sessionId: String): Validated[SessionNotFound, Set[Publisher]] =

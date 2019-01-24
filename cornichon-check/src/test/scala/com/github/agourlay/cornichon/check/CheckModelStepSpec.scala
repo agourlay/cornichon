@@ -34,10 +34,12 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
 
-  def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = EffectStep.identityStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
+  val identityStep: EffectStep = EffectStep.fromSync("identity effect step", identity)
+
+  def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = identityStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property1(
       description = name,
-      preCondition = if (preNeverValid) neverValidAssertStep else EffectStep.identityStep,
+      preCondition = if (preNeverValid) neverValidAssertStep else identityStep,
       invariant = g ⇒ if (callGen) { g(); step } else step)
 
   "CheckModelStep" when {
