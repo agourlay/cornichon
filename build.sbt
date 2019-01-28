@@ -66,12 +66,8 @@ lazy val standardSettings = Seq(
   scmInfo := Some(ScmInfo(
     browseUrl = url("https://github.com/agourlay/cornichon.git"),
     connection = "scm:git:git@github.com:agourlay/cornichon.git"
-  ))
-  // To chase down cyclic dependencies
-  //libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.7" % "provided",
-  //autoCompilerPlugins := true,
-  //scalacOptions += "-P:acyclic:force",
-  //addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.7"),
+  )),
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0-M4")
   // To profile tests execution
   //javaOptions in Test := Seq("-XX:+UnlockCommercialFeatures", "-XX:+FlightRecorder")
 )

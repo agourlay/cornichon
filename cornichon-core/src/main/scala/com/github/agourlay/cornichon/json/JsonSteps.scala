@@ -117,10 +117,8 @@ object JsonSteps {
               sessionValue ← s.get(sessionKey)
               sessionValueWithFocusJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
               _ ← if (sessionValueWithFocusJson.isNull) PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)).asLeft else rightDone
-              withMatchers ← handleMatchers(s, sessionValueWithFocusJson)
-              (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = withMatchers
-              withIgnoredFields ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
-              (expectedPrepared, actualPrepared) = withIgnoredFields
+              (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) ← handleMatchers(s, sessionValueWithFocusJson)
+              (expectedPrepared, actualPrepared) ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
             } yield {
               if (negate && matcherAssertions.nonEmpty && expectedPrepared.isNull && actualPrepared.isNull)
                 // Handles annoying edge case of no payload remaining once all matched keys have been removed for negated assertion

@@ -68,8 +68,7 @@ class HttpService(
 
   private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(s: Session) =
     for {
-      resolvedRequestParts ← EitherT.fromEither[Task](resolveRequestParts(r.url, None, r.params, r.headers)(SelectNone)(s))
-      (url, _, params, headers) = resolvedRequestParts
+      (url, _, params, headers) ← EitherT.fromEither[Task](resolveRequestParts(r.url, None, r.params, r.headers)(SelectNone)(s))
       resolvedRequest = HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
       resp ← EitherT(client.openStream(resolvedRequest, requestTimeout))
       newSession ← EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(s))

@@ -54,11 +54,11 @@ class CheckStepBench {
   }
   /*
 [info] Benchmark                (transitionNumber)   Mode  Cnt      Score     Error  Units
-[info] CheckStepBench.runModel                  10  thrpt   10  34418.304 ±  57.569  ops/s
-[info] CheckStepBench.runModel                  20  thrpt   10  25133.954 ± 616.993  ops/s
-[info] CheckStepBench.runModel                  50  thrpt   10  14485.608 ± 511.710  ops/s
-[info] CheckStepBench.runModel                 100  thrpt   10   6466.801 ±  37.639  ops/s
-[info] CheckStepBench.runModel                 200  thrpt   10   3341.684 ±  33.144  ops/s
+[info] CheckStepBench.runModel                  10  thrpt   10    33746.833 ±    42.610  ops/s
+[info] CheckStepBench.runModel                  20  thrpt   10    21967.974 ±  3066.914  ops/s
+[info] CheckStepBench.runModel                  50  thrpt   10    14783.717 ±   165.020  ops/s
+[info] CheckStepBench.runModel                 100  thrpt   10     8676.695 ±    88.083  ops/s
+[info] CheckStepBench.runModel                 200  thrpt   10     3481.889 ±    22.729  ops/s
   */
 
   @Benchmark
