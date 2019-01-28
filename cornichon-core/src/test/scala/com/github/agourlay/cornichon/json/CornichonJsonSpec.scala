@@ -642,6 +642,17 @@ class CornichonJsonSpec extends WordSpec
         findAllJsonWithValue("Coding" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
 
       }
+
+      "find key in any JsonObject" in {
+        val targetValue = Json.fromString("target value")
+        forAll { jos: List[JsonObject] ⇒
+
+          val json = jos.foldRight(targetValue) { case (next, acc) ⇒ Json.fromJsonObject(next.add("stitch", acc)) }
+
+          val path = findAllJsonWithValue("target value" :: Nil, json).head
+          path.run(json) should be(targetValue)
+        }
+      }
     }
   }
 }
