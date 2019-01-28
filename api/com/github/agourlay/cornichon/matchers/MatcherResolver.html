@@ -567,9 +567,9 @@
               
         </dd></dl></div>
     </li><li name="com.github.agourlay.cornichon.matchers.MatcherResolver#prepareMatchers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="prepareMatchers(matchers:List[com.github.agourlay.cornichon.matchers.Matcher],expected:io.circe.Json,actual:io.circe.Json,negate:Boolean):(io.circe.Json,io.circe.Json,Seq[com.github.agourlay.cornichon.matchers.MatcherAssertion])"></a><a id="prepareMatchers(List[Matcher],Json,Json,Boolean):(Json,Json,Seq[MatcherAssertion])"></a>
+      <a id="prepareMatchers(matchers:List[com.github.agourlay.cornichon.matchers.Matcher],expected:io.circe.Json,actual:io.circe.Json,negate:Boolean):(io.circe.Json,io.circe.Json,List[com.github.agourlay.cornichon.matchers.MatcherAssertion])"></a><a id="prepareMatchers(List[Matcher],Json,Json,Boolean):(Json,Json,List[MatcherAssertion])"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/matchers/MatcherResolver.html#prepareMatchers(matchers:List[com.github.agourlay.cornichon.matchers.Matcher],expected:io.circe.Json,actual:io.circe.Json,negate:Boolean):(io.circe.Json,io.circe.Json,Seq[com.github.agourlay.cornichon.matchers.MatcherAssertion])" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/matchers/MatcherResolver.html#prepareMatchers(matchers:List[com.github.agourlay.cornichon.matchers.Matcher],expected:io.circe.Json,actual:io.circe.Json,negate:Boolean):(io.circe.Json,io.circe.Json,List[com.github.agourlay.cornichon.matchers.MatcherAssertion])" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -578,14 +578,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">prepareMatchers</span><span class="params">(<span name="matchers">matchers: <span class="extype" name="scala.List">List</span>[<a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a>]</span>, <span name="expected">expected: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>, <span name="actual">actual: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>, <span name="negate">negate: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: (<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>, <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>, <span class="extype" name="scala.Seq">Seq</span>[<a href="MatcherAssertion.html" class="extype" name="com.github.agourlay.cornichon.matchers.MatcherAssertion">MatcherAssertion</a>])</span>
+        <span class="name">prepareMatchers</span><span class="params">(<span name="matchers">matchers: <span class="extype" name="scala.List">List</span>[<a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a>]</span>, <span name="expected">expected: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>, <span name="actual">actual: <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a></span>, <span name="negate">negate: <a href="http://www.scala-lang.org/api/2.12.8/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: (<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>, <a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>, <span class="extype" name="scala.List">List</span>[<a href="MatcherAssertion.html" class="extype" name="com.github.agourlay.cornichon.matchers.MatcherAssertion">MatcherAssertion</a>])</span>
       </span>
       
       
     </li><li name="com.github.agourlay.cornichon.matchers.MatcherResolver#quoteMatchers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="quoteMatchers(input:String):String"></a><a id="quoteMatchers(String):String"></a>
+      <a id="quoteMatchers(input:String,matchersToQuote:List[com.github.agourlay.cornichon.matchers.Matcher]):String"></a><a id="quoteMatchers(String,List[Matcher]):String"></a>
       <span class="permalink">
-      <a href="../../../../../com/github/agourlay/cornichon/matchers/MatcherResolver.html#quoteMatchers(input:String):String" title="Permalink">
+      <a href="../../../../../com/github/agourlay/cornichon/matchers/MatcherResolver.html#quoteMatchers(input:String,matchersToQuote:List[com.github.agourlay.cornichon.matchers.Matcher]):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -594,7 +594,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">quoteMatchers</span><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">quoteMatchers</span><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="matchersToQuote">matchersToQuote: <span class="extype" name="scala.List">List</span>[<a href="Matcher.html" class="extype" name="com.github.agourlay.cornichon.matchers.Matcher">Matcher</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
