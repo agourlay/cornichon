@@ -43,25 +43,25 @@ class RequestEffectBench {
   final def afterAll(): Unit = {
     es.shutdown()
   }
-/*
+  /*
 [info] Benchmark                          Mode  Cnt       Score      Error  Units
 [info] RequestEffectBench.singleRequest  thrpt   20  415997.362 ± 1399.205  ops/s
 */
 
-@Benchmark
-def singleRequest() = {
-  val f = httpService.requestEffect(request)
-  val res = Await.result(f(session), Duration.Inf)
-  assert(res.isRight)
-}
+  @Benchmark
+  def singleRequest() = {
+    val f = httpService.requestEffect(request)
+    val res = Await.result(f(session), Duration.Inf)
+    assert(res.isRight)
+  }
 }
 
 object RequestEffectBench {
-val session = Session.newEmpty
-val request = HttpRequest[String](
-  method = HttpMethods.GET,
-  url = "https://myUrl/my/segment",
-  body = Some(""" { "k1":"v1", "k2":"v2","k3":"v3","k4":"v4" } """),
-  params = ("q1", "v1") :: ("q2", "v2") :: ("q3", "v3") :: Nil,
-  headers = ("h1", "v1") :: ("h2", "v2") :: ("h3", "v3") :: Nil)
+  val session = Session.newEmpty
+  val request = HttpRequest[String](
+    method = HttpMethods.GET,
+    url = "https://myUrl/my/segment",
+    body = Some(""" { "k1":"v1", "k2":"v2","k3":"v3","k4":"v4" } """),
+    params = ("q1", "v1") :: ("q2", "v2") :: ("q3", "v3") :: Nil,
+    headers = ("h1", "v1") :: ("h2", "v2") :: ("h3", "v3") :: Nil)
 }
