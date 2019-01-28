@@ -5,7 +5,7 @@ title:  "Property based testing support"
 
 # Property based testing support
 
-There is a support for property based testing through the `cornichon-check` module.
+There is support for property based testing through the `cornichon-check` module.
 
 It offers two flavours of testing which can be used in different situations, both are available when mixing the `CheckCheck` trait.
 
@@ -53,13 +53,13 @@ def coinGen(rc: RandomContext): Generator[Coin] = OptionalValueGenerator(
 
 ## First flavour - ∀
 
-The first flavour follows the classical approach found in many testing libraries. That is for any values from a set of generators, we will validate that a given invariant holds.
+The first flavour follows the classical approach found in many testing libraries. That is, for any values from a set of generators, we will validate that a given invariant holds.
 
 Here is the `API` available when using a single `generator`
 
 `def for_all[A](description: String, ga: RandomContext ⇒ Generator[A])(f: A ⇒ Step): Step`
 
-Let's use an example to see how to use it!
+Let's look at an example to see how to use it!
 
 We want to enforce the following invariant `for any string, if we reverse it twice, it should yield the same value`.
 
@@ -75,7 +75,7 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
   def feature = Feature("Basic examples of checks") {
 
     Scenario("reverse a string twice yields the same results") {
- 
+
       Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString ⇒
         Attach {
           Given I post("/double-reverse").withParams("word" -> randomString)
@@ -142,13 +142,13 @@ The logs show that:
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse).
 
-More often that not, using `forAll` is enough to cover the most common use cases. But sometimes, we want not only to have random values generated but also random interactions with the system under tests.
+More often than not, using `forAll` is enough to cover the most common use cases. But sometimes we not only want to have random values generated but also random interactions with the system under tests.
 
 ## Second flavour - Random model exploration
 
 The initial inspiration came after reading the following article [Property based integration testing using Haskell!](https://functional.works-hub.com/learn/property-based-integration-testing-using-haskell-6c25c) which describes a way to tackle the problem of property based testing for HTTP APIs.
 
-It is still a great introduction to the problem we are trying to solve although the implementations are significantly different.
+It is still a great introduction to the problem we are trying to solve, although the implementations are significantly different.
 
 ### Concepts
 
@@ -170,7 +170,7 @@ Let's unpack this signature:
 - `modelRunner` is the actual definition of the `model`
 - `A B C D E F` refers to the types of the `generators` used in `model` definition (maximum of 6 for the moment)
 
-Such Markov chain wires together a set of `properties` that relate to each others through `transitions` which are chosen according to a given `probability` (between 0 and 100).
+Such a Markov chain wires together a set of `properties` that relate to each other through `transitions` which are chosen according to a given `probability` (between 0 and 100).
 
 A `property` is composed of:
 - a description
@@ -192,12 +192,12 @@ Having `generators` as input enables the `action` to introduce some randomness i
 
 A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
 
-A `run` fails if one the following conditions is met:
+A `run` fails if one of the following conditions is met:
 - an error is thrown from a `property`
 - no `properties` with a valid `pre-condition` can be found, this is generally a sign of a malformed `model`
 - a `generator` throws an error
 
-A `model` exploration terminates successfully if the max number of run is reached or with an error if a run fails.
+A `model` exploration terminates successfully if the max number of runs is reached or with an error if a run fails.
 
 Let's create our first `model`!
 
@@ -210,14 +210,14 @@ It will be a basic chain which will not enforce any invariants; it will have:
 
 We will define the transitions such that:
 
-- there is 50% chance to start with ping or pong following the entry point
+- there is a 50% chance to start with ping or pong following the entry point
 - there is 90% to go from a ping/pong to a pong/ping
 - there is no loop from any `property`
 - there is a 10% chance to exit the game after a ping or a pong
 
 Also the DSL is asking for a `modelRunner` which is a little helper connecting a `model` to its `generators`.
 
-The type inference is sometimes not detecting properly the action type, so it is recommended to define the `modelRunner` and the `model` as a single expression to help the typechecker.
+The type inference is sometimes not properly detecting the action type, so it is recommended to define the `modelRunner` and the `model` as a single expression to help the typechecker.
 
 ```scala
 
@@ -490,7 +490,7 @@ It is interesting to note that we are executing a single run on purpose, as the 
 
 This is an issue because we are starting our model with `pushCoinAction` which is always expected to succeed.
 
-Let's try to the same model with more run to see if it breaks!
+Let's try to test the same model with more runs to see if it breaks!
 
 ```
 Starting scenario 'Turnstile acts according to model'
@@ -571,13 +571,13 @@ Starting scenario 'Turnstile acts according to model'
       Check model block failed  (74 millis)
 ```
 
-Using 2 runs, we found already the problem because the first run finished by introducing a coin.
+Using 2 runs, we already found the problem because the first run finished by introducing a coin.
 
 It is possible to replay exactly this run in a deterministic fashion by using the `seed` printed in the logs and feed it to the DSL.
 
 `Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1542021482941L))(turnstileModel)`
 
-This example shows that designing test scenarios with `cornichon-check` is sometimes challenging in the case of shared mutable state.
+This example shows that designing test scenarios with `cornichon-check` is sometimes challenging in the case of shared mutable states.
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile).
 
@@ -739,7 +739,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
 }
 ```
 
-Again let's have a look at the logs to see how things go.
+Again, let's have a look at the logs to see how things go.
 
 ```
 Advanced example of model checks:
@@ -963,7 +963,7 @@ Starting scenario 'WebShop acts according to model'
       Check block succeeded (42662 millis)
 ```
 
-We can see that we have been interacting with the `CRUD` API using randomly generated `ProductDraft` and that the eventually consistent contracts seems to hold.
+We can see that we have been interacting with the `CRUD` API using randomly generated `ProductDraft` and that the eventually consistent contracts seem to hold.
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/webShop).
 
