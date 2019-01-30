@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import cats.instances.future._
 import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
@@ -22,10 +21,6 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
 
   override def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction =
     successLog(title, initialRunState.depth, show, executionTime)
-
-  @deprecated("chain complete steps using AttachStep/AttachAsStep", "0.17.0")
-  def chainSyncE(chainedEffect: Session ⇒ Either[CornichonError, Session])(implicit ec: ExecutionContext): EffectStep =
-    copy(effect = s ⇒ EitherT(effect(s)).flatMap(s2 ⇒ EitherT.fromEither(chainedEffect(s2))).value)
 }
 
 object EffectStep {
