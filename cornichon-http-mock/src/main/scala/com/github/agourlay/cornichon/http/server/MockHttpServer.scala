@@ -38,6 +38,7 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
   private def startBlazeServer(port: Int): Task[A] =
     BlazeServerBuilder[Task]
       .bindHttp(port, selectedInterface)
+      .withoutBanner
       .withHttpApp(Router("/" -> mockService).orNotFound)
       .resource
       .use(server ⇒ useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
