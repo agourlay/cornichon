@@ -5,6 +5,7 @@ import java.util.function.UnaryOperator
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
+import com.github.agourlay.cornichon.steps.wrapped.ResourceStep
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.Future

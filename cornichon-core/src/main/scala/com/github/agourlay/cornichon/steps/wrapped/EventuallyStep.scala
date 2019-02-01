@@ -11,6 +11,7 @@ import monix.eval.Task
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationAllowed: Boolean) extends WrapperStep {
+
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
   override def run(engine: Engine)(initialRunState: RunState): StepResult = {

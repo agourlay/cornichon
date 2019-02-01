@@ -5,11 +5,11 @@ import java.util.Base64
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.Step
-import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ SuperHeroesHttpAPI, HttpServer }
+import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ HttpServer, SuperHeroesHttpAPI }
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper
-import com.github.agourlay.cornichon.steps.regular.ResourceStep
+import com.github.agourlay.cornichon.steps.wrapped.ResourceStep
 import sangria.macros._
 
 import scala.concurrent.Await

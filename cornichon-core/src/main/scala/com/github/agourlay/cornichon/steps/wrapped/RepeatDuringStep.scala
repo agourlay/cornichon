@@ -12,6 +12,7 @@ import monix.eval.Task
 import scala.concurrent.duration.FiniteDuration
 
 case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extends WrapperStep {
+
   val title = s"Repeat block during '$duration'"
 
   override def run(engine: Engine)(initialRunState: RunState): StepResult = {

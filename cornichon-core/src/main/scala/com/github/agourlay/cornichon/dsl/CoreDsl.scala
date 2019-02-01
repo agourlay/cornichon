@@ -166,21 +166,21 @@ trait CoreDsl extends ProvidedInstances {
     SessionValuesStepBuilder(placeholderResolver, k1, k2)
 
   def show_session: Step =
-    DebugStep(s ⇒ s"Session content is\n${s.show}".asRight)
+    DebugStep("show session", s ⇒ s"Session content is\n${s.show}".asRight)
 
   def show_session(
     key: String,
     indice: Option[Int] = None,
     transform: String ⇒ Either[CornichonError, String] = _.asRight) =
-    DebugStep { s ⇒
+    DebugStep(s"show session value for key $key", s ⇒
       for {
         v ← s.get(key, indice)
         transformed ← transform(v)
       } yield s"Session content for key '${SessionKey(key, indice).show}' is\n$transformed"
-    }
+    )
 
   def print_step(message: String): Step =
-    DebugStep(placeholderResolver.fillPlaceholders(message))
+    DebugStep("print step", placeholderResolver.fillPlaceholders(message))
 }
 
 object CoreDsl {

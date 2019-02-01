@@ -116,7 +116,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
       }
     }
 
-  private def showLastResponse[A: Show](parse: String ⇒ Either[CornichonError, A]) = DebugStep(s ⇒
+  private def showLastResponse[A: Show](title: String)(parse: String ⇒ Either[CornichonError, A]) = DebugStep(title, s ⇒
     for {
       headers ← s.get(lastResponseHeadersKey)
       decodedHeaders ← decodeSessionHeaders(headers)
@@ -131,8 +131,8 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
      """.stripMargin
     })
 
-  def show_last_response: Step = showLastResponse(_.asRight)
-  def show_last_response_json: Step = showLastResponse[Json](parseJson)
+  def show_last_response: Step = showLastResponse("show last response")(_.asRight)
+  def show_last_response_json: Step = showLastResponse[Json]("show last response JSON")(parseJson)
   def show_last_status: Step = show_session(lastResponseStatusKey)
 
   def show_last_body: Step = show_session(lastResponseBodyKey)
