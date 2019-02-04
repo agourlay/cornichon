@@ -31,7 +31,8 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
   private val (httpClient, safeShutdown) =
     BlazeClientBuilder(executionContext = ec)
       .withoutSslContext
-      .withMaxTotalConnections(100)
+      .withMaxTotalConnections(300)
+      .withMaxWaitQueueLimit(500)
       .withIdleTimeout(Duration.Inf)
       .withResponseHeaderTimeout(Duration.Inf)
       .withRequestTimeout(Duration.Inf)
