@@ -651,7 +651,7 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Repeat for each element
-        RepeatFrom(Vector("Superman", "GreenLantern", "Spiderman"))("superhero-name") {
+        RepeatFrom("Superman" :: "GreenLantern" :: "Spiderman" :: Nil)("superhero-name") {
 
           When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
 
@@ -686,7 +686,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Blocks can be nested
         RepeatConcurrently(times = 10, parallelism = 2, maxTime = 20 seconds) {
 
-          Eventually(maxDuration = 10 seconds, interval = 200 milliseconds) {
+          Eventually(maxDuration = 10 seconds, interval = 10 milliseconds) {
 
             When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
@@ -792,7 +792,7 @@ class SuperHeroesScenario extends CornichonFeature {
   }
 
   def session_resource = ResourceStep(
-    title = "manage session resource",
+    title = "session resource",
     acquire = post("/session"),
     release = delete("/session").withParams("sessionId" → "<session-id>")
   )
@@ -811,13 +811,6 @@ class SuperHeroesScenario extends CornichonFeature {
     }
 
   }
-
-  // Step to be executed after each scenario
-  //afterEachScenario {
-  //
-  //  Then I print_step("done!")
-  //
-  //}
 
   override def registerExtractors = Map(
     "name" → JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "name")
