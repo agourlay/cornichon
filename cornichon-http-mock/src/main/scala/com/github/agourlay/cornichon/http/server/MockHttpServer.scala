@@ -19,6 +19,8 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r ⇒ Random.shuffle(r.toList))
 
+  private val mockRouter = Router("/" -> mockService).orNotFound
+
   def useServer(): Task[A] =
     if (randomPortOrder.isEmpty)
       Task.raiseError(MockHttpServerError.toException)
@@ -32,14 +34,14 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
       case _: java.net.BindException if retry < maxRetries ⇒
         val sleepFor = retry + 1
         println(s"Could not start server on any port. Retrying in $sleepFor seconds...")
-        startServerTryPorts(randomPortOrder, retry + 1).delayExecution((retry + 1).seconds)
+        startServerTryPorts(randomPortOrder, retry = retry + 1).delayExecution(sleepFor.seconds)
     }
 
   private def startBlazeServer(port: Int): Task[A] =
     BlazeServerBuilder[Task]
       .bindHttp(port, selectedInterface)
       .withoutBanner
-      .withHttpApp(Router("/" -> mockService).orNotFound)
+      .withHttpApp(mockRouter)
       .resource
       .use(server ⇒ useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
 
