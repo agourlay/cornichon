@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 abstract class GenericAssertStepBuilder[A: Show: Order: Eq: Diff] {
 
   protected val baseTitle: String
-  protected def sessionExtractor(s: Session): Either[CornichonError, (A, Option[String])]
+  protected def sessionExtractor(s: Session): Either[CornichonError, (A, Option[() ⇒ String])]
 
   def is(expected: A): AssertStep = {
     val fullTitle = s"$baseTitle is '$expected'"
@@ -20,7 +20,7 @@ abstract class GenericAssertStepBuilder[A: Show: Order: Eq: Diff] {
               case None ⇒
                 GenericEqualityAssertion(asserted, expected)
               case Some(info) ⇒
-                CustomMessageEqualityAssertion(asserted, expected, () ⇒ s"'${asserted.show}' was not equal to '${expected.show}' for context\n$info")
+                CustomMessageEqualityAssertion(asserted, expected, () ⇒ s"'${asserted.show}' was not equal to '${expected.show}' for context\n${info()}")
             }
         }
       }
@@ -32,7 +32,7 @@ abstract class GenericAssertStepBuilder[A: Show: Order: Eq: Diff] {
     AssertStep(
       title = fullTitle,
       action = s ⇒ Assertion.either {
-        sessionExtractor(s).map { case (asserted, source) ⇒ LessThanAssertion(asserted, lessThan) }
+        sessionExtractor(s).map { case (asserted, _) ⇒ LessThanAssertion(asserted, lessThan) }
       }
     )
   }
@@ -42,7 +42,7 @@ abstract class GenericAssertStepBuilder[A: Show: Order: Eq: Diff] {
     AssertStep(
       title = fullTitle,
       action = s ⇒ Assertion.either {
-        sessionExtractor(s).map { case (asserted, source) ⇒ GreaterThanAssertion(asserted, greaterThan) }
+        sessionExtractor(s).map { case (asserted, _) ⇒ GreaterThanAssertion(asserted, greaterThan) }
       }
     )
   }
@@ -52,7 +52,7 @@ abstract class GenericAssertStepBuilder[A: Show: Order: Eq: Diff] {
     AssertStep(
       title = fullTitle,
       action = s ⇒ Assertion.either {
-        sessionExtractor(s).map { case (asserted, source) ⇒ BetweenAssertion(less, asserted, greater) }
+        sessionExtractor(s).map { case (asserted, _) ⇒ BetweenAssertion(less, asserted, greater) }
       }
     )
   }
