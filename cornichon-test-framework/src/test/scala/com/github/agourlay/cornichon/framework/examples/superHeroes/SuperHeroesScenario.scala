@@ -374,6 +374,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.hasSize(5)
 
+        Then assert body.asArray.size.isLessThan(6)
+
         Then I save("5th-name" → "IronMan")
 
         And assert body.asArray.ignoringEach("city", "hasSuperpowers").contains(

@@ -228,6 +228,43 @@ class JsonStepsSpec extends AsyncWordSpec
         }
       }
 
+      // goes through the new experimental GenericAssertStepBuilder
+      "array size is" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
+        val step = jsonStepBuilder.asArray.size.is(3)
+        val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "array size is greater" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
+        val step = jsonStepBuilder.asArray.size.isGreaterThan(2)
+        val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "array size is less" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
+        val step = jsonStepBuilder.asArray.size.isLessThan(4)
+        val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "array size is between" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
+        val step = jsonStepBuilder.asArray.size.isBetween(2, 4)
+        val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
       "not empty array" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.isNotEmpty

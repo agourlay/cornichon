@@ -30,7 +30,7 @@ object HeadersSteps {
       title = s"headers size is '$expectedSize'",
       action = s ⇒ Assertion.either {
         s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
-          CollectionSizeAssertion(sessionHeaders.split(","), expectedSize).withName("headers")
+          CollectionSizeAssertion(sessionHeaders.split(","), expectedSize, "headers")
         }
       }
     )

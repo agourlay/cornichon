@@ -264,6 +264,16 @@ object JsonSteps {
 
     def isEmpty: AssertStep = hasSize(0)
 
+    def size: GenericAssertStepBuilder[Int] = new GenericAssertStepBuilder[Int] {
+      override val baseTitle: String = if (jsonPath == JsonPath.root) s"$target array size" else s"$target's array '$jsonPath' size"
+
+      override def sessionExtractor(s: Session): Either[CornichonError, (Int, Some[String])] =
+        for {
+          sessionValue ← s.get(sessionKey)
+          elements ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
+        } yield (elements.size, Some(Json.fromValues(elements).show))
+    }
+
     def hasSize(expectedSize: Int) = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is '$expectedSize'" else s"$target's array '$jsonPath' size is '$expectedSize'",
       action = s ⇒ Assertion.either {
