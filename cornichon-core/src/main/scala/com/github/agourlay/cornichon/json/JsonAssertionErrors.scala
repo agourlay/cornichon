@@ -38,10 +38,9 @@ object JsonAssertionErrors {
     else base
   }
 
-  def jsonArrayNotEmptyError(arrayElements: Vector[Json]): String = {
-    val jsonArray = Json.fromValues(arrayElements).show
-    s"""expected JSON array to be empty but it is not the case with array:
-       |$jsonArray""".stripMargin
+  def jsonArrayNotEmptyError(context: String): String = {
+    s"""expected JSON array to not be empty but it is not the case in the context of:
+       |$context""".stripMargin
   }
 
   def arrayContainsError(expected: Vector[Json], sourceArray: Vector[Json], contains: Boolean): String = {

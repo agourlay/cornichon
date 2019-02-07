@@ -9,6 +9,7 @@ import cats.instances.int._
 import cats.instances.vector._
 import cats.instances.list._
 import cats.instances.either._
+import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable }
@@ -268,7 +269,7 @@ object JsonSteps {
         for {
           sessionValue ← s.get(sessionKey)
           elements ← applyPathAndFindArray(jsonPath, resolver)(s, sessionValue)
-        } yield CustomMessageEqualityAssertion(true, elements.nonEmpty, () ⇒ jsonArrayNotEmptyError(elements))
+        } yield CustomMessageEqualityAssertion(true, elements.nonEmpty, () ⇒ jsonArrayNotEmptyError(parseJsonUnsafe(sessionValue).show))
       }
     )
 
