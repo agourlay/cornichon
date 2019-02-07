@@ -1,18 +1,18 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.{Eq, Order, Show}
+import cats.{ Eq, Order, Show }
 import cats.instances.int._
-import com.github.agourlay.cornichon.core.{CornichonError, Session}
+import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 
 //experimental and unused ;)
-abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { outer =>
+abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { outer ⇒
 
   protected val baseTitle: String
   protected def sessionExtractor(s: Session): Either[CornichonError, Iterable[A]]
 
-  def size : GenericAssertStepBuilder[Int] = new GenericAssertStepBuilder[Int] {
-    protected val baseTitle: String =  s"$baseTitle's size"
-    protected def sessionExtractor(s: Session): Either[CornichonError, (Int, Option[() => String])] = outer.sessionExtractor(s).map(c => (c.seq.size, None))
+  def size: GenericAssertStepBuilder[Int] = new GenericAssertStepBuilder[Int] {
+    protected val baseTitle: String = s"$baseTitle's size"
+    protected def sessionExtractor(s: Session): Either[CornichonError, (Int, Option[() ⇒ String])] = outer.sessionExtractor(s).map(c ⇒ (c.seq.size, None))
   }
 
   def isNotEmpty: AssertStep = {
@@ -38,7 +38,6 @@ abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { ou
       }
     )
   }
-
 
 }
 
