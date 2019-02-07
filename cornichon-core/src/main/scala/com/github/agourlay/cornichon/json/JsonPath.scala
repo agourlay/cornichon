@@ -2,6 +2,10 @@ package com.github.agourlay.cornichon.json
 
 import cats.Show
 import cats.instances.string._
+import cats.instances.list._
+import cats.instances.option._
+import cats.syntax.traverse._
+import cats.syntax.either._
 
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -12,16 +16,24 @@ import scala.collection.mutable.ListBuffer
 
 case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
-  def run(superSet: Json): Json = {
+  def run(superSet: Json): Option[Json] = {
     val (allCursors, projectionMode) = cursors(superSet)
-    val focused = allCursors.map(c ⇒ c.focus.getOrElse(Json.Null))
-    if (projectionMode)
-      Json.fromValues(focused)
-    else
-      focused.head
+    allCursors.traverse(c ⇒ c.focus).map { focused ⇒
+      if (projectionMode)
+        Json.fromValues(focused)
+      else
+        focused.head
+    }
   }
 
-  def run(json: String): Either[CornichonError, Json] = parseJson(json).map(run)
+  def runStrict(superSet: Json): Either[CornichonError, Json] =
+    run(superSet) match {
+      case None    ⇒ PathSelectsNothing(JsonPath.showJsonPath.show(this), superSet).asLeft
+      case Some(j) ⇒ j.asRight
+    }
+
+  def run(json: String): Either[CornichonError, Option[Json]] = parseJson(json).map(run)
+  def runStrict(json: String): Either[CornichonError, Json] = parseJson(json).flatMap(runStrict)
 
   // Boolean flag to indicate if the operations contain a projection segment.
   // If it is the case, the result must be interpreted as a List.
@@ -74,7 +86,7 @@ object JsonPath {
   private val rightEmptyJsonPath = Right(rootPath)
   private val operationsCache = Caching.buildCache[String, Either[CornichonError, List[JsonPathOperation]]]()
 
-  implicit val showJsonPath = Show.show[JsonPath] { p ⇒
+  implicit val showJsonPath: Show[JsonPath] = Show.show[JsonPath] { p ⇒
     p.operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
   }
 
@@ -84,15 +96,24 @@ object JsonPath {
     else
       operationsCache.get(path, p ⇒ JsonPathParser.parseJsonPath(p)).map(JsonPath(_))
 
-  def run(path: String, json: Json): Either[CornichonError, Json] =
+  def run(path: String, json: Json): Either[CornichonError, Option[Json]] =
     JsonPath.parse(path).map(_.run(json))
 
-  def run(path: String, json: String): Either[CornichonError, Json] =
+  def runStrict(path: String, json: Json): Either[CornichonError, Json] =
+    JsonPath.parse(path).flatMap(_.runStrict(json))
+
+  def run(path: String, json: String): Either[CornichonError, Option[Json]] =
     for {
       json ← parseJson(json)
       jsonPath ← JsonPath.parse(path)
     } yield jsonPath.run(json)
 
+  def runStrict(path: String, json: String): Either[CornichonError, Json] =
+    for {
+      json ← parseJson(json)
+      jsonPath ← JsonPath.parse(path)
+      res ← jsonPath.runStrict(json)
+    } yield res
 }
 
 sealed trait JsonPathOperation {

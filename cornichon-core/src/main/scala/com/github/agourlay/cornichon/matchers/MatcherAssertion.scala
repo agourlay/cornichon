@@ -35,10 +35,12 @@ case class MatcherAssertionError(m: Matcher, input: Json, negate: Boolean) exten
 }
 
 object MatcherAssertion {
-  def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher, negateMatcher: Boolean) =
-    new MatcherAssertion {
-      val negate = negateMatcher
-      val m = matcher
-      val input = jsonPath.run(json)
+  def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher, negateMatcher: Boolean): Either[CornichonError, MatcherAssertion] =
+    jsonPath.runStrict(json).map { json ⇒
+      new MatcherAssertion {
+        val negate = negateMatcher
+        val m = matcher
+        val input = json
+      }
     }
 }

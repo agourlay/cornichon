@@ -20,8 +20,14 @@ object Matchers {
 
   val isPresent = Matcher(
     key = "is-present",
-    description = "checks if the field is defined",
+    description = "checks if the field is defined and not null",
     predicate = !_.isNull
+  )
+
+  val isNull = Matcher(
+    key = "is-null",
+    description = "checks if the field is defined and null",
+    predicate = _.isNull
   )
 
   val anyString = Matcher(

@@ -100,7 +100,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
             for {
               resolvedPath ← placeholderResolver.fillPlaceholders(path)(session)
               jsonPath ← JsonPath.parse(resolvedPath)
-              json ← jsonPath.run(s)
+              json ← jsonPath.runStrict(s)
             } yield jsonStringValue(json)
           })
       }

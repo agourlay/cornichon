@@ -78,8 +78,8 @@ trait CornichonJson {
   def parseArray(input: String): Either[CornichonError, Vector[Json]] =
     parseJson(input).flatMap(jsonArrayValues)
 
-  def selectArrayJsonPath(path: JsonPath, json: String): Either[CornichonError, Vector[Json]] =
-    path.run(json).flatMap(jsonArrayValues)
+  def selectMandatoryArrayJsonPath(path: JsonPath, json: String): Either[CornichonError, Vector[Json]] =
+    path.runStrict(json).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]): Json =
     paths.foldLeft(input) { (json, path) ⇒
@@ -100,7 +100,7 @@ trait CornichonJson {
     )
 
   def extract(json: Json, path: String): Either[CornichonError, Json] =
-    JsonPath.run(path, json)
+    JsonPath.runStrict(path, json)
 
   def prettyPrint(json: Json): String =
     json.spaces2
@@ -163,7 +163,7 @@ object CornichonJson extends CornichonJson {
       for {
         sessionValue ← s.get(key, stackingIndice)
         jsonValue ← parseJson(sessionValue)
-        extracted ← JsonPath.run(path, jsonValue)
+        extracted ← JsonPath.runStrict(path, jsonValue)
       } yield extracted
 
     def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, String] =

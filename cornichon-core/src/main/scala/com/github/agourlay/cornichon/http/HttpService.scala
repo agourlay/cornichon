@@ -219,7 +219,7 @@ object HttpService {
           filledSession.addValue(targetKey, response.body)
 
         case PathExtractor(path, targetKey) ⇒
-          JsonPath.run(path, response.body)
+          JsonPath.runStrict(path, response.body)
             .flatMap(extractedJson ⇒ filledSession.addValue(targetKey, jsonStringValue(extractedJson)))
       }
     }

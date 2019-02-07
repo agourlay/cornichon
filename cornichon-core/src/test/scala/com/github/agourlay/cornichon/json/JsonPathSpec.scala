@@ -13,6 +13,32 @@ class JsonPathSpec extends WordSpec
 
   "JsonPath" must {
 
+    "non strict version returns None if the field does not exist" in {
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |}
+        """.stripMargin
+
+      JsonPath.run("Name2", input) should be(Right(None))
+    }
+
+    "select properly null field" in {
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": null
+          |}
+        """.stripMargin
+
+      JsonPath.runStrict("Name", input) should beRight(Json.Null)
+    }
+
     "select properly String based on single field" in {
       val input =
         """
@@ -23,7 +49,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.run("Name", input) should beRight(Json.fromString("John"))
+      JsonPath.runStrict("Name", input) should beRight(Json.fromString("John"))
     }
 
     "select properly Int based on single field" in {
@@ -36,7 +62,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.run("Age", input) should beRight(Json.fromInt(50))
+      JsonPath.runStrict("Age", input) should beRight(Json.fromInt(50))
     }
 
     "select properly nested field in Object" in {
@@ -53,7 +79,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.run("brother.Age", input) should beRight(Json.fromInt(50))
+      JsonPath.runStrict("brother.Age", input) should beRight(Json.fromInt(50))
     }
 
     "select properly nested field in Array" in {
@@ -76,7 +102,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.run("brothers[1].Age", input) should beRight(Json.fromInt(30))
+      JsonPath.runStrict("brothers[1].Age", input) should beRight(Json.fromInt(30))
     }
 
     "select properly nested fields projected in Array" in {
@@ -99,7 +125,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.run("brothers[*].Age", input) should beRight(Json.arr(Json.fromInt(50), Json.fromInt(30)))
+      JsonPath.runStrict("brothers[*].Age", input) should beRight(Json.arr(Json.fromInt(50), Json.fromInt(30)))
     }
 
     "select properly nested fields projected in Array with a single value" in {
@@ -118,7 +144,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.run("brothers[*].Age", input) should beRight(Json.arr(Json.fromInt(50)))
+      JsonPath.runStrict("brothers[*].Age", input) should beRight(Json.arr(Json.fromInt(50)))
     }
 
     "select properly doubly nested fields projected in Array" in {
@@ -159,7 +185,7 @@ class JsonPathSpec extends WordSpec
           |}
         """.stripMargin
 
-      JsonPath.run("Brothers[*].Hobbies[*].Name", input) should beRight(Json.arr(
+      JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) should beRight(Json.arr(
         Json.fromString("Karate"), Json.fromString("Football"), Json.fromString("Diving"), Json.fromString("Reading")
       ))
     }
@@ -184,7 +210,7 @@ class JsonPathSpec extends WordSpec
           |}]
         """.stripMargin
 
-      JsonPath.run("$[0].brothers[1].Age", input) should beRight(Json.fromInt(30))
+      JsonPath.runStrict("$[0].brothers[1].Age", input) should beRight(Json.fromInt(30))
     }
   }
 }

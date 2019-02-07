@@ -28,7 +28,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
       (session.get(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
         case (v, None)               ⇒ v
         case (Left(_), Some(mapper)) ⇒ applyMapper(otherKeyName, mapper, session, ph)
-        case (Right(_), Some(_))     ⇒ Left(AmbiguousKeyDefinition(otherKeyName))
+        case (Right(_), Some(_))     ⇒ AmbiguousKeyDefinition(otherKeyName).asLeft
       }
     }
 
@@ -62,7 +62,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
         .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
         .flatMap { sessionValue ⇒
           // No placeholders in JsonMapper to avoid accidental infinite recursions.
-          JsonPath.run(jsonPath, sessionValue)
+          JsonPath.runStrict(jsonPath, sessionValue)
             .map(CornichonJson.jsonStringValue)
             .map(transform)
         }

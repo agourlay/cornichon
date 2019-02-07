@@ -650,7 +650,7 @@ class CornichonJsonSpec extends WordSpec
           val json = jos.foldRight(targetValue) { case (next, acc) ⇒ Json.fromJsonObject(next.add("stitch", acc)) }
 
           val path = findAllJsonWithValue("target value" :: Nil, json).head
-          path.run(json) should be(targetValue)
+          path.run(json).value should be(targetValue)
         }
       }
     }

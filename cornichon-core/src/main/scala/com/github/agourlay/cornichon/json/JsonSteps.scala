@@ -6,16 +6,14 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.instances.boolean._
 import cats.instances.int._
-import cats.instances.string._
 import cats.instances.vector._
 import cats.instances.list._
 import cats.instances.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, SessionKey }
-import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.{ PlaceholderResolver, Resolvable }
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.matchers.MatcherResolver
+import com.github.agourlay.cornichon.matchers.{ MatcherAssertion, MatcherResolver }
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import io.circe.{ Decoder, Encoder, Json }
 
@@ -78,7 +76,7 @@ object JsonSteps {
       val isOrNot = if (negate) "is not" else "is"
       val baseTitle = if (jsonPath == JsonPath.root) s"$target $isOrNot\n$expectedShow" else s"$target's field '$jsonPath' $isOrNot\n$expectedShow"
 
-      def handleMatchers(session: Session, sessionValueWithFocusJson: Json) =
+      def handleMatchers(session: Session, sessionValueWithFocusJson: Json): Either[CornichonError, (Json, Json, List[MatcherAssertion])] =
         matcherResolver.findAllMatchers(expectedShow).flatMap { matchers ⇒
           if (matchers.nonEmpty) {
             val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected) { r ⇒
@@ -86,7 +84,7 @@ object JsonSteps {
               if (isJsonString(r)) r
               else matcherResolver.quoteMatchers(r, matchers)
             }
-            resolveAndParseJson(withQuotedMatchers, session, placeholderResolver).map {
+            resolveAndParseJson(withQuotedMatchers, session, placeholderResolver).flatMap {
               expectedJson ⇒ matcherResolver.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson, negate)
             }
           } else
@@ -115,8 +113,7 @@ object JsonSteps {
           else
             for {
               sessionValue ← s.get(sessionKey)
-              sessionValueWithFocusJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
-              _ ← if (sessionValueWithFocusJson.isNull) PathSelectsNothing(jsonPath, parseJsonUnsafe(sessionValue)).asLeft else rightDone
+              sessionValueWithFocusJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
               (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) ← handleMatchers(s, sessionValueWithFocusJson)
               (expectedPrepared, actualPrepared) ← handleIgnoredFields(s, expectedWithoutMatchers, actualWithoutMatchers)
             } yield {
@@ -137,7 +134,7 @@ object JsonSteps {
         action = s ⇒ Assertion.either {
           for {
             sessionValue ← s.get(sessionKey)
-            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
             subJsonTyped ← decodeAs[A](subJson)
             resolvedExpected ← placeholderResolver.fillPlaceholders(lessThan)(s)
           } yield LessThanAssertion(subJsonTyped, resolvedExpected)
@@ -153,7 +150,7 @@ object JsonSteps {
         action = s ⇒ Assertion.either {
           for {
             sessionValue ← s.get(sessionKey)
-            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
             subJsonTyped ← decodeAs[A](subJson)
             resolvedExpected ← placeholderResolver.fillPlaceholders(greaterThan)(s)
           } yield GreaterThanAssertion(subJsonTyped, resolvedExpected)
@@ -168,7 +165,7 @@ object JsonSteps {
         action = s ⇒ Assertion.either {
           for {
             sessionValue ← s.get(sessionKey)
-            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
             subJsonTyped ← decodeAs[A](subJson)
             resolvedLess ← placeholderResolver.fillPlaceholders(less)(s)
             resolvedGreater ← placeholderResolver.fillPlaceholders(greater)(s)
@@ -184,7 +181,7 @@ object JsonSteps {
         action = s ⇒ Assertion.either {
           for {
             sessionValue ← s.get(sessionKey)
-            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
             resolvedExpected ← placeholderResolver.fillPlaceholders(expectedPart)(s)
           } yield StringContainsAssertion(subJson.show, resolvedExpected)
         }
@@ -198,8 +195,21 @@ object JsonSteps {
         action = s ⇒ Assertion.either {
           for {
             sessionValue ← s.get(sessionKey)
-            subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+            subJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
           } yield RegexAssertion(subJson.show, expectedRegex)
+        }
+      )
+    }
+
+    def isNull: AssertStep = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target is null" else s"$target's field '$jsonPath' is null"
+      AssertStep(
+        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        action = s ⇒ Assertion.either {
+          for {
+            sessionValue ← s.get(sessionKey)
+            subJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
+          } yield GenericEqualityAssertion(subJson, Json.Null)
         }
       )
     }
@@ -212,7 +222,7 @@ object JsonSteps {
           for {
             sessionValue ← s.get(sessionKey)
             subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
-          } yield CustomMessageEqualityAssertion(true, subJson.isNull, () ⇒ keyIsPresentError(jsonPath, subJson))
+          } yield CustomMessageEqualityAssertion(true, subJson.isEmpty, () ⇒ keyIsPresentError(jsonPath, subJson.get)) //YOLO
         }
       )
     }
@@ -225,7 +235,7 @@ object JsonSteps {
           for {
             sessionValue ← s.get(sessionKey)
             subJson ← resolveRunJsonPath(jsonPath, sessionValue, placeholderResolver)(s)
-          } yield CustomMessageEqualityAssertion(false, subJson.isNull, () ⇒ keyIsAbsentError(jsonPath, sessionValue))
+          } yield CustomMessageEqualityAssertion(true, subJson.isDefined, () ⇒ keyIsAbsentError(jsonPath, sessionValue))
         }
       )
     }
@@ -359,7 +369,7 @@ object JsonSteps {
     if (path == JsonPath.root)
       parseArray(sessionValue)
     else
-      resolveAndParseJsonPath(path, resolver)(s).flatMap(selectArrayJsonPath(_, sessionValue))
+      resolveAndParseJsonPath(path, resolver)(s).flatMap(selectMandatoryArrayJsonPath(_, sessionValue))
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
@@ -379,6 +389,9 @@ object JsonSteps {
       jsonPath ← JsonPath.parse(resolvedPath)
     } yield jsonPath
 
-  private def resolveRunJsonPath(path: String, source: String, pr: PlaceholderResolver)(s: Session): Either[CornichonError, Json] =
+  private def resolveRunJsonPath(path: String, source: String, pr: PlaceholderResolver)(s: Session): Either[CornichonError, Option[Json]] =
     resolveAndParseJsonPath(path, pr)(s).flatMap(jsonPath ⇒ jsonPath.run(source))
+
+  private def resolveRunMandatoryJsonPath(path: String, source: String, pr: PlaceholderResolver)(s: Session): Either[CornichonError, Json] =
+    resolveAndParseJsonPath(path, pr)(s).flatMap(jsonPath ⇒ jsonPath.runStrict(source))
 }

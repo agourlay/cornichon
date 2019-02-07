@@ -78,6 +78,60 @@ class JsonStepsSpec extends AsyncWordSpec
         }
       }
 
+      "isPresent path to json key" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
+        val step = jsonStepBuilder.path("myKey").isPresent
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "isPresent path to json key fail" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
+        val step = jsonStepBuilder.path("myKey2").isPresent
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
+      "isAbsent path to json key" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
+        val step = jsonStepBuilder.path("myKey2").isAbsent
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "isAbsent path to json key fail" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
+        val step = jsonStepBuilder.path("myKey").isAbsent
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
+      "isNull path to json key" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : null }""")
+        val step = jsonStepBuilder.path("myKey").isNull
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "isNull path to json key fail" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "notNull" }""")
+        val step = jsonStepBuilder.path("myKey").isNull
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
       "is with absent path to json key" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey1").is("myValue")
