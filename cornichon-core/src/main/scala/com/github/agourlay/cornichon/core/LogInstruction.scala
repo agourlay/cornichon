@@ -13,9 +13,10 @@ sealed trait LogInstruction {
 
     def withMarginAndDuration(line: String): String = {
       val d = duration match {
-        case None                           ⇒ ""
-        case Some(dur) if dur.toMillis == 0 ⇒ s" [${dur.toMicros} μs]"
-        case Some(dur)                      ⇒ s" [${dur.toMillis} ms]"
+        case None                             ⇒ ""
+        case Some(dur) if dur.toMillis == 0   ⇒ s" [${dur.toMicros} μs]"
+        case Some(dur) if dur.toSeconds >= 10 ⇒ s" [${dur.toSeconds} s]"
+        case Some(dur)                        ⇒ s" [${dur.toMillis} ms]"
       }
       fullMargin + line + d
     }
