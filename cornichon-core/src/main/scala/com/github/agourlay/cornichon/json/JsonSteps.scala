@@ -378,7 +378,7 @@ object JsonSteps {
   }
 
   private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, s: Session, pr: PlaceholderResolver): Either[CornichonError, Json] =
-    pr.fillPlaceholders(input)(s).flatMap(parseJson)
+    pr.fillPlaceholders(input)(s).flatMap(r ⇒ parseJson(r))
 
   private def resolveAndParseJsonPath(path: String, pr: PlaceholderResolver)(s: Session): Either[CornichonError, JsonPath] =
     pr.fillPlaceholders(path)(s).flatMap(JsonPath.parse)
