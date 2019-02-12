@@ -364,13 +364,12 @@ object JsonSteps {
       ignoredEachKeys.traverse(resolveAndParseJsonPath(_, resolver)(s))
         .map(ignoredPaths ⇒ jArray.map(removeFieldsByPath(_, ignoredPaths)))
 
+    private def applyPathAndFindArray(path: String, resolver: PlaceholderResolver)(s: Session, sessionValue: String): Either[CornichonError, Vector[Json]] =
+      if (path == JsonPath.root)
+        parseArray(sessionValue)
+      else
+        resolveAndParseJsonPath(path, resolver)(s).flatMap(selectMandatoryArrayJsonPath(sessionValue, _))
   }
-
-  private def applyPathAndFindArray(path: String, resolver: PlaceholderResolver)(s: Session, sessionValue: String): Either[CornichonError, Vector[Json]] =
-    if (path == JsonPath.root)
-      parseArray(sessionValue)
-    else
-      resolveAndParseJsonPath(path, resolver)(s).flatMap(selectMandatoryArrayJsonPath(_, sessionValue))
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
@@ -379,20 +378,14 @@ object JsonSteps {
   }
 
   private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, s: Session, pr: PlaceholderResolver): Either[CornichonError, Json] =
-    for {
-      resolved ← pr.fillPlaceholders(input)(s)
-      json ← parseJson(resolved)
-    } yield json
+    pr.fillPlaceholders(input)(s).flatMap(parseJson)
 
   private def resolveAndParseJsonPath(path: String, pr: PlaceholderResolver)(s: Session): Either[CornichonError, JsonPath] =
-    for {
-      resolvedPath ← pr.fillPlaceholders(path)(s)
-      jsonPath ← JsonPath.parse(resolvedPath)
-    } yield jsonPath
+    pr.fillPlaceholders(path)(s).flatMap(JsonPath.parse)
 
   private def resolveRunJsonPath(path: String, source: String, pr: PlaceholderResolver)(s: Session): Either[CornichonError, Option[Json]] =
-    resolveAndParseJsonPath(path, pr)(s).flatMap(jsonPath ⇒ jsonPath.run(source))
+    resolveAndParseJsonPath(path, pr)(s).flatMap(_.run(source))
 
   private def resolveRunMandatoryJsonPath(path: String, source: String, pr: PlaceholderResolver)(s: Session): Either[CornichonError, Json] =
-    resolveAndParseJsonPath(path, pr)(s).flatMap(jsonPath ⇒ jsonPath.runStrict(source))
+    resolveAndParseJsonPath(path, pr)(s).flatMap(_.runStrict(source))
 }

@@ -558,14 +558,14 @@ class CornichonJsonSpec extends WordSpec
 
         val input = "target value"
 
-        findAllJsonWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(List(rootPath))
+        findAllPathWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(List(rootPath))
       }
 
       "not find root value" in {
 
         val input = "target values"
 
-        findAllJsonWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(Nil)
+        findAllPathWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(Nil)
       }
 
       "find root key" in {
@@ -579,7 +579,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue("John" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Name")))
+        findAllPathWithValue("John" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Name")))
 
       }
 
@@ -598,7 +598,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue("Paul" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brother.Name")))
+        findAllPathWithValue("Paul" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brother.Name")))
 
       }
 
@@ -623,7 +623,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue("Bob" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brothers[1].Name")))
+        findAllPathWithValue("Bob" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brothers[1].Name")))
 
       }
 
@@ -639,7 +639,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllJsonWithValue("Coding" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
+        findAllPathWithValue("Coding" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
 
       }
 
@@ -649,7 +649,7 @@ class CornichonJsonSpec extends WordSpec
 
           val json = jos.foldRight(targetValue) { case (next, acc) ⇒ Json.fromJsonObject(next.add("stitch", acc)) }
 
-          val path = findAllJsonWithValue("target value" :: Nil, json).head
+          val path = findAllPathWithValue("target value" :: Nil, json).head
           path.run(json).value should be(targetValue)
         }
       }

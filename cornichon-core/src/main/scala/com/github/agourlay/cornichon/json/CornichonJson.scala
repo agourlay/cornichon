@@ -68,17 +68,17 @@ trait CornichonJson {
 
   def parseGraphQLJson(input: String): Either[MalformedGraphQLJsonError[String], Json] =
     QueryParser.parseInput(input) match {
-      case Success(value) ⇒ Right(value.convertMarshaled[Json])
-      case Failure(e)     ⇒ Left(MalformedGraphQLJsonError(input, e))
+      case Success(value) ⇒ value.convertMarshaled[Json].asRight
+      case Failure(e)     ⇒ MalformedGraphQLJsonError(input, e).asLeft
     }
 
   def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
-    json.asArray.map(Right(_)).getOrElse(Left(NotAnArrayError(json)))
+    json.asArray.map(Right.apply).getOrElse(Left(NotAnArrayError(json)))
 
   def parseArray(input: String): Either[CornichonError, Vector[Json]] =
     parseJson(input).flatMap(jsonArrayValues)
 
-  def selectMandatoryArrayJsonPath(path: JsonPath, json: String): Either[CornichonError, Vector[Json]] =
+  def selectMandatoryArrayJsonPath(json: String, path: JsonPath): Either[CornichonError, Vector[Json]] =
     path.runStrict(json).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]): Json =
@@ -121,7 +121,7 @@ trait CornichonJson {
       Left(WhitelistingError(forbiddenPatchOps.map(_.path.serialize), second))
   }
 
-  def findAllJsonWithValue(values: List[String], json: Json): List[JsonPath] = {
+  def findAllPathWithValue(values: List[String], json: Json): List[JsonPath] = {
     def keyValues(currentPath: String, json: Json, level: Int): List[(String, Json)] = {
 
       def leafValue(): List[(String, Json)] = if (level == 0) (currentPath -> json) :: Nil else Nil

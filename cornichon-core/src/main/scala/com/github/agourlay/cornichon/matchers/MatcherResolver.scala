@@ -44,7 +44,7 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
     if (matchers.isEmpty)
       (expected, actual, Nil).asRight
     else {
-      CornichonJson.findAllJsonWithValue(matchers.map(_.fullKey), expected)
+      CornichonJson.findAllPathWithValue(matchers.map(_.fullKey), expected)
         .zip(matchers)
         .traverse { case (jsonPath, matcher) ⇒ MatcherAssertion.atJsonPath(jsonPath, actual, matcher, negate).map((jsonPath, _)) }
         .map { pathAssertions ⇒
