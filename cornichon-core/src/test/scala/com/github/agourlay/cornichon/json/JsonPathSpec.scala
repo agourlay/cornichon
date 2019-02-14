@@ -1,14 +1,15 @@
 package com.github.agourlay.cornichon.json
 
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import cats.scalatest.{ EitherMatchers, EitherValues }
-import io.circe.Json
+import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
 
 class JsonPathSpec extends WordSpec
   with Matchers
   with PropertyChecks
+  with OptionValues
   with ArbitraryInstances
   with EitherValues
   with EitherMatchers {
@@ -19,7 +20,7 @@ class JsonPathSpec extends WordSpec
       val input =
         """
           |{
-          |"2LettersName" : false,
+          | "2LettersName" : false,
           | "Age": 50,
           | "Name": "John"
           |}
@@ -32,7 +33,7 @@ class JsonPathSpec extends WordSpec
       val input =
         """
           |{
-          |"2LettersName" : false,
+          | "2LettersName" : false,
           | "Age": 50,
           | "Name": null
           |}
@@ -45,7 +46,7 @@ class JsonPathSpec extends WordSpec
       val input =
         """
           |{
-          |"2LettersName" : false,
+          | "2LettersName" : false,
           | "Age": 50,
           | "Name": "John"
           |}
@@ -58,7 +59,7 @@ class JsonPathSpec extends WordSpec
       val input =
         """
           |{
-          |"2LettersName" : false,
+          | "2LettersName" : false,
           | "Age": 50,
           | "Name": "John"
           |}
@@ -220,6 +221,17 @@ class JsonPathSpec extends WordSpec
         """.stripMargin
 
       JsonPath.runStrict("$[0].brothers[1].Age", input) should beRight(Json.fromInt(30))
+    }
+
+    "select properly in any JsonObject" in {
+      val targetValue = Json.fromString("target value")
+      forAll { jos: List[JsonObject] ⇒
+
+        val json = jos.foldRight(targetValue) { case (next, acc) ⇒ Json.fromJsonObject(next.add("stitch", acc)) }
+
+        val path = List.fill(jos.size)(FieldSelection("stitch"))
+        JsonPath(path).run(json).value should be(targetValue)
+      }
     }
   }
 }
