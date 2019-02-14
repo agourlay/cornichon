@@ -178,8 +178,17 @@ class JsonStepsSpec extends AsyncWordSpec
       }
 
       "is json with matcher" in {
-        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
-        val step = jsonStepBuilder.whitelisting.is("""{ "myKeyOther" : *any-string* }""")
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : 1, "myKeyOther" : "myOtherValue" }""")
+        val step = jsonStepBuilder.is("""{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }""")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "is json with matchers in array" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : 1, "myKeyOther" : "myOtherValue" }]""")
+        val step = jsonStepBuilder.is("""[{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }]""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
@@ -433,6 +442,22 @@ class JsonStepsSpec extends AsyncWordSpec
         val s = Scenario("scenario with JsonSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
+        }
+      }
+
+      "is json with matcher" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
+        val step = jsonStepBuilder.asArray.ignoringEach("$.*.myKey").is("""{ "myKeyOther" : *any-string* }""")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        engine.runScenario(session)(s).map {
+          case f: FailureScenarioReport ⇒
+            f.failedSteps.head.errors.head.renderedMessage should be(
+              """
+                |matchers are not supported in `asArray` assertion but *any-string* found
+                |https://github.com/agourlay/cornichon/issues/135"""
+                .stripMargin.trim
+            )
+          case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
         }
       }
     }

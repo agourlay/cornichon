@@ -30,6 +30,7 @@ You just need to replace the value of the field by one of the built-in JSON matc
 Here are the available matchers:
 
 - `*is-present*` : checks if the field is defined
+- `*is-null*` : checks if the field is defined
 - `*any-string*` : checks if the field is a String
 - `*any-array*` : checks if the field is an Array
 - `*any-object*` : checks if the field is an Object
@@ -45,4 +46,4 @@ Here are the available matchers:
 
 This feature is still fresh and under experimentation therefore it comes with a couple of limitations:
 - it is not yet possible to register custom JSON matchers
-- matchers are not supported for JSON arrays assertions
+- matchers are not supported for JSON arrays assertions via `asArray`

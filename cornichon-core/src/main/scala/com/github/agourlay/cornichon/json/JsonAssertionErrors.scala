@@ -1,12 +1,11 @@
 package com.github.agourlay.cornichon.json
 
 import io.circe.Json
-
 import cats.syntax.show._
 import cats.instances.string._
-
 import com.github.agourlay.cornichon.json.CornichonJson.parseJsonUnsafe
 import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.matchers.Matcher
 
 object JsonAssertionErrors {
 
@@ -52,4 +51,8 @@ object JsonAssertionErrors {
         |$prettySource""".stripMargin
   }
 
+  case class MatchersNotSupportedInAsArray(matchers: List[Matcher]) extends CornichonError {
+    lazy val baseErrorMessage: String = s"matchers are not supported in `asArray` assertion but ${matchers.map(_.fullKey).mkString(", ")} found" +
+      s"\nhttps://github.com/agourlay/cornichon/issues/135"
+  }
 }
