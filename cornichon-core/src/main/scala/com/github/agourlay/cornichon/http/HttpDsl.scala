@@ -13,7 +13,7 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.json.{ JsonDsl, JsonPath }
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep, TaskStep }
+import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep, CatsEffectStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient }
@@ -40,7 +40,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): Step =
-    TaskStep(
+    CatsEffectStep(
       title = request.compactDescription,
       effect = http.requestEffectTask(request)
     )
@@ -61,7 +61,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
     val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")
 
-    TaskStep(
+    CatsEffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
       effect = http.requestEffectTask(queryGQL)
     )
