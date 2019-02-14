@@ -30,7 +30,7 @@ You just need to replace the value of the field by one of the built-in JSON matc
 Here are the available matchers:
 
 - `*is-present*` : checks if the field is defined
-- `*is-null*` : checks if the field is defined
+- `*is-null*` : checks if the field is null
 - `*any-string*` : checks if the field is a String
 - `*any-array*` : checks if the field is an Array
 - `*any-object*` : checks if the field is an Object
