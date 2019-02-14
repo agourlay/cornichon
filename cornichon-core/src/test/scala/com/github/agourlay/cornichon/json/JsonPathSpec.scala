@@ -4,10 +4,12 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import io.circe.Json
+import io.circe.testing.ArbitraryInstances
 
 class JsonPathSpec extends WordSpec
   with Matchers
   with PropertyChecks
+  with ArbitraryInstances
   with EitherValues
   with EitherMatchers {
 
@@ -188,6 +190,13 @@ class JsonPathSpec extends WordSpec
       JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) should beRight(Json.arr(
         Json.fromString("Karate"), Json.fromString("Football"), Json.fromString("Diving"), Json.fromString("Reading")
       ))
+    }
+
+    "always returns a JArray when using a projection" in {
+      val emptyJArray = Json.fromValues(Nil)
+      forAll { json: Json ⇒
+        JsonPath.runStrict("a.b.c[*].d", json) should beRight(emptyJArray)
+      }
     }
 
     "select properly element of a root Array" in {

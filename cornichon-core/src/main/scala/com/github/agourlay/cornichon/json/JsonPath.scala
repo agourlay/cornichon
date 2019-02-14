@@ -6,6 +6,7 @@ import cats.instances.list._
 import cats.instances.option._
 import cats.syntax.traverse._
 import cats.syntax.either._
+import cats.syntax.option._
 
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -18,11 +19,11 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
   def run(superSet: Json): Option[Json] = {
     val (allCursors, projectionMode) = cursors(superSet)
-    allCursors.traverse(c ⇒ c.focus).map { focused ⇒
-      if (projectionMode)
-        Json.fromValues(focused)
-      else
-        focused.head
+    allCursors.traverse(c ⇒ c.focus) match {
+      case Some(focused) if projectionMode ⇒ Json.fromValues(focused).some
+      case Some(focused)                   ⇒ focused.headOption
+      case None if projectionMode          ⇒ Json.fromValues(Nil).some
+      case _                               ⇒ None
     }
   }
 
