@@ -247,6 +247,14 @@
                         <a href="EqualityAssertion.html" title="">EqualityAssertion</a>
                       </li><li class="current-entities indented7">
                         <span class="separator"></span>
+                        <a class="class" href="GenericAssertStepBuilder.html" title=""></a>
+                        <a href="GenericAssertStepBuilder.html" title="">GenericAssertStepBuilder</a>
+                      </li><li class="current-entities indented7">
+                        <span class="separator"></span>
+                        <a class="class" href="GenericCollectionAssertStepBuilder.html" title=""></a>
+                        <a href="GenericCollectionAssertStepBuilder.html" title="">GenericCollectionAssertStepBuilder</a>
+                      </li><li class="current-entities indented7">
+                        <span class="separator"></span>
                         <a class="class" href="GenericEqualityAssertion.html" title=""></a>
                         <a href="GenericEqualityAssertion.html" title="">GenericEqualityAssertion</a>
                       </li><li class="current-entities indented7">
@@ -316,7 +324,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">CollectionSizeAssertion</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="collection">collection: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>, <span name="size">size: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;collection&quot;</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="evidence$4">evidence$4: <span class="extype" name="cats.Show">Show</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>)</span><span class="result"> extends <a href="CollectionAssertion.html" class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionAssertion">CollectionAssertion</a>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>] with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <span class="name">CollectionSizeAssertion</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="collection">collection: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>, <span name="size">size: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="evidence$4">evidence$4: <span class="extype" name="cats.Show">Show</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>)</span><span class="result"> extends <a href="CollectionAssertion.html" class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionAssertion">CollectionAssertion</a>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>] with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       </h4>
 
@@ -383,7 +391,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">CollectionSizeAssertion</span><span class="params">(<span name="collection">collection: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>, <span name="size">size: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;collection&quot;</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="cats.Show">Show</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>)</span>
+        <span class="name">CollectionSizeAssertion</span><span class="params">(<span name="collection">collection: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>, <span name="size">size: <a href="http://www.scala-lang.org/api/2.12.8/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="cats.Show">Show</span>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>)</span>
       </span>
       
       
@@ -808,22 +816,6 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion#withName" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="withName(collectionName:String):com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion[A]"></a><a id="withName(String):CollectionSizeAssertion[A]"></a>
-      <span class="permalink">
-      <a href="../../../../../../../com/github/agourlay/cornichon/steps/regular/assertStep/CollectionSizeAssertion.html#withName(collectionName:String):com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion[A]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">withName</span><span class="params">(<span name="collectionName">collectionName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion">CollectionSizeAssertion</a>[<span class="extype" name="com.github.agourlay.cornichon.steps.regular.assertStep.CollectionSizeAssertion.A">A</span>]</span>
-      </span>
-      
-      
     </li>
               </ol>
             </div>
