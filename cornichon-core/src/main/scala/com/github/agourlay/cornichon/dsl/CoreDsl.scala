@@ -9,7 +9,8 @@ import cats.instances.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.feature.BaseFeature
-import com.github.agourlay.cornichon.steps.regular._
+import com.github.agourlay.cornichon.steps.cats.EffectStep
+import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.wrapped._
 import monix.eval.Task
 
@@ -127,25 +128,27 @@ trait CoreDsl extends ProvidedInstances {
 
   def wait(duration: FiniteDuration): Step = EffectStep.fromAsync(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ Task.delay(s).delayExecution(duration).runToFuture
+    effect = s ⇒ Task.delay(s).delayExecution(duration)
   )
 
-  def save(input: (String, String)): EffectStep = {
+  def save(input: (String, String), show: Boolean = true): Step = {
     val (key, value) = input
     EffectStep.fromSyncE(
-      s"add value '$value' to session under key '$key' ",
-      s ⇒ placeholderResolver.fillPlaceholders(value)(s).flatMap(s.addValue(key, _))
+      title = s"add value '$value' to session under key '$key' ",
+      effect = s ⇒ placeholderResolver.fillPlaceholders(value)(s).flatMap(s.addValue(key, _)),
+      show = show
     )
   }
 
-  def remove(key: String): EffectStep = EffectStep.fromSync(
+  def remove(key: String): Step = EffectStep.fromSync(
     title = s"remove '$key' from session",
     effect = _.removeKey(key)
   )
 
-  def rollback(key: String): EffectStep = EffectStep.fromSyncE(
+  def rollback(key: String, show: Boolean = true): Step = EffectStep.fromSyncE(
     title = s"rollback '$key' in session",
-    effect = _.rollbackKey(key)
+    effect = _.rollbackKey(key),
+    show = show
   )
 
   def transform_session(key: String)(map: String ⇒ String): Step = EffectStep.fromSyncE(

@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.check.checkModel._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
 import monix.eval.Task
 import monix.execution.Scheduler
@@ -30,11 +30,11 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
     name = "integer",
     gen = () ⇒ throw new RuntimeException("boom gen!"))
 
-  val brokenEffect: EffectStep = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
+  val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
 
-  val identityStep: EffectStep = EffectStep.fromSync("identity effect step", identity)
+  val identityStep: Step = EffectStep.fromSync("identity effect step", identity)
 
   def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = identityStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property1(
@@ -134,7 +134,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
       "with maxNumberOfRuns" in {
         val maxRun = 100
         var uglyCounter = 0
-        val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
         val starting = dummyProperty1("starting property", step = incrementEffect)
         val otherAction = dummyProperty1("other property")
@@ -158,7 +158,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
       "with maxNumberOfTransitions (even with cyclic model)" in {
         val maxTransition = 100
         var uglyCounter = 0
-        val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property", step = incrementEffect)

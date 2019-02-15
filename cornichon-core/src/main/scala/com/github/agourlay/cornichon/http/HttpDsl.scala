@@ -13,7 +13,8 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.json.{ JsonDsl, JsonPath }
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep, CatsEffectStep }
+import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
+import com.github.agourlay.cornichon.steps.cats.{ EffectStep ⇒ CEffectStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient }
@@ -40,7 +41,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): Step =
-    CatsEffectStep(
+    CEffectStep(
       title = request.compactDescription,
       effect = http.requestEffectTask(request)
     )
@@ -61,7 +62,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
     val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")
 
-    CatsEffectStep(
+    CEffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
       effect = http.requestEffectTask(queryGQL)
     )
@@ -146,8 +147,9 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
   def WithHeaders(headers: (String, String)*): BodyElementCollector[Step, Seq[Step]] =
     BodyElementCollector[Step, Seq[Step]] { steps ⇒
-      val saveStep = save((withHeadersKey, encodeSessionHeaders(headers))).copy(show = false)
-      val rollbackStep = rollback(withHeadersKey).copy(show = false)
+      // the surrounding steps are hidden from the logs
+      val saveStep = save((withHeadersKey, encodeSessionHeaders(headers)), show = false)
+      val rollbackStep = rollback(withHeadersKey, show = false)
       saveStep +: steps :+ rollbackStep
     }
 }

@@ -5,7 +5,7 @@ import java.util.concurrent.{ ExecutorService, Executors }
 import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
 import engine.RunScenarioBench._
@@ -53,11 +53,11 @@ class RunScenarioBench {
 
   /*
 [info] Benchmark                     (stepsNumber)   Mode  Cnt       Score     Error  Units
-[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  199557.268 ± 686.272  ops/s
-[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  120734.113 ± 656.716  ops/s
-[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   54793.358 ± 189.382  ops/s
-[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   29014.163 ± 110.159  ops/s
-[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   14599.727 ±  44.403  ops/s
+[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  206940.529 ± 835.769  ops/s
+[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  124110.917 ± 447.382  ops/s
+[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   57775.992 ± 353.459  ops/s
+[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   31247.792 ± 237.184  ops/s
+[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   15263.972 ±  39.602  ops/s
  */
 
   @Benchmark

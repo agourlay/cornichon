@@ -40,8 +40,8 @@ class HttpService(
     params: Seq[(String, String)],
     headers: Seq[(String, String)])(ignoreFromWithHeaders: HeaderSelection)(s: Session) =
     for {
-      bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some(_))).getOrElse(rightNone)
-      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some(_))).getOrElse(rightNone)
+      bodyResolved ← body.map(resolver.fillPlaceholders(_)(s).map(Some.apply)).getOrElse(rightNone)
+      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some.apply)).getOrElse(rightNone)
       urlResolved ← resolver.fillPlaceholders(url)(s)
       completeUrlResolved ← resolver.fillPlaceholders(withBaseUrl(urlResolved))(s)
       urlParams ← client.paramsFromUrl(completeUrlResolved)
@@ -58,8 +58,7 @@ class HttpService(
     extractor: ResponseExtractor,
     ignoreFromWithHeaders: HeaderSelection)(s: Session): EitherT[Task, CornichonError, Session] =
     for {
-      resolvedRequestParts ← EitherT.fromEither[Task](resolveRequestParts(r.url, r.body, r.params, r.headers)(ignoreFromWithHeaders)(s))
-      (url, jsonBody, params, headers) = resolvedRequestParts
+      (url, jsonBody, params, headers) ← EitherT.fromEither[Task](resolveRequestParts(r.url, r.body, r.params, r.headers)(ignoreFromWithHeaders)(s))
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
       configuredRequest = configureRequest(resolvedRequest, config)
       resp ← client.runRequest(configuredRequest, requestTimeout)

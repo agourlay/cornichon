@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.framework.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 
 import scala.util.Random
 

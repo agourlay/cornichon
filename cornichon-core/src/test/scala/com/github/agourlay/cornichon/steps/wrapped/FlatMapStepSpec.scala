@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioTitleLogInstruction, Session, Step }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.scalatest.{ AsyncWordSpec, Matchers, OptionValues }
 

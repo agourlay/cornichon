@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.util.TaskSpec
 import monix.execution.Scheduler

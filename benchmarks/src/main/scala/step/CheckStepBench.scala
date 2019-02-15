@@ -9,7 +9,7 @@ import monix.execution.Scheduler
 import org.openjdk.jmh.annotations._
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.check.checkModel._
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -54,11 +54,11 @@ class CheckStepBench {
   }
   /*
 [info] Benchmark                (transitionNumber)   Mode  Cnt      Score     Error  Units
-[info] CheckStepBench.runModel                  10  thrpt   10    33746.833 ±    42.610  ops/s
-[info] CheckStepBench.runModel                  20  thrpt   10    21967.974 ±  3066.914  ops/s
-[info] CheckStepBench.runModel                  50  thrpt   10    14783.717 ±   165.020  ops/s
-[info] CheckStepBench.runModel                 100  thrpt   10     8676.695 ±    88.083  ops/s
-[info] CheckStepBench.runModel                 200  thrpt   10     3481.889 ±    22.729  ops/s
+[info] CheckStepBench.runModel                  10  thrpt   10  34220.496 ±  71.293  ops/s
+[info] CheckStepBench.runModel                  20  thrpt   10  24294.561 ± 385.750  ops/s
+[info] CheckStepBench.runModel                  50  thrpt   10  14380.225 ± 141.274  ops/s
+[info] CheckStepBench.runModel                 100  thrpt   10   6306.461 ±  47.306  ops/s
+[info] CheckStepBench.runModel                 200  thrpt   10   3302.245 ±  18.204  ops/s
   */
 
   @Benchmark

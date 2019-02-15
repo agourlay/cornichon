@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.check
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
-import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.steps.wrapped.AttachStep
 import monix.eval.Task
@@ -34,7 +34,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
     name = "integer",
     gen = () ⇒ throw new RuntimeException("boom gen!"))
 
-  val brokenEffect: EffectStep = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
+  val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
   val alwaysalidAssertStep = AssertStep("valid", _ ⇒ Assertion.alwaysValid)
@@ -63,7 +63,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
       "incorrect case" in {
         val maxRun = 10
         var uglyCounter = 0
-        val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
         val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ ⇒
           val assert = if (uglyCounter < 5) alwaysalidAssertStep else brokenEffect
@@ -95,7 +95,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
       "with maxNumberOfRuns" in {
         val maxRun = 100
         var uglyCounter = 0
-        val incrementEffect: EffectStep = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
         val forAllStep = for_all("fails", maxNumberOfRuns = maxRun, integerGen)(_ ⇒ incrementEffect)
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)

@@ -31,7 +31,7 @@ object EffectStep {
   }
 
   def fromSync(title: String, effect: Session ⇒ Session, show: Boolean = true): EffectStep = {
-    val effectF: Session ⇒ Future[Either[CornichonError, Session]] = s ⇒ Future.successful(Right(effect(s)))
+    val effectF: Session ⇒ Future[Either[CornichonError, Session]] = s ⇒ Future.successful(effect(s).asRight)
     EffectStep(title, effectF, show)
   }
 
@@ -41,7 +41,7 @@ object EffectStep {
   }
 
   def fromAsync(title: String, effect: Session ⇒ Future[Session], show: Boolean = true)(implicit ec: ExecutionContext): EffectStep = {
-    val effectF: Session ⇒ Future[Either[CornichonError, Session]] = s ⇒ effect(s).map(Right(_))
+    val effectF: Session ⇒ Future[Either[CornichonError, Session]] = s ⇒ effect(s).map(Right.apply)
     EffectStep(title, effectF, show)
   }
 }
