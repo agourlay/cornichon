@@ -8,7 +8,6 @@ case class RunState(
     depth: Int,
     cleanupSteps: List[Step]
 ) {
-  lazy val logs = logStack.reverse
   lazy val goDeeper = copy(depth = depth + 1)
   lazy val resetLogStack = copy(logStack = Nil)
 

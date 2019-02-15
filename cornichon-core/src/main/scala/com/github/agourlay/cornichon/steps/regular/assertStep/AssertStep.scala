@@ -1,7 +1,8 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.data._
-
+import cats.data.Validated.Invalid
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
@@ -12,10 +13,14 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], Done]] = {
-    val assertion = action(initialRunState.session)
-    Task.now(assertion.validated.toEither)
-  }
+  override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], Done]] =
+    Task.now {
+      val assertion = action(initialRunState.session)
+      assertion.validated match {
+        case Invalid(e) ⇒ e.asLeft
+        case _          ⇒ Done.rightDone
+      }
+    }
 
   override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep) =
     errorsToFailureStep(this, initialRunState.depth, errors)

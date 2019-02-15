@@ -22,7 +22,7 @@ import step.JsonStepBench._
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
   "-XX:StartFlightRecording=duration=60s,filename=./JsonStepBench-profiling-data.jfr,name=profile,settings=profile",
-  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
+  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
   "-Xmx1G"))
 class JsonStepBench {
 

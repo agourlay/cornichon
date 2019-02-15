@@ -22,7 +22,7 @@ import scala.concurrent.duration._
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
   "-XX:StartFlightRecording=duration=60s,filename=./RunScenarioBench-profiling-data.jfr,name=profile,settings=profile",
-  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
+  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
   "-Xmx1G"))
 class RunScenarioBench {
 
@@ -53,11 +53,11 @@ class RunScenarioBench {
 
   /*
 [info] Benchmark                     (stepsNumber)   Mode  Cnt       Score     Error  Units
-[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  206940.529 ± 835.769  ops/s
-[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  124110.917 ± 447.382  ops/s
-[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   57775.992 ± 353.459  ops/s
-[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   31247.792 ± 237.184  ops/s
-[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   15263.972 ±  39.602  ops/s
+[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  213582.940 ± 834.022  ops/s
+[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  130923.917 ± 348.669  ops/s
+[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   59752.716 ± 488.771  ops/s
+[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   29376.327 ±  95.921  ops/s
+[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   16046.343 ±  62.040  ops/s
  */
 
   @Benchmark
