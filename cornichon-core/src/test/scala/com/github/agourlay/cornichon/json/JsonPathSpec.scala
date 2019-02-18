@@ -150,6 +150,58 @@ class JsonPathSpec extends WordSpec
       JsonPath.runStrict("brothers[*].Age", input) should beRight(Json.arr(Json.fromInt(50)))
     }
 
+    "return empty array if projection on Array but nested field does not exist" in {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brothers": [
+          |   {
+          |     "Name" : "Paul",
+          |     "Age": 50
+          |   }
+          | ]
+          |}
+        """.stripMargin
+
+      JsonPath.runStrict("brothers[*].age", input) should beRight(Json.fromValues(Nil))
+    }
+
+    "return empty array if projection on empty Array but nested field does not exist" in {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brothers": []
+          |}
+        """.stripMargin
+
+      JsonPath.runStrict("brothers[*].age", input) should beRight(Json.fromValues(Nil))
+    }
+
+    "return None (nonStrict) if the array projected does not exist" in {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "brothers": [
+          |   {
+          |     "Name" : "Paul",
+          |     "Age": 50
+          |   }
+          | ]
+          |}
+        """.stripMargin
+
+      JsonPath.run("sisters[*].age", input) should be(Right(None))
+    }
+
     "select properly doubly nested fields projected in Array" in {
       val input =
         """
@@ -191,13 +243,6 @@ class JsonPathSpec extends WordSpec
       JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) should beRight(Json.arr(
         Json.fromString("Karate"), Json.fromString("Football"), Json.fromString("Diving"), Json.fromString("Reading")
       ))
-    }
-
-    "always returns a JArray when using a projection" in {
-      val emptyJArray = Json.fromValues(Nil)
-      forAll { json: Json ⇒
-        JsonPath.runStrict("a.b.c[*].d", json) should beRight(emptyJArray)
-      }
     }
 
     "select properly element of a root Array" in {
