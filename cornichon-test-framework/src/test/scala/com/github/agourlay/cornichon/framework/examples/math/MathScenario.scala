@@ -23,8 +23,6 @@ class MathScenario extends CornichonFeature with MathSteps {
 
       When I generate_random_int("random-1")
 
-      Then I print_step("picked <random-1>")
-
       Eventually(maxDuration = 3.seconds, interval = 1.millis) {
 
         When I generate_random_int("random-2")
@@ -33,7 +31,6 @@ class MathScenario extends CornichonFeature with MathSteps {
 
       }
 
-      And I print_step("found same values!")
     }
 
     Scenario("MonteCarlo approximation of PI") {
@@ -52,8 +49,6 @@ class MathScenario extends CornichonFeature with MathSteps {
 
       Then assert double_value("pi").isBetween(3.0, 3.3)
 
-      And I show_session("pi")
-
     }
 
     Scenario("Addition table") {
@@ -68,8 +63,6 @@ class MathScenario extends CornichonFeature with MathSteps {
       ) {
           Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.getUnsafe("c").toInt, s.getUnsafe("a").toInt + s.getUnsafe("b").toInt))
         }
-
-      And I print_step("calculation correct!")
     }
   }
 }

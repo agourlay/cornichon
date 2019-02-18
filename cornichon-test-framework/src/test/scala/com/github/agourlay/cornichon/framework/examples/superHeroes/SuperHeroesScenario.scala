@@ -770,7 +770,6 @@ class SuperHeroesScenario extends CornichonFeature {
     Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
       When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
       Then assert body.path("name").is(name)
-      Then I print_step("bingo!")
     }
 
   lazy val port = 8080
