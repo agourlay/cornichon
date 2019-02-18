@@ -971,5 +971,5 @@ The source for the test and the server are available [here](https://github.com/a
 
 - all `properties` must have the same types within a `model` definition
 - the API has a few rough edges, especially regarding type inference for the `modelRunner` definition
-- placeholders generating random data such as `<random-string` and `random-uuid` are not yet using the correct `seed`
+- placeholders generating random data such as `<random-string>` and `<random-uuid>` are not yet using the correct `seed`
 - the max number of `generators` is hard-coded to 6
