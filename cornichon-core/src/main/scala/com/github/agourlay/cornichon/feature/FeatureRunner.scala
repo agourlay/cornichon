@@ -23,12 +23,12 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
   final def runFeature(filterScenario: Scenario ⇒ Boolean)(scenarioResultHandler: ScenarioReport ⇒ ScenarioReport): Task[List[ScenarioReport]] = {
     val scenariosToRun = featureDef.scenarios.filter(filterScenario)
     if (scenariosToRun.isEmpty)
-      Task.now(Nil)
+      FeatureRunner.noop
     else {
       // Run 'before feature' hooks
       baseFeature.beforeFeature.foreach(f ⇒ f())
       // parallelism is limited to avoid spawning too much work at once
-      val parallelism = if (baseFeature.executeScenariosInParallel) Math.min(scenariosToRun.size, Runtime.getRuntime.availableProcessors() * 2) else 1
+      val parallelism = if (baseFeature.executeScenariosInParallel) Math.min(scenariosToRun.size, FeatureRunner.coreNum) else 1
       Observable.fromIterable(scenariosToRun)
         .mapParallelUnordered(parallelism)(runScenario(_).map(scenarioResultHandler))
         .toListL
@@ -40,4 +40,9 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
     }
   }
 
+}
+
+object FeatureRunner {
+  lazy val coreNum: Int = Runtime.getRuntime.availableProcessors()
+  val noop = Task.now(Nil)
 }
