@@ -4,6 +4,7 @@ import cats.Show
 import cats.data.EitherT
 import cats.syntax.traverse._
 import cats.syntax.show._
+import cats.syntax.either._
 import cats.instances.int._
 import cats.instances.list._
 import cats.instances.either._
@@ -173,9 +174,9 @@ object HttpService {
     headers.split(interHeadersValueDelim).toList.traverse { header ⇒
       val elms = header.split(headersKeyValueDelim)
       if (elms.length != 2)
-        Left(BadSessionHeadersEncoding(header))
+        BadSessionHeadersEncoding(header).asLeft
       else
-        Right((elms(0), elms(1)))
+        (elms(0) -> elms(1)).asRight
     }
 
   def configureRequest[A: Show](req: HttpRequest[A], config: Config): HttpRequest[A] = {
@@ -201,18 +202,18 @@ object HttpService {
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Either[CornichonError, CornichonHttpResponse] =
     expected match {
       case None ⇒
-        Right(httpResponse)
+        httpResponse.asRight
       case Some(expectedStatus) if httpResponse.status == expectedStatus ⇒
-        Right(httpResponse)
+        httpResponse.asRight
       case Some(expectedStatus) ⇒
-        Left(StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body))
+        StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body).asLeft
     }
 
   def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
     commonSessionExtraction(session, response).flatMap { filledSession ⇒
       extractor match {
         case NoOpExtraction ⇒
-          Right(filledSession)
+          filledSession.asRight
 
         case RootExtractor(targetKey) ⇒
           filledSession.addValue(targetKey, response.body)

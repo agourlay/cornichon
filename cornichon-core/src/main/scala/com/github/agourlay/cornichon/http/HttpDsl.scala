@@ -164,16 +164,16 @@ trait HttpDslOps {
 
   def removeFromWithHeaders(name: String)(s: Session): Either[CornichonError, Session] =
     s.getOpt(withHeadersKey)
-      .fold[Either[CornichonError, Session]](Right(s)) { currentHeadersString ⇒
+      .fold(s.asRight[CornichonError]) { currentHeadersString ⇒
         if (currentHeadersString.trim.isEmpty)
-          Right(s)
+          s.asRight
         else
           decodeSessionHeaders(currentHeadersString).flatMap { ch ⇒
             val (dump, keep) = ch.partition(_._1 == name)
             if (dump.isEmpty)
-              Right(s)
+              s.asRight
             else if (keep.isEmpty)
-              Right(s.removeKey(withHeadersKey))
+              s.removeKey(withHeadersKey).asRight
             else
               s.addValue(withHeadersKey, encodeSessionHeaders(keep))
           }

@@ -22,7 +22,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
     placeholdersCache.get(input, k ⇒ PlaceholderParser.parse(k))
 
   def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
-    builtInPlaceholders.lift(ph.key).map(Right(_)).getOrElse {
+    builtInPlaceholders.lift(ph.key).map(Right.apply).getOrElse {
       val otherKeyName = ph.key
       val otherKeyIndice = ph.index
       (session.get(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
@@ -81,7 +81,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
 
   def fillPlaceholders(input: String)(session: Session): Either[CornichonError, String] =
     findPlaceholders(input).flatMap {
-      _.foldLeft[Either[CornichonError, String]](Right(input)) { (accE, ph) ⇒
+      _.foldLeft(input.asRight[CornichonError]) { (accE, ph) ⇒
         for {
           acc ← accE
           resolvedValue ← resolvePlaceholder(ph)(session)
@@ -103,7 +103,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
 
 object PlaceholderResolver {
   def withoutExtractor(): PlaceholderResolver = new PlaceholderResolver(Map.empty[String, Mapper])
-  private val rightNil = Right(Nil)
+  private val rightNil = Nil.asRight
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {

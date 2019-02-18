@@ -26,7 +26,7 @@ trait CornichonJson {
     case s: String ⇒
       val trimmed = s.trim
       if (trimmed.isEmpty)
-        Right(Json.fromString(s))
+        Json.fromString(s).asRight
       else {
         val firstChar = trimmed.head
         if (firstChar == '{' || firstChar == '[')
@@ -34,7 +34,7 @@ trait CornichonJson {
         else if (firstChar == '|')
           parseDataTable(s).map(list ⇒ Json.fromValues(list.map(Json.fromJsonObject))) // table
         else
-          Right(Json.fromString(s)) // treated as a String
+          Json.fromString(s).asRight // treated as a String
       }
     case _ ⇒
       Either.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
@@ -82,9 +82,7 @@ trait CornichonJson {
     path.runStrict(json).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]): Json =
-    paths.foldLeft(input) { (json, path) ⇒
-      path.removeFromJson(json)
-    }
+    paths.foldLeft(input) { (json, path) ⇒ path.removeFromJson(json) }
 
   def jsonStringValue(j: Json): String =
     // Use Json.Folder for performance https://github.com/circe/circe/pull/656
@@ -116,9 +114,9 @@ trait CornichonJson {
     val forbiddenPatchOps = diffOps.collect { case r: Remove ⇒ r }
     if (forbiddenPatchOps.isEmpty) {
       val addOps = diffOps.collect { case r: Add ⇒ r }
-      Right(JsonPatch(addOps)(first))
+      JsonPatch(addOps)(first).asRight
     } else
-      Left(WhitelistingError(forbiddenPatchOps.map(_.path.serialize), second))
+      WhitelistingError(forbiddenPatchOps.map(_.path.serialize), second).asLeft
   }
 
   def findAllPathWithValue(values: List[String], json: Json): List[JsonPath] = {
