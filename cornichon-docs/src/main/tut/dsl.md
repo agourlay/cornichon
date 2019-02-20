@@ -204,6 +204,10 @@ body.asArray.inOrder.ignoringEach("publisher").is(
  """)
 
 body.asArray.hasSize(2)
+body.asArray.size.is(2) //equivalent to above
+body.asArray.size.isLesserThan(3)
+body.asArray.size.isGreaterThan(1)
+body.asArray.size.isBetween(1, 3)
 
 body.asArray.isNotEmpty
 
