@@ -31,7 +31,16 @@ Let's try so save a value into the `Session`
 When I EffectStep.fromSync(title = "estimate PI", action = s => s.add("result", piComputation())
 ```
 
-The test engine is responsible for controling the execution of the side effect function and to report any error.
+The test engine is responsible for controlling the execution of the side effect function and to report any error.
+
+If you prefer not using the `scala.concurrent.Future` as effect, it is possible to use the `Effect` type from `cats-effect`.
+
+```scala
+
+import com.github.agourlay.cornichon.steps.cats.EffectStep
+
+val myTaskEffect = EffectStep("identity task", s => Task.now(Right(s)))
+```
 
 
 # EffectStep using the HTTP service

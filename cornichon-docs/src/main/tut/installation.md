@@ -12,14 +12,14 @@ It is recommended to use Cornichon with `cornichon-test-framework` via `SBT` or 
 
 ``` scala
 // SBT
-libraryDependencies += "com.github.agourlay" %% "cornichon-test-framework" % "0.16.3" % Test
+libraryDependencies += "com.github.agourlay" %% "cornichon-test-framework" % "0.17.0" % Test
 testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework")
 ```
 
 ```scala
 // Mill
 object test extends Tests{
-  def ivyDeps = Agg(ivy"com.github.agourlay::cornichon-test-framework:0.16.3")
+  def ivyDeps = Agg(ivy"com.github.agourlay::cornichon-test-framework:0.17.0")
   def testFrameworks = Seq("com.github.agourlay.cornichon.framework.CornichonFramework")
 }
 ```
@@ -32,7 +32,7 @@ The alternative way is to use the [ScalaTest](http://www.scalatest.org/) flavor 
 
 ``` scala
 // SBT
-libraryDependencies += "com.github.agourlay" %% "cornichon-scalatest" % "0.16.3" % Test
+libraryDependencies += "com.github.agourlay" %% "cornichon-scalatest" % "0.17.0" % Test
 ```
 
 note: `cornichon-test-framework` will eventually support those additional use cases and `cornichon-scalatest` will be discontinued.

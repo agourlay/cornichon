@@ -6,11 +6,11 @@ position: 3
 
 # DSL
 
-The content of a ```feature``` is described using a domain-specific language (DSL) providing a clear structure for statement definitions.
+The content of a `feature` is described using a domain-specific language (DSL) providing a clear structure for statement definitions.
 
 The structure of a step statement is the following:
 
-1 - starts with either ```Given``` - ```When``` - ```And``` - ```Then```
+1 - starts with either `Given` - `When` - `And` - `Then`
 
 The prefixes do not change the behavior of the steps but are present to improve the readability.
 
@@ -20,9 +20,9 @@ The prefixes do not change the behavior of the steps but are present to improve 
 This structure was chosen to increase the freedom of customization while still benefiting from Scala's infix notation.
 
 
-3 - ending with a ```step``` definition
+3 - ending with a `step` definition
 
-The usage pattern is often to first run a ```step``` with a side effect then assert an expected state in a second ```step```.
+The usage pattern is often to first run a `step` with a side effect then assert an expected state in a second `step`.
 
 For example :
 
@@ -36,7 +36,7 @@ And \`another really important\` step_definition
 Then assert step_definition
 ```
 
-```step_definition``` stands here for any object of type ```Step```, those can be manually defined or simply built-in in Cornichon.
+`step_definition` stands here for any object of type `Step`, those can be manually defined or simply built-in in Cornichon.
 
 
 # Built-in steps
@@ -157,6 +157,15 @@ body.path("publisher.foundationYear").isPresent
 body.path("publisher.foundationMonth").isAbsent
 ```
 
+It is possible to handle null values, given the following response body `{ “data” : null }`
+
+```scala
+body.path("data").isAbsent //incorrect
+body.path("data").isPresent //correct
+body.path("data").isNull //correct
+
+```
+
 If one key of the path contains a "." it has to be wrapped with "`" to notify the parser.
 
 ```scala
@@ -260,12 +269,12 @@ import sangria.macros._
     )
 ```
 
-```query_gql``` can also be used for mutation query.
+`query_gql` can also be used for mutation query.
 
 
 - GraphQL JSON
 
-all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the ```gqljson``` StringContext.
+all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the `gqljson` StringContext.
 
 ```scala
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -283,39 +292,39 @@ And assert body.ignoring("city", "publisher").is(
 
 ## Session steps
 
-- setting a value in ```session```
+- setting a value in `session`
 
 ```scala
 save("favorite-superhero" → "Batman")
 ```
 
-- saving value to ```session```
+- saving value to `session`
 
 ```scala
 save_body_path("city" -> "batman-city")
 ```
 
-- asserting value in ```session```
+- asserting value in `session`
 
 ```scala
 session_value("favorite-superhero").is("Batman")
 ```
 
-- asserting JSON value in ```session```
+- asserting JSON value in `session`
 
 ```scala
 session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is(...)
 ```
 
 
-- asserting existence of value in ```session```
+- asserting existence of value in `session`
 
 ```scala
 session_value("favorite-superhero").isPresent
 session_value("favorite-superhero").isAbsent
 ````
 
-- transforming a value in ```session```
+- transforming a value in `session`
 
 ```scala
 transform_session("my-key")(_.toUpperCase)
@@ -325,7 +334,7 @@ transform_session("my-key")(_.toUpperCase)
 
 Wrapper steps allow to control the execution of a series of steps to build more powerful tests.
 
-- repeating a series of ```steps```
+- repeating a series of `steps`
 
 ```scala
 Repeat(3) {
@@ -335,7 +344,7 @@ Repeat(3) {
 }
 ```
 
-- repeating a series of ```steps``` during a period of time
+- repeating a series of `steps` during a period of time
 
 ```scala
 RepeatDuring(300.millis) {
@@ -345,7 +354,7 @@ RepeatDuring(300.millis) {
 }
 ```
 
-- repeat a series of ```steps``` for each input element
+- repeat a series of `steps` for each input element
 
 ```scala
 RepeatWith("Superman", "GreenLantern", "Spiderman")("superhero-name") {
@@ -358,7 +367,7 @@ RepeatWith("Superman", "GreenLantern", "Spiderman")("superhero-name") {
 }
 ```
 
-- retry a series of ```steps``` until it succeeds or reaches the limit
+- retry a series of `steps` until it succeeds or reaches the limit
 
 ```scala
 RetryMax(3) {
@@ -369,7 +378,7 @@ RetryMax(3) {
 ```
 
 
-- repeating a series of ```steps``` until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)
+- repeating a series of `steps` until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)
 
 ```scala
 Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
@@ -388,16 +397,40 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-- execute a series of steps 'n' times concurrently and wait 'maxTime' for completion.
+It is also possible to enable the oscillations detector to fail the step in case of oscillation of errors.
 
 ```scala
-RepeatConcurrently(factor = 3, maxTime = 10 seconds) {
+Given I send_async_command_updating_search_index
+Eventually(maxDuration = 1.seconds, interval = 100.ms, oscillationAllowed = false) {
+  Given I search_for_new_state
+  Then assert status.is(200)
+}
+```
+
+Here an oscillation could be seen in the status with something like 404 -> 500 -> 404 -> 200.
+
+- execute a series of steps 'n' times by batch of `p` in parallel and wait 'maxTime' for completion.
+
+```scala
+RepeatConcurrently(times = 10, parallel = 3, maxTime = 10 seconds) {
 
   When I get("http://superhero.io/batman")
 
   Then assert status.is(200)
 }
 ```
+
+- execute a each step in parallel and wait 'maxTime' for completion.
+
+```scala
+Concurrently(maxTime = 10 seconds) {
+
+  When I get("http://superhero.io/batman")
+
+  When I get("http://superhero.io/superman")
+}
+```
+
 
 - execute a series of steps and fails if the execution does not complete within 'maxDuration'.
 
@@ -410,7 +443,7 @@ Within(maxDuration = 10 seconds) {
 }
 ```
 
-- repeat a series of steps with different inputs specified via a datatable
+- repeat a series of steps with different inputs specified via a data-table
 
 ```scala
 WithDataInputs(
@@ -448,7 +481,7 @@ WithBasicAuth("admin", "root"){
 
 - HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.
 
-This feature is defined the module ```cornichon-http-mock``` and requires to extend the trait ```HttpMockDsl```.
+This feature is defined the module `cornichon-http-mock` and requires to extend the trait `HttpMockDsl`.
 
 By default this server responds with 201 to any POST request and 200 for all the rest.
 
@@ -467,9 +500,9 @@ This feature is experimental and subject to changes.
 
 - Log duration
 
-By default all ```Step``` execution time can be found in the logs, but sometimes one needs to time a series of steps.
+By default all `Step` execution time can be found in the logs, but sometimes one needs to time a series of steps.
 
-This is where ```LogDuration``` comes in handy, it requires a label that will be printed as well to identify results.
+This is where `LogDuration` comes in handy, it requires a label that will be printed as well to identify results.
 
 ```scala
 LogDuration(label = "my experiment") {
@@ -505,9 +538,9 @@ Those descriptions might be already outdated, in case of doubt always refer to t
 
 ## DSL composition
 
-Series of steps defined with Cornichon's DSL can be reused within different ```Scenarios```.
+Series of steps defined with Cornichon's DSL can be reused within different `Scenarios`.
 
-Using the keyword ```Attach``` if the series starts with a ```Step``` and without if it starts with a wrapping bloc.
+Using the keyword `Attach` if the series starts with a `Step` and without if it starts with a wrapping bloc.
 
 ```tut:silent
 import com.github.agourlay.cornichon.CornichonFeature
@@ -542,4 +575,4 @@ class CompositionFeature extends CornichonFeature {
 }
 ```
 
-It is possible to give a title to an attached bloc using ```AttachAs(title)```.
+It is possible to give a title to an attached bloc using `AttachAs(title)`.
