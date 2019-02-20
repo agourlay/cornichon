@@ -150,6 +150,14 @@
 <span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"publisher.foundationMonth"</span><span class="o">).</span><span class="n">isAbsent</span>
 </code></pre></div></div>
 
+<p>It is possible to handle null values, given the following response body <code class="highlighter-rouge">{ “data” : null }</code></p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="c1">//incorrect
+</span><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isPresent</span> <span class="c1">//correct
+</span><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isNull</span> <span class="c1">//correct
+</span>
+</code></pre></div></div>
+
 <p>If one key of the path contains a “.” it has to be wrapped with “`” to notify the parser.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"`message.en`"</span><span class="o">).</span><span class="n">isPresent</span>
@@ -386,15 +394,38 @@
   <span class="o">}</span>
 </code></pre></div></div>
 
+<p>It is also possible to enable the oscillations detector to fail the step in case of oscillation of errors.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Given</span> <span class="n">I</span> <span class="n">send_async_command_updating_search_index</span>
+<span class="nc">Eventually</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mf">1.</span><span class="n">seconds</span><span class="o">,</span> <span class="n">interval</span> <span class="k">=</span> <span class="mf">100.</span><span class="n">ms</span><span class="o">,</span> <span class="n">oscillationAllowed</span> <span class="k">=</span> <span class="kc">false</span><span class="o">)</span> <span class="o">{</span>
+  <span class="nc">Given</span> <span class="n">I</span> <span class="n">search_for_new_state</span>
+  <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Here an oscillation could be seen in the status with something like 404 -&gt; 500 -&gt; 404 -&gt; 200.</p>
+
 <ul>
-  <li>execute a series of steps ‘n’ times concurrently and wait ‘maxTime’ for completion.</li>
+  <li>execute a series of steps ‘n’ times by batch of <code class="highlighter-rouge">p</code> in parallel and wait ‘maxTime’ for completion.</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatConcurrently</span><span class="o">(</span><span class="n">factor</span> <span class="k">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatConcurrently</span><span class="o">(</span><span class="n">times</span> <span class="k">=</span> <span class="mi">10</span><span class="o">,</span> <span class="n">parallel</span> <span class="k">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
 
   <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
 
   <span class="nc">Then</span> <span class="n">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>execute a each step in parallel and wait ‘maxTime’ for completion.</li>
+</ul>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Concurrently</span><span class="o">(</span><span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
+
+  <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/batman"</span><span class="o">)</span>
+
+  <span class="nc">When</span> <span class="n">I</span> <span class="n">get</span><span class="o">(</span><span class="s">"http://superhero.io/superman"</span><span class="o">)</span>
 <span class="o">}</span>
 </code></pre></div></div>
 
@@ -411,7 +442,7 @@
 </code></pre></div></div>
 
 <ul>
-  <li>repeat a series of steps with different inputs specified via a datatable</li>
+  <li>repeat a series of steps with different inputs specified via a data-table</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">WithDataInputs</span><span class="o">(</span>

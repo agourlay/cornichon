@@ -23,7 +23,15 @@
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">.</span><span class="n">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="n">piComputation</span><span class="o">())</span>
 </code></pre></div></div>
 
-<p>The test engine is responsible for controling the execution of the side effect function and to report any error.</p>
+<p>The test engine is responsible for controlling the execution of the side effect function and to report any error.</p>
+
+<p>If you prefer not using the <code class="highlighter-rouge">scala.concurrent.Future</code> as effect, it is possible to use the <code class="highlighter-rouge">Effect</code> type from <code class="highlighter-rouge">cats-effect</code>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.steps.cats.EffectStep</span>
+
+<span class="k">val</span> <span class="n">myTaskEffect</span> <span class="k">=</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="s">"identity task"</span><span class="o">,</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="nc">Task</span><span class="o">.</span><span class="n">now</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="n">s</span><span class="o">)))</span>
+</code></pre></div></div>
 
 <h1 id="effectstep-using-the-http-service">EffectStep using the HTTP service</h1>
 
