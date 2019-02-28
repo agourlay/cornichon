@@ -1,16 +1,16 @@
 package com.github.agourlay.cornichon.core
 
 import cats.scalatest.{ EitherMatchers, EitherValues }
-import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Gen
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import com.github.agourlay.cornichon.core.SessionSpec._
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import scala.util.Random
 
 class SessionSpec extends WordSpec
   with Matchers
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with OptionValues
   with EitherValues
   with EitherMatchers {

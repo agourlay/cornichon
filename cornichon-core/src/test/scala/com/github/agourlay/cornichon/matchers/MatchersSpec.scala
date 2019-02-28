@@ -2,14 +2,14 @@ package com.github.agourlay.cornichon.matchers
 
 import cats.scalatest.EitherValues
 import org.scalacheck.Gen
-import org.scalatest.prop.PropertyChecks
 import org.scalatest._
 import com.github.agourlay.cornichon.matchers.Matchers._
 import io.circe.Json
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class MatchersSpec extends WordSpec
   with Matchers
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with EitherValues {
 
   "Matchers" when {

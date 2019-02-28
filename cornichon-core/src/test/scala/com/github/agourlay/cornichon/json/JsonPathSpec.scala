@@ -1,14 +1,14 @@
 package com.github.agourlay.cornichon.json
 
-import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class JsonPathSpec extends WordSpec
   with Matchers
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with OptionValues
   with ArbitraryInstances
   with EitherValues

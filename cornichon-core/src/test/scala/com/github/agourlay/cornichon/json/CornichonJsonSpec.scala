@@ -6,16 +6,16 @@ import cats.instances.long._
 import cats.instances.double._
 import cats.instances.boolean._
 import cats.instances.int._
-import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import cats.instances.bigDecimal._
 import cats.scalatest.{ EitherMatchers, EitherValues }
 import com.github.agourlay.cornichon.json.JsonPath._
 import io.circe.testing.ArbitraryInstances
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class CornichonJsonSpec extends WordSpec
   with Matchers
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with ArbitraryInstances
   with CornichonJson
   with EitherValues

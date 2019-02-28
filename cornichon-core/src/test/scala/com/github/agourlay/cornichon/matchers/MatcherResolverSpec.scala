@@ -2,12 +2,12 @@ package com.github.agourlay.cornichon.matchers
 
 import cats.scalatest.EitherValues
 import com.github.agourlay.cornichon.core.SessionSpec._
-import org.scalatest.prop.PropertyChecks
 import org.scalatest._
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class MatcherResolverSpec extends WordSpec
   with Matchers
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with EitherValues {
 
   private val resolver = MatcherResolver()

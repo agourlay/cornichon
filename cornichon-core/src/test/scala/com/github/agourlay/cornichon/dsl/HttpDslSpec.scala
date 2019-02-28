@@ -4,9 +4,9 @@ import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.{ HttpDslOps, HttpService }
 import org.scalacheck.Gen
 import org.scalatest._
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class HttpDslSpec extends WordSpec with Matchers with OptionValues with EitherValues with PropertyChecks {
+class HttpDslSpec extends WordSpec with Matchers with OptionValues with EitherValues with ScalaCheckPropertyChecks {
 
   val ops = new HttpDslOps {}
 

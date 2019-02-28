@@ -6,14 +6,14 @@ import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
-import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ AsyncWordSpec, Matchers, OptionValues }
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 class JsonStepsSpec extends AsyncWordSpec
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with ArbitraryInstances
   with Matchers
   with OptionValues

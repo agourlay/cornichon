@@ -2,13 +2,13 @@ package com.github.agourlay.cornichon.json
 
 import cats.scalatest.EitherMatchers
 import org.scalacheck.Gen
-import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ EitherValues, Matchers, WordSpec }
 import com.github.agourlay.cornichon.json.JsonPathParserSpec._
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class JsonPathParserSpec extends WordSpec
   with Matchers
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with EitherValues
   with EitherMatchers {
 

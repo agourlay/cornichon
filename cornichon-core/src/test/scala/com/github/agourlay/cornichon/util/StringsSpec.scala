@@ -2,11 +2,11 @@ package com.github.agourlay.cornichon.util
 
 import org.scalacheck.Gen
 import org.scalatest.{ Matchers, WordSpec }
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class StringsSpec extends WordSpec
   with Matchers
-  with PropertyChecks {
+  with ScalaCheckPropertyChecks {
 
   "Strings" when {
     "levenshtein" must {
