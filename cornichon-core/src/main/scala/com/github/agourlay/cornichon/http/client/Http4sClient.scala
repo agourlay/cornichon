@@ -27,15 +27,16 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
 
   // Lives for the duration of the test run
   private val uriCache = Caching.buildCache[String, Either[CornichonError, Uri]]()
-
+  // Timeouts are managed within the HttpService
+  private val defaultHighTimeout = Duration.fromNanos(Long.MaxValue)
   private val (httpClient, safeShutdown) =
     BlazeClientBuilder(executionContext = ec)
       .withoutSslContext
       .withMaxTotalConnections(300)
       .withMaxWaitQueueLimit(500)
-      .withIdleTimeout(Duration.Inf)
-      .withResponseHeaderTimeout(Duration.Inf)
-      .withRequestTimeout(Duration.Inf)
+      .withIdleTimeout(defaultHighTimeout)
+      .withResponseHeaderTimeout(defaultHighTimeout)
+      .withRequestTimeout(defaultHighTimeout)
       .allocated
       .runSyncUnsafe(10.seconds)
 
