@@ -16,7 +16,6 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 
-import scala.collection.breakOut
 import scala.concurrent.duration._
 
 class MockServerRequestHandler() extends Http4sDsl[Task] {
@@ -112,7 +111,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
           url = rawReq.uri.path.toString,
           body = Some(decodedBody),
           params = rawReq.params.toList,
-          headers = rawReq.headers.map(h ⇒ (h.name.value, h.value))(breakOut)
+          headers = rawReq.headers.toList.map(h ⇒ (h.name.value, h.value))
         )
         mockState.registerRequest(req)
       }

@@ -62,7 +62,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
     else {
       val q = Query.fromPairs(moreParams: _*)
       //Not sure it is not most efficient way
-      uri.copy(query = Query(uri.query ++ q: _*))
+      uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
     }
 
   private def handleResponse[A](response: Response[Task]): Task[CornichonHttpResponse] = {
@@ -73,7 +73,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
       .map { decodedBody ⇒
         CornichonHttpResponse(
           status = response.status.code,
-          headers = response.headers.map(h ⇒ (h.name.value, h.value))(breakOut),
+          headers = response.headers.toList.map(h ⇒ (h.name.value, h.value))(breakOut),
           body = decodedBody
         )
       }
