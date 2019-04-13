@@ -67,7 +67,7 @@ lazy val standardSettings = Seq(
     browseUrl = url("https://github.com/agourlay/cornichon.git"),
     connection = "scm:git:git@github.com:agourlay/cornichon.git"
   )),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0-M4")
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0")
   // To profile tests execution
   //javaOptions in Test := Seq("-XX:+UnlockCommercialFeatures", "-XX:+FlightRecorder")
 )
