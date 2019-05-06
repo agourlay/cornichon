@@ -13,6 +13,8 @@ sealed trait Step {
   def setTitle(newTitle: String): Step
   def run(engine: Engine)(initialRunState: RunState): StepResult
   def chain(others: Session ⇒ List[Step]): Step = FlatMapStep(this, others)
+  def andThen(others: List[Step]): Step = FlatMapStep(this, _ ⇒ others)
+  def andThen(other: Step): Step = FlatMapStep(this, _ ⇒ other :: Nil)
 }
 
 object NoOpStep extends Step {

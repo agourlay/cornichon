@@ -11,14 +11,14 @@ import org.scalatest.{ AsyncWordSpec, Matchers }
 import scala.concurrent.Future
 import scala.util.Random
 
-class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
   def randomName = Random.alphanumeric.take(10).mkString
   import QueueManager._
 
   "ResourceStep" must {
     "acquire a resource and release it before the end of the run even if something blows up in the middle" in {
       implicit val queueResource = new QueueManager
-      val resourceStep = ResourceStep(
+      val resourceStep = ScenarioResourceStep(
         "ensure queue exists",
         createAndStoreQueueInSession("the-queue"),
         deleteQueue("the-queue")
@@ -38,8 +38,8 @@ class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
     "not run a ResourceStep if a previous step failed but should still clean up the resource steps that did run" in {
       implicit val queueResource = new QueueManager
-      val resourceStep1 = ResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
-      val resourceStep2 = ResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), deleteQueue("q2"))
+      val resourceStep1 = ScenarioResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
+      val resourceStep2 = ScenarioResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), deleteQueue("q2"))
       val scenario = Scenario("resource step scenario", resourceStep1 :: fail :: resourceStep2 :: Nil)
 
       val run = engine.runScenario(Session.newEmpty)(scenario)
@@ -53,7 +53,7 @@ class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     "run all the clean up steps in order" in {
       val is = List.range(1, 5)
       implicit val queueResource = new QueueManager
-      val resourceSteps = is.map(i ⇒ ResourceStep(s"ensure q$i exists", createAndStoreQueueInSession(s"q$i"), deleteQueue(s"q$i")))
+      val resourceSteps = is.map(i ⇒ ScenarioResourceStep(s"ensure q$i exists", createAndStoreQueueInSession(s"q$i"), deleteQueue(s"q$i")))
       val scenario = Scenario("resource step scenario", resourceSteps)
 
       val run = engine.runScenario(Session.newEmpty)(scenario)
@@ -66,9 +66,9 @@ class ResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
     "perform all the release steps even if one fails and report all the ones that failed" in {
       implicit val queueResource = new QueueManager
-      val resourceStep1 = ResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
-      val resourceStep2 = ResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), failToDeleteQueue("q2"))
-      val resourceStep3 = ResourceStep("ensure q3 exists", createAndStoreQueueInSession("q3"), failToDeleteQueue("q3"))
+      val resourceStep1 = ScenarioResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
+      val resourceStep2 = ScenarioResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), failToDeleteQueue("q2"))
+      val resourceStep3 = ScenarioResourceStep("ensure q3 exists", createAndStoreQueueInSession("q3"), failToDeleteQueue("q3"))
       val scenario = Scenario("resource step scenario", resourceStep1 :: resourceStep2 :: resourceStep3 :: Nil)
 
       val run = engine.runScenario(Session.newEmpty)(scenario)

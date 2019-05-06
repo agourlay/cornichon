@@ -4,7 +4,8 @@ import com.github.agourlay.cornichon.core.{ FailedStep, RunState, SimpleWrapperS
 
 import scala.concurrent.duration.Duration
 
-case class ResourceStep(title: String, acquire: Step, release: Step) extends SimpleWrapperStep {
+// `Resources` that are released at the end of the `Scenario`
+case class ScenarioResourceStep(title: String, acquire: Step, release: Step) extends SimpleWrapperStep {
   override def setTitle(newTitle: String) = copy(title = newTitle)
   override val nestedToRun = AttachAsStep(s"$title - acquire step", _ ⇒ acquire :: Nil) :: Nil
   override val indentLog = false

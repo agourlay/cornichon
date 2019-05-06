@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ Htt
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper
-import com.github.agourlay.cornichon.steps.wrapped.ResourceStep
+import com.github.agourlay.cornichon.steps.wrapped.ScenarioResourceStep
 import sangria.macros._
 
 import scala.concurrent.Await
@@ -792,7 +792,7 @@ class SuperHeroesScenario extends CornichonFeature {
     Await.result(server.shutdown(), 5.second)
   }
 
-  def session_resource = ResourceStep(
+  def session_resource = ScenarioResourceStep(
     title = "session resource",
     acquire = post("/session"),
     release = delete("/session").withParams("sessionId" → "<session-id>")
