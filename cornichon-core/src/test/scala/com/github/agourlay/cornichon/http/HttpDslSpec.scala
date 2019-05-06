@@ -1,7 +1,6 @@
-package com.github.agourlay.cornichon.dsl
+package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.core.Session
-import com.github.agourlay.cornichon.http.{ HttpDslOps, HttpService }
 import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
