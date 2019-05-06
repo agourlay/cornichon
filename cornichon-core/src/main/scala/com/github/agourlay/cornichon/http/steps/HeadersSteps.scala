@@ -12,6 +12,8 @@ import com.github.agourlay.cornichon.util.Printing._
 
 import scala.collection.breakOut
 
+// The assertion are case-insensitive on the field names.
+// https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
 object HeadersSteps {
 
   case object HeadersStepBuilder {
@@ -21,7 +23,7 @@ object HeadersSteps {
         s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
           val actualValue = sessionHeaders.split(",").toList
           val expectedValue: List[String] = expected.map { case (name, value) ⇒ encodeSessionHeader(name, value) }(breakOut)
-          GenericEqualityAssertion(expectedValue, actualValue)
+          GenericEqualityAssertion(expectedValue.map(_.toLowerCase), actualValue.map(_.toLowerCase))
         }
       }
     )
@@ -39,8 +41,8 @@ object HeadersSteps {
       title = s"headers contain ${printArrowPairs(elements)}",
       action = s ⇒ Assertion.either {
         s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
-          val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim)
-          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(encodeSessionHeader(name, value)) }
+          val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim).map(_.toLowerCase)
+          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(encodeSessionHeader(name.toLowerCase, value)) }
           CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
         }
       }
@@ -56,7 +58,7 @@ object HeadersSteps {
         for {
           sessionHeaders ← s.get(lastResponseHeadersKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
-          predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
+          predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname.toLowerCase == name.toLowerCase })
         } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
       }
     )
@@ -67,7 +69,7 @@ object HeadersSteps {
         for {
           sessionHeaders ← s.get(lastResponseHeadersKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
-          predicate ← Right(!sessionHeadersValue.exists { case (hname, _) ⇒ hname == name })
+          predicate ← Right(!sessionHeadersValue.exists { case (hname, _) ⇒ hname.toLowerCase == name.toLowerCase })
         } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersContainFieldWithNameError(name, sessionHeadersValue))
       }
     )
