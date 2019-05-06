@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http.steps
 
-import cats.instances.list._
+import cats.instances.tuple._
 import cats.instances.boolean._
 import cats.instances.string._
 
@@ -20,11 +20,12 @@ object HeadersSteps {
     def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${printArrowPairs(expected)}",
       action = s ⇒ Assertion.either {
-        s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
-          val actualValue = sessionHeaders.split(",").toList
-          val expectedValue: List[String] = expected.map { case (name, value) ⇒ encodeSessionHeader(name, value) }(breakOut)
-          GenericEqualityAssertion(expectedValue.map(_.toLowerCase), actualValue.map(_.toLowerCase))
-        }
+        for {
+          sessionHeaders ← s.get(lastResponseHeadersKey)
+          sessionHeadersValue ← decodeSessionHeaders(sessionHeaders)
+          lowerCasedActual = sessionHeadersValue.map { case (name, value) ⇒ name.toLowerCase -> value }
+          lowerCasedExpected: List[(String, String)] = expected.map { case (name, value) ⇒ name.toLowerCase -> value }(breakOut)
+        } yield CollectionsContainSameElements(lowerCasedExpected, lowerCasedActual)
       }
     )
 
@@ -32,7 +33,7 @@ object HeadersSteps {
       title = s"headers size is '$expectedSize'",
       action = s ⇒ Assertion.either {
         s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
-          CollectionSizeAssertion(sessionHeaders.split(","), expectedSize, "headers")
+          CollectionSizeAssertion(sessionHeaders.split(interHeadersValueDelim), expectedSize, "headers")
         }
       }
     )
@@ -40,11 +41,12 @@ object HeadersSteps {
     def contain(elements: (String, String)*) = AssertStep(
       title = s"headers contain ${printArrowPairs(elements)}",
       action = s ⇒ Assertion.either {
-        s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
-          val sessionHeadersValue = sessionHeaders.split(interHeadersValueDelim).map(_.toLowerCase)
-          val predicate = elements.forall { case (name, value) ⇒ sessionHeadersValue.contains(encodeSessionHeader(name.toLowerCase, value)) }
-          CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
-        }
+        for {
+          sessionHeaders ← s.get(lastResponseHeadersKey)
+          sessionHeadersValue ← decodeSessionHeaders(sessionHeaders)
+          lowerCasedActual = sessionHeadersValue.map { case (name, value) ⇒ name.toLowerCase -> value }
+          predicate = elements.forall { case (name, value) ⇒ lowerCasedActual.contains(name.toLowerCase -> value) }
+        } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
       }
     )
 

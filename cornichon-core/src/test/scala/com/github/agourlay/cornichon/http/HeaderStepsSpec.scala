@@ -15,13 +15,13 @@ class HeaderStepsSpec extends AsyncWordSpec
   with OptionValues
   with StepUtilSpec {
 
-  private def addHeaderToSession(s: Session)(name: String, value: String) =
-    s.addValue(SessionKeys.lastResponseHeadersKey, encodeSessionHeader(name, value)).valueUnsafe
+  private def addHeaderToSession(s: Session)(headers: (String, String)*) =
+    s.addValue(SessionKeys.lastResponseHeadersKey, encodeSessionHeaders(headers)).valueUnsafe
 
   "HeaderSteps" when {
     "HeadersNameStepBuilder" must {
       "is present" in {
-        val session = addHeaderToSession(Session.newEmpty)("test-key", "test")
+        val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
         val step = HeadersStepBuilder.name("test-key").isPresent
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
@@ -30,7 +30,7 @@ class HeaderStepsSpec extends AsyncWordSpec
       }
 
       "is present (case-insensitive)" in {
-        val session = addHeaderToSession(Session.newEmpty)("test-Key", "test")
+        val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "test")
         val step = HeadersStepBuilder.name("test-key").isPresent
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
@@ -39,7 +39,7 @@ class HeaderStepsSpec extends AsyncWordSpec
       }
 
       "is absent" in {
-        val session = addHeaderToSession(Session.newEmpty)("test-key", "test")
+        val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
         val step = HeadersStepBuilder.name("test-key2").isAbsent
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
@@ -49,9 +49,19 @@ class HeaderStepsSpec extends AsyncWordSpec
     }
 
     "HeaderStepBuilder" must {
+
+      "hasSize" in {
+        val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test", "test-key2" -> "test")
+        val step = HeadersStepBuilder.hasSize(2)
+        val s = Scenario("scenario with HeaderSteps", step :: Nil)
+        engine.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
       "is" in {
-        val session = addHeaderToSession(Session.newEmpty)("test-key", "test")
-        val step = HeadersStepBuilder.is("test-key" -> "test")
+        val session = addHeaderToSession(Session.newEmpty)("test-key" -> "Test")
+        val step = HeadersStepBuilder.is("test-key" -> "Test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
@@ -59,8 +69,8 @@ class HeaderStepsSpec extends AsyncWordSpec
       }
 
       "is (case-insensitive)" in {
-        val session = addHeaderToSession(Session.newEmpty)("test-Key", "test")
-        val step = HeadersStepBuilder.is("test-key" -> "test")
+        val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "Test")
+        val step = HeadersStepBuilder.is("test-key" -> "Test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
@@ -68,7 +78,7 @@ class HeaderStepsSpec extends AsyncWordSpec
       }
 
       "contain" in {
-        val session = addHeaderToSession(Session.newEmpty)("test-key", "test")
+        val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
         val step = HeadersStepBuilder.contain("test-key" -> "test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
@@ -77,8 +87,8 @@ class HeaderStepsSpec extends AsyncWordSpec
       }
 
       "contain (case-insensitive)" in {
-        val session = addHeaderToSession(Session.newEmpty)("test-Key", "test")
-        val step = HeadersStepBuilder.contain("test-key" -> "test")
+        val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "Test")
+        val step = HeadersStepBuilder.contain("test-key" -> "Test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
         engine.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
