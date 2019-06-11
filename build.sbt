@@ -288,7 +288,7 @@ lazy val formattingSettings = Seq(
 lazy val library =
   new {
     object Version {
-      val scalaTest     = "3.0.7"
+      val scalaTest     = "3.0.8"
       val akkaHttp      = "10.1.8"
       val akkaStream    = "2.5.23"
       val cats          = "1.6.1"
