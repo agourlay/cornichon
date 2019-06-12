@@ -22,8 +22,8 @@ trait KafkaDsl {
   // Kafka scenario can not run in // because they share the same producer/consumer
   override lazy val executeScenariosInParallel: Boolean = false
 
-  val kafkaBootstrapServersHost: String = "localhost"
-  val kafkaBootstrapServersPort: Int = 9092
+  lazy val kafkaBootstrapServersHost: String = "localhost"
+  lazy val kafkaBootstrapServersPort: Int = 9092
   private lazy val kafkaBootstrapServer = s"$kafkaBootstrapServersHost:$kafkaBootstrapServersPort"
 
   val kafkaProducerConfig: KafkaProducerConfig = KafkaProducerConfig()

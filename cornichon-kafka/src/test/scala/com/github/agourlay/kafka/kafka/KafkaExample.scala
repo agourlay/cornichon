@@ -6,8 +6,8 @@ import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
 class KafkaExample extends CornichonFeature with KafkaDsl {
 
-  override val kafkaBootstrapServersHost = "localhost"
-  override val kafkaBootstrapServersPort = 9092
+  override lazy val kafkaBootstrapServersHost = "localhost"
+  override lazy val kafkaBootstrapServersPort = 9092
 
   def feature = Feature("Kafka DSL") {
 
