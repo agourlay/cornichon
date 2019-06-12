@@ -18,9 +18,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
         message = "I am a plain string"
       )
 
-      When I read_from_topic(
-        topic = "cornichon"
-      )
+      When I read_from_topic("cornichon")
 
       Then assert kafka("cornichon").topic_is("cornichon")
       Then assert kafka("cornichon").key_is("success")
@@ -31,23 +29,18 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
       Given I put_topic(
         topic = "cornichon",
         key = "json",
-        message =
-          """{
-            | "coffee"   : "black",
-            | "cornichon": "green"
-            |}""".stripMargin
+        message = """{ "coffee": "black", "cornichon": "green" }"""
       )
 
-      When I read_from_topic(
-        topic = "cornichon"
+      When I read_from_topic("cornichon")
+      Then assert kafka("cornichon").key_is("json")
+      Then assert kafka("cornichon").message_value.ignoring("coffee").is("""
+        {
+          "cornichon": "green"
+        }
+        """
       )
-
-      Then assert kafka("cornichon").message_value.ignoring("coffee").is(
-        """{
-          | "cornichon": "green"
-          |}""".stripMargin)
     }
-
   }
 
   beforeFeature {
