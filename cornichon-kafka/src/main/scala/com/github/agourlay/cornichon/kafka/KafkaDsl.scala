@@ -10,8 +10,6 @@ import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
 import com.github.agourlay.cornichon.kafka.KafkaDsl._
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
-import pureconfig.generic.ProductHint
-import pureconfig.{ CamelCase, ConfigFieldMapping }
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -20,15 +18,24 @@ import scala.concurrent.{ Future, Promise }
 trait KafkaDsl {
   this: BaseFeature with CoreDsl ⇒
 
-  // Kafka tests can not run in //
+  // Kafka scenario can not run in // because they share the same producer/consumer
   override lazy val executeScenariosInParallel: Boolean = false
 
-  def put_topic(topic: String, key: String, message: String) = EffectStep.fromAsync(
+  val kafkaBootstrapServersHost: String = "localhost"
+  val kafkaBootstrapServersPort: Int = 9092
+
+  val kafkaProducerConfig: KafkaProducerConfig = KafkaProducerConfig()
+  val kafkaConsumerConfig: KafkaConsumerConfig = KafkaConsumerConfig()
+
+  lazy val featureProducer = producer(s"$kafkaBootstrapServersHost:$kafkaBootstrapServersPort", kafkaProducerConfig)
+  lazy val featureConsumer = consumer(s"$kafkaBootstrapServersHost:$kafkaBootstrapServersPort", kafkaConsumerConfig)
+
+  def put_topic(topic: String, key: String, message: String): EffectStep = EffectStep.fromAsync(
     title = s"put message=$message with key=$key to topic=$topic",
     effect = s ⇒ {
-      val pr = buildProducerRecord(topic, key, message)
+      val pr = new ProducerRecord[String, String](topic, key, message)
       val p = Promise[Unit]()
-      producer.send(pr, new Callback {
+      featureProducer.send(pr, new Callback {
         def onCompletion(metadata: RecordMetadata, exception: Exception): Unit =
           if (exception == null)
             p.success(())
@@ -39,21 +46,20 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int = 1, timeout: Int = 500) = EffectStep.fromAsync(
+  def read_from_topic(topic: String, amount: Int = 1, timeout: Int = 500): EffectStep = EffectStep.fromAsync(
     title = s"reading the last $amount messages from topic=$topic",
     effect = s ⇒ Future {
-      consumer.unsubscribe()
-      consumer.subscribe(Seq(topic).asJava)
+      featureConsumer.subscribe(Seq(topic).asJava)
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
       val pollDuration = Duration.ofMillis(timeout.toLong)
       while (!nothingNewAnymore) {
-        val newMessages = consumer.poll(pollDuration)
+        val newMessages = featureConsumer.poll(pollDuration)
         val collectionOfNewMessages = newMessages.iterator().asScala.toList
         messages ++= collectionOfNewMessages
         nothingNewAnymore = newMessages.isEmpty
       }
-      consumer.commitSync()
+      featureConsumer.commitSync()
       messages.drop(messages.size - amount)
       messages.foldLeft(s) { (session, value) ⇒
         commonSessionExtraction(session, topic, value).valueUnsafe
@@ -78,16 +84,12 @@ trait KafkaDsl {
 
 object KafkaDsl {
   import scala.concurrent.ExecutionContext.Implicits.global
-  import pureconfig.generic.auto._
 
-  // if the config does not exist we use the default values
-  lazy val kafkaConfig = pureconfig.loadConfigOrThrow[Option[KafkaConfig]]("kafka").getOrElse(KafkaConfig())
-
-  lazy val producer = {
+  def producer(bootstrapServer: String, producerConfig: KafkaProducerConfig): KafkaProducer[String, String] = {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> kafkaConfig.bootstrapServers,
-      ProducerConfig.ACKS_CONFIG -> kafkaConfig.producer.ack,
-      ProducerConfig.BATCH_SIZE_CONFIG -> kafkaConfig.producer.batchSizeInBytes.toString
+      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> bootstrapServer,
+      ProducerConfig.ACKS_CONFIG -> producerConfig.ack,
+      ProducerConfig.BATCH_SIZE_CONFIG -> producerConfig.batchSizeInBytes.toString
     )
 
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
@@ -97,14 +99,14 @@ object KafkaDsl {
     p
   }
 
-  lazy val consumer = {
+  def consumer(bootstrapServer: String, consumerConfig: KafkaConsumerConfig): KafkaConsumer[String, String] = {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
-      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> kafkaConfig.bootstrapServers,
+      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> bootstrapServer,
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
-      ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG -> "100",
-      ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "10000",
+      ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG -> consumerConfig.heartbeatIntervalMsConfig.toString,
+      ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> consumerConfig.sessionTimeoutMsConfig.toString,
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest",
-      ConsumerConfig.GROUP_ID_CONFIG -> kafkaConfig.consumer.groupId
+      ConsumerConfig.GROUP_ID_CONFIG -> consumerConfig.groupId
     )
 
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
@@ -113,29 +115,14 @@ object KafkaDsl {
     })
     c
   }
-
-  def buildProducerRecord(topic: String, key: String, message: String): ProducerRecord[String, String] =
-    new ProducerRecord[String, String](topic, key, message)
-
-  def buildConsumerRecordJsonProjection(f: String ⇒ String)(record: ConsumerRecord[String, String]): String =
-    s"""{
-       |  "key": "${record.key()}",
-       |  "topic": "${record.topic()}",
-       |  "timestamp": "${record.timestamp()}",
-       |  "value": ${f(record.value())}
-       |}""".stripMargin
-
 }
 
-case class KafkaConfig(
-    bootstrapServers: String = "localhost:9092",
-    producer: KafkaProducerConfig = KafkaProducerConfig(),
-    consumer: KafkaConsumerConfig = KafkaConsumerConfig())
+case class KafkaProducerConfig(
+    ack: String = "all",
+    batchSizeInBytes: Int = 1,
+    retriesConfig: Option[Int] = None)
 
-object KafkaConfig {
-  implicit val hint = ProductHint[KafkaConfig](allowUnknownKeys = false, fieldMapping = ConfigFieldMapping(CamelCase, CamelCase))
-}
-
-case class KafkaProducerConfig(ack: String = "all", batchSizeInBytes: Int = 1, retriesConfig: Option[Int] = None)
-
-case class KafkaConsumerConfig(groupId: String = s"cornichon-groupId")
+case class KafkaConsumerConfig(
+    groupId: String = s"cornichon-groupId",
+    sessionTimeoutMsConfig: Int = 10000,
+    heartbeatIntervalMsConfig: Int = 100)

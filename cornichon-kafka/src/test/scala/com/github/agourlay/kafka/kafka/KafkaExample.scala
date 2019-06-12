@@ -6,6 +6,9 @@ import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
 class KafkaExample extends CornichonFeature with KafkaDsl {
 
+  override val kafkaBootstrapServersHost = "localhost"
+  override val kafkaBootstrapServersPort = 9092
+
   def feature = Feature("Kafka DSL") {
 
     Scenario("write and read arbitrary Strings to/from topic") {
@@ -48,11 +51,13 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
   }
 
   beforeFeature {
-    implicit val kafkaConfig: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
-      kafkaPort = 9092,
-      customBrokerProperties = Map("group.initial.rebalance.delay.ms" -> "10")
-    )
-    EmbeddedKafka.start()
+    // start an embedded kafka for the tests
+    EmbeddedKafka.start() {
+      EmbeddedKafkaConfig(
+        kafkaPort = kafkaBootstrapServersPort,
+        customBrokerProperties = Map("group.initial.rebalance.delay.ms" -> "10")
+      )
+    }
     ()
   }
 
