@@ -31,7 +31,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
   private val defaultHighTimeout = Duration.fromNanos(Long.MaxValue)
   private val (httpClient, safeShutdown) =
     BlazeClientBuilder(executionContext = ec)
-      .withoutSslContext
+      .withDefaultSslContext
       .withMaxTotalConnections(300)
       .withMaxWaitQueueLimit(500)
       .withIdleTimeout(defaultHighTimeout)

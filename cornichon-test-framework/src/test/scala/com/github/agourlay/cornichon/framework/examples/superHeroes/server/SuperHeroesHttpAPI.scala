@@ -98,7 +98,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
   private val authMiddleware: AuthMiddleware[Task, String] = BasicAuth("secure site", authStore)
 
   private val securedSuperHeroesService = authMiddleware {
-    AuthedService[String, Task] {
+    AuthedRoutes.of[String, Task] {
       case req @ POST -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ ⇒
         for {
           s ← req.req.as[SuperHero]
