@@ -6,6 +6,9 @@ import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
 class KafkaExample extends CornichonFeature with KafkaDsl {
 
+  override lazy val kafkaBootstrapServersHost = "localhost"
+  override lazy val kafkaBootstrapServersPort = 9092
+
   def feature = Feature("Kafka DSL") {
 
     Scenario("write and read arbitrary Strings to/from topic") {
@@ -15,9 +18,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
         message = "I am a plain string"
       )
 
-      When I read_from_topic(
-        topic = "cornichon"
-      )
+      When I read_from_topic("cornichon")
 
       Then assert kafka("cornichon").topic_is("cornichon")
       Then assert kafka("cornichon").key_is("success")
@@ -28,31 +29,28 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
       Given I put_topic(
         topic = "cornichon",
         key = "json",
-        message =
-          """{
-            | "coffee"   : "black",
-            | "cornichon": "green"
-            |}""".stripMargin
+        message = """{ "coffee": "black", "cornichon": "green" }"""
       )
 
-      When I read_from_topic(
-        topic = "cornichon"
+      When I read_from_topic("cornichon")
+      Then assert kafka("cornichon").key_is("json")
+      Then assert kafka("cornichon").message_value.ignoring("coffee").is("""
+        {
+          "cornichon": "green"
+        }
+        """
       )
-
-      Then assert kafka("cornichon").message_value.ignoring("coffee").is(
-        """{
-          | "cornichon": "green"
-          |}""".stripMargin)
     }
-
   }
 
   beforeFeature {
-    implicit val kafkaConfig: EmbeddedKafkaConfig = EmbeddedKafkaConfig(
-      kafkaPort = 9092,
-      customBrokerProperties = Map("group.initial.rebalance.delay.ms" -> "10")
-    )
-    EmbeddedKafka.start()
+    // start an embedded kafka for the tests
+    EmbeddedKafka.start() {
+      EmbeddedKafkaConfig(
+        kafkaPort = kafkaBootstrapServersPort,
+        customBrokerProperties = Map("group.initial.rebalance.delay.ms" -> "10")
+      )
+    }
     ()
   }
 
