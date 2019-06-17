@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.kafka
 
 import java.time.Duration
 
-import com.github.agourlay.cornichon.core.{ Session, Step }
+import com.github.agourlay.cornichon.core.{ CornichonError, Session, Step }
 import com.github.agourlay.cornichon.dsl.CoreDsl
 import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.cats.EffectStep
@@ -11,6 +11,7 @@ import org.apache.kafka.common.serialization.{ StringDeserializer, StringSeriali
 import monix.eval.Task
 import monix.execution.CancelablePromise
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
+import cats.syntax.either._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -48,8 +49,8 @@ trait KafkaDsl {
     }
   )
 
-  def read_from_topic(topic: String, amount: Int = 1, timeoutMs: Int = 500): Step = EffectStep.fromAsync(
-    title = s"reading the last $amount messages from topic=$topic",
+  def read_from_topic(topic: String, atLeastAmount: Int = 1, timeoutMs: Int = 500): Step = EffectStep[Task](
+    title = s"reading the last $atLeastAmount messages from topic=$topic",
     effect = s ⇒ Task.delay {
       featureConsumer.subscribe(Seq(topic).asJava)
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
@@ -63,9 +64,14 @@ trait KafkaDsl {
           messages ++= newMessages.iterator().asScala.toList
       }
       featureConsumer.commitSync()
-      messages.drop(messages.size - amount)
-      messages.foldLeft(s) { (session, value) ⇒
-        commonSessionExtraction(session, topic, value).valueUnsafe
+      if (messages.size < atLeastAmount)
+        NotEnoughMessagesPolled(atLeastAmount, messages.toList).asLeft
+      else {
+        messages.drop(messages.size - atLeastAmount)
+        val newSession = messages.foldLeft(s) { (session, value) ⇒
+          commonSessionExtraction(session, topic, value).valueUnsafe
+        }
+        newSession.asRight
       }
     }
   )
@@ -120,3 +126,7 @@ trait KafkaDsl {
 case class KafkaProducerConfig(ack: String = "all", batchSizeInBytes: Int = 1, retriesConfig: Option[Int] = None)
 
 case class KafkaConsumerConfig(groupId: String = "cornichon-groupId", sessionTimeoutMsConfig: Int = 10000, heartbeatIntervalMsConfig: Int = 100)
+
+case class NotEnoughMessagesPolled(atLeastExpected: Int, messagesPolled: List[ConsumerRecord[String, String]]) extends CornichonError {
+  lazy val baseErrorMessage: String = s"Not enough messages polled, expected at least $atLeastExpected but got ${messagesPolled.size}\n${messagesPolled.mkString("\n")}"
+}

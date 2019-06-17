@@ -34,7 +34,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
       When I read_from_topic(
         topic = "cornichon",
         timeoutMs = 500,
-        amount = 1
+        atLeastAmount = 1
       )
 
       Then assert kafka("cornichon").topic_is("cornichon")
