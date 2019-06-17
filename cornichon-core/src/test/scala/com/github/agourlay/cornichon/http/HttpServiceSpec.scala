@@ -28,14 +28,14 @@ class HttpServiceSpec extends WordSpec
     "fillInSessionWithResponse" must {
       "extract content with NoOpExtraction" in {
         val resp = CornichonHttpResponse(200, Nil, "hello world")
-        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, resp, NoOpExtraction)
+        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, NoOpExtraction)(resp)
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight("hello world")
       }
 
       "extract content with RootResponseExtraction" in {
         val resp = CornichonHttpResponse(200, Nil, "hello world")
-        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, resp, RootExtractor("copy-body"))
+        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, RootExtractor("copy-body"))(resp)
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight("hello world")
         filledSession.value.get("copy-body") should beRight("hello world")
@@ -48,7 +48,7 @@ class HttpServiceSpec extends WordSpec
               "name" : "batman"
             }
           """)
-        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, resp, PathExtractor("name", "part-of-body"))
+        val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, PathExtractor("name", "part-of-body"))(resp)
         filledSession.value.get("last-response-status") should beRight("200")
         filledSession.value.get("last-response-body") should beRight(
           """

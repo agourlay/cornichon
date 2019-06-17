@@ -27,11 +27,16 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
     } yield value
 
   def get(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
-    for {
-      values ← content.get(key).toRight(KeyNotFoundInSession(key, this))
-      indice = stackingIndice.getOrElse(values.size - 1)
-      value ← values.lift(indice).toRight(IndiceNotFoundForKey(key, indice, values))
-    } yield value
+    content.get(key) match {
+      case None ⇒
+        KeyNotFoundInSession(key, this).asLeft
+      case Some(values) ⇒
+        val indice = stackingIndice.getOrElse(values.size - 1)
+        if (values.size < indice)
+          IndiceNotFoundForKey(key, indice, values).asLeft
+        else
+          values(indice).asRight
+    }
 
   def get(sessionKey: SessionKey): Either[CornichonError, String] =
     get(sessionKey.name, sessionKey.index)
@@ -58,9 +63,9 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
     def validateKey(key: String): Either[CornichonError, Done] = {
       val trimmedKey = new StringOps(key.trim)
       if (trimmedKey.isEmpty)
-        Left(EmptyKey)
+        EmptyKey.asLeft
       else if (Session.notAllowedInKey.exists(forbidden ⇒ trimmedKey.contains(forbidden)))
-        Left(IllegalKey(key))
+        IllegalKey(key).asLeft
       else
         Done.rightDone
     }
@@ -109,13 +114,13 @@ object Session {
 
   private val knownKeysCache = Caching.buildCache[String, Either[CornichonError, Done]]()
 
-  implicit val monoidSession = new Monoid[Session] {
+  implicit val monoidSession: Monoid[Session] = new Monoid[Session] {
     def empty: Session = newEmpty
     def combine(x: Session, y: Session): Session =
       Session(x.content.combine(y.content))
   }
 
-  implicit val showSession = Show.show[Session] { s ⇒
+  implicit val showSession: Show[Session] = Show.show[Session] { s ⇒
     if (s.content.isEmpty)
       "empty"
     else

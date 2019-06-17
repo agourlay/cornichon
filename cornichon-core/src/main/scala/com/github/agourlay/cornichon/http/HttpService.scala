@@ -209,15 +209,13 @@ object HttpService {
         StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body).asLeft
     }
 
-  def fillInSessionWithResponse(session: Session, response: CornichonHttpResponse, extractor: ResponseExtractor): Either[CornichonError, Session] =
+  def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor)(response: CornichonHttpResponse): Either[CornichonError, Session] =
     commonSessionExtraction(session, response).flatMap { filledSession ⇒
       extractor match {
         case NoOpExtraction ⇒
           filledSession.asRight
-
         case RootExtractor(targetKey) ⇒
           filledSession.addValue(targetKey, response.body)
-
         case PathExtractor(path, targetKey) ⇒
           JsonPath.runStrict(path, response.body)
             .flatMap(extractedJson ⇒ filledSession.addValue(targetKey, jsonStringValue(extractedJson)))
@@ -225,10 +223,8 @@ object HttpService {
     }
 
   def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
-    for {
-      resExpected ← expectStatusCode(resp, expectedStatus)
-      newSession ← fillInSessionWithResponse(session, resExpected, extractor)
-    } yield newSession
+    expectStatusCode(resp, expectedStatus)
+      .flatMap(fillInSessionWithResponse(session, extractor))
 
   def commonSessionExtraction(session: Session, response: CornichonHttpResponse): Either[CornichonError, Session] =
     session.addValues(
