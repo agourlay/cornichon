@@ -22,7 +22,7 @@ class CheckModelEngine[A, B, C, D, E, F](
 
   // Assertions do not propagate their Session!
   private def checkStepConditions(engine: Engine, initialRunState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
-    assertion.run(engine)(initialRunState).map(_._2)
+    assertion.onEngine(engine).runA(initialRunState)
 
   private def validTransitions(engine: Engine, initialRunState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] =
     Task.gather {
@@ -85,7 +85,7 @@ class CheckModelEngine[A, B, C, D, E, F](
     // Generate effect
     val invariantStep = property.invariantN(ga, gb, gc, gd, ge, gf)
     val propertyNameLog = InfoLogInstruction(s"${property.description}", initialRunState.depth)
-    invariantStep.run(engine)(initialRunState.recordLog(propertyNameLog))
+    invariantStep.runOnEngine(engine, initialRunState.recordLog(propertyNameLog))
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability

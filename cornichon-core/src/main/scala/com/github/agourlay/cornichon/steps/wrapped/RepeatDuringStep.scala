@@ -2,10 +2,10 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.concurrent.TimeUnit
 
-import cats.data.NonEmptyList
+import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
 
@@ -15,14 +15,14 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
 
   val title = s"Repeat block during '$duration'"
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
 
     val initialDepth = initialRunState.depth
 
     def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] = {
       withDuration {
         // reset logs at each loop to have the possibility to not aggregate in failure case
-        engine.runSteps(nested, runState.resetLogStack)
+        engine.runStepsShortCircuiting(nested, runState.resetLogStack)
       }.flatMap {
         case (run, executionTime) ⇒
           val (repeatedOnceMore, res) = run

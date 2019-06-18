@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import cats.data.NonEmptyList
+import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
 
@@ -13,13 +13,13 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
 
   val title = s"Repeat block with occurrence '$occurrence'"
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
 
     def repeatSuccessSteps(retriesNumber: Int, runState: RunState): Task[(Int, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
       val rs = runState.resetLogStack
       val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
-      engine.runSteps(nested, runStateWithIndex).flatMap {
+      engine.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
         case (onceMoreRunState, stepResult) ⇒
           stepResult.fold(
             failed ⇒ {

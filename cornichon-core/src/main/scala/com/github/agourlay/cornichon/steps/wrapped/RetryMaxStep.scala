@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import cats.data.NonEmptyList
+import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
 
@@ -13,10 +13,10 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   val title = s"RetryMax block with limit '$limit'"
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
 
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
-      engine.runSteps(nested, runState.resetLogStack).flatMap {
+      engine.runStepsShortCircuiting(nested, runState.resetLogStack).flatMap {
         case (retriedState, Left(_)) if limit > 0 ⇒
           // In case of success all logs are returned but they are not printed by default.
           retryMaxSteps(runState.recordLogStack(retriedState.logStack), limit - 1, retriesNumber + 1)

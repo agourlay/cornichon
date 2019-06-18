@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import cats.data.NonEmptyList
+import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.Engine._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.util.Timing._
 import com.github.agourlay.cornichon.util.Printing._
@@ -15,7 +15,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
 
   val title = s"With data input block $where"
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
 
     def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] =
       if (inputs.isEmpty) Task.now((runState, rightDone))
@@ -23,7 +23,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
         val bootstrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
-        engine.runSteps(nested, bootstrapFilledInput).flatMap {
+        engine.runStepsShortCircuiting(nested, bootstrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒
             stepsResult.fold(
               failedStep ⇒ {

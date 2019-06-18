@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.check.checkModel
 
 import cats.data.Validated.Invalid
-import cats.data.ValidatedNel
+import cats.data.{ StateT, ValidatedNel }
 import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.validated._
@@ -9,6 +9,7 @@ import cats.syntax.apply._
 import com.github.agourlay.cornichon.check.RandomContext
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 import com.github.agourlay.cornichon.util.Timing._
 
@@ -85,7 +86,7 @@ case class CheckModelStep[A, B, C, D, E, F](
     emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> sumOfWeightIsCorrect
   }
 
-  override def run(engine: Engine)(initialRunState: RunState): Task[(RunState, FailedStep Either Done)] =
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
     withDuration {
       validateTransitions(model.transitions) match {
         case Invalid(ce) ⇒
@@ -106,6 +107,7 @@ case class CheckModelStep[A, B, C, D, E, F](
         }
         (initialRunState.mergeNested(checkState, fullLogs), res)
     }
+  }
 }
 
 case class EmptyTransitionsDefinitionForProperty(description: String) extends CornichonError {

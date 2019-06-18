@@ -1,10 +1,11 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.data.StateT
 import cats.instances.list._
 import cats.syntax.foldable._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 import monix.reactive.Observable
 
@@ -18,12 +19,12 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
 
   val title = s"Repeat concurrently block '$times' times with parallel factor '$parallelism' and maxTime '$maxTime'"
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
     val nestedRunState = initialRunState.nestedContext
     val initialDepth = initialRunState.depth
     val start = System.nanoTime
     Observable.fromIterable(List.fill(times)(()))
-      .mapParallelUnordered(parallelism)(_ ⇒ engine.runSteps(nested, nestedRunState))
+      .mapParallelUnordered(parallelism)(_ ⇒ engine.runStepsShortCircuiting(nested, nestedRunState))
       .takeUntil(Observable.evalDelayed(maxTime, ()))
       .toListL
       .flatMap { results ⇒

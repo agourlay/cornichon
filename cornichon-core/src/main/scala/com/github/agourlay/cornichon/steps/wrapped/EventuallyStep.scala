@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import cats.data.NonEmptyList
+import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
@@ -14,7 +14,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
 
@@ -29,7 +29,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
         knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
 
       withDuration {
-        engine.runSteps(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
+        engine.runStepsShortCircuiting(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime

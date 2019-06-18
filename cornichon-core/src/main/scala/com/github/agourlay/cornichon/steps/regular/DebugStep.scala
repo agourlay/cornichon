@@ -11,7 +11,7 @@ import scala.concurrent.duration.Duration
 
 case class DebugStep(title: String, message: Session ⇒ Either[CornichonError, String]) extends LogValueStep[String] {
 
-  def setTitle(newTitle: String) = copy(title = newTitle)
+  def setTitle(newTitle: String): Step = copy(title = newTitle)
 
   override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], String]] =
     Task.delay {

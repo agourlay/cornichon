@@ -1,8 +1,9 @@
 package com.github.agourlay.cornichon.check.forAll
 
+import cats.data.StateT
 import com.github.agourlay.cornichon.check.{ Generator, NoValueGenerator, RandomContext }
 import com.github.agourlay.cornichon.core.Done.rightDone
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
@@ -42,7 +43,7 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
       val invariantRunState = initialRunState.nestedContext.recordLog(preRunLog)
       val invariantStep = f(generatedA)(generatedB)(generatedC)(generatedD)(generatedE)(generatedF)
 
-      invariantStep.run(engine)(invariantRunState).flatMap {
+      invariantStep.runOnEngine(engine, invariantRunState).flatMap {
         case (newState, l @ Left(_)) ⇒
           val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
           val failedState = initialRunState.mergeNested(newState).recordLog(postRunLog)
@@ -55,7 +56,7 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
       }
     }
 
-  def run(engine: Engine)(initialRunState: RunState): StepResult =
+  def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
     withDuration {
       repeatModelOnSuccess(1)(engine, initialRunState.nestedContext)
     }.map {
@@ -71,4 +72,5 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
         }
         (initialRunState.mergeNested(checkState, fullLogs), res)
     }
+  }
 }

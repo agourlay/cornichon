@@ -1,8 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.data.StateT
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.duration.Duration
@@ -11,12 +12,12 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
 
   val title = s"Within block with max duration '$maxDuration'"
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult = {
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
 
     val initialDepth = initialRunState.depth
 
     withDuration {
-      engine.runSteps(nested, initialRunState.nestedContext)
+      engine.runStepsShortCircuiting(nested, initialRunState.nestedContext)
     }.map {
       case ((withinState, inputRes), executionTime) ⇒
         val (logStack, res) = inputRes match {

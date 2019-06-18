@@ -47,7 +47,7 @@ class Engine(stepPreparers: List[StepPreparer]) {
     if (steps.isEmpty)
       Task.now((runState, validDone))
     else
-      runSteps(steps, runState.recordLog(stageTitle)).map {
+      runStepsShortCircuiting(steps, runState.recordLog(stageTitle)).map {
         case (resultState, resultReport) ⇒ (resultState, resultReport.toValidatedNel)
       }
   }
@@ -58,25 +58,26 @@ class Engine(stepPreparers: List[StepPreparer]) {
     else {
       // Cleanup steps are consumed to avoid double run
       val cleanupState = runState.resetCleanupSteps.recordLog(cleanupLog)
-      runStepsDoNotShortCircuit(runState.cleanupSteps, cleanupState).map {
+      runStepsWithoutShortCircuiting(runState.cleanupSteps, cleanupState).map {
         case (resultState, resultReport) ⇒ (resultState, resultReport.toValidated)
       }
     }
   }
 
-  // run steps and short-circuit on Task[Either]
-  final def runSteps(remainingSteps: List[Step], initialRunState: RunState): StepResult =
-    remainingSteps.foldLeft[Task[(RunState, FailedStep Either Done)]](Task.now((initialRunState, Done.rightDone))) {
+  final def runStepsShortCircuiting(steps: List[Step], initialRunState: RunState): StepResult = {
+    val initAcc = Task.now(initialRunState -> Done.rightDone)
+    steps.foldLeft[Task[(RunState, FailedStep Either Done)]](initAcc) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap {
           case (runState, Right(_))    ⇒ prepareAndRunStep(currentStep, runState)
           case (runState, l @ Left(_)) ⇒ Task.now((runState, l))
         }
     }
+  }
 
-  // run steps and aggregate failed steps
-  private def runStepsDoNotShortCircuit(steps: List[Step], runState: RunState): Task[(RunState, NonEmptyList[FailedStep] Either Done)] = {
-    steps.foldLeft(Task.now((runState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])) {
+  private def runStepsWithoutShortCircuiting(steps: List[Step], initialRunState: RunState): Task[(RunState, Either[NonEmptyList[FailedStep], Done])] = {
+    val initAcc = Task.now((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])
+    steps.foldLeft(initAcc) {
       case (runStateF, currentStep) ⇒ runStateF.flatMap(prepareAndRunStepsAccumulatingErrors(currentStep))
     }.map(_.fold(
       { errors ⇒ (errors.head._1, Left(errors.map(_._2))) },
@@ -105,12 +106,12 @@ class Engine(stepPreparers: List[StepPreparer]) {
       ps ⇒ runStep(runState, ps)
     )
 
-  private def runStep(runState: RunState, ps: Step): Task[(RunState, FailedStep Either Done)] =
+  private def runStep(runState: RunState, step: Step): Task[(RunState, FailedStep Either Done)] =
     Either
-      .catchNonFatal(ps.run(this)(runState))
+      .catchNonFatal(step.runOnEngine(this, runState))
       .fold(
-        e ⇒ Task.now(handleThrowable(ps, runState, e)),
-        _.onErrorRecover { case NonFatal(t) ⇒ handleThrowable(ps, runState, t) }
+        e ⇒ Task.now(handleThrowable(step, runState, e)),
+        _.onErrorRecover { case NonFatal(t) ⇒ handleThrowable(step, runState, t) }
       )
 }
 

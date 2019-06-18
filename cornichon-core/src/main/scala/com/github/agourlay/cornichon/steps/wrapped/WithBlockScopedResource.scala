@@ -1,16 +1,17 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.data.StateT
 import cats.syntax.monoid._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.core.StepResult
+import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
 
 case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedResource) extends WrapperStep {
 
   val title = resource.openingTitle
 
-  override def run(engine: Engine)(initialRunState: RunState): StepResult =
-    resource.use(initialRunState.nestedContext)(engine.runSteps(nested, _)).map { resTuple ⇒
+  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
+    resource.use(initialRunState.nestedContext)(engine.runStepsShortCircuiting(nested, _)).map { resTuple ⇒
       val (results, (resourcedState, resourcedRes)) = resTuple
       val initialDepth = initialRunState.depth
       val closingTitle = resource.closingTitle
@@ -22,4 +23,5 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
       // Manual nested merge
       (initialRunState.withSession(completeSession).recordLogStack(logStack).registerCleanupSteps(initialRunState.cleanupSteps), resourcedRes)
     }
+  }
 }
