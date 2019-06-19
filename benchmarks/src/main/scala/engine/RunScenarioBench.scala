@@ -3,7 +3,7 @@ package engine
 import java.util.concurrent.{ ExecutorService, Executors }
 
 import cats.instances.int._
-import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session }
+import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session }
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
@@ -32,7 +32,7 @@ class RunScenarioBench {
   var stepsNumber: String = ""
   var es: ExecutorService = _
   var scheduler: Scheduler = _
-  var engine: Engine = _
+  var engine: ScenarioRunner = _
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
@@ -41,7 +41,7 @@ class RunScenarioBench {
     val resolver = PlaceholderResolver.default()
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = new Engine(resolver)
+    engine = new ScenarioRunner(resolver)
   }
 
   @TearDown(Level.Trial)

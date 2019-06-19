@@ -2,7 +2,7 @@ package step
 
 import java.util.concurrent.{ ExecutorService, Executors }
 
-import com.github.agourlay.cornichon.core.{ Engine, Scenario, Session, SessionKey }
+import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
@@ -30,7 +30,7 @@ class JsonStepBench {
 
   var es: ExecutorService = _
   var scheduler: Scheduler = _
-  var engine: Engine = _
+  var engine: ScenarioRunner = _
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
@@ -39,7 +39,7 @@ class JsonStepBench {
 
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = new Engine(resolver)
+    engine = new ScenarioRunner(resolver)
   }
 
   @TearDown(Level.Trial)

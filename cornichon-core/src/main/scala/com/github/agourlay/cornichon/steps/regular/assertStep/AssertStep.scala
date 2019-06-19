@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 import cats.data._
 import cats.data.Validated.Invalid
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.Engine._
+import com.github.agourlay.cornichon.core.ScenarioRunner._
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
 

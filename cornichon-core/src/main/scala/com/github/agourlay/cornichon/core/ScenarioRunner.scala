@@ -11,13 +11,13 @@ import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.Engine._
+import com.github.agourlay.cornichon.core.ScenarioRunner._
 import com.github.agourlay.cornichon.core.core.StepResult
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
 
-class Engine(resolver: PlaceholderResolver) {
+class ScenarioRunner(resolver: PlaceholderResolver) {
 
   final def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
     context.isIgnored(scenario) match {
@@ -102,12 +102,12 @@ class Engine(resolver: PlaceholderResolver) {
     resolver.fillPlaceholders(step.title)(runState.session)
       .map(step.setTitle)
       .fold(
-        ce ⇒ Task.now(Engine.handleErrors(step, runState, NonEmptyList.one(ce))),
+        ce ⇒ Task.now(ScenarioRunner.handleErrors(step, runState, NonEmptyList.one(ce))),
         ps ⇒ runStepSafe(runState, ps)
       )
 }
 
-object Engine {
+object ScenarioRunner {
 
   private val initMargin = 1
   private val beforeLog = InfoLogInstruction("before steps", initMargin + 1)

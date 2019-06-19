@@ -12,12 +12,12 @@ import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.ExecutionContext
 
-class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
+class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
 
   implicit val scheduler = Scheduler(ExecutionContext.global)
-  val engine = new Engine(PlaceholderResolver.default())
+  val engine = new ScenarioRunner(PlaceholderResolver.default())
 
-  "An engine" when {
+  "ScenarioRunner" when {
     "runScenario" must {
       "executes all steps of a scenario" in {
         val steps = AssertStep("first step", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil

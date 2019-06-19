@@ -7,7 +7,7 @@ import monix.reactive.Observable
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
 
-  private val engine = new Engine(baseFeature.placeholderResolver)
+  private val engine = new ScenarioRunner(baseFeature.placeholderResolver)
   private val featureContext = FeatureExecutionContext(
     beforeSteps = baseFeature.beforeEachScenario.toList,
     finallySteps = baseFeature.afterEachScenario.toList,

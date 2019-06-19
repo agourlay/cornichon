@@ -34,7 +34,7 @@ class CheckStepBench {
 
   var es: ExecutorService = _
   var scheduler: Scheduler = _
-  var engine: Engine = _
+  var engine: ScenarioRunner = _
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
@@ -43,7 +43,7 @@ class CheckStepBench {
 
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = new Engine(resolver)
+    engine = new ScenarioRunner(resolver)
   }
 
   @TearDown(Level.Trial)

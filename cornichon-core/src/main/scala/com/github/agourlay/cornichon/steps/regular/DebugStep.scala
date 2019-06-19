@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import cats.syntax.either._
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.Engine._
+import com.github.agourlay.cornichon.core.ScenarioRunner._
 import monix.eval.Task
 
 import scala.concurrent.duration.Duration

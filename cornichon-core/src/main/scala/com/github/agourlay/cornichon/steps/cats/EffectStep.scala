@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.cats
 import cats.data.{ EitherT, NonEmptyList }
 import cats.effect.Effect
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.Engine.{ errorsToFailureStep, successLog }
+import com.github.agourlay.cornichon.core.ScenarioRunner.{ errorsToFailureStep, successLog }
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
 import monix.execution.Scheduler
