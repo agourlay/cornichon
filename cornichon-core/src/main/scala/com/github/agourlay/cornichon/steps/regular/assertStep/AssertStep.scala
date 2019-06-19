@@ -22,9 +22,9 @@ case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolea
       }
     }
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep) =
-    errorsToFailureStep(this, initialRunState.depth, errors)
+  override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
+    errorsToFailureStep(this, runState.depth, errors)
 
-  override def logOnSuccess(result: Done, initialRunState: RunState, executionTime: Duration): LogInstruction =
-    successLog(title, initialRunState.depth, show, executionTime)
+  override def logOnSuccess(result: Done, runState: RunState, executionTime: Duration): LogInstruction =
+    successLog(title, runState.depth, show, executionTime)
 }

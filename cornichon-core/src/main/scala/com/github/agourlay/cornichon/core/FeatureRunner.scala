@@ -6,7 +6,7 @@ import monix.reactive.Observable
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
 
-  private val engine = new ScenarioRunner(baseFeature.placeholderResolver)
+  private val scenarioRunner = new ScenarioRunner(baseFeature.placeholderResolver)
   private val featureContext = FeatureExecutionContext(
     beforeSteps = baseFeature.beforeEachScenario.toList,
     finallySteps = baseFeature.afterEachScenario.toList,
@@ -16,7 +16,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
 
   final def runScenario(s: Scenario): Task[ScenarioReport] = {
     println(s"Starting scenario '${s.name}'")
-    engine.runScenario(Session.newEmpty, featureContext)(s)
+    scenarioRunner.runScenario(Session.newEmpty, featureContext)(s)
   }
 
   final def runFeature(filterScenario: Scenario ⇒ Boolean)(scenarioResultHandler: ScenarioReport ⇒ ScenarioReport): Task[List[ScenarioReport]] = {

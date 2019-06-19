@@ -19,7 +19,7 @@ sealed trait ScenarioReport {
 object ScenarioReport {
   def build(scenarioName: String, runState: RunState, result: ValidatedNel[FailedStep, Done], duration: FiniteDuration): ScenarioReport =
     result.fold(
-      failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logStack, duration),
+      failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logStack, duration, runState.randomContext.initialSeed),
       _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logStack, duration)
     )
 }
@@ -45,12 +45,14 @@ case class PendingScenarioReport(scenarioName: String, session: Session) extends
   val duration = Duration.Zero
 }
 
-case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logStack: List[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
+case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logStack: List[LogInstruction], duration: FiniteDuration, seed: Long) extends ScenarioReport {
   val isSuccess = false
 
   val msg =
     s"""|Scenario '$scenarioName' failed:
-        |${failedSteps.map(_.messageForFailedStep).toList.mkString("\nand\n")}""".stripMargin
+        |${failedSteps.map(_.messageForFailedStep).toList.mkString("\nand\n")}
+        |seed for the run was '$seed'
+        |""".stripMargin
 
   lazy val logs = logStack.reverse
   lazy val renderedColoredLogs = LogInstruction.renderLogs(logs)

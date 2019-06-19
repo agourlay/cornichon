@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.check.examples.stringReverse
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.check.examples.HttpServer
+import com.github.agourlay.cornichon.core.RandomContext
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

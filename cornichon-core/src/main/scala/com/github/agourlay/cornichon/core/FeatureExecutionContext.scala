@@ -6,7 +6,8 @@ case class FeatureExecutionContext(
     beforeSteps: List[Step] = Nil,
     finallySteps: List[Step] = Nil,
     featureIgnored: Boolean = false,
-    focusedScenarios: Set[String] = Set.empty) {
+    focusedScenarios: Set[String] = Set.empty,
+    withSeed: Option[Long] = None) {
 
   def isIgnored(scenario: Scenario): Option[String] =
     if (featureIgnored)
@@ -25,7 +26,7 @@ case class FeatureExecutionContext(
 }
 
 object FeatureExecutionContext {
-  val empty = FeatureExecutionContext()
+  val empty = FeatureExecutionContext(withSeed = Some(1L))
   private val someFeatureIgnored = Some("feature ignored")
   private val someNoFocus = Some("no focus")
 }

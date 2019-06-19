@@ -52,7 +52,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val transitions = Map(otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting property", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
+        val seed = 10L
         val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
@@ -62,10 +62,12 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
             f.msg should be("""Scenario 'scenario with checkStep' failed:
                               |
                               |at step:
-                              |Checking model 'model with empty transition for starting property' with maxNumberOfRuns=10 and maxNumberOfTransitions=10 and seed=1
+                              |Checking model 'model with empty transition for starting property' with maxNumberOfRuns=10 and maxNumberOfTransitions=10
                               |
                               |with error(s):
                               |No outgoing transitions definition found for starting property 'starting property'
+                              |
+                              |seed for the run was '1'
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")
@@ -90,10 +92,12 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
             f.msg should be("""Scenario 'scenario with checkStep' failed:
                               |
                               |at step:
-                              |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10 and seed=1
+                              |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10
                               |
                               |with error(s):
                               |Transitions definition from 'other property' contains duplicates target properties
+                              |
+                              |seed for the run was '1'
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")
@@ -118,10 +122,12 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
             f.msg should be("""Scenario 'scenario with checkStep' failed:
                               |
                               |at step:
-                              |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10 and seed=1
+                              |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10
                               |
                               |with error(s):
                               |Transitions definition from 'other property' contains incorrect weight definition (above 100)
+                              |
+                              |seed for the run was '1'
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")
@@ -208,6 +214,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
                               |
                               |with error(s):
                               |boom!
+                              |
+                              |seed for the run was '1'
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")
@@ -232,10 +240,12 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
             f.msg should be("""Scenario 'scenario with checkStep' failed:
                               |
                               |at step:
-                              |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10 and seed=1
+                              |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10
                               |
                               |with error(s):
                               |No outgoing transition found from `starting property` to another property with valid pre-conditions
+                              |
+                              |seed for the run was '1'
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")

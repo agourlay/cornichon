@@ -21,33 +21,33 @@ class CheckModelEngine[A, B, C, D, E, F](
     genF: Generator[F]) {
 
   // Assertions do not propagate their Session!
-  private def checkStepConditions(initialRunState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
-    assertion.stateUpdate.runA(initialRunState)
+  private def checkStepConditions(runState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
+    assertion.stateUpdate.runA(runState)
 
-  private def validTransitions(initialRunState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] =
+  private def validTransitions(runState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] =
     Task.gather {
       transitions.map {
         case (weight, properties) ⇒
-          checkStepConditions(initialRunState)(properties.preCondition)
+          checkStepConditions(runState)(properties.preCondition)
             .map(preConditionsRes ⇒ (weight, properties, preConditionsRes.isRight))
       }
     }
 
-  def run(initialRunState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  def run(runState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting property
-    checkStepConditions(initialRunState)(model.entryPoint.preCondition).flatMap {
+    checkStepConditions(runState)(model.entryPoint.preCondition).flatMap {
       case Right(_) ⇒
         // run first state
-        loopRun(initialRunState, model.entryPoint, 0)
+        loopRun(runState, model.entryPoint, 0)
       case Left(failedStep) ⇒
-        Task.now((initialRunState, FailedStep(cs, failedStep.errors).asLeft))
+        Task.now((runState, FailedStep(cs, failedStep.errors).asLeft))
     }
 
-  private def loopRun(initialRunState: RunState, property: PropertyN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  private def loopRun(runState: RunState, property: PropertyN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     if (currentNumberOfTransitions > maxNumberOfTransitions)
-      Task.now((initialRunState, MaxTransitionReached(maxNumberOfTransitions).asRight))
+      Task.now((runState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else
-      runPropertyAndValidatePostConditions(initialRunState, property).flatMap {
+      runPropertyAndValidatePostConditions(runState, property).flatMap {
         case (newState, Left(fs)) ⇒
           Task.now((newState, fs.asLeft))
         case (newState, Right(_)) ⇒
@@ -61,7 +61,7 @@ class CheckModelEngine[A, B, C, D, E, F](
                 val validNext = possibleNextStates.filter(_._3)
                 if (validNext.isEmpty) {
                   val error = NoValidTransitionAvailableForState(property.description)
-                  val noTransitionLog = FailureLogInstruction(error.baseErrorMessage, initialRunState.depth)
+                  val noTransitionLog = FailureLogInstruction(error.baseErrorMessage, runState.depth)
                   Task.now((newState.recordLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
                 } else {
                   // pick one transition according to the weight
@@ -73,8 +73,8 @@ class CheckModelEngine[A, B, C, D, E, F](
       }
 
   // Assumes valid pre-conditions
-  private def runPropertyAndValidatePostConditions(initialRunState: RunState, property: PropertyN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
-    val s = initialRunState.session
+  private def runPropertyAndValidatePostConditions(runState: RunState, property: PropertyN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
+    val s = runState.session
     // Init Gens
     val ga = genA.value(s)
     val gb = genB.value(s)
@@ -84,8 +84,8 @@ class CheckModelEngine[A, B, C, D, E, F](
     val gf = genF.value(s)
     // Generate effect
     val invariantStep = property.invariantN(ga, gb, gc, gd, ge, gf)
-    val propertyNameLog = InfoLogInstruction(s"${property.description}", initialRunState.depth)
-    invariantStep.runStep(initialRunState.recordLog(propertyNameLog))
+    val propertyNameLog = InfoLogInstruction(s"${property.description}", runState.depth)
+    invariantStep.runStep(runState.recordLog(propertyNameLog))
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability

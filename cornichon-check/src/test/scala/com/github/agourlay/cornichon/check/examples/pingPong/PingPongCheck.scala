@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.check.examples.pingPong
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.check.checkModel.{ Model, ModelRunner, Property2 }
+import com.github.agourlay.cornichon.core.RandomContext
 
 class PingPongCheck extends CornichonFeature with CheckDsl {
 

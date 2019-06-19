@@ -4,6 +4,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.check.checkModel.{ Model, ModelRunner, Property1 }
 import com.github.agourlay.cornichon.check.examples.HttpServer
+import com.github.agourlay.cornichon.core.RandomContext
 import io.circe.syntax._
 import io.circe.generic.auto._
 import org.scalacheck.Gen

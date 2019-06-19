@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.check.examples.scalacheck
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.check.checkModel.{ Model, ModelRunner, Property1 }
+import com.github.agourlay.cornichon.core.RandomContext
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 

@@ -57,7 +57,7 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
         val mainStep = AssertStep("main step", _ ⇒ GenericEqualityAssertion(true, false))
         val finalAssertion = AssertStep("finally step", _ ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
-        engine.runScenario(Session.newEmpty, FeatureExecutionContext(finallySteps = finalAssertion :: Nil))(s).map {
+        engine.runScenario(Session.newEmpty, FeatureExecutionContext(finallySteps = finalAssertion :: Nil, withSeed = Some(1)))(s).map {
           case f: FailureScenarioReport ⇒
             withClue(f.msg) {
               f.msg should be(
@@ -82,6 +82,8 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
                 |'true'
                 |but actual result is:
                 |'false'
+                |
+                |seed for the run was '1'
                 |""".
                   stripMargin
               )

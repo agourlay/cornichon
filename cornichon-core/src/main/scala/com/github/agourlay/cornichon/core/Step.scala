@@ -12,7 +12,7 @@ sealed trait Step {
   def title: String
   def setTitle(newTitle: String): Step
   val stateUpdate: StepState
-  def runStep(initialRunState: RunState): StepResult = stateUpdate.run(initialRunState)
+  def runStep(runState: RunState): StepResult = stateUpdate.run(runState)
   def chain(others: Session ⇒ List[Step]): Step = FlatMapStep(this, others)
   def andThen(others: List[Step]): Step = FlatMapStep(this, _ ⇒ others)
   def andThen(other: Step): Step = FlatMapStep(this, _ ⇒ other :: Nil)
@@ -21,29 +21,29 @@ sealed trait Step {
 object NoOpStep extends Step {
   def title: String = "noOp"
   def setTitle(newTitle: String): Step = this
-  val stateUpdate: StepState = StateT { initialRunState ⇒ Task.now(initialRunState -> rightDone) }
+  val stateUpdate: StepState = StateT { runState ⇒ Task.now(runState -> rightDone) }
 }
 
 //Step that produces a Session
 trait SessionValueStep extends Step {
 
-  def runSessionValueStep(initialRunState: RunState): Task[NonEmptyList[CornichonError] Either Session]
+  def runSessionValueStep(runState: RunState): Task[NonEmptyList[CornichonError] Either Session]
 
-  def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep)
+  def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep)
 
-  def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction
+  def logOnSuccess(result: Session, runState: RunState, executionTime: Duration): LogInstruction
 
-  override val stateUpdate: StepState = StateT { initialRunState ⇒
+  override val stateUpdate: StepState = StateT { runState ⇒
     val now = System.nanoTime
-    runSessionValueStep(initialRunState).map {
+    runSessionValueStep(runState).map {
       case Left(errors) ⇒
-        val (logs, failedStep) = onError(errors, initialRunState)
-        (initialRunState.recordLogStack(logs), Left(failedStep))
+        val (logs, failedStep) = onError(errors, runState)
+        (runState.recordLogStack(logs), Left(failedStep))
 
       case Right(session) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
-        val log = logOnSuccess(session, initialRunState, executionTime)
-        val logSessionState = initialRunState.recordLog(log).withSession(session)
+        val log = logOnSuccess(session, runState, executionTime)
+        val logSessionState = runState.recordLog(log).withSession(session)
         (logSessionState, rightDone)
     }
   }
@@ -112,7 +112,7 @@ trait SimpleWrapperStep extends Step {
 
   def indentLog: Boolean = true
 
-  def onNestedError(failedStep: FailedStep, resultRunState: RunState, initialRunState: RunState, executionTime: Duration): (RunState, FailedStep)
+  def onNestedError(failedStep: FailedStep, resultRunState: RunState, runState: RunState, executionTime: Duration): (RunState, FailedStep)
 
   def onNestedSuccess(resultRunState: RunState, runState: RunState, executionTime: Duration): RunState
 

@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.check
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Session }
+import com.github.agourlay.cornichon.core.{ CornichonError, RandomContext, Session }
 
 trait Generator[A] {
   def name: String

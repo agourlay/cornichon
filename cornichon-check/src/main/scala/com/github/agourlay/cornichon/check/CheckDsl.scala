@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.check
 
 import com.github.agourlay.cornichon.check.checkModel.{ CheckModelStep, ModelRunner }
 import com.github.agourlay.cornichon.check.forAll.ForAllStep
-import com.github.agourlay.cornichon.core.Step
+import com.github.agourlay.cornichon.core.{ RandomContext, Step }
 import com.github.agourlay.cornichon.check.NoValue.seededNoValueGenerator
 
 trait CheckDsl {

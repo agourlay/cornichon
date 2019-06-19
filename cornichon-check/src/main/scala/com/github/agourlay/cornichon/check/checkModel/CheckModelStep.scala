@@ -6,14 +6,11 @@ import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.validated._
 import cats.syntax.apply._
-import com.github.agourlay.cornichon.check.RandomContext
 import com.github.agourlay.cornichon.core.Done.rightDone
-import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.core.{ RandomContext, _ }
 import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 import com.github.agourlay.cornichon.util.Timing._
-
-import scala.util.Random
 
 case class CheckModelStep[A, B, C, D, E, F](
     maxNumberOfRuns: Int,
@@ -21,23 +18,11 @@ case class CheckModelStep[A, B, C, D, E, F](
     modelRunner: ModelRunner[A, B, C, D, E, F],
     withSeed: Option[Long]) extends WrapperStep {
 
-  private val initialSeed = withSeed.getOrElse(System.currentTimeMillis())
-  private val randomContext = RandomContext(new Random(new java.util.Random(initialSeed)))
-
-  private val genA = modelRunner.generatorA(randomContext)
-  private val genB = modelRunner.generatorB(randomContext)
-  private val genC = modelRunner.generatorC(randomContext)
-  private val genD = modelRunner.generatorD(randomContext)
-  private val genE = modelRunner.generatorE(randomContext)
-  private val genF = modelRunner.generatorF(randomContext)
-
   private val model = modelRunner.model
 
-  private val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
+  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions"
 
-  val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions and seed=$initialSeed"
-
-  private def repeatModelOnSuccess(runNumber: Int)(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
+  private def repeatModelOnSuccess(checkEngine: CheckModelEngine[A, B, C, D, E, F], runNumber: Int)(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)
       Task.now((runState, rightDone))
     else {
@@ -52,7 +37,7 @@ case class CheckModelStep[A, B, C, D, E, F](
           // success case we are mot propagating the Session so runs do not interfere with each-others
           val nextRunState = runState.recordLogStack(newState.logStack).registerCleanupSteps(newState.cleanupSteps)
           val postRunLog = buildInfoRunLog(runNumber, endOfRun, runState.depth)
-          repeatModelOnSuccess(runNumber + 1)(nextRunState.recordLog(postRunLog))
+          repeatModelOnSuccess(checkEngine, runNumber + 1)(nextRunState.recordLog(postRunLog))
       }
     }
 
@@ -92,7 +77,16 @@ case class CheckModelStep[A, B, C, D, E, F](
         case Invalid(ce) ⇒
           Task.now((runState, FailedStep(this, ce).asLeft))
         case _ ⇒
-          repeatModelOnSuccess(runNumber = 1)(runState.nestedContext)
+          // use existing RunState's randomContext if no seed is provided
+          val randomContext = withSeed.fold(runState.randomContext)(RandomContext.fromSeed)
+          val genA = modelRunner.generatorA(randomContext)
+          val genB = modelRunner.generatorB(randomContext)
+          val genC = modelRunner.generatorC(randomContext)
+          val genD = modelRunner.generatorD(randomContext)
+          val genE = modelRunner.generatorE(randomContext)
+          val genF = modelRunner.generatorF(randomContext)
+          val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
+          repeatModelOnSuccess(checkEngine, runNumber = 1)(runState.nestedContext)
       }
     }.map {
       case (run, executionTime) ⇒

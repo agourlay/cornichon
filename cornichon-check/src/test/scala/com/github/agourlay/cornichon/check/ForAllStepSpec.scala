@@ -37,7 +37,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
   val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
-  val alwaysalidAssertStep = AssertStep("valid", _ ⇒ Assertion.alwaysValid)
+  val alwaysValidAssertStep = AssertStep("valid", _ ⇒ Assertion.alwaysValid)
 
   "ForAllStep" when {
 
@@ -66,7 +66,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
         val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
 
         val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ ⇒
-          val assert = if (uglyCounter < 5) alwaysalidAssertStep else brokenEffect
+          val assert = if (uglyCounter < 5) alwaysValidAssertStep else brokenEffect
           AttachStep(_ ⇒ incrementEffect :: assert :: Nil)
         }
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
@@ -82,6 +82,8 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
                               |
                               |with error(s):
                               |boom!
+                              |
+                              |seed for the run was '1'
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")
@@ -127,6 +129,8 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
                               |
                               |with error(s):
                               |boom!
+                              |
+                              |seed for the run was '1'
                               |""".stripMargin)
           case other @ _ ⇒
             fail(s"should have failed but got $other")

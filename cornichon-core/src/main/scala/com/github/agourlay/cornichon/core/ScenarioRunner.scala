@@ -35,7 +35,8 @@ class ScenarioRunner(resolver: PlaceholderResolver) {
         } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
 
         val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-        val startingRunState = RunState(this, session, titleLog :: Nil, initMargin + 1, Nil)
+        val randomContext = RandomContext.fromOptSeed(context.withSeed)
+        val startingRunState = RunState(this, randomContext, session, titleLog :: Nil, initMargin + 1, Nil)
         val now = System.nanoTime
         stages.run(startingRunState).map {
           case (lastState, aggregatedResult) ⇒

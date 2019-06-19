@@ -59,6 +59,8 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
                             |
                             |with error(s):
                             |Eventually block is interrupted due to a long period of inactivity
+                            |
+                            |seed for the run was '1'
                             |""".stripMargin)
         case other @ _ ⇒
           fail(s"should have failed but got $other")
@@ -89,6 +91,8 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
                             |
                             |with error(s):
                             |Failing forever
+                            |
+                            |seed for the run was '1'
                             |""".stripMargin)
           val logs = LogInstruction.renderLogs(f.logs.drop(2).dropRight(1), colorized = false)
           logs should be("""
@@ -141,6 +145,8 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
                             |with error(s):
                             |Failure mode one
                             |
+                            |
+                            |seed for the run was '1'
                             |""".stripMargin)
           val logs = LogInstruction.renderLogs(f.logs.drop(2).dropRight(1), colorized = false)
           logs should be("""

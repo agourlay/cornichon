@@ -1,7 +1,8 @@
 package com.github.agourlay.cornichon.check.checkModel
 
-import com.github.agourlay.cornichon.check.{ Generator, NoValue, RandomContext }
+import com.github.agourlay.cornichon.check.{ Generator, NoValue }
 import com.github.agourlay.cornichon.check.NoValue.seededNoValueGenerator
+import com.github.agourlay.cornichon.core.RandomContext
 
 case class ModelRunner[A, B, C, D, E, F](
     generatorA: RandomContext ⇒ Generator[A],
