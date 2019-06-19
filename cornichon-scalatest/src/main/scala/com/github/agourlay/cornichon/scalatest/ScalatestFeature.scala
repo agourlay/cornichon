@@ -2,10 +2,11 @@ package com.github.agourlay.cornichon.scalatest
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.github.agourlay.cornichon
 import com.github.agourlay.cornichon.core.LogInstruction._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.feature.{ BaseFeature, FeatureRunner }
-import com.github.agourlay.cornichon.feature.BaseFeature.shutDownGlobalResources
+import com.github.agourlay.cornichon.dsl.BaseFeature
+import com.github.agourlay.cornichon.dsl.BaseFeature.shutDownGlobalResources
 import org.scalatest._
 import com.github.agourlay.cornichon.scalatest.ScalatestFeature._
 import monix.execution.Scheduler
@@ -61,7 +62,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
             s.name in pending
           else
             s.name in {
-              FeatureRunner(feature, this).runScenario(s).map {
+              cornichon.core.FeatureRunner(feature, this).runScenario(s).map {
                 case s: SuccessScenarioReport ⇒
                   if (s.shouldShowLogs) printLogs(s.logs)
                   assert(true)

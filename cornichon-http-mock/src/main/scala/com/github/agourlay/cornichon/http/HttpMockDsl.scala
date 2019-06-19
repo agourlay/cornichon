@@ -1,8 +1,7 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.core.Step
-import com.github.agourlay.cornichon.dsl.BodyElementCollector
-import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.dsl.{ BaseFeature, BodyElementCollector }
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource
 import com.github.agourlay.cornichon.http.steps.HttpListenSteps.HttpListenStepBuilder
 import com.github.agourlay.cornichon.steps.wrapped.WithBlockScopedResource

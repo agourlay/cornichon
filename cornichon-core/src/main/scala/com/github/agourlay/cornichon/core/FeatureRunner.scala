@@ -1,7 +1,6 @@
-package com.github.agourlay.cornichon.feature
+package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.core._
-
+import com.github.agourlay.cornichon.dsl.BaseFeature
 import monix.eval.Task
 import monix.reactive.Observable
 

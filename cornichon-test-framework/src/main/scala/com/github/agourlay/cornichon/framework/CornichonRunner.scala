@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.framework
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.dsl.BaseFeature
 import sbt.testing._
 
 import scala.concurrent.Await

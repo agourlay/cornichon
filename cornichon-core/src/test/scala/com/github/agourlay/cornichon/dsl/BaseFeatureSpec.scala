@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.feature
+package com.github.agourlay.cornichon.dsl
 
 import org.scalatest._
 

@@ -1,8 +1,9 @@
 package com.github.agourlay.cornichon.framework
 
 import cats.syntax.either._
+import com.github.agourlay.cornichon
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.feature.{ BaseFeature, FeatureRunner }
+import com.github.agourlay.cornichon.dsl.BaseFeature
 import monix.eval
 import monix.execution.Scheduler.Implicits.global
 import sbt.testing._
@@ -49,7 +50,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
             (featureLog, Done.taskDone)
           case None ⇒
             val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
-            val featureRunner = FeatureRunner(feature, baseFeature)
+            val featureRunner = cornichon.core.FeatureRunner(feature, baseFeature)
             val run = featureRunner.runFeature(filterScenarios)(generateResultEvent(eventHandler)).map { results ⇒
               results.foreach(printResultLogs(featureClass))
               Done

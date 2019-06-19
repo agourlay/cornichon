@@ -8,7 +8,6 @@ import cats.instances.list._
 import cats.instances.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionStepBuilder, SessionValuesStepBuilder }
-import com.github.agourlay.cornichon.feature.BaseFeature
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.wrapped._

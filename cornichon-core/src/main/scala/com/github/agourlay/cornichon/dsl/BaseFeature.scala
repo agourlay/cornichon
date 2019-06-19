@@ -1,10 +1,10 @@
-package com.github.agourlay.cornichon.feature
+package com.github.agourlay.cornichon.dsl
 
 import java.util.concurrent.ConcurrentLinkedDeque
 
-import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
+import com.github.agourlay.cornichon.core.{ Config, Done, FeatureDef, Step }
 import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
+import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
 import monix.execution.Scheduler
 
 import scala.annotation.tailrec

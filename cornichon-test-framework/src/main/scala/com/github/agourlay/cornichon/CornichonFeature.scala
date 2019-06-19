@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon
 
-import com.github.agourlay.cornichon.dsl.CoreDsl
-import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.dsl.{ BaseFeature, CoreDsl }
 import com.github.agourlay.cornichon.http.HttpDsl
 import com.github.agourlay.cornichon.json.JsonDsl
 

@@ -3,8 +3,7 @@ package com.github.agourlay.cornichon.kafka
 import java.time.Duration
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, Step }
-import com.github.agourlay.cornichon.dsl.CoreDsl
-import com.github.agourlay.cornichon.feature.BaseFeature
+import com.github.agourlay.cornichon.dsl.{ BaseFeature, CoreDsl }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
