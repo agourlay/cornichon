@@ -10,14 +10,14 @@ case class FlatMapStep(started: Step, nestedProducers: Session ⇒ List[Step]) e
 
   val title: String = ""
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
-    engine.runStepsShortCircuiting(started :: Nil, initialRunState).flatMap {
+  override val stateUpdate: StepState = StateT { runState ⇒
+    runState.engine.runStepsShortCircuiting(started :: Nil, runState).flatMap {
       case t @ (rs2, res) ⇒
         if (res.isLeft)
           Task.now(t)
         else {
           val nestedStep = nestedProducers(rs2.session)
-          engine.runStepsShortCircuiting(nestedStep, rs2)
+          runState.engine.runStepsShortCircuiting(nestedStep, rs2)
         }
     }
   }

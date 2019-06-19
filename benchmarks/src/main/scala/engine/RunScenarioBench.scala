@@ -38,10 +38,10 @@ class RunScenarioBench {
   final def beforeAll(): Unit = {
     println("")
     println("Creating Engine...")
-    val resolver = PlaceholderResolver.withoutExtractor()
+    val resolver = PlaceholderResolver.default()
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = Engine.withStepTitleResolver(resolver)
+    engine = new Engine(resolver)
   }
 
   @TearDown(Level.Trial)
@@ -53,11 +53,11 @@ class RunScenarioBench {
 
   /*
 [info] Benchmark                     (stepsNumber)   Mode  Cnt       Score     Error  Units
-[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  213582.940 ± 834.022  ops/s
-[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  130923.917 ± 348.669  ops/s
-[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   59752.716 ± 488.771  ops/s
-[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   29376.327 ±  95.921  ops/s
-[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   16046.343 ±  62.040  ops/s
+[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  201744.142 ± 383.851  ops/s
+[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  122674.232 ± 440.603  ops/s
+[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   51052.932 ± 892.777  ops/s
+[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   26376.429 ± 181.747  ops/s
+[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   13394.110 ± 183.945  ops/s
  */
 
   @Benchmark

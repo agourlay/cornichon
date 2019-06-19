@@ -7,7 +7,7 @@ import monix.reactive.Observable
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
 
-  private val engine = Engine.withStepTitleResolver(baseFeature.placeholderResolver)
+  private val engine = new Engine(baseFeature.placeholderResolver)
   private val featureContext = FeatureExecutionContext(
     beforeSteps = baseFeature.beforeEachScenario.toList,
     finallySteps = baseFeature.afterEachScenario.toList,
@@ -44,5 +44,5 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
 
 object FeatureRunner {
   lazy val coreNum: Int = Runtime.getRuntime.availableProcessors()
-  val noop = Task.now(Nil)
+  private val noop = Task.now(Nil)
 }

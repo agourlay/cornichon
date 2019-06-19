@@ -19,18 +19,18 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
 
   val title = s"Repeat concurrently block '$times' times with parallel factor '$parallelism' and maxTime '$maxTime'"
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
-    val nestedRunState = initialRunState.nestedContext
-    val initialDepth = initialRunState.depth
+  override val stateUpdate: StepState = StateT { runState ⇒
+    val nestedRunState = runState.nestedContext
+    val initialDepth = runState.depth
     val start = System.nanoTime
     Observable.fromIterable(List.fill(times)(()))
-      .mapParallelUnordered(parallelism)(_ ⇒ engine.runStepsShortCircuiting(nested, nestedRunState))
+      .mapParallelUnordered(parallelism)(_ ⇒ runState.engine.runStepsShortCircuiting(nested, nestedRunState))
       .takeUntil(Observable.evalDelayed(maxTime, ()))
       .toListL
       .flatMap { results ⇒
         if (results.size != times) {
           val error = RepeatConcurrentlyTimeout(times, results.size)
-          val errorState = initialRunState.recordLog(failedTitleLog(initialDepth)).recordLog(FailureLogInstruction(error.renderedMessage, initialDepth))
+          val errorState = runState.recordLog(failedTitleLog(initialDepth)).recordLog(FailureLogInstruction(error.renderedMessage, initialDepth))
           val failedStep = FailedStep.fromSingle(this, error)
           Task.now(errorState -> Left(failedStep))
         } else {
@@ -47,19 +47,19 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
             val updatedSession = allRunStates.head.session
             // merge all cleanups steps
             val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
-            val successState = initialRunState.withSession(updatedSession).recordLogStack(wrappedLogStack).registerCleanupSteps(allCleanupSteps)
+            val successState = runState.withSession(updatedSession).recordLogStack(wrappedLogStack).registerCleanupSteps(allCleanupSteps)
             Task.now((successState, rightDone))
           } {
             case (s, failedStep) ⇒
               val ratio = s"'${failedStepRuns.size}/$times' run(s)"
               val wrapLogStack = FailureLogInstruction(s"Repeat concurrently block failed for $ratio", initialDepth) +: s.logStack :+ failedTitleLog(initialDepth)
-              Task.now((initialRunState.mergeNested(s, wrapLogStack), failedStep))
+              Task.now((runState.mergeNested(s, wrapLogStack), failedStep))
           }
         }
       }.onErrorRecover {
         case NonFatal(e) ⇒
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyError(e))
-          (initialRunState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
+          (runState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
       }
   }
 }

@@ -12,12 +12,10 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
 
   val title = s"Within block with max duration '$maxDuration'"
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
-
-    val initialDepth = initialRunState.depth
-
+  override val stateUpdate: StepState = StateT { runState ⇒
+    val initialDepth = runState.depth
     withDuration {
-      engine.runStepsShortCircuiting(nested, initialRunState.nestedContext)
+      runState.engine.runStepsShortCircuiting(nested, runState.nestedContext)
     }.map {
       case ((withinState, inputRes), executionTime) ⇒
         val (logStack, res) = inputRes match {
@@ -37,8 +35,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
               (wrappedLogStack, rightDone)
             }
         }
-        (initialRunState.mergeNested(withinState, logStack), res)
-
+        (runState.mergeNested(withinState, logStack), res)
     }
   }
 }

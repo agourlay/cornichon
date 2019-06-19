@@ -9,10 +9,11 @@ import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver._
 import com.github.agourlay.cornichon.util.Caching
 
-class PlaceholderResolver(extractors: Map[String, Mapper]) {
+class PlaceholderResolver(extractors: Map[String, Mapper], withSeed: Option[Long] = None) {
 
   // FIXME - should be globally seeded to reproduce tests
-  private val r = new scala.util.Random()
+  private val initialSeed = withSeed.getOrElse(System.currentTimeMillis())
+  private val r = new scala.util.Random(initialSeed)
 
   // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for placeholders.
   // There is one resolver per Feature so the cache is not living too long.
@@ -102,7 +103,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper]) {
 }
 
 object PlaceholderResolver {
-  def withoutExtractor(): PlaceholderResolver = new PlaceholderResolver(Map.empty[String, Mapper])
+  def default(): PlaceholderResolver = new PlaceholderResolver(Map.empty[String, Mapper], None)
   private val rightNil = Nil.asRight
 }
 

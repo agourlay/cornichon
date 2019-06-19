@@ -43,7 +43,7 @@ class CheckStepBench {
 
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = Engine.withStepTitleResolver(resolver)
+    engine = new Engine(resolver)
   }
 
   @TearDown(Level.Trial)
@@ -73,7 +73,7 @@ class CheckStepBench {
 }
 
 object CheckStepBench {
-  val resolver = PlaceholderResolver.withoutExtractor()
+  val resolver = PlaceholderResolver.default()
   val matcherResolver = MatcherResolver()
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(

@@ -14,14 +14,14 @@ case class EffectStep[F[_]: Effect](title: String, effect: Session ⇒ F[Either[
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
-  override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
-    Task.fromEffect(effect(initialRunState.session)).map(_.leftMap(NonEmptyList.one))
+  override def runSessionValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
+    Task.fromEffect(effect(runState.session)).map(_.leftMap(NonEmptyList.one))
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep) =
-    errorsToFailureStep(this, initialRunState.depth, errors)
+  override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
+    errorsToFailureStep(this, runState.depth, errors)
 
-  override def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction =
-    successLog(title, initialRunState.depth, show, executionTime)
+  override def logOnSuccess(result: Session, runState: RunState, executionTime: Duration): LogInstruction =
+    successLog(title, runState.depth, show, executionTime)
 
 }
 

@@ -13,10 +13,10 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   val title = s"RetryMax block with limit '$limit'"
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
+  override val stateUpdate: StepState = StateT { runState ⇒
 
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
-      engine.runStepsShortCircuiting(nested, runState.resetLogStack).flatMap {
+      runState.engine.runStepsShortCircuiting(nested, runState.resetLogStack).flatMap {
         case (retriedState, Left(_)) if limit > 0 ⇒
           // In case of success all logs are returned but they are not printed by default.
           retryMaxSteps(runState.recordLogStack(retriedState.logStack), limit - 1, retriesNumber + 1)
@@ -32,11 +32,11 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
       }
 
     withDuration {
-      retryMaxSteps(initialRunState.nestedContext, limit, 0)
+      retryMaxSteps(runState.nestedContext, limit, 0)
     }.map {
       case (run, executionTime) ⇒
         val (retries, retriedState, report) = run
-        val depth = initialRunState.depth
+        val depth = runState.depth
         val (logStack, res) = report.fold(
           failedStep ⇒ {
             val wrappedLogStack = FailureLogInstruction(s"RetryMax block with limit '$limit' failed", depth, Some(executionTime)) +: retriedState.logStack :+ failedTitleLog(depth)
@@ -48,12 +48,12 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
             (wrappedLogStack, rightDone)
           }
         )
-        (initialRunState.mergeNested(retriedState, logStack), res)
+        (runState.mergeNested(retriedState, logStack), res)
     }
   }
 }
 
 case class RetryMaxBlockReachedLimit(limit: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
-  val baseErrorMessage = s"Retry max block failed '$limit' times"
+  lazy val baseErrorMessage = s"Retry max block failed '$limit' times"
   override val causedBy = errors.toList
 }

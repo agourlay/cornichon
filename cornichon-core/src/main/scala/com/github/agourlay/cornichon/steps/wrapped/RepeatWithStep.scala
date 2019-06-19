@@ -14,7 +14,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
   val printElements = s"[${elements.mkString(", ")}]"
   val title = s"RepeatWith block with elements $printElements"
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
+  override val stateUpdate: StepState = StateT { runState ⇒
 
     def repeatSuccessSteps(remainingElements: List[String], runState: RunState): Task[(RunState, Either[(String, FailedStep), Done])] =
       remainingElements match {
@@ -24,7 +24,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
           // reset logs at each loop to have the possibility to not aggregate in failure case
           val rs = runState.resetLogStack
           val runStateWithIndex = rs.addToSession(elementName, element)
-          engine.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
+          runState.engine.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
             case (onceMoreRunState, stepResult) ⇒
               stepResult.fold(
                 failed ⇒ {
@@ -40,10 +40,10 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
       }
 
     withDuration {
-      repeatSuccessSteps(elements, initialRunState.nestedContext)
+      repeatSuccessSteps(elements, runState.nestedContext)
     }.map {
       case ((repeatedState, report), executionTime) ⇒
-        val depth = initialRunState.depth
+        val depth = runState.depth
         val (logStack, res) = report match {
           case Right(_) ⇒
             val wrappedLogStack = SuccessLogInstruction(s"RepeatWith block with elements $printElements succeeded", depth, Some(executionTime)) +: repeatedState.logStack :+ successTitleLog(depth)
@@ -53,7 +53,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
             val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatWithBlockContainFailedSteps(failedElement, failedStep.errors))
             (wrappedLogStack, Left(artificialFailedStep))
         }
-        (initialRunState.mergeNested(repeatedState, logStack), res)
+        (runState.mergeNested(repeatedState, logStack), res)
     }
   }
 }

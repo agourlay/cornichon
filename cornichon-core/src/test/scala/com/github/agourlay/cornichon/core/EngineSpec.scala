@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
 class EngineSpec extends AsyncWordSpec with Matchers with TaskSpec {
 
   implicit val scheduler = Scheduler(ExecutionContext.global)
-  val engine = Engine.withStepTitleResolver(PlaceholderResolver.withoutExtractor())
+  val engine = new Engine(PlaceholderResolver.default())
 
   "An engine" when {
     "runScenario" must {

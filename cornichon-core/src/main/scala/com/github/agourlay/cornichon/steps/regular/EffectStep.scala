@@ -13,14 +13,14 @@ case class EffectStep(title: String, effect: Session ⇒ Future[Either[Cornichon
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
-  override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
-    Task.deferFuture(effect(initialRunState.session)).map(_.leftMap(NonEmptyList.one))
+  override def runSessionValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
+    Task.deferFuture(effect(runState.session)).map(_.leftMap(NonEmptyList.one))
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep) =
-    errorsToFailureStep(this, initialRunState.depth, errors)
+  override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
+    errorsToFailureStep(this, runState.depth, errors)
 
-  override def logOnSuccess(result: Session, initialRunState: RunState, executionTime: Duration): LogInstruction =
-    successLog(title, initialRunState.depth, show, executionTime)
+  override def logOnSuccess(result: Session, runState: RunState, executionTime: Duration): LogInstruction =
+    successLog(title, runState.depth, show, executionTime)
 }
 
 object EffectStep {

@@ -13,13 +13,13 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
 
   val title = s"Repeat block with occurrence '$occurrence'"
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
+  override val stateUpdate: StepState = StateT { runState ⇒
 
     def repeatSuccessSteps(retriesNumber: Int, runState: RunState): Task[(Int, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
       val rs = runState.resetLogStack
       val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
-      engine.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
+      runState.engine.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
         case (onceMoreRunState, stepResult) ⇒
           stepResult.fold(
             failed ⇒ {
@@ -37,11 +37,11 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
     }
 
     withDuration {
-      repeatSuccessSteps(0, initialRunState.nestedContext)
+      repeatSuccessSteps(0, runState.nestedContext)
     }.map {
       case (run, executionTime) ⇒
         val (retries, repeatedState, report) = run
-        val depth = initialRunState.depth
+        val depth = runState.depth
         val (logStack, res) = report.fold(
           failedStep ⇒ {
             val wrappedLogStack = FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurence", depth, Some(executionTime)) +: repeatedState.logStack :+ failedTitleLog(depth)
@@ -53,7 +53,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
             (wrappedLockStack, rightDone)
           }
         )
-        (initialRunState.mergeNested(repeatedState, logStack), res)
+        (runState.mergeNested(repeatedState, logStack), res)
     }
   }
 }

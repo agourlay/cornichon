@@ -39,7 +39,7 @@ class JsonStepBench {
 
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = Engine.withStepTitleResolver(resolver)
+    engine = new Engine(resolver)
   }
 
   @TearDown(Level.Trial)
@@ -157,7 +157,7 @@ class JsonStepBench {
 }
 
 object JsonStepBench {
-  val resolver = PlaceholderResolver.withoutExtractor()
+  val resolver = PlaceholderResolver.default()
   val matcherResolver = MatcherResolver()
   val testKey = "test-key"
   val jsonStepBuilder = JsonStepBuilder(resolver, matcherResolver, SessionKey(testKey), Some("test body"))

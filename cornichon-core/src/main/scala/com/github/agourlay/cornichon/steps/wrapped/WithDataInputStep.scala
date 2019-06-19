@@ -15,7 +15,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
 
   val title = s"With data input block $where"
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
+  override val stateUpdate: StepState = StateT { runState ⇒
 
     def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] =
       if (inputs.isEmpty) Task.now((runState, rightDone))
@@ -23,7 +23,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
         val bootstrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
-        engine.runStepsShortCircuiting(nested, bootstrapFilledInput).flatMap {
+        runState.engine.runStepsShortCircuiting(nested, bootstrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒
             stepsResult.fold(
               failedStep ⇒ {
@@ -38,20 +38,20 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
         }
       }
 
-    r.fillPlaceholders(where)(initialRunState.session)
+    r.fillPlaceholders(where)(runState.session)
       .flatMap(CornichonJson.parseDataTable)
       .fold(
-        t ⇒ Task.now(handleErrors(this, initialRunState, NonEmptyList.one(t))),
+        t ⇒ Task.now(handleErrors(this, runState, NonEmptyList.one(t))),
         parsedTable ⇒ {
           val inputs = parsedTable.map { line ⇒
             line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
           }
 
           withDuration {
-            runInputs(inputs, initialRunState.nestedContext)
+            runInputs(inputs, runState.nestedContext)
           }.map {
             case ((inputsState, inputsRes), executionTime) ⇒
-              val initialDepth = initialRunState.depth
+              val initialDepth = runState.depth
               val (logStack, res) = inputsRes match {
                 case Right(_) ⇒
                   val wrappedLogStack = SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime)) +: inputsState.logStack :+ successTitleLog(initialDepth)
@@ -61,7 +61,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
                   val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
                   (wrappedLogStack, Left(artificialFailedStep))
               }
-              (initialRunState.mergeNested(inputsState, logStack), res)
+              (runState.mergeNested(inputsState, logStack), res)
           }
         }
       )
@@ -69,6 +69,6 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
 }
 
 case class WithDataInputBlockFailedStep(failedInputs: List[(String, String)], errors: NonEmptyList[CornichonError]) extends CornichonError {
-  val baseErrorMessage = s"WithDataInput block failed for inputs ${printArrowPairs(failedInputs)}"
+  lazy val baseErrorMessage = s"WithDataInput block failed for inputs ${printArrowPairs(failedInputs)}"
   override val causedBy = errors.toList
 }

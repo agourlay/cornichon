@@ -19,8 +19,8 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
     t.runToFuture(s)
 
   implicit val scheduler = Scheduler.Implicits.global
-  val resolver = PlaceholderResolver.withoutExtractor()
-  val engine = Engine.withStepTitleResolver(resolver)
+  val resolver = PlaceholderResolver.default()
+  val engine = new Engine(resolver)
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",

@@ -27,11 +27,11 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
   val baseTitle = s"ForAll '${concreteGens.map(_.name).mkString(",")}' check '$description'"
   val title = s"$baseTitle with maxNumberOfRuns=$maxNumberOfRuns and seed=$initialSeed"
 
-  private def repeatModelOnSuccess(runNumber: Int)(engine: Engine, initialRunState: RunState): Task[(RunState, Either[FailedStep, Done])] =
+  private def repeatModelOnSuccess(runNumber: Int)(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)
-      Task.now((initialRunState, rightDone))
+      Task.now((runState, rightDone))
     else {
-      val s = initialRunState.session
+      val s = runState.session
       val generatedA = genA.value(s)()
       val generatedB = genB.value(s)()
       val generatedC = genC.value(s)()
@@ -39,26 +39,26 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
       val generatedE = genE.value(s)()
       val generatedF = genF.value(s)()
 
-      val preRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
-      val invariantRunState = initialRunState.nestedContext.recordLog(preRunLog)
+      val preRunLog = InfoLogInstruction(s"Run #$runNumber", runState.depth)
+      val invariantRunState = runState.nestedContext.recordLog(preRunLog)
       val invariantStep = f(generatedA)(generatedB)(generatedC)(generatedD)(generatedE)(generatedF)
 
-      invariantStep.runOnEngine(engine, invariantRunState).flatMap {
+      invariantStep.runStep(invariantRunState).flatMap {
         case (newState, l @ Left(_)) ⇒
-          val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", initialRunState.depth)
-          val failedState = initialRunState.mergeNested(newState).recordLog(postRunLog)
+          val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", runState.depth)
+          val failedState = runState.mergeNested(newState).recordLog(postRunLog)
           Task.now((failedState, l))
         case (newState, _) ⇒
-          val postRunLog = InfoLogInstruction(s"Run #$runNumber", initialRunState.depth)
+          val postRunLog = InfoLogInstruction(s"Run #$runNumber", runState.depth)
           // success case we are not propagating the Session so runs do not interfere with each-others
-          val nextRunState = initialRunState.recordLogStack(newState.logStack).recordLog(postRunLog).registerCleanupSteps(newState.cleanupSteps)
-          repeatModelOnSuccess(runNumber + 1)(engine, nextRunState)
+          val nextRunState = runState.recordLogStack(newState.logStack).recordLog(postRunLog).registerCleanupSteps(newState.cleanupSteps)
+          repeatModelOnSuccess(runNumber + 1)(nextRunState)
       }
     }
 
-  def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
+  override val stateUpdate: StepState = StateT { initialRunState ⇒
     withDuration {
-      repeatModelOnSuccess(1)(engine, initialRunState.nestedContext)
+      repeatModelOnSuccess(1)(initialRunState.nestedContext)
     }.map {
       case (run, executionTime) ⇒
         val depth = initialRunState.depth

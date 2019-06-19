@@ -9,7 +9,7 @@ import monix.execution.Scheduler
 trait StepUtilSpec extends ProvidedInstances with TaskSpec {
 
   implicit val scheduler = Scheduler.Implicits.global
-  val resolver = PlaceholderResolver.withoutExtractor()
-  val engine = Engine.withStepTitleResolver(resolver)
+  val resolver = PlaceholderResolver.default()
+  val engine = new Engine(resolver)
 
 }

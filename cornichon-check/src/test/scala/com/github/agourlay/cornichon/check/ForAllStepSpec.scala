@@ -19,8 +19,8 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
     t.runToFuture(s)
 
   implicit val scheduler = Scheduler.Implicits.global
-  val resolver = PlaceholderResolver.withoutExtractor()
-  val engine = Engine.withStepTitleResolver(resolver)
+  val resolver = PlaceholderResolver.default()
+  val engine = new Engine(resolver)
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",

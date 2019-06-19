@@ -22,7 +22,7 @@ trait BaseFeature {
   private[cornichon] lazy val config = BaseFeature.config
   lazy val executeScenariosInParallel: Boolean = config.executeScenariosInParallel
 
-  lazy val placeholderResolver = new PlaceholderResolver(registerExtractors)
+  lazy val placeholderResolver = new PlaceholderResolver(registerExtractors, None)
   lazy val matcherResolver = new MatcherResolver(registerMatcher)
 
   // Convenient implicits for the custom DSL's

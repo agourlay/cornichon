@@ -17,7 +17,7 @@ import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import scala.util.control.NonFatal
 
-class Engine(stepPreparers: List[StepPreparer]) {
+class Engine(resolver: PlaceholderResolver) {
 
   final def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
     context.isIgnored(scenario) match {
@@ -35,9 +35,9 @@ class Engine(stepPreparers: List[StepPreparer]) {
         } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
 
         val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-        val initialRunState = RunState(session, titleLog :: Nil, initMargin + 1, Nil)
+        val startingRunState = RunState(this, session, titleLog :: Nil, initMargin + 1, Nil)
         val now = System.nanoTime
-        stages.run(initialRunState).map {
+        stages.run(startingRunState).map {
           case (lastState, aggregatedResult) ⇒
             ScenarioReport.build(scenario.name, lastState, aggregatedResult, Duration.fromNanos(System.nanoTime - now))
         }
@@ -64,19 +64,19 @@ class Engine(stepPreparers: List[StepPreparer]) {
     }
   }
 
-  final def runStepsShortCircuiting(steps: List[Step], initialRunState: RunState): StepResult = {
-    val initAcc = Task.now(initialRunState -> Done.rightDone)
+  final def runStepsShortCircuiting(steps: List[Step], runState: RunState): StepResult = {
+    val initAcc = Task.now(runState -> Done.rightDone)
     steps.foldLeft[Task[(RunState, FailedStep Either Done)]](initAcc) {
       case (runStateF, currentStep) ⇒
         runStateF.flatMap {
-          case (runState, Right(_))    ⇒ prepareAndRunStep(currentStep, runState)
-          case (runState, l @ Left(_)) ⇒ Task.now((runState, l))
+          case (rs, Right(_))    ⇒ prepareAndRunStep(currentStep, rs)
+          case (rs, l @ Left(_)) ⇒ Task.now((rs, l))
         }
     }
   }
 
-  private def runStepsWithoutShortCircuiting(steps: List[Step], initialRunState: RunState): Task[(RunState, Either[NonEmptyList[FailedStep], Done])] = {
-    val initAcc = Task.now((initialRunState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])
+  private def runStepsWithoutShortCircuiting(steps: List[Step], runState: RunState): Task[(RunState, Either[NonEmptyList[FailedStep], Done])] = {
+    val initAcc = Task.now((runState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])
     steps.foldLeft(initAcc) {
       case (runStateF, currentStep) ⇒ runStateF.flatMap(prepareAndRunStepsAccumulatingErrors(currentStep))
     }.map(_.fold(
@@ -98,20 +98,12 @@ class Engine(stepPreparers: List[StepPreparer]) {
       .map(res ⇒ (res.toValidatedNel <* failureOrDoneWithRunState.toValidated).toEither) // if current step is successful, it is propagated
   }
 
-  private def prepareAndRunStep(currentStep: Step, runState: RunState): Task[(RunState, FailedStep Either Done)] =
-    stepPreparers.foldLeft[CornichonError Either Step](currentStep.asRight) {
-      (stepOrError, stepPreparer) ⇒ stepOrError.flatMap(stepPreparer.run(runState.session))
-    }.fold(
-      ce ⇒ Task.now(Engine.handleErrors(currentStep, runState, NonEmptyList.one(ce))),
-      ps ⇒ runStep(runState, ps)
-    )
-
-  private def runStep(runState: RunState, step: Step): Task[(RunState, FailedStep Either Done)] =
-    Either
-      .catchNonFatal(step.runOnEngine(this, runState))
+  private def prepareAndRunStep(step: Step, runState: RunState): Task[(RunState, FailedStep Either Done)] =
+    resolver.fillPlaceholders(step.title)(runState.session)
+      .map(step.setTitle)
       .fold(
-        e ⇒ Task.now(handleThrowable(step, runState, e)),
-        _.onErrorRecover { case NonFatal(t) ⇒ handleThrowable(step, runState, t) }
+        ce ⇒ Task.now(Engine.handleErrors(step, runState, NonEmptyList.one(ce))),
+        ps ⇒ runStepSafe(runState, ps)
       )
 }
 
@@ -125,8 +117,13 @@ object Engine {
 
   private val noOpStage: StateT[Task, RunState, FailedStep ValidatedNel Done] = StateT { s ⇒ Task.now((s, validDone)) }
 
-  def withStepTitleResolver(resolver: PlaceholderResolver) =
-    new Engine(stepPreparers = StepPreparerTitleResolver(resolver) :: Nil)
+  private def runStepSafe(runState: RunState, step: Step): Task[(RunState, FailedStep Either Done)] =
+    Either
+      .catchNonFatal(step.runStep(runState))
+      .fold(
+        e ⇒ Task.now(handleThrowable(step, runState, e)),
+        _.onErrorRecover { case NonFatal(t) ⇒ handleThrowable(step, runState, t) }
+      )
 
   def successLog(title: String, depth: Int, show: Boolean, duration: Duration): LogInstruction =
     if (show)

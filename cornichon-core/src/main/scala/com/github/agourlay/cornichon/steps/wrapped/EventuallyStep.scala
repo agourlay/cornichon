@@ -14,7 +14,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
+  override val stateUpdate: StepState = StateT { runState ⇒
 
     def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
 
@@ -29,7 +29,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
         knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
 
       withDuration {
-        engine.runStepsShortCircuiting(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
+        runState.engine.runStepsShortCircuiting(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime
@@ -69,30 +69,30 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
     def timeoutFailedResult: Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
       val fs = FailedStep(this, NonEmptyList.of(EventuallyBlockMaxInactivity))
-      Task.delay((0, 0, initialRunState.nestedContext, fs.asLeft[Done]))
+      Task.delay((0, 0, runState.nestedContext, fs.asLeft[Done]))
     }
 
     withDuration {
-      val eventually = retryEventuallySteps(initialRunState.nestedContext, conf, 0, Nil)
+      val eventually = retryEventuallySteps(runState.nestedContext, conf, 0, Nil)
       // make sure that the inner block does not run forever
       eventually.timeoutTo(after = conf.maxTime * 2, backup = timeoutFailedResult)
     }.map {
       case (run, executionTime) ⇒
         val (retries, distinctErrors, retriedRunState, report) = run
-        val initialDepth = initialRunState.depth
+        val initialDepth = runState.depth
         val wrappedLogStack = report match {
           case Left(_) ⇒
             FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
           case _ ⇒
             SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ successTitleLog(initialDepth)
         }
-        (initialRunState.mergeNested(retriedRunState, wrappedLogStack), report)
+        (runState.mergeNested(retriedRunState, wrappedLogStack), report)
     }
   }
 }
 
 case class EventuallyConf(maxTime: FiniteDuration, interval: FiniteDuration) {
-  def consume(burnt: FiniteDuration) = {
+  def consume(burnt: FiniteDuration): EventuallyConf = {
     val rest = maxTime - burnt
     val newMax = if (rest.lteq(Duration.Zero)) Duration.Zero else rest
     copy(maxTime = newMax)

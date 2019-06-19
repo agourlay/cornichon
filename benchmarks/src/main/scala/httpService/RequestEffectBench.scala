@@ -36,7 +36,7 @@ class RequestEffectBench {
   final def beforeAll(): Unit = {
     es = Executors.newFixedThreadPool(1)
     val scheduler = Scheduler(es)
-    httpService = new HttpService("", 2000.millis, client, PlaceholderResolver.withoutExtractor(), Config())(scheduler)
+    httpService = new HttpService("", 2000.millis, client, PlaceholderResolver.default(), Config())(scheduler)
   }
 
   @TearDown(Level.Trial)

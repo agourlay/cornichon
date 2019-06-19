@@ -21,33 +21,33 @@ class CheckModelEngine[A, B, C, D, E, F](
     genF: Generator[F]) {
 
   // Assertions do not propagate their Session!
-  private def checkStepConditions(engine: Engine, initialRunState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
-    assertion.onEngine(engine).runA(initialRunState)
+  private def checkStepConditions(initialRunState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
+    assertion.stateUpdate.runA(initialRunState)
 
-  private def validTransitions(engine: Engine, initialRunState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] =
+  private def validTransitions(initialRunState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] =
     Task.gather {
       transitions.map {
         case (weight, properties) ⇒
-          checkStepConditions(engine, initialRunState)(properties.preCondition)
+          checkStepConditions(initialRunState)(properties.preCondition)
             .map(preConditionsRes ⇒ (weight, properties, preConditionsRes.isRight))
       }
     }
 
-  def run(engine: Engine, initialRunState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  def run(initialRunState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting property
-    checkStepConditions(engine, initialRunState)(model.entryPoint.preCondition).flatMap {
+    checkStepConditions(initialRunState)(model.entryPoint.preCondition).flatMap {
       case Right(_) ⇒
         // run first state
-        loopRun(engine, initialRunState, model.entryPoint, 0)
+        loopRun(initialRunState, model.entryPoint, 0)
       case Left(failedStep) ⇒
         Task.now((initialRunState, FailedStep(cs, failedStep.errors).asLeft))
     }
 
-  private def loopRun(engine: Engine, initialRunState: RunState, property: PropertyN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  private def loopRun(initialRunState: RunState, property: PropertyN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     if (currentNumberOfTransitions > maxNumberOfTransitions)
       Task.now((initialRunState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else
-      runPropertyAndValidatePostConditions(engine, initialRunState, property).flatMap {
+      runPropertyAndValidatePostConditions(initialRunState, property).flatMap {
         case (newState, Left(fs)) ⇒
           Task.now((newState, fs.asLeft))
         case (newState, Right(_)) ⇒
@@ -57,7 +57,7 @@ class CheckModelEngine[A, B, C, D, E, F](
               // no transitions defined -> end of run
               Task.now((newState, EndPropertyReached(property.description, currentNumberOfTransitions).asRight))
             case Some(transitions) ⇒
-              validTransitions(engine, newState)(transitions).flatMap { possibleNextStates ⇒
+              validTransitions(newState)(transitions).flatMap { possibleNextStates ⇒
                 val validNext = possibleNextStates.filter(_._3)
                 if (validNext.isEmpty) {
                   val error = NoValidTransitionAvailableForState(property.description)
@@ -66,14 +66,14 @@ class CheckModelEngine[A, B, C, D, E, F](
                 } else {
                   // pick one transition according to the weight
                   val nextProperty = pickTransitionAccordingToProbability(rd, validNext)
-                  loopRun(engine, newState, nextProperty, currentNumberOfTransitions + 1)
+                  loopRun(newState, nextProperty, currentNumberOfTransitions + 1)
                 }
               }
           }
       }
 
   // Assumes valid pre-conditions
-  private def runPropertyAndValidatePostConditions(engine: Engine, initialRunState: RunState, property: PropertyN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
+  private def runPropertyAndValidatePostConditions(initialRunState: RunState, property: PropertyN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
     val s = initialRunState.session
     // Init Gens
     val ga = genA.value(s)
@@ -85,7 +85,7 @@ class CheckModelEngine[A, B, C, D, E, F](
     // Generate effect
     val invariantStep = property.invariantN(ga, gb, gc, gd, ge, gf)
     val propertyNameLog = InfoLogInstruction(s"${property.description}", initialRunState.depth)
-    invariantStep.runOnEngine(engine, initialRunState.recordLog(propertyNameLog))
+    invariantStep.runStep(initialRunState.recordLog(propertyNameLog))
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability

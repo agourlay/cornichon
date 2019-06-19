@@ -10,10 +10,10 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
 
   val title = resource.openingTitle
 
-  override def onEngine(engine: Engine): StepState = StateT { initialRunState ⇒
-    resource.use(initialRunState.nestedContext)(engine.runStepsShortCircuiting(nested, _)).map { resTuple ⇒
+  override val stateUpdate: StepState = StateT { runState ⇒
+    resource.use(runState.nestedContext)(runState.engine.runStepsShortCircuiting(nested, _)).map { resTuple ⇒
       val (results, (resourcedState, resourcedRes)) = resTuple
-      val initialDepth = initialRunState.depth
+      val initialDepth = runState.depth
       val closingTitle = resource.closingTitle
       val logStack = resourcedRes match {
         case Left(_) ⇒ FailureLogInstruction(closingTitle, initialDepth) +: resourcedState.logStack :+ failedTitleLog(initialDepth)
@@ -21,7 +21,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
       }
       val completeSession = resourcedState.session.combine(results)
       // Manual nested merge
-      (initialRunState.withSession(completeSession).recordLogStack(logStack).registerCleanupSteps(initialRunState.cleanupSteps), resourcedRes)
+      (runState.withSession(completeSession).recordLogStack(logStack).registerCleanupSteps(runState.cleanupSteps), resourcedRes)
     }
   }
 }

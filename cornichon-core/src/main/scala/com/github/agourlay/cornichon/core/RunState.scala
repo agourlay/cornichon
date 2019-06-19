@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.core
 import cats.syntax.monoid._
 
 case class RunState(
+    engine: Engine,
     session: Session,
     logStack: List[LogInstruction], // reversed for fast appending
     depth: Int,

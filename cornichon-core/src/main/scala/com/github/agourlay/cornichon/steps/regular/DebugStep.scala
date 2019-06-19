@@ -13,14 +13,14 @@ case class DebugStep(title: String, message: Session ⇒ Either[CornichonError, 
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
-  override def run(initialRunState: RunState): Task[Either[NonEmptyList[CornichonError], String]] =
+  override def runLogValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], String]] =
     Task.delay {
-      message(initialRunState.session).leftMap(NonEmptyList.one)
+      message(runState.session).leftMap(NonEmptyList.one)
     }
 
-  override def onError(errors: NonEmptyList[CornichonError], initialRunState: RunState): (List[LogInstruction], FailedStep) =
-    errorsToFailureStep(this, initialRunState.depth, errors)
+  override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
+    errorsToFailureStep(this, runState.depth, errors)
 
-  override def logOnSuccess(result: String, initialRunState: RunState, executionTime: Duration): LogInstruction =
-    DebugLogInstruction(result, initialRunState.depth)
+  override def logOnSuccess(result: String, runState: RunState, executionTime: Duration): LogInstruction =
+    DebugLogInstruction(result, runState.depth)
 }
