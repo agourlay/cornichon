@@ -23,7 +23,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
         val bootstrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
-        runState.engine.runStepsShortCircuiting(nested, bootstrapFilledInput).flatMap {
+        ScenarioRunner.runStepsShortCircuiting(nested, bootstrapFilledInput).flatMap {
           case (filledState, stepsResult) ⇒
             stepsResult.fold(
               failedStep ⇒ {

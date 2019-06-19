@@ -11,7 +11,7 @@ case class AttachStep(nested: Session ⇒ List[Step]) extends WrapperStep {
 
   override val stateUpdate: StepState = StateT { runState ⇒
     val steps = nested(runState.session)
-    runState.engine.runStepsShortCircuiting(steps, runState)
+    ScenarioRunner.runStepsShortCircuiting(steps, runState)
   }
 
 }

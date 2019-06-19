@@ -21,7 +21,7 @@ case class ConcurrentlyStep(nested: List[Step], maxTime: FiniteDuration) extends
     val initialDepth = runState.depth
     val start = System.nanoTime
     Observable.fromIterable(nested)
-      .mapParallelUnordered(nested.size)(s ⇒ runState.engine.runStepsShortCircuiting(s :: Nil, nestedRunState))
+      .mapParallelUnordered(nested.size)(s ⇒ ScenarioRunner.runStepsShortCircuiting(s :: Nil, nestedRunState))
       .takeUntil(Observable.evalDelayed(maxTime, ()))
       .toListL
       .flatMap { results ⇒

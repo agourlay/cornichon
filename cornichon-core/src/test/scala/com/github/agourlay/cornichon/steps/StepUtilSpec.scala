@@ -10,6 +10,6 @@ trait StepUtilSpec extends ProvidedInstances with TaskSpec {
 
   implicit val scheduler = Scheduler.Implicits.global
   val resolver = PlaceholderResolver.default()
-  val engine = new ScenarioRunner(resolver)
+  val engine = ScenarioRunner
 
 }

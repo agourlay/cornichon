@@ -1,13 +1,15 @@
 package com.github.agourlay.cornichon.core
 
 import FeatureExecutionContext._
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 case class FeatureExecutionContext(
-    beforeSteps: List[Step] = Nil,
-    finallySteps: List[Step] = Nil,
-    featureIgnored: Boolean = false,
-    focusedScenarios: Set[String] = Set.empty,
-    withSeed: Option[Long] = None) {
+    beforeSteps: List[Step],
+    finallySteps: List[Step],
+    featureIgnored: Boolean,
+    focusedScenarios: Set[String],
+    withSeed: Option[Long],
+    placeholderResolver: PlaceholderResolver) {
 
   def isIgnored(scenario: Scenario): Option[String] =
     if (featureIgnored)
@@ -26,7 +28,13 @@ case class FeatureExecutionContext(
 }
 
 object FeatureExecutionContext {
-  val empty = FeatureExecutionContext(withSeed = Some(1L))
+  val empty = FeatureExecutionContext(
+    beforeSteps = Nil,
+    finallySteps = Nil,
+    featureIgnored = false,
+    focusedScenarios = Set.empty,
+    withSeed = Some(1L),
+    placeholderResolver = PlaceholderResolver.default())
   private val someFeatureIgnored = Some("feature ignored")
   private val someNoFocus = Some("no focus")
 }

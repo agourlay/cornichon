@@ -34,7 +34,6 @@ class CheckStepBench {
 
   var es: ExecutorService = _
   var scheduler: Scheduler = _
-  var engine: ScenarioRunner = _
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
@@ -43,7 +42,6 @@ class CheckStepBench {
 
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = new ScenarioRunner(resolver)
   }
 
   @TearDown(Level.Trial)
@@ -65,7 +63,7 @@ class CheckStepBench {
   def runModel() = {
     val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxNumberOfTransitions = transitionNumber.toInt, CheckStepBench.modelRunner, None)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
-    val f = engine.runScenario(session)(s)
+    val f = ScenarioRunner.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }

@@ -30,7 +30,6 @@ class JsonStepBench {
 
   var es: ExecutorService = _
   var scheduler: Scheduler = _
-  var engine: ScenarioRunner = _
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
@@ -39,7 +38,6 @@ class JsonStepBench {
 
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = new ScenarioRunner(resolver)
   }
 
   @TearDown(Level.Trial)
@@ -63,7 +61,7 @@ class JsonStepBench {
   def jsonIs() = {
     val step = jsonStepBuilder.is(json)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val f = engine.runScenario(session)(s)
+    val f = ScenarioRunner.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
@@ -93,7 +91,7 @@ class JsonStepBench {
       }
       """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val f = engine.runScenario(s2)(s)
+    val f = ScenarioRunner.runScenario(s2)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
@@ -115,7 +113,7 @@ class JsonStepBench {
       }
       """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val f = engine.runScenario(session)(s)
+    val f = ScenarioRunner.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
@@ -132,7 +130,7 @@ class JsonStepBench {
       }
     """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val f = engine.runScenario(session)(s)
+    val f = ScenarioRunner.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
@@ -141,7 +139,7 @@ class JsonStepBench {
   def jsonPathIs() = {
     val step = jsonStepBuilder.path("publisher.name").is("DC")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val f = engine.runScenario(session)(s)
+    val f = ScenarioRunner.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
@@ -150,7 +148,7 @@ class JsonStepBench {
   def jsonWhitelistingIs() = {
     val step = jsonStepBuilder.whitelisting.is("""{"hasSuperpowers": false}""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val f = engine.runScenario(session)(s)
+    val f = ScenarioRunner.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }

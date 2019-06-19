@@ -86,7 +86,7 @@ trait LogDecoratorStep extends Step {
   override val stateUpdate: StepState = StateT { rs ⇒
     val now = System.nanoTime
     val steps = nestedToRun(rs.session)
-    rs.engine.runStepsShortCircuiting(steps, rs.nestedContext).map {
+    ScenarioRunner.runStepsShortCircuiting(steps, rs.nestedContext).map {
       case (resState, l @ Left(_)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val decoratedLogs = logStackOnNestedError(resState.logStack, rs.depth, executionTime)
@@ -119,7 +119,7 @@ trait SimpleWrapperStep extends Step {
   override val stateUpdate: StepState = StateT { rs ⇒
     val now = System.nanoTime
     val init = if (indentLog) rs.nestedContext else rs.sameLevelContext
-    rs.engine.runStepsShortCircuiting(nestedToRun, init).map {
+    ScenarioRunner.runStepsShortCircuiting(nestedToRun, init).map {
       case (resState, Left(failedStep)) ⇒
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         val (finalState, fs) = onNestedError(failedStep, resState, rs, executionTime)

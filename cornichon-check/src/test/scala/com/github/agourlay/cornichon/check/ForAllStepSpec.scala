@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.check
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.steps.wrapped.AttachStep
@@ -19,8 +18,6 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
     t.runToFuture(s)
 
   implicit val scheduler = Scheduler.Implicits.global
-  val resolver = PlaceholderResolver.default()
-  val engine = new ScenarioRunner(resolver)
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
@@ -51,7 +48,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
         }
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: SuccessScenarioReport ⇒
             f.isSuccess should be(true)
 
@@ -71,7 +68,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
         }
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
             uglyCounter should be(6)
@@ -102,7 +99,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
         val forAllStep = for_all("fails", maxNumberOfRuns = maxRun, integerGen)(_ ⇒ incrementEffect)
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: SuccessScenarioReport ⇒
             f.isSuccess should be(true)
             uglyCounter should be(maxRun)
@@ -119,7 +116,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
         val forAllStep = for_all("fails", maxNumberOfRuns = 10, integerGen)(_ ⇒ brokenEffect)
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
             f.msg should be("""Scenario 'scenario with forAllStep' failed:
@@ -144,7 +141,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
         val forAllStep = for_all("fails", maxNumberOfRuns = 10, brokenIntGen)(_ ⇒ neverValidAssertStep)
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
           case other @ _ ⇒

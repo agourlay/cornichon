@@ -29,7 +29,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
         knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
 
       withDuration {
-        runState.engine.runStepsShortCircuiting(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
+        ScenarioRunner.runStepsShortCircuiting(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
       }.flatMap {
         case ((newRunState, res), executionTime) ⇒
           val remainingTime = conf.maxTime - executionTime

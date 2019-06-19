@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.check
 import com.github.agourlay.cornichon.check.checkModel._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
 import monix.eval.Task
@@ -19,8 +18,6 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
     t.runToFuture(s)
 
   implicit val scheduler = Scheduler.Implicits.global
-  val resolver = PlaceholderResolver.default()
-  val engine = new ScenarioRunner(resolver)
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
@@ -56,7 +53,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
             f.msg should be("""Scenario 'scenario with checkStep' failed:
@@ -86,7 +83,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
             f.msg should be("""Scenario 'scenario with checkStep' failed:
@@ -116,7 +113,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
             f.msg should be("""Scenario 'scenario with checkStep' failed:
@@ -151,7 +148,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(maxNumberOfRuns = maxRun, 1, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: SuccessScenarioReport ⇒
             f.isSuccess should be(true)
             uglyCounter should be(maxRun)
@@ -179,7 +176,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxTransition, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: SuccessScenarioReport ⇒
             f.isSuccess should be(true)
             uglyCounter should be(maxTransition)
@@ -204,7 +201,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
             f.msg should be("""Scenario 'scenario with checkStep' failed:
@@ -234,7 +231,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
             f.msg should be("""Scenario 'scenario with checkStep' failed:
@@ -268,7 +265,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: SuccessScenarioReport ⇒
             f.isSuccess should be(true)
 
@@ -289,7 +286,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-        engine.runScenario(Session.newEmpty)(s).map {
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map {
           case f: FailureScenarioReport ⇒
             f.isSuccess should be(false)
           case other @ _ ⇒

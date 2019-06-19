@@ -11,7 +11,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
   val title = resource.openingTitle
 
   override val stateUpdate: StepState = StateT { runState ⇒
-    resource.use(runState.nestedContext)(runState.engine.runStepsShortCircuiting(nested, _)).map { resTuple ⇒
+    resource.use(runState.nestedContext)(ScenarioRunner.runStepsShortCircuiting(nested, _)).map { resTuple ⇒
       val (results, (resourcedState, resourcedRes)) = resTuple
       val initialDepth = runState.depth
       val closingTitle = resource.closingTitle

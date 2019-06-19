@@ -24,7 +24,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
           // reset logs at each loop to have the possibility to not aggregate in failure case
           val rs = runState.resetLogStack
           val runStateWithIndex = rs.addToSession(elementName, element)
-          runState.engine.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
+          ScenarioRunner.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
             case (onceMoreRunState, stepResult) ⇒
               stepResult.fold(
                 failed ⇒ {

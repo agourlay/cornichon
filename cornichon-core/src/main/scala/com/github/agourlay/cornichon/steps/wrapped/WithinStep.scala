@@ -15,7 +15,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
   override val stateUpdate: StepState = StateT { runState ⇒
     val initialDepth = runState.depth
     withDuration {
-      runState.engine.runStepsShortCircuiting(nested, runState.nestedContext)
+      ScenarioRunner.runStepsShortCircuiting(nested, runState.nestedContext)
     }.map {
       case ((withinState, inputRes), executionTime) ⇒
         val (logStack, res) = inputRes match {

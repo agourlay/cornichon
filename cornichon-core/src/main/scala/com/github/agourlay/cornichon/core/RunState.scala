@@ -1,9 +1,10 @@
 package com.github.agourlay.cornichon.core
 
 import cats.syntax.monoid._
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 case class RunState(
-    engine: ScenarioRunner,
+    placeholderResolver: PlaceholderResolver,
     randomContext: RandomContext,
     session: Session,
     logStack: List[LogInstruction], // reversed for fast appending

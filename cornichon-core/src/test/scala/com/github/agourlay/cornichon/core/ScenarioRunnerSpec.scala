@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.core
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.dsl.ProvidedInstances._
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.util.TaskSpec
@@ -15,7 +14,7 @@ import scala.concurrent.ExecutionContext
 class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
 
   implicit val scheduler = Scheduler(ExecutionContext.global)
-  val engine = new ScenarioRunner(PlaceholderResolver.default())
+  val engine = ScenarioRunner
 
   "ScenarioRunner" when {
     "runScenario" must {
@@ -57,7 +56,8 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
         val mainStep = AssertStep("main step", _ ⇒ GenericEqualityAssertion(true, false))
         val finalAssertion = AssertStep("finally step", _ ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
-        engine.runScenario(Session.newEmpty, FeatureExecutionContext(finallySteps = finalAssertion :: Nil, withSeed = Some(1)))(s).map {
+        val fc = FeatureExecutionContext.empty.copy(finallySteps = finalAssertion :: Nil, withSeed = Some(1))
+        engine.runScenario(Session.newEmpty, fc)(s).map {
           case f: FailureScenarioReport ⇒
             withClue(f.msg) {
               f.msg should be(
@@ -123,7 +123,7 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
           }
         )
 
-        val context = FeatureExecutionContext(finallySteps = List.fill(effectNumber)(effect))
+        val context = FeatureExecutionContext.empty.copy(finallySteps = List.fill(effectNumber)(effect))
         val s = Scenario("scenario with effects", context.finallySteps)
         engine.runScenario(Session.newEmpty, context)(s).map { res ⇒
           res.isSuccess should be(true)

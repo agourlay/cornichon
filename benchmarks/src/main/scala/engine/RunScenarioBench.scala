@@ -4,7 +4,6 @@ import java.util.concurrent.{ ExecutorService, Executors }
 
 import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session }
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
@@ -32,16 +31,13 @@ class RunScenarioBench {
   var stepsNumber: String = ""
   var es: ExecutorService = _
   var scheduler: Scheduler = _
-  var engine: ScenarioRunner = _
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
     println("")
     println("Creating Engine...")
-    val resolver = PlaceholderResolver.default()
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
-    engine = new ScenarioRunner(resolver)
   }
 
   @TearDown(Level.Trial)
@@ -66,7 +62,7 @@ class RunScenarioBench {
     val assertSteps = List.fill(half)(assertStep)
     val effectSteps = List.fill(half)(effectStep)
     val scenario = Scenario("test scenario", setupSession +: (assertSteps ++ effectSteps))
-    val f = engine.runScenario(Session.newEmpty)(scenario)
+    val f = ScenarioRunner.runScenario(Session.newEmpty)(scenario)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
     assert(res.isSuccess)
   }
