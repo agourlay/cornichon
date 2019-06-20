@@ -21,7 +21,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper], withSeed: Option[Long
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
     placeholdersCache.get(input, k ⇒ PlaceholderParser.parse(k))
 
-  def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
+  private def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
     builtInPlaceholders.lift(ph.key).map(Right.apply).getOrElse {
       val otherKeyName = ph.key
       val otherKeyIndice = ph.index
@@ -32,7 +32,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper], withSeed: Option[Long
       }
     }
 
-  def builtInPlaceholders: PartialFunction[String, String] = {
+  private def builtInPlaceholders: PartialFunction[String, String] = {
     case "random-uuid"             ⇒ UUID.randomUUID().toString
     case "random-positive-integer" ⇒ r.nextInt(10000).toString
     case "random-string"           ⇒ r.nextString(5)
@@ -42,7 +42,7 @@ class PlaceholderResolver(extractors: Map[String, Mapper], withSeed: Option[Long
     case "current-timestamp"       ⇒ (System.currentTimeMillis / 1000).toString
   }
 
-  def applyMapper(bindingKey: String, m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
+  private def applyMapper(bindingKey: String, m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) ⇒
       Either.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
     case SessionMapper(gen) ⇒
