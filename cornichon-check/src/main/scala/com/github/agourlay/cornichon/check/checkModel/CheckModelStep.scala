@@ -15,8 +15,7 @@ import com.github.agourlay.cornichon.util.Timing._
 case class CheckModelStep[A, B, C, D, E, F](
     maxNumberOfRuns: Int,
     maxNumberOfTransitions: Int,
-    modelRunner: ModelRunner[A, B, C, D, E, F],
-    withSeed: Option[Long]) extends WrapperStep {
+    modelRunner: ModelRunner[A, B, C, D, E, F]) extends WrapperStep {
 
   private val model = modelRunner.model
 
@@ -77,8 +76,7 @@ case class CheckModelStep[A, B, C, D, E, F](
         case Invalid(ce) ⇒
           Task.now((runState, FailedStep(this, ce).asLeft))
         case _ ⇒
-          // use existing RunState's randomContext if no seed is provided
-          val randomContext = withSeed.fold(runState.randomContext)(RandomContext.fromSeed)
+          val randomContext = runState.randomContext
           val genA = modelRunner.generatorA(randomContext)
           val genB = modelRunner.generatorB(randomContext)
           val genC = modelRunner.generatorC(randomContext)

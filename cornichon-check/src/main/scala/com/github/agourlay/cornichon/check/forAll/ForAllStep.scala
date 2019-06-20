@@ -8,15 +8,14 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
 
-case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int, withSeed: Option[Long] = None)(ga: RandomContext ⇒ Generator[A], gb: RandomContext ⇒ Generator[B], gc: RandomContext ⇒ Generator[C], gd: RandomContext ⇒ Generator[D], ge: RandomContext ⇒ Generator[E], gf: RandomContext ⇒ Generator[F])(f: A ⇒ B ⇒ C ⇒ D ⇒ E ⇒ F ⇒ Step) extends WrapperStep {
+case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int)(ga: RandomContext ⇒ Generator[A], gb: RandomContext ⇒ Generator[B], gc: RandomContext ⇒ Generator[C], gd: RandomContext ⇒ Generator[D], ge: RandomContext ⇒ Generator[E], gf: RandomContext ⇒ Generator[F])(f: A ⇒ B ⇒ C ⇒ D ⇒ E ⇒ F ⇒ Step) extends WrapperStep {
 
   val baseTitle = s"ForAll values of generators check '$description'"
   val title = s"$baseTitle with maxNumberOfRuns=$maxNumberOfRuns"
 
   override val stateUpdate: StepState = StateT { runState ⇒
     withDuration {
-      // use existing RunState's randomContext if no seed is provided
-      val randomContext = withSeed.fold(runState.randomContext)(RandomContext.fromSeed)
+      val randomContext = runState.randomContext
       val genA = ga(randomContext)
       val genB = gb(randomContext)
       val genC = gc(randomContext)

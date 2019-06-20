@@ -7,8 +7,8 @@ import com.github.agourlay.cornichon.check.NoValue.seededNoValueGenerator
 
 trait CheckDsl {
 
-  def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, seed: Option[Long] = None)(modelRunner: ModelRunner[A, B, C, D, E, F]): Step =
-    CheckModelStep(maxNumberOfRuns, maxNumberOfTransitions, modelRunner, seed)
+  def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int)(modelRunner: ModelRunner[A, B, C, D, E, F]): Step =
+    CheckModelStep(maxNumberOfRuns, maxNumberOfTransitions, modelRunner)
 
   def for_all[A](description: String, maxNumberOfRuns: Int, ga: RandomContext ⇒ Generator[A])(builder: A ⇒ Step): Step = {
     val g: A ⇒ NoValue ⇒ NoValue ⇒ NoValue ⇒ NoValue ⇒ NoValue ⇒ Step = { a: A ⇒ _ ⇒ _ ⇒ _ ⇒ _ ⇒ _ ⇒ builder(a) }

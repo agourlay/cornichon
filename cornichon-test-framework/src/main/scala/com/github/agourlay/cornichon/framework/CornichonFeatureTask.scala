@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.framework
 
 import cats.syntax.either._
-import com.github.agourlay.cornichon
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import monix.eval
@@ -11,7 +10,7 @@ import sbt.testing._
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 
-class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) extends Task {
+class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], explicitSeed: Option[Long]) extends Task {
 
   override def tags(): Array[String] = Array.empty
   override def taskDef(): TaskDef = task
@@ -50,7 +49,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
             (featureLog, Done.taskDone)
           case None ⇒
             val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
-            val featureRunner = cornichon.core.FeatureRunner(feature, baseFeature)
+            val featureRunner = FeatureRunner(feature, baseFeature, explicitSeed)
             val run = featureRunner.runFeature(filterScenarios)(generateResultEvent(eventHandler)).map { results ⇒
               results.foreach(printResultLogs(featureClass))
               Done
@@ -69,8 +68,8 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
     else
       scenarioNameFilter.contains(s.name)
 
-  private def replayCommand(featureClass: Class[_], scenarioName: String): String =
-    s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" """
+  private def replayCommand(featureClass: Class[_], scenarioName: String, seed: Long): String =
+    s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" "--seed=$seed""""
 
   private def generateResultEvent(eventHandler: EventHandler)(sr: ScenarioReport) = {
     eventHandler.handle(eventBuilder(sr, sr.duration.toMillis))
@@ -84,7 +83,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
       if (s.shouldShowLogs) LogInstruction.printLogs(s.logs)
 
     case f: FailureScenarioReport ⇒
-      val msg = failureErrorMessage(featureClass, f.scenarioName, f.msg, f.duration)
+      val msg = failureErrorMessage(featureClass, f)
       println(FailureLogInstruction(msg, 0).colorized)
       println(f.renderedColoredLogs)
 
@@ -97,13 +96,13 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String]) exten
       println(DebugLogInstruction(msg, 0).colorized)
   }
 
-  private def failureErrorMessage(featureClass: Class[_], scenarioName: String, errorMessage: String, duration: Duration): String =
-    s"""|- **failed** $scenarioName [${duration.toMillis} ms]
+  private def failureErrorMessage(featureClass: Class[_], f: FailureScenarioReport): String =
+    s"""|- **failed** ${f.scenarioName} [${f.duration.toMillis} ms]
         |
-        |  ${errorMessage.split('\n').toList.mkString("\n  ")}
+        |  ${f.msg.split('\n').toList.mkString("\n  ")}
         |
         |  ${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
-        |  ${replayCommand(featureClass, scenarioName)}""".stripMargin
+        |  ${replayCommand(featureClass, f.scenarioName, f.seed)}""".stripMargin
 
   private def eventBuilder(sr: ScenarioReport, durationInMillis: Long) = new Event {
     val status = sr match {

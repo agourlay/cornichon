@@ -2,21 +2,32 @@ package com.github.agourlay.cornichon.framework
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+import com.github.agourlay.cornichon.core.CornichonError
+import com.github.agourlay.cornichon.framework.CornichonRunner._
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import sbt.testing._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.util.control.NonFatal
 
 class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) extends Runner {
 
   private val gotTasks = new AtomicBoolean(false)
 
   // A task is a Feature class
-  override def tasks(taskDefs: Array[TaskDef]) = {
+  override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     gotTasks.set(true)
-    val scenarioNameFilter = args.toSet
-    taskDefs.map(new CornichonFeatureTask(_, scenarioNameFilter))
+    val (seeds, scenarioNameFilter) = args.toSet.partition(_.startsWith(seedArg))
+    val explicitSeed = try {
+      seeds.headOption.map(_.split(seedArg)(1).toLong) //YOLO
+    } catch {
+      case NonFatal(e) ⇒
+        println(s"Could not parse seed from args ${args.toList}")
+        println(CornichonError.genStacktrace(e))
+        None
+    }
+    taskDefs.map(new CornichonFeatureTask(_, scenarioNameFilter, explicitSeed))
   }
 
   override def done(): String = {
@@ -27,4 +38,8 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
     ""
   }
 
+}
+
+object CornichonRunner {
+  val seedArg = "--seed="
 }

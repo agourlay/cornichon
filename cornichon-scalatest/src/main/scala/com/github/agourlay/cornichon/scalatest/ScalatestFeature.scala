@@ -62,7 +62,8 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
             s.name in pending
           else
             s.name in {
-              cornichon.core.FeatureRunner(feature, this).runScenario(s).map {
+              // No explicit seed in `cornichon-scalatest`
+              cornichon.core.FeatureRunner(feature, this, explicitSeed = None).runScenario(s).map {
                 case s: SuccessScenarioReport ⇒
                   if (s.shouldShowLogs) printLogs(s.logs)
                   assert(true)

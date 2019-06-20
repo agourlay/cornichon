@@ -4,14 +4,14 @@ import com.github.agourlay.cornichon.dsl.BaseFeature
 import monix.eval.Task
 import monix.reactive.Observable
 
-case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature) {
+case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, explicitSeed: Option[Long]) {
 
   private val featureContext = FeatureExecutionContext(
     beforeSteps = baseFeature.beforeEachScenario.toList,
     finallySteps = baseFeature.afterEachScenario.toList,
     featureIgnored = featureDef.ignored.isDefined,
     focusedScenarios = featureDef.focusedScenarios,
-    withSeed = baseFeature.seed,
+    withSeed = explicitSeed.orElse(baseFeature.seed),
     placeholderResolver = baseFeature.placeholderResolver
   )
 

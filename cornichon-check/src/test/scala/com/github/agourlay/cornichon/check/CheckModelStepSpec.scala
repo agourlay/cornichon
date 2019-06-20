@@ -49,8 +49,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val transitions = Map(otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting property", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 10L
-        val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(10, 10, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -79,8 +78,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
           otherAction -> ((80, starting) :: (20, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(10, 10, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -109,8 +107,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
           otherAction -> ((101, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(10, 10, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -144,8 +141,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val transitions = Map(starting -> ((100, otherAction) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(maxNumberOfRuns = maxRun, 1, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = maxRun, 1, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -172,8 +168,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
           otherActionTwo -> ((100, otherAction) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxTransition, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxTransition, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -197,8 +192,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
           otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -227,8 +221,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
           otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(integerGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -261,8 +254,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
         val model = Model("model with empty transition for starting", starting, transitions)
         // passing a broken gen but the actions are not calling it...should be good!
         val modelRunner = ModelRunner.make(brokenIntGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {
@@ -282,8 +274,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
           otherAction -> ((100, starting) :: Nil))
         val model = Model("model with empty transition for starting", starting, transitions)
         val modelRunner = ModelRunner.make(brokenIntGen)(model)
-        val seed = 1L
-        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner, Some(seed))
+        val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
         val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
         ScenarioRunner.runScenario(Session.newEmpty)(s).map {

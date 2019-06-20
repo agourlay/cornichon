@@ -15,16 +15,19 @@ import com.github.agourlay.cornichon.core.Session._
 import com.github.agourlay.cornichon.util.{ Caching, Strings }
 
 import scala.collection.immutable.{ HashMap, StringOps }
-
+// TODO try replacing Vector by ArraySeq in Scala 2.13
+// https://www.scala-lang.org/api/2.13.0/scala/collection/immutable/ArraySeq.html
 case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   //Specialised Option version to avoid Either.left creation through Either.toOption
   def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] =
-    for {
-      values ← content.get(key)
-      indice = stackingIndice.getOrElse(values.size - 1)
-      value ← values.lift(indice)
-    } yield value
+    content.get(key).flatMap { values ⇒
+      val indice = stackingIndice.getOrElse(values.size - 1)
+      if (values.size < indice)
+        None
+      else
+        Some(values(indice))
+    }
 
   def get(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
     content.get(key) match {

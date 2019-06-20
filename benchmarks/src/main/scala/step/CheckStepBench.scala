@@ -61,7 +61,7 @@ class CheckStepBench {
 
   @Benchmark
   def runModel() = {
-    val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxNumberOfTransitions = transitionNumber.toInt, CheckStepBench.modelRunner, None)
+    val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxNumberOfTransitions = transitionNumber.toInt, CheckStepBench.modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
     val f = ScenarioRunner.runScenario(session)(s)
     val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
