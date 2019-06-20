@@ -30,6 +30,42 @@ class SessionSpec extends WordSpec
           }
         }
       }
+
+      "write the value" in {
+        forAll(keyGen, valueGen) { (key, value) ⇒
+          val s2 = Session.newEmpty.addValueUnsafe(key, value)
+          s2.content.get(key).value should be(Vector(value))
+        }
+      }
+    }
+
+    "addValues" must {
+      "throw if one key is empty" in {
+        intercept[CornichonException] {
+          Session.newEmpty.addValuesUnsafe("a" -> Random.nextString(5), "" -> Random.nextString(5))
+        }
+      }
+
+      "throw if key contains illegal chars" in {
+        forAll(keyGen, Gen.oneOf(Session.notAllowedInKey.trim)) { (key, forbiddenChar) ⇒
+          intercept[CornichonException] {
+            Session.newEmpty.addValuesUnsafe(key -> Random.nextString(5), key + forbiddenChar -> Random.nextString(5))
+          }
+        }
+      }
+
+      "write the values" in {
+        forAll(keyGen, valueGen, keyGen, valueGen) { (k1, v1, k2, v2) ⇒
+          val s2 = Session.newEmpty.addValuesUnsafe(k1 -> v1, k2 -> v2)
+          if (k1 == k2)
+            s2.content.get(k1).value should be(Vector(v1, v2))
+          else {
+            s2.content.get(k1).value should be(Vector(v1))
+            s2.content.get(k2).value should be(Vector(v2))
+          }
+        }
+      }
+
     }
 
     "get" must {

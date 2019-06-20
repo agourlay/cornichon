@@ -33,17 +33,12 @@ class JsonStepBench {
 
   @Setup(Level.Trial)
   final def beforeAll(): Unit = {
-    println("")
-    println("Creating Engine...")
-
     es = Executors.newFixedThreadPool(1)
     scheduler = Scheduler(es)
   }
 
   @TearDown(Level.Trial)
   final def afterAll(): Unit = {
-    println("")
-    println("Shutting down ExecutionContext...")
     es.shutdown()
   }
 

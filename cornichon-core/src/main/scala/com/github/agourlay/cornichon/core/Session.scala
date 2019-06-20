@@ -60,10 +60,9 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       value ← values.lift(indice).asRight
     } yield value
 
-  def addValue(key: String, value: String): Either[CornichonError, Session] = {
-
-    // Not returning the same key wrapped to avoid allocations
-    def validateKey(key: String): Either[CornichonError, Done] = {
+  // Not returning the same key wrapped to avoid allocations
+  private def validateKey(key: String): Either[CornichonError, Done] =
+    knownKeysCache.get(key, key ⇒ {
       val trimmedKey = new StringOps(key.trim)
       if (trimmedKey.isEmpty)
         EmptyKey.asLeft
@@ -71,24 +70,33 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
         IllegalKey(key).asLeft
       else
         Done.rightDone
+    })
+
+  private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
+    c1.get(key) match {
+      case None         ⇒ c1 + (key → Vector(value))
+      case Some(values) ⇒ (c1 - key) + (key → values.:+(value))
     }
 
-    def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
-      c1.get(key) match {
-        case None         ⇒ c1 + (key → Vector(value))
-        case Some(values) ⇒ (c1 - key) + (key → values.:+(value))
-      }
-
-    knownKeysCache.get(key, k ⇒ validateKey(k)).map(_ ⇒ Session(updateContent(content)(key, value)))
-  }
+  def addValue(key: String, value: String): Either[CornichonError, Session] =
+    validateKey(key).map(_ ⇒ Session(updateContent(content)(key, value)))
 
   def addValueUnsafe(key: String, value: String): Session =
     addValue(key, value).valueUnsafe
 
   def addValues(tuples: (String, String)*): Either[CornichonError, Session] =
     tuples match {
-      case t :: Nil ⇒ addValue(t._1, t._2)
-      case _        ⇒ tuples.foldLeft(this.asRight[CornichonError])((s, t) ⇒ s.flatMap(_.addValue(t._1, t._2)))
+      case t :: Nil ⇒
+        addValue(t._1, t._2)
+      case _ ⇒
+        tuples
+          .toList
+          .traverse(t ⇒ validateKey(t._1)) //validate all keys and then work at the Map level for efficiency
+          .map { _ ⇒
+            // Idea: this could be a mutable map for the time of the updates
+            val updatedContent = tuples.foldLeft(this.content)((c, t) ⇒ updateContent(c)(t._1, t._2))
+            Session(updatedContent)
+          }
     }
 
   def addValuesUnsafe(tuples: (String, String)*): Session =
