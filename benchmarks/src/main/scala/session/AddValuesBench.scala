@@ -2,6 +2,7 @@ package session
 
 import com.github.agourlay.cornichon.core.Session
 import org.openjdk.jmh.annotations._
+import session.AddValuesBench._
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
@@ -22,17 +23,20 @@ class AddValuesBench {
 
   /*
   [info] Benchmark                 (insertNumber)   Mode  Cnt        Score       Error  Units
-  [info] AddValuesBench.addValues               1   thrpt   10  5868537.796 ± 99466.506  ops/s
-  [info] AddValuesBench.addValues               2   thrpt   10  2343205.029 ± 29841.329  ops/s
-  [info] AddValuesBench.addValues               3   thrpt   10  1765478.878 ± 31085.742  ops/s
-  [info] AddValuesBench.addValues               5   thrpt   10  1193001.461 ± 29921.254  ops/s
-  [info] AddValuesBench.addValues              10   thrpt   10   458965.622 ± 10070.368  ops/s
+  [info] AddValuesBench.addValues               1  thrpt   10  6340605.917 ± 1144511.766  ops/s
+  [info] AddValuesBench.addValues               2  thrpt   10  4407327.951 ±   21119.301  ops/s
+  [info] AddValuesBench.addValues               3  thrpt   10  2164558.453 ±    3107.111  ops/s
+  [info] AddValuesBench.addValues               5  thrpt   10  1488271.191 ±    3462.505  ops/s
+  [info] AddValuesBench.addValues              10  thrpt   10   809096.566 ±    3380.935  ops/s
   */
   @Benchmark
   def addValues() = {
-    val s = Session.newEmpty
-    val values = List.fill(insertNumber.toInt)("key" -> "value")
-    s.addValues(values: _*)
+    val values = List.fill(insertNumber.toInt)(tupleEntry)
+    Session.newEmpty.addValues(values: _*)
   }
+}
+
+object AddValuesBench {
+  val tupleEntry = "key" -> "value"
 }
 

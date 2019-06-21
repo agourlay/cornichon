@@ -88,6 +88,8 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
     tuples match {
       case t :: Nil ⇒
         addValue(t._1, t._2)
+      case t1 :: t2 :: Nil ⇒
+        addValue(t1._1, t1._2).flatMap(_.addValue(t2._1, t2._2))
       case _ ⇒
         tuples
           .toList
