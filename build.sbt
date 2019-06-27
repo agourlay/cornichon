@@ -303,8 +303,8 @@ lazy val library =
       val monix         = "3.0.0-RC3"
       val sbtTest       = "1.0"
       val http4s        = "0.20.3"
-      val embeddedKafka = "2.0.0"
-      val kafkaClient   = "2.0.1"
+      val embeddedKafka = "2.3.0"
+      val kafkaClient   = "2.3.0"
       val caffeine      = "2.7.0"
     }
     val akkaStream    = "com.typesafe.akka"             %% "akka-stream"              % Version.akkaStream
@@ -332,6 +332,6 @@ lazy val library =
     val http4sCirce   = "org.http4s"                    %% "http4s-circe"             % Version.http4s
     val http4sDsl     = "org.http4s"                    %% "http4s-dsl"               % Version.http4s
     val kafkaClient   = "org.apache.kafka"              %  "kafka-clients"            % Version.kafkaClient
-    val kafkaBroker   = "net.manub"                     %% "scalatest-embedded-kafka" % Version.embeddedKafka
+    val kafkaBroker   = "io.github.embeddedkafka"       %% "embedded-kafka"           % Version.embeddedKafka
     val caffeine      = "com.github.ben-manes.caffeine" %  "caffeine"                 % Version.caffeine
   }
