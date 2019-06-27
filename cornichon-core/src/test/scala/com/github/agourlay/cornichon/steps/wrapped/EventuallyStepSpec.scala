@@ -19,7 +19,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
       val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true) :: Nil
       val s = Scenario("scenario with eventually", steps)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
     }
 
     "replay eventually wrapped steps until limit" in {
@@ -33,7 +33,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map { r ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r ⇒
         r.isSuccess should be(false)
         counter <= 10 should be(true) // at most 10*100millis
       }
@@ -49,7 +49,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map {
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
           f.isSuccess should be(false)
           f.msg should be("""Scenario 'scenario with eventually that fails' failed:
@@ -81,7 +81,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map {
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
           f.isSuccess should be(false)
           f.msg should be("""Scenario 'scenario with different failures' failed:
@@ -128,7 +128,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = false)
       val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map {
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
           f.isSuccess should be(false)
           f.msg should be("""Scenario 'scenario with different failures' failed:

@@ -19,9 +19,9 @@ object HeadersSteps {
   case object HeadersStepBuilder {
     def is(expected: (String, String)*) = AssertStep(
       title = s"headers is ${printArrowPairs(expected)}",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          sessionHeaders ← s.get(lastResponseHeadersKey)
+          sessionHeaders ← sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue ← decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) ⇒ name.toLowerCase -> value }
           lowerCasedExpected: List[(String, String)] = expected.map { case (name, value) ⇒ name.toLowerCase -> value }(breakOut)
@@ -31,8 +31,8 @@ object HeadersSteps {
 
     def hasSize(expectedSize: Int) = AssertStep(
       title = s"headers size is '$expectedSize'",
-      action = s ⇒ Assertion.either {
-        s.get(lastResponseHeadersKey).map { sessionHeaders ⇒
+      action = sc ⇒ Assertion.either {
+        sc.session.get(lastResponseHeadersKey).map { sessionHeaders ⇒
           CollectionSizeAssertion(sessionHeaders.split(interHeadersValueDelim), expectedSize, "headers")
         }
       }
@@ -40,9 +40,9 @@ object HeadersSteps {
 
     def contain(elements: (String, String)*) = AssertStep(
       title = s"headers contain ${printArrowPairs(elements)}",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          sessionHeaders ← s.get(lastResponseHeadersKey)
+          sessionHeaders ← sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue ← decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) ⇒ name.toLowerCase -> value }
           predicate = elements.forall { case (name, value) ⇒ lowerCasedActual.contains(name.toLowerCase -> value) }
@@ -56,9 +56,9 @@ object HeadersSteps {
   case class HeadersNameStepBuilder(name: String) {
     def isPresent = AssertStep(
       title = s"headers contain field with name '$name'",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          sessionHeaders ← s.get(lastResponseHeadersKey)
+          sessionHeaders ← sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
           predicate ← Right(sessionHeadersValue.exists { case (hname, _) ⇒ hname.toLowerCase == name.toLowerCase })
         } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
@@ -67,11 +67,11 @@ object HeadersSteps {
 
     def isAbsent = AssertStep(
       title = s"headers do not contain field with name '$name'",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          sessionHeaders ← s.get(lastResponseHeadersKey)
+          sessionHeaders ← sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue ← HttpService.decodeSessionHeaders(sessionHeaders)
-          predicate ← Right(!sessionHeadersValue.exists { case (hname, _) ⇒ hname.toLowerCase == name.toLowerCase })
+          predicate ← Right(!sessionHeadersValue.exists { case (hName, _) ⇒ hName.toLowerCase == name.toLowerCase })
         } yield CustomMessageEqualityAssertion(true, predicate, () ⇒ headersContainFieldWithNameError(name, sessionHeadersValue))
       }
     )

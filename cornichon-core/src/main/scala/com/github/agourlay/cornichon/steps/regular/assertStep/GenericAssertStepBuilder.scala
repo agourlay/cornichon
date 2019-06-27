@@ -2,12 +2,12 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.{ Eq, Order, Show }
 import cats.syntax.show._
-import com.github.agourlay.cornichon.core.{ CornichonError, Session }
+import com.github.agourlay.cornichon.core.{ CornichonError, ScenarioContext }
 
 abstract class GenericAssertStepBuilder[A: Show: Order: Eq: Diff] {
 
   protected val baseTitle: String
-  protected def sessionExtractor(s: Session): Either[CornichonError, (A, Option[() ⇒ String])]
+  protected def sessionExtractor(sc: ScenarioContext): Either[CornichonError, (A, Option[() ⇒ String])]
 
   def is(expected: A): AssertStep = {
     val fullTitle = s"$baseTitle is '$expected'"

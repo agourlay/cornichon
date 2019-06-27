@@ -10,28 +10,40 @@ import com.github.agourlay.cornichon.matchers.Matchers._
 import com.github.agourlay.cornichon.util.Caching
 import io.circe.Json
 
-case class MatcherResolver(matchers: List[Matcher] = Nil) {
+object MatcherResolver {
 
-  private val allMatchers = MatcherResolver.builtInMatchers ::: matchers
-  private val allMatchersByKey = allMatchers.groupBy(_.key)
+  private val matchersCache = Caching.buildCache[String, Either[CornichonError, List[MatcherKey]]]()
 
-  // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for matchers.
-  // There is one resolver per Feature so the cache is not living too long.
-  private val matchersCache = Caching.buildCache[String, Either[CornichonError, List[Matcher]]]()
+  val builtInMatchers: List[Matcher] =
+    isPresent ::
+      isNull ::
+      anyString ::
+      anyArray ::
+      anyObject ::
+      anyInteger ::
+      anyPositiveInteger ::
+      anyNegativeInteger ::
+      anyUUID ::
+      anyBoolean ::
+      anyAlphaNum ::
+      anyDate ::
+      anyDateTime ::
+      anyTime ::
+      Nil
 
   def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] =
     MatcherParser.parse(input)
 
-  def resolveMatcherKeys(mk: MatcherKey): Either[CornichonError, Matcher] =
-    allMatchersByKey.get(mk.key) match {
+  def resolveMatcherKeys(allMatchers: Map[String, List[Matcher]])(mk: MatcherKey): Either[CornichonError, Matcher] =
+    allMatchers.get(mk.key) match {
       case None              ⇒ MatcherUndefined(mk.key).asLeft
       case Some(Nil)         ⇒ MatcherUndefined(mk.key).asLeft
       case Some(m :: Nil)    ⇒ m.asRight
       case Some(m :: others) ⇒ DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)).asLeft
     }
 
-  def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] =
-    matchersCache.get(input, i ⇒ findMatcherKeys(i).flatMap(_.traverse(resolveMatcherKeys)))
+  def findAllMatchers(allMatchers: Map[String, List[Matcher]])(input: String): Either[CornichonError, List[Matcher]] =
+    matchersCache.get(input, i ⇒ findMatcherKeys(i)).flatMap(_.traverse(resolveMatcherKeys(allMatchers)))
 
   // Add quotes around known matchers
   def quoteMatchers(input: String, matchersToQuote: List[Matcher]): String =
@@ -54,26 +66,6 @@ case class MatcherResolver(matchers: List[Matcher] = Nil) {
           (newExpected, newActual, pathAssertions.map(_._2))
         }
     }
-}
-
-object MatcherResolver {
-
-  val builtInMatchers: List[Matcher] =
-    isPresent ::
-      isNull ::
-      anyString ::
-      anyArray ::
-      anyObject ::
-      anyInteger ::
-      anyPositiveInteger ::
-      anyNegativeInteger ::
-      anyUUID ::
-      anyBoolean ::
-      anyAlphaNum ::
-      anyDate ::
-      anyDateTime ::
-      anyTime ::
-      Nil
 }
 
 case class MatcherUndefined(name: String) extends CornichonError {

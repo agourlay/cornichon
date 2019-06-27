@@ -7,7 +7,7 @@ import cats.syntax.either._
 import cats.syntax.validated._
 import cats.syntax.apply._
 import com.github.agourlay.cornichon.core.Done.rightDone
-import com.github.agourlay.cornichon.core.{ RandomContext, _ }
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 import com.github.agourlay.cornichon.util.Timing._
@@ -95,7 +95,7 @@ case class CheckModelStep[A, B, C, D, E, F](
             FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
 
           case _ ⇒
-            SuccessLogInstruction(s"Check block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
+            SuccessLogInstruction(s"Check model block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
         }
         (runState.mergeNested(checkState, fullLogs), res)
     }

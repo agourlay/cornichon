@@ -18,16 +18,17 @@ class AddValuesBench {
 
   //sbt:benchmarks> jmh:run .*AddValues.* -prof gc -foe true -gc true -rf csv
 
-  @Param(Array("1", "2", "3", "5", "10"))
+  @Param(Array("1", "2", "3", "4", "5", "10"))
   var insertNumber: String = ""
 
   /*
   [info] Benchmark                 (insertNumber)   Mode  Cnt        Score       Error  Units
-  [info] AddValuesBench.addValues               1  thrpt   10  6340605.917 ± 1144511.766  ops/s
-  [info] AddValuesBench.addValues               2  thrpt   10  4407327.951 ±   21119.301  ops/s
-  [info] AddValuesBench.addValues               3  thrpt   10  2164558.453 ±    3107.111  ops/s
-  [info] AddValuesBench.addValues               5  thrpt   10  1488271.191 ±    3462.505  ops/s
-  [info] AddValuesBench.addValues              10  thrpt   10   809096.566 ±    3380.935  ops/s
+  [info] AddValuesBench.addValues               1  thrpt   10  7221200.170 ± 25630.672  ops/s
+  [info] AddValuesBench.addValues               2  thrpt   10  4455484.006 ± 16331.895  ops/s
+  [info] AddValuesBench.addValues               3  thrpt   10  2180160.733 ±  3846.665  ops/s
+  [info] AddValuesBench.addValues               4  thrpt   10  1751734.128 ±  6915.557  ops/s
+  [info] AddValuesBench.addValues               5  thrpt   10  1486845.132 ±  6748.036  ops/s
+  [info] AddValuesBench.addValues              10  thrpt   10   784736.989 ± 22766.361  ops/s
   */
   @Benchmark
   def addValues() = {

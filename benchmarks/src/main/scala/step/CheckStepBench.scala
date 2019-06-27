@@ -3,8 +3,6 @@ package step
 import java.util.concurrent.{ ExecutorService, Executors }
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.matchers.MatcherResolver
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import monix.execution.Scheduler
 import org.openjdk.jmh.annotations._
 import com.github.agourlay.cornichon.check._
@@ -47,11 +45,11 @@ class CheckStepBench {
   }
   /*
 [info] Benchmark                (transitionNumber)   Mode  Cnt      Score     Error  Units
-[info] CheckStepBench.runModel                  10  thrpt   10  34220.496 ±  71.293  ops/s
-[info] CheckStepBench.runModel                  20  thrpt   10  24294.561 ± 385.750  ops/s
-[info] CheckStepBench.runModel                  50  thrpt   10  14380.225 ± 141.274  ops/s
-[info] CheckStepBench.runModel                 100  thrpt   10   6306.461 ±  47.306  ops/s
-[info] CheckStepBench.runModel                 200  thrpt   10   3302.245 ±  18.204  ops/s
+[info] CheckStepBench.runModel                  10  thrpt   10  38383.334 ±  370.299  ops/s
+[info] CheckStepBench.runModel                  20  thrpt   10  26802.047 ±  441.715  ops/s
+[info] CheckStepBench.runModel                  50  thrpt   10  14620.691 ±   82.412  ops/s
+[info] CheckStepBench.runModel                 100  thrpt   10   7614.196 ±   82.952  ops/s
+[info] CheckStepBench.runModel                 200  thrpt   10   4019.746 ±   51.299  ops/s
   */
 
   @Benchmark
@@ -66,9 +64,6 @@ class CheckStepBench {
 }
 
 object CheckStepBench {
-  val resolver = PlaceholderResolver.default()
-  val matcherResolver = MatcherResolver()
-
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
     gen = () ⇒ rc.seededRandom.nextInt(10000))
@@ -76,7 +71,7 @@ object CheckStepBench {
   def dummyProperty1(name: String): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property1(
       description = name,
-      invariant = g ⇒ EffectStep.fromSyncE("add generated", _.addValue("generated", g().toString)))
+      invariant = g ⇒ EffectStep.fromSyncE("add generated", _.session.addValue("generated", g().toString)))
 
   val starting = dummyProperty1("starting action")
   val otherAction = dummyProperty1("other action")

@@ -10,12 +10,12 @@ import monix.execution.Scheduler
 
 import scala.concurrent.duration.Duration
 
-case class EffectStep[F[_]: Effect](title: String, effect: Session ⇒ F[Either[CornichonError, Session]], show: Boolean = true) extends SessionValueStep {
+case class EffectStep[F[_]: Effect](title: String, effect: ScenarioContext ⇒ F[Either[CornichonError, Session]], show: Boolean = true) extends SessionValueStep {
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
   override def runSessionValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
-    Task.fromEffect(effect(runState.session)).map(_.leftMap(NonEmptyList.one))
+    Task.fromEffect(effect(runState.scenarioContext)).map(_.leftMap(NonEmptyList.one))
 
   override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
     errorsToFailureStep(this, runState.depth, errors)
@@ -27,26 +27,26 @@ case class EffectStep[F[_]: Effect](title: String, effect: Session ⇒ F[Either[
 
 object EffectStep {
 
-  def fromEitherT[F[_]: Effect](title: String, effect: Session ⇒ EitherT[F, CornichonError, Session], show: Boolean = true): Step = {
-    val effectT: Session ⇒ F[Either[CornichonError, Session]] = s ⇒ effect(s).value
+  def fromEitherT[F[_]: Effect](title: String, effect: ScenarioContext ⇒ EitherT[F, CornichonError, Session], show: Boolean = true): Step = {
+    val effectT: ScenarioContext ⇒ F[Either[CornichonError, Session]] = s ⇒ effect(s).value
     EffectStep(title, effectT, show)
   }
 
-  def fromSync(title: String, effect: Session ⇒ Session, show: Boolean = true): Step = {
+  def fromSync(title: String, effect: ScenarioContext ⇒ Session, show: Boolean = true): Step = {
     import Scheduler.Implicits.global
-    val effectF: Session ⇒ Task[Either[CornichonError, Session]] = s ⇒ Task.now(effect(s).asRight)
+    val effectF: ScenarioContext ⇒ Task[Either[CornichonError, Session]] = s ⇒ Task.now(effect(s).asRight)
     EffectStep(title, effectF, show)
   }
 
-  def fromSyncE(title: String, effect: Session ⇒ Either[CornichonError, Session], show: Boolean = true): Step = {
+  def fromSyncE(title: String, effect: ScenarioContext ⇒ Either[CornichonError, Session], show: Boolean = true): Step = {
     import Scheduler.Implicits.global
-    val effectF: Session ⇒ Task[Either[CornichonError, Session]] = s ⇒ Task.now(effect(s))
+    val effectF: ScenarioContext ⇒ Task[Either[CornichonError, Session]] = s ⇒ Task.now(effect(s))
     EffectStep(title, effectF, show)
   }
 
-  def fromAsync[F[_]: Effect](title: String, effect: Session ⇒ F[Session], show: Boolean = true): Step = {
+  def fromAsync[F[_]: Effect](title: String, effect: ScenarioContext ⇒ F[Session], show: Boolean = true): Step = {
     import Scheduler.Implicits.global
-    val effectF: Session ⇒ Task[Either[CornichonError, Session]] = s ⇒ Task.fromEffect(effect(s)).map(Right.apply)
+    val effectF: ScenarioContext ⇒ Task[Either[CornichonError, Session]] = s ⇒ Task.fromEffect(effect(s)).map(Right.apply)
     EffectStep(title, effectF, show)
   }
 

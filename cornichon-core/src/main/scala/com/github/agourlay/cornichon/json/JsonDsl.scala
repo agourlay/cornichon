@@ -12,6 +12,6 @@ trait JsonDsl {
   def show_key_as_json(key: String, indice: Option[Int] = None): Step =
     show_session(key, indice, v ⇒ parseJson(v) map (_.show))
 
-  def session_json_values(k1: String, k2: String) = JsonValuesStepBuilder(k1, k2, placeholderResolver)
+  def session_json_values(k1: String, k2: String) = JsonValuesStepBuilder(k1, k2)
 
 }

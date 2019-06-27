@@ -1,15 +1,17 @@
 package com.github.agourlay.cornichon.core
 
-import FeatureExecutionContext._
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
+import FeatureContext._
+import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
+import com.github.agourlay.cornichon.resolver.Mapper
 
-case class FeatureExecutionContext(
+case class FeatureContext(
     beforeSteps: List[Step],
     finallySteps: List[Step],
     featureIgnored: Boolean,
     focusedScenarios: Set[String],
     withSeed: Option[Long],
-    placeholderResolver: PlaceholderResolver) {
+    customExtractors: Map[String, Mapper],
+    allMatchers: Map[String, List[Matcher]]) {
 
   def isIgnored(scenario: Scenario): Option[String] =
     if (featureIgnored)
@@ -27,14 +29,15 @@ case class FeatureExecutionContext(
     scenario.pending
 }
 
-object FeatureExecutionContext {
-  val empty = FeatureExecutionContext(
+object FeatureContext {
+  val empty = FeatureContext(
     beforeSteps = Nil,
     finallySteps = Nil,
     featureIgnored = false,
     focusedScenarios = Set.empty,
     withSeed = Some(1L),
-    placeholderResolver = PlaceholderResolver.default())
+    customExtractors = Map.empty,
+    allMatchers = MatcherResolver.builtInMatchers.groupBy(_.key))
   private val someFeatureIgnored = Some("feature ignored")
   private val someNoFocus = Some("no focus")
 }

@@ -19,7 +19,7 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
       val s = Scenario("scenario with Concurrently", steps)
-      engine.runScenario(Session.newEmpty)(s).map {
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
           f.failedSteps.head.errors.head.renderedMessage should be("expected result was:\n'true'\nbut actual result is:\n'false'")
         case _ ⇒ assert(false)
@@ -36,7 +36,7 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
       val s = Scenario("scenario with Concurrently", steps)
-      engine.runScenario(Session.newEmpty)(s).map {
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Concurrently block did not reach completion in time: 0/1 finished")
         case _                        ⇒ assert(false)
       }
@@ -54,7 +54,7 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       )
       val concurrentlyStep = ConcurrentlyStep(List.fill(loop)(nested), 300.millis)
       val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         uglyCounter.intValue() should be(loop)
       }

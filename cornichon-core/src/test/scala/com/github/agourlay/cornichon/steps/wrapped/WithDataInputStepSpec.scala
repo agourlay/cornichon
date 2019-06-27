@@ -22,9 +22,9 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
           | 0  0 | 0 |
         """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
+      val withDataInputStep = WithDataInputStep(nested, inputs)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-      val res = engine.runScenario(Session.newEmpty)(s)
+      val res = ScenarioRunner.runScenario(Session.newEmpty)(s)
       res.map(_.isSuccess should be(false))
     }
 
@@ -41,9 +41,9 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
           | 0 | 0 | 0 |
         """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
+      val withDataInputStep = WithDataInputStep(nested, inputs)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
     "execute all steps if successful" in {
@@ -63,9 +63,9 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
         | 0 | 0 | 0 |
       """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
+      val withDataInputStep = WithDataInputStep(nested, inputs)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-      val res = engine.runScenario(Session.newEmpty)(s)
+      val res = ScenarioRunner.runScenario(Session.newEmpty)(s)
       res.map { res ⇒
         res.isSuccess should be(true)
         uglyCounter should be(3)
@@ -75,7 +75,8 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "inject values in session" in {
       val nested = AssertStep(
         "sum of 'a' + 'b' = 'c'",
-        s ⇒ {
+        sc ⇒ {
+          val s = sc.session
           val sum = s.getUnsafe("a").toInt + s.getUnsafe("b").toInt
           GenericEqualityAssertion(sum, s.getUnsafe("c").toInt)
         }
@@ -88,16 +89,17 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
           | 1 | -1 | 0  |
         """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
+      val withDataInputStep = WithDataInputStep(nested, inputs)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-      val res = engine.runScenario(Session.newEmpty)(s)
+      val res = ScenarioRunner.runScenario(Session.newEmpty)(s)
       res.map(_.isSuccess should be(true))
     }
 
     "resolve placeholder" in {
       val nested = AssertStep(
         "building URL",
-        s ⇒ {
+        sc ⇒ {
+          val s = sc.session
           val url = s.getUnsafe("endpoint") + "/" + s.getUnsafe("resource")
           GenericEqualityAssertion(url, s.getUnsafe("url"))
         }
@@ -109,9 +111,9 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
           | "api"    | "<other>"  | "api/customers" |
         """
 
-      val withDataInputStep = WithDataInputStep(nested, inputs, resolver)
+      val withDataInputStep = WithDataInputStep(nested, inputs)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-      val res = engine.runScenario(Session.newEmpty.addValueUnsafe("other", "customers"))(s)
+      val res = ScenarioRunner.runScenario(Session.newEmpty.addValueUnsafe("other", "customers"))(s)
       res.map(_.isSuccess should be(true))
     }
   }

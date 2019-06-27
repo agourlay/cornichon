@@ -4,8 +4,6 @@ import java.util.concurrent.{ ExecutorService, Executors }
 
 import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.matchers.MatcherResolver
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import monix.execution.Scheduler
 import org.openjdk.jmh.annotations._
 import cats.instances.string._
@@ -43,13 +41,13 @@ class JsonStepBench {
   }
 
   /*
-[info] Benchmark                          Mode  Cnt       Score      Error  Units
-[info] JsonStepBench.jsonIgnoreIs        thrpt   10   173287.000 ±   851.190  ops/s
-[info] JsonStepBench.jsonIs              thrpt   10   160768.072 ±   283.836  ops/s
-[info] JsonStepBench.jsonMatchersIs      thrpt   10    48469.556 ±    80.382  ops/s
-[info] JsonStepBench.jsonPathIs          thrpt   10   329925.168 ±  1879.597  ops/s
-[info] JsonStepBench.jsonPlaceholdersIs  thrpt   10    50429.236 ±   187.052  ops/s
-[info] JsonStepBench.jsonWhitelistingIs  thrpt   10   129291.143 ±   893.171  ops/s
+[info] Benchmark                          Mode  Cnt       Score        Error  Units
+[info] JsonStepBench.jsonIgnoreIs        thrpt   10   156868.898 ±  2387.007  ops/s
+[info] JsonStepBench.jsonIs              thrpt   10   149942.604 ±   275.062  ops/s
+[info] JsonStepBench.jsonMatchersIs      thrpt   10    43171.132 ±    99.635  ops/s
+[info] JsonStepBench.jsonPathIs          thrpt   10   318615.786 ±   643.034  ops/s
+[info] JsonStepBench.jsonPlaceholdersIs  thrpt   10    49132.037 ±    70.851  ops/s
+[info] JsonStepBench.jsonWhitelistingIs  thrpt   10   120792.614 ±   516.992  ops/s
   */
 
   @Benchmark
@@ -150,10 +148,8 @@ class JsonStepBench {
 }
 
 object JsonStepBench {
-  val resolver = PlaceholderResolver.default()
-  val matcherResolver = MatcherResolver()
   val testKey = "test-key"
-  val jsonStepBuilder = JsonStepBuilder(resolver, matcherResolver, SessionKey(testKey), Some("test body"))
+  val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))
   val json = """
     {
       "name": "Batman",

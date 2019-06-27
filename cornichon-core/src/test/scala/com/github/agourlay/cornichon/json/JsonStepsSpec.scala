@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.matchers.MatcherResolver
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
@@ -19,9 +18,8 @@ class JsonStepsSpec extends AsyncWordSpec
   with OptionValues
   with StepUtilSpec {
 
-  private val matcherResolver = MatcherResolver()
   private val testKey = "test-key"
-  private val jsonStepBuilder = JsonStepBuilder(resolver, matcherResolver, SessionKey(testKey), Some("test body"))
+  private val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))
 
   "JsonStep" when {
     "JsonStepBuilder" must {
@@ -29,7 +27,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
         val step = jsonStepBuilder.is("test")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -38,7 +36,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
         val step = jsonStepBuilder.isNot("test")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -47,7 +45,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
         val step = jsonStepBuilder.is("{test:")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -55,7 +53,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
         val step = jsonStepBuilder.isNot("test1")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -64,7 +62,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
         val step = jsonStepBuilder.isNot("test")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -73,7 +71,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey").is("myValue")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -82,7 +80,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey").isPresent
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -91,7 +89,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey2").isPresent
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -100,7 +98,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey2").isAbsent
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -109,7 +107,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey").isAbsent
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -118,7 +116,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : null }""")
         val step = jsonStepBuilder.path("myKey").isNull
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -127,7 +125,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "notNull" }""")
         val step = jsonStepBuilder.path("myKey").isNull
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -136,7 +134,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey1").is("myValue")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -145,7 +143,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
         val step = jsonStepBuilder.ignoring("myKey").is("""{ "myKeyOther" : "myOtherValue" }""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -154,7 +152,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
         val step = jsonStepBuilder.ignoring("myKey").is("""{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -163,7 +161,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
         val step = jsonStepBuilder.ignoring("myKey", "myKey1").is("""{ "myKeyOther" : "myOtherValue" }""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -172,7 +170,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
         val step = jsonStepBuilder.whitelisting.is("""{ "myKeyOther" : "myOtherValue" }""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -181,7 +179,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : 1, "myKeyOther" : "myOtherValue" }""")
         val step = jsonStepBuilder.is("""{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -190,7 +188,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : 1, "myKeyOther" : "myOtherValue" }]""")
         val step = jsonStepBuilder.is("""[{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }]""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -201,7 +199,7 @@ class JsonStepsSpec extends AsyncWordSpec
           val session = Session.newEmpty.addValuesUnsafe(testKey -> json.spaces2)
           val step = jsonStepBuilder.is(json)
           val s = Scenario("scenario with JsonSteps", step :: Nil)
-          val t = engine.runScenario(session)(s).map { r ⇒
+          val t = ScenarioRunner.runScenario(session)(s).map { r ⇒
             withClue(LogInstruction.renderLogs(r.logs)) {
               r.isSuccess should be(true)
             }
@@ -220,7 +218,7 @@ class JsonStepsSpec extends AsyncWordSpec
           val fullPlaceholderJsonObj = jsonOb.add("myKeyOther", Json.fromString("<a-placeholder>"))
           val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
           val s = Scenario("scenario with JsonSteps", step :: Nil)
-          val t = engine.runScenario(session)(s).map { r ⇒
+          val t = ScenarioRunner.runScenario(session)(s).map { r ⇒
             withClue(LogInstruction.renderLogs(r.logs)) {
               r.isSuccess should be(true)
             }
@@ -236,7 +234,7 @@ class JsonStepsSpec extends AsyncWordSpec
           val fullPlaceholderJsonObj = jsonOb.add("myKeyOther", Json.fromString("<a-placeholder>"))
           val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
           val s = Scenario("scenario with JsonSteps", step :: Nil)
-          val t = engine.runScenario(session)(s).map { r ⇒
+          val t = ScenarioRunner.runScenario(session)(s).map { r ⇒
             withClue(LogInstruction.renderLogs(r.logs)) {
               r.isSuccess should be(false)
             }
@@ -257,7 +255,7 @@ class JsonStepsSpec extends AsyncWordSpec
 
         val step = jsonStepBuilder.is(instance.asJson)
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -268,7 +266,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
         val step = jsonStepBuilder.asArray.is("test")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -277,7 +275,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.is("""["a", "b". "c" ]""")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -286,7 +284,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.hasSize(3)
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -296,7 +294,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.size.is(3)
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -305,7 +303,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.size.isGreaterThan(2)
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -314,7 +312,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.size.isLessThan(4)
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -323,7 +321,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.size.isBetween(2, 4)
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -332,7 +330,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.isNotEmpty
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -341,7 +339,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """[]""")
         val step = jsonStepBuilder.asArray.isNotEmpty
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -350,7 +348,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """[]""")
         val step = jsonStepBuilder.asArray.isEmpty
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -359,7 +357,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.isEmpty
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -368,7 +366,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.hasSize(2)
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -377,7 +375,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.is("""["a", "c", "b" ]""")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -386,7 +384,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.inOrder.is("""["a", "c", "b" ]""")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -395,7 +393,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.contains("b")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -404,7 +402,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.contains("d")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
         }
       }
@@ -413,7 +411,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.not_contains("d")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -422,7 +420,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.not_contains("d")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -431,7 +429,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
         val step = jsonStepBuilder.asArray.ignoringEach("myKey").is("""[{ "myKeyOther" : "myOtherValue" }]""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -440,7 +438,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
         val step = jsonStepBuilder.asArray.ignoringEach("myKey").is("""[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -449,7 +447,7 @@ class JsonStepsSpec extends AsyncWordSpec
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
         val step = jsonStepBuilder.asArray.ignoringEach("$.*.myKey").is("""{ "myKeyOther" : *any-string* }""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
-        engine.runScenario(session)(s).map {
+        ScenarioRunner.runScenario(session)(s).map {
           case f: FailureScenarioReport ⇒
             f.failedSteps.head.errors.head.renderedMessage should be(
               """

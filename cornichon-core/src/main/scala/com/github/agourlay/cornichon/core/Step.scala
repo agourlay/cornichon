@@ -19,7 +19,7 @@ sealed trait Step {
 }
 
 object NoOpStep extends Step {
-  def title: String = "noOp"
+  val title: String = "noOp"
   def setTitle(newTitle: String): Step = this
   val stateUpdate: StepState = StateT { runState ⇒ Task.now(runState -> rightDone) }
 }

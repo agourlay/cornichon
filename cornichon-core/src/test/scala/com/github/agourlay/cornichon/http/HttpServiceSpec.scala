@@ -6,7 +6,6 @@ import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Config, Session }
 import com.github.agourlay.cornichon.http.HttpMethods.GET
 import com.github.agourlay.cornichon.http.client.NoOpHttpClient
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 
 import monix.execution.Scheduler.Implicits.global
 
@@ -21,7 +20,7 @@ class HttpServiceSpec extends WordSpec
   with EitherMatchers {
 
   val client = new NoOpHttpClient
-  val service = new HttpService("", 2000.millis, client, PlaceholderResolver.default(), Config())
+  val service = new HttpService("", 2000.millis, client, Config())
   val dummyRequest = HttpRequest[String](GET, "", None, Nil, Nil)
 
   "HttpService" when {

@@ -6,49 +6,75 @@ import java.util.regex.Matcher
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver._
 import com.github.agourlay.cornichon.util.Caching
 
-class PlaceholderResolver(extractors: Map[String, Mapper], withSeed: Option[Long] = None) {
+object PlaceholderResolver {
 
-  // FIXME - should be globally seeded to reproduce tests
-  private val r = RandomContext.fromOptSeed(withSeed).seededRandom
-
-  // When steps are nested (repeat, eventually, retryMax) it is wasteful to repeat the parsing process of looking for placeholders.
-  // There is one resolver per Feature so the cache is not living too long.
+  private val rightNil = Nil.asRight
   private val placeholdersCache = Caching.buildCache[String, Either[CornichonError, List[Placeholder]]]()
 
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
     placeholdersCache.get(input, k ⇒ PlaceholderParser.parse(k))
 
-  private def resolvePlaceholder(ph: Placeholder)(session: Session): Either[CornichonError, String] =
-    builtInPlaceholders.lift(ph.key).map(Right.apply).getOrElse {
+  private def resolvePlaceholder(ph: Placeholder)(session: Session, random: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
+    builtInPlaceholders(random).lift(ph.key).map(Right.apply).getOrElse {
       val otherKeyName = ph.key
       val otherKeyIndice = ph.index
-      (session.get(otherKeyName, otherKeyIndice), extractors.get(otherKeyName)) match {
+      (session.get(otherKeyName, otherKeyIndice), customExtractors.get(otherKeyName)) match {
         case (v, None)               ⇒ v
-        case (Left(_), Some(mapper)) ⇒ applyMapper(otherKeyName, mapper, session, ph)
+        case (Left(_), Some(mapper)) ⇒ applyMapper(otherKeyName, mapper, ph)(session, random)
         case (Right(_), Some(_))     ⇒ AmbiguousKeyDefinition(otherKeyName).asLeft
       }
     }
 
-  private def builtInPlaceholders: PartialFunction[String, String] = {
+  def fillPlaceholdersResolvable[A: Resolvable](resolvableInput: A)(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, A] = {
+    val ri = Resolvable[A]
+    val resolvableForm = ri.toResolvableForm(resolvableInput)
+    fillPlaceholders(resolvableForm)(session, randomContext, customExtractors).map { resolved ⇒
+      // If the input did not contain placeholders,
+      // we can return the original value directly
+      // and avoid an extra transformation from the resolved form
+      if (resolved == resolvableForm) resolvableInput else ri.fromResolvableForm(resolved)
+    }
+  }
+
+  def fillPlaceholders(input: String)(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
+    findPlaceholders(input).flatMap {
+      _.foldLeft(input.asRight[CornichonError]) { (accE, ph) ⇒
+        for {
+          acc ← accE
+          resolvedValue ← resolvePlaceholder(ph)(session, randomContext, customExtractors)
+        } yield ph.pattern.matcher(acc).replaceAll(Matcher.quoteReplacement(resolvedValue))
+      }
+    }
+
+  def fillPlaceholdersMany(params: Seq[(String, String)])(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, List[(String, String)]] =
+    params.foldRight[Either[CornichonError, List[(String, String)]]](rightNil) { (p, accE) ⇒
+      val (name, value) = p
+      for {
+        acc ← accE
+        resolvedName ← fillPlaceholders(name)(session, randomContext, customExtractors)
+        resolvedValue ← fillPlaceholders(value)(session, randomContext, customExtractors)
+      } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
+    }
+
+  private def builtInPlaceholders(r: RandomContext): PartialFunction[String, String] = {
     case "random-uuid"             ⇒ UUID.randomUUID().toString
-    case "random-positive-integer" ⇒ r.nextInt(10000).toString
-    case "random-string"           ⇒ r.nextString(5)
-    case "random-alphanum-string"  ⇒ r.alphanumeric.take(5).mkString("")
-    case "random-boolean"          ⇒ r.nextBoolean().toString
-    case "random-timestamp"        ⇒ (Math.abs(System.currentTimeMillis - r.nextLong()) / 1000).toString
+    case "random-positive-integer" ⇒ r.seededRandom.nextInt(10000).toString
+    case "random-string"           ⇒ r.seededRandom.nextString(5)
+    case "random-alphanum-string"  ⇒ r.seededRandom.alphanumeric.take(5).mkString("")
+    case "random-boolean"          ⇒ r.seededRandom.nextBoolean().toString
+    case "random-timestamp"        ⇒ (Math.abs(System.currentTimeMillis - r.seededRandom.nextLong()) / 1000).toString
     case "current-timestamp"       ⇒ (System.currentTimeMillis / 1000).toString
   }
 
-  private def applyMapper(bindingKey: String, m: Mapper, session: Session, ph: Placeholder): Either[CornichonError, String] = m match {
+  private def applyMapper(bindingKey: String, m: Mapper, ph: Placeholder)(session: Session, randomContext: RandomContext): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) ⇒
       Either.catchNonFatal(gen()).leftMap(SimpleMapperError(ph.fullKey, _))
     case SessionMapper(gen) ⇒
       gen(session).leftMap(SessionMapperError(ph.fullKey, _))
     case RandomMapper(gen) ⇒
-      Either.catchNonFatal(gen(r)).leftMap(RandomMapperError(ph.fullKey, _))
+      Either.catchNonFatal(gen(randomContext.seededRandom)).leftMap(RandomMapperError(ph.fullKey, _))
     case HistoryMapper(key, transform) ⇒
       session.getHistory(key)
         .leftMap { o: CornichonError ⇒ MapperKeyNotFoundInSession(bindingKey, o) }
@@ -67,43 +93,6 @@ class PlaceholderResolver(extractors: Map[String, Mapper], withSeed: Option[Long
             .map(transform)
         }
   }
-
-  def fillPlaceholders[A: Resolvable](input: A)(session: Session): Either[CornichonError, A] = {
-    val ri = Resolvable[A]
-    val resolvableForm = ri.toResolvableForm(input)
-    fillPlaceholders(resolvableForm)(session).map { resolved ⇒
-      // If the input did not contain placeholders,
-      // we can return the original value directly
-      // and avoid an extra transformation from the resolved form
-      if (resolved == resolvableForm) input else ri.fromResolvableForm(resolved)
-    }
-  }
-
-  def fillPlaceholders(input: String)(session: Session): Either[CornichonError, String] =
-    findPlaceholders(input).flatMap {
-      _.foldLeft(input.asRight[CornichonError]) { (accE, ph) ⇒
-        for {
-          acc ← accE
-          resolvedValue ← resolvePlaceholder(ph)(session)
-        } yield ph.pattern.matcher(acc).replaceAll(Matcher.quoteReplacement(resolvedValue))
-      }
-    }
-
-  def fillPlaceholders(params: Seq[(String, String)])(session: Session): Either[CornichonError, List[(String, String)]] =
-    params.foldRight[Either[CornichonError, List[(String, String)]]](rightNil) { (p, accE) ⇒
-      val (name, value) = p
-      for {
-        acc ← accE
-        resolvedName ← fillPlaceholders(name)(session)
-        resolvedValue ← fillPlaceholders(value)(session)
-      } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
-    }
-
-}
-
-object PlaceholderResolver {
-  def default(): PlaceholderResolver = new PlaceholderResolver(Map.empty[String, Mapper], None)
-  private val rightNil = Nil.asRight
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {

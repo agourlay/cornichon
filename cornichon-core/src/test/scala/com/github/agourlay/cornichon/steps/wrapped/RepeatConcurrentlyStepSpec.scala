@@ -20,7 +20,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       ) :: Nil
       val steps = RepeatConcurrentlyStep(times = 3, nested, parallelism = 1, 200.millis) :: Nil
       val s = Scenario("scenario with RepeatConcurrently", steps)
-      engine.runScenario(Session.newEmpty)(s).map {
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒
           f.failedSteps.head.errors.head.renderedMessage should be("expected result was:\n'true'\nbut actual result is:\n'false'")
         case _ ⇒ assert(false)
@@ -37,7 +37,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       ) :: Nil
       val steps = RepeatConcurrentlyStep(times = 1, nested, parallelism = 1, 200.millis) :: Nil
       val s = Scenario("scenario with RepeatConcurrently", steps)
-      engine.runScenario(Session.newEmpty)(s).map {
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
         case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Repeat concurrently block did not reach completion in time: 0/1 finished")
         case _                        ⇒ assert(false)
       }
@@ -55,7 +55,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       ) :: Nil
       val concurrentlyStep = RepeatConcurrentlyStep(times = loop, nested, parallelism = 2, 300.millis)
       val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         uglyCounter.intValue() should be(loop)
       }
@@ -65,13 +65,13 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       val steps = Range.inclusive(1, 5).map { i ⇒
         EffectStep.fromSyncE(
           title = s"set $i in the session",
-          effect = _.addValue("indice", i.toString)
+          effect = _.session.addValue("indice", i.toString)
         )
       }
       val repeatFactor = 5
       val concurrentlyStep = RepeatConcurrentlyStep(times = repeatFactor, steps.toList, repeatFactor, 300.millis)
       val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         res.session.getHistory("indice").valueUnsafe should be(Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
 

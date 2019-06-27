@@ -16,10 +16,10 @@ class MacroErrorSpec extends WordSpec with Matchers {
           val feature =
             Feature("foo") {
               Scenario("aaa") {
-                EffectStep.fromSync("just testing", identity)
+                EffectStep.fromSync("just testing", _.session)
 
                 Repeat(10) {
-                  EffectStep.fromAsync("just testing repeat", s => Future.successful(s))
+                  EffectStep.fromAsync("just testing repeat", sc => Future.successful(sc.session))
                 }
               }
             }
@@ -38,10 +38,10 @@ class MacroErrorSpec extends WordSpec with Matchers {
             Feature("foo") {
               import scala.concurrent.Future
               Scenario("aaa") {
-                EffectStep.fromSync("just testing", identity)
+                EffectStep.fromSync("just testing", _.session)
 
                 Repeat(10) {
-                  EffectStep.fromAsync("just testing repeat", s => Future.successful(s))
+                  EffectStep.fromAsync("just testing repeat", sc => Future.successful(sc.session))
                 }
               }
             }
@@ -59,12 +59,12 @@ class MacroErrorSpec extends WordSpec with Matchers {
           val feature =
             Feature("foo") {
               Scenario("aaa") {
-                EffectStep.fromAsync("just testing", s => Future.successful(s))
+                EffectStep.fromAsync("just testing", sc => Future.successful(sc.session))
 
                 val oops = "Hello World!"
 
                 Repeat(10) {
-                  EffectStep.fromSync("just testing repeat", identity)
+                  EffectStep.fromSync("just testing repeat", _.session)
                 }
               }
             }

@@ -3,7 +3,8 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.{ _ }
+
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.CoreDsl._
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
@@ -20,7 +21,9 @@ import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient,
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
+
 import io.circe.{ Encoder, Json }
+
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
@@ -35,7 +38,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   lazy val baseUrl: String = config.baseUrl
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, placeholderResolver, config)
+    new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, config)
 
   lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
@@ -86,7 +89,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     HeadersStepBuilder
 
   //FIXME the body is expected to always contains JSON currently
-  private lazy val jsonStepBuilder = JsonStepBuilder(placeholderResolver, matcherResolver, HttpDsl.lastBodySessionKey, HttpDsl.bodyBuilderTitle)
+  private lazy val jsonStepBuilder = JsonStepBuilder(HttpDsl.lastBodySessionKey, HttpDsl.bodyBuilderTitle)
   def body: JsonStepBuilder = jsonStepBuilder
 
   def save_body(target: String): Step =
@@ -96,9 +99,9 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     save_from_session {
       args.map {
         case (path, target) ⇒
-          FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (session, s) ⇒ {
+          FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (sc, s) ⇒ {
             for {
-              resolvedPath ← placeholderResolver.fillPlaceholders(path)(session)
+              resolvedPath ← sc.fillPlaceholders(path)
               jsonPath ← JsonPath.parse(resolvedPath)
               json ← jsonPath.runStrict(s)
             } yield jsonStringValue(json)
@@ -116,20 +119,26 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
       }
     }
 
-  private def showLastResponse[A: Show](title: String)(parse: String ⇒ Either[CornichonError, A]) = DebugStep(title, s ⇒
-    for {
-      headers ← s.get(lastResponseHeadersKey)
-      decodedHeaders ← decodeSessionHeaders(headers)
-      status ← s.get(lastResponseStatusKey)
-      body ← s.get(lastResponseBodyKey)
-      bodyParsed ← parse(body)
-    } yield {
-      s"""Show last response
-         |headers: ${printArrowPairs(decodedHeaders)}
-         |status : $status
-         |body   : ${bodyParsed.show}
-     """.stripMargin
-    })
+  private def showLastResponse[A: Show](title: String)(parse: String ⇒ Either[CornichonError, A]) =
+    DebugStep(
+      title = title,
+      message = sc ⇒ {
+        val s = sc.session
+        for {
+          headers ← s.get(lastResponseHeadersKey)
+          decodedHeaders ← decodeSessionHeaders(headers)
+          status ← s.get(lastResponseStatusKey)
+          body ← s.get(lastResponseBodyKey)
+          bodyParsed ← parse(body)
+        } yield {
+          s"""Show last response
+             |headers: ${printArrowPairs(decodedHeaders)}
+             |status : $status
+             |body   : ${bodyParsed.show}
+         """.stripMargin
+        }
+      }
+    )
 
   def show_last_response: Step = showLastResponse("show last response")(_.asRight)
   def show_last_response_json: Step = showLastResponse[Json]("show last response JSON")(parseJson)
@@ -177,11 +186,9 @@ trait HttpDslOps {
               s.addValue(withHeadersKey, encodeSessionHeaders(keep))
           }
       }
-
 }
 
 object HttpDsl {
-
   val lastBodySessionKey = SessionKey(lastResponseBodyKey)
   val bodyBuilderTitle = Some("response body")
 

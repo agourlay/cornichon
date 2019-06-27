@@ -9,13 +9,13 @@ import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 
-case class AssertStep(title: String, action: Session ⇒ Assertion, show: Boolean = true) extends LogValueStep[Done] {
+case class AssertStep(title: String, action: ScenarioContext ⇒ Assertion, show: Boolean = true) extends LogValueStep[Done] {
 
   def setTitle(newTitle: String) = copy(title = newTitle)
 
   override def runLogValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Done]] =
     Task.now {
-      val assertion = action(runState.session)
+      val assertion = action(runState.scenarioContext)
       assertion.validated match {
         case Invalid(e) ⇒ e.asLeft
         case _          ⇒ Done.rightDone

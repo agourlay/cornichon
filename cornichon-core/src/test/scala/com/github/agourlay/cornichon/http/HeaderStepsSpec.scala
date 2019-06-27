@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.core.{ Scenario, Session }
+import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.HeadersSteps.HeadersStepBuilder
 import com.github.agourlay.cornichon.steps.StepUtilSpec
@@ -24,7 +24,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
         val step = HeadersStepBuilder.name("test-key").isPresent
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -33,7 +33,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "test")
         val step = HeadersStepBuilder.name("test-key").isPresent
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -42,7 +42,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
         val step = HeadersStepBuilder.name("test-key2").isAbsent
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -54,7 +54,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test", "test-key2" -> "test")
         val step = HeadersStepBuilder.hasSize(2)
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -63,7 +63,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-key" -> "Test")
         val step = HeadersStepBuilder.is("test-key" -> "Test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -72,7 +72,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "Test")
         val step = HeadersStepBuilder.is("test-key" -> "Test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -81,7 +81,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
         val step = HeadersStepBuilder.contain("test-key" -> "test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }
@@ -90,7 +90,7 @@ class HeaderStepsSpec extends AsyncWordSpec
         val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "Test")
         val step = HeadersStepBuilder.contain("test-key" -> "Test")
         val s = Scenario("scenario with HeaderSteps", step :: Nil)
-        engine.runScenario(session)(s).map { r ⇒
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
         }
       }

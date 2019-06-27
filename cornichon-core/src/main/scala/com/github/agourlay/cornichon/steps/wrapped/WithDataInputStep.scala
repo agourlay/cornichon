@@ -6,12 +6,11 @@ import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.ScenarioRunner._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.core.core.StepState
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.util.Timing._
 import com.github.agourlay.cornichon.util.Printing._
 import monix.eval.Task
 
-case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderResolver) extends WrapperStep {
+case class WithDataInputStep(nested: List[Step], where: String) extends WrapperStep {
 
   val title = s"With data input block $where"
 
@@ -38,7 +37,7 @@ case class WithDataInputStep(nested: List[Step], where: String, r: PlaceholderRe
         }
       }
 
-    r.fillPlaceholders(where)(runState.session)
+    runState.scenarioContext.fillPlaceholders(where)
       .flatMap(CornichonJson.parseDataTable)
       .fold(
         t ⇒ Task.now(handleErrors(this, runState, NonEmptyList.one(t))),

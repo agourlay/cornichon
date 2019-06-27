@@ -60,7 +60,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
       "incorrect case" in {
         val maxRun = 10
         var uglyCounter = 0
-        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ { uglyCounter = uglyCounter + 1; sc.session })
 
         val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ ⇒
           val assert = if (uglyCounter < 5) alwaysValidAssertStep else brokenEffect
@@ -94,7 +94,7 @@ class ForAllStepSpec extends AsyncWordSpec with Matchers with ProvidedInstances 
       "with maxNumberOfRuns" in {
         val maxRun = 100
         var uglyCounter = 0
-        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ { uglyCounter = uglyCounter + 1; sc.session })
 
         val forAllStep = for_all("fails", maxNumberOfRuns = maxRun, integerGen)(_ ⇒ incrementEffect)
         val s = Scenario("scenario with forAllStep", forAllStep :: Nil)

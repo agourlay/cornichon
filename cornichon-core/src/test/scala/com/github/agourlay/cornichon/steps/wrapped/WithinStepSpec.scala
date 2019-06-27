@@ -21,7 +21,7 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val withinStep = WithinStep(nested, d)
       val s = Scenario("scenario with Within", withinStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
     }
 
     "fail if duration of 'within' is exceeded" in {
@@ -35,7 +35,7 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val withinStep = WithinStep(nested, d)
       val s = Scenario("scenario with Within", withinStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
   }
 

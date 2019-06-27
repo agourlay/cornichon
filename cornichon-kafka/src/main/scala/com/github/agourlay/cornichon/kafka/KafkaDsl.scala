@@ -34,7 +34,7 @@ trait KafkaDsl {
 
   def put_topic(topic: String, key: String, message: String): Step = EffectStep.fromAsync(
     title = s"put message=$message with key=$key to topic=$topic",
-    effect = s ⇒ {
+    effect = sc ⇒ {
       val pr = new ProducerRecord[String, String](topic, key, message)
       val cp = CancelablePromise[Unit]()
       featureProducer.send(pr, new Callback {
@@ -44,13 +44,13 @@ trait KafkaDsl {
           else
             cp.failure(exception)
       })
-      Task.fromCancelablePromise(cp).map(_ ⇒ s)
+      Task.fromCancelablePromise(cp).map(_ ⇒ sc.session)
     }
   )
 
   def read_from_topic(topic: String, atLeastAmount: Int = 1, timeoutMs: Int = 500): Step = EffectStep[Task](
     title = s"reading the last $atLeastAmount messages from topic=$topic",
-    effect = s ⇒ Task.delay {
+    effect = sc ⇒ Task.delay {
       featureConsumer.subscribe(Seq(topic).asJava)
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
@@ -67,7 +67,7 @@ trait KafkaDsl {
         NotEnoughMessagesPolled(atLeastAmount, messages.toList).asLeft
       else {
         messages.drop(messages.size - atLeastAmount)
-        val newSession = messages.foldLeft(s) { (session, value) ⇒
+        val newSession = messages.foldLeft(sc.session) { (session, value) ⇒
           commonSessionExtraction(session, topic, value).valueUnsafe
         }
         newSession.asRight
@@ -75,11 +75,7 @@ trait KafkaDsl {
     }
   )
 
-  def kafka(topic: String) = KafkaStepBuilder(
-    sessionKey = topic,
-    placeholderResolver = placeholderResolver,
-    matcherResolver = matcherResolver
-  )
+  def kafka(topic: String) = KafkaStepBuilder(sessionKey = topic)
 
   private def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
     session.addValues(

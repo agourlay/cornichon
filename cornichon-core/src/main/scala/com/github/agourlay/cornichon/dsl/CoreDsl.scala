@@ -6,7 +6,7 @@ import cats.syntax.show._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
-import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
@@ -19,7 +19,7 @@ import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
 
 trait CoreDsl extends ProvidedInstances {
-  this: BaseFeature ⇒
+  this: BaseFeature ⇒ //baseFeature brings the executionContext
 
   def Feature(name: String) = FeatureBuilder(name)
 
@@ -122,80 +122,87 @@ trait CoreDsl extends ProvidedInstances {
 
   def WithDataInputs(where: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
-      WithDataInputStep(steps, where, placeholderResolver)
+      WithDataInputStep(steps, where)
     }
 
   def wait(duration: FiniteDuration): Step = EffectStep.fromAsync(
     title = s"wait for ${duration.toMillis} millis",
-    effect = s ⇒ Task.delay(s).delayExecution(duration)
+    effect = sc ⇒ Task.delay(sc.session).delayExecution(duration)
   )
 
   def save(input: (String, String), show: Boolean = true): Step = {
     val (key, value) = input
     EffectStep.fromSyncE(
       title = s"add value '$value' to session under key '$key' ",
-      effect = s ⇒ placeholderResolver.fillPlaceholders(value)(s).flatMap(s.addValue(key, _)),
+      effect = sc ⇒ {
+        sc.fillPlaceholders(value).flatMap(sc.session.addValue(key, _))
+      },
       show = show
     )
   }
 
   def remove(key: String): Step = EffectStep.fromSync(
     title = s"remove '$key' from session",
-    effect = _.removeKey(key)
+    effect = _.session.removeKey(key)
   )
 
   def rollback(key: String, show: Boolean = true): Step = EffectStep.fromSyncE(
     title = s"rollback '$key' in session",
-    effect = _.rollbackKey(key),
+    effect = _.session.rollbackKey(key),
     show = show
   )
 
   def transform_session(key: String)(map: String ⇒ String): Step = EffectStep.fromSyncE(
     title = s"transform '$key' from session",
-    effect = s ⇒ {
+    effect = sc ⇒ {
       for {
-        v ← s.get(key)
+        v ← sc.session.get(key)
         tv ← Either.catchNonFatal(map(v)).leftMap(CornichonError.fromThrowable)
-        ns ← s.addValue(key, tv)
+        ns ← sc.session.addValue(key, tv)
       } yield ns
     }
   )
 
   def session_value(key: String): SessionStepBuilder =
-    SessionStepBuilder(placeholderResolver, matcherResolver, key)
+    SessionStepBuilder(key)
 
   def session_values(k1: String, k2: String): SessionValuesStepBuilder =
-    SessionValuesStepBuilder(placeholderResolver, k1, k2)
+    SessionValuesStepBuilder(k1, k2)
 
   def show_session: Step =
-    DebugStep("show session", s ⇒ s"Session content is\n${s.show}".asRight)
+    DebugStep("show session", sc ⇒ s"Session content is\n${sc.session.show}".asRight)
 
   def show_session(
     key: String,
     indice: Option[Int] = None,
     transform: String ⇒ Either[CornichonError, String] = _.asRight) =
-    DebugStep(s"show session value for key $key", s ⇒
+    DebugStep(s"show session value for key $key", sc ⇒
       for {
-        v ← s.get(key, indice)
+        v ← sc.session.get(key, indice)
         transformed ← transform(v)
       } yield s"Session content for key '${SessionKey(key, indice).show}' is\n$transformed"
     )
 
   def print_step(message: String): Step =
-    DebugStep("print step", placeholderResolver.fillPlaceholders(message))
+    DebugStep("print step", _.fillPlaceholders(message))
 }
 
 object CoreDsl {
 
-  case class FromSessionSetter(fromKey: String, target: String, title: String, trans: (Session, String) ⇒ Either[CornichonError, String])
+  case class FromSessionSetter(
+      fromKey: String,
+      target: String,
+      title: String,
+      trans: (ScenarioContext, String) ⇒ Either[CornichonError, String])
 
   def save_from_session(args: Seq[FromSessionSetter]): Step =
     EffectStep.fromSyncE(
       s"${args.map(_.title).mkString(" and ")}",
-      session ⇒ {
+      sc ⇒ {
+        val session = sc.session
         for {
           allValues ← session.getList(args.map(_.fromKey))
-          extracted ← allValues.zip(args.map(_.trans)).traverse { case (value, extractor) ⇒ extractor(session, value) }
+          extracted ← allValues.zip(args.map(_.trans)).traverse { case (value, extractor) ⇒ extractor(sc, value) }
           newSession ← args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) ⇒ s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }

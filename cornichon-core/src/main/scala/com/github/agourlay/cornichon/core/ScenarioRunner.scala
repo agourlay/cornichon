@@ -53,7 +53,7 @@ object ScenarioRunner {
     errorLogs :+ failureLogTitle
   }
 
-  final def runScenario(session: Session, context: FeatureExecutionContext = FeatureExecutionContext.empty)(scenario: Scenario): Task[ScenarioReport] =
+  final def runScenario(session: Session, context: FeatureContext = FeatureContext.empty)(scenario: Scenario): Task[ScenarioReport] =
     context.isIgnored(scenario) match {
       case Some(reason) ⇒
         Task.now(IgnoreScenarioReport(scenario.name, reason, session))
@@ -69,8 +69,7 @@ object ScenarioRunner {
         } yield Foldable[List].fold(beforeResult :: mainResult :: mainCleanupResult :: finallyResult :: finallyCleanupResult :: Nil)
 
         val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
-        val randomContext = RandomContext.fromOptSeed(context.withSeed)
-        val startingRunState = RunState(context.placeholderResolver, randomContext, session, titleLog :: Nil, initMargin + 1, Nil)
+        val startingRunState = RunState.fromFeatureContext(context, session, titleLog :: Nil, initMargin + 1, Nil)
         val now = System.nanoTime
         stages.run(startingRunState).map {
           case (lastState, aggregatedResult) ⇒
@@ -134,7 +133,7 @@ object ScenarioRunner {
   }
 
   private def prepareAndRunStep(step: Step, runState: RunState): Task[(RunState, FailedStep Either Done)] =
-    runState.placeholderResolver.fillPlaceholders(step.title)(runState.session)
+    runState.scenarioContext.fillPlaceholders(step.title)
       .map(step.setTitle)
       .fold(
         ce ⇒ Task.now(ScenarioRunner.handleErrors(step, runState, NonEmptyList.one(ce))),

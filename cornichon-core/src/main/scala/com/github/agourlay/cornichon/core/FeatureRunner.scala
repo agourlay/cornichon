@@ -1,18 +1,20 @@
 package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.dsl.BaseFeature
+import com.github.agourlay.cornichon.matchers.MatcherResolver
 import monix.eval.Task
 import monix.reactive.Observable
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, explicitSeed: Option[Long]) {
 
-  private val featureContext = FeatureExecutionContext(
+  private val featureContext = FeatureContext(
     beforeSteps = baseFeature.beforeEachScenario.toList,
     finallySteps = baseFeature.afterEachScenario.toList,
     featureIgnored = featureDef.ignored.isDefined,
     focusedScenarios = featureDef.focusedScenarios,
     withSeed = explicitSeed.orElse(baseFeature.seed),
-    placeholderResolver = baseFeature.placeholderResolver
+    customExtractors = baseFeature.registerExtractors,
+    allMatchers = (MatcherResolver.builtInMatchers ::: baseFeature.registerMatchers).groupBy(_.key)
   )
 
   final def runScenario(s: Scenario): Task[ScenarioReport] = {

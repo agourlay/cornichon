@@ -20,7 +20,7 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val retryMaxStep = RetryMaxStep(nested, loop)
       val s = Scenario("scenario with RetryMax", retryMaxStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(false)
         // Initial run + 'loop' retries
         uglyCounter should be(loop + 1)
@@ -39,7 +39,7 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val retryMaxStep = RetryMaxStep(nested, max)
       val s = Scenario("scenario with RetryMax", retryMaxStep :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         uglyCounter should be(max - 2)
       }

@@ -5,46 +5,41 @@ import cats.instances.boolean._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.matchers.MatcherResolver
-import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, CustomMessageEqualityAssertion, GenericEqualityAssertion }
 
 object SessionSteps {
 
   case class SessionValuesStepBuilder(
-      private val placeholderResolver: PlaceholderResolver,
       private val k1: String,
       private val k2: String) {
 
     def areEquals = AssertStep(
       title = s"content of session key '$k1' is equal to content of key '$k2'",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          v1 ← s.get(k1)
-          v2 ← s.get(k2)
+          v1 ← sc.session.get(k1)
+          v2 ← sc.session.get(k2)
         } yield GenericEqualityAssertion(v1, v2)
       }
     )
 
     def areNotEquals = AssertStep(
       title = s"content of session key '$k1' is not equal to content of key '$k2'",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          v1 ← s.get(k1)
-          v2 ← s.get(k2)
+          v1 ← sc.session.get(k1)
+          v2 ← sc.session.get(k2)
         } yield GenericEqualityAssertion(v1, v2, negate = true)
       }
     )
   }
 
   case class SessionStepBuilder(
-      private val placeholderResolver: PlaceholderResolver,
-      private val matcherResolver: MatcherResolver,
       private val key: String,
       private val indice: Option[Int] = None
   ) {
 
-    def atIndex(indice: Int) = copy(indice = Some(indice))
+    def atIndex(indice: Int): SessionStepBuilder = copy(indice = Some(indice))
 
     def is(expected: String): AssertStep = isImpl(expected, negate = false)
 
@@ -52,26 +47,26 @@ object SessionSteps {
 
     private def isImpl(expected: String, negate: Boolean) = AssertStep(
       title = s"session key '$key' ${if (negate) "is not" else "is"} '$expected'",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          filledPlaceholders ← placeholderResolver.fillPlaceholders(expected)(s)
-          keyValue ← s.get(key, indice)
+          filledPlaceholders ← sc.fillPlaceholders(expected)
+          keyValue ← sc.session.get(key, indice)
         } yield GenericEqualityAssertion(filledPlaceholders, keyValue, negate = negate)
       }
     )
 
     def isPresent = AssertStep(
       title = s"session contains key '$key'",
-      action = s ⇒ {
-        val predicate = s.getOpt(key, indice).isDefined
-        CustomMessageEqualityAssertion(true, predicate, () ⇒ keyIsAbsentError(key, s.show))
+      action = sc ⇒ {
+        val predicate = sc.session.getOpt(key, indice).isDefined
+        CustomMessageEqualityAssertion(true, predicate, () ⇒ keyIsAbsentError(key, sc.session.show))
       }
     )
 
     def isAbsent = AssertStep(
       title = s"session does not contain key '$key'",
-      action = s ⇒
-        s.getOpt(key, indice) match {
+      action = sc ⇒
+        sc.session.getOpt(key, indice) match {
           case None        ⇒ Assertion.alwaysValid
           case Some(value) ⇒ CustomMessageEqualityAssertion(false, true, () ⇒ keyIsPresentError(key, value))
         }
@@ -79,10 +74,10 @@ object SessionSteps {
 
     def hasEqualCurrentAndPreviousValues = AssertStep(
       title = s"session key '$key' has equal current and previous values",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          current ← s.get(key)
-          previous ← s.getPrevious(key)
+          current ← sc.session.get(key)
+          previous ← sc.session.getPrevious(key)
         } yield previous match {
           case None                ⇒ Assertion.failWith(s"no previous value available to compare to current $current")
           case Some(previousValue) ⇒ GenericEqualityAssertion(current, previousValue)
@@ -92,10 +87,10 @@ object SessionSteps {
 
     def hasDifferentCurrentAndPreviousValues = AssertStep(
       title = s"session key '$key' has different current and previous values",
-      action = s ⇒ Assertion.either {
+      action = sc ⇒ Assertion.either {
         for {
-          current ← s.get(key)
-          previous ← s.getPrevious(key)
+          current ← sc.session.get(key)
+          previous ← sc.session.getPrevious(key)
         } yield previous match {
           case None                ⇒ Assertion.failWith(s"no previous value available to compare to current $current")
           case Some(previousValue) ⇒ GenericEqualityAssertion(current, previousValue, negate = true)
@@ -103,7 +98,7 @@ object SessionSteps {
       }
     )
 
-    def asJson = JsonStepBuilder(placeholderResolver, matcherResolver, SessionKey(key))
+    def asJson = JsonStepBuilder(SessionKey(key))
 
   }
 

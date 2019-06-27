@@ -31,28 +31,27 @@ object StatusSteps {
   case object StatusStepBuilder {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = s ⇒ Assertion.either {
-        s.get(lastResponseStatusKey).map { lastResponseStatus ⇒
-          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, () ⇒ statusError(expected, lastResponseStatus, s))
+      action = sc ⇒ Assertion.either {
+        sc.session.get(lastResponseStatusKey).map { lastResponseStatus ⇒
+          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, () ⇒ statusError(expected, lastResponseStatus, sc.session))
         }
       }
     )
 
     private def isByKind(expectedKind: Int) = AssertStep(
       title = s"status is ${StatusKind.kindLabel(expectedKind)} '${StatusKind.kindDisplay(expectedKind)}'",
-      action = s ⇒ Assertion.either {
-        s.get(lastResponseStatusKey).map { lastResponseStatus ⇒
+      action = sc ⇒ Assertion.either {
+        sc.session.get(lastResponseStatusKey).map { lastResponseStatus ⇒
           val actualKind = StatusKind.computeKind(lastResponseStatus.toInt)
-          CustomMessageEqualityAssertion(expectedKind, actualKind, () ⇒ statusKindError(expectedKind, lastResponseStatus, s))
+          CustomMessageEqualityAssertion(expectedKind, actualKind, () ⇒ statusKindError(expectedKind, lastResponseStatus, sc.session))
         }
       }
     )
 
-    def isSuccess = isByKind(2)
-    def isRedirect = isByKind(3)
-    def isClientError = isByKind(4)
-    def isServerError = isByKind(5)
-
+    def isSuccess: AssertStep = isByKind(2)
+    def isRedirect: AssertStep = isByKind(3)
+    def isClientError: AssertStep = isByKind(4)
+    def isServerError: AssertStep = isByKind(5)
   }
 
   def statusError(expected: Int, actual: String, session: Session): String = {

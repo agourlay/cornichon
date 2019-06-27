@@ -3,8 +3,8 @@ package com.github.agourlay.cornichon.dsl
 import java.util.concurrent.ConcurrentLinkedDeque
 
 import com.github.agourlay.cornichon.core.{ Config, Done, FeatureDef, Step }
-import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
-import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver }
+import com.github.agourlay.cornichon.matchers.Matcher
+import com.github.agourlay.cornichon.resolver.Mapper
 import monix.execution.Scheduler
 
 import scala.annotation.tailrec
@@ -23,17 +23,15 @@ trait BaseFeature {
   lazy val executeScenariosInParallel: Boolean = config.executeScenariosInParallel
 
   lazy val seed: Option[Long] = None
-  lazy val placeholderResolver = new PlaceholderResolver(registerExtractors, seed)
-  lazy val matcherResolver = new MatcherResolver(registerMatcher)
 
-  // Convenient implicits for the custom DSL's
+  // Convenient implicits for the custom DSL
   implicit lazy val ec = Scheduler.Implicits.global
 
   def feature: FeatureDef
 
   def registerExtractors: Map[String, Mapper] = Map.empty
 
-  def registerMatcher: List[Matcher] = Nil
+  def registerMatchers: List[Matcher] = Nil
 
   def beforeFeature(before: ⇒ Unit): Unit =
     beforeFeature += (() ⇒ before)
@@ -57,7 +55,7 @@ object BaseFeature {
 
   private val hooks = new ConcurrentLinkedDeque[() ⇒ Future[_]]()
 
-  def addShutdownHook(h: () ⇒ Future[_]) =
+  def addShutdownHook(h: () ⇒ Future[_]): Unit =
     hooks.push(h)
 
   def shutDownGlobalResources(): Future[Done] = {

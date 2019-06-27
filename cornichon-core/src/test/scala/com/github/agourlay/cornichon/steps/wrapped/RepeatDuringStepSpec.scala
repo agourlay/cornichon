@@ -17,7 +17,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       ) :: Nil
       val repeatDuring = RepeatDuringStep(nested, 5.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuring :: Nil)
-      engine.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
 
     "repeat steps inside 'repeatDuring' for at least the duration param" in {
@@ -31,7 +31,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val repeatDurinStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDurinStep :: Nil)
       val now = System.nanoTime
-      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         withClue(executionTime.toMillis) {
@@ -53,7 +53,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
       val now = System.nanoTime
-      engine.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         val executionTime = Duration.fromNanos(System.nanoTime - now)
         withClue(executionTime.toMillis) {

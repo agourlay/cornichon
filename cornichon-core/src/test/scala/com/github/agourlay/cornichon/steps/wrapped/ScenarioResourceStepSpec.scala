@@ -25,7 +25,7 @@ class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtil
       )
       val scenario = Scenario("", resourceStep :: fail :: Nil)
 
-      val run = engine.runScenario(Session.newEmpty)(scenario)
+      val run = ScenarioRunner.runScenario(Session.newEmpty)(scenario)
 
       run.map { report ⇒
         val qName = report.session.get("the-queue").right.get
@@ -42,7 +42,7 @@ class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtil
       val resourceStep2 = ScenarioResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), deleteQueue("q2"))
       val scenario = Scenario("resource step scenario", resourceStep1 :: fail :: resourceStep2 :: Nil)
 
-      val run = engine.runScenario(Session.newEmpty)(scenario)
+      val run = ScenarioRunner.runScenario(Session.newEmpty)(scenario)
 
       run.map { rep ⇒
         val q1 = rep.session.get("q1").right.get
@@ -56,7 +56,7 @@ class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtil
       val resourceSteps = is.map(i ⇒ ScenarioResourceStep(s"ensure q$i exists", createAndStoreQueueInSession(s"q$i"), deleteQueue(s"q$i")))
       val scenario = Scenario("resource step scenario", resourceSteps)
 
-      val run = engine.runScenario(Session.newEmpty)(scenario)
+      val run = ScenarioRunner.runScenario(Session.newEmpty)(scenario)
 
       run.map { rep ⇒
         def q(i: Int) = rep.session.get(s"q$i").right.get
@@ -71,7 +71,7 @@ class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtil
       val resourceStep3 = ScenarioResourceStep("ensure q3 exists", createAndStoreQueueInSession("q3"), failToDeleteQueue("q3"))
       val scenario = Scenario("resource step scenario", resourceStep1 :: resourceStep2 :: resourceStep3 :: Nil)
 
-      val run = engine.runScenario(Session.newEmpty)(scenario)
+      val run = ScenarioRunner.runScenario(Session.newEmpty)(scenario)
 
       run.map { rep ⇒
         val q1 = rep.session.get("q1").right.get
@@ -85,20 +85,20 @@ class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtil
   private def createAndStoreQueueInSession(key: String)(implicit queueResource: QueueManager) =
     EffectStep(
       s"create the queue: $key",
-      s ⇒ F {
+      sc ⇒ F {
         val name = key + "-" + randomName
         queueResource.create(name)
-        s.addValue(key, name)
+        sc.session.addValue(key, name)
       }
     )
 
   private def deleteQueue(key: String)(implicit queueResource: QueueManager) =
     EffectStep(
       s"delete the queue: $key",
-      s ⇒ Future {
+      sc ⇒ Future {
         Thread.sleep(Random.nextInt(500).toLong) // To prove that steps are executed in sequence, it's useful to have them take varying amounts of time (so, if they were being executed in parallel the order would be non-deterministic)
-        queueResource.delete(s.get(key).right.get)
-        Right(s)
+        queueResource.delete(sc.session.get(key).right.get)
+        Right(sc.session)
       }
     )
 

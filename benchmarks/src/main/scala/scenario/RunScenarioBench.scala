@@ -1,4 +1,4 @@
-package engine
+package scenario
 
 import java.util.concurrent.{ ExecutorService, Executors }
 
@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
-import engine.RunScenarioBench._
+import scenario.RunScenarioBench._
 import monix.execution.Scheduler
 
 import scala.concurrent.Await
@@ -45,11 +45,11 @@ class RunScenarioBench {
 
   /*
 [info] Benchmark                     (stepsNumber)   Mode  Cnt       Score     Error  Units
-[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  201744.142 ± 383.851  ops/s
-[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  122674.232 ± 440.603  ops/s
-[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   51052.932 ± 892.777  ops/s
-[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   26376.429 ± 181.747  ops/s
-[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   13394.110 ± 183.945  ops/s
+[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  181242.825 ±  1134.861  ops/s
+[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  111107.596 ±  2055.684  ops/s
+[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   51680.691 ±   139.650  ops/s
+[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   27624.388 ±    49.305  ops/s
+[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   14191.329 ±    72.443  ops/s
  */
 
   @Benchmark
@@ -65,14 +65,14 @@ class RunScenarioBench {
 }
 
 object RunScenarioBench {
-  val setupSession = EffectStep.fromSyncE("setup session", _.addValues("v1" -> "2", "v2" -> "1"))
+  val setupSession = EffectStep.fromSyncE("setup session", _.session.addValues("v1" -> "2", "v2" -> "1"))
   val assertStep = AssertStep(
     "addition step",
-    s ⇒ Assertion.either {
+    sc ⇒ Assertion.either {
       for {
-        two ← s.get("v1").map(_.toInt)
-        one ← s.get("v2").map(_.toInt)
+        two ← sc.session.get("v1").map(_.toInt)
+        one ← sc.session.get("v2").map(_.toInt)
       } yield GenericEqualityAssertion(two + one, 3)
     })
-  val effectStep = EffectStep.fromSync("identity", s ⇒ s)
+  val effectStep = EffectStep.fromSync("identity", _.session)
 }

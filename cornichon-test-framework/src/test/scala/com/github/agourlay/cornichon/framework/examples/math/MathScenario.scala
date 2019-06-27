@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.framework.examples.math
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 
 import scala.concurrent.duration._
 
@@ -61,7 +60,7 @@ class MathScenario extends CornichonFeature with MathSteps {
           | 1 | -1 | 0  |
         """
       ) {
-          Then assert AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.getUnsafe("c").toInt, s.getUnsafe("a").toInt + s.getUnsafe("b").toInt))
+          Then assert is_valid_sum
         }
     }
   }

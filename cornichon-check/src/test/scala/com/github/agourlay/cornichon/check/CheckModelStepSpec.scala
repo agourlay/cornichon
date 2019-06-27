@@ -31,7 +31,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
 
   val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
 
-  val identityStep: Step = EffectStep.fromSync("identity effect step", identity)
+  val identityStep: Step = EffectStep.fromSync("identity effect step", _.session)
 
   def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = identityStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property1(
@@ -134,7 +134,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
       "with maxNumberOfRuns" in {
         val maxRun = 100
         var uglyCounter = 0
-        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ { uglyCounter = uglyCounter + 1; sc.session })
 
         val starting = dummyProperty1("starting property", step = incrementEffect)
         val otherAction = dummyProperty1("other property")
@@ -157,7 +157,7 @@ class CheckModelStepSpec extends AsyncWordSpec with Matchers with ProvidedInstan
       "with maxNumberOfTransitions (even with cyclic model)" in {
         val maxTransition = 100
         var uglyCounter = 0
-        val incrementEffect: Step = EffectStep.fromSync("identity", s ⇒ { uglyCounter = uglyCounter + 1; s })
+        val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ { uglyCounter = uglyCounter + 1; sc.session })
 
         val starting = dummyProperty1("starting property")
         val otherAction = dummyProperty1("other property", step = incrementEffect)
