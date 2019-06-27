@@ -138,21 +138,21 @@ trait DeckSteps {
 
   def verify_hand_score = AssertStep(
     title = "value of 'c1' with 'c2' is 'score'",
-    action = s ⇒ Assertion.either {
+    action = sc ⇒ Assertion.either {
       for {
-        score ← s.get("score").map(_.toInt)
-        c1 ← s.get("c1")
-        c2 ← s.get("c2")
+        score ← sc.session.get("score").map(_.toInt)
+        c1 ← sc.session.get("c1")
+        c2 ← sc.session.get("c2")
       } yield GenericEqualityAssertion(score, scoreBlackjackHand(c1, c2))
     }
   )
 
   def is_blackjack = AssertStep(
     title = s"current hand is Blackjack!",
-    action = s ⇒ Assertion.either {
+    action = sc ⇒ Assertion.either {
       for {
-        c1 ← s.get("c1")
-        c2 ← s.get("c2")
+        c1 ← sc.session.get("c1")
+        c2 ← sc.session.get("c2")
       } yield GenericEqualityAssertion(21, scoreBlackjackHand(c1, c2))
     }
   )
