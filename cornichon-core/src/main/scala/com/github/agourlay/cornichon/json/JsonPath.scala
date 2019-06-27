@@ -66,8 +66,8 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
       op match {
         case RootSelection                      ⇒ oc
         case FieldSelection(field)              ⇒ oc.map(_.downField(field))
-        case RootArrayElementSelection(indice)  ⇒ oc.map(_.downArray.rightN(indice))
-        case ArrayFieldSelection(field, indice) ⇒ oc.map(_.downField(field).downArray.rightN(indice))
+        case RootArrayElementSelection(indice)  ⇒ oc.map(_.downN(indice))
+        case ArrayFieldSelection(field, indice) ⇒ oc.map(_.downField(field).downN(indice))
         case RootArrayFieldProjection           ⇒ oc.flatMap(o ⇒ expandCursors(o, projectionMode))
         case ArrayFieldProjection(field)        ⇒ oc.flatMap(o ⇒ expandCursors(o.downField(field), projectionMode))
       }
