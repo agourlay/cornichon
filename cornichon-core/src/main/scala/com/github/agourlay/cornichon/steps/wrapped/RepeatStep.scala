@@ -9,7 +9,7 @@ import monix.eval.Task
 
 case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[String]) extends WrapperStep {
 
-  require(occurrence > 0, "repeat block must contain a positive number of occurence")
+  require(occurrence > 0, "repeat block must contain a positive number of occurrence")
 
   val title = s"Repeat block with occurrence '$occurrence'"
 
@@ -44,7 +44,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
         val depth = runState.depth
         val (logStack, res) = report.fold(
           failedStep ⇒ {
-            val wrappedLogStack = FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurence", depth, Some(executionTime)) +: repeatedState.logStack :+ failedTitleLog(depth)
+            val wrappedLogStack = FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurrence", depth, Some(executionTime)) +: repeatedState.logStack :+ failedTitleLog(depth)
             val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.errors))
             (wrappedLogStack, Left(artificialFailedStep))
           },
@@ -58,7 +58,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
   }
 }
 
-case class RepeatBlockContainFailedSteps(failedOccurence: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
-  val baseErrorMessage = s"Repeat block failed at occurence $failedOccurence"
+case class RepeatBlockContainFailedSteps(failedOccurrence: Int, errors: NonEmptyList[CornichonError]) extends CornichonError {
+  lazy val baseErrorMessage = s"Repeat block failed at occurrence $failedOccurrence"
   override val causedBy = errors.toList
 }

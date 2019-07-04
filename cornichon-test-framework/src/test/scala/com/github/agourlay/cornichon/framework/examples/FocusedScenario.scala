@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.CornichonFeature
 
 import scala.concurrent.duration._
 
-class FocusedExperimentalScenario extends CornichonFeature {
+class FocusedScenario extends CornichonFeature {
   def feature = Feature("feature with scenario focus") {
     Scenario("Scenario 1") {
       Given I wait(10 hours)

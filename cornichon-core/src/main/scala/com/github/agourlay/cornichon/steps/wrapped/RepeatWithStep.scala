@@ -59,6 +59,6 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
 }
 
 case class RepeatWithBlockContainFailedSteps(element: String, errors: NonEmptyList[CornichonError]) extends CornichonError {
-  val baseErrorMessage = s"RepeatWith block failed for element '$element'"
+  lazy val baseErrorMessage = s"RepeatWith block failed for element '$element'"
   override val causedBy = errors.toList
 }
