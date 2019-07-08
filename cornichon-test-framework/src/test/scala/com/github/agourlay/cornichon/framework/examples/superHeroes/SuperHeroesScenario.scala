@@ -264,30 +264,30 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate Gzip support") {
 
-        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>").withHeaders(
-          "Accept-Encoding" → "gzip"
-        )
+        RepeatWith("application/json", "gzip", "deflate")("encoding") {
 
-        Then assert status.is(200)
+          When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>").withHeaders(
+            "Accept-Encoding" → "<encoding>"
+          )
 
-        And assert body.is(
-          """
-          {
-            "name": "Batman",
-            "realName": "Bruce Wayne",
-            "city": "Gotham city",
-            "hasSuperpowers": false,
-            "publisher":{
-              "name":"DC",
-              "foundationYear":1934,
-              "location":"Burbank, California"
+          Then assert status.is(200)
+
+          And assert body.is(
+            """
+            {
+              "name": "Batman",
+              "realName": "Bruce Wayne",
+              "city": "Gotham city",
+              "hasSuperpowers": false,
+              "publisher":{
+                "name":"DC",
+                "foundationYear":1934,
+                "location":"Burbank, California"
+              }
             }
-          }
-          """
-        )
-
-        Then assert headers.contain("Content-Encoding" → "gzip")
-
+            """
+          )
+        }
       }
 
       Scenario("demonstrate collection features") {
@@ -594,7 +594,7 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Execute steps 10 times with parallelism factor of 3
-        RepeatConcurrently(times = 10, parallelism = 3, maxTime = 20 seconds) {
+        RepeatConcurrently(times = 10, parallelism = 3, maxTime = 20.seconds) {
 
           When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
 
@@ -602,7 +602,7 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Repeat serie of Steps until it succeed
-        Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
+        Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
@@ -626,7 +626,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
           Then assert status.is(200)
 
-          Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
+          Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
 
             When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
@@ -679,16 +679,16 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Assert that a serie of Steps succeeds within a given duration
-        Within(maxDuration = 200 millis) {
+        Within(maxDuration = 200.millis) {
 
-          When I wait(150 millis)
+          When I wait(150.millis)
 
         }
 
         // Blocks can be nested
-        RepeatConcurrently(times = 10, parallelism = 2, maxTime = 20 seconds) {
+        RepeatConcurrently(times = 10, parallelism = 2, maxTime = 20.seconds) {
 
-          Eventually(maxDuration = 10 seconds, interval = 10 milliseconds) {
+          Eventually(maxDuration = 10.seconds, interval = 10.milliseconds) {
 
             When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
 
@@ -708,7 +708,7 @@ class SuperHeroesScenario extends CornichonFeature {
       Scenario("demonstrate streaming support") {
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I open_sse("/sseStream/superheroes", takeWithin = 3 seconds).withParams(
+        When I open_sse("/sseStream/superheroes", takeWithin = 3.seconds).withParams(
           "sessionId" → "<session-id>",
           "justName" → "true"
         )
@@ -813,7 +813,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
   }
 
-  override def registerExtractors = Map(
+  override def registerExtractors: Map[String, JsonMapper] = Map(
     "name" → JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "name")
   )
 }

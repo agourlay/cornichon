@@ -14,14 +14,12 @@ import monix.execution.Scheduler
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.client.middleware.GZip
 
-import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.concurrent.duration._
 import scala.collection.breakOut
 import scala.concurrent.ExecutionContext
 
-// TODO Gzip support https://github.com/http4s/http4s/issues/1327
-// TODO SSE support https://github.com/http4s/http4s/issues/619
 class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClient {
   implicit val s = scheduler
 
@@ -38,6 +36,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
       .withResponseHeaderTimeout(defaultHighTimeout)
       .withRequestTimeout(defaultHighTimeout)
       .allocated
+      .map { case (client, shutdown) ⇒ GZip()(client) -> shutdown } // always adds `Accept-Encoding` `gzip`
       .runSyncUnsafe(10.seconds)
 
   private def httpMethodMapper(method: HttpMethod): Method = method match {
@@ -61,7 +60,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
       uri
     else {
       val q = Query.fromPairs(moreParams: _*)
-      //Not sure it is not most efficient way
+      // Not sure it is the most efficient way
       uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
     }
 
@@ -88,9 +87,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
           .withUri(addQueryParams(uri, cReq.params))
 
         val completeRequest = cReq.body.fold(req)(b ⇒ req.withEntity(b))
-
         val response = httpClient.fetch(completeRequest)(handleResponse).map(_.asRight[CornichonError])
-
         val timeout = Task.delay(TimeoutErrorAfter(cReq, t).asLeft).delayExecution(t)
 
         Task.race(response, timeout)
@@ -99,14 +96,11 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
       }
     )
 
+  // TODO SSE support https://github.com/http4s/http4s/issues/619
   def openStream(req: HttpStreamedRequest, t: FiniteDuration): Task[Either[CornichonError, CornichonHttpResponse]] = ???
 
   def shutdown(): Task[Done] =
-    safeShutdown
-      .map { _ ⇒
-        uriCache.invalidateAll()
-        Done
-      }
+    safeShutdown.map { _ ⇒ uriCache.invalidateAll(); Done }
 
   def paramsFromUrl(url: String): Either[CornichonError, List[(String, String)]] =
     if (url.contains('?'))
