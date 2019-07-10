@@ -116,8 +116,6 @@ lazy val core =
         library.http4sCirce,
         library.catsCore,
         library.catsMacro,
-        library.akkaStream,
-        library.akkaHttp,
         library.pureConfig,
         library.parboiled,
         library.fansi,
@@ -288,8 +286,6 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.0.8"
-      val akkaHttp      = "10.1.8"
-      val akkaStream    = "2.5.23"
       val cats          = "1.6.1"
       val parboiled     = "2.1.7"
       val scalaCheck    = "1.14.0"
@@ -307,8 +303,6 @@ lazy val library =
       val kafkaClient   = "2.3.0"
       val caffeine      = "2.7.0"
     }
-    val akkaStream    = "com.typesafe.akka"             %% "akka-stream"              % Version.akkaStream
-    val akkaHttp      = "com.typesafe.akka"             %% "akka-http"                % Version.akkaHttp
     val catsMacro     = "org.typelevel"                 %% "cats-macros"              % Version.cats
     val catsCore      = "org.typelevel"                 %% "cats-core"                % Version.cats
     val scalatest     = "org.scalatest"                 %% "scalatest"                % Version.scalaTest

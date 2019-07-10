@@ -10,7 +10,6 @@ case class Config(
     requestTimeout: FiniteDuration = 2000.millis,
     baseUrl: String = "",
     traceRequests: Boolean = false,
-    useExperimentalHttp4sClient: Boolean = false,
     warnOnDuplicateHeaders: Boolean = false,
     failOnDuplicateHeaders: Boolean = false,
     addAcceptGzipByDefault: Boolean = false

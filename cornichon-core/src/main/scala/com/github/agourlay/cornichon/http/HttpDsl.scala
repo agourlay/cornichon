@@ -17,7 +17,7 @@ import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.steps.cats.{ EffectStep ⇒ CEffectStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
-import com.github.agourlay.cornichon.http.client.{ AkkaHttpClient, Http4sClient, HttpClient }
+import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
@@ -193,12 +193,7 @@ object HttpDsl {
   val bodyBuilderTitle = Some("response body")
 
   lazy val globalHttpClient: HttpClient = {
-    val c = {
-      if (BaseFeature.config.useExperimentalHttp4sClient)
-        new Http4sClient(Scheduler.Implicits.global, scala.concurrent.ExecutionContext.global)
-      else
-        new AkkaHttpClient(scala.concurrent.ExecutionContext.global)
-    }
+    val c = new Http4sClient(Scheduler.Implicits.global, scala.concurrent.ExecutionContext.global)
     BaseFeature.addShutdownHook(() ⇒ c.shutdown().runToFuture(Scheduler.Implicits.global))
     c
   }
