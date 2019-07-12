@@ -22,9 +22,8 @@ import org.http4s.client.middleware.GZip
 
 import scala.concurrent.duration._
 import scala.collection.breakOut
-import scala.concurrent.ExecutionContext
 
-class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClient {
+class Http4sClient(scheduler: Scheduler) extends HttpClient {
   implicit val s = scheduler
 
   // Lives for the duration of the test run
@@ -32,7 +31,7 @@ class Http4sClient(scheduler: Scheduler, ec: ExecutionContext) extends HttpClien
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.fromNanos(Long.MaxValue)
   private val (httpClient, safeShutdown) =
-    BlazeClientBuilder(executionContext = ec)
+    BlazeClientBuilder(executionContext = scheduler)
       .withDefaultSslContext
       .withMaxTotalConnections(300)
       .withMaxWaitQueueLimit(500)

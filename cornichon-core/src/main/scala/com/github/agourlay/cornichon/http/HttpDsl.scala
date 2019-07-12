@@ -193,7 +193,7 @@ object HttpDsl {
   val bodyBuilderTitle = Some("response body")
 
   lazy val globalHttpClient: HttpClient = {
-    val c = new Http4sClient(Scheduler.Implicits.global, scala.concurrent.ExecutionContext.global)
+    val c = new Http4sClient(Scheduler.Implicits.global)
     BaseFeature.addShutdownHook(() ⇒ c.shutdown().runToFuture(Scheduler.Implicits.global))
     c
   }
