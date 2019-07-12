@@ -101,12 +101,14 @@ class Http4sClient(scheduler: Scheduler) extends HttpClient {
       }
     )
 
+  private val sseHeader = "text" → "event-stream"
+
   private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[Task, CornichonError, CornichonHttpResponse] = {
     parseUri(streamReq.url).fold(
       e ⇒ EitherT.left[CornichonHttpResponse](Task.now(e)),
       uri ⇒ EitherT {
         val req = Request[Task](org.http4s.Method.GET)
-          .withHeaders(toHttp4sHeaders(streamReq.addHeaders("text" → "event-stream").headers))
+          .withHeaders(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers))
           .withUri(addQueryParams(uri, streamReq.params))
 
         val cornichonResponse = httpClient.fetch(req) { http4sResp ⇒
