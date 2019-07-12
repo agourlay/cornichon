@@ -16,7 +16,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
   override val stateUpdate: StepState = StateT { runState ⇒
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[String]): Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
 
       def distinctErrorsWith(fs: FailedStep): Int =
         (fs :: knownErrors).toSet.size
@@ -25,8 +25,10 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
         knownErrors.toSet.size
 
       // Error already seen in the past with another error in between
-      def oscillationDetectedForFailedStep(fs: FailedStep): Boolean =
-        knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
+      def oscillationDetectedForFailedStep(fs: FailedStep): Boolean = {
+        val failedStepMessage = fs.messageForFailedStep
+        knownErrors.nonEmpty && failedStepMessage != knownErrors.head && knownErrors.tail.contains(failedStepMessage)
+      }
 
       withDuration {
         ScenarioRunner.runStepsShortCircuiting(nested, runState).delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
@@ -39,7 +41,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
               val updatedRunState = {
                 if (oscillationDetected) //oscillation detected - return the whole thing
                   newRunState
-                else if (!knownErrors.contains(failedStep)) //new error - return the whole thing
+                else if (!knownErrors.contains(failedStep.messageForFailedStep)) //new error - return the whole thing
                   newRunState
                 else // known error only propagate cleanup steps and session as we know the logs already
                   runState.registerCleanupSteps(newRunState.cleanupSteps).withSession(newRunState.session)
@@ -49,7 +51,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
                 val fsOscillation = FailedStep.fromSingle(this, EventuallyBlockOscillationDetected(failedStep))
                 Task.now((retriesNumber, distinctErrors, updatedRunState, fsOscillation.asLeft))
               } else if ((remainingTime - conf.interval).gt(Duration.Zero)) // Check that it could go through another loop after the interval
-                retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors)
+                retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, failedStep.messageForFailedStep :: knownErrors)
               else {
                 Task.now((retriesNumber, distinctErrorsWith(failedStep), updatedRunState, failedStep.asLeft))
               }
