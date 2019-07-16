@@ -66,7 +66,7 @@ trait HttpRequestsDsl {
 
 object HttpRequest extends HttpRequestsDsl {
 
-  implicit def showRequest[A: Show] = new Show[HttpRequest[A]] {
+  implicit def showRequest[A: Show]: Show[HttpRequest[A]] = new Show[HttpRequest[A]] {
     def show(r: HttpRequest[A]): String = {
       val body = r.body.fold("without body")(b ⇒ s"with body\n${b.show}")
       val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"

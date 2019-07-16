@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.http.client
 
+import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.syntax.show._
@@ -16,7 +17,6 @@ import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
 import org.http4s._
-import org.http4s.circe._
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.middleware.GZip
 
@@ -70,7 +70,7 @@ class Http4sClient(scheduler: Scheduler) extends HttpClient {
       uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
     }
 
-  override def runRequest(cReq: HttpRequest[Json], t: FiniteDuration): EitherT[Task, CornichonError, CornichonHttpResponse] =
+  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, CornichonHttpResponse] =
     parseUri(cReq.url).fold(
       e ⇒ EitherT.left[CornichonHttpResponse](Task.now(e)),
       uri ⇒ EitherT {
