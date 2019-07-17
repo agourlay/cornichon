@@ -24,14 +24,15 @@ class CheckModelEngine[A, B, C, D, E, F](
   private def checkStepConditions(runState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
     assertion.stateUpdate.runA(runState)
 
-  private def validTransitions(runState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] =
-    Task.gather {
-      transitions.map {
-        case (weight, properties) ⇒
-          checkStepConditions(runState)(properties.preCondition)
-            .map(preConditionsRes ⇒ (weight, properties, preConditionsRes.isRight))
-      }
+  private def validTransitions(runState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] = {
+    val stepsConditionValidations = transitions.map {
+      case (weight, properties) ⇒
+        checkStepConditions(runState)(properties.preCondition)
+          .map(preConditionsRes ⇒ (weight, properties, preConditionsRes.isRight))
     }
+    Task.gather(stepsConditionValidations)
+      .map(_.sortBy(_._1)) // We sort the result because `Task.gather` is non-deterministic to not break the seed
+  }
 
   def run(runState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting property
