@@ -4,7 +4,7 @@ import cats.Show
 import cats.syntax.show._
 import cats.instances.string._
 import com.github.agourlay.cornichon.core.CornichonError
-import com.github.agourlay.cornichon.json.CornichonJson.parseJsonUnsafe
+import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
 import com.github.agourlay.cornichon.util.Printing.printArrowPairs
 
 import scala.concurrent.duration.FiniteDuration
@@ -42,7 +42,7 @@ case class WsUpgradeError(status: Int) extends HttpError {
 case class StatusNonExpected[A: Show](expectedStatus: A, actualStatus: A, headers: Seq[(String, String)], rawBody: String) extends HttpError {
   lazy val baseErrorMessage = {
     // TODO do not assume that body is JSON - use content-type
-    val prettyBody = parseJsonUnsafe(rawBody).show
+    val prettyBody = parseDslJsonUnsafe(rawBody).show
     val headersMsg = if (headers.isEmpty) "" else s"and with headers:\n${printArrowPairs(headers)}"
     s"""expected status code '${expectedStatus.show}' but '${actualStatus.show}' was received with body:
        |$prettyBody

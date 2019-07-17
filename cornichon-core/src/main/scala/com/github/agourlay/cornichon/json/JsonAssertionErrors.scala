@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.json
 import io.circe.Json
 import cats.syntax.show._
 import cats.instances.string._
-import com.github.agourlay.cornichon.json.CornichonJson.parseJsonUnsafe
+import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.matchers.Matcher
 
@@ -15,7 +15,7 @@ object JsonAssertionErrors {
   }
 
   def keyIsAbsentError(keyName: String, source: String): String = {
-    val prettySource = parseJsonUnsafe(source).show
+    val prettySource = parseDslJsonUnsafe(source).show
     s"""expected key '$keyName' to be present but it was not in the source :
         |$prettySource""".stripMargin
   }

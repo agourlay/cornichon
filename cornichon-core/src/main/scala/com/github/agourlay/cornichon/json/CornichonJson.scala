@@ -22,26 +22,33 @@ import scala.collection.breakOut
 
 trait CornichonJson {
 
-  def parseJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
-    case s: String ⇒
-      val trimmed = s.trim
-      if (trimmed.isEmpty)
-        Json.fromString(s).asRight
-      else {
-        val firstChar = trimmed.head
-        if (firstChar == '{' || firstChar == '[')
-          parseString(s) // parse object or array
-        else if (firstChar == '|')
-          parseDataTable(s).map(list ⇒ Json.fromValues(list.map(Json.fromJsonObject))) // table
-        else
-          Json.fromString(s).asRight // treated as a String
-      }
-    case _ ⇒
-      Either.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
+  // A DSL String can be :
+  // - an object
+  // - an array
+  // - a string
+  // - a data table
+  private def parseDslStringJson(s: String): Either[CornichonError, Json] = {
+    val trimmed = s.trim
+    if (trimmed.isEmpty)
+      Json.fromString(s).asRight
+    else {
+      val firstChar = trimmed.head
+      if (firstChar == '{' || firstChar == '[')
+        parseString(s) // parse object or array
+      else if (firstChar == '|')
+        parseDataTable(s).map(list ⇒ Json.fromValues(list.map(Json.fromJsonObject))) // table is turned into a JArray
+      else
+        Json.fromString(s).asRight // treated as a JString
+    }
   }
 
-  def parseJsonUnsafe[A: Encoder: Show](input: A): Json =
-    parseJson(input).valueUnsafe
+  def parseDslJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
+    case s: String ⇒ parseDslStringJson(s)
+    case _         ⇒ Either.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
+  }
+
+  def parseDslJsonUnsafe[A: Encoder: Show](input: A): Json =
+    parseDslJson(input).valueUnsafe
 
   def parseString(s: String): Either[MalformedJsonError[String], Json] =
     io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
@@ -76,7 +83,7 @@ trait CornichonJson {
     json.asArray.map(Right.apply).getOrElse(Left(NotAnArrayError(json)))
 
   def parseArray(input: String): Either[CornichonError, Vector[Json]] =
-    parseJson(input).flatMap(jsonArrayValues)
+    parseDslJson(input).flatMap(jsonArrayValues)
 
   def selectMandatoryArrayJsonPath(json: String, path: JsonPath): Either[CornichonError, Vector[Json]] =
     path.runStrict(json).flatMap(jsonArrayValues)
@@ -160,7 +167,7 @@ object CornichonJson extends CornichonJson {
     def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
       for {
         sessionValue ← s.get(key, stackingIndice)
-        jsonValue ← parseJson(sessionValue)
+        jsonValue ← parseDslJson(sessionValue)
         extracted ← JsonPath.runStrict(path, jsonValue)
       } yield extracted
 
@@ -174,7 +181,7 @@ object CornichonJson extends CornichonJson {
       getJsonStringField(key, stackingIndice, path).valueUnsafe
 
     def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] =
-      s.getOpt(key, stackingIndice).flatMap(s ⇒ parseJson(s).toOption)
+      s.getOpt(key, stackingIndice).flatMap(s ⇒ parseDslJson(s).toOption)
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {

@@ -248,7 +248,7 @@ object JsonSteps {
         for {
           sessionValue ← sc.session.get(sessionKey)
           elements ← applyPathAndFindArray(jsonPath)(sc, sessionValue)
-        } yield CustomMessageEqualityAssertion(true, elements.nonEmpty, () ⇒ jsonArrayNotEmptyError(parseJsonUnsafe(sessionValue).show))
+        } yield CustomMessageEqualityAssertion(true, elements.nonEmpty, () ⇒ jsonArrayNotEmptyError(parseDslJsonUnsafe(sessionValue).show))
       }
     )
 
@@ -377,7 +377,7 @@ object JsonSteps {
   }
 
   private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, sc: ScenarioContext): Either[CornichonError, Json] =
-    sc.fillPlaceholders(input).flatMap(r ⇒ parseJson(r))
+    sc.fillPlaceholders(input).flatMap(r ⇒ parseDslJson(r))
 
   private def resolveAndParseJsonPath(path: String, sc: ScenarioContext): Either[CornichonError, JsonPath] =
     sc.fillPlaceholders(path).flatMap(JsonPath.parse)

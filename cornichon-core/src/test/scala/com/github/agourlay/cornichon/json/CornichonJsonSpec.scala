@@ -35,41 +35,41 @@ class CornichonJsonSpec extends WordSpec
     "parseJson" must {
       "parse Boolean" in {
         forAll { bool: Boolean ⇒
-          parseJson(bool) should beRight(Json.fromBoolean(bool))
+          parseDslJson(bool) should beRight(Json.fromBoolean(bool))
         }
       }
 
       "parse Int" in {
         forAll { int: Int ⇒
-          parseJson(int) should beRight(Json.fromInt(int))
+          parseDslJson(int) should beRight(Json.fromInt(int))
         }
       }
 
       "parse Long" in {
         forAll { long: Long ⇒
-          parseJson(long) should beRight(Json.fromLong(long))
+          parseDslJson(long) should beRight(Json.fromLong(long))
         }
       }
 
       "parse Double" in {
         forAll { double: Double ⇒
-          parseJson(double) should beRight(Json.fromDoubleOrNull(double))
+          parseDslJson(double) should beRight(Json.fromDoubleOrNull(double))
         }
       }
 
       "parse BigDecimal" in {
         forAll { bigDec: BigDecimal ⇒
-          parseJson(bigDec) should beRight(Json.fromBigDecimal(bigDec))
+          parseDslJson(bigDec) should beRight(Json.fromBigDecimal(bigDec))
         }
       }
 
       "parse flat string" in {
-        parseJson("cornichon") should beRight(Json.fromString("cornichon"))
+        parseDslJson("cornichon") should beRight(Json.fromString("cornichon"))
       }
 
       "parse JSON object string" in {
         val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
-        parseJson("""{"name":"cornichon"}""") should beRight(expected)
+        parseDslJson("""{"name":"cornichon"}""") should beRight(expected)
       }
 
       "parse JSON Array string" in {
@@ -78,7 +78,7 @@ class CornichonJsonSpec extends WordSpec
           mapToJsonObject(Map("name" → Json.fromString("scala")))
         ))
 
-        parseJson(
+        parseDslJson(
           """
            [
             {"name":"cornichon"},
@@ -105,7 +105,7 @@ class CornichonJsonSpec extends WordSpec
             |]
           """.stripMargin
 
-        parseJson("""
+        parseDslJson("""
            |  Name  |   Age  | 2LettersName |
            | "John" |   50   |    false     |
            | "Bob"  |   11   |    true      |
@@ -147,7 +147,7 @@ class CornichonJsonSpec extends WordSpec
 
       "parse any Circe Json" ignore {
         forAll { json: Json ⇒
-          parseJson(json.spaces2) should beRight(json)
+          parseDslJson(json.spaces2) should beRight(json)
         }
       }
     }
@@ -440,7 +440,7 @@ class CornichonJsonSpec extends WordSpec
             | "Name": "John"
             |}
           """.stripMargin
-        val actualJson = parseJsonUnsafe(actual)
+        val actualJson = parseDslJsonUnsafe(actual)
 
         val input =
           """
@@ -449,7 +449,7 @@ class CornichonJsonSpec extends WordSpec
             | "Age": 50
             |}
           """.stripMargin
-        val inputJson = parseJsonUnsafe(input)
+        val inputJson = parseDslJsonUnsafe(input)
 
         whitelistingValue(inputJson, actualJson).value shouldBe actualJson
       }
@@ -463,7 +463,7 @@ class CornichonJsonSpec extends WordSpec
             | "Name": "John"
             |}
           """.stripMargin
-        val actualJson = parseJsonUnsafe(actual)
+        val actualJson = parseDslJsonUnsafe(actual)
 
         val input =
           """
@@ -472,7 +472,7 @@ class CornichonJsonSpec extends WordSpec
             | "Ag": 50
             |}
           """.stripMargin
-        val inputJson = parseJsonUnsafe(input)
+        val inputJson = parseDslJsonUnsafe(input)
 
         whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/Ag"), actualJson))
       }
@@ -494,7 +494,7 @@ class CornichonJsonSpec extends WordSpec
             |}
             |]
           """.stripMargin
-        val actualJson = parseJsonUnsafe(actual)
+        val actualJson = parseDslJsonUnsafe(actual)
 
         val input =
           """
@@ -509,7 +509,7 @@ class CornichonJsonSpec extends WordSpec
             |}
             |]
           """.stripMargin
-        val inputJson = parseJsonUnsafe(input)
+        val inputJson = parseDslJsonUnsafe(input)
 
         whitelistingValue(inputJson, actualJson).value shouldBe actualJson
       }
@@ -531,7 +531,7 @@ class CornichonJsonSpec extends WordSpec
             |}
             |]
           """.stripMargin
-        val actualJson = parseJsonUnsafe(actual)
+        val actualJson = parseDslJsonUnsafe(actual)
 
         val input =
           """
@@ -546,7 +546,7 @@ class CornichonJsonSpec extends WordSpec
             |}
             |]
           """.stripMargin
-        val inputJson = parseJsonUnsafe(input)
+        val inputJson = parseDslJsonUnsafe(input)
 
         whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/0/Nam"), actualJson))
       }
@@ -558,14 +558,14 @@ class CornichonJsonSpec extends WordSpec
 
         val input = "target value"
 
-        findAllPathWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(List(rootPath))
+        findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) should be(List(rootPath))
       }
 
       "not find root value" in {
 
         val input = "target values"
 
-        findAllPathWithValue("target value" :: Nil, parseJsonUnsafe(input)) should be(Nil)
+        findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) should be(Nil)
       }
 
       "find root key" in {
@@ -579,7 +579,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllPathWithValue("John" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Name")))
+        findAllPathWithValue("John" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Name")))
 
       }
 
@@ -598,7 +598,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllPathWithValue("Paul" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brother.Name")))
+        findAllPathWithValue("Paul" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Brother.Name")))
 
       }
 
@@ -623,7 +623,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllPathWithValue("Bob" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Brothers[1].Name")))
+        findAllPathWithValue("Bob" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Brothers[1].Name")))
 
       }
 
@@ -639,7 +639,7 @@ class CornichonJsonSpec extends WordSpec
             |}
           """.stripMargin
 
-        findAllPathWithValue("Coding" :: Nil, parseJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
+        findAllPathWithValue("Coding" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
 
       }
 

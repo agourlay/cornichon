@@ -76,7 +76,7 @@ object Resolvable {
 
   implicit val jsonResolvable = new Resolvable[Json] {
     def toResolvableForm(j: Json) = j.spaces2
-    def fromResolvableForm(j: String) = CornichonJson.parseJsonUnsafe(j)
+    def fromResolvableForm(j: String) = CornichonJson.parseDslJsonUnsafe(j)
   }
 
 }

@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.syntax.show._
 
-import com.github.agourlay.cornichon.json.CornichonJson.parseJsonUnsafe
+import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
 
 import io.circe.{ Encoder, Json }
 
@@ -29,7 +29,7 @@ case class QueryGQL(
   def withOperationName(operationName: String) = copy(operationName = Some(operationName))
 
   def withVariables[A: Encoder: Show](newVariables: (String, A)*) = {
-    val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → parseJsonUnsafe(v) }(scala.collection.breakOut)
+    val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → parseDslJsonUnsafe(v) }(scala.collection.breakOut)
     copy(variables = variables.fold(Some(vars))(v ⇒ Some(v ++ vars)))
   }
 

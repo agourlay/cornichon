@@ -25,7 +25,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
   def fetchRecordedRequestsAsJson(): Vector[Json] = mockState.getReceivedRequest.map { req ⇒
     Json.fromFields(
       Seq(
-        "body" → CornichonJson.parseJsonUnsafe(req.body.getOrElse("")),
+        "body" → CornichonJson.parseDslJsonUnsafe(req.body.getOrElse("")),
         "url" → Json.fromString(req.url),
         "method" → Json.fromString(req.method.name),
         "parameters" → Json.fromFields(req.params.map { case (n, v) ⇒ (n, Json.fromString(v)) }),

@@ -141,7 +141,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     )
 
   def show_last_response: Step = showLastResponse("show last response")(_.asRight)
-  def show_last_response_json: Step = showLastResponse[Json]("show last response JSON")(parseJson)
+  def show_last_response_json: Step = showLastResponse[Json]("show last response JSON")(parseString)
   def show_last_status: Step = show_session(lastResponseStatusKey)
 
   def show_last_body: Step = show_session(lastResponseBodyKey)

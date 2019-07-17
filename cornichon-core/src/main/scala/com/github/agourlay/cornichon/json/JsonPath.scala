@@ -33,8 +33,8 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
       case None    ⇒ PathSelectsNothing(JsonPath.showJsonPath.show(this), superSet).asLeft
     }
 
-  def run(json: String): Either[CornichonError, Option[Json]] = parseJson(json).map(run)
-  def runStrict(json: String): Either[CornichonError, Json] = parseJson(json).flatMap(runStrict)
+  def run(json: String): Either[CornichonError, Option[Json]] = parseDslJson(json).map(run)
+  def runStrict(json: String): Either[CornichonError, Json] = parseDslJson(json).flatMap(runStrict)
 
   // Boolean flag to indicate if the operations contain a valid projection segment.
   // If it is the case, the result must be interpreted as a List otherwise it is always a List of one element.
@@ -109,13 +109,13 @@ object JsonPath {
 
   def run(path: String, json: String): Either[CornichonError, Option[Json]] =
     for {
-      json ← parseJson(json)
+      json ← parseDslJson(json)
       jsonPath ← JsonPath.parse(path)
     } yield jsonPath.run(json)
 
   def runStrict(path: String, json: String): Either[CornichonError, Json] =
     for {
-      json ← parseJson(json)
+      json ← parseDslJson(json)
       jsonPath ← JsonPath.parse(path)
       res ← jsonPath.runStrict(json)
     } yield res

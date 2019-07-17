@@ -44,7 +44,7 @@ class HttpService(
     ignoreFromWithHeaders: HeaderSelection)(scenarioContext: ScenarioContext): Either[CornichonError, (String, Option[Json], Seq[(String, String)], List[(String, String)])] =
     for {
       bodyResolved ← body.map(scenarioContext.fillPlaceholders(_).map(Some.apply)).getOrElse(rightNone)
-      jsonBodyResolved ← bodyResolved.map(parseJson(_).map(Some.apply)).getOrElse(rightNone)
+      jsonBodyResolved ← bodyResolved.map(parseDslJson(_).map(Some.apply)).getOrElse(rightNone)
       urlResolved ← scenarioContext.fillPlaceholders(url)
       completeUrlResolved ← scenarioContext.fillPlaceholders(withBaseUrl(urlResolved))
       urlParams ← client.paramsFromUrl(completeUrlResolved)
