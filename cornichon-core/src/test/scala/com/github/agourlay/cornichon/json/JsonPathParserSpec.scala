@@ -21,8 +21,8 @@ class JsonPathParserSpec extends WordSpec
       }
 
       "parse JsonPath containing a field with index" in {
-        forAll(fieldGen, indiceGen) { (field, indice) ⇒
-          JsonPathParser.parseJsonPath(s"$field[$indice]").right.value should be(List(ArrayFieldSelection(field, indice)))
+        forAll(fieldGen, indexGen) { (field, index) ⇒
+          JsonPathParser.parseJsonPath(s"$field[$index]").right.value should be(List(ArrayFieldSelection(field, index)))
         }
       }
 
@@ -49,7 +49,7 @@ class JsonPathParserSpec extends WordSpec
       }
 
       "parse JsonPath with key containing a dot with index" in {
-        forAll(fieldGen, fieldGen, fieldGen, indiceGen) { (field1, field2, field3, index) ⇒
+        forAll(fieldGen, fieldGen, fieldGen, indexGen) { (field1, field2, field3, index) ⇒
           val composedPath = s"$field1.$field2"
           val fullPath = s"`$composedPath`.$field3[$index]"
           withClue(s"fullPath was $fullPath") {
@@ -71,8 +71,8 @@ class JsonPathParserSpec extends WordSpec
       }
 
       "parse JsonPath containing a broken index bracket" in {
-        forAll(fieldGen, indiceGen) { (field, indice) ⇒
-          JsonPathParser.parseJsonPath(s"$field[$indice[") should be(left)
+        forAll(fieldGen, indexGen) { (field, index) ⇒
+          JsonPathParser.parseJsonPath(s"$field[$index[") should be(left)
         }
       }
     }
@@ -83,5 +83,5 @@ object JsonPathParserSpec {
   val fieldGen = Gen.alphaStr.filter(_.trim.nonEmpty).filter(k ⇒ !JsonPathParser.notAllowedInField.exists(forbidden ⇒ k.contains(forbidden)))
   def fieldsGen(n: Int) = Gen.listOfN(n, fieldGen)
 
-  val indiceGen = Gen.choose(0, Int.MaxValue)
+  val indexGen = Gen.choose(0, Int.MaxValue)
 }

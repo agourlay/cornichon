@@ -69,19 +69,19 @@ trait CoreDsl extends ProvidedInstances {
       RepeatStep(steps, times, None)
     }
 
-  def Repeat(times: Int, indice: String): BodyElementCollector[Step, Step] =
+  def Repeat(times: Int, index: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatStep(steps, times, Some(indice))
+      RepeatStep(steps, times, Some(index))
     }
 
-  def RepeatWith(elements: ContainerType[Any, Show]*)(indice: String): BodyElementCollector[Step, Step] =
+  def RepeatWith(elements: ContainerType[Any, Show]*)(index: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), indice)
+      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), index)
     }
 
-  def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(indice: String): BodyElementCollector[Step, Step] =
+  def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(index: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), indice)
+      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), index)
     }
 
   def RetryMax(limit: Int): BodyElementCollector[Step, Step] =
@@ -174,13 +174,13 @@ trait CoreDsl extends ProvidedInstances {
 
   def show_session(
     key: String,
-    indice: Option[Int] = None,
+    index: Option[Int] = None,
     transform: String ⇒ Either[CornichonError, String] = _.asRight) =
     DebugStep(s"show session value for key $key", sc ⇒
       for {
-        v ← sc.session.get(key, indice)
+        v ← sc.session.get(key, index)
         transformed ← transform(v)
-      } yield s"Session content for key '${SessionKey(key, indice).show}' is\n$transformed"
+      } yield s"Session content for key '${SessionKey(key, index).show}' is\n$transformed"
     )
 
   def print_step(message: String): Step =

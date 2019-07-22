@@ -36,18 +36,18 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       }
     }
 
-    "expose indice in session" in {
+    "expose index in session" in {
       var uglyCounter = 0
       val loop = 5
-      val indiceKeyName = "my-counter"
+      val indexKeyName = "my-counter"
       val nested = AssertStep(
         "increment captured counter",
         sc ⇒ {
           uglyCounter = uglyCounter + 1
-          GenericEqualityAssertion(sc.session.getUnsafe(indiceKeyName), uglyCounter.toString)
+          GenericEqualityAssertion(sc.session.getUnsafe(indexKeyName), uglyCounter.toString)
         }
       ) :: Nil
-      val repeatStep = RepeatStep(nested, loop, Some(indiceKeyName))
+      val repeatStep = RepeatStep(nested, loop, Some(indexKeyName))
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)

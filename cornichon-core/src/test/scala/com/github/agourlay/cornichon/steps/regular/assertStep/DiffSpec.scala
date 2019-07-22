@@ -33,9 +33,9 @@ class DiffSpec extends WordSpec with Matchers {
              |
              |
              |moved elements:
-             |from indice 0 to indice 1
+             |from index 0 to index 1
              |a
-             |from indice 1 to indice 0
+             |from index 1 to index 0
              |b""".stripMargin
         )
       }
@@ -50,9 +50,9 @@ class DiffSpec extends WordSpec with Matchers {
              |c
              |e
              |moved elements:
-             |from indice 0 to indice 1
+             |from index 0 to index 1
              |a
-             |from indice 1 to indice 0
+             |from index 1 to index 0
              |b""".stripMargin
         )
       }

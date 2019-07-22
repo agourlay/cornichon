@@ -28,8 +28,8 @@ class PlaceholderResolverSpec extends WordSpec
       }
 
       "find placeholder in content solely containing a placeholder with index" in {
-        forAll(keyGen, indiceGen) { (key, indice) ⇒
-          PlaceholderResolver.findPlaceholders(s"<$key[$indice]>").value should be(List(Placeholder(key, Some(indice))))
+        forAll(keyGen, indexGen) { (key, index) ⇒
+          PlaceholderResolver.findPlaceholders(s"<$key[$index]>").value should be(List(Placeholder(key, Some(index))))
         }
       }
 
@@ -58,16 +58,16 @@ class PlaceholderResolverSpec extends WordSpec
       }
 
       "find placeholder in random content containing a placeholder with index" in {
-        forAll(keyGen, indiceGen, Gen.alphaStr) { (key, indice, content) ⇒
-          PlaceholderResolver.findPlaceholders(s"$content<$key[$indice]>$content").value should be(List(Placeholder(key, Some(indice))))
+        forAll(keyGen, indexGen, Gen.alphaStr) { (key, index, content) ⇒
+          PlaceholderResolver.findPlaceholders(s"$content<$key[$index]>$content").value should be(List(Placeholder(key, Some(index))))
         }
       }
 
       // FIXME '<' is always accepted inside the key, the parser backtracks and consumes it twice??
       "do not accept placeholders containing forbidden char" ignore {
         val genInvalidChar = Gen.oneOf(Session.notAllowedInKey.toList)
-        forAll(keyGen, indiceGen, Gen.alphaStr, genInvalidChar) { (key, indice, content, invalid) ⇒
-          PlaceholderResolver.findPlaceholders(s"$content<$invalid$key[$indice]>$content").value should be(Nil)
+        forAll(keyGen, indexGen, Gen.alphaStr, genInvalidChar) { (key, index, content, invalid) ⇒
+          PlaceholderResolver.findPlaceholders(s"$content<$invalid$key[$index]>$content").value should be(Nil)
         }
       }
     }
@@ -132,7 +132,7 @@ class PlaceholderResolverSpec extends WordSpec
         UUID.fromString(PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor).getOrElse(""))
       }
 
-      "take the first value in session if indice = 0" in {
+      "take the first value in session if index = 0" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
           val content = s"<$key[0]>"
@@ -140,7 +140,7 @@ class PlaceholderResolverSpec extends WordSpec
         }
       }
 
-      "take the second value in session if indice = 1" in {
+      "take the second value in session if index = 1" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
           val content = s"<$key[1]>"

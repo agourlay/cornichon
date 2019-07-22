@@ -146,7 +146,7 @@ trait CornichonJson {
           def onString(value: String): List[(String, Json)] =
             leafValue()
           def onArray(elems: Vector[Json]): List[(String, Json)] =
-            elems.zipWithIndex.flatMap { case (e, indice) ⇒ keyValuesHelper(s"$currentPath[$indice]", e, level) }(breakOut)
+            elems.zipWithIndex.flatMap { case (e, index) ⇒ keyValuesHelper(s"$currentPath[$index]", e, level) }(breakOut)
           def onObject(elems: JsonObject): List[(String, Json)] =
             elems.toIterable.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v, level) }(breakOut)
         }
@@ -164,24 +164,24 @@ trait CornichonJson {
 object CornichonJson extends CornichonJson {
 
   implicit class sessionJson(val s: Session) {
-    def getJson(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
+    def getJson(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
       for {
-        sessionValue ← s.get(key, stackingIndice)
+        sessionValue ← s.get(key, stackingIndex)
         jsonValue ← parseDslJson(sessionValue)
         extracted ← JsonPath.runStrict(path, jsonValue)
       } yield extracted
 
-    def getJsonStringField(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, String] =
+    def getJsonStringField(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, String] =
       for {
-        json ← getJson(key, stackingIndice, path)
+        json ← getJson(key, stackingIndex, path)
         field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
       } yield field
 
-    def getJsonStringFieldUnsafe(key: String, stackingIndice: Option[Int] = None, path: String = JsonPath.root): String =
-      getJsonStringField(key, stackingIndice, path).valueUnsafe
+    def getJsonStringFieldUnsafe(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): String =
+      getJsonStringField(key, stackingIndex, path).valueUnsafe
 
-    def getJsonOpt(key: String, stackingIndice: Option[Int] = None): Option[Json] =
-      s.getOpt(key, stackingIndice).flatMap(s ⇒ parseDslJson(s).toOption)
+    def getJsonOpt(key: String, stackingIndex: Option[Int] = None): Option[Json] =
+      s.getOpt(key, stackingIndex).flatMap(s ⇒ parseDslJson(s).toOption)
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {

@@ -90,26 +90,26 @@ class SessionSpec extends WordSpec
         }
       }
 
-      "take the first value in session with indice = zero" in {
+      "take the first value in session with index = zero" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue)
           s.addValueUnsafe(key, secondValue).get(key, Some(0)) should beRight(firstValue)
         }
       }
 
-      "take the second value in session with indice = 1" in {
+      "take the second value in session with index = 1" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue)
           s.addValueUnsafe(key, secondValue).get(key, Some(1)) should beRight(secondValue)
         }
       }
 
-      "thrown an error if the key exists but not the indice " in {
+      "thrown an error if the key exists but not the index " in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
-          val error = IndiceNotFoundForKey(key, 3, Vector(firstValue, secondValue))
+          val error = IndexNotFoundForKey(key, 3, Vector(firstValue, secondValue))
           s.get(key, Some(3)) should beLeft[CornichonError](error)
-          error.renderedMessage should be(s"indice '3' not found for key '$key' with values \n0 -> $firstValue\n1 -> $secondValue")
+          error.renderedMessage should be(s"index '3' not found for key '$key' with values \n0 -> $firstValue\n1 -> $secondValue")
         }
       }
 
@@ -200,5 +200,5 @@ object SessionSpec {
   val valueGen = Gen.alphaStr
   def valuesGen(n: Int) = Gen.listOfN(n, valueGen)
 
-  val indiceGen = Gen.choose(0, Int.MaxValue)
+  val indexGen = Gen.choose(0, Int.MaxValue)
 }

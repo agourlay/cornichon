@@ -31,7 +31,7 @@ object Diff {
     val added = right.diff(left)
     val (deletedTuple, stillPresent) = left.map(e ⇒ (e, right.indexWhere(_ == e))).partition(_._2 == -1)
     val deleted = deletedTuple.map(_._1)
-    val moved = stillPresent.map { case (elem, newIndice) ⇒ MovedElement(elem, newIndice, left.indexWhere(_ == elem)) }.filter(_.changed)
+    val moved = stillPresent.map { case (elem, newIndex) ⇒ MovedElement(elem, newIndex, left.indexWhere(_ == elem)) }.filter(_.changed)
     s"""|Ordered collection diff. between actual result and expected result is :
         |${if (added.isEmpty) "" else "added elements:\n" + added.map(_.show).mkString("\n")}
         |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.map(_.show).mkString("\n")}
@@ -86,14 +86,14 @@ object Diff {
 
 }
 
-private case class MovedElement[A](element: A, newIndice: Int, oldIndice: Int) {
-  val changed = newIndice != oldIndice
+private case class MovedElement[A](element: A, newIndex: Int, oldIndex: Int) {
+  val changed = newIndex != oldIndex
 }
 
 private object MovedElement {
   implicit def showMoved[A: Show]: Show[MovedElement[A]] =
     Show.show { ma ⇒
-      s"""from indice ${ma.oldIndice} to indice ${ma.newIndice}
+      s"""from index ${ma.oldIndex} to index ${ma.newIndex}
          |${ma.element.show}"""
     }
 }

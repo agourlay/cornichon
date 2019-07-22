@@ -64,12 +64,12 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
     val projectionMode = AtomicBoolean(false)
     val cursors = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) ⇒
       op match {
-        case RootSelection                      ⇒ oc
-        case FieldSelection(field)              ⇒ oc.map(_.downField(field))
-        case RootArrayElementSelection(indice)  ⇒ oc.map(_.downN(indice))
-        case ArrayFieldSelection(field, indice) ⇒ oc.map(_.downField(field).downN(indice))
-        case RootArrayFieldProjection           ⇒ oc.flatMap(o ⇒ expandCursors(o, projectionMode))
-        case ArrayFieldProjection(field)        ⇒ oc.flatMap(o ⇒ expandCursors(o.downField(field), projectionMode))
+        case RootSelection                     ⇒ oc
+        case FieldSelection(field)             ⇒ oc.map(_.downField(field))
+        case RootArrayElementSelection(index)  ⇒ oc.map(_.downN(index))
+        case ArrayFieldSelection(field, index) ⇒ oc.map(_.downField(field).downN(index))
+        case RootArrayFieldProjection          ⇒ oc.flatMap(o ⇒ expandCursors(o, projectionMode))
+        case ArrayFieldProjection(field)       ⇒ oc.flatMap(o ⇒ expandCursors(o.downField(field), projectionMode))
       }
     }
     (cursors, projectionMode.get())
@@ -135,13 +135,13 @@ case class FieldSelection(field: String) extends JsonPathOperation {
   val pretty = field
 }
 
-case class RootArrayElementSelection(indice: Int) extends JsonPathOperation {
+case class RootArrayElementSelection(index: Int) extends JsonPathOperation {
   val field = JsonPath.root
-  val pretty = s"$field[$indice]"
+  val pretty = s"$field[$index]"
 }
 
-case class ArrayFieldSelection(field: String, indice: Int) extends JsonPathOperation {
-  val pretty = s"$field[$indice]"
+case class ArrayFieldSelection(field: String, index: Int) extends JsonPathOperation {
+  val pretty = s"$field[$index]"
 }
 
 case class ArrayFieldProjection(field: String) extends JsonPathOperation {

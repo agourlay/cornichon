@@ -36,10 +36,10 @@ object SessionSteps {
 
   case class SessionStepBuilder(
       private val key: String,
-      private val indice: Option[Int] = None
+      private val index: Option[Int] = None
   ) {
 
-    def atIndex(indice: Int): SessionStepBuilder = copy(indice = Some(indice))
+    def atIndex(index: Int): SessionStepBuilder = copy(index = Some(index))
 
     def is(expected: String): AssertStep = isImpl(expected, negate = false)
 
@@ -50,7 +50,7 @@ object SessionSteps {
       action = sc ⇒ Assertion.either {
         for {
           filledPlaceholders ← sc.fillPlaceholders(expected)
-          keyValue ← sc.session.get(key, indice)
+          keyValue ← sc.session.get(key, index)
         } yield GenericEqualityAssertion(filledPlaceholders, keyValue, negate = negate)
       }
     )
@@ -58,7 +58,7 @@ object SessionSteps {
     def isPresent = AssertStep(
       title = s"session contains key '$key'",
       action = sc ⇒ {
-        val predicate = sc.session.getOpt(key, indice).isDefined
+        val predicate = sc.session.getOpt(key, index).isDefined
         CustomMessageEqualityAssertion(true, predicate, () ⇒ keyIsAbsentError(key, sc.session.show))
       }
     )
@@ -66,7 +66,7 @@ object SessionSteps {
     def isAbsent = AssertStep(
       title = s"session does not contain key '$key'",
       action = sc ⇒
-        sc.session.getOpt(key, indice) match {
+        sc.session.getOpt(key, index) match {
           case None        ⇒ Assertion.alwaysValid
           case Some(value) ⇒ CustomMessageEqualityAssertion(false, true, () ⇒ keyIsPresentError(key, value))
         }

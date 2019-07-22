@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
 
-case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[String]) extends WrapperStep {
+case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[String]) extends WrapperStep {
 
   require(occurrence > 0, "repeat block must contain a positive number of occurrence")
 
@@ -18,7 +18,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indiceName: Option[St
     def repeatSuccessSteps(retriesNumber: Int, runState: RunState): Task[(Int, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
       val rs = runState.resetLogStack
-      val runStateWithIndex = indiceName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
+      val runStateWithIndex = indexName.fold(rs)(in ⇒ rs.addToSession(in, (retriesNumber + 1).toString))
       ScenarioRunner.runStepsShortCircuiting(nested, runStateWithIndex).flatMap {
         case (onceMoreRunState, stepResult) ⇒
           stepResult.fold(

@@ -19,8 +19,8 @@ object PlaceholderResolver {
   private def resolvePlaceholder(ph: Placeholder)(session: Session, random: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
     builtInPlaceholders(random).lift(ph.key).map(Right.apply).getOrElse {
       val otherKeyName = ph.key
-      val otherKeyIndice = ph.index
-      (session.get(otherKeyName, otherKeyIndice), customExtractors.get(otherKeyName)) match {
+      val otherKeyIndex = ph.index
+      (session.get(otherKeyName, otherKeyIndex), customExtractors.get(otherKeyName)) match {
         case (v, None)               ⇒ v
         case (Left(_), Some(mapper)) ⇒ applyMapper(otherKeyName, mapper, ph)(session, random)
         case (Right(_), Some(_))     ⇒ AmbiguousKeyDefinition(otherKeyName).asLeft

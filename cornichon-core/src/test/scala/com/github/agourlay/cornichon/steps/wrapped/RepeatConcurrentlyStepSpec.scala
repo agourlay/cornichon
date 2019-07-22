@@ -65,7 +65,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       val steps = Range.inclusive(1, 5).map { i ⇒
         EffectStep.fromSyncE(
           title = s"set $i in the session",
-          effect = _.session.addValue("indice", i.toString)
+          effect = _.session.addValue("index", i.toString)
         )
       }
       val repeatFactor = 5
@@ -73,7 +73,7 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
-        res.session.getHistory("indice").valueUnsafe should be(Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
+        res.session.getHistory("index").valueUnsafe should be(Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
 
       }
     }

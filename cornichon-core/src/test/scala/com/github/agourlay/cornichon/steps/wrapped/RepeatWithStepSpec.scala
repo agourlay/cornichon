@@ -13,7 +13,7 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         "always fails",
         _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
-      val repeatStep = RepeatWithStep(nested, List("1", "2", "3"), "indice")
+      val repeatStep = RepeatWithStep(nested, List("1", "2", "3"), "index")
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
     }
@@ -28,7 +28,7 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), "indice")
+      val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), "index")
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
@@ -36,18 +36,18 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       }
     }
 
-    "expose indice in session" in {
+    "expose index in session" in {
       var uglyCounter = 0
       val loop = 5
-      val indiceKeyName = "my-counter"
+      val indexKeyName = "my-counter"
       val nested = AssertStep(
         "increment captured counter",
         sc ⇒ {
           uglyCounter = uglyCounter + 1
-          GenericEqualityAssertion(sc.session.getUnsafe(indiceKeyName), uglyCounter.toString)
+          GenericEqualityAssertion(sc.session.getUnsafe(indexKeyName), uglyCounter.toString)
         }
       ) :: Nil
-      val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), indiceKeyName)
+      val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), indexKeyName)
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)

@@ -20,32 +20,32 @@ import scala.collection.immutable.{ HashMap, StringOps }
 case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   //Specialised Option version to avoid Either.left creation through Either.toOption
-  def getOpt(key: String, stackingIndice: Option[Int] = None): Option[String] =
+  def getOpt(key: String, stackingIndex: Option[Int] = None): Option[String] =
     content.get(key).flatMap { values ⇒
-      val indice = stackingIndice.getOrElse(values.size - 1)
-      if (values.size < indice)
+      val index = stackingIndex.getOrElse(values.size - 1)
+      if (values.size < index)
         None
       else
-        Some(values(indice))
+        Some(values(index))
     }
 
-  def get(key: String, stackingIndice: Option[Int] = None): Either[CornichonError, String] =
+  def get(key: String, stackingIndex: Option[Int] = None): Either[CornichonError, String] =
     content.get(key) match {
       case None ⇒
         KeyNotFoundInSession(key, this).asLeft
       case Some(values) ⇒
-        val indice = stackingIndice.getOrElse(values.size - 1)
-        if (values.size < indice)
-          IndiceNotFoundForKey(key, indice, values).asLeft
+        val index = stackingIndex.getOrElse(values.size - 1)
+        if (values.size < index)
+          IndexNotFoundForKey(key, index, values).asLeft
         else
-          values(indice).asRight
+          values(index).asRight
     }
 
   def get(sessionKey: SessionKey): Either[CornichonError, String] =
     get(sessionKey.name, sessionKey.index)
 
-  def getUnsafe(key: String, stackingIndice: Option[Int] = None): String =
-    get(key, stackingIndice).valueUnsafe
+  def getUnsafe(key: String, stackingIndex: Option[Int] = None): String =
+    get(key, stackingIndex).valueUnsafe
 
   def getList(keys: Seq[String]): Either[CornichonError, List[String]] =
     keys.toList.traverse(get(_))
@@ -56,8 +56,8 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   def getPrevious(key: String): Either[CornichonError, Option[String]] =
     for {
       values ← content.get(key).toRight(KeyNotFoundInSession(key, this))
-      indice = values.size - 2
-      value ← values.lift(indice).asRight
+      index = values.size - 2
+      value ← values.lift(index).asRight
     } yield value
 
   // Not returning the same key wrapped to avoid allocations
@@ -151,8 +151,8 @@ case class SessionKey(name: String, index: Option[Int] = None) {
 object SessionKey {
   implicit val showSessionKey = Show.show[SessionKey] { sk ⇒
     val key = sk.name
-    val indice = sk.index
-    s"$key${indice.map(i ⇒ s"[$i]").getOrElse("")}"
+    val index = sk.index
+    s"$key${index.map(i ⇒ s"[$i]").getOrElse("")}"
   }
 }
 
@@ -175,7 +175,7 @@ case class IllegalKey(key: String) extends CornichonError {
   lazy val baseErrorMessage = s"Illegal session key '$key'\nsession key can not contain the following chars ${Session.notAllowedInKey.mkString(" ")}"
 }
 
-case class IndiceNotFoundForKey(key: String, indice: Int, values: Vector[String]) extends CornichonError {
-  lazy val baseErrorMessage = s"indice '$indice' not found for key '$key' with values \n" +
+case class IndexNotFoundForKey(key: String, index: Int, values: Vector[String]) extends CornichonError {
+  lazy val baseErrorMessage = s"index '$index' not found for key '$key' with values \n" +
     s"${values.zipWithIndex.map { case (v, i) ⇒ s"$i -> $v" }.mkString("\n")}"
 }
