@@ -74,8 +74,8 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
     c1.get(key) match {
-      case None         ⇒ c1 + (key → Vector(value))
-      case Some(values) ⇒ (c1 - key) + (key → values.:+(value))
+      case None         ⇒ c1.updated(key, Vector(value))
+      case Some(values) ⇒ (c1 - key).updated(key, values :+ value)
     }
 
   def addValue(key: String, value: String): Either[CornichonError, Session] =
@@ -114,7 +114,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       if (previous.isEmpty)
         s
       else
-        s.copy(content = s.content + (key -> previous))
+        s.copy(content = s.content.updated(key, previous))
     }
 
 }
