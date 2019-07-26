@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.matchers
 
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.regex.Pattern
 
@@ -14,9 +15,6 @@ case class Matcher(key: String, description: String, predicate: Json ⇒ Boolean
 }
 
 object Matchers {
-  private val sdfDate = new java.text.SimpleDateFormat("yyyy-MM-dd")
-  private val sdfDateTime = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-  private val sdfTime = new java.text.SimpleDateFormat("HH:mm:ss.SSS")
 
   val isPresent = Matcher(
     key = "is-present",
@@ -86,19 +84,19 @@ object Matchers {
 
   val anyDate = Matcher(
     key = "any-date",
-    description = "checks if the field is a 'yyyy-MM-dd' date",
-    predicate = _.asString.exists(s ⇒ Try(sdfDate.parse(s)).isSuccess)
+    description = "checks if the field is an ISO date (e.g. 'yyyy-MM-dd')",
+    predicate = _.asString.exists(s ⇒ Try(DateTimeFormatter.ISO_DATE.parse(s)).isSuccess)
   )
 
   val anyDateTime = Matcher(
     key = "any-date-time",
-    description = """checks if the field is a "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" datetime""",
-    predicate = _.asString.exists(s ⇒ Try(sdfDateTime.parse(s)).isSuccess)
+    description = """checks if the field is an ISO instant (e.g. "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")""",
+    predicate = _.asString.exists(s ⇒ Try(DateTimeFormatter.ISO_INSTANT.parse(s)).isSuccess)
   )
 
   val anyTime = Matcher(
     key = "any-time",
-    description = "checks if the field is a 'HH:mm:ss.SSS' time",
-    predicate = _.asString.exists(s ⇒ Try(sdfTime.parse(s)).isSuccess)
+    description = "checks if the field is an ISO time (e.g. 'HH:mm:ss.SSS')",
+    predicate = _.asString.exists(s ⇒ Try(DateTimeFormatter.ISO_TIME.parse(s)).isSuccess)
   )
 }
