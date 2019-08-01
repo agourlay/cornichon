@@ -29,10 +29,10 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
     else {
       // Run 'before feature' hooks
       baseFeature.beforeFeature.foreach(f ⇒ f())
-      // parallelism is limited to avoid spawning too much work at once
-      val parallelism = if (baseFeature.executeScenariosInParallel) Math.min(scenariosToRun.size, FeatureRunner.coreNum) else 1
+      // featureParallelism is limited to avoid spawning too much work at once
+      val featureParallelism = if (baseFeature.executeScenariosInParallel) Math.min(scenariosToRun.size, FeatureRunner.maxParallelism) else 1
       Observable.fromIterable(scenariosToRun)
-        .mapParallelUnordered(parallelism)(runScenario(_).map(scenarioResultHandler))
+        .mapParallelUnordered(featureParallelism)(runScenario(_).map(scenarioResultHandler))
         .toListL
         .map { results ⇒
           // Run 'after feature' hooks
@@ -45,6 +45,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
 }
 
 object FeatureRunner {
-  lazy val coreNum: Int = Runtime.getRuntime.availableProcessors()
+  // the tests are mostly IO bound so we can start a bit more on a single core
+  lazy val maxParallelism: Int = Runtime.getRuntime.availableProcessors() + 1
   private val noop = Task.now(Nil)
 }
