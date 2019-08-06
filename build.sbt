@@ -301,7 +301,7 @@ lazy val library =
       val http4s        = "0.20.8"
       val embeddedKafka = "2.3.0"
       val kafkaClient   = "2.3.0"
-      val caffeine      = "2.7.0"
+      val caffeine      = "2.8.0"
     }
     val catsMacro     = "org.typelevel"                 %% "cats-macros"              % Version.cats
     val catsCore      = "org.typelevel"                 %% "cats-core"                % Version.cats
