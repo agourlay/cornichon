@@ -10,11 +10,11 @@ class Options extends CornichonFeature {
 
     Scenario("ignore scenario").ignoredBecause("takes too long!") {
 
-      Given I wait(10 hours)
+      Given I wait(10.hours)
 
     }
 
-    Scenario("remember to add later") pending
+    Scenario("remember to add later").pending
 
   }
 }
