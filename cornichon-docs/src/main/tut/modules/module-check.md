@@ -21,6 +21,8 @@ There are tree concrete instances of `generators`:
 - `OptionalValueGenerator` to fail in a controlled fashion
 
 ```scala
+import com.github.agourlay.cornichon.core.RandomContext
+
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
   gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
@@ -35,6 +37,7 @@ This approach also supports embedding `Scalacheck's Gen` into a `Generator` by p
 ```scala
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
+import com.github.agourlay.cornichon.core.RandomContext
 
 sealed trait Coin
 case object Head extends Coin
@@ -66,6 +69,7 @@ We want to enforce the following invariant `for any string, if we reverse it twi
 The implementation under test is a server accepting `POST` requests to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
 
 ```tut:silent
+import com.github.agourlay.cornichon.core.RandomContext
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.steps.regular.EffectStep
