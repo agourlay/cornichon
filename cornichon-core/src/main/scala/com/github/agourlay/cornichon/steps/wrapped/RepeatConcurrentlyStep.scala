@@ -5,7 +5,6 @@ import cats.instances.list._
 import cats.syntax.foldable._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 import monix.reactive.Observable
 

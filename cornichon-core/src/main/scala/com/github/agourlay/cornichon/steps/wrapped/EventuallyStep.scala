@@ -5,7 +5,6 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Timing._
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }

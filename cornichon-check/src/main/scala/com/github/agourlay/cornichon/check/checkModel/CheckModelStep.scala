@@ -8,7 +8,6 @@ import cats.syntax.validated._
 import cats.syntax.apply._
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 import com.github.agourlay.cornichon.util.Timing._
 

@@ -1,4 +1,4 @@
-package com.github.agourlay.cornichon.core
+package com.github.agourlay.cornichon
 
 import cats.data.StateT
 import monix.eval.Task

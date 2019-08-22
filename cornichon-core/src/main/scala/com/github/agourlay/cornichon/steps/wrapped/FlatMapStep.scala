@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.StateT
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.core.StepState
 import monix.eval.Task
 
 // Transparent wrapper - Steps are flatten in the main execution

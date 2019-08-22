@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.{ StepResult, StepState }
 import com.github.agourlay.cornichon.steps.wrapped.FlatMapStep
 import monix.eval.Task
 

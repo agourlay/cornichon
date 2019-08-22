@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.steps.wrapped
 import cats.data.StateT
 import cats.syntax.monoid._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
 
 case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedResource) extends WrapperStep {

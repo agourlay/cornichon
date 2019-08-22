@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.check.forAll
 import cats.data.StateT
 import com.github.agourlay.cornichon.check.Generator
 import com.github.agourlay.cornichon.core.Done.rightDone
-import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task

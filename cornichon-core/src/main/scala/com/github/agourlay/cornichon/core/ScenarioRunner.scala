@@ -11,7 +11,6 @@ import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepResult
 
 import scala.util.control.NonFatal
 

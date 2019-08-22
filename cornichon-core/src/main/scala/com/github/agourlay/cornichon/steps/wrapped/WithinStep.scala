@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.steps.wrapped
 import cats.data.StateT
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.core.core.StepState
 import com.github.agourlay.cornichon.util.Timing._
 
 import scala.concurrent.duration.Duration
