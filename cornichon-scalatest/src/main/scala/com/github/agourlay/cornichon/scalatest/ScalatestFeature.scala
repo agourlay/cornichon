@@ -99,13 +99,20 @@ object ScalatestFeature {
   Scheduler.Implicits.global.scheduleWithFixedDelay(5.seconds, 5.seconds) {
     if (registeredUsage.get() == 0) {
       safePassInRow.incrementAndGet()
-      if (safePassInRow.get() == 2) shutDownGlobalResources()
-    } else if (safePassInRow.get() > 0)
+      if (safePassInRow.get() == 2) { shutDownGlobalResources(); () } else ()
+    } else if (safePassInRow.get() > 0) {
       safePassInRow.decrementAndGet()
+      ()
+    }
   }
 
-  def reserveGlobalRuntime(): Unit =
+  def reserveGlobalRuntime(): Unit = {
     registeredUsage.incrementAndGet()
-  def releaseGlobalRuntime(): Unit =
+    ()
+  }
+
+  def releaseGlobalRuntime(): Unit = {
     registeredUsage.decrementAndGet()
+    ()
+  }
 }
