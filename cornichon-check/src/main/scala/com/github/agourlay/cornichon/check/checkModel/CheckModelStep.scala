@@ -43,8 +43,8 @@ case class CheckModelStep[A, B, C, D, E, F](
     val reason = endOfRun match {
       case EndPropertyReached(property, numberOfTransitions) ⇒
         s"End reached on property '$property' after $numberOfTransitions transitions"
-      case MaxTransitionReached(_) ⇒
-        "Max transitions number per run reached"
+      case MaxTransitionReached(numberOfTransitions) ⇒
+        s"Max number of transitions per run reached ($numberOfTransitions)"
     }
     InfoLogInstruction(s"Run #$runNumber - $reason", depth)
   }
