@@ -195,6 +195,19 @@ object JsonSteps {
       )
     }
 
+    def isNotNull: AssertStep = {
+      val baseTitle = if (jsonPath == JsonPath.root) s"$target is not null" else s"$target's field '$jsonPath' is not null"
+      AssertStep(
+        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        action = sc ⇒ Assertion.either {
+          for {
+            sessionValue ← sc.session.get(sessionKey)
+            subJson ← resolveRunMandatoryJsonPath(jsonPath, sessionValue, sc)
+          } yield CustomMessageEqualityAssertion(false, subJson.isNull, () ⇒ keyIsNotNullError(jsonPath, sessionValue))
+        }
+      )
+    }
+
     def isAbsent: AssertStep = {
       val baseTitle = if (jsonPath == JsonPath.root) s"$target is absent" else s"$target's field '$jsonPath' is absent"
       AssertStep(

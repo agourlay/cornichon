@@ -130,6 +130,24 @@ class JsonStepsSpec extends AsyncWordSpec
         }
       }
 
+      "isNotNull path to json key" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "null" }""")
+        val step = jsonStepBuilder.path("myKey").isNotNull
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "isNotNull path to json key fail" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : null }""")
+        val step = jsonStepBuilder.path("myKey").isNotNull
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
       "is with absent path to json key" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
         val step = jsonStepBuilder.path("myKey1").is("myValue")

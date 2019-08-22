@@ -9,14 +9,20 @@ import com.github.agourlay.cornichon.matchers.Matcher
 
 object JsonAssertionErrors {
 
+  def keyIsNotNullError(keyName: String, source: String): String = {
+    val prettySource = parseDslJsonUnsafe(source).show
+    s"""expected key '$keyName' to not be null but it was null in the source:
+       |$prettySource""".stripMargin
+  }
+
   def keyIsPresentError(keyName: String, source: Json): String = {
-    s"""expected key '$keyName' to be absent but it was found with value :
+    s"""expected key '$keyName' to be absent but it was found with value:
         |${source.show}""".stripMargin
   }
 
   def keyIsAbsentError(keyName: String, source: String): String = {
     val prettySource = parseDslJsonUnsafe(source).show
-    s"""expected key '$keyName' to be present but it was not in the source :
+    s"""expected key '$keyName' to be present but it was not in the source:
         |$prettySource""".stripMargin
   }
 

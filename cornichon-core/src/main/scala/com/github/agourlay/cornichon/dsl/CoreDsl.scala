@@ -133,7 +133,7 @@ trait CoreDsl extends ProvidedInstances {
   def save(input: (String, String), show: Boolean = true): Step = {
     val (key, value) = input
     EffectStep.fromSyncE(
-      title = s"add value '$value' to session under key '$key' ",
+      title = s"add value '$value' to session under key '$key'",
       effect = sc ⇒ {
         sc.fillPlaceholders(value).flatMap(sc.session.addValue(key, _))
       },
