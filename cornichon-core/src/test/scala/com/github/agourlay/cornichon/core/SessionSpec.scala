@@ -153,6 +153,13 @@ class SessionSpec extends WordSpec
           Session.newEmpty.getOpt(key) should be(None)
         }
       }
+
+      "return a written value" in {
+        forAll(keyGen, valueGen) { (key, value) ⇒
+          val s2 = Session.newEmpty.addValueUnsafe(key, value)
+          s2.getOpt(key).value should be(value)
+        }
+      }
     }
 
     "removeKey" must {

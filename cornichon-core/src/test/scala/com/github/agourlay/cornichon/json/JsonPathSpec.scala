@@ -5,6 +5,7 @@ import cats.scalatest.{ EitherMatchers, EitherValues }
 import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import cats.syntax.show._
 
 class JsonPathSpec extends WordSpec
   with Matchers
@@ -277,6 +278,10 @@ class JsonPathSpec extends WordSpec
         val path = List.fill(jos.size)(FieldSelection("stitch"))
         JsonPath(path).run(json).value should be(targetValue)
       }
+    }
+
+    "have a pretty rendering via Show" in {
+      JsonPath.parse("a.b[1].d.e[*]").value.show should be("$.a.b[1].d.e[*]")
     }
   }
 }

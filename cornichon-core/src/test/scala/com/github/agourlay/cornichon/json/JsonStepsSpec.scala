@@ -193,7 +193,48 @@ class JsonStepsSpec extends AsyncWordSpec
         }
       }
 
-      "is json with matcher" in {
+      "is json without whitelisting enabled" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        // forcing whitelisting to false to have the negative test
+        val step = jsonStepBuilder.copy(whitelist = false).is("""{ "myKeyOther" : "myOtherValue" }""")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
+      "is json with ignoring fields and whitelisting - combination not supported" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        val step = jsonStepBuilder.whitelisting.ignoring("blah").is("""{ "myKeyOther" : "myOtherValue" }""")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map {
+          case f: FailureScenarioReport ⇒
+            f.failedSteps.head.errors.head.renderedMessage should be(
+              """usage of 'ignoring' and 'whiteListing' is mutually exclusive"""
+            )
+          case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
+        }
+      }
+
+      "is json with matcher in string" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> "myOtherValue")
+        val step = jsonStepBuilder.is("*any-string*")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "is json with matcher in string - non trimmed" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> "myOtherValue")
+        val step = jsonStepBuilder.is(" *any-string* ")
+        val s = Scenario("scenario with JsonSteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
+      "is json with matcher in object" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : 1, "myKeyOther" : "myOtherValue" }""")
         val step = jsonStepBuilder.is("""{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }""")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -409,7 +450,7 @@ class JsonStepsSpec extends AsyncWordSpec
 
       "contains" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
-        val step = jsonStepBuilder.asArray.contains("b")
+        val step = jsonStepBuilder.asArray.contains("b", "c")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
         ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
@@ -425,9 +466,27 @@ class JsonStepsSpec extends AsyncWordSpec
         }
       }
 
+      "contains fail - partial" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
+        val step = jsonStepBuilder.asArray.contains("c", "d")
+        val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(false)
+        }
+      }
+
       "not contains fail" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
         val step = jsonStepBuilder.asArray.not_contains("d")
+        val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+        ScenarioRunner.runScenario(session)(s).map { r ⇒
+          r.isSuccess should be(true)
+        }
+      }
+
+      "not contains fail - partial" in {
+        val session = Session.newEmpty.addValuesUnsafe(testKey -> """["a", "b", "c" ]""")
+        val step = jsonStepBuilder.asArray.not_contains("c", "d")
         val s = Scenario("scenario with JsonArraySteps", step :: Nil)
         ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)

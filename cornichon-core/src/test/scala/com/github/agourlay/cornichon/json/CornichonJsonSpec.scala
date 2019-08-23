@@ -67,9 +67,18 @@ class CornichonJsonSpec extends WordSpec
         parseDslJson("cornichon") should beRight(Json.fromString("cornichon"))
       }
 
+      "parse flat string with spaces" in {
+        parseDslJson(" cornichon ") should beRight(Json.fromString(" cornichon "))
+      }
+
       "parse JSON object string" in {
         val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
         parseDslJson("""{"name":"cornichon"}""") should beRight(expected)
+      }
+
+      "parse JSON object string with spaces" in {
+        val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
+        parseDslJson("""  {"name":"cornichon"}  """) should beRight(expected)
       }
 
       "parse JSON Array string" in {
@@ -150,6 +159,26 @@ class CornichonJsonSpec extends WordSpec
           parseDslJson(json.spaces2) should beRight(json)
         }
       }
+    }
+
+    "isJsonString" must {
+
+      "detect invalid empty string" in {
+        isJsonString("") should be(false)
+      }
+
+      "detect a string" in {
+        isJsonString("a") should be(true)
+      }
+
+      "detect an object" in {
+        isJsonString(""" { "a" : "v"} """) should be(false)
+      }
+
+      "detect an array" in {
+        isJsonString(""" [ "a", "v"] """) should be(false)
+      }
+
     }
 
     "removeFieldsByPath" must {
@@ -553,6 +582,11 @@ class CornichonJsonSpec extends WordSpec
     }
 
     "findAllContainingValue" must {
+
+      "handle empty values array" in {
+        val input = "target value"
+        findAllPathWithValue(Nil, parseDslJsonUnsafe(input)) should be(Nil)
+      }
 
       "find root value" in {
 
