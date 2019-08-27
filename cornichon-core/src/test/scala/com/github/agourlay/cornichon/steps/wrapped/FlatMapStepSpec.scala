@@ -6,9 +6,10 @@ import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTi
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.util.ScenarioMatchers
 import org.scalatest.{ AsyncWordSpec, Matchers, OptionValues }
 
-class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with StepUtilSpec {
+class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with StepUtilSpec with ScenarioMatchers {
 
   "FlatMapStep" must {
     "merge nested steps in the parent flow when first" in {
@@ -26,12 +27,22 @@ class FlatMapStepSpec extends AsyncWordSpec with Matchers with OptionValues with
     "shortcut if starting step fails" in {
       val dummy = AssertStep("always true", _ ⇒ Assertion.alwaysValid)
       val nested = List.fill(5)(dummy)
-      val steps = FlatMapStep(AssertStep("always false", _ ⇒ Assertion.failWith("Nop!")), _ ⇒ nested) :: Nil
-      val s = Scenario("scenario with FlatMap", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r ⇒
-        r.isSuccess should be(false)
-        r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with FlatMap", 1))
-        r.logs.size should be(4)
+      val steps = FlatMapStep(AssertStep("always fails", _ ⇒ Assertion.failWith("Nop!")), _ ⇒ nested) :: Nil
+      val s = Scenario("with FlatMap", steps)
+
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'with FlatMap' failed:
+            |
+            |at step:
+            |always fails
+            |
+            |with error(s):
+            |Nop!
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
       }
     }
 

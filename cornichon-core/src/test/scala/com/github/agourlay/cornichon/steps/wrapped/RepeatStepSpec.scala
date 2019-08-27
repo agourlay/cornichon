@@ -3,9 +3,10 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import org.scalatest.{ Matchers, AsyncWordSpec }
+import com.github.agourlay.cornichon.util.ScenarioMatchers
+import org.scalatest.{ AsyncWordSpec, Matchers }
 
-class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with ScenarioMatchers {
 
   "RepeatStep" must {
     "fail if 'repeat' block contains a failed step" in {
@@ -14,8 +15,26 @@ class RepeatStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatStep = RepeatStep(nested, 5, None)
-      val s = Scenario("scenario with Repeat", repeatStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      val s = Scenario("with Repeat", repeatStep :: Nil)
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'with Repeat' failed:
+            |
+            |at step:
+            |always fails
+            |
+            |with error(s):
+            |Repeat block failed at occurrence 0
+            |caused by:
+            |expected result was:
+            |'true'
+            |but actual result is:
+            |'false'
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
+      }
     }
 
     "repeat steps inside a 'repeat' block" in {

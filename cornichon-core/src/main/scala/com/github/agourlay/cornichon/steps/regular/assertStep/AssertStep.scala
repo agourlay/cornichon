@@ -22,8 +22,8 @@ case class AssertStep(title: String, action: ScenarioContext ⇒ Assertion, show
       }
     }
 
-  override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
-    errorsToFailureStep(this, runState.depth, errors)
+  override def onError(errors: NonEmptyList[CornichonError], runState: RunState, executionTime: Duration): (LogInstruction, FailedStep) =
+    errorsToFailureStep(this, runState.depth, errors, Some(executionTime))
 
   override def logOnSuccess(result: Done, runState: RunState, executionTime: Duration): LogInstruction =
     successLog(title, runState.depth, show, executionTime)

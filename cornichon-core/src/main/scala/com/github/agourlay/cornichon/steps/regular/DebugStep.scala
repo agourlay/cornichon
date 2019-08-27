@@ -18,8 +18,8 @@ case class DebugStep(title: String, message: ScenarioContext ⇒ Either[Cornicho
       message(runState.scenarioContext).leftMap(NonEmptyList.one)
     }
 
-  override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
-    errorsToFailureStep(this, runState.depth, errors)
+  override def onError(errors: NonEmptyList[CornichonError], runState: RunState, executionTime: Duration): (LogInstruction, FailedStep) =
+    errorsToFailureStep(this, runState.depth, errors, Some(executionTime))
 
   override def logOnSuccess(result: String, runState: RunState, executionTime: Duration): LogInstruction =
     DebugLogInstruction(result, runState.depth)

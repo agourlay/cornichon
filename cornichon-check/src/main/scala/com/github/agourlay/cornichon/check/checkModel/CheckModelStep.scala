@@ -9,7 +9,6 @@ import cats.syntax.apply._
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
-import com.github.agourlay.cornichon.util.Timing._
 
 case class CheckModelStep[A, B, C, D, E, F](
     maxNumberOfRuns: Int,
@@ -69,35 +68,37 @@ case class CheckModelStep[A, B, C, D, E, F](
     emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> sumOfWeightIsCorrect
   }
 
-  override val stateUpdate: StepState = StateT { runState ⇒
-    withDuration {
-      validateTransitions(model.transitions) match {
-        case Invalid(ce) ⇒
-          Task.now((runState, FailedStep(this, ce).asLeft))
-        case _ ⇒
-          val randomContext = runState.randomContext
-          val genA = modelRunner.generatorA(randomContext)
-          val genB = modelRunner.generatorB(randomContext)
-          val genC = modelRunner.generatorC(randomContext)
-          val genD = modelRunner.generatorD(randomContext)
-          val genE = modelRunner.generatorE(randomContext)
-          val genF = modelRunner.generatorF(randomContext)
-          val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
-          repeatModelOnSuccess(checkEngine, runNumber = 1)(runState.nestedContext)
-      }
-    }.map {
-      case (run, executionTime) ⇒
-        val depth = runState.depth
-        val (checkState, res) = run
-        val fullLogs = res match {
-          case Left(_) ⇒
-            FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
-
-          case _ ⇒
-            SuccessLogInstruction(s"Check model block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
-        }
-        (runState.mergeNested(checkState, fullLogs), res)
+  private def checkModel(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
+    validateTransitions(model.transitions) match {
+      case Invalid(ce) ⇒
+        Task.now((runState, FailedStep(this, ce).asLeft))
+      case _ ⇒
+        val randomContext = runState.randomContext
+        val genA = modelRunner.generatorA(randomContext)
+        val genB = modelRunner.generatorB(randomContext)
+        val genC = modelRunner.generatorC(randomContext)
+        val genD = modelRunner.generatorD(randomContext)
+        val genE = modelRunner.generatorE(randomContext)
+        val genF = modelRunner.generatorF(randomContext)
+        val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
+        repeatModelOnSuccess(checkEngine, runNumber = 1)(runState.nestedContext)
     }
+
+  override val stateUpdate: StepState = StateT { runState ⇒
+    checkModel(runState)
+      .timed
+      .map {
+        case (executionTime, run) ⇒
+          val depth = runState.depth
+          val (checkState, res) = run
+          val fullLogs = res match {
+            case Left(_) ⇒
+              FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
+            case _ ⇒
+              SuccessLogInstruction(s"Check model block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
+          }
+          (runState.mergeNested(checkState, fullLogs), res)
+      }
   }
 }
 

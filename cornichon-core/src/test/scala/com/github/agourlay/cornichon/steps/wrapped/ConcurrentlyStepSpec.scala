@@ -5,11 +5,12 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.util.ScenarioMatchers
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.duration._
 
-class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with ScenarioMatchers {
 
   "ConcurrentlyStep" must {
     "fail if 'Concurrently' block contains a failed step" in {
@@ -18,11 +19,23 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
-      val s = Scenario("scenario with Concurrently", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒
-          f.failedSteps.head.errors.head.renderedMessage should be("expected result was:\n'true'\nbut actual result is:\n'false'")
-        case _ ⇒ assert(false)
+      val s = Scenario("with Concurrently", steps)
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'with Concurrently' failed:
+            |
+            |at step:
+            |always fails
+            |
+            |with error(s):
+            |expected result was:
+            |'true'
+            |but actual result is:
+            |'false'
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
       }
     }
 
@@ -35,10 +48,20 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
         }
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
-      val s = Scenario("scenario with Concurrently", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Concurrently block did not reach completion in time: 0/1 finished")
-        case _                        ⇒ assert(false)
+      val s = Scenario("with Concurrently", steps)
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'with Concurrently' failed:
+            |
+            |at step:
+            |Concurrently block with maxTime '200 milliseconds'
+            |
+            |with error(s):
+            |Concurrently block did not reach completion in time: 0/1 finished
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
       }
     }
 

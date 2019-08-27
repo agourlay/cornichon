@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.steps.wrapped
 import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.util.Timing._
 import monix.eval.Task
 
 case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[String]) extends WrapperStep {
@@ -35,25 +34,25 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[Str
       }
     }
 
-    withDuration {
-      repeatSuccessSteps(0, runState.nestedContext)
-    }.map {
-      case (run, executionTime) ⇒
-        val (retries, repeatedState, report) = run
-        val depth = runState.depth
-        val (logStack, res) = report.fold(
-          failedStep ⇒ {
-            val wrappedLogStack = FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurrence", depth, Some(executionTime)) +: repeatedState.logStack :+ failedTitleLog(depth)
-            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.errors))
-            (wrappedLogStack, Left(artificialFailedStep))
-          },
-          _ ⇒ {
-            val wrappedLockStack = SuccessLogInstruction(s"Repeat block with occurrence '$occurrence' succeeded", depth, Some(executionTime)) +: repeatedState.logStack :+ successTitleLog(depth)
-            (wrappedLockStack, rightDone)
-          }
-        )
-        (runState.mergeNested(repeatedState, logStack), res)
-    }
+    repeatSuccessSteps(0, runState.nestedContext)
+      .timed
+      .map {
+        case (executionTime, run) ⇒
+          val (retries, repeatedState, report) = run
+          val depth = runState.depth
+          val (logStack, res) = report.fold(
+            failedStep ⇒ {
+              val wrappedLogStack = FailureLogInstruction(s"Repeat block with occurrence '$occurrence' failed after '$retries' occurrence", depth, Some(executionTime)) +: repeatedState.logStack :+ failedTitleLog(depth)
+              val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.errors))
+              (wrappedLogStack, Left(artificialFailedStep))
+            },
+            _ ⇒ {
+              val wrappedLockStack = SuccessLogInstruction(s"Repeat block with occurrence '$occurrence' succeeded", depth, Some(executionTime)) +: repeatedState.logStack :+ successTitleLog(depth)
+              (wrappedLockStack, rightDone)
+            }
+          )
+          (runState.mergeNested(repeatedState, logStack), res)
+      }
   }
 }
 

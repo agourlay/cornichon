@@ -3,9 +3,10 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import org.scalatest.{ Matchers, AsyncWordSpec }
+import com.github.agourlay.cornichon.util.ScenarioMatchers
+import org.scalatest.{ AsyncWordSpec, Matchers }
 
-class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with ScenarioMatchers {
 
   "RetryMaxStep" must {
     "fail if 'retryMax' block never succeeds" in {
@@ -19,9 +20,25 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
         }
       ) :: Nil
       val retryMaxStep = RetryMaxStep(nested, loop)
-      val s = Scenario("scenario with RetryMax", retryMaxStep :: Nil)
+      val s = Scenario("with RetryMax", retryMaxStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
-        res.isSuccess should be(false)
+        scenarioFailsWithMessage(res) {
+          """Scenario 'with RetryMax' failed:
+            |
+            |at step:
+            |always fails
+            |
+            |with error(s):
+            |Retry max block failed '10' times
+            |caused by:
+            |expected result was:
+            |'true'
+            |but actual result is:
+            |'false'
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
         // Initial run + 'loop' retries
         uglyCounter should be(loop + 1)
       }

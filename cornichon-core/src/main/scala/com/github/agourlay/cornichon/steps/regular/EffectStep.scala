@@ -16,8 +16,8 @@ case class EffectStep(title: String, effect: ScenarioContext ⇒ Future[Either[C
   override def runSessionValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
     Task.deferFuture(effect(runState.scenarioContext)).map(_.leftMap(NonEmptyList.one))
 
-  override def onError(errors: NonEmptyList[CornichonError], runState: RunState): (List[LogInstruction], FailedStep) =
-    errorsToFailureStep(this, runState.depth, errors)
+  override def onError(errors: NonEmptyList[CornichonError], runState: RunState, executionTime: Duration): (LogInstruction, FailedStep) =
+    errorsToFailureStep(this, runState.depth, errors, Some(executionTime))
 
   override def logOnSuccess(result: Session, runState: RunState, executionTime: Duration): LogInstruction =
     successLog(title, runState.depth, show, executionTime)

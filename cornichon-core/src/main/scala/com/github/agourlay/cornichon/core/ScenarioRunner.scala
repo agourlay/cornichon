@@ -30,26 +30,21 @@ object ScenarioRunner {
     else
       NoShowLogInstruction(title, depth, Some(duration))
 
-  def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError]): (List[LogInstruction], FailedStep) = {
-    val runLogs = errorLogStack(currentStep.title, errors, depth)
+  def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError], duration: Option[Duration] = None): (LogInstruction, FailedStep) = {
+    val errorLogs = errors.toList.map(_.renderedMessage).reverse.mkString("\n")
+    val runLog = FailureLogInstruction(s"${currentStep.title}\n*** FAILED ***\n$errorLogs", depth, duration)
     val failedStep = FailedStep(currentStep, errors)
-    (runLogs, failedStep)
+    (runLog, failedStep)
   }
 
   def handleErrors(currentStep: Step, runState: RunState, errors: NonEmptyList[CornichonError]): (RunState, FailedStep Either Done) = {
     val (errorLogStack, failedStep) = errorsToFailureStep(currentStep, runState.depth, errors)
-    (runState.recordLogStack(errorLogStack), failedStep.asLeft)
+    (runState.recordLog(errorLogStack), failedStep.asLeft)
   }
 
   def handleThrowable(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) = {
     val (errorLogStack, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.one(CornichonError.fromThrowable(error)))
-    (runState.recordLogStack(errorLogStack), failedStep.asLeft)
-  }
-
-  def errorLogStack(title: String, errors: NonEmptyList[CornichonError], depth: Int): List[FailureLogInstruction] = {
-    val failureLogTitle = FailureLogInstruction(s"$title *** FAILED ***", depth)
-    val errorLogs = errors.toList.map(e ⇒ FailureLogInstruction(e.renderedMessage, depth)).reverse
-    errorLogs :+ failureLogTitle
+    (runState.recordLog(errorLogStack), failedStep.asLeft)
   }
 
   final def runScenario(session: Session, context: FeatureContext = FeatureContext.empty)(scenario: Scenario): Task[ScenarioReport] =
@@ -69,10 +64,9 @@ object ScenarioRunner {
 
         val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
         val startingRunState = RunState.fromFeatureContext(context, session, titleLog :: Nil, initMargin + 1, Nil)
-        val now = System.nanoTime
-        stages.run(startingRunState).map {
-          case (lastState, aggregatedResult) ⇒
-            ScenarioReport.build(scenario.name, lastState, aggregatedResult, Duration.fromNanos(System.nanoTime - now))
+        stages.run(startingRunState).timed.map {
+          case (executionTime, (lastState, aggregatedResult)) ⇒
+            ScenarioReport.build(scenario.name, lastState, aggregatedResult, executionTime)
         }
     }
 

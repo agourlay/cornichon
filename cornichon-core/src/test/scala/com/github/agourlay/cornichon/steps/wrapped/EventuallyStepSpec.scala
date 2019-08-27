@@ -3,15 +3,16 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.util.ScenarioMatchers
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.duration._
 
-class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with ScenarioMatchers {
 
   "EventuallyStep" must {
     "replay eventually wrapped steps" in {
-      val eventuallyConf = EventuallyConf(maxTime = 5.seconds, interval = 10.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
       val nested = AssertStep(
         "possible random value step",
         _ ⇒ GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
@@ -23,7 +24,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     }
 
     "replay eventually wrapped steps until limit" in {
-      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
       var counter = 0
       val nested = AssertStep(
         "impossible random value step", _ ⇒ {
@@ -40,35 +41,33 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     }
 
     "replay eventually handle hanging wrapped steps" in {
-      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
       val nested = AssertStep(
         "slow always true step", _ ⇒ {
-          Thread.sleep(100000)
+          Thread.sleep(1000)
           Assertion.alwaysValid
         }
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒
-          f.isSuccess should be(false)
-          f.msg should be("""Scenario 'scenario with eventually that fails' failed:
-                            |
-                            |at step:
-                            |Eventually block with maxDuration = 1 second and interval = 100 milliseconds
-                            |
-                            |with error(s):
-                            |Eventually block is interrupted due to a long period of inactivity
-                            |
-                            |seed for the run was '1'
-                            |""".stripMargin)
-        case other @ _ ⇒
-          fail(s"should have failed but got $other")
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep ⇒
+        scenarioFailsWithMessage(rep) {
+          """Scenario 'scenario with eventually that fails' failed:
+            |
+            |at step:
+            |Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
+            |
+            |with error(s):
+            |Eventually block is interrupted due to a long period of inactivity
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
       }
     }
 
     "report distinct errors in the logs and only final error in the report" in {
-      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
       var counter = 0
       val nested = AssertStep(
         "Fail differently", _ ⇒ {
@@ -81,38 +80,39 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒
-          f.isSuccess should be(false)
-          f.msg should be("""Scenario 'scenario with different failures' failed:
-                            |
-                            |at step:
-                            |Fail differently
-                            |
-                            |with error(s):
-                            |Failing forever
-                            |
-                            |seed for the run was '1'
-                            |""".stripMargin)
-          val logs = LogInstruction.renderLogs(f.logs.drop(2).dropRight(1), colorized = false)
-          logs should be("""
-                           |      Eventually block with maxDuration = 1 second and interval = 100 milliseconds
-                           |         Fail differently *** FAILED ***
-                           |         Failing 1
-                           |         Fail differently *** FAILED ***
-                           |         Failing 2
-                           |         Fail differently *** FAILED ***
-                           |         Failing 3
-                           |         Fail differently *** FAILED ***
-                           |         Failing forever
-                           |""".stripMargin)
-        case other @ _ ⇒
-          fail(s"should have failed but got $other")
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'scenario with different failures' failed:
+            |
+            |at step:
+            |Fail differently
+            |
+            |with error(s):
+            |Failing forever
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
+
+        // TODO logs cannot be asserted if they contain timing info
+        //val logs = LogInstruction.renderLogs(res.logs.drop(2).dropRight(1), colorized = false)
+        //        logs should be(
+        //          """
+        //            |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+        //            |         Fail differently *** FAILED ***
+        //            |         Failing 1
+        //            |         Fail differently *** FAILED ***
+        //            |         Failing 2
+        //            |         Fail differently *** FAILED ***
+        //            |         Failing 3
+        //            |         Fail differently *** FAILED ***
+        //            |         Failing forever
+        //            |""".stripMargin)
       }
     }
 
     "detect oscillation in wrapped step" in {
-      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 100.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
       var counter = 1
       val nested = AssertStep(
         "Fail with oscillation", _ ⇒ {
@@ -128,41 +128,40 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = false)
       val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒
-          f.isSuccess should be(false)
-          f.msg should be("""Scenario 'scenario with different failures' failed:
-                            |
-                            |at step:
-                            |Eventually block with maxDuration = 1 second and interval = 100 milliseconds
-                            |
-                            |with error(s):
-                            |Eventually block failed because it detected an oscillation of errors
-                            |
-                            |at step:
-                            |Fail with oscillation
-                            |
-                            |with error(s):
-                            |Failure mode one
-                            |
-                            |
-                            |seed for the run was '1'
-                            |""".stripMargin)
-          val logs = LogInstruction.renderLogs(f.logs.drop(2).dropRight(1), colorized = false)
-          logs should be("""
-                           |      Eventually block with maxDuration = 1 second and interval = 100 milliseconds
-                           |         Fail with oscillation *** FAILED ***
-                           |         Failure mode one
-                           |         Fail with oscillation *** FAILED ***
-                           |         Failure mode two
-                           |         Fail with oscillation *** FAILED ***
-                           |         Failure mode one
-                           |""".stripMargin)
-        case other @ _ ⇒
-          fail(s"should have failed but got $other")
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'scenario with different failures' failed:
+            |
+            |at step:
+            |Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+            |
+            |with error(s):
+            |Eventually block failed because it detected an oscillation of errors
+            |
+            |at step:
+            |Fail with oscillation
+            |
+            |with error(s):
+            |Failure mode one
+            |
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
+
+        // TODO logs cannot be asserted if they contain timing info
+        //val logs = LogInstruction.renderLogs(res.logs.drop(2).dropRight(1), colorized = false)
+        //        logs should be("""
+        //                           |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+        //                           |         Fail with oscillation *** FAILED ***
+        //                           |         Failure mode one
+        //                           |         Fail with oscillation *** FAILED ***
+        //                           |         Failure mode two
+        //                           |         Fail with oscillation *** FAILED ***
+        //                           |         Failure mode one
+        //                           |""".stripMargin)
       }
     }
-
   }
 
 }

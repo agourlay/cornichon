@@ -5,7 +5,6 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.ScenarioRunner._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.util.Timing._
 import com.github.agourlay.cornichon.util.Printing._
 import monix.eval.Task
 
@@ -45,22 +44,22 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
             line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
           }
 
-          withDuration {
-            runInputs(inputs, runState.nestedContext)
-          }.map {
-            case ((inputsState, inputsRes), executionTime) ⇒
-              val initialDepth = runState.depth
-              val (logStack, res) = inputsRes match {
-                case Right(_) ⇒
-                  val wrappedLogStack = SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime)) +: inputsState.logStack :+ successTitleLog(initialDepth)
-                  (wrappedLogStack, rightDone)
-                case Left((failedInputs, failedStep)) ⇒
-                  val wrappedLogStack = FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime)) +: inputsState.logStack :+ failedTitleLog(initialDepth)
-                  val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
-                  (wrappedLogStack, Left(artificialFailedStep))
-              }
-              (runState.mergeNested(inputsState, logStack), res)
-          }
+          runInputs(inputs, runState.nestedContext)
+            .timed
+            .map {
+              case (executionTime, (inputsState, inputsRes)) ⇒
+                val initialDepth = runState.depth
+                val (logStack, res) = inputsRes match {
+                  case Right(_) ⇒
+                    val wrappedLogStack = SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime)) +: inputsState.logStack :+ successTitleLog(initialDepth)
+                    (wrappedLogStack, rightDone)
+                  case Left((failedInputs, failedStep)) ⇒
+                    val wrappedLogStack = FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime)) +: inputsState.logStack :+ failedTitleLog(initialDepth)
+                    val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
+                    (wrappedLogStack, Left(artificialFailedStep))
+                }
+                (runState.mergeNested(inputsState, logStack), res)
+            }
         }
       )
   }

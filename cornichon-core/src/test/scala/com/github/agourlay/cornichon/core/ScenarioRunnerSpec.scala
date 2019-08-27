@@ -5,10 +5,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.TaskSpec
+import com.github.agourlay.cornichon.util.{ ScenarioMatchers, TaskSpec }
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
-class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
+class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with ScenarioMatchers {
 
   "ScenarioRunner" when {
     "runScenario" must {
@@ -17,7 +17,6 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
         val s = Scenario("test", steps)
         ScenarioRunner.runScenario(Session.newEmpty)(s).map { r ⇒
           r.isSuccess should be(true)
-          r.logs.size should be(3)
         }
       }
 
@@ -28,20 +27,20 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
         val steps = step1 :: step2 :: step3 :: Nil
         val s = Scenario("test", steps)
         ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
-          withClue(s"logs were ${res.logs}") {
-            res match {
-              case f: FailureScenarioReport ⇒
-                f.failedSteps.head.errors.head.renderedMessage should be(
-                  """
-                  |expected result was:
-                  |'4'
-                  |but actual result is:
-                  |'5'"""
-                    .stripMargin.trim
-                )
-                f.logs.size should be(5)
-              case _ ⇒ fail(s"Should be a FailedScenarioReport but got \n${res.logs}")
-            }
+          scenarioFailsWithMessage(res) {
+            """Scenario 'test' failed:
+              |
+              |at step:
+              |second step
+              |
+              |with error(s):
+              |expected result was:
+              |'4'
+              |but actual result is:
+              |'5'
+              |
+              |seed for the run was '1'
+              |""".stripMargin
           }
         }
       }
@@ -51,39 +50,33 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec {
         val finalAssertion = AssertStep("finally step", _ ⇒ GenericEqualityAssertion(true, false))
         val s = Scenario("test", mainStep :: Nil)
         val fc = FeatureContext.empty.copy(finallySteps = finalAssertion :: Nil, withSeed = Some(1))
-        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map {
-          case f: FailureScenarioReport ⇒
-            withClue(f.msg) {
-              f.msg should be(
-                """Scenario 'test' failed:
-                |
-                |at step:
-                |main step
-                |
-                |with error(s):
-                |expected result was:
-                |'true'
-                |but actual result is:
-                |'false'
-                |
-                |and
-                |
-                |at step:
-                |finally step
-                |
-                |with error(s):
-                |expected result was:
-                |'true'
-                |but actual result is:
-                |'false'
-                |
-                |seed for the run was '1'
-                |""".
-                  stripMargin
-              )
-              f.logs.size should be(7)
-            }
-          case other ⇒ fail(s"Should be a FailedScenarioReport but got \n${other.logs}")
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
+          scenarioFailsWithMessage(r) {
+            """Scenario 'test' failed:
+              |
+              |at step:
+              |main step
+              |
+              |with error(s):
+              |expected result was:
+              |'true'
+              |but actual result is:
+              |'false'
+              |
+              |and
+              |
+              |at step:
+              |finally step
+              |
+              |with error(s):
+              |expected result was:
+              |'true'
+              |but actual result is:
+              |'false'
+              |
+              |seed for the run was '1'
+              |""".stripMargin
+          }
         }
       }
 

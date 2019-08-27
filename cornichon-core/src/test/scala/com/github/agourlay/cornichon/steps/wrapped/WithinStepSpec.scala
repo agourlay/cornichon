@@ -11,11 +11,11 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "WithinStep" must {
     "control duration of 'within' wrapped steps" in {
-      val d = 200.millis
+      val d = 100.millis
       val nested = AssertStep(
         "possible random value step",
         _ ⇒ {
-          Thread.sleep(100)
+          Thread.sleep(50)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
@@ -25,11 +25,11 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
     }
 
     "fail if duration of 'within' is exceeded" in {
-      val d = 200.millis
+      val d = 100.millis
       val nested = AssertStep(
         "possible random value step",
         _ ⇒ {
-          Thread.sleep(250)
+          Thread.sleep(150)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil

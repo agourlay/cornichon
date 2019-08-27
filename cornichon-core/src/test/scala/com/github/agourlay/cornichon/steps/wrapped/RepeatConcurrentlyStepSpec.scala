@@ -6,11 +6,12 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.util.ScenarioMatchers
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.duration._
 
-class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with ScenarioMatchers {
 
   "RepeatConcurrentlyStep" must {
     "fail if 'repeatConcurrently' block contains a failed step" in {
@@ -18,12 +19,24 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
         "always fails",
         _ ⇒ GenericEqualityAssertion(true, false)
       ) :: Nil
-      val steps = RepeatConcurrentlyStep(times = 3, nested, parallelism = 1, 200.millis) :: Nil
-      val s = Scenario("scenario with RepeatConcurrently", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒
-          f.failedSteps.head.errors.head.renderedMessage should be("expected result was:\n'true'\nbut actual result is:\n'false'")
-        case _ ⇒ assert(false)
+      val steps = RepeatConcurrentlyStep(times = 3, nested, parallelism = 1, maxTime = 300.millis) :: Nil
+      val s = Scenario("with RepeatConcurrently", steps)
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'with RepeatConcurrently' failed:
+            |
+            |at step:
+            |always fails
+            |
+            |with error(s):
+            |expected result was:
+            |'true'
+            |but actual result is:
+            |'false'
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
       }
     }
 
@@ -35,11 +48,21 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val steps = RepeatConcurrentlyStep(times = 1, nested, parallelism = 1, 200.millis) :: Nil
-      val s = Scenario("scenario with RepeatConcurrently", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map {
-        case f: FailureScenarioReport ⇒ f.failedSteps.head.errors.head.renderedMessage should be("Repeat concurrently block did not reach completion in time: 0/1 finished")
-        case _                        ⇒ assert(false)
+      val steps = RepeatConcurrentlyStep(times = 1, nested, parallelism = 1, maxTime = 100.millis) :: Nil
+      val s = Scenario("with RepeatConcurrently", steps)
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        scenarioFailsWithMessage(res) {
+          """Scenario 'with RepeatConcurrently' failed:
+            |
+            |at step:
+            |Repeat concurrently block '1' times with parallel factor '1' and maxTime '100 milliseconds'
+            |
+            |with error(s):
+            |Repeat concurrently block did not reach completion in time: 0/1 finished
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
       }
     }
 
@@ -74,7 +97,6 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
         res.isSuccess should be(true)
         res.session.getHistory("index").valueUnsafe should be(Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
-
       }
     }
   }

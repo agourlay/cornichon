@@ -10,9 +10,9 @@ case class ScenarioResourceStep(title: String, acquire: Step, release: Step) ext
   override val nestedToRun = AttachAsStep(s"$title - acquire step", _ ⇒ acquire :: Nil) :: Nil
   override val indentLog = false
 
-  def onNestedError(failedStep: FailedStep, resultRunState: RunState, runState: RunState, executionTime: Duration) =
+  def onNestedError(failedStep: FailedStep, resultRunState: RunState, runState: RunState, executionTime: Duration): (RunState, FailedStep) =
     (runState.mergeNested(resultRunState), failedStep)
 
-  def onNestedSuccess(resultRunState: RunState, runState: RunState, executionTime: Duration) =
+  def onNestedSuccess(resultRunState: RunState, runState: RunState, executionTime: Duration): RunState =
     runState.mergeNested(resultRunState).registerCleanupStep(AttachAsStep(s"$title - release step", _ ⇒ release :: Nil))
 }

@@ -6,12 +6,13 @@ import java.util.function.UnaryOperator
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.EffectStep
+import com.github.agourlay.cornichon.util.ScenarioMatchers
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with ScenarioMatchers {
   def randomName = Random.alphanumeric.take(10).mkString
   import QueueManager._
 
@@ -76,8 +77,26 @@ class ScenarioResourceStepSpec extends AsyncWordSpec with Matchers with StepUtil
       run.map { rep ⇒
         val q1 = rep.session.get("q1").right.get
         queueResource.actionsFor(q1) should be(List(CreateQueue(q1), DeleteQueue(q1)))
-        rep.logs.find { case FailureLogInstruction("fail to delete the queue: q2 *** FAILED ***", _, _) ⇒ true; case _ ⇒ false } should be('defined)
-        rep.logs.find { case FailureLogInstruction("fail to delete the queue: q3 *** FAILED ***", _, _) ⇒ true; case _ ⇒ false } should be('defined)
+        scenarioFailsWithMessage(rep) {
+          """Scenario 'resource step scenario' failed:
+            |
+            |at step:
+            |fail to delete the queue: q2
+            |
+            |with error(s):
+            |no queue for you
+            |
+            |and
+            |
+            |at step:
+            |fail to delete the queue: q3
+            |
+            |with error(s):
+            |no queue for you
+            |
+            |seed for the run was '1'
+            |""".stripMargin
+        }
       }
     }
   }
