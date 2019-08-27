@@ -11,10 +11,10 @@ import scala.concurrent.duration.Duration
 
 case class AssertStep(title: String, action: ScenarioContext ⇒ Assertion, show: Boolean = true) extends LogValueStep[Done] {
 
-  def setTitle(newTitle: String) = copy(title = newTitle)
+  def setTitle(newTitle: String): Step = copy(title = newTitle)
 
   override def runLogValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Done]] =
-    Task.now {
+    Task.delay {
       val assertion = action(runState.scenarioContext)
       assertion.validated match {
         case Invalid(e) ⇒ e.asLeft
