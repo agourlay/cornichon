@@ -32,8 +32,8 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
         case (executionTime, res) ⇒
-          res.isSuccess should be(true)
-          withClue(executionTime.toMillis) {
+          withClue(executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)) {
+            res.isSuccess should be(true)
             executionTime.gt(50.millis) should be(true)
             // empiric values for the upper bound here
             executionTime.lteq(65.millis) should be(true)
@@ -53,8 +53,8 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
         case (executionTime, res) ⇒
-          res.isSuccess should be(true)
-          withClue(executionTime.toMillis) {
+          withClue(executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)) {
+            res.isSuccess should be(true)
             executionTime.gt(50.millis) should be(true)
             // empiric values for the upper bound here
             executionTime.lt(550.millis) should be(true)

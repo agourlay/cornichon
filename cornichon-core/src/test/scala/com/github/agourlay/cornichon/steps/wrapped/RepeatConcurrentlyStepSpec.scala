@@ -42,9 +42,9 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
 
     "fail if 'RepeatConcurrently' block does not complete within 'maxDuration because of a single step duration" in {
       val nested = AssertStep(
-        "always succeed after 1000 ms",
+        "always succeed after 200 ms",
         _ ⇒ {
-          Thread.sleep(1000)
+          Thread.sleep(200)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
@@ -79,8 +79,10 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       val concurrentlyStep = RepeatConcurrentlyStep(times = loop, nested, parallelism = 2, 300.millis)
       val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
-        res.isSuccess should be(true)
-        uglyCounter.intValue() should be(loop)
+        withClue(LogInstruction.renderLogs(res.logs)) {
+          res.isSuccess should be(true)
+          uglyCounter.intValue() should be(loop)
+        }
       }
     }
 
@@ -95,8 +97,10 @@ class RepeatConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUt
       val concurrentlyStep = RepeatConcurrentlyStep(times = repeatFactor, steps.toList, repeatFactor, 300.millis)
       val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
-        res.isSuccess should be(true)
-        res.session.getHistory("index").valueUnsafe should be(Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
+        withClue(LogInstruction.renderLogs(res.logs)) {
+          res.isSuccess should be(true)
+          res.session.getHistory("index").valueUnsafe should be(Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
+        }
       }
     }
   }
