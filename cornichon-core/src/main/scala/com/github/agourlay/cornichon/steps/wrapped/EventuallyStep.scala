@@ -75,12 +75,11 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
       .timeoutTo(after = conf.maxTime * 2, backup = timeoutFailedResult) // make sure that the inner block does not run forever
       .timed
       .map {
-        case (executionTime, run) ⇒
-          val (retries, distinctErrors, retriedRunState, report) = run
+        case (executionTime, (retries, distinctErrors, retriedRunState, report)) ⇒
           val initialDepth = runState.depth
           val wrappedLogStack = report match {
             case Left(_) ⇒
-              FailureLogInstruction(s"Eventually block did not complete in time after being retried '$retries' times with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
+              FailureLogInstruction(s"Eventually block did not complete in time after having being tried '${retries + 1}' times with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
             case _ ⇒
               SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ successTitleLog(initialDepth)
           }

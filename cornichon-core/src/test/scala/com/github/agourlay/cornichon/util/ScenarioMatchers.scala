@@ -15,4 +15,24 @@ trait ScenarioMatchers {
       case other ⇒
         fail(s"Should have been a FailedScenarioReport but got \n${LogInstruction.renderLogs(other.logs)}")
     }
+
+  def matchLogsWithoutDuration(logs: List[LogInstruction])(expectedRenderedLogs: String): Assertion = {
+    val renderedLogs = LogInstruction.renderLogs(logs, colorized = false)
+    val cleanedLogs = renderedLogs.split('\n').toList.map { l ⇒
+      // check if duration is present at end
+      if (l.nonEmpty && l.last == ']')
+        l.dropRight(1) // drop ']'
+          .reverse
+          .dropWhile(_ != '[') // drop measurement
+          .drop(1) // drop '['
+          .dropWhile(_ == ' ') // drop whitespaces
+          .reverse
+      else
+        l
+    }
+    val preparedCleanedLogs = cleanedLogs.mkString("\n")
+    withClue(preparedCleanedLogs) {
+      preparedCleanedLogs should be(expectedRenderedLogs)
+    }
+  }
 }

@@ -94,20 +94,24 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
             |""".stripMargin
         }
 
-        // TODO logs cannot be asserted if they contain timing info
-        //val logs = LogInstruction.renderLogs(res.logs.drop(2).dropRight(1), colorized = false)
-        //        logs should be(
-        //          """
-        //            |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-        //            |         Fail differently *** FAILED ***
-        //            |         Failing 1
-        //            |         Fail differently *** FAILED ***
-        //            |         Failing 2
-        //            |         Fail differently *** FAILED ***
-        //            |         Failing 3
-        //            |         Fail differently *** FAILED ***
-        //            |         Failing forever
-        //            |""".stripMargin)
+        matchLogsWithoutDuration(res.logs.dropRight(1)) {
+          """
+            |   Scenario : scenario with different failures
+            |      main steps
+            |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+            |         Fail differently
+            |         *** FAILED ***
+            |         Failing 1
+            |         Fail differently
+            |         *** FAILED ***
+            |         Failing 2
+            |         Fail differently
+            |         *** FAILED ***
+            |         Failing 3
+            |         Fail differently
+            |         *** FAILED ***
+            |         Failing forever""".stripMargin
+        }
       }
     }
 
@@ -149,17 +153,22 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
             |""".stripMargin
         }
 
-        // TODO logs cannot be asserted if they contain timing info
-        //val logs = LogInstruction.renderLogs(res.logs.drop(2).dropRight(1), colorized = false)
-        //        logs should be("""
-        //                           |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-        //                           |         Fail with oscillation *** FAILED ***
-        //                           |         Failure mode one
-        //                           |         Fail with oscillation *** FAILED ***
-        //                           |         Failure mode two
-        //                           |         Fail with oscillation *** FAILED ***
-        //                           |         Failure mode one
-        //                           |""".stripMargin)
+        matchLogsWithoutDuration(res.logs) {
+          """
+           |   Scenario : scenario with different failures
+           |      main steps
+           |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+           |         Fail with oscillation
+           |         *** FAILED ***
+           |         Failure mode one
+           |         Fail with oscillation
+           |         *** FAILED ***
+           |         Failure mode two
+           |         Fail with oscillation
+           |         *** FAILED ***
+           |         Failure mode one
+           |      Eventually block did not complete in time after having being tried '3' times with '2' distinct errors""".stripMargin
+        }
       }
     }
   }
