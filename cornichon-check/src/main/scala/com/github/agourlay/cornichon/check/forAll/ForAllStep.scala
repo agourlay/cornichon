@@ -52,14 +52,14 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
     repeatEvaluationOnSuccess(1)(runState.nestedContext)
       .timed
       .map {
-        case (executionTime, run) ⇒
+        case (executionTime, (checkState, res)) ⇒
           val depth = runState.depth
-          val (checkState, res) = run
+          val exec = Some(executionTime)
           val fullLogs = res match {
             case Left(_) ⇒
-              FailureLogInstruction(s"$baseTitle block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
+              FailureLogInstruction(s"$baseTitle block failed ", depth, exec) +: checkState.logStack :+ failedTitleLog(depth)
             case _ ⇒
-              SuccessLogInstruction(s"$baseTitle block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
+              SuccessLogInstruction(s"$baseTitle block succeeded", depth, exec) +: checkState.logStack :+ successTitleLog(depth)
           }
           (runState.mergeNested(checkState, fullLogs), res)
       }
