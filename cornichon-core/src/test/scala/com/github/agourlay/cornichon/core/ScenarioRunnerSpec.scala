@@ -45,9 +45,24 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
           finallySteps = finallySteps
         )
         val s = Scenario("casual stuff", steps)
-        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
-          r.isSuccess should be(false)
-          matchLogsWithoutDuration(r.logs) {
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { res ⇒
+          scenarioFailsWithMessage(res) {
+            """Scenario 'casual stuff' failed:
+              |
+              |at step:
+              |before assertion
+              |
+              |with error(s):
+              |expected result was:
+              |'3'
+              |but actual result is:
+              |'4'
+              |
+              |seed for the run was '1'
+              |""".stripMargin
+          }
+
+          matchLogsWithoutDuration(res.logs) {
             """
               |   Scenario : casual stuff
               |      before steps
@@ -68,10 +83,10 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
         val step2 = AssertStep("second step", _ ⇒ GenericEqualityAssertion(4, 5))
         val step3 = AssertStep("third step", _ ⇒ GenericEqualityAssertion(1, 1))
         val steps = step1 :: step2 :: step3 :: Nil
-        val s = Scenario("test", steps)
+        val s = Scenario("early stop", steps)
         ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
           scenarioFailsWithMessage(res) {
-            """Scenario 'test' failed:
+            """Scenario 'early stop' failed:
               |
               |at step:
               |second step
@@ -85,20 +100,33 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
               |seed for the run was '1'
               |""".stripMargin
           }
+
+          matchLogsWithoutDuration(res.logs) {
+            """
+              |   Scenario : early stop
+              |      main steps
+              |      first step
+              |      second step
+              |      *** FAILED ***
+              |      expected result was:
+              |      '4'
+              |      but actual result is:
+              |      '5'""".stripMargin
+          }
         }
       }
 
       "accumulates errors if 'main' and 'finally' fail" in {
-        val mainStep = AssertStep("main step", _ ⇒ GenericEqualityAssertion(true, false))
-        val finalAssertion = AssertStep("finally step", _ ⇒ GenericEqualityAssertion(true, false))
-        val s = Scenario("test", mainStep :: Nil)
+        val mainStep = AssertStep("main assertion", _ ⇒ GenericEqualityAssertion(true, false))
+        val finalAssertion = AssertStep("finally assertion", _ ⇒ GenericEqualityAssertion(true, false))
+        val s = Scenario("accumulate", mainStep :: Nil)
         val fc = FeatureContext.empty.copy(finallySteps = finalAssertion :: Nil, withSeed = Some(1))
         ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
           scenarioFailsWithMessage(r) {
-            """Scenario 'test' failed:
+            """Scenario 'accumulate' failed:
               |
               |at step:
-              |main step
+              |main assertion
               |
               |with error(s):
               |expected result was:
@@ -109,7 +137,7 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
               |and
               |
               |at step:
-              |finally step
+              |finally assertion
               |
               |with error(s):
               |expected result was:
@@ -119,6 +147,25 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
               |
               |seed for the run was '1'
               |""".stripMargin
+          }
+
+          matchLogsWithoutDuration(r.logs) {
+            """
+              |   Scenario : accumulate
+              |      main steps
+              |      main assertion
+              |      *** FAILED ***
+              |      expected result was:
+              |      'true'
+              |      but actual result is:
+              |      'false'
+              |      finally steps
+              |      finally assertion
+              |      *** FAILED ***
+              |      expected result was:
+              |      'true'
+              |      but actual result is:
+              |      'false'""".stripMargin
           }
         }
       }
