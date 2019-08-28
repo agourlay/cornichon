@@ -2,7 +2,8 @@ package com.github.agourlay.cornichon.core
 
 import scala.util.Random
 
-// seededRandom works through internal mutation :(
+// FIXME seededRandom works through internal mutation :(
+// use purely functional number generation instead
 case class RandomContext(initialSeed: Long, seededRandom: Random)
 
 object RandomContext {

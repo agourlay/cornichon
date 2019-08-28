@@ -125,11 +125,61 @@ class PlaceholderResolverSpec extends WordSpec
         PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor).leftValue should be(KeyNotFoundInSession("new-taste", session))
       }
 
-      "generate random uuid if <random-uuid>" in {
+      "generate random uuid if <random-uuid> - fixed by seed" in {
         val session = Session.newEmpty
         val content = "<random-uuid>"
-        // throws if invalid UUID
-        UUID.fromString(PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor).getOrElse(""))
+        val fixedRc = RandomContext.fromSeed(1L)
+        val expectedUUID = "bb1ad573-19b8-9cd8-68fb-0e6f684df992"
+        val uuidInSession = PlaceholderResolver.fillPlaceholders(content)(session, fixedRc, noExtractor).value
+        UUID.fromString(uuidInSession) should be(UUID.fromString(expectedUUID))
+      }
+
+      "generate random positive integer if <random-positive-integer> - fixed by seed" in {
+        val session = Session.newEmpty
+        val content = "<random-positive-integer>"
+        val fixedRc = RandomContext.fromSeed(1L)
+        val integerInSession = PlaceholderResolver.fillPlaceholders(content)(session, fixedRc, noExtractor).value
+        integerInSession.toInt should be(8985)
+      }
+
+      "generate random string if <random-string> - fixed by seed" in {
+        val session = Session.newEmpty
+        val content = "<random-string>"
+        val fixedRc = RandomContext.fromSeed(1L)
+        val stringInSession = PlaceholderResolver.fillPlaceholders(content)(session, fixedRc, noExtractor).value
+        stringInSession should be("ƛණ㕮銙혁")
+      }
+
+      "generate random alphanum string if <random-alphanum-string> - fixed by seed" in {
+        val session = Session.newEmpty
+        val content = "<random-alphanum-string>"
+        val fixedRc = RandomContext.fromSeed(2L)
+        val stringInSession = PlaceholderResolver.fillPlaceholders(content)(session, fixedRc, noExtractor).value
+        stringInSession should be("oC8rH")
+      }
+
+      "generate random boolean if <random-boolean> - fixed by seed" in {
+        val session = Session.newEmpty
+        val content = "<random-boolean>"
+        val fixedRc = RandomContext.fromSeed(1L)
+        val booleanInSession = PlaceholderResolver.fillPlaceholders(content)(session, fixedRc, noExtractor).value
+        booleanInSession.toBoolean should be(true)
+      }
+
+      "generate random timestamp string if <random-timestamp>" in {
+        val session = Session.newEmpty
+        val content = "<random-timestamp>"
+        val timestampInSession = PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor).value
+        // not sure what to assert here
+        noException should be thrownBy new java.util.Date(timestampInSession.toLong * 1000L)
+      }
+
+      "generate current timestamp string if <current-timestamp>" in {
+        val session = Session.newEmpty
+        val content = "<current-timestamp>"
+        val timestampInSession = PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor).value
+        val date = new java.util.Date(timestampInSession.toLong * 1000L)
+        date.before(new java.util.Date()) should be(true)
       }
 
       "take the first value in session if index = 0" in {

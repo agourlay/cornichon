@@ -8,6 +8,8 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.util.Caching
 
+import scala.util.Random
+
 object PlaceholderResolver {
 
   private val rightNil = Nil.asRight
@@ -17,7 +19,7 @@ object PlaceholderResolver {
     placeholdersCache.get(input, k ⇒ PlaceholderParser.parse(k))
 
   private def resolvePlaceholder(ph: Placeholder)(session: Session, random: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
-    builtInPlaceholders(random).lift(ph.key).map(Right.apply).getOrElse {
+    builtInPlaceholders(random.seededRandom).lift(ph.key).map(Right.apply).getOrElse {
       val otherKeyName = ph.key
       val otherKeyIndex = ph.index
       (session.get(otherKeyName, otherKeyIndex), customExtractors.get(otherKeyName)) match {
@@ -58,13 +60,13 @@ object PlaceholderResolver {
       } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
     }
 
-  private def builtInPlaceholders(r: RandomContext): PartialFunction[String, String] = {
-    case "random-uuid"             ⇒ UUID.randomUUID().toString
-    case "random-positive-integer" ⇒ r.seededRandom.nextInt(10000).toString
-    case "random-string"           ⇒ r.seededRandom.nextString(5)
-    case "random-alphanum-string"  ⇒ r.seededRandom.alphanumeric.take(5).mkString("")
-    case "random-boolean"          ⇒ r.seededRandom.nextBoolean().toString
-    case "random-timestamp"        ⇒ (Math.abs(System.currentTimeMillis - r.seededRandom.nextLong()) / 1000).toString
+  private def builtInPlaceholders(seededRandom: Random): PartialFunction[String, String] = {
+    case "random-uuid"             ⇒ new UUID(seededRandom.nextLong(), seededRandom.nextLong()).toString
+    case "random-positive-integer" ⇒ seededRandom.nextInt(10000).toString
+    case "random-string"           ⇒ seededRandom.nextString(5)
+    case "random-alphanum-string"  ⇒ seededRandom.alphanumeric.take(5).mkString("")
+    case "random-boolean"          ⇒ seededRandom.nextBoolean().toString
+    case "random-timestamp"        ⇒ (Math.abs(System.currentTimeMillis - seededRandom.nextLong()) / 1000).toString
     case "current-timestamp"       ⇒ (System.currentTimeMillis / 1000).toString
   }
 
