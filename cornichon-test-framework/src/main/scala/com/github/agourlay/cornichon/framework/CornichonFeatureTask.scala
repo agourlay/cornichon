@@ -80,7 +80,14 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
     case s: SuccessScenarioReport ⇒
       val msg = s"- ${s.scenarioName} [${s.duration.toMillis} ms]"
       println(SuccessLogInstruction(msg, 0).colorized)
-      if (s.shouldShowLogs) LogInstruction.printLogs(s.logs)
+      if (s.shouldShowLogs) {
+        LogInstruction.printLogs(s.logs)
+        println(
+          s"""|  ${fansi.Color.LightGray("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
+              |  ${replayCommand(featureClass, s.scenarioName, s.seed)}
+              |""".stripMargin
+        )
+      }
 
     case f: FailureScenarioReport ⇒
       val msg = failureErrorMessage(featureClass, f)

@@ -20,11 +20,11 @@ object ScenarioReport {
   def build(scenarioName: String, runState: RunState, result: ValidatedNel[FailedStep, Done], duration: FiniteDuration): ScenarioReport =
     result.fold(
       failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logStack, duration, runState.randomContext.initialSeed),
-      _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logStack, duration)
+      _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logStack, duration, runState.randomContext.initialSeed)
     )
 }
 
-case class SuccessScenarioReport(scenarioName: String, session: Session, logStack: List[LogInstruction], duration: FiniteDuration) extends ScenarioReport {
+case class SuccessScenarioReport(scenarioName: String, session: Session, logStack: List[LogInstruction], duration: FiniteDuration, seed: Long) extends ScenarioReport {
   val isSuccess = true
 
   // keeping it lazy to avoid the reverse in case of no rendering
