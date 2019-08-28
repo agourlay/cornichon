@@ -9,7 +9,7 @@ trait ScenarioMatchers {
   def scenarioFailsWithMessage(report: ScenarioReport)(expectedMessage: String): Assertion =
     report match {
       case f: FailureScenarioReport ⇒
-        withClue(f.msg + "\nwith logs\n" + LogInstruction.renderLogs(f.logs)) {
+        withClue(f.msg + "\nwith logs\n" + LogInstruction.renderLogs(f.logs) + "\n\n") {
           f.msg should be(expectedMessage)
         }
       case other ⇒
@@ -31,7 +31,7 @@ trait ScenarioMatchers {
         l
     }
     val preparedCleanedLogs = cleanedLogs.mkString("\n")
-    withClue(preparedCleanedLogs) {
+    withClue(preparedCleanedLogs + "\n" + expectedRenderedLogs + "\n\n") {
       preparedCleanedLogs should be(expectedRenderedLogs)
     }
   }

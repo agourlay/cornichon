@@ -12,11 +12,54 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
 
   "ScenarioRunner" when {
     "runScenario" must {
-      "executes all steps of a scenario" in {
-        val steps = AssertStep("first step", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
-        val s = Scenario("test", steps)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map { r ⇒
+      "executes all steps of a scenario in case of success" in {
+        val beforeSteps = AssertStep("before assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val steps = AssertStep("main assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val finallySteps = AssertStep("finally assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val fc = FeatureContext.empty.copy(
+          beforeSteps = beforeSteps,
+          finallySteps = finallySteps
+        )
+        val s = Scenario("casual stuff", steps)
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
           r.isSuccess should be(true)
+          matchLogsWithoutDuration(r.logs) {
+            """
+              |   Scenario : casual stuff
+              |      before steps
+              |      before assertion
+              |      main steps
+              |      main assertion
+              |      finally steps
+              |      finally assertion""".stripMargin
+          }
+        }
+      }
+
+      "do not run `main steps` if there is a failure in `beforeSteps`" in {
+        val beforeSteps = AssertStep("before assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 4)) :: Nil
+        val steps = AssertStep("main assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val finallySteps = AssertStep("finally assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val fc = FeatureContext.empty.copy(
+          beforeSteps = beforeSteps,
+          finallySteps = finallySteps
+        )
+        val s = Scenario("casual stuff", steps)
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
+          r.isSuccess should be(false)
+          matchLogsWithoutDuration(r.logs) {
+            """
+              |   Scenario : casual stuff
+              |      before steps
+              |      before assertion
+              |      *** FAILED ***
+              |      expected result was:
+              |      '3'
+              |      but actual result is:
+              |      '4'
+              |      finally steps
+              |      finally assertion""".stripMargin
+          }
         }
       }
 
