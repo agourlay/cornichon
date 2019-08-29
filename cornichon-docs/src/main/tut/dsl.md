@@ -160,10 +160,10 @@ body.path("publisher.foundationMonth").isAbsent
 It is possible to handle null values, given the following response body `{ “data” : null }`
 
 ```scala
-body.path("data").isAbsent //incorrect
+body.path("data").isAbsent  //incorrect
 body.path("data").isPresent //correct
-body.path("data").isNull //correct
-
+body.path("data").isNull    //correct
+body.path("data").isNotNull //incorrect
 ```
 
 If one key of the path contains a "." it has to be wrapped with "`" to notify the parser.

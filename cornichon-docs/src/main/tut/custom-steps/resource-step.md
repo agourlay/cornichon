@@ -24,12 +24,12 @@ where
 ```scala
 def setup_some_fixture_data() = ScenarioResourceStep(
   title = "Set up fixture data"
-  acquire = EffectStep("insert data", { session =>
+  acquire = EffectStep("insert data", { scenarioContext =>
     val randomId = insertData()
-    session.addValue("id", randomId)
+    scenarioContext.session.addValue("id", randomId)
   }),
-  release = EffectStep("clean up data", { session =>
-    val randomId = session.get("id").right.get
+  release = EffectStep("clean up data", { scenarioContext =>
+    val randomId = scenarioContext.session.get("id").right.get
     deleteData(randomId)
   })
 )

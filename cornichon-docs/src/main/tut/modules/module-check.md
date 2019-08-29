@@ -164,13 +164,12 @@ The key idea is to describe the possible interactions with the API as [Markov ch
 
 The entry point of the `cornichon-check` DSL is reached by mixing the trait `CheckDsl` which exposes the following function:
 
-`def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, seed: Option[Long] = None)(modelRunner: ModelRunner[A, B, C, D, E, F])`
+`def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int)(modelRunner: ModelRunner[A, B, C, D, E, F])`
 
 Let's unpack this signature:
 
 - `maxNumberOfRuns` refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant
 - `maxNumberOfTransition` is useful when the `model` contains cycles in order to ensure termination
-- `seed` can be provided in order to trigger a deterministic run
 - `modelRunner` is the actual definition of the `model`
 - `A B C D E F` refers to the types of the `generators` used in `model` definition (maximum of 6 for the moment)
 
@@ -344,11 +343,7 @@ The logs give us:
 - a detailed description of the runs execution
 - the seed used to create the `Generators`
 
-It is possible to replay exactly the same run by passing the seed as a parameter.
-
-```scala
- Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1542986106586))(myModelRunner)
-```
+It is possible to replay exactly the same run by passing the seed as a parameter of the feature or by a CLI argument.
 
 ### Examples
 
@@ -579,7 +574,7 @@ Using 2 runs, we already found the problem because the first run finished by int
 
 It is possible to replay exactly this run in a deterministic fashion by using the `seed` printed in the logs and feed it to the DSL.
 
-`Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1542021482941L))(turnstileModel)`
+`Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(turnstileModel)`
 
 This example shows that designing test scenarios with `cornichon-check` is sometimes challenging in the case of shared mutable states.
 

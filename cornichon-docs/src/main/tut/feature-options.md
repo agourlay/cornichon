@@ -68,6 +68,19 @@ import scala.concurrent.duration._
 override lazy val requestTimeout = 100 millis
 ```
 
+## Seed
+
+On a failure the initial seed will be provided in the error reporting enabling you to replay the exact same test even if it contains source of randomness such as:
+
+  - randomized placeholders (random-uuid, random-string, random-boolean etc)
+  - `cornichon-check` value generators & transitions
+  - custom steps using `ScenarioContext.randomContext`
+  - `RandomMapper` as extractor
+
+```scala
+override lazy val seed: Option[Long] = Some(1L)
+```
+
 ## Register custom extractors
 
 In some cases it makes sense to declare ```extractors``` to avoid code duplication when dealing with ```session``` values.

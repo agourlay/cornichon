@@ -5,7 +5,7 @@ title:  "Assert steps"
 
 # AssertStep
 
-An `AssertStep` can be understood as the following function `Sesssion => Assertion`. Its goal is to describe an expectation.
+An `AssertStep` can be understood as the following function `ScenarioContext => Assertion`. Its goal is to describe an expectation.
 
 The test engine is responsible to test the validity of the provided `Assertion` which can be one of the following:
 
@@ -13,7 +13,7 @@ The test engine is responsible to test the validity of the provided `Assertion` 
   * GenericEqualityAssertion to leave all the details to Cornichon
 
     ```scala
-    When I AssertStep("always true!", s => GenericEqualityAssertion(true, true))
+    When I AssertStep("always true!", sc => GenericEqualityAssertion(true, true))
     ```
 
   * CustomMessageEqualityAssertion to provide a custom error message
@@ -43,13 +43,13 @@ Below is a longer example showing how to integration an assertion into scenario.
 ```scala
 When I EffectStep.fromSync(
   title = "estimate PI",
-  action = s => s.add("result", piComputation())
+  action = scenarioContext => scenarioContext.session.add("result", piComputation())
 )
 
 Then assert AssertStep(
   title = "check estimate",
-  action = s => Assertion.either{
-    s.get("result").map(r => BetweenAssertion(3.1, r.toDouble, 3.2))
+  action = scenarioContext => Assertion.either{
+    scenarioContext.session.get("result").map(r => BetweenAssertion(3.1, r.toDouble, 3.2))
   }
 )
 ```

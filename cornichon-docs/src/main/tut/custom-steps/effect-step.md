@@ -5,7 +5,7 @@ title:  "Effect steps"
 
 # EffectStep
 
-An `EffectStep` can be understood as the following function `Session => Future[Either[CornichonError, Session]]`.
+An `EffectStep` can be understood as the following function `ScenarioContext => Future[Either[CornichonError, Session]]`.
 
 This means that an `EffectStep` runs a side effect and populates the `Session` with potential result values or returns an error.
 
@@ -14,21 +14,21 @@ A `Session` is a Map-like object used to propagate state throughout a `scenario`
 Here is the most simple `EffectStep`:
 
 ```scala
-When I EffectStep(title = "do nothing", action = s => Future.successful(Right(s)))
+When I EffectStep(title = "do nothing", action = scenarioContext => Future.successful(Right(scenarioContext.session)))
 ```
 
 or using a factory helper when dealing with computations that do not fit the `EffectStep` type.
 
 ```scala
-When I EffectStep.fromSync(title = "do nothing", action = s => s)
-When I EffectStep.fromSyncE(title = "do nothing", action = s => Right(s))
-When I EffectStep.fromAsync(title = "do nothing", action = s => Future(s))
+When I EffectStep.fromSync(title = "do nothing", action = scenarioContext => scenarioContext.session)
+When I EffectStep.fromSyncE(title = "do nothing", action = scenarioContext => Right(scenarioContext.session))
+When I EffectStep.fromAsync(title = "do nothing", action = scenarioContext => Future(scenarioContext.session))
 ```
 
 Let's try so save a value into the `Session`
 
 ```scala
-When I EffectStep.fromSync(title = "estimate PI", action = s => s.add("result", piComputation())
+When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.add("result", piComputation())
 ```
 
 The test engine is responsible for controlling the execution of the side effect function and to report any error.
@@ -39,7 +39,7 @@ If you prefer not using the `scala.concurrent.Future` as effect, it is possible 
 
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 
-val myTaskEffect = EffectStep("identity task", s => Task.now(Right(s)))
+val myTaskEffect = EffectStep("identity task", scenarioContext => Task.now(Right(scenarioContext.session)))
 ```
 
 
