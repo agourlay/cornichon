@@ -19,7 +19,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
 
     Scenario("WebShop acts according to model") {
 
-      Given I check_model(maxNumberOfRuns = 1, maxNumberOfTransitions = 100)(webShopModel)
+      Given I check_model(maxNumberOfRuns = 1, maxNumberOfTransitions = 10)(webShopModel)
 
     }
   }
