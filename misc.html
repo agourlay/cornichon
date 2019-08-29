@@ -48,19 +48,6 @@
   <li>the scenario succeeded and contains at least one <code class="highlighter-rouge">DebugStep</code> such as <code class="highlighter-rouge">And I show_last_status</code></li>
 </ul>
 
-<h2 id="ssl-configuration">SSL configuration</h2>
-
-<p>Testing environment often have broken certificates, it is possible to disable hostname verification by adding the following configuration to your reference.conf or application.conf in src/test/resources</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>akka {
-  ssl-config{
-    loose {
-      disableHostnameVerification = true
-    }
-  }
-}
-</code></pre></div></div>
-
 <h1 id="packaging-features-only-for-cornichon-scalatest">Packaging features (only for cornichon-scalatest)</h1>
 
 <p>When integrating cornichon features in a build pipeline, it can be interesting to package those features in a runnable forms to avoid the cost of recompilation.</p>

@@ -152,11 +152,11 @@
 
 <p>It is possible to handle null values, given the following response body <code class="highlighter-rouge">{ “data” : null }</code></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isAbsent</span> <span class="c1">//incorrect
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isAbsent</span>  <span class="c1">//incorrect
 </span><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isPresent</span> <span class="c1">//correct
-</span><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isNull</span> <span class="c1">//correct
-</span>
-</code></pre></div></div>
+</span><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isNull</span>    <span class="c1">//correct
+</span><span class="n">body</span><span class="o">.</span><span class="n">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="n">isNotNull</span> <span class="c1">//incorrect
+</span></code></pre></div></div>
 
 <p>If one key of the path contains a “.” it has to be wrapped with “`” to notify the parser.</p>
 

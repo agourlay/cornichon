@@ -17,7 +17,9 @@
   <li><code class="highlighter-rouge">OptionalValueGenerator</code> to fail in a controlled fashion</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.core.RandomContext</span>
+
+<span class="k">def</span> <span class="n">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
   <span class="n">name</span> <span class="k">=</span> <span class="s">"an alphanumeric String (20)"</span><span class="o">,</span>
   <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="n">rc</span><span class="o">.</span><span class="n">seededRandom</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">20</span><span class="o">).</span><span class="n">mkString</span><span class="o">(</span><span class="s">""</span><span class="o">))</span>
 
@@ -30,6 +32,7 @@
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">org.scalacheck.Gen</span>
 <span class="k">import</span> <span class="nn">org.scalacheck.rng.Seed</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.core.RandomContext</span>
 
 <span class="k">sealed</span> <span class="k">trait</span> <span class="nc">Coin</span>
 <span class="k">case</span> <span class="k">object</span> <span class="nc">Head</span> <span class="k">extends</span> <span class="nc">Coin</span>
@@ -60,7 +63,8 @@
 
 <p>The implementation under test is a server accepting <code class="highlighter-rouge">POST</code> requests to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.core.RandomContext</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.steps.regular.EffectStep</span>
 
@@ -155,14 +159,13 @@
 
 <p>The entry point of the <code class="highlighter-rouge">cornichon-check</code> DSL is reached by mixing the trait <code class="highlighter-rouge">CheckDsl</code> which exposes the following function:</p>
 
-<p><code class="highlighter-rouge">def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, seed: Option[Long] = None)(modelRunner: ModelRunner[A, B, C, D, E, F])</code></p>
+<p><code class="highlighter-rouge">def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int)(modelRunner: ModelRunner[A, B, C, D, E, F])</code></p>
 
 <p>Let’s unpack this signature:</p>
 
 <ul>
   <li><code class="highlighter-rouge">maxNumberOfRuns</code> refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant</li>
   <li><code class="highlighter-rouge">maxNumberOfTransition</code> is useful when the <code class="highlighter-rouge">model</code> contains cycles in order to ensure termination</li>
-  <li><code class="highlighter-rouge">seed</code> can be provided in order to trigger a deterministic run</li>
   <li><code class="highlighter-rouge">modelRunner</code> is the actual definition of the <code class="highlighter-rouge">model</code></li>
   <li><code class="highlighter-rouge">A B C D E F</code> refers to the types of the <code class="highlighter-rouge">generators</code> used in <code class="highlighter-rouge">model</code> definition (maximum of 6 for the moment)</li>
 </ul>
@@ -345,10 +348,7 @@
   <li>the seed used to create the <code class="highlighter-rouge">Generators</code></li>
 </ul>
 
-<p>It is possible to replay exactly the same run by passing the seed as a parameter.</p>
-
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nc">Given</span> <span class="n">I</span> <span class="n">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">2</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">10</span><span class="o">,</span> <span class="n">seed</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="mi">1542986106586</span><span class="o">))(</span><span class="n">myModelRunner</span><span class="o">)</span>
-</code></pre></div></div>
+<p>It is possible to replay exactly the same run by passing the seed as a parameter of the feature or by a CLI argument.</p>
 
 <h3 id="examples">Examples</h3>
 
@@ -578,7 +578,7 @@
 
 <p>It is possible to replay exactly this run in a deterministic fashion by using the <code class="highlighter-rouge">seed</code> printed in the logs and feed it to the DSL.</p>
 
-<p><code class="highlighter-rouge">Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10, seed = Some(1542021482941L))(turnstileModel)</code></p>
+<p><code class="highlighter-rouge">Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(turnstileModel)</code></p>
 
 <p>This example shows that designing test scenarios with <code class="highlighter-rouge">cornichon-check</code> is sometimes challenging in the case of shared mutable states.</p>
 
@@ -615,8 +615,8 @@
 
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check._</span>
-<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check.checkModel.</span><span class="o">{</span> <span class="nc">Model</span><span class="o">,</span> <span class="nc">ModelRunner</span><span class="o">,</span> <span class="nc">Property1</span> <span class="o">}</span>
-
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.check.checkModel.</span><span class="o">{</span><span class="nc">Model</span><span class="o">,</span> <span class="nc">ModelRunner</span><span class="o">,</span> <span class="nc">Property1</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.core.RandomContext</span>
 <span class="k">import</span> <span class="nn">io.circe.syntax._</span>
 <span class="k">import</span> <span class="nn">io.circe.generic.auto._</span>
 <span class="k">import</span> <span class="nn">org.scalacheck.Gen</span>

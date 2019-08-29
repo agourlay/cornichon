@@ -16,12 +16,12 @@ through the <code class="highlighter-rouge">Session</code>.</p>
 <p>where</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="n">setup_some_fixture_data</span><span class="o">()</span> <span class="k">=</span> <span class="nc">ScenarioResourceStep</span><span class="o">(</span>
   <span class="n">title</span> <span class="k">=</span> <span class="s">"Set up fixture data"</span>
-  <span class="n">acquire</span> <span class="k">=</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="s">"insert data"</span><span class="o">,</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
+  <span class="n">acquire</span> <span class="k">=</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="s">"insert data"</span><span class="o">,</span> <span class="o">{</span> <span class="n">scenarioContext</span> <span class="k">=&gt;</span>
     <span class="k">val</span> <span class="n">randomId</span> <span class="k">=</span> <span class="n">insertData</span><span class="o">()</span>
-    <span class="n">session</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="n">randomId</span><span class="o">)</span>
+    <span class="n">scenarioContext</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">addValue</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="n">randomId</span><span class="o">)</span>
   <span class="o">}),</span>
-  <span class="n">release</span> <span class="k">=</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="s">"clean up data"</span><span class="o">,</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
-    <span class="k">val</span> <span class="n">randomId</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"id"</span><span class="o">).</span><span class="n">right</span><span class="o">.</span><span class="n">get</span>
+  <span class="n">release</span> <span class="k">=</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="s">"clean up data"</span><span class="o">,</span> <span class="o">{</span> <span class="n">scenarioContext</span> <span class="k">=&gt;</span>
+    <span class="k">val</span> <span class="n">randomId</span> <span class="k">=</span> <span class="n">scenarioContext</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"id"</span><span class="o">).</span><span class="n">right</span><span class="o">.</span><span class="n">get</span>
     <span class="n">deleteData</span><span class="o">(</span><span class="n">randomId</span><span class="o">)</span>
   <span class="o">})</span>
 <span class="o">)</span>

@@ -57,6 +57,20 @@
 <span class="k">override</span> <span class="k">lazy</span> <span class="k">val</span> <span class="n">requestTimeout</span> <span class="k">=</span> <span class="mi">100</span> <span class="n">millis</span>
 </code></pre></div></div>
 
+<h2 id="seed">Seed</h2>
+
+<p>On a failure the initial seed will be provided in the error reporting enabling you to replay the exact same test even if it contains source of randomness such as:</p>
+
+<ul>
+  <li>randomized placeholders (random-uuid, random-string, random-boolean etc)</li>
+  <li><code class="highlighter-rouge">cornichon-check</code> value generators &amp; transitions</li>
+  <li>custom steps using <code class="highlighter-rouge">ScenarioContext.randomContext</code></li>
+  <li><code class="highlighter-rouge">RandomMapper</code> as extractor</li>
+</ul>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">override</span> <span class="k">lazy</span> <span class="k">val</span> <span class="n">seed</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Long</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="mi">1L</span><span class="o">)</span>
+</code></pre></div></div>
+
 <h2 id="register-custom-extractors">Register custom extractors</h2>
 
 <p>In some cases it makes sense to declare <code class="highlighter-rouge">extractors</code> to avoid code duplication when dealing with <code class="highlighter-rouge">session</code> values.</p>
