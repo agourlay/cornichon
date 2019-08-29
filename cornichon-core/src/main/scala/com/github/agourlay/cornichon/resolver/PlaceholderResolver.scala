@@ -51,13 +51,13 @@ object PlaceholderResolver {
     }
 
   def fillPlaceholdersMany(params: Seq[(String, String)])(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, List[(String, String)]] =
-    params.foldRight[Either[CornichonError, List[(String, String)]]](rightNil) { (p, accE) ⇒
-      val (name, value) = p
-      for {
-        acc ← accE
-        resolvedName ← fillPlaceholders(name)(session, randomContext, customExtractors)
-        resolvedValue ← fillPlaceholders(value)(session, randomContext, customExtractors)
-      } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
+    params.foldRight[Either[CornichonError, List[(String, String)]]](rightNil) {
+      case ((name, value), accE) ⇒
+        for {
+          acc ← accE
+          resolvedName ← fillPlaceholders(name)(session, randomContext, customExtractors)
+          resolvedValue ← fillPlaceholders(value)(session, randomContext, customExtractors)
+        } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
     }
 
   private def builtInPlaceholders(seededRandom: Random): PartialFunction[String, String] = {
