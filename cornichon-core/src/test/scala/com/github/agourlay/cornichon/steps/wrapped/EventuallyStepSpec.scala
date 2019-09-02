@@ -20,7 +20,13 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
 
       val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true) :: Nil
       val s = Scenario("scenario with eventually", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
+      ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
+        case (executionTime, res) ⇒
+          res.isSuccess should be(true)
+          withClue(executionTime.toMillis) {
+            executionTime.lt(1100.millis) should be(true)
+          }
+      }
     }
 
     "replay eventually wrapped steps until limit" in {
@@ -34,13 +40,19 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r ⇒
-        r.isSuccess should be(false)
-        counter <= 10 should be(true) // at most 10*100millis
+      ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
+        case (executionTime, r) ⇒
+          r.isSuccess should be(false)
+          counter <= 10 should be(true) // at most 10*100millis
+          withClue(executionTime.toMillis) {
+            executionTime.lt(120.millis) should be(true)
+          }
       }
     }
 
-    "replay eventually handle hanging wrapped steps" in {
+    // Waiting for Monix 3.1 to interrupt Thread.sleep
+    // https://twitter.com/alexelcu/status/1168428868841213952
+    "replay eventually handle hanging wrapped steps" ignore {
       val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
       val nested = AssertStep(
         "slow always true step", _ ⇒ {
@@ -50,9 +62,16 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep ⇒
-        scenarioFailsWithMessage(rep) {
-          """Scenario 'scenario with eventually that fails' failed:
+      ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
+        case (executionTime, rep) ⇒
+
+          // currently the idle detection is at maxTime * 2
+          withClue(executionTime.toMillis) {
+            executionTime.lt(500.millis) should be(true)
+          }
+
+          scenarioFailsWithMessage(rep) {
+            """Scenario 'scenario with eventually that fails' failed:
             |
             |at step:
             |Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
@@ -62,7 +81,15 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
             |
             |seed for the run was '1'
             |""".stripMargin
-        }
+          }
+
+          matchLogsWithoutDuration(rep.logs) {
+            """
+            |   Scenario : scenario with eventually that fails
+            |      main steps
+            |      Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
+            |      Eventually block did not complete in time after having being tried '1' times with '0' distinct errors""".stripMargin
+          }
       }
     }
 
