@@ -1,5 +1,8 @@
 package com.github.agourlay.cornichon.http.client
 
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
@@ -13,6 +16,7 @@ import com.github.agourlay.cornichon.util.Caching
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
+import javax.net.ssl.{ SSLContext, TrustManager, X509TrustManager }
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
@@ -26,13 +30,25 @@ import scala.collection.breakOut
 class Http4sClient(scheduler: Scheduler) extends HttpClient {
   implicit val s = scheduler
 
+  // Disable JDK built-in checks
+  private val sslContext = {
+    val ssl = SSLContext.getInstance("SSL")
+    val byPassTrustManagers = Array[TrustManager](new X509TrustManager() {
+      override def getAcceptedIssuers: Array[X509Certificate] = Array.empty
+      override def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
+      override def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
+    })
+    ssl.init(null, byPassTrustManagers, new SecureRandom)
+    ssl
+  }
+
   // Lives for the duration of the test run
   private val uriCache = Caching.buildCache[String, Either[CornichonError, Uri]]()
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.Inf
   private val (httpClient, safeShutdown) =
     BlazeClientBuilder(executionContext = scheduler)
-      .withDefaultSslContext
+      .withSslContext(sslContext)
       .withMaxTotalConnections(300)
       .withMaxWaitQueueLimit(500)
       .withIdleTimeout(defaultHighTimeout)
