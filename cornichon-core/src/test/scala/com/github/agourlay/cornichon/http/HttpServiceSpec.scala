@@ -65,18 +65,5 @@ class HttpServiceSpec extends WordSpec
         HttpService.decodeSessionHeaders("headerkey-headervalue") should be(left)
       }
     }
-
-    "configureRequest" must {
-      "add accept gzip according to config - true" in {
-        val config = Config(addAcceptGzipByDefault = true)
-        HttpService.configureRequest(dummyRequest, config).headers should be(("Accept-Encoding" -> "gzip") :: Nil)
-      }
-
-      "add accept gzip according to config - false" in {
-        val config = Config(addAcceptGzipByDefault = false)
-        HttpService.configureRequest(dummyRequest, config).headers should be(Nil)
-      }
-
-    }
   }
 }

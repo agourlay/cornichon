@@ -27,7 +27,8 @@ import org.http4s.client.middleware.GZip
 import scala.concurrent.duration._
 import scala.collection.breakOut
 
-class Http4sClient(disableCertificateVerification: Boolean)(implicit scheduler: Scheduler) extends HttpClient {
+class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerification: Boolean)(implicit scheduler: Scheduler)
+  extends HttpClient {
 
   // Disable JDK built-in checks
   private val sslContext = {
@@ -56,7 +57,11 @@ class Http4sClient(disableCertificateVerification: Boolean)(implicit scheduler: 
       .withResponseHeaderTimeout(defaultHighTimeout)
       .withRequestTimeout(defaultHighTimeout)
       .allocated
-      .map { case (client, shutdown) ⇒ GZip()(client) -> shutdown } // always adds `Accept-Encoding` `gzip`
+      .map {
+        case (client, shutdown) ⇒
+          val c = if (addAcceptGzipByDefault) GZip()(client) else client
+          c -> shutdown
+      }
       .runSyncUnsafe(10.seconds)
 
   private def toHttp4sMethod(method: HttpMethod): Method = method match {
