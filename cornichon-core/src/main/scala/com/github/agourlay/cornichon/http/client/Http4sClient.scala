@@ -27,19 +27,20 @@ import org.http4s.client.middleware.GZip
 import scala.concurrent.duration._
 import scala.collection.breakOut
 
-class Http4sClient(scheduler: Scheduler) extends HttpClient {
-  implicit val s = scheduler
+class Http4sClient(disableCertificateVerification: Boolean)(implicit scheduler: Scheduler) extends HttpClient {
 
   // Disable JDK built-in checks
   private val sslContext = {
-    val ssl = SSLContext.getInstance("SSL")
-    val byPassTrustManagers = Array[TrustManager](new X509TrustManager() {
-      override def getAcceptedIssuers: Array[X509Certificate] = Array.empty
-      override def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
-      override def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
-    })
-    ssl.init(null, byPassTrustManagers, new SecureRandom)
-    ssl
+    if (disableCertificateVerification) {
+      val ssl = SSLContext.getInstance("SSL")
+      val byPassTrustManagers = Array[TrustManager](new X509TrustManager() {
+        override def getAcceptedIssuers: Array[X509Certificate] = Array.empty
+        override def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
+        override def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String) = ()
+      })
+      ssl.init(null, byPassTrustManagers, new SecureRandom)
+      ssl
+    } else SSLContext.getDefault
   }
 
   // Lives for the duration of the test run

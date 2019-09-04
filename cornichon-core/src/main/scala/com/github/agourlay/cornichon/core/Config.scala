@@ -12,7 +12,8 @@ case class Config(
     traceRequests: Boolean = false,
     warnOnDuplicateHeaders: Boolean = false,
     failOnDuplicateHeaders: Boolean = false,
-    addAcceptGzipByDefault: Boolean = false
+    addAcceptGzipByDefault: Boolean = false,
+    disableCertificateVerification: Boolean = false
 )
 
 object Config {
