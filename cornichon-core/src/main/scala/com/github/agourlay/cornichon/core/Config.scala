@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 case class Config(
     executeScenariosInParallel: Boolean = true,
     requestTimeout: FiniteDuration = 2000.millis,
-    baseUrl: String = "",
+    globalBaseUrl: String = "",
     traceRequests: Boolean = false,
     warnOnDuplicateHeaders: Boolean = false,
     failOnDuplicateHeaders: Boolean = false,

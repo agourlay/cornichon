@@ -35,7 +35,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   this: BaseFeature with JsonDsl with CoreDsl ⇒
 
   lazy val requestTimeout: FiniteDuration = config.requestTimeout
-  lazy val baseUrl: String = config.baseUrl
+  lazy val baseUrl: String = config.globalBaseUrl
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
     new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, config)
