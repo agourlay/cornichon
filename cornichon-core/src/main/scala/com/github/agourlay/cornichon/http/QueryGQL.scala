@@ -1,12 +1,7 @@
 package com.github.agourlay.cornichon.http
 
-import cats.Show
 import cats.syntax.show._
-
-import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
-
 import io.circe.{ Encoder, Json }
-
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
@@ -28,8 +23,8 @@ case class QueryGQL(
 
   def withOperationName(operationName: String) = copy(operationName = Some(operationName))
 
-  def withVariables[A: Encoder: Show](newVariables: (String, A)*) = {
-    val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → parseDslJsonUnsafe(v) }(scala.collection.breakOut)
+  def withVariables(newVariables: (String, VarValue)*) = {
+    val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → v.value }(scala.collection.breakOut)
     copy(variables = variables.fold(Some(vars))(v ⇒ Some(v ++ vars)))
   }
 
@@ -44,6 +39,16 @@ case class QueryGQL(
 
   private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, Json]])
 
+}
+
+trait VarValue {
+  def value: Json
+}
+
+object VarValue {
+  implicit def fromEncoder[A: Encoder](a: A): VarValue = new VarValue {
+    def value: Json = Encoder[A].apply(a)
+  }
 }
 
 object QueryGQL {
