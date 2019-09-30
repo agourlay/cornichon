@@ -49,9 +49,10 @@ trait BaseFeature {
 // Protect and free resources
 object BaseFeature {
   import pureconfig.generic.auto._
+  import pureconfig.ConfigSource
 
-  // if the config does not exist we use the default values
-  lazy val config = pureconfig.loadConfigOrThrow[Option[Config]]("cornichon").getOrElse(Config())
+  // the config file must exist with the `cornichon` namespace even if it is empty
+  lazy val config = ConfigSource.default.at("cornichon").loadOrThrow[Config]
 
   private val hooks = new ConcurrentLinkedDeque[() ⇒ Future[_]]()
 
