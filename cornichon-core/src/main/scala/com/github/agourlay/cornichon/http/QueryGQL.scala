@@ -28,8 +28,8 @@ case class QueryGQL(
 
   def withOperationName(operationName: String) = copy(operationName = Some(operationName))
 
-  def withVariables[A: Encoder: Show](newVariables: (String, A)*) = {
-    val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → parseDslJsonUnsafe(v) }(scala.collection.breakOut)
+  def withVariables(newVariables: (String, VarValue)*) = {
+    val vars: Map[String, Json] = newVariables.map { case (k, v) ⇒ k → parseDslJsonUnsafe(v.value)(v.encoder, v.show) }(scala.collection.breakOut)
     copy(variables = variables.fold(Some(vars))(v ⇒ Some(v ++ vars)))
   }
 
@@ -44,6 +44,22 @@ case class QueryGQL(
 
   private case class GqlPayload(query: String, operationName: Option[String], variables: Option[Map[String, Json]])
 
+}
+
+trait VarValue {
+  type Value
+  def value: Value
+  def encoder: Encoder[Value]
+  def show: Show[Value]
+}
+
+object VarValue {
+  implicit def fromEncoderShow[A: Encoder: Show](a: A): VarValue = new VarValue {
+    type Value = A
+    def value = a
+    def encoder = Encoder[A]
+    def show = Show[A]
+  }
 }
 
 object QueryGQL {
