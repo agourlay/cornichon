@@ -7,9 +7,14 @@ import cats.instances.string._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
+import cats.instances.try_._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
-import gnieh.diffson.circe._
+import diffson._
+import diffson.lcs._
+import diffson.circe._
+import diffson.jsonpatch._
+import diffson.jsonpatch.lcsdiff.remembering._
 import io.circe._
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
@@ -17,7 +22,7 @@ import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
 import sangria.marshalling.circe._
 
-import scala.util.{ Failure, Success }
+import scala.util.{ Failure, Success, Try }
 import scala.collection.breakOut
 
 trait CornichonJson {
@@ -110,20 +115,22 @@ trait CornichonJson {
   def prettyPrint(json: Json): String =
     json.spaces2
 
-  def diffPatch(first: Json, second: Json): JsonPatch =
-    JsonDiff.diff(first, second, remember = true)
+  implicit private val lcs: Patience[Json] = new Patience[Json]
+
+  def diffPatch(first: Json, second: Json): JsonPatch[Json] =
+    diff(first, second)
 
   def decodeAs[A: Decoder](json: Json): Either[CornichonError, A] =
     json.as[A].leftMap(df ⇒ JsonDecodingFailure(json, df.message))
 
-  def whitelistingValue(first: Json, second: Json): Either[WhitelistingError, Json] = {
+  def whitelistingValue(first: Json, second: Json): Either[CornichonError, Json] = {
     val diffOps = diffPatch(first, second).ops
-    val forbiddenPatchOps = diffOps.collect { case r: Remove ⇒ r }
+    val forbiddenPatchOps = diffOps.collect { case r: Remove[Json] ⇒ r }
     if (forbiddenPatchOps.isEmpty) {
-      val addOps = diffOps.collect { case r: Add ⇒ r }
-      JsonPatch(addOps)(first).asRight
+      val addOps = diffOps.collect { case r: Add[Json] ⇒ r }
+      JsonPatch(addOps).apply[Try](first).toEither.leftMap(CornichonError.fromThrowable)
     } else
-      WhitelistingError(forbiddenPatchOps.map(_.path.serialize), second).asLeft
+      WhitelistingError(forbiddenPatchOps.map(_.path.show), second).asLeft
   }
 
   def findAllPathWithValue(values: List[String], json: Json): List[JsonPath] = {

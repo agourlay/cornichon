@@ -503,7 +503,7 @@ class CornichonJsonSpec extends WordSpec
           """.stripMargin
         val inputJson = parseDslJsonUnsafe(input)
 
-        whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/Ag"), actualJson))
+        whitelistingValue(inputJson, actualJson) should be(Left(WhitelistingError(Seq("/Ag"), actualJson)))
       }
 
       "detect correct whitelisting on root array" in {
@@ -577,7 +577,7 @@ class CornichonJsonSpec extends WordSpec
           """.stripMargin
         val inputJson = parseDslJsonUnsafe(input)
 
-        whitelistingValue(inputJson, actualJson) should beLeft(WhitelistingError(Seq("/0/Nam"), actualJson))
+        whitelistingValue(inputJson, actualJson) should be(Left(WhitelistingError(Seq("/0/Nam"), actualJson)))
       }
     }
 
