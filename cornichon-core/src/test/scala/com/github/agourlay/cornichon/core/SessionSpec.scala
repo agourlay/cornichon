@@ -1,19 +1,17 @@
 package com.github.agourlay.cornichon.core
 
-import cats.scalatest.{ EitherMatchers, EitherValues }
 import org.scalacheck.Gen
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import com.github.agourlay.cornichon.core.SessionSpec._
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import cats.syntax.either._
 
 import scala.util.Random
 
 class SessionSpec extends WordSpec
   with Matchers
   with ScalaCheckPropertyChecks
-  with OptionValues
-  with EitherValues
-  with EitherMatchers {
+  with OptionValues {
 
   "Session" when {
     "addValue" must {
@@ -72,35 +70,35 @@ class SessionSpec extends WordSpec
       "return a written value" in {
         forAll(keyGen, valueGen) { (key, value) ⇒
           val s2 = Session.newEmpty.addValueUnsafe(key, value)
-          s2.get(key) should beRight(value)
+          s2.get(key) should be(Right(value))
         }
       }
 
       "throw an error if the key does not exist" in {
         forAll(keyGen) { key ⇒
           val s = Session.newEmpty
-          s.get(key) should beLeft[CornichonError](KeyNotFoundInSession(key, s))
+          s.get(key) should be(Left(KeyNotFoundInSession(key, s)))
         }
       }
 
       "take the last value in session without index param" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue)
-          s.addValueUnsafe(key, secondValue).get(key) should beRight(secondValue)
+          s.addValueUnsafe(key, secondValue).get(key) should be(Right(secondValue))
         }
       }
 
       "take the first value in session with index = zero" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue)
-          s.addValueUnsafe(key, secondValue).get(key, Some(0)) should beRight(firstValue)
+          s.addValueUnsafe(key, secondValue).get(key, Some(0)) should be(Right(firstValue))
         }
       }
 
       "take the second value in session with index = 1" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue)
-          s.addValueUnsafe(key, secondValue).get(key, Some(1)) should beRight(secondValue)
+          s.addValueUnsafe(key, secondValue).get(key, Some(1)) should be(Right(secondValue))
         }
       }
 
@@ -108,14 +106,14 @@ class SessionSpec extends WordSpec
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
           val error = IndexNotFoundForKey(key, 3, Vector(firstValue, secondValue))
-          s.get(key, Some(3)) should beLeft[CornichonError](error)
+          s.get(key, Some(3)) should be(Left(error))
           error.renderedMessage should be(s"index '3' not found for key '$key' with values \n0 -> $firstValue\n1 -> $secondValue")
         }
       }
 
       "propose similar keys in Session in case of a missing key" in {
         val s = Session.newEmpty.addValuesUnsafe("my-key" -> "blah", "my_keys" -> "bloh", "not-my-key" -> "blih")
-        s.get("my_key").leftValue.renderedMessage should be("key 'my_key' can not be found in session maybe you meant 'my-key' or 'my_keys'\nmy-key -> Values(blah)\nmy_keys -> Values(bloh)\nnot-my-key -> Values(blih)")
+        s.get("my_key").leftMap(_.renderedMessage) should be(Left("key 'my_key' can not be found in session maybe you meant 'my-key' or 'my_keys'\nmy-key -> Values(blah)\nmy_keys -> Values(bloh)\nnot-my-key -> Values(blih)"))
       }
     }
 
@@ -123,14 +121,14 @@ class SessionSpec extends WordSpec
       "return None if the key has only one value" in {
         forAll(keyGen, valueGen) { (key, firstValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue)
-          s.getPrevious(key).value should be(None)
+          s.getPrevious(key) should be(Right(None))
         }
       }
 
       "return an Option of the previous value in session" in {
         forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
-          s.getPrevious(key).value should be(Some(firstValue))
+          s.getPrevious(key) should be(Right(Some(firstValue)))
         }
       }
     }
@@ -142,7 +140,7 @@ class SessionSpec extends WordSpec
             .newEmpty
             .addValueUnsafe(firstKey, firstValue)
             .addValueUnsafe(secondKey, secondValue)
-          s2.getList(Seq(firstKey, thirdKey)) should be(left)
+          s2.getList(Seq(firstKey, thirdKey)).isLeft should be(true)
         }
       }
     }
@@ -166,7 +164,7 @@ class SessionSpec extends WordSpec
       "remove entry" in {
         forAll(keyGen, valueGen) { (key, value) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, value)
-          s.get(key) should beRight(value)
+          s.get(key) should be(Right(value))
           s.removeKey(key).getOpt(key) should be(None)
         }
       }
@@ -182,16 +180,16 @@ class SessionSpec extends WordSpec
       "rollback properly" in {
         forAll(keyGen, valueGen, valueGen) { (key, value1, value2) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, value1).addValueUnsafe(key, value2)
-          s.get(key) should beRight(value2)
-          s.rollbackKey(key).value.get(key) should beRight(value1)
+          s.get(key) should be(Right(value2))
+          s.rollbackKey(key).flatMap(_.get(key)) should be(Right(value1))
         }
       }
 
       "delete key if it has only one value" in {
         forAll(keyGen, valueGen) { (key, value) ⇒
           val s = Session.newEmpty.addValueUnsafe(key, value)
-          s.get(key) should beRight(value)
-          s.rollbackKey(key).value.getOpt(key) should be(None)
+          s.get(key) should be(Right(value))
+          s.rollbackKey(key).map(_.getOpt(key)) should be(Right(None))
         }
       }
     }

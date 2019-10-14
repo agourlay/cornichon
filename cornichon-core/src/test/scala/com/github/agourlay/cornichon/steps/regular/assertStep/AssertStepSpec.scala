@@ -1,14 +1,10 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.scalatest.EitherValues
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import org.scalatest.{ AsyncWordSpec, Matchers }
 
-class AssertStepSpec extends AsyncWordSpec
-  with Matchers
-  with EitherValues
-  with StepUtilSpec {
+class AssertStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
 
   "AssertStep" must {
 

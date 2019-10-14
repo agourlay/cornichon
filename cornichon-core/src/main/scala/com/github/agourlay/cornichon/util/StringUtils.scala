@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.util
 
-object Strings {
+object StringUtils {
 
   //https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Scala
   def levenshtein(str1: String, str2: String): Int = {

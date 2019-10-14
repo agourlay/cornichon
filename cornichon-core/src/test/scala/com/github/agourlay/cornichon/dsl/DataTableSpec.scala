@@ -1,14 +1,12 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.scalatest.EitherMatchers
 import io.circe.Json
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import com.github.agourlay.cornichon.json.CornichonJson.parseDataTable
 
 class DataTableSpec extends WordSpec
   with Matchers
-  with OptionValues
-  with EitherMatchers {
+  with OptionValues {
 
   def referenceParser(input: String) =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
@@ -21,7 +19,7 @@ class DataTableSpec extends WordSpec
                     |  "John" |   5a    |
                   """
 
-      parseDataTable(input) should be(left)
+      parseDataTable(input).isLeft should be(true)
     }
 
     "process a single line with 1 value without new line on first" in {
@@ -29,8 +27,8 @@ class DataTableSpec extends WordSpec
                       |  "John"  |
                   """
 
-      parseDataTable(input) should beRight(
-        List(Json.obj("Name" → Json.fromString("John")).asObject.value))
+      parseDataTable(input) should be(Right(
+        List(Json.obj("Name" → Json.fromString("John")).asObject.value)))
     }
 
     "process a single line with 1 value" in {
@@ -39,8 +37,8 @@ class DataTableSpec extends WordSpec
         |  "John"  |
         """
 
-      parseDataTable(input) should beRight(
-        List(Json.obj("Name" → Json.fromString("John")).asObject.value))
+      parseDataTable(input) should be(Right(
+        List(Json.obj("Name" → Json.fromString("John")).asObject.value)))
     }
 
     "process a single line with 2 values" in {
@@ -49,11 +47,11 @@ class DataTableSpec extends WordSpec
         |  "John" |   50    |
       """
 
-      parseDataTable(input) should beRight(
+      parseDataTable(input) should be(Right(
         List(Json.obj(
           "Name" → Json.fromString("John"),
           "Age" → Json.fromInt(50)
-        ).asObject.value))
+        ).asObject.value)))
     }
 
     "process string values nd headers with unicode characters and escaping" in {
@@ -63,11 +61,11 @@ class DataTableSpec extends WordSpec
           | "öÖß \u00DF \" test " |   50                     |
         """
 
-      parseDataTable(input) should beRight(
+      parseDataTable(input) should be(Right(
         List(Json.obj(
           "Name" → Json.fromString("öÖß \u00DF \" test "),
           "Größe \u00DF \" | test" → Json.fromInt(50)
-        ).asObject.value))
+        ).asObject.value)))
     }
 
     "process multiline string" in {
@@ -77,7 +75,7 @@ class DataTableSpec extends WordSpec
         | "Bob"  |   11   |
       """
 
-      parseDataTable(input) should beRight(
+      parseDataTable(input) should be(Right(
         List(
           Json.obj(
             "Name" → Json.fromString("John"),
@@ -86,7 +84,7 @@ class DataTableSpec extends WordSpec
           Json.obj(
             "Name" → Json.fromString("Bob"),
             "Age" → Json.fromInt(11)
-          ).asObject.value))
+          ).asObject.value)))
     }
 
     "notify malformed table" in {
@@ -123,7 +121,7 @@ class DataTableSpec extends WordSpec
         """
 
       val objects = parseDataTable(input).map(l ⇒ l.map(Json.fromJsonObject)).map(Json.fromValues)
-      objects should beRight(referenceParser(expected))
+      objects should be(Right(referenceParser(expected)))
     }
   }
 }

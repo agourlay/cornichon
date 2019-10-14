@@ -2,24 +2,12 @@ package com.github.agourlay.cornichon.json
 
 import io.circe.{ Json, JsonObject }
 import cats.instances.string._
-import cats.instances.long._
-import cats.instances.double._
-import cats.instances.boolean._
-import cats.instances.int._
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
-import cats.instances.bigDecimal._
-import cats.scalatest.{ EitherMatchers, EitherValues }
 import com.github.agourlay.cornichon.json.JsonPath._
-import io.circe.testing.ArbitraryInstances
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class CornichonJsonSpec extends WordSpec
   with Matchers
-  with ScalaCheckPropertyChecks
-  with ArbitraryInstances
   with CornichonJson
-  with EitherValues
-  with EitherMatchers
   with OptionValues {
 
   def refParser(input: String) =
@@ -33,52 +21,15 @@ class CornichonJsonSpec extends WordSpec
 
   "CornichonJson" when {
     "parseJson" must {
-      "parse Boolean" in {
-        forAll { bool: Boolean ⇒
-          parseDslJson(bool) should beRight(Json.fromBoolean(bool))
-        }
-      }
-
-      "parse Int" in {
-        forAll { int: Int ⇒
-          parseDslJson(int) should beRight(Json.fromInt(int))
-        }
-      }
-
-      "parse Long" in {
-        forAll { long: Long ⇒
-          parseDslJson(long) should beRight(Json.fromLong(long))
-        }
-      }
-
-      "parse Double" in {
-        forAll { double: Double ⇒
-          parseDslJson(double) should beRight(Json.fromDoubleOrNull(double))
-        }
-      }
-
-      "parse BigDecimal" in {
-        forAll { bigDec: BigDecimal ⇒
-          parseDslJson(bigDec) should beRight(Json.fromBigDecimal(bigDec))
-        }
-      }
-
-      "parse flat string" in {
-        parseDslJson("cornichon") should beRight(Json.fromString("cornichon"))
-      }
-
-      "parse flat string with spaces" in {
-        parseDslJson(" cornichon ") should beRight(Json.fromString(" cornichon "))
-      }
 
       "parse JSON object string" in {
         val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
-        parseDslJson("""{"name":"cornichon"}""") should beRight(expected)
+        parseDslJson("""{"name":"cornichon"}""") should be(Right(expected))
       }
 
       "parse JSON object string with spaces" in {
         val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
-        parseDslJson("""  {"name":"cornichon"}  """) should beRight(expected)
+        parseDslJson("""  {"name":"cornichon"}  """) should be(Right(expected))
       }
 
       "parse JSON Array string" in {
@@ -94,7 +45,7 @@ class CornichonJsonSpec extends WordSpec
             {"name":"scala"}
            ]
            """
-        ) should beRight(expected)
+        ) should be(Right(expected))
       }
 
       "parse data table" in {
@@ -118,7 +69,7 @@ class CornichonJsonSpec extends WordSpec
            |  Name  |   Age  | 2LettersName |
            | "John" |   50   |    false     |
            | "Bob"  |   11   |    true      |
-         """) should beRight(refParser(expected))
+         """) should be(Right(refParser(expected)))
       }
 
       "parse data table with empty cell values" in {
@@ -128,7 +79,7 @@ class CornichonJsonSpec extends WordSpec
             |        |        |    false     |
             | "Bob"  |   11   |              |
           """
-        ) should beRight(List(
+        ) should be(Right(List(
             """
             {
               "2LettersName" : false
@@ -139,7 +90,7 @@ class CornichonJsonSpec extends WordSpec
               "Age": 11,
               "Name": "Bob"
             }
-          """) map (refParser(_).asObject.value))
+          """) map (refParser(_).asObject.value)))
       }
 
       "parse data table as a map of raw string values" in {
@@ -149,15 +100,9 @@ class CornichonJsonSpec extends WordSpec
             |      |        |    false     |
             | Bob  |   11   |              |
           """
-        ) should beRight(List(
+        ) should be(Right(List(
             Map("2LettersName" → "false"),
-            Map("Age" → "11", "Name" → "Bob")))
-      }
-
-      "parse any Circe Json" ignore {
-        forAll { json: Json ⇒
-          parseDslJson(json.spaces2) should beRight(json)
-        }
+            Map("Age" → "11", "Name" → "Bob"))))
       }
     }
 
@@ -455,7 +400,7 @@ class CornichonJsonSpec extends WordSpec
         """
 
         val out = parseGraphQLJson(in)
-        out should beRight(refParser(expected))
+        out should be(Right(refParser(expected)))
       }
     }
 
@@ -480,7 +425,7 @@ class CornichonJsonSpec extends WordSpec
           """.stripMargin
         val inputJson = parseDslJsonUnsafe(input)
 
-        whitelistingValue(inputJson, actualJson).value shouldBe actualJson
+        whitelistingValue(inputJson, actualJson) should be(Right(actualJson))
       }
 
       "detect incorrect whitelisting on simple object" in {
@@ -540,7 +485,7 @@ class CornichonJsonSpec extends WordSpec
           """.stripMargin
         val inputJson = parseDslJsonUnsafe(input)
 
-        whitelistingValue(inputJson, actualJson).value shouldBe actualJson
+        whitelistingValue(inputJson, actualJson) should be(Right(actualJson))
       }
 
       "detect incorrect whitelisting on root array" in {
@@ -675,17 +620,6 @@ class CornichonJsonSpec extends WordSpec
 
         findAllPathWithValue("Coding" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
 
-      }
-
-      "find key in any JsonObject" in {
-        val targetValue = Json.fromString("target value")
-        forAll { jos: List[JsonObject] ⇒
-
-          val json = jos.foldRight(targetValue) { case (next, acc) ⇒ Json.fromJsonObject(next.add("stitch", acc)) }
-
-          val path = findAllPathWithValue("target value" :: Nil, json).head
-          path.run(json).value should be(targetValue)
-        }
       }
     }
   }

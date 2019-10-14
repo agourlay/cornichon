@@ -111,6 +111,7 @@ lazy val core =
     .settings(formattingSettings)
     .settings(
       name := "cornichon-core",
+      testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
       libraryDependencies ++= Seq(
         library.http4sClient,
         library.http4sCirce,
@@ -129,8 +130,8 @@ lazy val core =
         library.monixReactive,
         library.caffeine,
         library.scalatest % Test,
+        library.claimant % Test,
         library.scalacheck % Test,
-        library.catsScalatest % Test,
         library.circeTesting % Test
       )
     )
@@ -285,6 +286,7 @@ lazy val formattingSettings = Seq(
 lazy val library =
   new {
     object Version {
+      val claimant      = "0.1.2"
       val scalaTest     = "3.0.8"
       val cats          = "2.0.0"
       val parboiled     = "2.1.8"
@@ -294,7 +296,6 @@ lazy val library =
       val diffson       = "4.0.0"
       val sangria       = "1.4.2"
       val fansi         = "0.2.7"
-      val catsScalaTest = "3.0.0"
       val pureConfig    = "0.12.1"
       val monix         = "3.0.0"
       val sbtTest       = "1.0"
@@ -303,6 +304,7 @@ lazy val library =
       val kafkaClient   = "2.3.0"
       val caffeine      = "2.8.0"
     }
+    val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
     val catsMacro     = "org.typelevel"                  %% "cats-macros"          % Version.cats
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
     val scalatest     = "org.scalatest"                  %% "scalatest"            % Version.scalaTest
@@ -317,7 +319,6 @@ lazy val library =
     val circeTesting  = "io.circe"                       %% "circe-testing"        % Version.circe
     val diffsonCirce  = "org.gnieh"                      %% "diffson-circe"        % Version.diffson
     val scalacheck    = "org.scalacheck"                 %% "scalacheck"           % Version.scalaCheck
-    val catsScalatest = "com.ironcorelabs"               %% "cats-scalatest"       % Version.catsScalaTest
     val monixExec     = "io.monix"                       %% "monix-execution"      % Version.monix
     val monixReactive = "io.monix"                       %% "monix-reactive"       % Version.monix
     val sbtTest       = "org.scala-sbt"                  %  "test-interface"       % Version.sbtTest

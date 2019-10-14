@@ -12,7 +12,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
-import com.github.agourlay.cornichon.util.{ Caching, Strings }
+import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
 
 import scala.collection.immutable.{ HashMap, StringOps }
 // TODO try replacing Vector by ArraySeq in Scala 2.13
@@ -158,7 +158,7 @@ object SessionKey {
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
   lazy val similarKeysMsg = {
-    val similar = s.content.keys.filter(Strings.levenshtein(_, key) == 1)
+    val similar = s.content.keys.filter(StringUtils.levenshtein(_, key) == 1)
     if (similar.isEmpty)
       ""
     else

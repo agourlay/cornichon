@@ -6,10 +6,8 @@ import com.github.agourlay.cornichon.http.steps.HeadersSteps.HeadersStepBuilder
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import io.circe.testing.ArbitraryInstances
 import org.scalatest.{ AsyncWordSpec, Matchers, OptionValues }
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class HeaderStepsSpec extends AsyncWordSpec
-  with ScalaCheckPropertyChecks
   with ArbitraryInstances
   with Matchers
   with OptionValues

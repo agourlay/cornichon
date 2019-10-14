@@ -1,33 +1,29 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.scalatest.{ ValidatedMatchers, ValidatedValues }
 import org.scalatest.{ Matchers, WordSpec }
 
-class StringAssertionSpec extends WordSpec
-  with Matchers
-  with ValidatedMatchers
-  with ValidatedValues {
+class StringAssertionSpec extends WordSpec with Matchers {
 
   "StringAssertion" must {
 
     "StringContainsAssertion" must {
       "valid assertion" in {
-        StringContainsAssertion("the text string", "text").validated should be(valid)
+        StringContainsAssertion("the text string", "text").validated.isValid should be(true)
       }
 
       "invalid" in {
-        StringContainsAssertion("the text string", "other").validated should be(invalid)
+        StringContainsAssertion("the text string", "other").validated.isValid should be(false)
       }
 
     }
 
     "RegexAssertion" must {
       "valid assertion" in {
-        RegexAssertion("the text string sample 434", "\\d+".r).validated should be(valid)
+        RegexAssertion("the text string sample 434", "\\d+".r).validated.isValid should be(true)
       }
 
       "invalid" in {
-        RegexAssertion("the text string sample 434", "[A-Z]+".r).validated should be(invalid)
+        RegexAssertion("the text string sample 434", "[A-Z]+".r).validated.isValid should be(false)
       }
     }
 
