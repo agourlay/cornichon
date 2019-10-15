@@ -66,7 +66,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       val trimmedKey = new StringOps(key.trim)
       if (trimmedKey.isEmpty)
         EmptyKey.asLeft
-      else if (Session.notAllowedInKey.exists(forbidden ⇒ trimmedKey.contains(forbidden)))
+      else if (Session.notAllowedInKey.exists(forbidden ⇒ key.contains(forbidden)))
         IllegalKey(key).asLeft
       else
         Done.rightDone
@@ -123,7 +123,7 @@ object Session {
   val newEmpty = Session(HashMap.empty)
 
   // Saved as StringOps as it uses '.exists' extremely often
-  val notAllowedInKey: StringOps = new StringOps("\r\n<>/[] ")
+  val notAllowedInKey: StringOps = new StringOps("\r\n<>/ []")
 
   private val knownKeysCache = Caching.buildCache[String, Either[CornichonError, Done]]()
 

@@ -3,21 +3,14 @@ package com.github.agourlay.cornichon.http
 import com.github.agourlay.cornichon.core.Session
 import org.scalacheck.Gen
 import org.scalatest._
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class HttpDslSpec extends WordSpec with Matchers with OptionValues with EitherValues with ScalaCheckPropertyChecks {
+class HttpDslSpec extends WordSpec with Matchers with OptionValues with EitherValues {
 
-  val ops = new HttpDslOps {}
+  private val ops = new HttpDslOps {}
 
   "HttpDSL" when {
 
     "removeFromWithHeaders" must {
-
-      "handle no 'with-headers'" in {
-        forAll(Gen.alphaStr) { header ⇒
-          ops.removeFromWithHeaders(header)(Session.newEmpty).right.value should be(Session.newEmpty)
-        }
-      }
 
       "handle with 'with-headers' not containing the header" in {
         val ns = ops.addToWithHeaders("header1", "value1")(Session.newEmpty).valueUnsafe
