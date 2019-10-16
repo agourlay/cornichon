@@ -3,17 +3,9 @@ package com.github.agourlay.cornichon.json
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import io.circe.{ Json, JsonObject }
-import io.circe.testing.ArbitraryInstances
 import org.scalatest.{ AsyncWordSpec, Matchers, OptionValues }
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 class JsonStepsSpec extends AsyncWordSpec
-  with ScalaCheckPropertyChecks
-  with ArbitraryInstances
   with Matchers
   with OptionValues
   with StepUtilSpec {
@@ -23,44 +15,10 @@ class JsonStepsSpec extends AsyncWordSpec
 
   "JsonStep" when {
     "JsonStepBuilder" must {
-      "is value" in {
-        val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
-        val step = jsonStepBuilder.is("test")
-        val s = Scenario("scenario with JsonSteps", step :: Nil)
-        ScenarioRunner.runScenario(session)(s).map { r ⇒
-          r.isSuccess should be(true)
-        }
-      }
-
-      "is value fail" in {
-        val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
-        val step = jsonStepBuilder.isNot("test")
-        val s = Scenario("scenario with JsonSteps", step :: Nil)
-        ScenarioRunner.runScenario(session)(s).map { r ⇒
-          r.isSuccess should be(false)
-        }
-      }
 
       "is malformed Json fail" in {
         val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
         val step = jsonStepBuilder.is("{test:")
-        val s = Scenario("scenario with JsonSteps", step :: Nil)
-        ScenarioRunner.runScenario(session)(s).map { r ⇒
-          r.isSuccess should be(false)
-        }
-      }
-      "isNot value" in {
-        val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
-        val step = jsonStepBuilder.isNot("test1")
-        val s = Scenario("scenario with JsonSteps", step :: Nil)
-        ScenarioRunner.runScenario(session)(s).map { r ⇒
-          r.isSuccess should be(true)
-        }
-      }
-
-      "isNot value fail" in {
-        val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
-        val step = jsonStepBuilder.isNot("test")
         val s = Scenario("scenario with JsonSteps", step :: Nil)
         ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(false)
@@ -249,56 +207,6 @@ class JsonStepsSpec extends AsyncWordSpec
         val s = Scenario("scenario with JsonSteps", step :: Nil)
         ScenarioRunner.runScenario(session)(s).map { r ⇒
           r.isSuccess should be(true)
-        }
-      }
-
-      "is any Circe jsonObject" in {
-        forAll { jsonOb: JsonObject ⇒
-          val json = Json.fromJsonObject(jsonOb)
-          val session = Session.newEmpty.addValuesUnsafe(testKey -> json.spaces2)
-          val step = jsonStepBuilder.is(json)
-          val s = Scenario("scenario with JsonSteps", step :: Nil)
-          val t = ScenarioRunner.runScenario(session)(s).map { r ⇒
-            withClue(LogInstruction.renderLogs(r.logs)) {
-              r.isSuccess should be(true)
-            }
-          }
-          Await.result(t, Duration.Inf)
-        }
-      }
-
-      "is any Circe jsonObject with placeholder" in {
-        forAll { jsonOb: JsonObject ⇒
-          val fullJsonObj = jsonOb.add("myKeyOther", Json.fromString("myOtherValue"))
-          val session = Session.newEmpty.addValuesUnsafe(
-            testKey -> Json.fromJsonObject(fullJsonObj).spaces2,
-            "a-placeholder" -> "myOtherValue"
-          )
-          val fullPlaceholderJsonObj = jsonOb.add("myKeyOther", Json.fromString("<a-placeholder>"))
-          val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
-          val s = Scenario("scenario with JsonSteps", step :: Nil)
-          val t = ScenarioRunner.runScenario(session)(s).map { r ⇒
-            withClue(LogInstruction.renderLogs(r.logs)) {
-              r.isSuccess should be(true)
-            }
-          }
-          Await.result(t, Duration.Inf)
-        }
-      }
-
-      "is Circe jsonObject with absent placeholder" in {
-        forAll { jsonOb: JsonObject ⇒
-          val fullJsonObj = jsonOb.add("myKeyOther", Json.fromString("myOtherValue"))
-          val session = Session.newEmpty.addValuesUnsafe(testKey -> Json.fromJsonObject(fullJsonObj).spaces2)
-          val fullPlaceholderJsonObj = jsonOb.add("myKeyOther", Json.fromString("<a-placeholder>"))
-          val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
-          val s = Scenario("scenario with JsonSteps", step :: Nil)
-          val t = ScenarioRunner.runScenario(session)(s).map { r ⇒
-            withClue(LogInstruction.renderLogs(r.logs)) {
-              r.isSuccess should be(false)
-            }
-          }
-          Await.result(t, Duration.Inf)
         }
       }
 
