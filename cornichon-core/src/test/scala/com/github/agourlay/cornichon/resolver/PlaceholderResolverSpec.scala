@@ -2,91 +2,19 @@ package com.github.agourlay.cornichon.resolver
 
 import java.util.UUID
 
-import com.github.agourlay.cornichon.core.SessionSpec._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ KeyNotFoundInSession, RandomContext, Session }
-import org.scalacheck.Gen
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class PlaceholderResolverSpec extends WordSpec
   with Matchers
-  with OptionValues
-  with ScalaCheckPropertyChecks {
+  with OptionValues {
 
   private val rc = RandomContext.fromSeed(1L)
   private val noExtractor = Map.empty[String, Mapper]
 
   "Resolver" when {
-    "findPlaceholders" must {
-      "find placeholder in content solely containing a placeholder without index" in {
-        forAll(keyGen) { key ⇒
-          PlaceholderResolver.findPlaceholders(s"<$key>") should be(Right(List(Placeholder(key, None))))
-        }
-      }
-
-      "find placeholder in content solely containing a placeholder with index" in {
-        forAll(keyGen, indexGen) { (key, index) ⇒
-          PlaceholderResolver.findPlaceholders(s"<$key[$index]>") should be(Right(List(Placeholder(key, Some(index)))))
-        }
-      }
-
-      "find placeholder in content starting with whitespace and containing a placeholder" in {
-        forAll(keyGen) { key ⇒
-          PlaceholderResolver.findPlaceholders(s" <$key>") should be(Right(List(Placeholder(key, None))))
-        }
-      }
-
-      "find placeholder in content starting with 2 whitespaces and containing a placeholder" in {
-        forAll(keyGen) { key ⇒
-          PlaceholderResolver.findPlaceholders(s"  <$key>") should be(Right(List(Placeholder(key, None))))
-        }
-      }
-
-      "find placeholder in content finishing with whitespace and containing a placeholder" in {
-        forAll(keyGen) { key ⇒
-          PlaceholderResolver.findPlaceholders(s"<$key> ") should be(Right(List(Placeholder(key, None))))
-        }
-      }
-
-      "find placeholder in content finishing with 2 whitespaces and containing a placeholder" in {
-        forAll(keyGen) { key ⇒
-          PlaceholderResolver.findPlaceholders(s"<$key>  ") should be(Right(List(Placeholder(key, None))))
-        }
-      }
-
-      "find placeholder in random content containing a placeholder with index" in {
-        forAll(keyGen, indexGen, Gen.alphaStr) { (key, index, content) ⇒
-          PlaceholderResolver.findPlaceholders(s"$content<$key[$index]>$content") should be(Right(List(Placeholder(key, Some(index)))))
-        }
-      }
-
-      // FIXME '<' is always accepted inside the key, the parser backtracks and consumes it twice??
-      "do not accept placeholders containing forbidden char" ignore {
-        val genInvalidChar = Gen.oneOf(Session.notAllowedInKey.toList)
-        forAll(keyGen, indexGen, Gen.alphaStr, genInvalidChar) { (key, index, content, invalid) ⇒
-          PlaceholderResolver.findPlaceholders(s"$content<$invalid$key[$index]>$content") should be(Right(Nil))
-        }
-      }
-    }
-
     "fillPlaceholders" must {
-      "replace a single string" in {
-        forAll(keyGen, valueGen) { (ph, value) ⇒
-          val session = Session.newEmpty.addValueUnsafe(ph, value)
-          val content = s"This project is <$ph>"
-          PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) should be(Right(s"This project is $value"))
-        }
-      }
-
-      "not be confused by markup order" in {
-        forAll(keyGen, valueGen) { (ph, value) ⇒
-          val session = Session.newEmpty.addValueUnsafe(ph, value)
-          val content = s"This project is >$ph<"
-          PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) should be(Right(s"This project is >$ph<"))
-        }
-      }
-
       "not be confused if key contains empty string" in {
         val session = Session.newEmpty.addValueUnsafe("project-name", "cornichon")
         val content = "This project is named <project name>"
@@ -178,22 +106,6 @@ class PlaceholderResolverSpec extends WordSpec
         val timestampInSession = PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor).valueUnsafe
         val date = new java.util.Date(timestampInSession.toLong * 1000L)
         date.before(new java.util.Date()) should be(true)
-      }
-
-      "take the first value in session if index = 0" in {
-        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
-          val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
-          val content = s"<$key[0]>"
-          PlaceholderResolver.fillPlaceholders(content)(s, rc, noExtractor) should be(Right(firstValue))
-        }
-      }
-
-      "take the second value in session if index = 1" in {
-        forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
-          val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
-          val content = s"<$key[1]>"
-          PlaceholderResolver.fillPlaceholders(content)(s, rc, noExtractor) should be(Right(secondValue))
-        }
       }
 
       "fail with clear error message if key is defined in both Session and Extractors" in {

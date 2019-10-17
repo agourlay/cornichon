@@ -1,24 +1,11 @@
 package com.github.agourlay.cornichon.http
 
-import cats.instances.string._
-
-import com.github.agourlay.cornichon.core.{ Config, Session }
-import com.github.agourlay.cornichon.http.HttpMethods.GET
-import com.github.agourlay.cornichon.http.client.NoOpHttpClient
-
-import monix.execution.Scheduler.Implicits.global
-
+import com.github.agourlay.cornichon.core.Session
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
-
-import scala.concurrent.duration._
 
 class HttpServiceSpec extends WordSpec
   with Matchers
   with BeforeAndAfterAll {
-
-  private val client = new NoOpHttpClient
-  private val service = new HttpService("", 2000.millis, client, Config())
-  private val dummyRequest = HttpRequest[String](GET, "", None, Nil, Nil)
 
   "HttpService" when {
     "fillInSessionWithResponse" must {

@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.core.Session
-import org.scalacheck.Gen
 import org.scalatest._
 
 class HttpDslSpec extends WordSpec with Matchers with OptionValues with EitherValues {
