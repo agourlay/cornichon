@@ -1,11 +1,19 @@
 package com.github.agourlay.cornichon.core
 
-import com.github.agourlay.cornichon.core.SessionSpec.{ badKeyGen, keyGen, valueGen }
-import org.scalacheck.Properties
+import org.scalacheck.{ Gen, Properties }
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim
+import cats.syntax.either._
 
-class SessionProperties extends Properties("Session") {
+object SessionProperties extends Properties("Session") {
+
+  val keyGen: Gen[String] = Gen.alphaStr
+    .filter(_.trim.nonEmpty)
+    .filter(k ⇒ !Session.notAllowedInKey.exists(forbidden ⇒ k.contains(forbidden)))
+
+  val badKeyGen: Gen[String] = Gen.nonEmptyListOf(Session.notAllowedInKey).filter(_.nonEmpty).map(_.toString())
+  val valueGen: Gen[String] = Gen.alphaStr
+  val indexGen: Gen[Int] = Gen.choose(0, Int.MaxValue)
 
   property("addValue error if key contains illegal chars") =
     forAll(badKeyGen, valueGen) { (keyWithForbiddenChar, value) ⇒
@@ -15,7 +23,7 @@ class SessionProperties extends Properties("Session") {
     }
 
   property("addValue error not accept empty key") =
-    forAll(valueGen) { (value) ⇒
+    forAll(valueGen) { value ⇒
       Claim {
         Session.newEmpty.addValue("", value) == Left(EmptyKey)
       }
@@ -32,7 +40,7 @@ class SessionProperties extends Properties("Session") {
   property("addValues error if one key is empty") = {
     forAll(valueGen, valueGen) { (v1, v2) ⇒
       Claim {
-        Session.newEmpty.addValues("a" -> v1, "" -> v2) == (Left(EmptyKey))
+        Session.newEmpty.addValues("a" -> v1, "" -> v2) == Left(EmptyKey)
       }
     }
   }
@@ -101,16 +109,25 @@ class SessionProperties extends Properties("Session") {
       }
     }
 
-  property("get returns an error if the key exists but not the index") = {
+  property("get returns an error if the key exists but not the index") =
     forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
       val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
       val error = IndexNotFoundForKey(key, 3, Vector(firstValue, secondValue))
       Claim {
         s.get(key, Some(3)) == Left(error)
-        error.renderedMessage == (s"index '3' not found for key '$key' with values \n0 -> $firstValue\n1 -> $secondValue")
+        error.renderedMessage == s"index '3' not found for key '$key' with values \n0 -> $firstValue\n1 -> $secondValue"
       }
     }
-  }
+
+  property("get proposes similar keys in Session in case of a missing key") =
+    forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
+      val similarKey = key + "1"
+      val s = Session.newEmpty.addValuesUnsafe(key -> firstValue, similarKey -> secondValue)
+      val typoKey = key + "2"
+      Claim {
+        s.get(typoKey).leftMap(_.renderedMessage) == Left(s"key '$typoKey' can not be found in session maybe you meant '$key' or '$similarKey'\n$key -> Values($firstValue)\n$similarKey -> Values($secondValue)")
+      }
+    }
 
   property("getOps return None if key does not exist") = {
     forAll(keyGen) { key ⇒
@@ -137,7 +154,7 @@ class SessionProperties extends Properties("Session") {
       }
     }
 
-  property("rollbackKey delete key if it has only one value") = {
+  property("rollbackKey delete key if it has only one value") =
     forAll(keyGen, valueGen) { (key, value) ⇒
       val s = Session.newEmpty.addValueUnsafe(key, value)
       Claim {
@@ -145,18 +162,16 @@ class SessionProperties extends Properties("Session") {
         s.rollbackKey(key).map(_.getOpt(key)) == Right(None)
       }
     }
-  }
 
-  property("getPrevious return None if the key has only one value") = {
+  property("getPrevious return None if the key has only one value") =
     forAll(keyGen, valueGen) { (key, firstValue) ⇒
       val s = Session.newEmpty.addValueUnsafe(key, firstValue)
       Claim {
         s.getPrevious(key) == Right(None)
       }
     }
-  }
 
-  property("getList error if one of the key does not exist") = {
+  property("getList error if one of the key does not exist") =
     forAll(keyGen, keyGen, keyGen, valueGen, valueGen) { (firstKey, secondKey, thirdKey, firstValue, secondValue) ⇒
       val s2 = Session
         .newEmpty
@@ -166,18 +181,16 @@ class SessionProperties extends Properties("Session") {
         s2.getList(Seq(firstKey, thirdKey)).isLeft
       }
     }
-  }
 
-  property("getPrevious return an Option of the previous value in session") = {
+  property("getPrevious return an Option of the previous value in session") =
     forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
       val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
       Claim {
         s.getPrevious(key) == Right(Some(firstValue))
       }
     }
-  }
 
-  property("removeKey remove entry") = {
+  property("removeKey remove entry") =
     forAll(keyGen, valueGen) { (key, value) ⇒
       val s = Session.newEmpty.addValueUnsafe(key, value)
       Claim {
@@ -185,15 +198,13 @@ class SessionProperties extends Properties("Session") {
         s.removeKey(key).getOpt(key).isEmpty
       }
     }
-  }
 
-  property("removeKey not throw error if key does not exist") = {
+  property("removeKey not throw error if key does not exist") =
     forAll(keyGen) { key ⇒
       val s = Session.newEmpty.removeKey(key)
       Claim {
         s.removeKey(key).getOpt(key).isEmpty
       }
     }
-  }
 
 }

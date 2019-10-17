@@ -1,9 +1,7 @@
 package com.github.agourlay.cornichon.resolver
 
-import java.util.UUID
-
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.{ KeyNotFoundInSession, RandomContext, Session }
+import com.github.agourlay.cornichon.core.{ RandomContext, Session }
 import org.scalatest.{ Matchers, OptionValues, WordSpec }
 
 class PlaceholderResolverSpec extends WordSpec
@@ -31,33 +29,6 @@ class PlaceholderResolverSpec extends WordSpec
         val session = Session.newEmpty.addValueUnsafe("pi", "3.14")
         val content = "PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT <pi>"
         PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) should be(Right("PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT 3.14"))
-      }
-
-      "return ResolverError if placeholder not found" in {
-        val session = Session.newEmpty.addValueUnsafe("project-name", "cornichon")
-        val content = "This project is named <project-new-name>"
-        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) should be(Left(KeyNotFoundInSession("project-new-name", session)))
-      }
-
-      "resolve two placeholders" in {
-        val session = Session.newEmpty.addValuesUnsafe("project-name" → "cornichon", "taste" → "tasty")
-        val content = "This project is named <project-name> and is super <taste>"
-        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) should be(Right("This project is named cornichon and is super tasty"))
-      }
-
-      "return ResolverError for the first placeholder not found" in {
-        val session = Session.newEmpty.addValuesUnsafe("project-name" → "cornichon", "taste" → "tasty")
-        val content = "This project is named <project-name> and is super <new-taste>"
-        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) should be(Left(KeyNotFoundInSession("new-taste", session)))
-      }
-
-      "generate random uuid if <random-uuid> - fixed by seed" in {
-        val session = Session.newEmpty
-        val content = "<random-uuid>"
-        val fixedRc = RandomContext.fromSeed(1L)
-        val expectedUUID = "bb1ad573-19b8-9cd8-68fb-0e6f684df992"
-        val uuidInSession = PlaceholderResolver.fillPlaceholders(content)(session, fixedRc, noExtractor).valueUnsafe
-        UUID.fromString(uuidInSession) should be(UUID.fromString(expectedUUID))
       }
 
       "generate random positive integer if <random-positive-integer> - fixed by seed" in {

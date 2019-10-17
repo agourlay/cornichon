@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.matchers
 
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.SessionSpec._
+import com.github.agourlay.cornichon.core.SessionProperties._
 import org.scalacheck.{ Gen, Properties }
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim

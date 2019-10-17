@@ -1,7 +1,9 @@
 package com.github.agourlay.cornichon.resolver
 
-import com.github.agourlay.cornichon.core.{ RandomContext, Session }
-import com.github.agourlay.cornichon.core.SessionSpec._
+import java.util.UUID
+
+import com.github.agourlay.cornichon.core.{ KeyNotFoundInSession, RandomContext, Session }
+import com.github.agourlay.cornichon.core.SessionProperties._
 import org.scalacheck.{ Gen, Properties }
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim
@@ -97,4 +99,41 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
       }
     }
 
+  property("fillPlaceholders returns ResolverError if placeholder not found") =
+    forAll(keyGen, valueGen, keyGen) { (key, value, secondKey) ⇒
+      val session = Session.newEmpty.addValueUnsafe(key, value)
+      val content = s"This project is named <$secondKey>"
+      Claim {
+        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession(secondKey, session))
+      }
+    }
+
+  property("fillPlaceholders resolves two placeholders") =
+    forAll(keyGen, valueGen, keyGen, valueGen) { (k1, v1, k2, v2) ⇒
+      val session = Session.newEmpty.addValuesUnsafe(k1 → v1, k2 → v2)
+      val content = s"This project is named <$k1> and is super <$k2>"
+      Claim {
+        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Right(s"This project is named $v1 and is super $v2")
+      }
+    }
+
+  property("fillPlaceholders returns ResolverError for the first placeholder not found") =
+    forAll(keyGen, valueGen, keyGen, valueGen) { (k1, v1, k2, v2) ⇒
+      val session = Session.newEmpty.addValuesUnsafe(k1 → v1, k2 → v2)
+      val content = s"This project is named <$k1> and is super <other-key>"
+      Claim {
+        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession("other-key", session))
+      }
+    }
+
+  property("generate random uuid if <random-uuid> - fixed by seed") =
+    forAll { seed: Long ⇒
+      val session = Session.newEmpty
+      val content = "<random-uuid>"
+      val first = PlaceholderResolver.fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = PlaceholderResolver.fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      Claim {
+        UUID.fromString(second) == UUID.fromString(first)
+      }
+    }
 }

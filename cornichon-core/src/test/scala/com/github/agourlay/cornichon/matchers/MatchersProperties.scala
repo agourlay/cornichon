@@ -81,4 +81,16 @@ object MatchersProperties extends Properties("Matchers") {
         anyDateTime.predicate(Json.fromString(DateTimeFormatter.ISO_INSTANT.format(instant)))
       }
     }
+
+  property("any-date-time correct in parallel") = {
+    forAll(reasonablyRandomInstantGen) { instant ⇒
+      val booleans: List[Boolean] = 1.to(64)
+        .par
+        .map { _ ⇒
+          anyDateTime.predicate(Json.fromString(DateTimeFormatter.ISO_INSTANT.format(instant)))
+        }.foldLeft(List.empty[Boolean]) { case (acc, e) ⇒ e :: acc }
+
+      Claim(booleans.forall(_ == true))
+    }
+  }
 }
