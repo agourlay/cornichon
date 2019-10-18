@@ -15,6 +15,13 @@ object SessionProperties extends Properties("Session") {
   val valueGen: Gen[String] = Gen.alphaStr
   val indexGen: Gen[Int] = Gen.choose(0, Int.MaxValue)
 
+  val keyValueGen: Gen[(String, String)] = for {
+    k ← keyGen
+    v ← valueGen
+  } yield (k -> v)
+
+  val keyValuesGen: Gen[List[(String, String)]] = Gen.nonEmptyListOf(keyValueGen)
+
   property("addValue error if key contains illegal chars") =
     forAll(badKeyGen, valueGen) { (keyWithForbiddenChar, value) ⇒
       Claim {
@@ -37,23 +44,21 @@ object SessionProperties extends Properties("Session") {
       }
     }
 
-  property("addValues error if one key is empty") = {
+  property("addValues error if one key is empty") =
     forAll(valueGen, valueGen) { (v1, v2) ⇒
       Claim {
         Session.newEmpty.addValues("a" -> v1, "" -> v2) == Left(EmptyKey)
       }
     }
-  }
 
-  property("addValues throw if key contains illegal chars") = {
+  property("addValues throw if key contains illegal chars") =
     forAll(keyGen, badKeyGen, valueGen, valueGen) { (key, badKey, v1, v2) ⇒
       Claim {
         Session.newEmpty.addValues(key -> v1, badKey -> v2) == Left(IllegalKey(badKey))
       }
     }
-  }
 
-  property("addValues write the values") = {
+  property("addValues write the values") =
     forAll(keyGen, valueGen, keyGen, valueGen) { (k1, v1, k2, v2) ⇒
       val s2 = Session.newEmpty.addValuesUnsafe(k1 -> v1, k2 -> v2)
       Claim {
@@ -65,25 +70,22 @@ object SessionProperties extends Properties("Session") {
         }
       }
     }
-  }
 
-  property("get returns a written value") = {
+  property("get returns a written value") =
     forAll(keyGen, valueGen) { (key, value) ⇒
       val s2 = Session.newEmpty.addValueUnsafe(key, value)
       Claim {
         s2.get(key) == Right(value)
       }
     }
-  }
 
-  property("get returns an error if the key does not exist") = {
+  property("get returns an error if the key does not exist") =
     forAll(keyGen) { key ⇒
       val s = Session.newEmpty
       Claim {
         s.get(key) == Left(KeyNotFoundInSession(key, s))
       }
     }
-  }
 
   property("get take the last value in session without index param") =
     forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒

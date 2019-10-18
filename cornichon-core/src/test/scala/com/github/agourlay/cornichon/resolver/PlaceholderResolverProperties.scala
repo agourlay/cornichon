@@ -7,6 +7,7 @@ import com.github.agourlay.cornichon.core.SessionProperties._
 import org.scalacheck.{ Gen, Properties }
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver._
 
 class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
 
@@ -16,49 +17,49 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
   property("findPlaceholders finds placeholder in content solely containing a placeholder without index") =
     forAll(keyGen) { key ⇒
       Claim {
-        PlaceholderResolver.findPlaceholders(s"<$key>") == Right(List(Placeholder(key, None)))
+        findPlaceholders(s"<$key>") == Right(List(Placeholder(key, None)))
       }
     }
 
   property("findPlaceholders find placeholder in content solely containing a placeholder with index") =
     forAll(keyGen, indexGen) { (key, index) ⇒
       Claim {
-        PlaceholderResolver.findPlaceholders(s"<$key[$index]>") == Right(List(Placeholder(key, Some(index))))
+        findPlaceholders(s"<$key[$index]>") == Right(List(Placeholder(key, Some(index))))
       }
     }
 
   property("findPlaceholders find placeholder in content starting with whitespace and containing a placeholder") =
     forAll(keyGen) { key ⇒
       Claim {
-        PlaceholderResolver.findPlaceholders(s" <$key>") == Right(List(Placeholder(key, None)))
+        findPlaceholders(s" <$key>") == Right(List(Placeholder(key, None)))
       }
     }
 
   property("findPlaceholders find placeholder in content starting with 2 whitespaces and containing a placeholder") =
     forAll(keyGen) { key ⇒
       Claim {
-        PlaceholderResolver.findPlaceholders(s"  <$key>") == Right(List(Placeholder(key, None)))
+        findPlaceholders(s"  <$key>") == Right(List(Placeholder(key, None)))
       }
     }
 
   property("findPlaceholders find placeholder in content finishing with whitespace and containing a placeholder") =
     forAll(keyGen) { key ⇒
       Claim {
-        PlaceholderResolver.findPlaceholders(s"<$key> ") == Right(List(Placeholder(key, None)))
+        findPlaceholders(s"<$key> ") == Right(List(Placeholder(key, None)))
       }
     }
 
   property("findPlaceholders find placeholder in content finishing with 2 whitespaces and containing a placeholder") =
     forAll(keyGen) { key ⇒
       Claim {
-        PlaceholderResolver.findPlaceholders(s"<$key>  ") == Right(List(Placeholder(key, None)))
+        findPlaceholders(s"<$key>  ") == Right(List(Placeholder(key, None)))
       }
     }
 
   property("findPlaceholders find placeholder in random content containing a placeholder with index") =
     forAll(keyGen, indexGen, Gen.alphaStr) { (key, index, content) ⇒
       Claim {
-        PlaceholderResolver.findPlaceholders(s"$content<$key[$index]>$content") == Right(List(Placeholder(key, Some(index))))
+        findPlaceholders(s"$content<$key[$index]>$content") == Right(List(Placeholder(key, Some(index))))
       }
     }
 
@@ -77,7 +78,18 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
       val session = Session.newEmpty.addValueUnsafe(ph, value)
       val content = s"This project is <$ph>"
       Claim {
-        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Right(s"This project is $value")
+        fillPlaceholders(content)(session, rc, noExtractor) == Right(s"This project is $value")
+      }
+    }
+
+  property("fillPlaceholders take the right value in session depending on the index") =
+    forAll(keyGen, Gen.nonEmptyListOf(valueGen)) { (key, values) ⇒
+      val input = values.map(v ⇒ (key, v))
+      val s = Session.newEmpty.addValuesUnsafe(input: _*)
+      val (lastKey, lastValue) = input.last
+      val content = s"<$lastKey[${input.size - 1}]>"
+      Claim {
+        fillPlaceholders(content)(s, rc, noExtractor) == Right(lastValue)
       }
     }
 
@@ -86,16 +98,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
       val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
       val content = s"<$key[0]>"
       Claim {
-        PlaceholderResolver.fillPlaceholders(content)(s, rc, noExtractor) == Right(firstValue)
-      }
-    }
-
-  property("fillPlaceholders take the second value in session if index = 1") =
-    forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) ⇒
-      val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
-      val content = s"<$key[1]>"
-      Claim {
-        PlaceholderResolver.fillPlaceholders(content)(s, rc, noExtractor) == Right(secondValue)
+        fillPlaceholders(content)(s, rc, noExtractor) == Right(firstValue)
       }
     }
 
@@ -104,7 +107,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
       val session = Session.newEmpty.addValueUnsafe(key, value)
       val content = s"This project is named <$secondKey>"
       Claim {
-        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession(secondKey, session))
+        fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession(secondKey, session))
       }
     }
 
@@ -113,7 +116,16 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
       val session = Session.newEmpty.addValuesUnsafe(k1 → v1, k2 → v2)
       val content = s"This project is named <$k1> and is super <$k2>"
       Claim {
-        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Right(s"This project is named $v1 and is super $v2")
+        fillPlaceholders(content)(session, rc, noExtractor) == Right(s"This project is named $v1 and is super $v2")
+      }
+    }
+
+  property("fillPlaceholders is not be confused by unclosed markup used in a math context") =
+    forAll(keyGen, valueGen) { (key, value) ⇒
+      val session = Session.newEmpty.addValueUnsafe(key, value)
+      val content = s"3.15 > <$key>"
+      Claim {
+        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Right(s"3.15 > $value")
       }
     }
 
@@ -122,18 +134,87 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
       val session = Session.newEmpty.addValuesUnsafe(k1 → v1, k2 → v2)
       val content = s"This project is named <$k1> and is super <other-key>"
       Claim {
-        PlaceholderResolver.fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession("other-key", session))
+        fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession("other-key", session))
       }
     }
 
-  property("generate random uuid if <random-uuid> - fixed by seed") =
+  property("fillPlaceholders generates random uuid if <random-uuid> - fixed by seed") =
     forAll { seed: Long ⇒
       val session = Session.newEmpty
       val content = "<random-uuid>"
-      val first = PlaceholderResolver.fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
-      val second = PlaceholderResolver.fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
       Claim {
         UUID.fromString(second) == UUID.fromString(first)
       }
     }
+
+  property("fillPlaceholders generates random positive integer if <random-positive-integer> - fixed by seed") =
+    forAll { seed: Long ⇒
+      val session = Session.newEmpty
+      val content = "<random-positive-integer>"
+      val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      Claim {
+        first.toInt == second.toInt
+      }
+    }
+
+  property("fillPlaceholders generates random string if <random-string> - fixed by seed") =
+    forAll { seed: Long ⇒
+      val session = Session.newEmpty
+      val content = "<random-string>"
+      val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      Claim {
+        first == second
+      }
+    }
+
+  property("fillPlaceholders generates random alphanum string if <random-alphanum-string> - fixed by seed") =
+    forAll { seed: Long ⇒
+      val session = Session.newEmpty
+      val content = "<random-alphanum-string>"
+      val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      Claim {
+        first == second
+      }
+    }
+
+  property("fillPlaceholders generates random boolean if <random-boolean> - fixed by seed") =
+    forAll { seed: Long ⇒
+      val session = Session.newEmpty
+      val content = "<random-boolean>"
+      val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      Claim {
+        first.toBoolean == second.toBoolean
+      }
+    }
+
+  property("fillPlaceholders generates random timestamp string if <random-timestamp>") =
+    forAll { seed: Long ⇒
+      val session = Session.newEmpty
+      val content = "<random-timestamp>"
+      val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      Claim {
+        new java.util.Date(first.toLong * 1000L) == new java.util.Date(second.toLong * 1000L)
+      }
+    }
+
+  property("fillPlaceholders generate current timestamp string if <current-timestamp>") =
+    forAll { seed: Long ⇒
+      val session = Session.newEmpty
+      val content = "<current-timestamp>"
+      val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      val second = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
+      Claim {
+        new java.util.Date(first.toLong * 1000L).before(new java.util.Date())
+        new java.util.Date(second.toLong * 1000L).before(new java.util.Date())
+        new java.util.Date(first.toLong * 1000L) == new java.util.Date(second.toLong * 1000L) // valid because delay is less than 1ms
+      }
+    }
+
 }
