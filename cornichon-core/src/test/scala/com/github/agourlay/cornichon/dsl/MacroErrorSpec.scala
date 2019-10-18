@@ -1,34 +1,13 @@
 package com.github.agourlay.cornichon.dsl
 
-import org.scalatest.{ WordSpec, Matchers }
+import utest._
 
-class MacroErrorSpec extends WordSpec with Matchers {
+object MacroErrorSpec extends TestSuite {
 
-  "Macro" should {
-    "compile valid feature definitions" in {
-      """
-        import com.github.agourlay.cornichon.dsl.BaseFeature
-        import com.github.agourlay.cornichon.dsl.CoreDsl
-        import com.github.agourlay.cornichon.steps.regular.EffectStep
-        import scala.concurrent.Future
-
-        class Foo extends BaseFeature with CoreDsl {
-          val feature =
-            Feature("foo") {
-              Scenario("aaa") {
-                EffectStep.fromSync("just testing", _.session)
-
-                Repeat(10) {
-                  EffectStep.fromAsync("just testing repeat", sc => Future.successful(sc.session))
-                }
-              }
-            }
-        }
-      """ should compile
-    }
-
-    "not compile feature definitions containing imports in DSL" in {
-      """
+  val tests = Tests {
+    test("macro not compile feature definitions containing imports in DSL") {
+      compileError {
+        """
         import com.github.agourlay.cornichon.dsl.BaseFeature
         import com.github.agourlay.cornichon.dsl.CoreDsl
         import com.github.agourlay.cornichon.steps.regular.EffectStep
@@ -46,11 +25,13 @@ class MacroErrorSpec extends WordSpec with Matchers {
               }
             }
         }
-      """ shouldNot typeCheck
+      """
+      }
     }
 
-    "not compile if feature definition contains invalid expressions" in {
-      """
+    test("macro not compile if feature definition contains invalid expressions") {
+      compileError {
+        """
         import com.github.agourlay.cornichon.dsl.BaseFeature
         import com.github.agourlay.cornichon.dsl.CoreDsl
         import com.github.agourlay.cornichon.steps.regular.EffectStep
@@ -69,8 +50,8 @@ class MacroErrorSpec extends WordSpec with Matchers {
               }
             }
         }
-      """ shouldNot typeCheck
+      """
+      }
     }
   }
-
 }

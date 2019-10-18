@@ -8,8 +8,7 @@ class DataTableSpec extends WordSpec
   with Matchers
   with OptionValues {
 
-  def referenceParser(input: String) =
-    io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
+  def referenceParser(input: String): Json = io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
 
   "DataTable parser" must {
 
@@ -68,7 +67,7 @@ class DataTableSpec extends WordSpec
         ).asObject.value)))
     }
 
-    "process multiline string" in {
+    "process multi-line string" in {
       val input = """
         |  Name  |   Age  |
         | "John" |   50   |

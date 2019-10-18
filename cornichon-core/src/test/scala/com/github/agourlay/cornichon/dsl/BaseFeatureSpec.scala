@@ -1,21 +1,21 @@
 package com.github.agourlay.cornichon.dsl
 
-import org.scalatest._
+import utest._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
 
-class BaseFeatureSpec extends WordSpec with Matchers {
+object BaseFeatureSpec extends TestSuite {
 
-  "BaseFeature" must {
-    "shutDownGlobalResources" in {
+  val tests = Tests {
+    test("BaseFeature shutdowns resources") {
       var counter = 0
       val f1 = () ⇒ Future.successful({ counter = counter + 1 })
       BaseFeature.addShutdownHook(f1)
       val f2 = () ⇒ Future.successful({ counter = counter + 2 })
       BaseFeature.addShutdownHook(f2)
       Await.ready(BaseFeature.shutDownGlobalResources(), Duration.Inf)
-      counter should be(3)
+      assert(counter == 3)
     }
   }
 

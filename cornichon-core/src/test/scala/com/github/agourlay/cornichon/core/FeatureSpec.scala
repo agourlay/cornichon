@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.core
 
-import org.scalatest.{ Matchers, WordSpec }
+import utest._
 
-class FeatureSpec extends WordSpec with Matchers {
+object FeatureSpec extends TestSuite {
 
-  "a Feature" must {
-    "have Scenarios with unique names" in {
+  val tests = Tests {
+    test("a Feature have Scenarios with unique names") {
       intercept[IllegalArgumentException] {
         FeatureDef("malformed feature", Scenario("doingstuff", Nil) :: Scenario("doingstuff", Nil) :: Nil)
       }

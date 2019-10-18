@@ -174,13 +174,13 @@ object SessionProperties extends Properties("Session") {
     }
 
   property("getList error if one of the key does not exist") =
-    forAll(keyGen, keyGen, keyGen, valueGen, valueGen) { (firstKey, secondKey, thirdKey, firstValue, secondValue) ⇒
+    forAll(keyGen, keyGen, valueGen, valueGen) { (firstKey, secondKey, firstValue, secondValue) ⇒
       val s2 = Session
         .newEmpty
         .addValueUnsafe(firstKey, firstValue)
         .addValueUnsafe(secondKey, secondValue)
       Claim {
-        s2.getList(Seq(firstKey, thirdKey)).isLeft
+        s2.getList(Seq(firstKey, firstKey + "42", secondKey)).isLeft
       }
     }
 
