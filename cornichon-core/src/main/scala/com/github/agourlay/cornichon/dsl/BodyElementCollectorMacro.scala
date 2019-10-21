@@ -7,7 +7,9 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
 
   import c.universe._
 
-  def collectImpl(body: Tree): c.universe.Tree = {
+  private val initTreeFold: (Tree, List[Tree]) = q"Nil" → Nil
+
+  def collectImpl(body: Tree): Tree = {
     val contextType = c.prefix.tree.tpe
     val validContext = typeOf[BodyElementCollector[_, _]]
 
@@ -15,12 +17,11 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
       c.abort(c.enclosingPosition, s"Macro only allowed to be used directly inside of a `$validContext`")
     else {
       val elementType = contextType.typeArgs.head
-
       blockOrApplyExpressionList(body, elementType) { elements ⇒
-        val (finalTree, rest) = elements.foldLeft[(Tree, List[Tree])]((q"Nil": Tree) → Nil) {
+        val (finalTree, rest) = elements.foldLeft(initTreeFold) {
           case ((accTree, accSingle), elem) ⇒
             if (elem.tpe <:< elementType)
-              accTree → (accSingle :+ elem)
+              accTree → (accSingle :+ elem) //todo avoid List.append
             else
               q"$accTree ++ $accSingle ++ $elem" → Nil
         }
@@ -46,14 +47,18 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     }
 
   private def singleExpressionList(app: Tree, elementType: Type)(typesTreesFn: List[Tree] ⇒ Tree): c.universe.Tree =
-    typeCheck(elementType)(app) match {
+    typeCheck(elementType, seqElementType(elementType))(app) match {
       case Right(checked)     ⇒ typesTreesFn(checked :: Nil)
       case Left((pos, error)) ⇒ c.abort(pos, error)
     }
 
+  private def seqElementType(elementType: Type): Type =
+    c.typecheck(q"Seq[$elementType]()").tpe
+
   private def blockExpressionList(block: Block, elementType: Type)(typesTreesFn: List[Tree] ⇒ Tree): c.universe.Tree = {
-    val allStats = block.stats :+ block.expr
-    val checked = allStats.map(typeCheck(elementType))
+    val allStats = block.stats :+ block.expr //todo avoid List.append
+    val seq = seqElementType(elementType)
+    val checked = allStats.map(typeCheck(elementType, seq))
 
     if (checked.exists(_.isLeft)) {
       val errors = checked.collect { case Left(error) ⇒ error }
@@ -64,8 +69,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
       typesTreesFn(checked.collect { case Right(typed) ⇒ typed })
   }
 
-  private def typeCheck(elementType: Type)(tree: Tree): Either[(c.universe.Position, String), c.Tree] = {
-    val seq = c.typecheck(q"Seq[$elementType]()").tpe
+  private def typeCheck(elementType: Type, seq: Type)(tree: Tree): Either[(c.universe.Position, String), c.Tree] = {
     val checked = c.typecheck(tree)
     // checked.tpe is null if the statement is an import
     if (checked.tpe == null)
