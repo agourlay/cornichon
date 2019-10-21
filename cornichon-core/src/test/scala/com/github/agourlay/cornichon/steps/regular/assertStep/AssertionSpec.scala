@@ -1,49 +1,53 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import org.scalatest.{ Matchers, WordSpec }
+import utest._
 
-class AssertionSpec extends WordSpec with Matchers {
+object AssertionSpec extends TestSuite {
 
-  "Assertion" when {
-
-    "compose with And" must {
-      "all valid is valid" in {
-        (Assertion.alwaysValid and Assertion.alwaysValid).validated.isValid should be(true)
-      }
-
-      "if on invalid then invalid" in {
-        (Assertion.failWith("always fail!") and Assertion.alwaysValid).validated.isValid should be(false)
-      }
+  val tests = Tests {
+    test("compose with And all valid is valid") {
+      val assertion = Assertion.alwaysValid and Assertion.alwaysValid
+      assert(assertion.validated.isValid)
     }
 
-    "compose with Or" must {
-      "all valid is valid" in {
-        (Assertion.failWith("always fail!") or Assertion.alwaysValid).validated.isValid should be(true)
-      }
-
-      "if one invalid then valid" in {
-        (Assertion.failWith("always fail!") or Assertion.alwaysValid).validated.isValid should be(true)
-      }
+    test("compose with And if on invalid then invalid") {
+      val assertion = Assertion.failWith("always fail!") and Assertion.alwaysValid
+      assert(!assertion.validated.isValid)
     }
 
-    "Assertion.all" must {
-      "all valid is valid" in {
-        Assertion.all(List(Assertion.alwaysValid, Assertion.alwaysValid)).validated.isValid should be(true)
-      }
-
-      "if one invalid then invalid" in {
-        Assertion.all(List(Assertion.failWith("always fail!"), Assertion.alwaysValid)).validated.isValid should be(false)
-      }
+    test("compose with Or valid if one valid") {
+      val assertion = Assertion.failWith("always fail!") or Assertion.alwaysValid
+      assert(assertion.validated.isValid)
     }
 
-    "Assertion.any" must {
-      "all valid is valid" in {
-        Assertion.any(List(Assertion.alwaysValid, Assertion.alwaysValid)).validated.isValid should be(true)
-      }
+    test("compose with Or invalid if all invalid") {
+      val assertion = Assertion.failWith("always fail!") and Assertion.failWith("boom!")
+      assert(!assertion.validated.isValid)
+    }
 
-      "if one valid then valid" in {
-        Assertion.any(List(Assertion.failWith("always fail!"), Assertion.alwaysValid)).validated.isValid should be(true)
-      }
+    test("Assertion.all all valid is valid") {
+      val assertion = Assertion.all(List(Assertion.alwaysValid, Assertion.alwaysValid))
+      assert(assertion.validated.isValid)
+    }
+
+    test("Assertion.all af one invalid then invalid") {
+      val assertion = Assertion.all(List(Assertion.failWith("always fail!"), Assertion.alwaysValid))
+      assert(!assertion.validated.isValid)
+    }
+
+    test("Assertion.any all valid is valid") {
+      val assertion = Assertion.any(List(Assertion.alwaysValid, Assertion.alwaysValid))
+      assert(assertion.validated.isValid)
+    }
+
+    test("Assertion.any if one valid then valid") {
+      val assertion = Assertion.any(List(Assertion.alwaysValid, Assertion.failWith("always fail!")))
+      assert(assertion.validated.isValid)
+    }
+
+    test("Assertion.any invalid if all invalid valid") {
+      val assertion = Assertion.any(List(Assertion.failWith("boom!"), Assertion.failWith("always fail!")))
+      assert(!assertion.validated.isValid)
     }
   }
 }

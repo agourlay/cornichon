@@ -1,41 +1,33 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.instances.int._
-import org.scalatest.{ Matchers, WordSpec }
+import utest._
 
-class OrderAssertionSpec extends WordSpec
-  with Matchers {
+object OrderAssertionSpec extends TestSuite {
 
-  "OrderAssertion" must {
-
-    "LessThenAssertion" must {
-      "valid assertion" in {
-        LessThanAssertion(2, 3).validated.isValid should be(true)
-      }
-
-      "invalid" in {
-        LessThanAssertion(3, 2).validated.isValid should be(false)
-      }
+  val tests = Tests {
+    test("LessThenAssertion valid assertion") {
+      assert(LessThanAssertion(2, 3).validated.isValid)
     }
 
-    "GreaterThenAssertion" must {
-      "valid assertion" in {
-        GreaterThanAssertion(3, 2).validated.isValid should be(true)
-      }
-
-      "invalid" in {
-        GreaterThanAssertion(2, 3).validated.isValid should be(false)
-      }
+    test("LessThenAssertion invalid assertion") {
+      assert(LessThanAssertion(3, 2).validated.isInvalid)
     }
 
-    "BetweenAssertion" must {
-      "valid assertion" in {
-        BetweenAssertion(2, 3, 4).validated.isValid should be(true)
-      }
+    test("GreaterThenAssertion valid assertion") {
+      assert(GreaterThanAssertion(3, 2).validated.isValid)
+    }
 
-      "invalid" in {
-        BetweenAssertion(4, 3, 2).validated.isValid should be(false)
-      }
+    test("GreaterThenAssertion invalid assertion") {
+      assert(GreaterThanAssertion(2, 3).validated.isInvalid)
+    }
+
+    test("BetweenAssertion valid assertion") {
+      assert(BetweenAssertion(2, 3, 4).validated.isValid)
+    }
+
+    test("BetweenAssertion invalid assertion") {
+      assert(BetweenAssertion(4, 3, 2).validated.isInvalid)
     }
   }
 }

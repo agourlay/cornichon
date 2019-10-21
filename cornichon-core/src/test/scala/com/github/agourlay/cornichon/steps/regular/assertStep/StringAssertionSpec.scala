@@ -1,32 +1,24 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import org.scalatest.{ Matchers, WordSpec }
+import utest._
 
-class StringAssertionSpec extends WordSpec with Matchers {
+object StringAssertionSpec extends TestSuite {
 
-  "StringAssertion" must {
-
-    "StringContainsAssertion" must {
-      "valid assertion" in {
-        StringContainsAssertion("the text string", "text").validated.isValid should be(true)
-      }
-
-      "invalid" in {
-        StringContainsAssertion("the text string", "other").validated.isValid should be(false)
-      }
-
+  val tests = Tests {
+    test("StringContainsAssertion valid assertion") {
+      assert(StringContainsAssertion("the text string", "text").validated.isValid)
     }
 
-    "RegexAssertion" must {
-      "valid assertion" in {
-        RegexAssertion("the text string sample 434", "\\d+".r).validated.isValid should be(true)
-      }
-
-      "invalid" in {
-        RegexAssertion("the text string sample 434", "[A-Z]+".r).validated.isValid should be(false)
-      }
+    test("StringContainsAssertion invalid assertion") {
+      assert(StringContainsAssertion("the text string", "other").validated.isInvalid)
     }
 
+    test("RegexAssertion valid assertion") {
+      assert(RegexAssertion("the text string sample 434", "\\d+".r).validated.isValid)
+    }
+
+    test("RegexAssertion invalid assertion") {
+      assert(RegexAssertion("the text string sample 434", "[A-Z]+".r).validated.isInvalid)
+    }
   }
-
 }

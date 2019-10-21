@@ -2,28 +2,30 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
 import com.github.agourlay.cornichon.steps.StepUtilSpec
-import org.scalatest.{ AsyncWordSpec, Matchers }
+import utest._
 
-class AssertStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+object AssertStepSpec extends TestSuite with StepUtilSpec {
 
-  "AssertStep" must {
-
-    "fail if instruction throws exception" in {
+  val tests = Tests {
+    test("fail if instruction throws exception") {
       val step = AssertStep("stupid step", _ ⇒ throw new RuntimeException("boom"))
       val s = Scenario("scenario with stupid test", step :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!r.isSuccess)
     }
 
-    "fail if instruction is an invalid assertion" in {
+    test("fail if instruction is an invalid assertion") {
       val step = AssertStep("stupid step", _ ⇒ Assertion.failWith("failed assertion"))
       val s = Scenario("scenario with stupid test", step :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!r.isSuccess)
     }
 
-    "success if non equality was expected" in {
+    test("success if non equality was expected") {
       val step = AssertStep("non equals step", _ ⇒ GenericEqualityAssertion(1, 2, negate = true))
       val s = Scenario("scenario with unresolved", step :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
+      val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(r.isSuccess)
     }
   }
 }

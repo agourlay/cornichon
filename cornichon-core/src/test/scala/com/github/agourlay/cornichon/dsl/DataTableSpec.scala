@@ -1,104 +1,101 @@
 package com.github.agourlay.cornichon.dsl
 
 import io.circe.Json
-import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import com.github.agourlay.cornichon.json.CornichonJson.parseDataTable
+import utest._
 
-class DataTableSpec extends WordSpec
-  with Matchers
-  with OptionValues {
+object DataTableSpec extends TestSuite {
 
   def referenceParser(input: String): Json = io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
 
-  "DataTable parser" must {
-
-    "report malformed JSON" in {
+  val tests = Tests {
+    test("parser reports malformed JSON") {
       val input = """
                     |   Name  |   Age   |
                     |  "John" |   5a    |
                   """
 
-      parseDataTable(input).isLeft should be(true)
+      assert(parseDataTable(input).isLeft)
     }
 
-    "process a single line with 1 value without new line on first" in {
+    test("parser processes a single line with 1 value without new line on first") {
       val input = """ |   Name   |
                       |  "John"  |
                   """
 
-      parseDataTable(input) should be(Right(
-        List(Json.obj("Name" → Json.fromString("John")).asObject.value)))
+      parseDataTable(input) == Right(
+        List(Json.obj("Name" → Json.fromString("John")).asObject.get))
     }
 
-    "process a single line with 1 value" in {
+    test("parser processes a single line with 1 value") {
       val input = """
-        |   Name   |
-        |  "John"  |
-        """
+                    |   Name   |
+                    |  "John"  |
+                  """
 
-      parseDataTable(input) should be(Right(
-        List(Json.obj("Name" → Json.fromString("John")).asObject.value)))
+      parseDataTable(input) == Right(
+        List(Json.obj("Name" → Json.fromString("John")).asObject.get))
     }
 
-    "process a single line with 2 values" in {
+    test("parser processes a single line with 2 values") {
       val input = """
-        |   Name  |   Age   |
-        |  "John" |   50    |
-      """
+                    |   Name  |   Age   |
+                    |  "John" |   50    |
+                  """
 
-      parseDataTable(input) should be(Right(
+      parseDataTable(input) == Right(
         List(Json.obj(
           "Name" → Json.fromString("John"),
           "Age" → Json.fromInt(50)
-        ).asObject.value)))
+        ).asObject.get))
     }
 
-    "process string values nd headers with unicode characters and escaping" in {
+    test("parser processes string values and headers with unicode characters and escaping") {
       val input =
         """
           | Name                  |   Größe \u00DF " \| test |
           | "öÖß \u00DF \" test " |   50                     |
         """
 
-      parseDataTable(input) should be(Right(
+      parseDataTable(input) == Right(
         List(Json.obj(
           "Name" → Json.fromString("öÖß \u00DF \" test "),
           "Größe \u00DF \" | test" → Json.fromInt(50)
-        ).asObject.value)))
+        ).asObject.get))
     }
 
-    "process multi-line string" in {
+    test("parser processes multi-line string") {
       val input = """
-        |  Name  |   Age  |
-        | "John" |   50   |
-        | "Bob"  |   11   |
+                    |  Name  |   Age  |
+                    | "John" |   50   |
+                    | "Bob"  |   11   |
       """
 
-      parseDataTable(input) should be(Right(
+      parseDataTable(input) == Right(
         List(
           Json.obj(
             "Name" → Json.fromString("John"),
             "Age" → Json.fromInt(50)
-          ).asObject.value,
+          ).asObject.get,
           Json.obj(
             "Name" → Json.fromString("Bob"),
             "Age" → Json.fromInt(11)
-          ).asObject.value)))
+          ).asObject.get))
     }
 
-    "notify malformed table" in {
+    test("parser detects malformed tables") {
       val input = """
-        |  Name   |   Age  |
-        | "John"  |   50   | "blah" |
+                    |  Name   |   Age  |
+                    | "John"  |   50   | "blah" |
       """
 
       parseDataTable(input) match {
-        case Right(t) ⇒ fail(s"should have failed but got $t")
-        case Left(e)  ⇒ e.renderedMessage should include("requirement failed: Datatable is malformed, all rows must have the same number of elements")
+        case Right(_) ⇒ assert(false)
+        case Left(e)  ⇒ assert(e.renderedMessage.contains("requirement failed: Datatable is malformed, all rows must have the same number of elements"))
       }
     }
 
-    "produce valid Json Array" in {
+    test("parser produces valid Json Array") {
       val input =
         """
           |  Name  |   Age  | 2LettersName |
@@ -120,7 +117,7 @@ class DataTableSpec extends WordSpec
         """
 
       val objects = parseDataTable(input).map(l ⇒ l.map(Json.fromJsonObject)).map(Json.fromValues)
-      objects should be(Right(referenceParser(expected)))
+      assert(objects == Right(referenceParser(expected)))
     }
   }
 }

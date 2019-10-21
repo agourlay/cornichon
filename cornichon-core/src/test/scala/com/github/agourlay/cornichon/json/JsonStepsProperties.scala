@@ -19,7 +19,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.is(input)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
-      val t = awaitFuture(ScenarioRunner.runScenario(session)(s))
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       Claim(t.isSuccess)
     }
 
@@ -28,7 +28,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.is(input + "42")
       val s = Scenario("scenario with JsonSteps", step :: Nil)
-      val t = awaitFuture(ScenarioRunner.runScenario(session)(s))
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       Claim(!t.isSuccess)
     }
 
@@ -37,7 +37,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.isNot(input + "42")
       val s = Scenario("scenario with JsonSteps", step :: Nil)
-      val t = awaitFuture(ScenarioRunner.runScenario(session)(s))
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       Claim(t.isSuccess)
     }
 
@@ -46,7 +46,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.isNot(input)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
-      val t = awaitFuture(ScenarioRunner.runScenario(session)(s))
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       Claim(!t.isSuccess)
     }
 
@@ -56,7 +56,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val session = Session.newEmpty.addValuesUnsafe(testKey -> json.spaces2)
       val step = jsonStepBuilder.is(json)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
-      val t = awaitFuture(ScenarioRunner.runScenario(session)(s))
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       Claim(t.isSuccess)
     }
 
@@ -70,7 +70,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val fullPlaceholderJsonObj = jsonOb.add("myKeyOther", Json.fromString("<a-placeholder>"))
       val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
       val s = Scenario("scenario with JsonSteps", step :: Nil)
-      val t = awaitFuture(ScenarioRunner.runScenario(session)(s))
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       Claim(t.isSuccess)
     }
 
@@ -81,7 +81,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val fullPlaceholderJsonObj = jsonOb.add("myKeyOther", Json.fromString("<a-placeholder>"))
       val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
       val s = Scenario("scenario with JsonSteps", step :: Nil)
-      val t = awaitFuture(ScenarioRunner.runScenario(session)(s))
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       Claim(!t.isSuccess)
     }
 }
