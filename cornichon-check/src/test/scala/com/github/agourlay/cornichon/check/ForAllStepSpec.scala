@@ -5,34 +5,9 @@ import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.steps.wrapped.AttachStep
-import monix.eval.Task
-import monix.execution.Scheduler
 import utest._
 
-import scala.concurrent.duration.Duration
-
-object ForAllStepSpec extends TestSuite with ProvidedInstances with CheckDsl {
-
-  // TODO use StepUtilSpec through some kind of common-testing
-  implicit val scheduler: Scheduler = Scheduler.Implicits.global
-  def awaitTask[A](t: Task[A]): A = t.runSyncUnsafe(Duration.Inf)
-
-  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    gen = () ⇒ rc.seededRandom.nextInt(10000))
-
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "integer",
-    gen = () ⇒ rc.seededRandom.nextString(10))
-
-  def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    gen = () ⇒ throw new RuntimeException("boom gen!"))
-
-  val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
-
-  val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
-  val alwaysValidAssertStep = AssertStep("valid", _ ⇒ Assertion.alwaysValid)
+object ForAllStepSpec extends TestSuite with ProvidedInstances with CheckDsl with CheckStepUtil {
 
   val tests = Tests {
     test("validate invariant - correct") {

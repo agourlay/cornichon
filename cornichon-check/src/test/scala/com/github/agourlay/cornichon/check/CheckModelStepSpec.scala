@@ -4,32 +4,9 @@ import com.github.agourlay.cornichon.check.checkModel._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
-import monix.eval.Task
-import monix.execution.Scheduler
 import utest._
 
-import scala.concurrent.duration.Duration
-
-object CheckModelStepSpec extends TestSuite with ProvidedInstances {
-
-  // TODO use StepUtilSpec through some kind of common-testing
-  implicit val scheduler: Scheduler = Scheduler.Implicits.global
-  def awaitTask[A](t: Task[A]): A = t.runSyncUnsafe(Duration.Inf)
-
-  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    gen = () ⇒ rc.seededRandom.nextInt(10000))
-
-  def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    gen = () ⇒ throw new RuntimeException("boom gen!"))
-
-  val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
-
-  val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
-
-  val identityStep: Step = EffectStep.fromSync("identity effect step", _.session)
+object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckStepUtil {
 
   def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = identityStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property1(
