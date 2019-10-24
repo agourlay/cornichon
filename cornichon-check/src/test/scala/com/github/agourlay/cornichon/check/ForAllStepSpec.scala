@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.check
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.steps.wrapped.AttachStep
 import utest._
 

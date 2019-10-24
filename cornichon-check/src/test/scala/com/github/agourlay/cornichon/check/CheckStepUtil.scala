@@ -19,7 +19,7 @@ trait CheckStepUtil {
 
   def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    gen = () ⇒ throw new RuntimeException("boom gen!"))
+    gen = () ⇒ throw new RuntimeException(s"boom gen with initial seed ${rc.initialSeed}"))
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "integer",
