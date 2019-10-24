@@ -33,8 +33,8 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
     }
   )
 
-  def assert_ping_or_ping(coin: Coin) = AssertStep(
-    title = "Ping or Pong",
+  def assert_head_or_tail(coin: Coin) = AssertStep(
+    title = "Head or Tail",
     action = _ ⇒ {
       val coinStr = coin.toString
       val isHead = GenericEqualityAssertion("Head", coinStr)
@@ -52,7 +52,7 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
 
     val flipCoin = Property1[Coin](
       description = "Flip coin",
-      invariant = coinGen ⇒ assert_ping_or_ping(coinGen())
+      invariant = coinGen ⇒ assert_head_or_tail(coinGen())
     )
 
     Model(
