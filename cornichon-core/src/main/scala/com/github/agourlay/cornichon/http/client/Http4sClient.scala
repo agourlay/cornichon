@@ -86,11 +86,8 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
   private def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
       uri
-    else {
-      val q = Query.fromPairs(moreParams: _*)
-      // Not sure it is the most efficient way
-      uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
-    }
+    else
+      moreParams.foldLeft(uri) { case (uri, (k, v)) ⇒ uri.withQueryParam(k, v) }
 
   override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, CornichonHttpResponse] =
     parseUri(cReq.url).fold(
