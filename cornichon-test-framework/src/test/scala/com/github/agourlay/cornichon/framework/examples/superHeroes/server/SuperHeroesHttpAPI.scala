@@ -158,7 +158,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
         superheroes.map(sh ⇒ ServerSentEvent(eventType = Some("superhero name"), data = sh.name))
       else
         superheroes.map(sh ⇒ ServerSentEvent(eventType = Some("superhero"), data = sh.asJson.noSpaces))
-      Ok(fs2.Stream.fromIterator[Task, ServerSentEvent](sse.toIterator))
+      Ok(fs2.Stream.fromIterator[Task](sse.toIterator))
   }
 
   private val routes = Router(
