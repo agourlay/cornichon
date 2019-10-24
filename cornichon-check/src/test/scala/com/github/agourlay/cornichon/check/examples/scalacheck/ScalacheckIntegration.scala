@@ -3,7 +3,8 @@ package com.github.agourlay.cornichon.check.examples.scalacheck
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.check._
 import com.github.agourlay.cornichon.check.checkModel.{ Model, ModelRunner, Property1 }
-import com.github.agourlay.cornichon.core.RandomContext
+import com.github.agourlay.cornichon.core.{ NoOpStep, RandomContext }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 
@@ -32,16 +33,26 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
     }
   )
 
+  def assert_ping_or_ping(coin: Coin) = AssertStep(
+    title = "Ping or Pong",
+    action = _ ⇒ {
+      val coinStr = coin.toString
+      val isHead = GenericEqualityAssertion("Head", coinStr)
+      val isTail = GenericEqualityAssertion("Tail", coinStr)
+      isHead.or(isTail)
+    }
+  )
+
   val myModelRunner = ModelRunner.make[Coin](coinGen) {
 
     val entryPoint = Property1[Coin](
       description = "Entry point",
-      invariant = _ ⇒ print_step("Start flipping a coin")
+      invariant = _ ⇒ NoOpStep
     )
 
     val flipCoin = Property1[Coin](
       description = "Flip coin",
-      invariant = coinGen ⇒ print_step(s"Flip result ${coinGen()}")
+      invariant = coinGen ⇒ assert_ping_or_ping(coinGen())
     )
 
     Model(
