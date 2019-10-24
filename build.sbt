@@ -215,8 +215,9 @@ lazy val check =
     .settings(
       name := "cornichon-check",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
+      testFrameworks += new TestFramework("utest.runner.Framework"),
       libraryDependencies ++= Seq(
-        library.scalatest % Test,
+        library.utest % Test,
         library.scalacheck % Test,
         library.http4sServer % Test,
         library.http4sCirce % Test,
