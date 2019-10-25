@@ -2,11 +2,9 @@ package com.github.agourlay.cornichon.framework.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
 
-import scala.concurrent.duration._
+class DummyExamples extends DummyFeatureToTestInheritance {
 
-class DummyExamplesTwo extends CornichonFeature {
-
-  def feature = Feature("Dummy two feature") {
+  def feature = Feature("Dummy one feature") {
 
     Scenario("session access") {
 
@@ -16,22 +14,19 @@ class DummyExamplesTwo extends CornichonFeature {
 
     }
 
-    Scenario("waiting step").ignoredBecause("Ignored for a good reason") {
-
-      And I wait(1.second)
-
-    }
-
     Scenario("pending scenario").pending
 
   }
+}
+
+trait DummyFeatureToTestInheritance extends CornichonFeature {
 
   beforeEachScenario(
-    print_step("before each scenario dummy two")
+    session_value("arg1").isAbsent
   )
 
   afterEachScenario(
-    print_step("after each scenario dummy two")
+    session_value("arg1").isPresent
   )
 
   beforeFeature(

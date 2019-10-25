@@ -8,20 +8,20 @@ class FocusedScenario extends CornichonFeature {
   def feature = Feature("feature with scenario focus") {
     Scenario("Scenario 1") {
       Given I wait(10.hours)
-      And I print_step("Scenario 1 is finished")
     }
 
     Scenario("Scenario 2").focused {
-      And I print_step("Scenario 2 is finished")
+      Given I save("test-key" -> "test-value")
+      Then assert session_value("test-key").is("test-value")
     }
 
     Scenario("Scenario 3") {
       Given I wait(10.hours)
-      And I print_step("Scenario 3 is finished")
     }
 
     Scenario("Scenario 4").focused {
-      And I print_step("Scenario 4 is finished")
+      Given I save("test-key" -> "test-value")
+      Then assert session_value("test-key").is("test-value")
     }
   }
 }
