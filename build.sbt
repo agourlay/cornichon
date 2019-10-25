@@ -304,8 +304,8 @@ lazy val library =
       val monix         = "3.0.0"
       val sbtTest       = "1.0"
       val http4s        = "0.21.0-M5"
-      val embeddedKafka = "2.3.0"
-      val kafkaClient   = "2.3.0"
+      val embeddedKafka = "2.3.1"
+      val kafkaClient   = "2.3.1"
       val caffeine      = "2.8.0"
     }
     val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
