@@ -1,2 +1,4 @@
 -J-Xss2m
 -J-XX:MaxInlineLevel=18
+-J-XX:MaxInlineSize=270
+-J-XX:MaxTrivialSize=12
