@@ -1,14 +1,13 @@
 package com.github.agourlay.cornichon.json
 
-import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import io.circe.Json
 import cats.syntax.show._
+import utest.{ TestSuite, Tests, test }
 
-class JsonPathSpec extends WordSpec with Matchers with OptionValues {
+object JsonPathSpec extends TestSuite {
 
-  "JsonPath" must {
-
-    "non strict version returns None if the field does not exist" in {
+  val tests = Tests {
+    test("non strict version returns None if the field does not exist") {
       val input =
         """
           |{
@@ -18,10 +17,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.run("Name2", input) should be(Right(None))
+      assert(JsonPath.run("Name2", input) == Right(None))
     }
 
-    "select properly null field" in {
+    test("select properly null field") {
       val input =
         """
           |{
@@ -31,10 +30,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("Name", input) should be(Right(Json.Null))
+      assert(JsonPath.runStrict("Name", input) == Right(Json.Null))
     }
 
-    "select properly String based on single field" in {
+    test("select properly String based on single field") {
       val input =
         """
           |{
@@ -44,10 +43,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("Name", input) should be(Right(Json.fromString("John")))
+      assert(JsonPath.runStrict("Name", input) == Right(Json.fromString("John")))
     }
 
-    "select properly Int based on single field" in {
+    test("select properly Int based on single field") {
       val input =
         """
           |{
@@ -57,10 +56,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("Age", input) should be(Right(Json.fromInt(50)))
+      assert(JsonPath.runStrict("Age", input) == Right(Json.fromInt(50)))
     }
 
-    "select properly nested field in Object" in {
+    test("select properly nested field in Object") {
       val input =
         """
           |{
@@ -74,10 +73,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("brother.Age", input) should be(Right(Json.fromInt(50)))
+      assert(JsonPath.runStrict("brother.Age", input) == Right(Json.fromInt(50)))
     }
 
-    "select properly nested field in Array" in {
+    test("select properly nested field in Array") {
       val input =
         """
           |{
@@ -97,10 +96,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("brothers[1].Age", input) should be(Right(Json.fromInt(30)))
+      assert(JsonPath.runStrict("brothers[1].Age", input) == Right(Json.fromInt(30)))
     }
 
-    "select properly nested fields projected in Array" in {
+    test("select properly nested fields projected in Array") {
       val input =
         """
           |{
@@ -120,10 +119,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("brothers[*].Age", input) should be(Right(Json.arr(Json.fromInt(50), Json.fromInt(30))))
+      assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50), Json.fromInt(30))))
     }
 
-    "select properly nested fields projected in Array with a single value" in {
+    test("select properly nested fields projected in Array with a single value") {
       val input =
         """
           |{
@@ -139,10 +138,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("brothers[*].Age", input) should be(Right(Json.arr(Json.fromInt(50))))
+      assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50))))
     }
 
-    "return empty array if projection on Array but nested field does not exist" in {
+    test("return empty array if projection on Array but nested field does not exist") {
       val input =
         """
           |{
@@ -158,10 +157,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("brothers[*].age", input) should be(Right(Json.fromValues(Nil)))
+      assert(JsonPath.runStrict("brothers[*].age", input) == Right(Json.fromValues(Nil)))
     }
 
-    "return empty array if projection on empty Array but nested field does not exist" in {
+    test("return empty array if projection on empty Array but nested field does not exist") {
       val input =
         """
           |{
@@ -172,10 +171,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("brothers[*].age", input) should be(Right(Json.fromValues(Nil)))
+      assert(JsonPath.runStrict("brothers[*].age", input) == Right(Json.fromValues(Nil)))
     }
 
-    "return None (nonStrict) if the array projected does not exist" in {
+    test("return None (nonStrict) if the array projected does not exist") {
       val input =
         """
           |{
@@ -191,10 +190,10 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.run("sisters[*].age", input) should be(Right(None))
+      assert(JsonPath.run("sisters[*].age", input) == Right(None))
     }
 
-    "select properly doubly nested fields projected in Array" in {
+    test("select properly doubly nested fields projected in Array") {
       val input =
         """
           |{
@@ -232,12 +231,12 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}
         """.stripMargin
 
-      JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) should be(Right(Json.arr(
+      assert(JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) == Right(Json.arr(
         Json.fromString("Karate"), Json.fromString("Football"), Json.fromString("Diving"), Json.fromString("Reading")
       )))
     }
 
-    "select properly element of a root Array" in {
+    test("select properly element of a root Array") {
       val input =
         """
           |[{
@@ -257,10 +256,12 @@ class JsonPathSpec extends WordSpec with Matchers with OptionValues {
           |}]
         """.stripMargin
 
-      JsonPath.runStrict("$[0].brothers[1].Age", input) should be(Right(Json.fromInt(30)))
+      assert(JsonPath.runStrict("$[0].brothers[1].Age", input) == Right(Json.fromInt(30)))
     }
-    "have a pretty rendering via Show" in {
-      JsonPath.parse("a.b[1].d.e[*]").map(_.show) should be(Right("$.a.b[1].d.e[*]"))
+
+    test("have a pretty rendering via Show") {
+      assert(JsonPath.parse("a.b[1].d.e[*]").map(_.show) == Right("$.a.b[1].d.e[*]"))
     }
+
   }
 }
