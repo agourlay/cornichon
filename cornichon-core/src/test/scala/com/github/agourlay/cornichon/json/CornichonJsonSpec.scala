@@ -2,232 +2,199 @@ package com.github.agourlay.cornichon.json
 
 import io.circe.{ Json, JsonObject }
 import cats.instances.string._
-import org.scalatest.{ Matchers, OptionValues, WordSpec }
 import com.github.agourlay.cornichon.json.JsonPath._
+import utest._
 
-class CornichonJsonSpec extends WordSpec
-  with Matchers
-  with CornichonJson
-  with OptionValues {
+object CornichonJsonSpec extends TestSuite with CornichonJson {
 
-  def refParser(input: String) =
+  def refParser(input: String): Json =
     io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
 
-  def mapToJsonObject(m: Map[String, Json]) =
+  def mapToJsonObject(m: Map[String, Json]): Json =
     Json.fromJsonObject(JsonObject.fromMap(m))
 
-  def parseUnsafe(path: String) =
+  def parseUnsafe(path: String): JsonPath =
     parse(path).valueUnsafe
 
-  "CornichonJson" when {
-    "parseJson" must {
+  val tests = Tests {
+    test("parseJson object String") {
+      val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
+      assert(parseDslJson("""{"name":"cornichon"}""") == Right(expected))
+    }
 
-      "parse JSON object string" in {
-        val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
-        parseDslJson("""{"name":"cornichon"}""") should be(Right(expected))
-      }
+    test("parseJson object String with spaces") {
+      val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
+      assert(parseDslJson("""   {"name":"cornichon"}""") == Right(expected))
+    }
 
-      "parse JSON object string with spaces" in {
-        val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
-        parseDslJson("""  {"name":"cornichon"}  """) should be(Right(expected))
-      }
+    test("parseJson JSON Array string") {
+      val expected = Json.fromValues(Seq(
+        mapToJsonObject(Map("name" → Json.fromString("cornichon"))),
+        mapToJsonObject(Map("name" → Json.fromString("scala")))
+      ))
 
-      "parse JSON Array string" in {
-        val expected = Json.fromValues(Seq(
-          mapToJsonObject(Map("name" → Json.fromString("cornichon"))),
-          mapToJsonObject(Map("name" → Json.fromString("scala")))
-        ))
+      assert(parseDslJson("""[ {"name":"cornichon"}, {"name":"scala"} ]""") == Right(expected))
+    }
 
-        parseDslJson(
-          """
-           [
-            {"name":"cornichon"},
-            {"name":"scala"}
-           ]
-           """
-        ) should be(Right(expected))
-      }
-
-      "parse data table" in {
-        val expected =
-          """
-            |[
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |},
-            |{
-            |"2LettersName" : true,
-            | "Age": 11,
-            | "Name": "Bob"
-            |}
-            |]
+    test("parseJson data-table") {
+      val expected =
+        """
+          |[
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |},
+          |{
+          |"2LettersName" : true,
+          | "Age": 11,
+          | "Name": "Bob"
+          |}
+          |]
           """.stripMargin
 
-        parseDslJson("""
-           |  Name  |   Age  | 2LettersName |
-           | "John" |   50   |    false     |
-           | "Bob"  |   11   |    true      |
-         """) should be(Right(refParser(expected)))
-      }
+      assert(parseDslJson("""
+                     |  Name  |   Age  | 2LettersName |
+                     | "John" |   50   |    false     |
+                     | "Bob"  |   11   |    true      |
+         """) == Right(refParser(expected)))
+    }
 
-      "parse data table with empty cell values" in {
-        parseDataTable(
+    test("parseJson data table with empty cell values") {
+      val parsed = parseDataTable(
+        """
+          |  Name  |   Age  | 2LettersName |
+          |        |        |    false     |
+          | "Bob"  |   11   |              |
           """
-            |  Name  |   Age  | 2LettersName |
-            |        |        |    false     |
-            | "Bob"  |   11   |              |
-          """
-        ) should be(Right(List(
-            """
+      )
+
+      assert(parsed == Right(List(
+        """
             {
               "2LettersName" : false
             }
           """,
-            """
+        """
             {
               "Age": 11,
               "Name": "Bob"
             }
-          """) map (refParser(_).asObject.value)))
-      }
-
-      "parse data table as a map of raw string values" in {
-        parseDataTableRaw(
-          """
-            | Name |   Age  | 2LettersName |
-            |      |        |    false     |
-            | Bob  |   11   |              |
-          """
-        ) should be(Right(List(
-            Map("2LettersName" → "false"),
-            Map("Age" → "11", "Name" → "Bob"))))
-      }
+          """) map (refParser(_).asObject.get)))
     }
 
-    "isJsonString" must {
-
-      "detect invalid empty string" in {
-        isJsonString("") should be(false)
-      }
-
-      "detect a string" in {
-        isJsonString("a") should be(true)
-      }
-
-      "detect an object" in {
-        isJsonString(""" { "a" : "v"} """) should be(false)
-      }
-
-      "detect an array" in {
-        isJsonString(""" [ "a", "v"] """) should be(false)
-      }
-
+    test("parseJson parse data table as a map of raw string values") {
+      assert(parseDataTableRaw(
+        """
+          | Name |   Age  | 2LettersName |
+          |      |        |    false     |
+          | Bob  |   11   |              |
+          """
+      ) == Right(List(
+          Map("2LettersName" → "false"),
+          Map("Age" → "11", "Name" → "Bob"))))
     }
 
-    "removeFieldsByPath" must {
+    test("isJsonString detects invalid empty string") {
+      assert(!isJsonString(""))
+    }
 
-      "remove everything if root path" in {
-        val input =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |}
+    test("isJsonString detects a string") {
+      assert(isJsonString("a"))
+    }
+
+    test("isJsonString detects an object") {
+      assert(!isJsonString(""" { "a" : "v"} """))
+    }
+
+    test("isJsonString detects an array") {
+      assert(!isJsonString(""" [ "a", "v"] """))
+    }
+
+    test("removeFieldsByPath removes everything if root path") {
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |}
           """.stripMargin
 
-        removeFieldsByPath(refParser(input), Seq(rootPath)) should be(Json.Null)
-      }
+      assert(removeFieldsByPath(refParser(input), Seq(rootPath)) == Json.Null)
+    }
 
-      "remove nothing if path does not exist" in {
-        val input =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |}
+    test("removeFieldsByPath removes nothing if path does not exist") {
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |}
           """.stripMargin
 
-        removeFieldsByPath(refParser(input), parseUnsafe("blah") :: Nil) should be(refParser(input))
-      }
+      assert(removeFieldsByPath(refParser(input), parseUnsafe("blah") :: Nil) == refParser(input))
+    }
 
-      "remove root keys" in {
-        val input =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |}
+    test("removeFieldsByPath removes root keys") {
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |}
           """.stripMargin
 
-        val expected =
-          """
+      val expected =
+        """
           |{
           | "Age": 50
           |}
         """.stripMargin
-        val paths = Seq("2LettersName", "Name").map(parseUnsafe)
-        removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
-      }
+      val paths = Seq("2LettersName", "Name").map(parseUnsafe)
+      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
+    }
 
-      "remove only root keys" in {
-        val input =
-          """
-            |{
-            |"name" : "bob",
-            |"age": 50,
-            |"brothers":[
-            |  {
-            |    "name" : "john",
-            |    "age": 40
-            |  }
-            |]
-            |} """.stripMargin
-
-        val expected = """
-           |{
-           |"age": 50,
-           |"brothers":[
-           |  {
-           |    "name" : "john",
-           |    "age": 40
-           |  }
-           |]
-           |} """.stripMargin
-
-        val paths = Seq("name").map(parseUnsafe)
-        removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
-      }
-
-      "remove keys inside specific indexed element" in {
-        val input =
-          """
-            |{
-            |"name" : "bob",
-            |"age": 50,
-            |"brothers":[
-            |  {
-            |    "name" : "john",
-            |    "age": 40
-            |  },
-            |  {
-            |    "name" : "jim",
-            |    "age": 30
-            |  }
-            |]
-            |}
-          """.stripMargin
-
-        val expected = """
+    test("removeFieldsByPath removes only root keys") {
+      val input =
+        """
           |{
           |"name" : "bob",
           |"age": 50,
           |"brothers":[
           |  {
+          |    "name" : "john",
+          |    "age": 40
+          |  }
+          |]
+          |} """.stripMargin
+
+      val expected = """
+                       |{
+                       |"age": 50,
+                       |"brothers":[
+                       |  {
+                       |    "name" : "john",
+                       |    "age": 40
+                       |  }
+                       |]
+                       |} """.stripMargin
+
+      val paths = Seq("name").map(parseUnsafe)
+      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
+    }
+
+    test("removeFieldsByPath removes keys inside specific indexed element") {
+      val input =
+        """
+          |{
+          |"name" : "bob",
+          |"age": 50,
+          |"brothers":[
+          |  {
+          |    "name" : "john",
           |    "age": 40
           |  },
           |  {
@@ -235,146 +202,156 @@ class CornichonJsonSpec extends WordSpec
           |    "age": 30
           |  }
           |]
-          |} """.stripMargin
-
-        val paths = Seq("brothers[0].name").map(parseUnsafe)
-        removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
-      }
-
-      //FIXME - done manually in BodyArrayAssertion for now
-      "remove field in each element of a root array" ignore {
-
-        val input =
-          """
-            |[
-            |{
-            |  "name" : "bob",
-            |  "age": 50
-            |},
-            |{
-            |  "name" : "jim",
-            |  "age": 40
-            |},
-            |{
-            |  "name" : "john",
-            |  "age": 30
-            |}
-            |]
+          |}
           """.stripMargin
 
-        val expected =
-          """
-            |[
-            |{
-            |  "name" : "bob"
-            |},
-            |{
-            |  "name" : "jim"
-            |},
-            |{
-            |  "name" : "john"
-            |}
-            |]
-          """.stripMargin
+      val expected = """
+                       |{
+                       |"name" : "bob",
+                       |"age": 50,
+                       |"brothers":[
+                       |  {
+                       |    "age": 40
+                       |  },
+                       |  {
+                       |    "name" : "jim",
+                       |    "age": 30
+                       |  }
+                       |]
+                       |} """.stripMargin
 
-        val paths = Seq("age").map(parseUnsafe)
-        removeFieldsByPath(refParser(input), paths) should be(Right(refParser(expected)))
-      }
-
-      //FIXME - done manually in BodyArrayAssertion for now
-      "remove field in each element of a nested array" ignore {
-
-        val input =
-          """
-            |{
-            |"people":[
-            |{
-            |  "name" : "bob",
-            |  "age": 50
-            |},
-            |{
-            |  "name" : "jim",
-            |  "age": 40
-            |},
-            |{
-            |  "name" : "john",
-            |  "age": 30
-            |}
-            |]
-            |}
-          """.stripMargin
-
-        val expected =
-          """
-            |{
-            |"people":[
-            |{
-            |  "name" : "bob"
-            |},
-            |{
-            |  "name" : "jim"
-            |},
-            |{
-            |  "name" : "john"
-            |}
-            |]
-            |}
-          """.stripMargin
-
-        val paths = Seq("people[*].age").map(parseUnsafe)
-        removeFieldsByPath(refParser(input), paths) should be(Right(refParser(expected)))
-      }
-
-      "be correct even with duplicate Fields" in {
-
-        val input =
-          """
-            |{
-            |"name" : "bob",
-            |"age": 50,
-            |"brother":[
-            |  {
-            |    "name" : "john",
-            |    "age": 40
-            |  }
-            |],
-            |"friend":[
-            |  {
-            |    "name" : "john",
-            |    "age": 30
-            |  }
-            |]
-            |}
-          """.stripMargin
-
-        val expected =
-          """
-            |{
-            |"name" : "bob",
-            |"age": 50,
-            |"brother":[
-            |  {
-            |    "age": 40
-            |  }
-            |],
-            |"friend":[
-            |  {
-            |    "name" : "john",
-            |    "age": 30
-            |  }
-            |]
-            |}
-          """.stripMargin
-
-        val paths = Seq("brother[0].name").map(parseUnsafe)
-
-        removeFieldsByPath(refParser(input), paths) should be(refParser(expected))
-      }
+      val paths = Seq("brothers[0].name").map(parseUnsafe)
+      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
     }
 
-    "parseGraphQLJson" must {
-      "nominal case" in {
-        val in = """
+    //FIXME - done manually in BodyArrayAssertion for now
+    //    test("removeFieldsByPath removes field in each element of a root array") {
+    //      val input =
+    //        """
+    //          |[
+    //          |{
+    //          |  "name" : "bob",
+    //          |  "age": 50
+    //          |},
+    //          |{
+    //          |  "name" : "jim",
+    //          |  "age": 40
+    //          |},
+    //          |{
+    //          |  "name" : "john",
+    //          |  "age": 30
+    //          |}
+    //          |]
+    //          """.stripMargin
+    //
+    //      val expected =
+    //        """
+    //          |[
+    //          |{
+    //          |  "name" : "bob"
+    //          |},
+    //          |{
+    //          |  "name" : "jim"
+    //          |},
+    //          |{
+    //          |  "name" : "john"
+    //          |}
+    //          |]
+    //          """.stripMargin
+    //
+    //      val paths = Seq("age").map(parseUnsafe)
+    //      assert(removeFieldsByPath(refParser(input), paths) == Right(refParser(expected)))
+    //    }
+
+    //FIXME - done manually in BodyArrayAssertion for now
+    //    test("removeFieldsByPath removes field in each element of a nested array") {
+    //      val input =
+    //        """
+    //          |{
+    //          |"people":[
+    //          |{
+    //          |  "name" : "bob",
+    //          |  "age": 50
+    //          |},
+    //          |{
+    //          |  "name" : "jim",
+    //          |  "age": 40
+    //          |},
+    //          |{
+    //          |  "name" : "john",
+    //          |  "age": 30
+    //          |}
+    //          |]
+    //          |}
+    //          """.stripMargin
+    //
+    //      val expected =
+    //        """
+    //          |{
+    //          |"people":[
+    //          |{
+    //          |  "name" : "bob"
+    //          |},
+    //          |{
+    //          |  "name" : "jim"
+    //          |},
+    //          |{
+    //          |  "name" : "john"
+    //          |}
+    //          |]
+    //          |}
+    //          """.stripMargin
+    //
+    //      val paths = Seq("people[*].age").map(parseUnsafe)
+    //      assert(removeFieldsByPath(refParser(input), paths) == Right(refParser(expected)))
+    //    }
+
+    test("removeFieldsByPath is correct even with duplicate Fields") {
+      val input =
+        """
+          |{
+          |"name" : "bob",
+          |"age": 50,
+          |"brother":[
+          |  {
+          |    "name" : "john",
+          |    "age": 40
+          |  }
+          |],
+          |"friend":[
+          |  {
+          |    "name" : "john",
+          |    "age": 30
+          |  }
+          |]
+          |}
+          """.stripMargin
+
+      val expected =
+        """
+          |{
+          |"name" : "bob",
+          |"age": 50,
+          |"brother":[
+          |  {
+          |    "age": 40
+          |  }
+          |],
+          |"friend":[
+          |  {
+          |    "name" : "john",
+          |    "age": 30
+          |  }
+          |]
+          |}
+          """.stripMargin
+
+      val paths = Seq("brother[0].name").map(parseUnsafe)
+      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
+    }
+
+    test("parseGraphQLJson nominal case") {
+      val in = """
         {
           id: 1
           name: "door"
@@ -387,7 +364,7 @@ class CornichonJsonSpec extends WordSpec
         }
         """
 
-        val expected = """
+      val expected = """
         {
           "id": 1,
           "name": "door",
@@ -399,228 +376,208 @@ class CornichonJsonSpec extends WordSpec
         }
         """
 
-        val out = parseGraphQLJson(in)
-        out should be(Right(refParser(expected)))
-      }
+      val out = parseGraphQLJson(in)
+      assert(out == Right(refParser(expected)))
     }
 
-    "whitelistingValue" must {
-      "detect correct whitelisting on simple object" in {
-        val actual =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |}
+    test("whitelistingValue detects correct whitelisting on simple object") {
+      val actual =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |}
           """.stripMargin
-        val actualJson = parseDslJsonUnsafe(actual)
+      val actualJson = parseDslJsonUnsafe(actual)
 
-        val input =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Age": 50
-            |}
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50
+          |}
           """.stripMargin
-        val inputJson = parseDslJsonUnsafe(input)
+      val inputJson = parseDslJsonUnsafe(input)
 
-        whitelistingValue(inputJson, actualJson) should be(Right(actualJson))
-      }
-
-      "detect incorrect whitelisting on simple object" in {
-        val actual =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |}
-          """.stripMargin
-        val actualJson = parseDslJsonUnsafe(actual)
-
-        val input =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Ag": 50
-            |}
-          """.stripMargin
-        val inputJson = parseDslJsonUnsafe(input)
-
-        whitelistingValue(inputJson, actualJson) should be(Left(WhitelistingError(Seq("/Ag"), actualJson)))
-      }
-
-      "detect correct whitelisting on root array" in {
-
-        val actual =
-          """
-            |[
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |},
-            |{
-            |"2LettersName" : true,
-            | "Age": 11,
-            | "Name": "Bob"
-            |}
-            |]
-          """.stripMargin
-        val actualJson = parseDslJsonUnsafe(actual)
-
-        val input =
-          """
-            |[
-            |{
-            |"2LettersName" : false,
-            | "Name": "John"
-            |},
-            |{
-            |"2LettersName" : true,
-            | "Name": "Bob"
-            |}
-            |]
-          """.stripMargin
-        val inputJson = parseDslJsonUnsafe(input)
-
-        whitelistingValue(inputJson, actualJson) should be(Right(actualJson))
-      }
-
-      "detect incorrect whitelisting on root array" in {
-
-        val actual =
-          """
-            |[
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |},
-            |{
-            |"2LettersName" : true,
-            | "Age": 11,
-            | "Name": "Bob"
-            |}
-            |]
-          """.stripMargin
-        val actualJson = parseDslJsonUnsafe(actual)
-
-        val input =
-          """
-            |[
-            |{
-            |"2LettersName" : false,
-            | "Nam": "John"
-            |},
-            |{
-            |"2LettersName" : true,
-            | "Name": "Bob"
-            |}
-            |]
-          """.stripMargin
-        val inputJson = parseDslJsonUnsafe(input)
-
-        whitelistingValue(inputJson, actualJson) should be(Left(WhitelistingError(Seq("/0/Nam"), actualJson)))
-      }
+      assert(whitelistingValue(inputJson, actualJson) == Right(actualJson))
     }
 
-    "findAllContainingValue" must {
+    test("whitelistingValue detects incorrect whitelisting on simple object") {
+      val actual =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |}
+          """.stripMargin
+      val actualJson = parseDslJsonUnsafe(actual)
 
-      "handle empty values array" in {
-        val input = "target value"
-        findAllPathWithValue(Nil, parseDslJsonUnsafe(input)) should be(Nil)
-      }
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Ag": 50
+          |}
+          """.stripMargin
+      val inputJson = parseDslJsonUnsafe(input)
 
-      "find root value" in {
+      assert(whitelistingValue(inputJson, actualJson) == Left(WhitelistingError(Seq("/Ag"), actualJson)))
+    }
 
-        val input = "target value"
+    test("whitelistingValue detects correct whitelisting on root array") {
+      val actual =
+        """
+          |[
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |},
+          |{
+          |"2LettersName" : true,
+          | "Age": 11,
+          | "Name": "Bob"
+          |}
+          |]
+          """.stripMargin
+      val actualJson = parseDslJsonUnsafe(actual)
 
-        findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) should be(List(rootPath))
-      }
+      val input =
+        """
+          |[
+          |{
+          |"2LettersName" : false,
+          | "Name": "John"
+          |},
+          |{
+          |"2LettersName" : true,
+          | "Name": "Bob"
+          |}
+          |]
+          """.stripMargin
+      val inputJson = parseDslJsonUnsafe(input)
 
-      "not find root value" in {
+      assert(whitelistingValue(inputJson, actualJson) == Right(actualJson))
+    }
 
-        val input = "target values"
+    test("whitelistingValue detects incorrect whitelisting on root array") {
+      val actual =
+        """
+          |[
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |},
+          |{
+          |"2LettersName" : true,
+          | "Age": 11,
+          | "Name": "Bob"
+          |}
+          |]
+          """.stripMargin
+      val actualJson = parseDslJsonUnsafe(actual)
 
-        findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) should be(Nil)
-      }
+      val input =
+        """
+          |[
+          |{
+          |"2LettersName" : false,
+          | "Nam": "John"
+          |},
+          |{
+          |"2LettersName" : true,
+          | "Name": "Bob"
+          |}
+          |]
+          """.stripMargin
+      val inputJson = parseDslJsonUnsafe(input)
 
-      "find root key" in {
+      assert(whitelistingValue(inputJson, actualJson) == Left(WhitelistingError(Seq("/0/Nam"), actualJson)))
+    }
 
-        val input =
-          """
-            |{
-            |"2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John"
-            |}
+    test("findAllContainingValue handles empty values array") {
+      val input = "target value"
+      assert(findAllPathWithValue(Nil, parseDslJsonUnsafe(input)) == Nil)
+    }
+
+    test("findAllContainingValue find root value") {
+      val input = "target value"
+      assert(findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) == List(rootPath))
+    }
+
+    test("findAllContainingValue not find root value") {
+      val input = "target values"
+      assert(findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) == Nil)
+    }
+
+    test("findAllContainingValue find root key") {
+      val input =
+        """
+          |{
+          |"2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John"
+          |}
           """.stripMargin
 
-        findAllPathWithValue("John" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Name")))
+      assert(findAllPathWithValue("John" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Name")))
+    }
 
-      }
-
-      "find nested key" in {
-
-        val input =
-          """
-            |{
-            | "2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John",
-            | "Brother": {
-            |   "Name" : "Paul",
-            |   "Age": 50
-            | }
-            |}
+    test("findAllContainingValue finds nested key") {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "Brother": {
+          |   "Name" : "Paul",
+          |   "Age": 50
+          | }
+          |}
           """.stripMargin
 
-        findAllPathWithValue("Paul" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Brother.Name")))
+      assert(findAllPathWithValue("Paul" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Brother.Name")))
+    }
 
-      }
-
-      "find key in array" in {
-
-        val input =
-          """
-            |{
-            | "2LettersName": false,
-            | "Age": 50,
-            | "Name": "John",
-            | "Brothers": [
-            |   {
-            |     "Name" : "Paul",
-            |     "Age": 50
-            |   },
-            |   {
-            |     "Name": "Bob",
-            |     "Age" : 30
-            |   }
-            | ]
-            |}
+    test("findAllContainingValue finds key in array") {
+      val input =
+        """
+          |{
+          | "2LettersName": false,
+          | "Age": 50,
+          | "Name": "John",
+          | "Brothers": [
+          |   {
+          |     "Name" : "Paul",
+          |     "Age": 50
+          |   },
+          |   {
+          |     "Name": "Bob",
+          |     "Age" : 30
+          |   }
+          | ]
+          |}
           """.stripMargin
 
-        findAllPathWithValue("Bob" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Brothers[1].Name")))
+      assert(findAllPathWithValue("Bob" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Brothers[1].Name")))
+    }
 
-      }
-
-      "find key in array of strings" in {
-
-        val input =
-          """
-            |{
-            | "2LettersName" : false,
-            | "Age": 50,
-            | "Name": "John",
-            | "Hobbies": [ "Basketball", "Climbing", "Coding"]
-            |}
+    test("findAllContainingValue finds key in array of strings") {
+      val input =
+        """
+          |{
+          | "2LettersName" : false,
+          | "Age": 50,
+          | "Name": "John",
+          | "Hobbies": [ "Basketball", "Climbing", "Coding"]
+          |}
           """.stripMargin
 
-        findAllPathWithValue("Coding" :: Nil, parseDslJsonUnsafe(input)) should be(List(parseUnsafe("$.Hobbies[2]")))
-
-      }
+      assert(findAllPathWithValue("Coding" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Hobbies[2]")))
     }
   }
 }
