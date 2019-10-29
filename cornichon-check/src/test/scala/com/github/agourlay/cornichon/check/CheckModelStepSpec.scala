@@ -12,7 +12,7 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
     Property1(
       description = name,
       preCondition = if (preNeverValid) neverValidAssertStep else identityStep,
-      invariant = g ⇒ if (callGen) { g(); step } else step)
+      invariant = g => if (callGen) { g(); step } else step)
 
   val tests = Tests {
     test("detect empty transition for starting property") {
@@ -26,7 +26,7 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
           assert(f.msg == """Scenario 'scenario with checkStep' failed:
                             |
@@ -38,8 +38,8 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
                             |
                             |seed for the run was '1'
                             |""".stripMargin)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
 
@@ -56,7 +56,7 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
           assert(f.msg == """Scenario 'scenario with checkStep' failed:
                             |
@@ -68,8 +68,8 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
                             |
                             |seed for the run was '1'
                             |""".stripMargin)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
 
@@ -86,7 +86,7 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
           assert(f.msg == """Scenario 'scenario with checkStep' failed:
                             |
@@ -98,15 +98,15 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
                             |
                             |seed for the run was '1'
                             |""".stripMargin)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
 
     test("always terminates with maxNumberOfRuns") {
       val maxRun = 100
       var uglyCounter = 0
-      val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ { uglyCounter = uglyCounter + 1; sc.session })
+      val incrementEffect: Step = EffectStep.fromSync("identity", sc => { uglyCounter = uglyCounter + 1; sc.session })
 
       val starting = dummyProperty1("starting property", step = incrementEffect)
       val otherAction = dummyProperty1("other property")
@@ -118,19 +118,19 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: SuccessScenarioReport ⇒
+        case f: SuccessScenarioReport =>
           assert(f.isSuccess)
           assert(uglyCounter == maxRun)
 
-        case _ ⇒
-          assertMatch(res) { case _: SuccessScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: SuccessScenarioReport => }
       }
     }
 
     test("always terminates with maxNumberOfTransitions (even with cyclic model)") {
       val maxTransition = 100
       var uglyCounter = 0
-      val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ { uglyCounter = uglyCounter + 1; sc.session })
+      val incrementEffect: Step = EffectStep.fromSync("identity", sc => { uglyCounter = uglyCounter + 1; sc.session })
 
       val starting = dummyProperty1("starting property")
       val otherAction = dummyProperty1("other property", step = incrementEffect)
@@ -146,12 +146,12 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: SuccessScenarioReport ⇒
+        case f: SuccessScenarioReport =>
           assert(f.isSuccess)
           assert(uglyCounter == maxTransition)
 
-        case _ ⇒
-          assertMatch(res) { case _: SuccessScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: SuccessScenarioReport => }
       }
     }
 
@@ -168,7 +168,7 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
           assert(f.msg == """Scenario 'scenario with checkStep' failed:
                             |
@@ -180,8 +180,8 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
                             |
                             |seed for the run was '1'
                             |""".stripMargin)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
 
@@ -198,7 +198,7 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
           assert(f.msg ==
             """Scenario 'scenario with checkStep' failed:
@@ -211,8 +211,8 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
               |
               |seed for the run was '1'
               |""".stripMargin)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
 
@@ -230,11 +230,11 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: SuccessScenarioReport ⇒
+        case f: SuccessScenarioReport =>
           assert(f.isSuccess)
 
-        case _ ⇒
-          assertMatch(res) { case _: SuccessScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: SuccessScenarioReport => }
       }
     }
 
@@ -251,10 +251,10 @@ object CheckModelStepSpec extends TestSuite with ProvidedInstances with CheckSte
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
   }

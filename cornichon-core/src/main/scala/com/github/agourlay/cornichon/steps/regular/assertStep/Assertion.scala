@@ -7,7 +7,7 @@ import cats.syntax.apply._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 
-trait Assertion { self ⇒
+trait Assertion { self =>
   def validated: ValidatedNel[CornichonError, Done]
 
   def and(other: Assertion): Assertion = new Assertion {
@@ -33,8 +33,8 @@ object Assertion {
   def failWith(error: String) = new Assertion { val validated = BasicError(error).invalidNel }
   def failWith(error: CornichonError) = new Assertion { val validated = error.invalidNel }
 
-  def either(v: Either[CornichonError, Assertion]) = v.fold(e ⇒ failWith(e), identity)
+  def either(v: Either[CornichonError, Assertion]) = v.fold(e => failWith(e), identity)
 
-  def all(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.and(assertion))
-  def any(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) ⇒ acc.or(assertion))
+  def all(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) => acc.and(assertion))
+  def any(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) => acc.or(assertion))
 }

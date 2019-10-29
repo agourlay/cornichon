@@ -43,7 +43,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   private val pushCoin = Property0(
     description = "push a coin",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/push-coin")
       Then assert status.is(200)
       And assert body.is("payment accepted")
@@ -51,7 +51,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   private val pushCoinBlocked = Property0(
     description = "push a coin is a blocked",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/push-coin")
       Then assert status.is(400)
       And assert body.is("payment refused")
@@ -59,7 +59,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   private val walkThroughOk = Property0(
     description = "walk through ok",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/walk-through")
       Then assert status.is(200)
       And assert body.is("door turns")
@@ -67,7 +67,7 @@ class TurnstileCheck extends CornichonFeature with CheckDsl {
 
   private val walkThroughBlocked = Property0(
     description = "walk through blocked",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/walk-through")
       Then assert status.is(400)
       And assert body.is("door blocked")

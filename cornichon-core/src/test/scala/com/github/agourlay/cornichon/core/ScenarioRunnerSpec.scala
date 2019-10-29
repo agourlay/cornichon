@@ -13,15 +13,15 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
   "ScenarioRunner" when {
     "runScenario" must {
       "executes all steps of a scenario in case of success" in {
-        val beforeSteps = AssertStep("before assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
-        val steps = AssertStep("main assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
-        val finallySteps = AssertStep("finally assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val beforeSteps = AssertStep("before assertion", _ => GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val steps = AssertStep("main assertion", _ => GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val finallySteps = AssertStep("finally assertion", _ => GenericEqualityAssertion(2 + 1, 3)) :: Nil
         val fc = FeatureContext.empty.copy(
           beforeSteps = beforeSteps,
           finallySteps = finallySteps
         )
         val s = Scenario("casual stuff", steps)
-        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r =>
           r.isSuccess should be(true)
           matchLogsWithoutDuration(r.logs) {
             """
@@ -37,15 +37,15 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
       }
 
       "do not run `main steps` if there is a failure in `beforeSteps`" in {
-        val beforeSteps = AssertStep("before assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 4)) :: Nil
-        val steps = AssertStep("main assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
-        val finallySteps = AssertStep("finally assertion", _ ⇒ GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val beforeSteps = AssertStep("before assertion", _ => GenericEqualityAssertion(2 + 1, 4)) :: Nil
+        val steps = AssertStep("main assertion", _ => GenericEqualityAssertion(2 + 1, 3)) :: Nil
+        val finallySteps = AssertStep("finally assertion", _ => GenericEqualityAssertion(2 + 1, 3)) :: Nil
         val fc = FeatureContext.empty.copy(
           beforeSteps = beforeSteps,
           finallySteps = finallySteps
         )
         val s = Scenario("casual stuff", steps)
-        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { res ⇒
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { res =>
           scenarioFailsWithMessage(res) {
             """Scenario 'casual stuff' failed:
               |
@@ -79,12 +79,12 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
       }
 
       "stops at first failed step" in {
-        val step1 = AssertStep("first step", _ ⇒ GenericEqualityAssertion(2, 2))
-        val step2 = AssertStep("second step", _ ⇒ GenericEqualityAssertion(4, 5))
-        val step3 = AssertStep("third step", _ ⇒ GenericEqualityAssertion(1, 1))
+        val step1 = AssertStep("first step", _ => GenericEqualityAssertion(2, 2))
+        val step2 = AssertStep("second step", _ => GenericEqualityAssertion(4, 5))
+        val step3 = AssertStep("third step", _ => GenericEqualityAssertion(1, 1))
         val steps = step1 :: step2 :: step3 :: Nil
         val s = Scenario("early stop", steps)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
           scenarioFailsWithMessage(res) {
             """Scenario 'early stop' failed:
               |
@@ -117,11 +117,11 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
       }
 
       "accumulates errors if 'main' and 'finally' fail" in {
-        val mainStep = AssertStep("main assertion", _ ⇒ GenericEqualityAssertion(true, false))
-        val finalAssertion = AssertStep("finally assertion", _ ⇒ GenericEqualityAssertion(true, false))
+        val mainStep = AssertStep("main assertion", _ => GenericEqualityAssertion(true, false))
+        val finalAssertion = AssertStep("finally assertion", _ => GenericEqualityAssertion(true, false))
         val s = Scenario("accumulate", mainStep :: Nil)
         val fc = FeatureContext.empty.copy(finallySteps = finalAssertion :: Nil, withSeed = Some(1))
-        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r =>
           scenarioFailsWithMessage(r) {
             """Scenario 'accumulate' failed:
               |
@@ -175,14 +175,14 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
         val effectNumber = 5
         val effect = EffectStep.fromSync(
           "increment captured counter",
-          sc ⇒ {
+          sc => {
             uglyCounter.incrementAndGet()
             sc.session
           }
         )
 
         val s = Scenario("scenario with effects", List.fill(effectNumber)(effect))
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+        ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
           res.isSuccess should be(true)
           uglyCounter.get() should be(effectNumber)
           res.logs.size should be(effectNumber + 2)
@@ -194,7 +194,7 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
         val effectNumber = 5
         val effect = EffectStep.fromSync(
           "increment captured counter",
-          sc ⇒ {
+          sc => {
             uglyCounter.incrementAndGet()
             sc.session
           }
@@ -202,7 +202,7 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
 
         val context = FeatureContext.empty.copy(finallySteps = List.fill(effectNumber)(effect))
         val s = Scenario("scenario with effects", context.finallySteps)
-        ScenarioRunner.runScenario(Session.newEmpty, context)(s).map { res ⇒
+        ScenarioRunner.runScenario(Session.newEmpty, context)(s).map { res =>
           res.isSuccess should be(true)
           uglyCounter.get() should be(effectNumber * 2)
           res.logs.size should be(effectNumber * 2 + 3)
@@ -213,23 +213,23 @@ class ScenarioRunnerSpec extends AsyncWordSpec with Matchers with TaskSpec with 
         val fixedTestSeed = 12345L
         val fc = FeatureContext.empty.copy(withSeed = Some(fixedTestSeed))
 
-        val assertSeed = AssertStep("assert seed", sc ⇒ {
+        val assertSeed = AssertStep("assert seed", sc => {
           GenericEqualityAssertion(sc.randomContext.initialSeed, fixedTestSeed)
         })
 
-        val rdStep = EffectStep.fromSyncE("pick random int", sc ⇒ {
+        val rdStep = EffectStep.fromSyncE("pick random int", sc => {
           val rdInt = sc.randomContext.seededRandom.nextInt()
           sc.session.addValue("random-int", rdInt.toString)
         })
 
-        val rdAssert = AssertStep("assert rd", sc ⇒ {
+        val rdAssert = AssertStep("assert rd", sc => {
           val rdValue = sc.session.getUnsafe("random-int")
           GenericEqualityAssertion(rdValue, "1553932502") // value generated with the fixedTestSeed
         })
 
         val steps = assertSeed :: rdStep :: rdAssert :: Nil
         val s = Scenario("deterministic test", steps)
-        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r ⇒
+        ScenarioRunner.runScenario(Session.newEmpty, fc)(s).map { r =>
           r.isSuccess should be(true)
           r.logs.size should be(5)
         }

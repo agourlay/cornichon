@@ -5,23 +5,23 @@ import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ CornichonError, ScenarioContext }
 
 //experimental and unused ;)
-abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { outer ⇒
+abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { outer =>
 
   protected val baseTitle: String
   protected def sessionExtractor(sc: ScenarioContext): Either[CornichonError, Iterable[A]]
 
   def size: GenericAssertStepBuilder[Int] = new GenericAssertStepBuilder[Int] {
     protected val baseTitle: String = s"$baseTitle's size"
-    protected def sessionExtractor(sc: ScenarioContext): Either[CornichonError, (Int, Option[() ⇒ String])] =
-      outer.sessionExtractor(sc).map(c ⇒ (c.seq.size, None))
+    protected def sessionExtractor(sc: ScenarioContext): Either[CornichonError, (Int, Option[() => String])] =
+      outer.sessionExtractor(sc).map(c => (c.seq.size, None))
   }
 
   def isNotEmpty: AssertStep = {
     val fullTitle = s"$baseTitle is not empty"
     AssertStep(
       title = fullTitle,
-      action = s ⇒ Assertion.either {
-        sessionExtractor(s).map { asserted ⇒
+      action = s => Assertion.either {
+        sessionExtractor(s).map { asserted =>
           CollectionNotEmptyAssertion(asserted, baseTitle)
         }
       }
@@ -32,8 +32,8 @@ abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { ou
     val fullTitle = s"$baseTitle is empty"
     AssertStep(
       title = fullTitle,
-      action = s ⇒ Assertion.either {
-        sessionExtractor(s).map { asserted ⇒
+      action = s => Assertion.either {
+        sessionExtractor(s).map { asserted =>
           CollectionEmptyAssertion(asserted, baseTitle)
         }
       }

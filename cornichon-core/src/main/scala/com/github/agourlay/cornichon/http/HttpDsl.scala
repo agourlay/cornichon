@@ -14,7 +14,7 @@ import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.json.{ JsonDsl, JsonPath }
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
-import com.github.agourlay.cornichon.steps.cats.{ EffectStep ⇒ CEffectStep }
+import com.github.agourlay.cornichon.steps.cats.{ EffectStep => CEffectStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
@@ -32,7 +32,7 @@ import monix.execution.Scheduler
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
-  this: BaseFeature with JsonDsl with CoreDsl ⇒
+  this: BaseFeature with JsonDsl with CoreDsl =>
 
   lazy val requestTimeout: FiniteDuration = config.requestTimeout
   lazy val baseUrl: String = config.globalBaseUrl
@@ -58,11 +58,11 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
     val prettyPayload = queryGQL.querySource
 
-    val prettyVar = queryGQL.variables.fold("") { variables ⇒
+    val prettyVar = queryGQL.variables.fold("") { variables =>
       " and with variables " + variables.show
     }
 
-    val prettyOp = queryGQL.operationName.fold("")(o ⇒ s" and with operationName $o")
+    val prettyOp = queryGQL.operationName.fold("")(o => s" and with operationName $o")
 
     CEffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
@@ -98,12 +98,12 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def save_body_path(args: (String, String)*): Step =
     save_from_session {
       args.map {
-        case (path, target) ⇒
-          FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (sc, s) ⇒ {
+        case (path, target) =>
+          FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (sc, s) => {
             for {
-              resolvedPath ← sc.fillPlaceholders(path)
-              jsonPath ← JsonPath.parse(resolvedPath)
-              json ← jsonPath.runStrict(s)
+              resolvedPath <- sc.fillPlaceholders(path)
+              jsonPath <- JsonPath.parse(resolvedPath)
+              json <- jsonPath.runStrict(s)
             } yield jsonStringValue(json)
           })
       }
@@ -112,24 +112,24 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def save_header_value(args: (String, String)*): Step =
     save_from_session {
       args.map {
-        case (headerFieldName, target) ⇒
-          FromSessionSetter(lastResponseHeadersKey, target, s"save '$headerFieldName' header value to key '$target'", (_, s) ⇒ {
-            decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h ⇒ h._2).getOrElse(""))
+        case (headerFieldName, target) =>
+          FromSessionSetter(lastResponseHeadersKey, target, s"save '$headerFieldName' header value to key '$target'", (_, s) => {
+            decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h => h._2).getOrElse(""))
           })
       }
     }
 
-  private def showLastResponse[A: Show](title: String)(parse: String ⇒ Either[CornichonError, A]) =
+  private def showLastResponse[A: Show](title: String)(parse: String => Either[CornichonError, A]) =
     DebugStep(
       title = title,
-      message = sc ⇒ {
+      message = sc => {
         val s = sc.session
         for {
-          headers ← s.get(lastResponseHeadersKey)
-          decodedHeaders ← decodeSessionHeaders(headers)
-          status ← s.get(lastResponseStatusKey)
-          body ← s.get(lastResponseBodyKey)
-          bodyParsed ← parse(body)
+          headers <- s.get(lastResponseHeadersKey)
+          decodedHeaders <- decodeSessionHeaders(headers)
+          status <- s.get(lastResponseStatusKey)
+          body <- s.get(lastResponseBodyKey)
+          bodyParsed <- parse(body)
         } yield {
           s"""Show last response
              |headers: ${printArrowPairs(decodedHeaders)}
@@ -154,7 +154,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     WithHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString(s"$userName:$password".getBytes(StandardCharsets.UTF_8))))
 
   def WithHeaders(headers: (String, String)*): BodyElementCollector[Step, Seq[Step]] =
-    BodyElementCollector[Step, Seq[Step]] { steps ⇒
+    BodyElementCollector[Step, Seq[Step]] { steps =>
       // the surrounding steps are hidden from the logs
       val saveStep = save((withHeadersKey, encodeSessionHeaders(headers)), show = false)
       val rollbackStep = rollback(withHeadersKey, show = false)
@@ -166,17 +166,17 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 trait HttpDslOps {
 
   def addToWithHeaders(name: String, value: String)(s: Session): Either[CornichonError, Session] = {
-    val currentHeader = s.getOpt(withHeadersKey).fold("")(v ⇒ s"$v$interHeadersValueDelim")
+    val currentHeader = s.getOpt(withHeadersKey).fold("")(v => s"$v$interHeadersValueDelim")
     s.addValue(withHeadersKey, s"$currentHeader${encodeSessionHeader(name, value)}")
   }
 
   def removeFromWithHeaders(name: String)(s: Session): Either[CornichonError, Session] =
     s.getOpt(withHeadersKey)
-      .fold(s.asRight[CornichonError]) { currentHeadersString ⇒
+      .fold(s.asRight[CornichonError]) { currentHeadersString =>
         if (currentHeadersString.trim.isEmpty)
           s.asRight
         else
-          decodeSessionHeaders(currentHeadersString).flatMap { ch ⇒
+          decodeSessionHeaders(currentHeadersString).flatMap { ch =>
             val (dump, keep) = ch.partition(_._1 == name)
             if (dump.isEmpty)
               s.asRight
@@ -195,7 +195,7 @@ object HttpDsl {
   lazy val globalHttpClient: HttpClient = {
     val config = BaseFeature.config
     val c = new Http4sClient(config.addAcceptGzipByDefault, config.disableCertificateVerification)(Scheduler.Implicits.global)
-    BaseFeature.addShutdownHook(() ⇒ c.shutdown().runToFuture(Scheduler.Implicits.global))
+    BaseFeature.addShutdownHook(() => c.shutdown().runToFuture(Scheduler.Implicits.global))
     c
   }
 }

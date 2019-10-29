@@ -282,7 +282,6 @@ lazy val formattingSettings = Seq(
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
     .setPreference(DoubleIndentConstructorArguments, true)
-    .setPreference(RewriteArrowSymbols, true)
     .setPreference(DanglingCloseParenthesis, Preserve)
 )
 

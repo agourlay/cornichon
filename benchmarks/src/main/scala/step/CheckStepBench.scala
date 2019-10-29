@@ -66,12 +66,12 @@ class CheckStepBench {
 object CheckStepBench {
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    gen = () ⇒ rc.seededRandom.nextInt(10000))
+    gen = () => rc.seededRandom.nextInt(10000))
 
   def dummyProperty1(name: String): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property1(
       description = name,
-      invariant = g ⇒ EffectStep.fromSyncE("add generated", _.session.addValue("generated", g().toString)))
+      invariant = g => EffectStep.fromSyncE("add generated", _.session.addValue("generated", g().toString)))
 
   val starting = dummyProperty1("starting action")
   val otherAction = dummyProperty1("other action")

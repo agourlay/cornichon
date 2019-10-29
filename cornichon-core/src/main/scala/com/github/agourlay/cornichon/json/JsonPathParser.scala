@@ -13,8 +13,8 @@ class JsonPathParser(val input: ParserInput) extends Parser {
   }
 
   def SegmentRule = rule {
-    Field ~ optIndex ~> ((f, i) ⇒ operation(f, i)) |
-      '`' ~ FieldWithDot ~ optIndex ~ '`' ~> ((f, i) ⇒ operation(f, i))
+    Field ~ optIndex ~> ((f, i) => operation(f, i)) |
+      '`' ~ FieldWithDot ~ optIndex ~ '`' ~> ((f, i) => operation(f, i))
   }
 
   def optIndex = rule(optional('[' ~ (Number | capture('*')) ~ ']'))
@@ -30,12 +30,12 @@ class JsonPathParser(val input: ParserInput) extends Parser {
   // The value in the Option is constrainted in the parser itself (any Number or '*')
   private def operation(field: String, index: Option[Any]): JsonPathOperation =
     (field, index) match {
-      case (JsonPath.root, None)         ⇒ RootSelection
-      case (JsonPath.root, Some(i: Int)) ⇒ RootArrayElementSelection(i)
-      case (f, None)                     ⇒ FieldSelection(f)
-      case (f, Some(i: Int))             ⇒ ArrayFieldSelection(f, i)
-      case (JsonPath.root, someStar @ _) ⇒ RootArrayFieldProjection
-      case (f, someStar @ _)             ⇒ ArrayFieldProjection(f)
+      case (JsonPath.root, None)         => RootSelection
+      case (JsonPath.root, Some(i: Int)) => RootArrayElementSelection(i)
+      case (f, None)                     => FieldSelection(f)
+      case (f, Some(i: Int))             => ArrayFieldSelection(f, i)
+      case (JsonPath.root, someStar @ _) => RootArrayFieldProjection
+      case (f, someStar @ _)             => ArrayFieldProjection(f)
     }
 
 }
@@ -50,11 +50,11 @@ object JsonPathParser {
   def parseJsonPath(input: String): Either[CornichonError, List[JsonPathOperation]] = {
     val p = new JsonPathParser(input)
     p.placeholdersRule.run() match {
-      case Failure(e: ParseError) ⇒
+      case Failure(e: ParseError) =>
         Left(JsonPathParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
-      case Failure(e: Throwable) ⇒
+      case Failure(e: Throwable) =>
         Left(JsonPathError(input, e))
-      case Success(dt) ⇒
+      case Success(dt) =>
         Right(dt.toList)
     }
   }

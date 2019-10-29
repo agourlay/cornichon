@@ -19,7 +19,7 @@ trait CornichonError {
     else
       s"""$baseErrorMessage
       |caused by:
-      |${causedBy.map(c ⇒ c.renderedMessage).mkString("\nand\n")}""".stripMargin
+      |${causedBy.map(c => c.renderedMessage).mkString("\nand\n")}""".stripMargin
   }
 
   def toException = CornichonException(renderedMessage)
@@ -39,11 +39,11 @@ object CornichonError {
   def fromThrowable(exception: Throwable): CornichonError =
     StepExecutionError(exception)
 
-  def catchThrowable[A](f: ⇒ A): Either[CornichonError, A] =
+  def catchThrowable[A](f: => A): Either[CornichonError, A] =
     Either.catchNonFatal(f).leftMap(fromThrowable)
 
   implicit class fromEither[A](e: Either[CornichonError, A]) {
-    def valueUnsafe: A = e.fold(e ⇒ throw e.toException, identity)
+    def valueUnsafe: A = e.fold(e => throw e.toException, identity)
     def futureEitherT(implicit ec: ExecutionContext): EitherT[Future, CornichonError, A] = EitherT.fromEither[Future](e)
   }
 }

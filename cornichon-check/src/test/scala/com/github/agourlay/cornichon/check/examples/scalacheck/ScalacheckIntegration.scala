@@ -25,7 +25,7 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
 
   def coinGen(rc: RandomContext): Generator[Coin] = OptionalValueGenerator(
     name = "a Coin",
-    gen = () ⇒ {
+    gen = () => {
       val nextSeed = rc.seededRandom.nextLong()
       val params = Gen.Parameters.default.withInitialSeed(nextSeed)
       val coin = Gen.oneOf[Coin](Head, Tail)
@@ -35,7 +35,7 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
 
   def assert_head_or_tail(coin: Coin) = AssertStep(
     title = "Head or Tail",
-    action = _ ⇒ {
+    action = _ => {
       val coinStr = coin.toString
       val isHead = GenericEqualityAssertion("Head", coinStr)
       val isTail = GenericEqualityAssertion("Tail", coinStr)
@@ -47,12 +47,12 @@ class ScalacheckIntegration extends CornichonFeature with CheckDsl {
 
     val entryPoint = Property1[Coin](
       description = "Entry point",
-      invariant = _ ⇒ NoOpStep
+      invariant = _ => NoOpStep
     )
 
     val flipCoin = Property1[Coin](
       description = "Flip coin",
-      invariant = coinGen ⇒ assert_head_or_tail(coinGen())
+      invariant = coinGen => assert_head_or_tail(coinGen())
     )
 
     Model(

@@ -41,22 +41,22 @@ trait CornichonJson {
       if (firstChar == '{' || firstChar == '[')
         parseString(s) // parse object or array
       else if (firstChar == '|')
-        parseDataTable(s).map(list ⇒ Json.fromValues(list.map(Json.fromJsonObject))) // table is turned into a JArray
+        parseDataTable(s).map(list => Json.fromValues(list.map(Json.fromJsonObject))) // table is turned into a JArray
       else
         Json.fromString(s).asRight // treated as a JString
     }
   }
 
   def parseDslJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
-    case s: String ⇒ parseDslStringJson(s)
-    case _         ⇒ Either.catchNonFatal(input.asJson).leftMap(f ⇒ MalformedJsonError(input.show, f.getMessage))
+    case s: String => parseDslStringJson(s)
+    case _         => Either.catchNonFatal(input.asJson).leftMap(f => MalformedJsonError(input.show, f.getMessage))
   }
 
   def parseDslJsonUnsafe[A: Encoder: Show](input: A): Json =
     parseDslJson(input).valueUnsafe
 
   def parseString(s: String): Either[MalformedJsonError[String], Json] =
-    io.circe.parser.parse(s).leftMap(f ⇒ MalformedJsonError(s, f.message))
+    io.circe.parser.parse(s).leftMap(f => MalformedJsonError(s, f.message))
 
   def isJsonString(s: String): Boolean = {
     val trimmed = s.trim
@@ -80,8 +80,8 @@ trait CornichonJson {
 
   def parseGraphQLJson(input: String): Either[MalformedGraphQLJsonError[String], Json] =
     QueryParser.parseInput(input) match {
-      case Success(value) ⇒ value.convertMarshaled[Json].asRight
-      case Failure(e)     ⇒ MalformedGraphQLJsonError(input, e).asLeft
+      case Success(value) => value.convertMarshaled[Json].asRight
+      case Failure(e)     => MalformedGraphQLJsonError(input, e).asLeft
     }
 
   def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
@@ -94,7 +94,7 @@ trait CornichonJson {
     path.runStrict(json).flatMap(jsonArrayValues)
 
   def removeFieldsByPath(input: Json, paths: Seq[JsonPath]): Json =
-    paths.foldLeft(input) { (json, path) ⇒ path.removeFromJson(json) }
+    paths.foldLeft(input) { (json, path) => path.removeFromJson(json) }
 
   def jsonStringValue(j: Json): String =
     // Use Json.Folder for performance https://github.com/circe/circe/pull/656
@@ -121,13 +121,13 @@ trait CornichonJson {
     diff(first, second)
 
   def decodeAs[A: Decoder](json: Json): Either[CornichonError, A] =
-    json.as[A].leftMap(df ⇒ JsonDecodingFailure(json, df.message))
+    json.as[A].leftMap(df => JsonDecodingFailure(json, df.message))
 
   def whitelistingValue(first: Json, second: Json): Either[CornichonError, Json] = {
     val diffOps = diffPatch(first, second).ops
-    val forbiddenPatchOps = diffOps.collect { case r: Remove[Json] ⇒ r }
+    val forbiddenPatchOps = diffOps.collect { case r: Remove[Json] => r }
     if (forbiddenPatchOps.isEmpty) {
-      val addOps = diffOps.collect { case r: Add[Json] ⇒ r }
+      val addOps = diffOps.collect { case r: Add[Json] => r }
       JsonPatch(addOps).apply[Try](first).toEither.leftMap(CornichonError.fromThrowable)
     } else
       WhitelistingError(forbiddenPatchOps.map(_.path.show), second).asLeft
@@ -153,16 +153,16 @@ trait CornichonJson {
           def onString(value: String): List[(String, Json)] =
             leafValue()
           def onArray(elems: Vector[Json]): List[(String, Json)] =
-            elems.zipWithIndex.flatMap { case (e, index) ⇒ keyValuesHelper(s"$currentPath[$index]", e, level) }(breakOut)
+            elems.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }(breakOut)
           def onObject(elems: JsonObject): List[(String, Json)] =
-            elems.toIterable.flatMap { case (k, v) ⇒ keyValuesHelper(s"$currentPath.$k", v, level) }(breakOut)
+            elems.toIterable.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }(breakOut)
         }
       )
     }
 
     // Do not traverse the JSON if there are no values to find
     if (values.nonEmpty)
-      keyValues(JsonPath.root, json, level = 0).collect { case (k, v) if values.exists(v.asString.contains) ⇒ JsonPath.parse(k).valueUnsafe }
+      keyValues(JsonPath.root, json, level = 0).collect { case (k, v) if values.exists(v.asString.contains) => JsonPath.parse(k).valueUnsafe }
     else
       Nil
   }
@@ -173,22 +173,22 @@ object CornichonJson extends CornichonJson {
   implicit class sessionJson(val s: Session) {
     def getJson(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
       for {
-        sessionValue ← s.get(key, stackingIndex)
-        jsonValue ← parseDslJson(sessionValue)
-        extracted ← JsonPath.runStrict(path, jsonValue)
+        sessionValue <- s.get(key, stackingIndex)
+        jsonValue <- parseDslJson(sessionValue)
+        extracted <- JsonPath.runStrict(path, jsonValue)
       } yield extracted
 
     def getJsonStringField(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, String] =
       for {
-        json ← getJson(key, stackingIndex, path)
-        field ← Either.fromOption(json.asString, NotStringFieldError(json, path))
+        json <- getJson(key, stackingIndex, path)
+        field <- Either.fromOption(json.asString, NotStringFieldError(json, path))
       } yield field
 
     def getJsonStringFieldUnsafe(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): String =
       getJsonStringField(key, stackingIndex, path).valueUnsafe
 
     def getJsonOpt(key: String, stackingIndex: Option[Int] = None): Option[Json] =
-      s.getOpt(key, stackingIndex).flatMap(s ⇒ parseDslJson(s).toOption)
+      s.getOpt(key, stackingIndex).flatMap(s => parseDslJson(s).toOption)
   }
 
   implicit class GqlHelper(val sc: StringContext) extends AnyVal {

@@ -16,16 +16,16 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
   val openingTitle: String = s"Starting HTTP mock server '$label'"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
-  def use[A](outsideRunState: RunState)(f: RunState ⇒ Task[A]): Task[(Session, A)] = {
+  def use[A](outsideRunState: RunState)(f: RunState => Task[A]): Task[(Session, A)] = {
     val mockRequestHandler = new MockServerRequestHandler()
 
-    val initSession: String ⇒ Session = id ⇒ Session.newEmpty.addValueUnsafe(s"$label-url", id)
-    val resourceContext: RunState ⇒ Session ⇒ RunState = r1 ⇒ s1 ⇒ r1.mergeSessions(s1)
+    val initSession: String => Session = id => Session.newEmpty.addValueUnsafe(s"$label-url", id)
+    val resourceContext: RunState => Session => RunState = r1 => s1 => r1.mergeSessions(s1)
     val runWithServer = initSession.andThen(resourceContext(outsideRunState)).andThen(f)
 
     val mockServer = new MockHttpServer(interface, portRange, mockRequestHandler.mockService)(runWithServer)
 
-    mockServer.useServer().map { res ⇒
+    mockServer.useServer().map { res =>
       val resourceResults = requestsResults(mockRequestHandler)
       (resourceResults, res)
     }

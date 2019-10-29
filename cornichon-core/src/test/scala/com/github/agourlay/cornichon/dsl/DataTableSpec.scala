@@ -6,7 +6,7 @@ import utest._
 
 object DataTableSpec extends TestSuite {
 
-  def referenceParser(input: String): Json = io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
+  def referenceParser(input: String): Json = io.circe.parser.parse(input).fold(e => throw e, identity)
 
   val tests = Tests {
     test("parser reports malformed JSON") {
@@ -90,8 +90,8 @@ object DataTableSpec extends TestSuite {
       """
 
       parseDataTable(input) match {
-        case Right(_) ⇒ assert(false)
-        case Left(e)  ⇒ assert(e.renderedMessage.contains("requirement failed: Datatable is malformed, all rows must have the same number of elements"))
+        case Right(_) => assert(false)
+        case Left(e)  => assert(e.renderedMessage.contains("requirement failed: Datatable is malformed, all rows must have the same number of elements"))
       }
     }
 
@@ -116,7 +116,7 @@ object DataTableSpec extends TestSuite {
         }]
         """
 
-      val objects = parseDataTable(input).map(l ⇒ l.map(Json.fromJsonObject)).map(Json.fromValues)
+      val objects = parseDataTable(input).map(l => l.map(Json.fromJsonObject)).map(Json.fromValues)
       assert(objects == Right(referenceParser(expected)))
     }
   }

@@ -58,52 +58,52 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
       .withRequestTimeout(defaultHighTimeout)
       .allocated
       .map {
-        case (client, shutdown) ⇒
+        case (client, shutdown) =>
           val c = if (addAcceptGzipByDefault) GZip()(client) else client
           c -> shutdown
       }
       .runSyncUnsafe(10.seconds)
 
   private def toHttp4sMethod(method: HttpMethod): Method = method match {
-    case DELETE  ⇒ org.http4s.Method.DELETE
-    case GET     ⇒ org.http4s.Method.GET
-    case HEAD    ⇒ org.http4s.Method.HEAD
-    case OPTIONS ⇒ org.http4s.Method.OPTIONS
-    case PATCH   ⇒ org.http4s.Method.PATCH
-    case POST    ⇒ org.http4s.Method.POST
-    case PUT     ⇒ org.http4s.Method.PUT
-    case other   ⇒ throw CornichonException(s"unsupported HTTP method ${other.name}")
+    case DELETE  => org.http4s.Method.DELETE
+    case GET     => org.http4s.Method.GET
+    case HEAD    => org.http4s.Method.HEAD
+    case OPTIONS => org.http4s.Method.OPTIONS
+    case PATCH   => org.http4s.Method.PATCH
+    case POST    => org.http4s.Method.POST
+    case PUT     => org.http4s.Method.PUT
+    case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
   private def toHttp4sHeaders(headers: Seq[(String, String)]): Headers = {
-    val h: List[Header] = headers.map { case (n, v) ⇒ Header(n, v).parsed }(breakOut)
+    val h: List[Header] = headers.map { case (n, v) => Header(n, v).parsed }(breakOut)
     Headers(h)
   }
 
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
-    headers.toList.map(h ⇒ (h.name.value, h.value))(breakOut)
+    headers.toList.map(h => (h.name.value, h.value))(breakOut)
 
   private def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
       uri
     else
-      moreParams.foldLeft(uri) { case (uri, (k, v)) ⇒ uri.withQueryParam(k, v) }
+      moreParams.foldLeft(uri) { case (uri, (k, v)) => uri.withQueryParam(k, v) }
 
   override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, CornichonHttpResponse] =
     parseUri(cReq.url).fold(
-      e ⇒ EitherT.left[CornichonHttpResponse](Task.now(e)),
-      uri ⇒ EitherT {
+      e => EitherT.left[CornichonHttpResponse](Task.now(e)),
+      uri => EitherT {
         val req = Request[Task](toHttp4sMethod(cReq.method))
           .withHeaders(toHttp4sHeaders(cReq.headers))
           .withUri(addQueryParams(uri, cReq.params))
 
-        val completeRequest = cReq.body.fold(req)(b ⇒ req.withEntity(b))
-        val cornichonResponse = httpClient.fetch(completeRequest) { http4sResp ⇒
+        val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
+        val cornichonResponse = httpClient.fetch(completeRequest) { http4sResp =>
           http4sResp
             .bodyAsText
             .compile
             .fold("")(_ ++ _)
-            .map { decodedBody ⇒
+            .map { decodedBody =>
               CornichonHttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
@@ -116,7 +116,7 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
 
         Task.race(cornichonResponse, timeout)
           .map(_.fold(identity, identity))
-          .onErrorRecover { case t: Throwable ⇒ RequestError(cReq, t).asLeft }
+          .onErrorRecover { case t: Throwable => RequestError(cReq, t).asLeft }
       }
     )
 
@@ -124,20 +124,20 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
 
   private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[Task, CornichonError, CornichonHttpResponse] = {
     parseUri(streamReq.url).fold(
-      e ⇒ EitherT.left[CornichonHttpResponse](Task.now(e)),
-      uri ⇒ EitherT {
+      e => EitherT.left[CornichonHttpResponse](Task.now(e)),
+      uri => EitherT {
         val req = Request[Task](org.http4s.Method.GET)
           .withHeaders(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers))
           .withUri(addQueryParams(uri, streamReq.params))
 
-        val cornichonResponse = httpClient.fetch(req) { http4sResp ⇒
+        val cornichonResponse = httpClient.fetch(req) { http4sResp =>
           http4sResp
             .body
             .through(ServerSentEvent.decoder)
             .interruptAfter(streamReq.takeWithin)
             .compile
             .toList
-            .map { events ⇒
+            .map { events =>
               CornichonHttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
@@ -150,19 +150,19 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
 
         Task.race(cornichonResponse, timeout)
           .map(_.fold(identity, identity))
-          .onErrorRecover { case t: Throwable ⇒ RequestError(streamReq, t).asLeft }
+          .onErrorRecover { case t: Throwable => RequestError(streamReq, t).asLeft }
       }
     )
   }
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration): Task[Either[CornichonError, CornichonHttpResponse]] =
     req.stream match {
-      case SSE ⇒ runSSE(req, t).value
-      case _   ⇒ ??? // TODO implement WS support
+      case SSE => runSSE(req, t).value
+      case _   => ??? // TODO implement WS support
     }
 
   def shutdown(): Task[Done] =
-    safeShutdown.map { _ ⇒ uriCache.invalidateAll(); Done }
+    safeShutdown.map { _ => uriCache.invalidateAll(); Done }
 
   def paramsFromUrl(url: String): Either[CornichonError, List[(String, String)]] =
     if (url.contains('?'))
@@ -171,5 +171,5 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
       rightNil
 
   private def parseUri(uri: String): Either[CornichonError, Uri] =
-    uriCache.get(uri, u ⇒ Uri.fromString(u).leftMap(e ⇒ MalformedUriError(u, e.message)))
+    uriCache.get(uri, u => Uri.fromString(u).leftMap(e => MalformedUriError(u, e.message)))
 }

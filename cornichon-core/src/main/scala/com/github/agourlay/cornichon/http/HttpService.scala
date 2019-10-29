@@ -43,16 +43,16 @@ class HttpService(
     headers: Seq[(String, String)],
     ignoreFromWithHeaders: HeaderSelection)(scenarioContext: ScenarioContext): Either[CornichonError, (String, Option[Json], Seq[(String, String)], List[(String, String)])] =
     for {
-      bodyResolved ← body.map(scenarioContext.fillPlaceholders(_).map(Some.apply)).getOrElse(rightNone)
-      jsonBodyResolved ← bodyResolved.map(parseDslJson(_).map(Some.apply)).getOrElse(rightNone)
-      urlResolved ← scenarioContext.fillPlaceholders(url)
-      completeUrlResolved ← scenarioContext.fillPlaceholders(withBaseUrl(urlResolved))
-      urlParams ← client.paramsFromUrl(completeUrlResolved)
-      explicitParams ← scenarioContext.fillPlaceholders(params)
+      bodyResolved <- body.map(scenarioContext.fillPlaceholders(_).map(Some.apply)).getOrElse(rightNone)
+      jsonBodyResolved <- bodyResolved.map(parseDslJson(_).map(Some.apply)).getOrElse(rightNone)
+      urlResolved <- scenarioContext.fillPlaceholders(url)
+      completeUrlResolved <- scenarioContext.fillPlaceholders(withBaseUrl(urlResolved))
+      urlParams <- client.paramsFromUrl(completeUrlResolved)
+      explicitParams <- scenarioContext.fillPlaceholders(params)
       allParams = urlParams ++ explicitParams
-      extractedWithHeaders ← extractWithHeadersSession(scenarioContext.session)
+      extractedWithHeaders <- extractWithHeadersSession(scenarioContext.session)
       allHeaders = headers ++ ignoreHeadersSelection(extractedWithHeaders, ignoreFromWithHeaders)
-      headersResolved ← scenarioContext.fillPlaceholders(allHeaders)
+      headersResolved <- scenarioContext.fillPlaceholders(allHeaders)
     } yield (completeUrlResolved, jsonBodyResolved, allParams, headersResolved)
 
   private def runRequest[A: Show: Resolvable: Encoder](
@@ -61,19 +61,19 @@ class HttpService(
     extractor: ResponseExtractor,
     ignoreFromWithHeaders: HeaderSelection)(scenarioContext: ScenarioContext): EitherT[Task, CornichonError, Session] =
     for {
-      (url, jsonBody, params, headers) ← EitherT.fromEither[Task](resolveRequestParts(r.url, r.body, r.params, r.headers, ignoreFromWithHeaders)(scenarioContext))
+      (url, jsonBody, params, headers) <- EitherT.fromEither[Task](resolveRequestParts(r.url, r.body, r.params, r.headers, ignoreFromWithHeaders)(scenarioContext))
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
       configuredRequest = configureRequest(resolvedRequest, config)
-      resp ← client.runRequest(configuredRequest, requestTimeout)
-      newSession ← EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(scenarioContext.session))
+      resp <- client.runRequest(configuredRequest, requestTimeout)
+      newSession <- EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 
   private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(scenarioContext: ScenarioContext) =
     for {
-      (url, _, params, headers) ← EitherT.fromEither[Task](resolveRequestParts(r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
+      (url, _, params, headers) <- EitherT.fromEither[Task](resolveRequestParts(r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
       resolvedRequest = HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
-      resp ← EitherT(client.openStream(resolvedRequest, requestTimeout))
-      newSession ← EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(scenarioContext.session))
+      resp <- EitherT(client.openStream(resolvedRequest, requestTimeout))
+      newSession <- EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 
   private def withBaseUrl(input: String) = {
@@ -85,15 +85,15 @@ class HttpService(
       else baseUrl + trimmedUrl
     }
 
-    fullUrlCache.get(input, k ⇒ urlBuilder(k))
+    fullUrlCache.get(input, k => urlBuilder(k))
   }
 
   def requestEffectT[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
     expectedStatus: Option[Int] = None,
-    ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext ⇒ EitherT[Future, CornichonError, Session] =
-    sc ⇒ {
+    ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext => EitherT[Future, CornichonError, Session] =
+    sc => {
       val f = requestEffect(request, extractor, expectedStatus, ignoreFromWithHeaders)
       EitherT(f(sc))
     }
@@ -103,21 +103,21 @@ class HttpService(
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
     expectedStatus: Option[Int] = None,
-    ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext ⇒ Task[Either[CornichonError, Session]] =
-    sc ⇒ runRequest(request, expectedStatus, extractor, ignoreFromWithHeaders)(sc).value
+    ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext => Task[Either[CornichonError, Session]] =
+    sc => runRequest(request, expectedStatus, extractor, ignoreFromWithHeaders)(sc).value
 
   def requestEffect[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
     expectedStatus: Option[Int] = None,
-    ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext ⇒ Future[Either[CornichonError, Session]] =
-    sc ⇒ {
+    ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext => Future[Either[CornichonError, Session]] =
+    sc => {
       val effect = requestEffectTask(request, extractor, expectedStatus, ignoreFromWithHeaders)
       effect(sc).runToFuture
     }
 
-  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): ScenarioContext ⇒ Future[Either[CornichonError, Session]] =
-    rs ⇒ runStreamRequest(request, expectedStatus, extractor)(rs).value.runToFuture
+  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): ScenarioContext => Future[Either[CornichonError, Session]] =
+    rs => runStreamRequest(request, expectedStatus, extractor)(rs).value.runToFuture
 
   def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
     extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
@@ -160,8 +160,8 @@ object HttpService {
 
   def extractWithHeadersSession(session: Session): Either[CornichonError, Seq[(String, String)]] =
     session.getOpt(withHeadersKey) match {
-      case Some(h) ⇒ decodeSessionHeaders(h)
-      case None    ⇒ rightNil
+      case Some(h) => decodeSessionHeaders(h)
+      case None    => rightNil
     }
 
   def encodeSessionHeader(name: String, value: String) =
@@ -169,11 +169,11 @@ object HttpService {
 
   def encodeSessionHeaders(headers: Seq[(String, String)]): String =
     headers.map {
-      case (name, value) ⇒ encodeSessionHeader(name, value)
+      case (name, value) => encodeSessionHeader(name, value)
     }.mkString(interHeadersValueDelimString)
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
-    headers.split(interHeadersValueDelim).toList.traverse { header ⇒
+    headers.split(interHeadersValueDelim).toList.traverse { header =>
       val elms = header.split(headersKeyValueDelim)
       if (elms.length != 2)
         BadSessionHeadersEncoding(header).asLeft
@@ -194,32 +194,32 @@ object HttpService {
 
   def ignoreHeadersSelection(headers: Seq[(String, String)], ignore: HeaderSelection): Seq[(String, String)] =
     ignore match {
-      case SelectNone     ⇒ headers
-      case SelectAll      ⇒ Nil
-      case ByNames(names) ⇒ headers.filterNot { case (n, _) ⇒ names.contains(n) }
+      case SelectNone     => headers
+      case SelectAll      => Nil
+      case ByNames(names) => headers.filterNot { case (n, _) => names.contains(n) }
     }
 
   def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Either[CornichonError, CornichonHttpResponse] =
     expected match {
-      case None ⇒
+      case None =>
         httpResponse.asRight
-      case Some(expectedStatus) if httpResponse.status == expectedStatus ⇒
+      case Some(expectedStatus) if httpResponse.status == expectedStatus =>
         httpResponse.asRight
-      case Some(expectedStatus) ⇒
+      case Some(expectedStatus) =>
         StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body).asLeft
     }
 
   def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor)(response: CornichonHttpResponse): Either[CornichonError, Session] = {
     val additionalExtractions = extractor match {
-      case NoOpExtraction ⇒
+      case NoOpExtraction =>
         rightNil
-      case RootExtractor(targetKey) ⇒
+      case RootExtractor(targetKey) =>
         Right((targetKey -> response.body) :: Nil)
-      case PathExtractor(path, targetKey) ⇒
+      case PathExtractor(path, targetKey) =>
         JsonPath.runStrict(path, response.body)
-          .map(extractedJson ⇒ (targetKey -> jsonStringValue(extractedJson)) :: Nil)
+          .map(extractedJson => (targetKey -> jsonStringValue(extractedJson)) :: Nil)
     }
-    additionalExtractions.flatMap { extra ⇒
+    additionalExtractions.flatMap { extra =>
       val allElementsToAdd = commonSessionExtractions(response) ++ extra
       session.addValues(allElementsToAdd: _*)
     }

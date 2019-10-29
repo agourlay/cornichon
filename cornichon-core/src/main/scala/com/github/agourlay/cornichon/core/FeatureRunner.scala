@@ -22,21 +22,21 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
     ScenarioRunner.runScenario(Session.newEmpty, featureContext)(s)
   }
 
-  final def runFeature(filterScenario: Scenario ⇒ Boolean)(scenarioResultHandler: ScenarioReport ⇒ ScenarioReport): Task[List[ScenarioReport]] = {
+  final def runFeature(filterScenario: Scenario => Boolean)(scenarioResultHandler: ScenarioReport => ScenarioReport): Task[List[ScenarioReport]] = {
     val scenariosToRun = featureDef.scenarios.filter(filterScenario)
     if (scenariosToRun.isEmpty)
       FeatureRunner.noop
     else {
       // Run 'before feature' hooks
-      baseFeature.beforeFeature.foreach(f ⇒ f())
+      baseFeature.beforeFeature.foreach(f => f())
       // featureParallelism is limited to avoid spawning too much work at once
       val featureParallelism = if (baseFeature.executeScenariosInParallel) Math.min(scenariosToRun.size, FeatureRunner.maxParallelism) else 1
       Observable.fromIterable(scenariosToRun)
         .mapParallelUnordered(featureParallelism)(runScenario(_).map(scenarioResultHandler))
         .toListL
-        .map { results ⇒
+        .map { results =>
           // Run 'after feature' hooks
-          baseFeature.afterFeature.foreach(f ⇒ f())
+          baseFeature.afterFeature.foreach(f => f())
           results
         }
     }

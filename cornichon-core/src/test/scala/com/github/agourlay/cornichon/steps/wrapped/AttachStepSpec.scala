@@ -12,10 +12,10 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
 
   "AttachStep" must {
     "merge nested steps in the parent flow when first" in {
-      val nested = List.fill(5)(AssertStep("always true", _ ⇒ Assertion.alwaysValid))
-      val steps = AttachStep(_ ⇒ nested) :: Nil
+      val nested = List.fill(5)(AssertStep("always true", _ => Assertion.alwaysValid))
+      val steps = AttachStep(_ => nested) :: Nil
       val s = Scenario("scenario with Attach", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r =>
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
         r.logs.size should be(7)
@@ -23,10 +23,10 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
     }
 
     "merge nested steps in the parent flow when nested" in {
-      val nested = List.fill(5)(AssertStep("always true", _ ⇒ Assertion.alwaysValid))
-      val steps = AttachStep(_ ⇒ nested) :: Nil
+      val nested = List.fill(5)(AssertStep("always true", _ => Assertion.alwaysValid))
+      val steps = AttachStep(_ => nested) :: Nil
       val s = Scenario("scenario with Attach", RepeatStep(steps, 1, None) :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r =>
         r.isSuccess should be(true)
         r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
         r.logs.size should be(9)
@@ -38,17 +38,17 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
       val effectNumber = 5
       val effect = EffectStep.fromSync(
         "increment captured counter",
-        sc ⇒ {
+        sc => {
           uglyCounter.incrementAndGet()
           sc.session
         }
       )
 
       val nestedSteps = List.fill(effectNumber)(effect)
-      val attached = AttachStep(_ ⇒ nestedSteps)
+      val attached = AttachStep(_ => nestedSteps)
 
       val s = Scenario("scenario with effects", attached :: effect :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         res.isSuccess should be(true)
         uglyCounter.get() should be(effectNumber + 1)
       }

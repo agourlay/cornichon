@@ -16,7 +16,7 @@ class ReverseAPI extends Http4sDsl[Task] {
   object WordQueryParamMatcher extends QueryParamDecoderMatcher[String]("word")
 
   private val reverseService = HttpRoutes.of[Task] {
-    case POST -> Root / "double-reverse" :? WordQueryParamMatcher(word) ⇒
+    case POST -> Root / "double-reverse" :? WordQueryParamMatcher(word) =>
       Ok(word.reverse.reverse)
   }
 
@@ -31,7 +31,7 @@ class ReverseAPI extends Http4sDsl[Task] {
       .withNio2(true)
       .withHttpApp(routes.orNotFound)
       .allocated
-      .map { case (_, stop) ⇒ new HttpServer(stop) }
+      .map { case (_, stop) => new HttpServer(stop) }
       .runToFuture
 }
 

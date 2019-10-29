@@ -10,7 +10,7 @@ class HttpDslProperties extends Properties("HttpDsl") {
   private val ops = new HttpDslOps {}
 
   property("removeFromWithHeaders handle no 'with-headers'") =
-    forAll(Gen.alphaStr) { header ⇒
+    forAll(Gen.alphaStr) { header =>
       Claim {
         ops.removeFromWithHeaders(header)(Session.newEmpty) == Right(Session.newEmpty)
       }

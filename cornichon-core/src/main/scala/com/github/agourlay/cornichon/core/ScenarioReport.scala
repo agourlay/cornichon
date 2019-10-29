@@ -19,8 +19,8 @@ sealed trait ScenarioReport {
 object ScenarioReport {
   def build(scenarioName: String, runState: RunState, result: ValidatedNel[FailedStep, Done], duration: FiniteDuration): ScenarioReport =
     result.fold(
-      failedSteps ⇒ FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logStack, duration, runState.randomContext.initialSeed),
-      _ ⇒ SuccessScenarioReport(scenarioName, runState.session, runState.logStack, duration, runState.randomContext.initialSeed)
+      failedSteps => FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logStack, duration, runState.randomContext.initialSeed),
+      _ => SuccessScenarioReport(scenarioName, runState.session, runState.logStack, duration, runState.randomContext.initialSeed)
     )
 }
 

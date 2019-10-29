@@ -39,18 +39,18 @@ object PlaceholderParser {
     else {
       val p = new PlaceholderParser(input)
       p.placeholdersRule.run() match {
-        case Failure(e: ParseError) ⇒
+        case Failure(e: ParseError) =>
           Left(PlaceholderParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
-        case Failure(e: Throwable) ⇒
+        case Failure(e: Throwable) =>
           Left(PlaceholderError(input, e))
-        case Success(dt) ⇒
+        case Success(dt) =>
           Right(dt.toList.distinct)
       }
     }
 }
 
 case class Placeholder(key: String, index: Option[Int]) {
-  val fullKey = index.fold(s"<$key>") { index ⇒ s"<$key[$index]>" }
+  val fullKey = index.fold(s"<$key>") { index => s"<$key[$index]>" }
   lazy val pattern = Pattern.compile(Pattern.quote(fullKey))
 }
 

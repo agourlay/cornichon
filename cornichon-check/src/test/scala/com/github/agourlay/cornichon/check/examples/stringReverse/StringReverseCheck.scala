@@ -14,7 +14,7 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
 
     Scenario("reverse a string twice yields the same results") {
 
-      Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString ⇒
+      Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString =>
         Attach {
           Given I post("/double-reverse").withParams("word" -> randomString)
           Then assert status.is(200)
@@ -26,7 +26,7 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
 
   def stringGen(rc: RandomContext): Generator[String] = ValueGenerator(
     name = "alphanumeric String (20)",
-    gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+    gen = () => rc.seededRandom.alphanumeric.take(20).mkString(""))
 
   lazy val port = 8080
 

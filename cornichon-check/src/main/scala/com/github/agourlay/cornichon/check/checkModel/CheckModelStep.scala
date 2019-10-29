@@ -26,11 +26,11 @@ case class CheckModelStep[A, B, C, D, E, F](
       val preRunLog = InfoLogInstruction(s"Run #$runNumber", runState.depth)
       val checkEngineRunState = runState.nestedContext.recordLog(preRunLog)
       checkEngine.run(checkEngineRunState).flatMap {
-        case (newState, Left(fs)) ⇒
+        case (newState, Left(fs)) =>
           val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", runState.depth)
           val failedState = runState.mergeNested(newState).recordLog(postRunLog)
           Task.now((failedState, fs.asLeft))
-        case (newState, Right(endOfRun)) ⇒
+        case (newState, Right(endOfRun)) =>
           // success case we are mot propagating the Session so runs do not interfere with each-others
           val nextRunState = runState.recordLogStack(newState.logStack).registerCleanupSteps(newState.cleanupSteps)
           val postRunLog = buildInfoRunLog(runNumber, endOfRun, runState.depth)
@@ -40,9 +40,9 @@ case class CheckModelStep[A, B, C, D, E, F](
 
   private def buildInfoRunLog(runNumber: Int, endOfRun: SuccessEndOfRun, depth: Int): LogInstruction = {
     val reason = endOfRun match {
-      case EndPropertyReached(property, numberOfTransitions) ⇒
+      case EndPropertyReached(property, numberOfTransitions) =>
         s"End reached on property '$property' after $numberOfTransitions transitions"
-      case MaxTransitionReached(numberOfTransitions) ⇒
+      case MaxTransitionReached(numberOfTransitions) =>
         s"Max number of transitions per run reached ($numberOfTransitions)"
     }
     InfoLogInstruction(s"Run #$runNumber - $reason", depth)
@@ -50,18 +50,18 @@ case class CheckModelStep[A, B, C, D, E, F](
 
   private def validateTransitions(transitions: Map[PropertyN[A, B, C, D, E, F], List[(Int, PropertyN[A, B, C, D, E, F])]]): ValidatedNel[CornichonError, Done] = {
     val emptyTransitionForState: ValidatedNel[CornichonError, Done] = transitions.find(_._2.isEmpty)
-      .map(s ⇒ EmptyTransitionsDefinitionForProperty(s._1.description)).toInvalidNel(Done)
+      .map(s => EmptyTransitionsDefinitionForProperty(s._1.description)).toInvalidNel(Done)
 
     val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (transitions.get(model.entryPoint).isEmpty)
       NoTransitionsDefinitionForStartingProperty(model.entryPoint.description).invalidNel
     else Done.validDone
 
-    val duplicateEntries: ValidatedNel[CornichonError, Done] = transitions.find { e ⇒
+    val duplicateEntries: ValidatedNel[CornichonError, Done] = transitions.find { e =>
       val allProperties = e._2.map(_._2)
       allProperties.distinct.size != allProperties.size
     }.map(_._1.description).map(DuplicateTransitionsDefinitionForProperty).toInvalidNel(Done)
 
-    val sumOfWeightIsCorrect: ValidatedNel[CornichonError, Done] = transitions.find { e ⇒
+    val sumOfWeightIsCorrect: ValidatedNel[CornichonError, Done] = transitions.find { e =>
       e._2.map(_._1).sum != 100
     }.map(_._1.description).map(IncorrectTransitionsWeightDefinitionForProperty).toInvalidNel(Done)
 
@@ -70,9 +70,9 @@ case class CheckModelStep[A, B, C, D, E, F](
 
   private def checkModel(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
     validateTransitions(model.transitions) match {
-      case Invalid(ce) ⇒
+      case Invalid(ce) =>
         Task.now((runState, FailedStep(this, ce).asLeft))
-      case _ ⇒
+      case _ =>
         val randomContext = runState.randomContext
         val genA = modelRunner.generatorA(randomContext)
         val genB = modelRunner.generatorB(randomContext)
@@ -84,17 +84,17 @@ case class CheckModelStep[A, B, C, D, E, F](
         repeatModelOnSuccess(checkEngine, runNumber = 1)(runState.nestedContext)
     }
 
-  override val stateUpdate: StepState = StateT { runState ⇒
+  override val stateUpdate: StepState = StateT { runState =>
     checkModel(runState)
       .timed
       .map {
-        case (executionTime, run) ⇒
+        case (executionTime, run) =>
           val depth = runState.depth
           val (checkState, res) = run
           val fullLogs = res match {
-            case Left(_) ⇒
+            case Left(_) =>
               FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
-            case _ ⇒
+            case _ =>
               SuccessLogInstruction(s"Check model block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
           }
           (runState.mergeNested(checkState, fullLogs), res)

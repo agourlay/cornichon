@@ -12,7 +12,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
 
   val title = s"With data input block $where"
 
-  override val stateUpdate: StepState = StateT { runState ⇒
+  override val stateUpdate: StepState = StateT { runState =>
 
     def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] =
       if (inputs.isEmpty) Task.now((runState, rightDone))
@@ -21,13 +21,13 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
         val bootstrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
         ScenarioRunner.runStepsShortCircuiting(nested, bootstrapFilledInput).flatMap {
-          case (filledState, stepsResult) ⇒
+          case (filledState, stepsResult) =>
             stepsResult.fold(
-              failedStep ⇒ {
+              failedStep => {
                 // Prepend previous logs
                 Task.now((runState.mergeNested(filledState), Left((currentInputs, failedStep))))
               },
-              _ ⇒ {
+              _ => {
                 // Logs are propagated but not the session
                 runInputs(inputs.tail, runState.recordLogStack(filledState.logStack))
               }
@@ -38,22 +38,22 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
     runState.scenarioContext.fillPlaceholders(where)
       .flatMap(CornichonJson.parseDataTable)
       .fold(
-        t ⇒ Task.now(handleErrors(this, runState, NonEmptyList.one(t))),
-        parsedTable ⇒ {
-          val inputs = parsedTable.map { line ⇒
-            line.toList.map { case (key, json) ⇒ (key, CornichonJson.jsonStringValue(json)) }
+        t => Task.now(handleErrors(this, runState, NonEmptyList.one(t))),
+        parsedTable => {
+          val inputs = parsedTable.map { line =>
+            line.toList.map { case (key, json) => (key, CornichonJson.jsonStringValue(json)) }
           }
 
           runInputs(inputs, runState.nestedContext)
             .timed
             .map {
-              case (executionTime, (inputsState, inputsRes)) ⇒
+              case (executionTime, (inputsState, inputsRes)) =>
                 val initialDepth = runState.depth
                 val (logStack, res) = inputsRes match {
-                  case Right(_) ⇒
+                  case Right(_) =>
                     val wrappedLogStack = SuccessLogInstruction("With data input succeeded for all inputs", initialDepth, Some(executionTime)) +: inputsState.logStack :+ successTitleLog(initialDepth)
                     (wrappedLogStack, rightDone)
-                  case Left((failedInputs, failedStep)) ⇒
+                  case Left((failedInputs, failedStep)) =>
                     val wrappedLogStack = FailureLogInstruction("With data input failed for one input", initialDepth, Some(executionTime)) +: inputsState.logStack :+ failedTitleLog(initialDepth)
                     val artificialFailedStep = FailedStep.fromSingle(failedStep.step, WithDataInputBlockFailedStep(failedInputs, failedStep.errors))
                     (wrappedLogStack, Left(artificialFailedStep))

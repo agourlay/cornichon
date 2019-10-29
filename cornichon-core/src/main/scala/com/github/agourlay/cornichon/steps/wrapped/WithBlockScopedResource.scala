@@ -9,14 +9,14 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
 
   val title = resource.openingTitle
 
-  override val stateUpdate: StepState = StateT { runState ⇒
-    resource.use(runState.nestedContext)(ScenarioRunner.runStepsShortCircuiting(nested, _)).map { resTuple ⇒
+  override val stateUpdate: StepState = StateT { runState =>
+    resource.use(runState.nestedContext)(ScenarioRunner.runStepsShortCircuiting(nested, _)).map { resTuple =>
       val (results, (resourcedState, resourcedRes)) = resTuple
       val initialDepth = runState.depth
       val closingTitle = resource.closingTitle
       val logStack = resourcedRes match {
-        case Left(_) ⇒ FailureLogInstruction(closingTitle, initialDepth) +: resourcedState.logStack :+ failedTitleLog(initialDepth)
-        case _       ⇒ SuccessLogInstruction(closingTitle, initialDepth) +: resourcedState.logStack :+ successTitleLog(initialDepth)
+        case Left(_) => FailureLogInstruction(closingTitle, initialDepth) +: resourcedState.logStack :+ failedTitleLog(initialDepth)
+        case _       => SuccessLogInstruction(closingTitle, initialDepth) +: resourcedState.logStack :+ successTitleLog(initialDepth)
       }
       val completeSession = resourcedState.session.combine(results)
       // Manual nested merge

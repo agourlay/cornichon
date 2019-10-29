@@ -8,7 +8,7 @@ import utest._
 object CornichonJsonSpec extends TestSuite with CornichonJson {
 
   def refParser(input: String): Json =
-    io.circe.parser.parse(input).fold(e ⇒ throw e, identity)
+    io.circe.parser.parse(input).fold(e => throw e, identity)
 
   def mapToJsonObject(m: Map[String, Json]): Json =
     Json.fromJsonObject(JsonObject.fromMap(m))

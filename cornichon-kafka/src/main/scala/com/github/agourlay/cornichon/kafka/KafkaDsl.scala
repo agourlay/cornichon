@@ -17,7 +17,7 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 
 trait KafkaDsl {
-  this: BaseFeature with CoreDsl ⇒
+  this: BaseFeature with CoreDsl =>
 
   // Kafka scenario can not run in // because they share the same producer/consumer
   override lazy val executeScenariosInParallel: Boolean = false
@@ -34,7 +34,7 @@ trait KafkaDsl {
 
   def put_topic(topic: String, key: String, message: String): Step = EffectStep.fromAsync(
     title = s"put message=$message with key=$key to topic=$topic",
-    effect = sc ⇒ {
+    effect = sc => {
       val pr = new ProducerRecord[String, String](topic, key, message)
       val cp = CancelablePromise[Unit]()
       featureProducer.send(pr, new Callback {
@@ -44,13 +44,13 @@ trait KafkaDsl {
           else
             cp.failure(exception)
       })
-      Task.fromCancelablePromise(cp).map(_ ⇒ sc.session)
+      Task.fromCancelablePromise(cp).map(_ => sc.session)
     }
   )
 
   def read_from_topic(topic: String, atLeastAmount: Int = 1, timeoutMs: Int = 500): Step = EffectStep[Task](
     title = s"reading the last $atLeastAmount messages from topic=$topic",
-    effect = sc ⇒ Task.delay {
+    effect = sc => Task.delay {
       featureConsumer.subscribe(Seq(topic).asJava)
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
@@ -67,7 +67,7 @@ trait KafkaDsl {
         NotEnoughMessagesPolled(atLeastAmount, messages.toList).asLeft
       else {
         messages.drop(messages.size - atLeastAmount)
-        val newSession = messages.foldLeft(sc.session) { (session, value) ⇒
+        val newSession = messages.foldLeft(sc.session) { (session, value) =>
           commonSessionExtraction(session, topic, value).valueUnsafe
         }
         newSession.asRight
@@ -93,7 +93,7 @@ trait KafkaDsl {
     )
 
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
-    BaseFeature.addShutdownHook(() ⇒ Future {
+    BaseFeature.addShutdownHook(() => Future {
       p.close()
     })
     p
@@ -111,7 +111,7 @@ trait KafkaDsl {
     )
 
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
-    BaseFeature.addShutdownHook(() ⇒ Future {
+    BaseFeature.addShutdownHook(() => Future {
       c.close()
     })
     c

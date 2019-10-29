@@ -12,7 +12,7 @@ case class RunState(
     logStack: List[LogInstruction], // reversed for fast appending
     depth: Int,
     cleanupSteps: List[Step]
-) { rs ⇒
+) { rs =>
   lazy val goDeeper: RunState = copy(depth = depth + 1)
   lazy val resetLogStack: RunState = copy(logStack = Nil)
 

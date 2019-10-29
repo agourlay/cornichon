@@ -25,10 +25,10 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
     val baseFeature = featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
     Either.catchNonFatal(baseFeature.feature).fold(
-      e ⇒ {
+      e => {
         val msg = e match {
-          case c: CornichonError ⇒ c.renderedMessage
-          case e: Throwable      ⇒ e.getMessage
+          case c: CornichonError => c.renderedMessage
+          case e: Throwable      => e.getMessage
         }
         val banner =
           s"""
@@ -39,18 +39,18 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
         eventHandler.handle(failureEventBuilder(e))
         Done.taskDone
       },
-      feature ⇒ {
+      feature => {
         val (featureLog, featureRun) = feature.ignored match {
-          case Some(reason) ⇒
+          case Some(reason) =>
             // Early detection of ignored feature to not generate logs for each scenario
             // This is not emitting the SBT `Status.Ignored` that counts tests.
             val msg = s"${feature.name}: ignored because $reason"
             val featureLog = WarningLogInstruction(msg, 0).colorized
             (featureLog, Done.taskDone)
-          case None ⇒
+          case None =>
             val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
             val featureRunner = FeatureRunner(feature, baseFeature, explicitSeed)
-            val run = featureRunner.runFeature(filterScenarios)(generateResultEvent(eventHandler)).map { results ⇒
+            val run = featureRunner.runFeature(filterScenarios)(generateResultEvent(eventHandler)).map { results =>
               results.foreach(printResultLogs(featureClass))
               Done
             }
@@ -77,7 +77,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
   }
 
   private def printResultLogs(featureClass: Class[_])(sr: ScenarioReport): Unit = sr match {
-    case s: SuccessScenarioReport ⇒
+    case s: SuccessScenarioReport =>
       val msg = s"- ${s.scenarioName} [${s.duration.toMillis} ms]"
       println(SuccessLogInstruction(msg, 0).colorized)
       if (s.shouldShowLogs) {
@@ -89,16 +89,16 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
         )
       }
 
-    case f: FailureScenarioReport ⇒
+    case f: FailureScenarioReport =>
       val msg = failureErrorMessage(featureClass, f)
       println(FailureLogInstruction(msg, 0).colorized)
       println(f.renderedColoredLogs)
 
-    case i: IgnoreScenarioReport ⇒
+    case i: IgnoreScenarioReport =>
       val msg = s"- **ignored** ${i.scenarioName} (${i.reason}) "
       println(WarningLogInstruction(msg, 0).colorized)
 
-    case p: PendingScenarioReport ⇒
+    case p: PendingScenarioReport =>
       val msg = s"- **pending** ${p.scenarioName} "
       println(DebugLogInstruction(msg, 0).colorized)
   }
@@ -113,16 +113,16 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
 
   private def eventBuilder(sr: ScenarioReport, durationInMillis: Long) = new Event {
     val status = sr match {
-      case _: SuccessScenarioReport ⇒ Status.Success
-      case _: FailureScenarioReport ⇒ Status.Failure
-      case _: IgnoreScenarioReport  ⇒ Status.Ignored
-      case _: PendingScenarioReport ⇒ Status.Pending
+      case _: SuccessScenarioReport => Status.Success
+      case _: FailureScenarioReport => Status.Failure
+      case _: IgnoreScenarioReport  => Status.Ignored
+      case _: PendingScenarioReport => Status.Pending
     }
     val throwable = sr match {
-      case f: FailureScenarioReport ⇒
+      case f: FailureScenarioReport =>
         val reporting = s"${f.msg}\n${f.renderedLogs}"
         new OptionalThrowable(CornichonException(reporting))
-      case _ ⇒
+      case _ =>
         new OptionalThrowable()
     }
     val fullyQualifiedName = task.fullyQualifiedName()

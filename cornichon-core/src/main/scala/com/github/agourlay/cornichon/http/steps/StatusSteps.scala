@@ -31,19 +31,19 @@ object StatusSteps {
   case object StatusStepBuilder {
     def is(expected: Int) = AssertStep(
       title = s"status is '$expected'",
-      action = sc ⇒ Assertion.either {
-        sc.session.get(lastResponseStatusKey).map { lastResponseStatus ⇒
-          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, () ⇒ statusError(expected, lastResponseStatus, sc.session))
+      action = sc => Assertion.either {
+        sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
+          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, () => statusError(expected, lastResponseStatus, sc.session))
         }
       }
     )
 
     private def isByKind(expectedKind: Int) = AssertStep(
       title = s"status is ${StatusKind.kindLabel(expectedKind)} '${StatusKind.kindDisplay(expectedKind)}'",
-      action = sc ⇒ Assertion.either {
-        sc.session.get(lastResponseStatusKey).map { lastResponseStatus ⇒
+      action = sc => Assertion.either {
+        sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
           val actualKind = StatusKind.computeKind(lastResponseStatus.toInt)
-          CustomMessageEqualityAssertion(expectedKind, actualKind, () ⇒ statusKindError(expectedKind, lastResponseStatus, sc.session))
+          CustomMessageEqualityAssertion(expectedKind, actualKind, () => statusKindError(expectedKind, lastResponseStatus, sc.session))
         }
       }
     )

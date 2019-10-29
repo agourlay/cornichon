@@ -57,68 +57,68 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
     }.delayExecution(randomDelay())
 
   private val productsService = HttpRoutes.of[Task] {
-    case GET -> Root / "products" ⇒
+    case GET -> Root / "products" =>
       Ok(productsDB.values.asJson)
 
-    case GET -> Root / "products" / UUIDVar(id) ⇒
+    case GET -> Root / "products" / UUIDVar(id) =>
       productsDB.get(id) match {
-        case None    ⇒ NotFound()
-        case Some(p) ⇒ Ok(p.asJson)
+        case None    => NotFound()
+        case Some(p) => Ok(p.asJson)
       }
 
-    case DELETE -> Root / "products" / UUIDVar(id) ⇒
+    case DELETE -> Root / "products" / UUIDVar(id) =>
       productsDB.get(id) match {
-        case None ⇒
+        case None =>
           NotFound()
-        case Some(p) ⇒
+        case Some(p) =>
           productsDB.remove(p.id)
           removeFromSearchIndexWithDelay(p).runToFuture
           Ok(s"product ${p.id} deleted")
       }
 
-    case req @ POST -> Root / "products" ⇒
+    case req @ POST -> Root / "products" =>
       for {
-        pd ← req.as[ProductDraft]
+        pd <- req.as[ProductDraft]
         pid = UUID.randomUUID()
         p = Product.fromDraft(pid, pd)
-        _ ← Task.delay(productsDB.put(pid, p))
-        resp ← Created(p.asJson)
+        _ <- Task.delay(productsDB.put(pid, p))
+        resp <- Created(p.asJson)
       } yield {
         indexInSearchWithDelay(p).runToFuture
         resp
       }
 
-    case req @ POST -> Root / "products" / UUIDVar(pid) ⇒
+    case req @ POST -> Root / "products" / UUIDVar(pid) =>
       if (!productsDB.contains(pid))
         NotFound(s"product $pid not found")
       else
         for {
-          pd ← req.as[ProductDraft]
+          pd <- req.as[ProductDraft]
           p = Product.fromDraft(pid, pd)
-          _ ← Task.delay {
+          _ <- Task.delay {
             productsDB.remove(pid)
             productsDB.put(pid, p)
           }
-          resp ← Created(p.asJson)
+          resp <- Created(p.asJson)
         } yield {
           indexInSearchWithDelay(p).runToFuture
           resp
         }
 
-    case GET -> Root / "products-search" ⇒
+    case GET -> Root / "products-search" =>
       Ok(productsSearch.values.asJson)
 
-    case GET -> Root / "products-search" :? NameQueryParamMatcher(name) ⇒
+    case GET -> Root / "products-search" :? NameQueryParamMatcher(name) =>
       val l = productsSearch.values.filter(_.name == name).toList
       Ok(l.asJson)
 
-    case GET -> Root / "products-search" :? DescriptionContainsQueryParamMatcher(descriptionContains) ⇒
+    case GET -> Root / "products-search" :? DescriptionContainsQueryParamMatcher(descriptionContains) =>
       val l = productsSearch.values.filter(_.description.contains(descriptionContains)).toList
       Ok(l.asJson)
 
-    case POST -> Root / "products-search" / "reindex" ⇒
+    case POST -> Root / "products-search" / "reindex" =>
       productsSearch.clear()
-      productsDB.values.foreach(p ⇒ productsSearch.put(p.id, p))
+      productsDB.values.foreach(p => productsSearch.put(p.id, p))
       Ok(s"index refreshed")
   }
 
@@ -133,7 +133,7 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
       .withNio2(true)
       .withHttpApp(routes.orNotFound)
       .allocated
-      .map { case (_, stop) ⇒ new HttpServer(stop) }
+      .map { case (_, stop) => new HttpServer(stop) }
       .runToFuture
 }
 

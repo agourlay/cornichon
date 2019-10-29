@@ -48,14 +48,14 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
 
   def productDraftGen(rc: RandomContext): Generator[ProductDraft] = OptionalValueGenerator(
     name = "a product draft",
-    gen = () ⇒ {
+    gen = () => {
       val nextSeed = rc.seededRandom.nextLong()
       val params = Gen.Parameters.default.withInitialSeed(nextSeed)
       val gen =
         for {
-          name ← Gen.alphaStr
-          description ← Gen.alphaStr
-          price ← Gen.posNum[Int]
+          name <- Gen.alphaStr
+          description <- Gen.alphaStr
+          price <- Gen.posNum[Int]
         } yield ProductDraft(name, description, price)
       gen(params, Seed(nextSeed))
     }
@@ -63,7 +63,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
 
   private val noProductsInDb = Property1[ProductDraft](
     description = "no products in DB",
-    invariant = _ ⇒ Attach {
+    invariant = _ => Attach {
       Given I get("/products")
       Then assert status.is(200)
       Then assert body.asArray.isEmpty
@@ -72,7 +72,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
 
   private val createProduct = Property1[ProductDraft](
     description = "create a product",
-    invariant = pd ⇒ {
+    invariant = pd => {
       val productDraft = pd()
       val productDraftJson = productDraft.asJson
       Attach {
@@ -93,7 +93,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
       Given I get("/products")
       Then assert body.asArray.isNotEmpty
     },
-    invariant = _ ⇒ Attach {
+    invariant = _ => Attach {
       Given I get("/products")
       Then assert status.is(200)
       Then I save_body_path("$[0].id" -> "id-to-delete")
@@ -115,7 +115,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
       Given I get("/products")
       Then assert body.asArray.isNotEmpty
     },
-    invariant = pd ⇒ {
+    invariant = pd => {
       val productDraft = pd()
       val productDraftJson = productDraft.asJson
       Attach {

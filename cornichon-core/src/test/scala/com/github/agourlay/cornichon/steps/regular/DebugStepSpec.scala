@@ -11,9 +11,9 @@ class DebugStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with S
 
   "DebugStep" must {
     "fail scenario if a Debug step throw an exception" in {
-      val step = DebugStep("bad debug", _ ⇒ throw new RuntimeException("boom") with NoStackTrace)
+      val step = DebugStep("bad debug", _ => throw new RuntimeException("boom") with NoStackTrace)
       val s = Scenario("scenario with faulty debug step", step :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep =>
         scenarioFailsWithMessage(rep) {
           """Scenario 'scenario with faulty debug step' failed:
             |
@@ -40,9 +40,9 @@ class DebugStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with S
     }
 
     "fail scenario if a Debug step return an Either.Left" in {
-      val step = DebugStep("invalid debug", _ ⇒ Left(CornichonError.fromString("debugging with println went wrong!")))
+      val step = DebugStep("invalid debug", _ => Left(CornichonError.fromString("debugging with println went wrong!")))
       val s = Scenario("scenario with faulty debug step", step :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep =>
         scenarioFailsWithMessage(rep) {
           """Scenario 'scenario with faulty debug step' failed:
             |
@@ -68,9 +68,9 @@ class DebugStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with S
     }
 
     "debug info is present in the logs" in {
-      val step = DebugStep("debug info", _ ⇒ Right("debugging with println"))
+      val step = DebugStep("debug info", _ => Right("debugging with println"))
       val s = Scenario("scenario with correct debug step", step :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { rep =>
         rep.isSuccess should be(true)
         matchLogsWithoutDuration(rep.logs) {
           """

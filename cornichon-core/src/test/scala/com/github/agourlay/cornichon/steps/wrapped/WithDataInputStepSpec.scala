@@ -12,7 +12,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "fail if table is malformed" in {
       val nested = AssertStep(
         "always ok",
-        _ ⇒ GenericEqualityAssertion(true, true)
+        _ => GenericEqualityAssertion(true, true)
       ) :: Nil
       val inputs =
         """
@@ -31,7 +31,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "fail at first failed input" in {
       val nested = AssertStep(
         "always fails",
-        _ ⇒ GenericEqualityAssertion(true, false)
+        _ => GenericEqualityAssertion(true, false)
       ) :: Nil
       val inputs =
         """
@@ -50,7 +50,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
       var uglyCounter = 0
       val nested = AssertStep(
         "always ok",
-        _ ⇒ {
+        _ => {
           uglyCounter = uglyCounter + 1
           GenericEqualityAssertion(true, true)
         }
@@ -66,7 +66,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
       val withDataInputStep = WithDataInputStep(nested, inputs)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
       val res = ScenarioRunner.runScenario(Session.newEmpty)(s)
-      res.map { res ⇒
+      res.map { res =>
         res.isSuccess should be(true)
         uglyCounter should be(3)
       }
@@ -75,7 +75,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "inject values in session" in {
       val nested = AssertStep(
         "sum of 'a' + 'b' = 'c'",
-        sc ⇒ {
+        sc => {
           val s = sc.session
           val sum = s.getUnsafe("a").toInt + s.getUnsafe("b").toInt
           GenericEqualityAssertion(sum, s.getUnsafe("c").toInt)
@@ -98,7 +98,7 @@ class WithDataInputStepSpec extends AsyncWordSpec with Matchers with StepUtilSpe
     "resolve placeholder" in {
       val nested = AssertStep(
         "building URL",
-        sc ⇒ {
+        sc => {
           val s = sc.session
           val url = s.getUnsafe("endpoint") + "/" + s.getUnsafe("resource")
           GenericEqualityAssertion(url, s.getUnsafe("url"))

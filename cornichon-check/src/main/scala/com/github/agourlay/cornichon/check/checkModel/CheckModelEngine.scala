@@ -26,9 +26,9 @@ class CheckModelEngine[A, B, C, D, E, F](
 
   private def validTransitions(runState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] = {
     val stepsConditionValidations = transitions.map {
-      case (weight, properties) ⇒
+      case (weight, properties) =>
         checkStepConditions(runState)(properties.preCondition)
-          .map(preConditionsRes ⇒ (weight, properties, preConditionsRes.isRight))
+          .map(preConditionsRes => (weight, properties, preConditionsRes.isRight))
     }
     Task.gather(stepsConditionValidations)
       .map(_.sortBy(_._1)) // We sort the result because `Task.gather` is non-deterministic to not break the seed
@@ -37,10 +37,10 @@ class CheckModelEngine[A, B, C, D, E, F](
   def run(runState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting property
     checkStepConditions(runState)(model.entryPoint.preCondition).flatMap {
-      case Right(_) ⇒
+      case Right(_) =>
         // run first state
         loopRun(runState, model.entryPoint, 0)
-      case Left(failedStep) ⇒
+      case Left(failedStep) =>
         Task.now((runState, FailedStep(cs, failedStep.errors).asLeft))
     }
 
@@ -49,16 +49,16 @@ class CheckModelEngine[A, B, C, D, E, F](
       Task.now((runState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else
       runPropertyAndValidatePostConditions(runState, property).flatMap {
-        case (newState, Left(fs)) ⇒
+        case (newState, Left(fs)) =>
           Task.now((newState, fs.asLeft))
-        case (newState, Right(_)) ⇒
+        case (newState, Right(_)) =>
           // check available outgoing transitions
           model.transitions.get(property) match {
-            case None ⇒
+            case None =>
               // no transitions defined -> end of run
               Task.now((newState, EndPropertyReached(property.description, currentNumberOfTransitions).asRight))
-            case Some(transitions) ⇒
-              validTransitions(newState)(transitions).flatMap { possibleNextStates ⇒
+            case Some(transitions) =>
+              validTransitions(newState)(transitions).flatMap { possibleNextStates =>
                 val validNext = possibleNextStates.filter(_._3)
                 if (validNext.isEmpty) {
                   val error = NoValidTransitionAvailableForState(property.description)
@@ -95,7 +95,7 @@ class CheckModelEngine[A, B, C, D, E, F](
     var cumulativeProbability: Int = 0
     var selected: Option[Z] = None
 
-    for (item ← inputs) {
+    for (item <- inputs) {
       cumulativeProbability += item._1
       if (weight <= cumulativeProbability && selected.isEmpty) selected = Some(item._2)
     }

@@ -35,11 +35,11 @@ object MatcherParser {
     else {
       val p = new MatcherParser(input)
       p.matchersRule.run() match {
-        case Failure(e: ParseError) ⇒
+        case Failure(e: ParseError) =>
           Left(MatcherParsingError(input, p.formatError(e, new ErrorFormatter(showTraces = true))))
-        case Failure(e: Throwable) ⇒
+        case Failure(e: Throwable) =>
           Left(MatcherError(input, e))
-        case Success(dt) ⇒
+        case Success(dt) =>
           Right(dt.toList)
       }
     }

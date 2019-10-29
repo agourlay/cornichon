@@ -9,10 +9,10 @@ import cats.instances.string._
 case class KafkaStepBuilder(sessionKey: String) {
   def topic_is(expected: String) = AssertStep(
     title = s"topic is $expected",
-    action = sc ⇒ Assertion.either {
+    action = sc => Assertion.either {
       for {
-        actualTopic ← sc.session.getJsonStringField(s"$sessionKey-topic")
-        resolvedExpectedTopic ← sc.fillPlaceholders(expected)
+        actualTopic <- sc.session.getJsonStringField(s"$sessionKey-topic")
+        resolvedExpectedTopic <- sc.fillPlaceholders(expected)
       } yield GenericEqualityAssertion(resolvedExpectedTopic, actualTopic)
     }
   )
@@ -21,10 +21,10 @@ case class KafkaStepBuilder(sessionKey: String) {
 
   def key_is(expected: String) = AssertStep(
     title = s"key is $expected",
-    action = sc ⇒ Assertion.either {
+    action = sc => Assertion.either {
       for {
-        actualKey ← sc.session.getJsonStringField(s"$sessionKey-key")
-        resolvedExpectedKey ← sc.fillPlaceholders(expected)
+        actualKey <- sc.session.getJsonStringField(s"$sessionKey-key")
+        resolvedExpectedKey <- sc.fillPlaceholders(expected)
       } yield GenericEqualityAssertion(resolvedExpectedKey, actualKey)
     }
   )

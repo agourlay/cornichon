@@ -36,19 +36,19 @@ object MatcherResolver {
 
   def resolveMatcherKeys(allMatchers: Map[String, List[Matcher]])(mk: MatcherKey): Either[CornichonError, Matcher] =
     allMatchers.get(mk.key) match {
-      case None              ⇒ MatcherUndefined(mk.key).asLeft
-      case Some(Nil)         ⇒ MatcherUndefined(mk.key).asLeft
-      case Some(m :: Nil)    ⇒ m.asRight
-      case Some(m :: others) ⇒ DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)).asLeft
+      case None              => MatcherUndefined(mk.key).asLeft
+      case Some(Nil)         => MatcherUndefined(mk.key).asLeft
+      case Some(m :: Nil)    => m.asRight
+      case Some(m :: others) => DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)).asLeft
     }
 
   def findAllMatchers(allMatchers: Map[String, List[Matcher]])(input: String): Either[CornichonError, List[Matcher]] =
-    matchersCache.get(input, i ⇒ findMatcherKeys(i)).flatMap(_.traverse(resolveMatcherKeys(allMatchers)))
+    matchersCache.get(input, i => findMatcherKeys(i)).flatMap(_.traverse(resolveMatcherKeys(allMatchers)))
 
   // Add quotes around known matchers
   def quoteMatchers(input: String, matchersToQuote: List[Matcher]): String =
     matchersToQuote.distinct.foldLeft(input) {
-      case (i, m) ⇒ m.pattern.matcher(i).replaceAll(m.quotedFullKey)
+      case (i, m) => m.pattern.matcher(i).replaceAll(m.quotedFullKey)
     }
 
   // Removes JSON fields targeted by matchers and builds corresponding matchers assertions
@@ -58,8 +58,8 @@ object MatcherResolver {
     else {
       CornichonJson.findAllPathWithValue(matchers.map(_.fullKey), expected)
         .zip(matchers)
-        .traverse { case (jsonPath, matcher) ⇒ MatcherAssertion.atJsonPath(jsonPath, actual, matcher, negate).map((jsonPath, _)) }
-        .map { pathAssertions ⇒
+        .traverse { case (jsonPath, matcher) => MatcherAssertion.atJsonPath(jsonPath, actual, matcher, negate).map((jsonPath, _)) }
+        .map { pathAssertions =>
           val jsonPathToIgnore = pathAssertions.map(_._1)
           val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
           val newActual = CornichonJson.removeFieldsByPath(actual, jsonPathToIgnore)
@@ -74,5 +74,5 @@ case class MatcherUndefined(name: String) extends CornichonError {
 
 case class DuplicateMatcherDefinition(name: String, descriptions: List[String]) extends CornichonError {
   lazy val baseErrorMessage = s"there are ${descriptions.size} matchers named '$name': " +
-    s"${descriptions.map(d ⇒ s"'$d'").mkString(" and ")}"
+    s"${descriptions.map(d => s"'$d'").mkString(" and ")}"
 }

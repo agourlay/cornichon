@@ -16,15 +16,15 @@ import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
 
 trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
-  this: BaseFeature ⇒
+  this: BaseFeature =>
 
   override def beforeAll() = {
     reserveGlobalRuntime()
-    beforeFeature.foreach(f ⇒ f())
+    beforeFeature.foreach(f => f())
   }
 
   override def afterAll() = {
-    afterFeature.foreach(f ⇒ f())
+    afterFeature.foreach(f => f())
     releaseGlobalRuntime()
   }
 
@@ -33,12 +33,12 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
     else super.run(testName, args.copy(distributor = None))
 
   Try { feature } match {
-    case Failure(e) ⇒
+    case Failure(e) =>
       "Cornichon" should {
         "load feature definition" in {
           val msg = e match {
-            case c: CornichonError ⇒ c.renderedMessage
-            case e: Throwable      ⇒ e.getMessage
+            case c: CornichonError => c.renderedMessage
+            case e: Throwable      => e.getMessage
           }
           fail(
             s"""
@@ -49,13 +49,13 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
         }
       }
 
-    case Success(feat) ⇒
-      s"${feat.name}${feat.ignored.fold("")(r ⇒ s" ignored because $r")}" should {
-        feat.scenarios.foreach { s ⇒
+    case Success(feat) =>
+      s"${feat.name}${feat.ignored.fold("")(r => s" ignored because $r")}" should {
+        feat.scenarios.foreach { s =>
           if (s.ignored.isDefined)
-            s"${s.name}${s.ignored.fold("")(r ⇒ s" ($r)")}" ignore Future.successful(Succeeded)
+            s"${s.name}${s.ignored.fold("")(r => s" ($r)")}" ignore Future.successful(Succeeded)
           else if (feat.ignored.isDefined)
-            s"${s.name}${feat.ignored.fold("")(_ ⇒ s" (feature ignored)")}" ignore Future.successful(Succeeded)
+            s"${s.name}${feat.ignored.fold("")(_ => s" (feature ignored)")}" ignore Future.successful(Succeeded)
           else if (feat.focusedScenarios.nonEmpty && !feat.focusedScenarios.contains(s.name))
             s"${s.name} (no focus)" ignore Future.successful(Succeeded)
           else if (s.pending)
@@ -64,19 +64,19 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
             s.name in {
               // No explicit seed in `cornichon-scalatest`
               cornichon.core.FeatureRunner(feature, this, explicitSeed = None).runScenario(s).map {
-                case s: SuccessScenarioReport ⇒
+                case s: SuccessScenarioReport =>
                   if (s.shouldShowLogs) printLogs(s.logs)
                   assert(true)
-                case f: FailureScenarioReport ⇒
+                case f: FailureScenarioReport =>
                   printLogs(f.logs)
                   fail(
                     s"""|${f.msg}
                         |${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
                         |${scalaTestReplayCmd(feat.name, s.name)}""".stripMargin
                   )
-                case i: IgnoreScenarioReport ⇒
+                case i: IgnoreScenarioReport =>
                   throw new RuntimeException(s"Scalatest filters ignored scenario upstream, this should never happen\n$i")
-                case p: PendingScenarioReport ⇒
+                case p: PendingScenarioReport =>
                   throw new RuntimeException(s"Scalatest filters pending scenario upstream, this should never happen\n$p")
               }.runToFuture
             }

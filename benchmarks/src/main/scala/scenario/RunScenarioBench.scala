@@ -68,10 +68,10 @@ object RunScenarioBench {
   val setupSession = EffectStep.fromSyncE("setup session", _.session.addValues("v1" -> "2", "v2" -> "1"))
   val assertStep = AssertStep(
     "addition step",
-    sc ⇒ Assertion.either {
+    sc => Assertion.either {
       for {
-        two ← sc.session.get("v1").map(_.toInt)
-        one ← sc.session.get("v2").map(_.toInt)
+        two <- sc.session.get("v1").map(_.toInt)
+        one <- sc.session.get("v2").map(_.toInt)
       } yield GenericEqualityAssertion(two + one, 3)
     })
   val effectStep = EffectStep.fromSync("identity", _.session)

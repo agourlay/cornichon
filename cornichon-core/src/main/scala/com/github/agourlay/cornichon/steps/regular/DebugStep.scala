@@ -9,7 +9,7 @@ import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 
-case class DebugStep(title: String, message: ScenarioContext ⇒ Either[CornichonError, String]) extends LogValueStep[String] {
+case class DebugStep(title: String, message: ScenarioContext => Either[CornichonError, String]) extends LogValueStep[String] {
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 

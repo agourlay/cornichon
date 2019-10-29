@@ -146,10 +146,10 @@ object JsonStepsSpec extends TestSuite with StepUtilSpec {
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(session)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(f.failedSteps.head.errors.head.renderedMessage == "usage of 'ignoring' and 'whiteListing' is mutually exclusive")
-        case _ ⇒
-          assertMatch(res) { case FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case FailureScenarioReport => }
       }
     }
 
@@ -384,14 +384,14 @@ object JsonStepsSpec extends TestSuite with StepUtilSpec {
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(session)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(f.failedSteps.head.errors.head.renderedMessage ==
             """
               |matchers are not supported in `asArray` assertion but *any-string* found
               |https://github.com/agourlay/cornichon/issues/135"""
             .stripMargin.trim)
-        case _ ⇒
-          assertMatch(res) { case FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case FailureScenarioReport => }
       }
     }
   }

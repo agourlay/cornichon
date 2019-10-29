@@ -9,7 +9,7 @@ import org.typelevel.claimant.Claim
 class MatcherResolverProperties extends Properties("MatcherResolver") {
 
   property("find matcher in content solely containing a matcher") = {
-    forAll(keyGen) { key ⇒
+    forAll(keyGen) { key =>
       Claim {
         MatcherResolver.findMatcherKeys(s"*$key*") == Right(List(MatcherKey(key)))
       }
@@ -17,7 +17,7 @@ class MatcherResolverProperties extends Properties("MatcherResolver") {
   }
 
   property("find matcher in content starting with whitespace and containing a matcher") = {
-    forAll(keyGen) { key ⇒
+    forAll(keyGen) { key =>
       Claim {
         MatcherResolver.findMatcherKeys(s" *$key*") == Right(List(MatcherKey(key)))
       }
@@ -25,7 +25,7 @@ class MatcherResolverProperties extends Properties("MatcherResolver") {
   }
 
   property("find matcher in content starting with 2 whitespaces and containing a matcher") = {
-    forAll(keyGen) { key ⇒
+    forAll(keyGen) { key =>
       Claim {
         MatcherResolver.findMatcherKeys(s"  *$key*") == Right(List(MatcherKey(key)))
       }
@@ -33,7 +33,7 @@ class MatcherResolverProperties extends Properties("MatcherResolver") {
   }
 
   property("find matcher in content finishing with whitespace and containing a matcher") = {
-    forAll(keyGen) { key ⇒
+    forAll(keyGen) { key =>
       Claim {
         MatcherResolver.findMatcherKeys(s"*$key* ") == Right(List(MatcherKey(key)))
       }
@@ -41,7 +41,7 @@ class MatcherResolverProperties extends Properties("MatcherResolver") {
   }
 
   property("find matcher in content finishing with 2 whitespaces and containing a matcher") = {
-    forAll(keyGen) { key ⇒
+    forAll(keyGen) { key =>
       Claim {
         MatcherResolver.findMatcherKeys(s"*$key*  ") == Right(List(MatcherKey(key)))
       }
@@ -50,7 +50,7 @@ class MatcherResolverProperties extends Properties("MatcherResolver") {
 
   property("resolveMatcherKeys detect duplicate matchers") = {
     val allMatchers = MatcherResolver.builtInMatchers
-    forAll(Gen.oneOf(allMatchers)) { m ⇒
+    forAll(Gen.oneOf(allMatchers)) { m =>
       val input = (m :: m :: Nil).groupBy(_.key)
       val expected = Left(s"there are 2 matchers named '${m.key}': '${m.description}' and '${m.description}'")
       Claim {

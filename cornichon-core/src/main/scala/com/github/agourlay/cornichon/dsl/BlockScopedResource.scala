@@ -10,5 +10,5 @@ trait BlockScopedResource {
   val openingTitle: String
   val closingTitle: String
 
-  def use[A](outsideRunState: RunState)(runInside: RunState ⇒ Task[A]): Task[(Session, A)]
+  def use[A](outsideRunState: RunState)(runInside: RunState => Task[A]): Task[(Session, A)]
 }

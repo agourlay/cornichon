@@ -14,14 +14,14 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec wit
       val loop = 10
       val nested = AssertStep(
         "always fails",
-        _ ⇒ {
+        _ => {
           uglyCounter = uglyCounter + 1
           GenericEqualityAssertion(true, false)
         }
       ) :: Nil
       val retryMaxStep = RetryMaxStep(nested, loop)
       val s = Scenario("with RetryMax", retryMaxStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         scenarioFailsWithMessage(res) {
           """Scenario 'with RetryMax' failed:
             |
@@ -49,14 +49,14 @@ class RetryMaxStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec wit
       val max = 10
       val nested = AssertStep(
         "always fails",
-        _ ⇒ {
+        _ => {
           uglyCounter = uglyCounter + 1
           GenericEqualityAssertion(true, uglyCounter == max - 2)
         }
       ) :: Nil
       val retryMaxStep = RetryMaxStep(nested, max)
       val s = Scenario("scenario with RetryMax", retryMaxStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         res.isSuccess should be(true)
         uglyCounter should be(max - 2)
       }

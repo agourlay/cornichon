@@ -16,11 +16,11 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "fail if 'Concurrently' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        _ ⇒ GenericEqualityAssertion(true, false)
+        _ => GenericEqualityAssertion(true, false)
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
       val s = Scenario("with Concurrently", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         scenarioFailsWithMessage(res) {
           """Scenario 'with Concurrently' failed:
             |
@@ -42,14 +42,14 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "fail if 'Concurrently' block does not complete within 'maxDuration because of a single step duration" in {
       val nested = AssertStep(
         "always succeed after 1000 ms",
-        _ ⇒ {
+        _ => {
           Thread.sleep(1000)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
       val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
       val s = Scenario("with Concurrently", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         scenarioFailsWithMessage(res) {
           """Scenario 'with Concurrently' failed:
             |
@@ -70,14 +70,14 @@ class ConcurrentlyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val loop = 5
       val nested = AssertStep(
         "increment captured counter",
-        _ ⇒ {
+        _ => {
           uglyCounter.incrementAndGet()
           GenericEqualityAssertion(true, true)
         }
       )
       val concurrentlyStep = ConcurrentlyStep(List.fill(loop)(nested), 300.millis)
       val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         res.isSuccess should be(true)
         uglyCounter.intValue() should be(loop)
       }

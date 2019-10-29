@@ -15,13 +15,13 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
       val nested = AssertStep(
         "possible random value step",
-        _ ⇒ GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
+        _ => GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
       ) :: Nil
 
       val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true) :: Nil
       val s = Scenario("scenario with eventually", steps)
       ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
-        case (executionTime, res) ⇒
+        case (executionTime, res) =>
           res.isSuccess should be(true)
           withClue(executionTime.toMillis) {
             executionTime.lt(1100.millis) should be(true)
@@ -33,7 +33,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
       var counter = 0
       val nested = AssertStep(
-        "impossible random value step", _ ⇒ {
+        "impossible random value step", _ => {
           counter = counter + 1
           Assertion.failWith("nop!")
         }
@@ -41,7 +41,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
-        case (executionTime, r) ⇒
+        case (executionTime, r) =>
           r.isSuccess should be(false)
           counter <= 10 should be(true) // at most 10*100millis
           withClue(executionTime.toMillis) {
@@ -55,7 +55,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
     "replay eventually handle hanging wrapped steps" ignore {
       val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
       val nested = AssertStep(
-        "slow always true step", _ ⇒ {
+        "slow always true step", _ => {
           Thread.sleep(1000)
           Assertion.alwaysValid
         }
@@ -63,7 +63,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
-        case (executionTime, rep) ⇒
+        case (executionTime, rep) =>
 
           // currently the idle detection is at maxTime * 2
           withClue(executionTime.toMillis) {
@@ -97,7 +97,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
       var counter = 0
       val nested = AssertStep(
-        "Fail differently", _ ⇒ {
+        "Fail differently", _ => {
           if (counter == 0 || counter == 1 || counter == 2) {
             counter += 1
             Assertion.failWith(s"Failing $counter")
@@ -107,7 +107,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
       val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         scenarioFailsWithMessage(res) {
           """Scenario 'scenario with different failures' failed:
             |
@@ -146,7 +146,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
       var counter = 1
       val nested = AssertStep(
-        "Fail with oscillation", _ ⇒ {
+        "Fail with oscillation", _ => {
           if (counter == 1) {
             counter += 1
             Assertion.failWith(s"Failure mode one")
@@ -159,7 +159,7 @@ class EventuallyStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       ) :: Nil
       val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = false)
       val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res ⇒
+      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
         scenarioFailsWithMessage(res) {
           """Scenario 'scenario with different failures' failed:
             |

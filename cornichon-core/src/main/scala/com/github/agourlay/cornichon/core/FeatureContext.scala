@@ -18,11 +18,11 @@ case class FeatureContext(
       someFeatureIgnored
     else
       scenario.ignored match {
-        case Some(_) ⇒
+        case Some(_) =>
           scenario.ignored
-        case None if focusedScenarios.nonEmpty && !focusedScenarios.contains(scenario.name) ⇒
+        case None if focusedScenarios.nonEmpty && !focusedScenarios.contains(scenario.name) =>
           someNoFocus
-        case _ ⇒ None
+        case _ => None
       }
 
   def isPending(scenario: Scenario): Boolean =

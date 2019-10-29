@@ -13,7 +13,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "fail if 'repeatDuring' block contains a failed step" in {
       val nested = AssertStep(
         "always fails",
-        _ ⇒ GenericEqualityAssertion(true, false)
+        _ => GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatDuring = RepeatDuringStep(nested, 5.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuring :: Nil)
@@ -23,7 +23,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "repeat steps inside 'repeatDuring' for at least the duration param" in {
       val nested = AssertStep(
         "always valid",
-        _ ⇒ {
+        _ => {
           Thread.sleep(1)
           GenericEqualityAssertion(true, true)
         }
@@ -31,7 +31,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
-        case (executionTime, res) ⇒
+        case (executionTime, res) =>
           withClue(executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)) {
             res.isSuccess should be(true)
             executionTime.gt(50.millis) should be(true)
@@ -44,7 +44,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
     "repeat steps inside 'repeatDuring' at least once if they take more time than the duration param" in {
       val nested = AssertStep(
         "always valid",
-        _ ⇒ {
+        _ => {
           Thread.sleep(500)
           GenericEqualityAssertion(true, true)
         }
@@ -52,7 +52,7 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
       ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
-        case (executionTime, res) ⇒
+        case (executionTime, res) =>
           withClue(executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)) {
             res.isSuccess should be(true)
             executionTime.gt(50.millis) should be(true)

@@ -38,21 +38,21 @@ object PlaceholderResolverSpec extends TestSuite {
     }
 
     test("fillPlaceholders use registered SimpleMapper") {
-      val extractor = SimpleMapper(() ⇒ "magic!")
+      val extractor = SimpleMapper(() => "magic!")
       val extractors = Map("customer-id" → extractor)
       val s = Session.newEmpty
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("magic!"))
     }
 
     test("fillPlaceholders use registered TextMapper") {
-      val extractor = TextMapper("customer", customerString ⇒ customerString.length.toString)
+      val extractor = TextMapper("customer", customerString => customerString.length.toString)
       val extractors = Map("customer-id" → extractor)
       val s = Session.newEmpty.addValueUnsafe("customer", "my-customer-name-of-great-length")
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("32"))
     }
 
     test("fillPlaceholders use registered HistoryMapper") {
-      val extractor = HistoryMapper("customer", customers ⇒ customers.length.toString)
+      val extractor = HistoryMapper("customer", customers => customers.length.toString)
       val extractors = Map("customer-id" → extractor)
       val s = Session.newEmpty.addValuesUnsafe(
         "customer" -> "customer1",
@@ -63,14 +63,14 @@ object PlaceholderResolverSpec extends TestSuite {
     }
 
     test("fillPlaceholders use registered SessionMapper") {
-      val extractor = SessionMapper(s ⇒ s.get("other-thing"))
+      val extractor = SessionMapper(s => s.get("other-thing"))
       val extractors = Map("customer-id" → extractor)
       val s = Session.newEmpty.addValueUnsafe("other-thing", "other unrelated value")
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("other unrelated value"))
     }
 
     test("fillPlaceholders use registered RandomMapper") {
-      val extractor = RandomMapper(rd ⇒ rd.alphanumeric.take(5).mkString("").length.toString)
+      val extractor = RandomMapper(rd => rd.alphanumeric.take(5).mkString("").length.toString)
       val extractors = Map("customer-id" → extractor)
       val s = Session.newEmpty
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("5"))

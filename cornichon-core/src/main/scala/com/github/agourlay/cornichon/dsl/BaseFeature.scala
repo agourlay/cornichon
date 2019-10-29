@@ -13,8 +13,8 @@ import scala.concurrent.Future
 
 trait BaseFeature {
 
-  protected[cornichon] val beforeFeature: ListBuffer[() ⇒ Unit] = ListBuffer.empty
-  protected[cornichon] val afterFeature: ListBuffer[() ⇒ Unit] = ListBuffer.empty
+  protected[cornichon] val beforeFeature: ListBuffer[() => Unit] = ListBuffer.empty
+  protected[cornichon] val afterFeature: ListBuffer[() => Unit] = ListBuffer.empty
 
   protected[cornichon] val beforeEachScenario: ListBuffer[Step] = ListBuffer.empty
   protected[cornichon] val afterEachScenario: ListBuffer[Step] = ListBuffer.empty
@@ -33,11 +33,11 @@ trait BaseFeature {
 
   def registerMatchers: List[Matcher] = Nil
 
-  def beforeFeature(before: ⇒ Unit): Unit =
-    beforeFeature += (() ⇒ before)
+  def beforeFeature(before: => Unit): Unit =
+    beforeFeature += (() => before)
 
-  def afterFeature(after: ⇒ Unit): Unit =
-    (() ⇒ after) +=: afterFeature
+  def afterFeature(after: => Unit): Unit =
+    (() => after) +=: afterFeature
 
   def beforeEachScenario(step: Step): Unit =
     beforeEachScenario += step
@@ -54,9 +54,9 @@ object BaseFeature {
   // the config file must exist with the `cornichon` namespace even if it is empty
   lazy val config = ConfigSource.default.at("cornichon").loadOrThrow[Config]
 
-  private val hooks = new ConcurrentLinkedDeque[() ⇒ Future[_]]()
+  private val hooks = new ConcurrentLinkedDeque[() => Future[_]]()
 
-  def addShutdownHook(h: () ⇒ Future[_]): Unit =
+  def addShutdownHook(h: () => Future[_]): Unit =
     hooks.push(h)
 
   def shutDownGlobalResources(): Future[Done] = {
@@ -64,13 +64,13 @@ object BaseFeature {
     @tailrec
     def clearHooks(previous: Future[Any] = Future.successful[Any](())): Future[Any] =
       Option(hooks.poll()) match {
-        case None ⇒ previous
-        case Some(f) ⇒
+        case None => previous
+        case Some(f) =>
           clearHooks {
-            previous.flatMap { _ ⇒ f().recover { case _ ⇒ Done } }
+            previous.flatMap { _ => f().recover { case _ => Done } }
           }
       }
 
-    clearHooks().map(_ ⇒ Done)
+    clearHooks().map(_ => Done)
   }
 }

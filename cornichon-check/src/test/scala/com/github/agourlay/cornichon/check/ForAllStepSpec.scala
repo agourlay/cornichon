@@ -13,8 +13,8 @@ object ForAllStepSpec extends TestSuite with ProvidedInstances with CheckDsl wit
     test("validate invariant - correct") {
       val maxRun = 10
 
-      val forAllStep = for_all("double reverse", maxNumberOfRuns = maxRun, stringGen) { s ⇒
-        AssertStep("double reverse string", _ ⇒ GenericEqualityAssertion(s, s.reverse.reverse))
+      val forAllStep = for_all("double reverse", maxNumberOfRuns = maxRun, stringGen) { s =>
+        AssertStep("double reverse string", _ => GenericEqualityAssertion(s, s.reverse.reverse))
       }
       val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
@@ -25,17 +25,17 @@ object ForAllStepSpec extends TestSuite with ProvidedInstances with CheckDsl wit
     test("validate invariant - incorrect") {
       val maxRun = 10
       var uglyCounter = 0
-      val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ { uglyCounter = uglyCounter + 1; sc.session })
+      val incrementEffect: Step = EffectStep.fromSync("identity", sc => { uglyCounter = uglyCounter + 1; sc.session })
 
-      val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ ⇒
+      val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ =>
         val assert = if (uglyCounter < 5) alwaysValidAssertStep else brokenEffect
-        AttachStep(_ ⇒ incrementEffect :: assert :: Nil)
+        AttachStep(_ => incrementEffect :: assert :: Nil)
       }
       val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
           assert(uglyCounter == 6)
           assert(f.msg == """Scenario 'scenario with forAllStep' failed:
@@ -48,40 +48,40 @@ object ForAllStepSpec extends TestSuite with ProvidedInstances with CheckDsl wit
                             |
                             |seed for the run was '1'
                             |""".stripMargin)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
 
     test("always terminates - with maxNumberOfRuns") {
       val maxRun = 100
       var uglyCounter = 0
-      val incrementEffect: Step = EffectStep.fromSync("identity", sc ⇒ {
+      val incrementEffect: Step = EffectStep.fromSync("identity", sc => {
         uglyCounter = uglyCounter + 1
         sc.session
       })
 
-      val forAllStep = for_all("fails", maxNumberOfRuns = maxRun, integerGen)(_ ⇒ incrementEffect)
+      val forAllStep = for_all("fails", maxNumberOfRuns = maxRun, integerGen)(_ => incrementEffect)
       val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: SuccessScenarioReport ⇒
+        case f: SuccessScenarioReport =>
           assert(f.isSuccess)
           assert(uglyCounter == maxRun)
 
-        case _ ⇒
-          assertMatch(res) { case _: SuccessScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: SuccessScenarioReport => }
       }
     }
 
     test("report failure when a nested step explodes") {
-      val forAllStep = for_all("fails", maxNumberOfRuns = 10, integerGen)(_ ⇒ brokenEffect)
+      val forAllStep = for_all("fails", maxNumberOfRuns = 10, integerGen)(_ => brokenEffect)
       val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
           assert(f.msg ==
             """Scenario 'scenario with forAllStep' failed:
@@ -94,21 +94,21 @@ object ForAllStepSpec extends TestSuite with ProvidedInstances with CheckDsl wit
                 |
                 |seed for the run was '1'
                 |""".stripMargin)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
 
     test("fail the test if the Gen throws") {
-      val forAllStep = for_all("fails", maxNumberOfRuns = 10, brokenIntGen)(_ ⇒ neverValidAssertStep)
+      val forAllStep = for_all("fails", maxNumberOfRuns = 10, brokenIntGen)(_ => neverValidAssertStep)
       val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       res match {
-        case f: FailureScenarioReport ⇒
+        case f: FailureScenarioReport =>
           assert(!f.isSuccess)
-        case _ ⇒
-          assertMatch(res) { case _: FailureScenarioReport ⇒ }
+        case _ =>
+          assertMatch(res) { case _: FailureScenarioReport => }
       }
     }
   }

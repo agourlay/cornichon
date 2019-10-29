@@ -19,18 +19,18 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
   def run(superSet: Json): Option[Json] = {
     val (allCursors, projectionMode) = cursors(superSet)
-    allCursors.traverse(c ⇒ c.focus) match {
-      case Some(focused) if projectionMode ⇒ Json.fromValues(focused).some
-      case Some(focused)                   ⇒ focused.headOption
-      case None if projectionMode          ⇒ Json.fromValues(Nil).some // this choice could be discussed
-      case _                               ⇒ None
+    allCursors.traverse(c => c.focus) match {
+      case Some(focused) if projectionMode => Json.fromValues(focused).some
+      case Some(focused)                   => focused.headOption
+      case None if projectionMode          => Json.fromValues(Nil).some // this choice could be discussed
+      case _                               => None
     }
   }
 
   def runStrict(superSet: Json): Either[CornichonError, Json] =
     run(superSet) match {
-      case Some(j) ⇒ j.asRight
-      case None    ⇒ PathSelectsNothing(JsonPath.showJsonPath.show(this), superSet).asLeft
+      case Some(j) => j.asRight
+      case None    => PathSelectsNothing(JsonPath.showJsonPath.show(this), superSet).asLeft
     }
 
   def run(json: String): Either[CornichonError, Option[Json]] = parseDslJson(json).map(run)
@@ -41,7 +41,7 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
   private def cursors(input: Json): (List[ACursor], Boolean) = {
 
     def expandCursors(arrayFieldCursor: ACursor, signalValidProjection: AtomicBoolean): List[ACursor] =
-      arrayFieldCursor.values.fold[List[ACursor]](Nil) { values ⇒
+      arrayFieldCursor.values.fold[List[ACursor]](Nil) { values =>
         // the projection is valid because there was an array
         signalValidProjection.set(true)
         if (values.isEmpty)
@@ -62,24 +62,24 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
     // using an AtomicBoolean for signaling...
     val projectionMode = AtomicBoolean(false)
-    val cursors = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) ⇒
+    val cursors = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) =>
       op match {
-        case RootSelection                     ⇒ oc
-        case FieldSelection(field)             ⇒ oc.map(_.downField(field))
-        case RootArrayElementSelection(index)  ⇒ oc.map(_.downN(index))
-        case ArrayFieldSelection(field, index) ⇒ oc.map(_.downField(field).downN(index))
-        case RootArrayFieldProjection          ⇒ oc.flatMap(o ⇒ expandCursors(o, projectionMode))
-        case ArrayFieldProjection(field)       ⇒ oc.flatMap(o ⇒ expandCursors(o.downField(field), projectionMode))
+        case RootSelection                     => oc
+        case FieldSelection(field)             => oc.map(_.downField(field))
+        case RootArrayElementSelection(index)  => oc.map(_.downN(index))
+        case ArrayFieldSelection(field, index) => oc.map(_.downField(field).downN(index))
+        case RootArrayFieldProjection          => oc.flatMap(o => expandCursors(o, projectionMode))
+        case ArrayFieldProjection(field)       => oc.flatMap(o => expandCursors(o.downField(field), projectionMode))
       }
     }
     (cursors, projectionMode.get())
   }
 
   def removeFromJson(input: Json): Json =
-    cursors(input)._1.foldLeft(input) { (j, c) ⇒
+    cursors(input)._1.foldLeft(input) { (j, c) =>
       c.focus match {
-        case None    ⇒ j // path does not exist in input
-        case Some(_) ⇒ c.delete.top.getOrElse(Json.Null) //drop path and back to top
+        case None    => j // path does not exist in input
+        case Some(_) => c.delete.top.getOrElse(Json.Null) //drop path and back to top
       }
     }
 
@@ -91,15 +91,15 @@ object JsonPath {
   private val rightEmptyJsonPath = Right(rootPath)
   private val operationsCache = Caching.buildCache[String, Either[CornichonError, List[JsonPathOperation]]]()
 
-  implicit val showJsonPath: Show[JsonPath] = Show.show[JsonPath] { p ⇒
-    p.operations.foldLeft(JsonPath.root)((acc, op) ⇒ s"$acc.${op.pretty}")
+  implicit val showJsonPath: Show[JsonPath] = Show.show[JsonPath] { p =>
+    p.operations.foldLeft(JsonPath.root)((acc, op) => s"$acc.${op.pretty}")
   }
 
   def parse(path: String): Either[CornichonError, JsonPath] =
     if (path == root)
       rightEmptyJsonPath
     else
-      operationsCache.get(path, p ⇒ JsonPathParser.parseJsonPath(p)).map(JsonPath(_))
+      operationsCache.get(path, p => JsonPathParser.parseJsonPath(p)).map(JsonPath(_))
 
   def run(path: String, json: Json): Either[CornichonError, Option[Json]] =
     JsonPath.parse(path).map(_.run(json))
@@ -109,15 +109,15 @@ object JsonPath {
 
   def run(path: String, json: String): Either[CornichonError, Option[Json]] =
     for {
-      json ← parseDslJson(json)
-      jsonPath ← JsonPath.parse(path)
+      json <- parseDslJson(json)
+      jsonPath <- JsonPath.parse(path)
     } yield jsonPath.run(json)
 
   def runStrict(path: String, json: String): Either[CornichonError, Json] =
     for {
-      json ← parseDslJson(json)
-      jsonPath ← JsonPath.parse(path)
-      res ← jsonPath.runStrict(json)
+      json <- parseDslJson(json)
+      jsonPath <- JsonPath.parse(path)
+      res <- jsonPath.runStrict(json)
     } yield res
 }
 

@@ -15,21 +15,21 @@ trait CheckStepUtil {
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    gen = () ⇒ rc.seededRandom.nextInt(10000))
+    gen = () => rc.seededRandom.nextInt(10000))
 
   def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    gen = () ⇒ throw new RuntimeException(s"boom gen with initial seed ${rc.initialSeed}"))
+    gen = () => throw new RuntimeException(s"boom gen with initial seed ${rc.initialSeed}"))
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "integer",
-    gen = () ⇒ rc.seededRandom.nextString(10))
+    gen = () => rc.seededRandom.nextString(10))
 
-  val alwaysValidAssertStep = AssertStep("valid", _ ⇒ Assertion.alwaysValid)
+  val alwaysValidAssertStep = AssertStep("valid", _ => Assertion.alwaysValid)
 
-  val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ ⇒ Left(CornichonError.fromString("boom!")))
+  val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ => Left(CornichonError.fromString("boom!")))
 
-  val neverValidAssertStep = AssertStep("never valid assert step", _ ⇒ Assertion.failWith("never valid!"))
+  val neverValidAssertStep = AssertStep("never valid assert step", _ => Assertion.failWith("never valid!"))
 
   val identityStep: Step = EffectStep.fromSync("identity effect step", _.session)
 }

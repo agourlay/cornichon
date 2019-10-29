@@ -46,7 +46,7 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
   lazy val compactDescription: String = {
     val base = s"${method.name} $url"
-    val payloadTitle = body.fold("")(p ⇒ s" with body\n${p.show}")
+    val payloadTitle = body.fold("")(p => s" with body\n${p.show}")
     base + payloadTitle + paramsTitle + headersTitle
   }
 }
@@ -68,7 +68,7 @@ object HttpRequest extends HttpRequestsDsl {
 
   implicit def showRequest[A: Show]: Show[HttpRequest[A]] = new Show[HttpRequest[A]] {
     def show(r: HttpRequest[A]): String = {
-      val body = r.body.fold("without body")(b ⇒ s"with body\n${b.show}")
+      val body = r.body.fold("without body")(b => s"with body\n${b.show}")
       val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"
       val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${printArrowPairs(r.headers)}"
 

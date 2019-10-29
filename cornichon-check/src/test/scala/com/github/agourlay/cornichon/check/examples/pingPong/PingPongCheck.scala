@@ -19,42 +19,42 @@ class PingPongCheck extends CornichonFeature with CheckDsl {
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "an alphanumeric String",
-    gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+    gen = () => rc.seededRandom.alphanumeric.take(20).mkString(""))
 
   def assert_String_20(s: String) = AssertStep(
     title = s"String has length 20 '$s'",
-    action = _ ⇒ GenericEqualityAssertion(20, s.length)
+    action = _ => GenericEqualityAssertion(20, s.length)
   )
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    gen = () ⇒ rc.seededRandom.nextInt(10000))
+    gen = () => rc.seededRandom.nextInt(10000))
 
   def assert_Integer_less_than_10000(i: Int) = AssertStep(
     title = s"Integer less than 10000 '$i'",
-    action = _ ⇒ GenericEqualityAssertion(true, i < 10000)
+    action = _ => GenericEqualityAssertion(true, i < 10000)
   )
 
   val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 
     val entryPoint = Property2[String, Int](
       description = "Entry point",
-      invariant = (_, _) ⇒ NoOpStep
+      invariant = (_, _) => NoOpStep
     )
 
     val pingString = Property2[String, Int](
       description = "Ping String",
-      invariant = (stringGen, _) ⇒ assert_String_20(stringGen())
+      invariant = (stringGen, _) => assert_String_20(stringGen())
     )
 
     val pongInt = Property2[String, Int](
       description = "Pong Int",
-      invariant = (_, intGen) ⇒ assert_Integer_less_than_10000(intGen())
+      invariant = (_, intGen) => assert_Integer_less_than_10000(intGen())
     )
 
     val exitPoint = Property2[String, Int](
       description = "Exit point",
-      invariant = (_, _) ⇒ NoOpStep
+      invariant = (_, _) => NoOpStep
     )
 
     Model(

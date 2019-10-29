@@ -18,11 +18,11 @@ object DataTableParser {
   def parse(input: String): Either[CornichonError, DataTable] = {
     val p = new DataTableParser(input)
     p.dataTableRule.run() match {
-      case Failure(e: ParseError) ⇒
+      case Failure(e: ParseError) =>
         Left(DataTableParseError(p.formatError(e, new ErrorFormatter(showTraces = true))))
-      case Failure(e: Throwable) ⇒
+      case Failure(e: Throwable) =>
         Left(DataTableError(e, input))
-      case Success(dt) ⇒
+      case Success(dt) =>
         Right(dt)
     }
   }
@@ -53,9 +53,9 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
 
   def rawStringList: List[Map[String, String]] =
-    rows.map { row ⇒
+    rows.map { row =>
       val map: Map[String, String] = (headers.fields zip row.fields).collect {
-        case (name, value) if value.trim.nonEmpty ⇒ name → value.trim
+        case (name, value) if value.trim.nonEmpty => name → value.trim
       }(breakOut)
       map
     }(breakOut)
@@ -65,7 +65,7 @@ case class Headers(fields: Seq[String])
 case class Row(fields: Seq[String])
 
 trait StringHeaderParserSupport extends StringBuilding {
-  this: Parser ⇒
+  this: Parser =>
 
   def HeaderValue = rule {
     atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.trim))
@@ -83,7 +83,7 @@ trait StringHeaderParserSupport extends StringBuilding {
       'r' ~ appendSB('\r') |
       't' ~ appendSB('\t') |
       '|' ~ appendSB('|') |
-      Unicode ~> { code ⇒ sb.append(code.asInstanceOf[Char]); () }
+      Unicode ~> { code => sb.append(code.asInstanceOf[Char]); () }
   }
 
   def Unicode = rule { 'u' ~ capture(4 times CharPredicate.HexDigit) ~> (Integer.parseInt(_, 16)) }

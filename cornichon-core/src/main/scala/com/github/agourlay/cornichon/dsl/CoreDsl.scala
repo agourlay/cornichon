@@ -6,7 +6,7 @@ import cats.syntax.show._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
-import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario ⇒ ScenarioDef }
+import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
@@ -19,7 +19,7 @@ import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
 
 trait CoreDsl extends ProvidedInstances {
-  this: BaseFeature ⇒ //baseFeature brings the executionContext
+  this: BaseFeature => //baseFeature brings the executionContext
 
   def Feature(name: String) = FeatureBuilder(name)
 
@@ -29,7 +29,7 @@ trait CoreDsl extends ProvidedInstances {
   }
 
   implicit final def featureBuilder(f: FeatureBuilder): BodyElementCollector[ScenarioDef, FeatureDef] =
-    BodyElementCollector[ScenarioDef, FeatureDef](scenarios ⇒ FeatureDef(f.name, scenarios, f.ignored))
+    BodyElementCollector[ScenarioDef, FeatureDef](scenarios => FeatureDef(f.name, scenarios, f.ignored))
 
   def Scenario(name: String) = ScenarioBuilder(name)
 
@@ -42,7 +42,7 @@ trait CoreDsl extends ProvidedInstances {
   }
 
   implicit final def scenarioBuilder(s: ScenarioBuilder): BodyElementCollector[Step, ScenarioDef] =
-    BodyElementCollector[Step, ScenarioDef](steps ⇒ ScenarioDef(s.name, steps, s.ignored, focused = s.focus))
+    BodyElementCollector[Step, ScenarioDef](steps => ScenarioDef(s.name, steps, s.ignored, focused = s.focus))
 
   sealed trait Starters extends Dynamic {
     def name: String
@@ -55,86 +55,86 @@ trait CoreDsl extends ProvidedInstances {
   case object And extends Starters { val name = "And" }
 
   def Attach: BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
-      AttachStep(nested = _ ⇒ steps)
+    BodyElementCollector[Step, Step] { steps =>
+      AttachStep(nested = _ => steps)
     }
 
   def AttachAs(title: String): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
-      AttachAsStep(title, _ ⇒ steps)
+    BodyElementCollector[Step, Step] { steps =>
+      AttachAsStep(title, _ => steps)
     }
 
   def Repeat(times: Int): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       RepeatStep(steps, times, None)
     }
 
   def Repeat(times: Int, index: String): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       RepeatStep(steps, times, Some(index))
     }
 
   def RepeatWith(elements: ContainerType[Any, Show]*)(index: String): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), index)
+    BodyElementCollector[Step, Step] { steps =>
+      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element))(breakOut), index)
     }
 
   def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(index: String): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
-      RepeatWithStep(steps, elements.map(c ⇒ c.tci.show(c.element))(breakOut), index)
+    BodyElementCollector[Step, Step] { steps =>
+      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element))(breakOut), index)
     }
 
   def RetryMax(limit: Int): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       RetryMaxStep(steps, limit)
     }
 
   def RepeatDuring(duration: FiniteDuration): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       RepeatDuringStep(steps, duration)
     }
 
   def Eventually(maxDuration: FiniteDuration, interval: FiniteDuration, oscillationAllowed: Boolean = true): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       val conf = EventuallyConf(maxDuration, interval)
       EventuallyStep(steps, conf, oscillationAllowed)
     }
 
   def RepeatConcurrently(times: Int, parallelism: Int, maxTime: FiniteDuration): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       RepeatConcurrentlyStep(times, steps, parallelism, maxTime)
     }
 
   def Concurrently(maxTime: FiniteDuration): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       ConcurrentlyStep(steps, maxTime)
     }
 
   def Within(maxDuration: FiniteDuration): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       WithinStep(steps, maxDuration)
     }
 
   def LogDuration(label: String): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       LogDurationStep(steps, label)
     }
 
   def WithDataInputs(where: String): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps ⇒
+    BodyElementCollector[Step, Step] { steps =>
       WithDataInputStep(steps, where)
     }
 
   def wait(duration: FiniteDuration): Step = EffectStep.fromAsync(
     title = s"wait for ${duration.toMillis} millis",
-    effect = sc ⇒ Task.delay(sc.session).delayExecution(duration)
+    effect = sc => Task.delay(sc.session).delayExecution(duration)
   )
 
   def save(input: (String, String), show: Boolean = true): Step = {
     val (key, value) = input
     EffectStep.fromSyncE(
       title = s"add value '$value' to session under key '$key'",
-      effect = sc ⇒ {
+      effect = sc => {
         sc.fillPlaceholders(value).flatMap(sc.session.addValue(key, _))
       },
       show = show
@@ -152,13 +152,13 @@ trait CoreDsl extends ProvidedInstances {
     show = show
   )
 
-  def transform_session(key: String)(map: String ⇒ String): Step = EffectStep.fromSyncE(
+  def transform_session(key: String)(map: String => String): Step = EffectStep.fromSyncE(
     title = s"transform '$key' from session",
-    effect = sc ⇒ {
+    effect = sc => {
       for {
-        v ← sc.session.get(key)
-        tv ← Either.catchNonFatal(map(v)).leftMap(CornichonError.fromThrowable)
-        ns ← sc.session.addValue(key, tv)
+        v <- sc.session.get(key)
+        tv <- Either.catchNonFatal(map(v)).leftMap(CornichonError.fromThrowable)
+        ns <- sc.session.addValue(key, tv)
       } yield ns
     }
   )
@@ -170,16 +170,16 @@ trait CoreDsl extends ProvidedInstances {
     SessionValuesStepBuilder(k1, k2)
 
   def show_session: Step =
-    DebugStep("show session", sc ⇒ s"Session content is\n${sc.session.show}".asRight)
+    DebugStep("show session", sc => s"Session content is\n${sc.session.show}".asRight)
 
   def show_session(
     key: String,
     index: Option[Int] = None,
-    transform: String ⇒ Either[CornichonError, String] = _.asRight) =
-    DebugStep(s"show session value for key $key", sc ⇒
+    transform: String => Either[CornichonError, String] = _.asRight) =
+    DebugStep(s"show session value for key $key", sc =>
       for {
-        v ← sc.session.get(key, index)
-        transformed ← transform(v)
+        v <- sc.session.get(key, index)
+        transformed <- transform(v)
       } yield s"Session content for key '${SessionKey(key, index).show}' is\n$transformed"
     )
 
@@ -193,17 +193,17 @@ object CoreDsl {
       fromKey: String,
       target: String,
       title: String,
-      trans: (ScenarioContext, String) ⇒ Either[CornichonError, String])
+      trans: (ScenarioContext, String) => Either[CornichonError, String])
 
   def save_from_session(args: Seq[FromSessionSetter]): Step =
     EffectStep.fromSyncE(
       s"${args.map(_.title).mkString(" and ")}",
-      sc ⇒ {
+      sc => {
         val session = sc.session
         for {
-          allValues ← session.getList(args.map(_.fromKey))
-          extracted ← allValues.zip(args.map(_.trans)).traverse { case (value, extractor) ⇒ extractor(sc, value) }
-          newSession ← args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) ⇒ s.flatMap(_.addValue(tuple._1, tuple._2)))
+          allValues <- session.getList(args.map(_.fromKey))
+          extracted <- allValues.zip(args.map(_.trans)).traverse { case (value, extractor) => extractor(sc, value) }
+          newSession <- args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }
     )

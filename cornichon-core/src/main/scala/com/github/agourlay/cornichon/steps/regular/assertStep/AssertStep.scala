@@ -9,7 +9,7 @@ import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 
-case class AssertStep(title: String, action: ScenarioContext ⇒ Assertion, show: Boolean = true) extends LogValueStep[Done] {
+case class AssertStep(title: String, action: ScenarioContext => Assertion, show: Boolean = true) extends LogValueStep[Done] {
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
@@ -17,8 +17,8 @@ case class AssertStep(title: String, action: ScenarioContext ⇒ Assertion, show
     Task.delay {
       val assertion = action(runState.scenarioContext)
       assertion.validated match {
-        case Invalid(e) ⇒ e.asLeft
-        case _          ⇒ Done.rightDone
+        case Invalid(e) => e.asLeft
+        case _          => Done.rightDone
       }
     }
 

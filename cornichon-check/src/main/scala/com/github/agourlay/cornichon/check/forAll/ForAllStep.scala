@@ -6,12 +6,12 @@ import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
 import monix.eval.Task
 
-case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int)(ga: RandomContext ⇒ Generator[A], gb: RandomContext ⇒ Generator[B], gc: RandomContext ⇒ Generator[C], gd: RandomContext ⇒ Generator[D], ge: RandomContext ⇒ Generator[E], gf: RandomContext ⇒ Generator[F])(f: A ⇒ B ⇒ C ⇒ D ⇒ E ⇒ F ⇒ Step) extends WrapperStep {
+case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int)(ga: RandomContext => Generator[A], gb: RandomContext => Generator[B], gc: RandomContext => Generator[C], gd: RandomContext => Generator[D], ge: RandomContext => Generator[E], gf: RandomContext => Generator[F])(f: A => B => C => D => E => F => Step) extends WrapperStep {
 
   val baseTitle = s"ForAll values of generators check '$description'"
   val title = s"$baseTitle with maxNumberOfRuns=$maxNumberOfRuns"
 
-  override val stateUpdate: StepState = StateT { runState ⇒
+  override val stateUpdate: StepState = StateT { runState =>
     val randomContext = runState.randomContext
     val genA = ga(randomContext)
     val genB = gb(randomContext)
@@ -37,11 +37,11 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
         val invariantStep = f(generatedA)(generatedB)(generatedC)(generatedD)(generatedE)(generatedF)
 
         invariantStep.runStep(invariantRunState).flatMap {
-          case (newState, l @ Left(_)) ⇒
+          case (newState, l @ Left(_)) =>
             val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", runState.depth)
             val failedState = runState.mergeNested(newState).recordLog(postRunLog)
             Task.now((failedState, l))
-          case (newState, _) ⇒
+          case (newState, _) =>
             val postRunLog = InfoLogInstruction(s"Run #$runNumber", runState.depth)
             // success case we are not propagating the Session so runs do not interfere with each-others
             val nextRunState = runState.recordLogStack(newState.logStack).recordLog(postRunLog).registerCleanupSteps(newState.cleanupSteps)
@@ -52,13 +52,13 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
     repeatEvaluationOnSuccess(1)(runState.nestedContext)
       .timed
       .map {
-        case (executionTime, (checkState, res)) ⇒
+        case (executionTime, (checkState, res)) =>
           val depth = runState.depth
           val exec = Some(executionTime)
           val fullLogs = res match {
-            case Left(_) ⇒
+            case Left(_) =>
               FailureLogInstruction(s"$baseTitle block failed ", depth, exec) +: checkState.logStack :+ failedTitleLog(depth)
-            case _ ⇒
+            case _ =>
               SuccessLogInstruction(s"$baseTitle block succeeded", depth, exec) +: checkState.logStack :+ successTitleLog(depth)
           }
           (runState.mergeNested(checkState, fullLogs), res)

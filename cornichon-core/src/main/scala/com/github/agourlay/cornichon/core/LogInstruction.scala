@@ -13,22 +13,22 @@ sealed trait LogInstruction {
 
     def withMarginAndDuration(line: String): String = {
       val d = duration match {
-        case None                             ⇒ ""
-        case Some(dur) if dur.toMillis == 0   ⇒ s" [${dur.toMicros} μs]"
-        case Some(dur) if dur.toSeconds >= 10 ⇒ s" [${dur.toSeconds} s]"
-        case Some(dur)                        ⇒ s" [${dur.toMillis} ms]"
+        case None                             => ""
+        case Some(dur) if dur.toMillis == 0   => s" [${dur.toMicros} μs]"
+        case Some(dur) if dur.toSeconds >= 10 => s" [${dur.toSeconds} s]"
+        case Some(dur)                        => s" [${dur.toMillis} ms]"
       }
       fullMargin + line + d
     }
 
     // Inject duration at the end of the first line
     message.split('\n').toList match {
-      case Nil ⇒
+      case Nil =>
         withMarginAndDuration(message)
-      case head :: Nil ⇒
+      case head :: Nil =>
         withMarginAndDuration(head)
-      case head :: tail ⇒
-        (withMarginAndDuration(head) :: tail.map(l ⇒ fullMargin + l)).mkString("\n")
+      case head :: tail =>
+        (withMarginAndDuration(head) :: tail.map(l => fullMargin + l)).mkString("\n")
     }
   }
 }
@@ -37,10 +37,10 @@ object LogInstruction {
   val physicalMargin: StringOps = "   "
 
   def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String =
-    logs.foldLeft(StringBuilder.newBuilder) { (b, l) ⇒
+    logs.foldLeft(StringBuilder.newBuilder) { (b, l) =>
       l match {
-        case NoShowLogInstruction(_, _, _) ⇒ b
-        case l: LogInstruction             ⇒ b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
+        case NoShowLogInstruction(_, _, _) => b
+        case l: LogInstruction             => b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
       }
     }.append("\n").result()
 

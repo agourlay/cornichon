@@ -16,10 +16,10 @@ trait MatcherAssertion extends Assertion {
 
   lazy val validated =
     Either.catchNonFatal(m.predicate(input))
-      .leftMap(e ⇒ MatcherAssertionEvaluationError(m, input, e))
+      .leftMap(e => MatcherAssertionEvaluationError(m, input, e))
       .fold[ValidatedNel[CornichonError, Done]](
-        errors ⇒ errors.invalidNel,
-        matcherResult ⇒
+        errors => errors.invalidNel,
+        matcherResult =>
           // XNOR condition for not negate
           if (matcherResult == !negate) validDone else MatcherAssertionError(m, input, negate).invalidNel
       )
@@ -36,7 +36,7 @@ case class MatcherAssertionError(m: Matcher, input: Json, negate: Boolean) exten
 
 object MatcherAssertion {
   def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher, negateMatcher: Boolean): Either[CornichonError, MatcherAssertion] =
-    jsonPath.runStrict(json).map { json ⇒
+    jsonPath.runStrict(json).map { json =>
       new MatcherAssertion {
         val negate = negateMatcher
         val m = matcher

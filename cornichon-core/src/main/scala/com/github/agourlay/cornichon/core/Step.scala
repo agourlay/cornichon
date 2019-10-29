@@ -12,15 +12,15 @@ sealed trait Step {
   def setTitle(newTitle: String): Step
   val stateUpdate: StepState
   def runStep(runState: RunState): StepResult = stateUpdate.run(runState)
-  def chain(others: Session ⇒ List[Step]): Step = FlatMapStep(this, others)
-  def andThen(others: List[Step]): Step = FlatMapStep(this, _ ⇒ others)
-  def andThen(other: Step): Step = FlatMapStep(this, _ ⇒ other :: Nil)
+  def chain(others: Session => List[Step]): Step = FlatMapStep(this, others)
+  def andThen(others: List[Step]): Step = FlatMapStep(this, _ => others)
+  def andThen(other: Step): Step = FlatMapStep(this, _ => other :: Nil)
 }
 
 object NoOpStep extends Step {
   val title: String = "noOp"
   def setTitle(newTitle: String): Step = this
-  val stateUpdate: StepState = StateT { runState ⇒ Task.now(runState -> rightDone) }
+  val stateUpdate: StepState = StateT { runState => Task.now(runState -> rightDone) }
 }
 
 //Step that produces a Session
@@ -32,13 +32,13 @@ trait SessionValueStep extends Step {
 
   def logOnSuccess(result: Session, runState: RunState, executionTime: Duration): LogInstruction
 
-  override val stateUpdate: StepState = StateT { runState ⇒
+  override val stateUpdate: StepState = StateT { runState =>
     runSessionValueStep(runState).timed.map {
-      case (executionTime, Left(errors)) ⇒
+      case (executionTime, Left(errors)) =>
         val (logs, failedStep) = onError(errors, runState, executionTime)
         (runState.recordLog(logs), Left(failedStep))
 
-      case (executionTime, Right(session)) ⇒
+      case (executionTime, Right(session)) =>
         val log = logOnSuccess(session, runState, executionTime)
         val logSessionState = runState.recordLog(log).withSession(session)
         (logSessionState, rightDone)
@@ -55,13 +55,13 @@ trait LogValueStep[A] extends Step {
 
   def logOnSuccess(result: A, runState: RunState, executionTime: Duration): LogInstruction
 
-  override val stateUpdate: StepState = StateT { rs ⇒
+  override val stateUpdate: StepState = StateT { rs =>
     runLogValueStep(rs).timed.map {
-      case (executionTime, Left(errors)) ⇒
+      case (executionTime, Left(errors)) =>
         val (logStack, failedStep) = onError(errors, rs, executionTime)
         (rs.recordLog(logStack), Left(failedStep))
 
-      case (executionTime, Right(value)) ⇒
+      case (executionTime, Right(value)) =>
         val log = logOnSuccess(value, rs, executionTime)
         val logState = rs.recordLog(log)
         (logState, rightDone)
@@ -72,20 +72,20 @@ trait LogValueStep[A] extends Step {
 //Step that delegate the execution of nested steps and enable to decorate the nestedLogs
 trait LogDecoratorStep extends Step {
 
-  def nestedToRun: Session ⇒ List[Step]
+  def nestedToRun: Session => List[Step]
 
   def logStackOnNestedError(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction]
 
   def logStackOnNestedSuccess(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction]
 
-  override val stateUpdate: StepState = StateT { rs ⇒
+  override val stateUpdate: StepState = StateT { rs =>
     val steps = nestedToRun(rs.session)
     ScenarioRunner.runStepsShortCircuiting(steps, rs.nestedContext).timed.map {
-      case (executionTime, (resState, l @ Left(_))) ⇒
+      case (executionTime, (resState, l @ Left(_))) =>
         val decoratedLogs = logStackOnNestedError(resState.logStack, rs.depth, executionTime)
         (rs.mergeNested(resState, decoratedLogs), l)
 
-      case (executionTime, (resState, r @ Right(_))) ⇒
+      case (executionTime, (resState, r @ Right(_))) =>
         val decoratedLogs = logStackOnNestedSuccess(resState.logStack, rs.depth, executionTime)
         (rs.mergeNested(resState, decoratedLogs), r)
     }
@@ -108,14 +108,14 @@ trait SimpleWrapperStep extends Step {
 
   def onNestedSuccess(resultRunState: RunState, runState: RunState, executionTime: Duration): RunState
 
-  override val stateUpdate: StepState = StateT { rs ⇒
+  override val stateUpdate: StepState = StateT { rs =>
     val init = if (indentLog) rs.nestedContext else rs.sameLevelContext
     ScenarioRunner.runStepsShortCircuiting(nestedToRun, init).timed.map {
-      case (executionTime, (resState, Left(failedStep))) ⇒
+      case (executionTime, (resState, Left(failedStep))) =>
         val (finalState, fs) = onNestedError(failedStep, resState, rs, executionTime)
         (finalState, Left(fs))
 
-      case (executionTime, (resState, Right(_))) ⇒
+      case (executionTime, (resState, Right(_))) =>
         val finalState = onNestedSuccess(resState, rs, executionTime)
         (finalState, rightDone)
     }

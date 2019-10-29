@@ -17,14 +17,14 @@ class TurnstileAPI extends Http4sDsl[Task] {
   private val turnstileLocked = AtomicBoolean(true)
 
   private val turnstileService = HttpRoutes.of[Task] {
-    case POST -> Root / "push-coin" ⇒
+    case POST -> Root / "push-coin" =>
       if (turnstileLocked.get()) {
         turnstileLocked.set(false)
         Ok("payment accepted")
       } else
         BadRequest("payment refused")
 
-    case POST -> Root / "walk-through" ⇒
+    case POST -> Root / "walk-through" =>
       if (turnstileLocked.get())
         BadRequest("door blocked")
       else {
@@ -44,7 +44,7 @@ class TurnstileAPI extends Http4sDsl[Task] {
       .withNio2(true)
       .withHttpApp(routes.orNotFound)
       .allocated
-      .map { case (_, stop) ⇒ new HttpServer(stop) }
+      .map { case (_, stop) => new HttpServer(stop) }
       .runToFuture
 
 }

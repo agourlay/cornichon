@@ -15,8 +15,8 @@ object GqlString {
   }
 
   implicit val gqlShow =
-    Show.show[GqlString](g ⇒ s"GraphQl JSON ${g.input}")
+    Show.show[GqlString](g => s"GraphQl JSON ${g.input}")
 
   implicit val gqlEncode =
-    Encoder.instance[GqlString](g ⇒ parseGraphQLJson(g.input).valueUnsafe)
+    Encoder.instance[GqlString](g => parseGraphQLJson(g.input).valueUnsafe)
 }

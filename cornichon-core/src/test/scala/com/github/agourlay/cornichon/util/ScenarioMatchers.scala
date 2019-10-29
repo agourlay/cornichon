@@ -4,21 +4,21 @@ import com.github.agourlay.cornichon.core.{ FailureScenarioReport, LogInstructio
 import org.scalatest.{ Assertion, AsyncWordSpecLike, Matchers }
 
 trait ScenarioMatchers {
-  this: AsyncWordSpecLike with Matchers ⇒
+  this: AsyncWordSpecLike with Matchers =>
 
   def scenarioFailsWithMessage(report: ScenarioReport)(expectedMessage: String): Assertion =
     report match {
-      case f: FailureScenarioReport ⇒
+      case f: FailureScenarioReport =>
         withClue(f.msg + "\nwith logs\n" + LogInstruction.renderLogs(f.logs) + "\n\n") {
           f.msg should be(expectedMessage)
         }
-      case other ⇒
+      case other =>
         fail(s"Should have been a FailedScenarioReport but got \n${LogInstruction.renderLogs(other.logs)}")
     }
 
   def matchLogsWithoutDuration(logs: List[LogInstruction])(expectedRenderedLogs: String): Assertion = {
     val renderedLogs = LogInstruction.renderLogs(logs, colorized = false)
-    val cleanedLogs = renderedLogs.split('\n').toList.map { l ⇒
+    val cleanedLogs = renderedLogs.split('\n').toList.map { l =>
       // check if duration is present at end
       if (l.nonEmpty && l.last == ']')
         l.dropRight(1) // drop ']'
