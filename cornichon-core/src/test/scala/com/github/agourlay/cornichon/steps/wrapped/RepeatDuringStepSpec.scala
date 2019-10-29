@@ -3,24 +3,25 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import org.scalatest.{ Matchers, AsyncWordSpec }
+import utest._
 
 import scala.concurrent.duration._
 
-class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+object RepeatDuringStepSpec extends TestSuite with StepUtilSpec {
 
-  "RepeatDuringStep" must {
-    "fail if 'repeatDuring' block contains a failed step" in {
+  val tests = Tests {
+    test("fails if 'repeatDuring' block contains a failed step") {
       val nested = AssertStep(
         "always fails",
         _ => GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatDuring = RepeatDuringStep(nested, 5.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuring :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
     }
 
-    "repeat steps inside 'repeatDuring' for at least the duration param" in {
+    test("repeat steps inside 'repeatDuring' for at least the duration param") {
       val nested = AssertStep(
         "always valid",
         _ => {
@@ -30,18 +31,18 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       ) :: Nil
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
-        case (executionTime, res) =>
-          withClue(executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)) {
-            res.isSuccess should be(true)
-            executionTime.gt(50.millis) should be(true)
-            // empiric values for the upper bound here
-            executionTime.lteq(65.millis) should be(true)
-          }
+      val (executionTime, res) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
+      def clue() = executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)
+      if (!res.isSuccess) {
+        clue()
       }
+      assert(res.isSuccess)
+      assert(executionTime.gt(50.millis))
+      // empiric values for the upper bound here
+      assert(executionTime.lteq(65.millis))
     }
 
-    "repeat steps inside 'repeatDuring' at least once if they take more time than the duration param" in {
+    test("repeats steps inside 'repeatDuring' at least once if they take more time than the duration param") {
       val nested = AssertStep(
         "always valid",
         _ => {
@@ -51,15 +52,15 @@ class RepeatDuringStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec
       ) :: Nil
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).timed.map {
-        case (executionTime, res) =>
-          withClue(executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)) {
-            res.isSuccess should be(true)
-            executionTime.gt(50.millis) should be(true)
-            // empiric values for the upper bound here
-            executionTime.lt(550.millis) should be(true)
-          }
+      val (executionTime, res) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
+      def clue() = executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)
+      if (!res.isSuccess) {
+        clue()
       }
+      assert(res.isSuccess)
+      assert(executionTime.gt(50.millis))
+      // empiric values for the upper bound here
+      assert(executionTime.lt(550.millis))
     }
   }
 }

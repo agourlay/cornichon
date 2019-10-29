@@ -130,7 +130,6 @@ lazy val core =
         library.monixExec,
         library.monixReactive,
         library.caffeine,
-        library.scalatest % Test,
         library.utest % Test,
         library.claimant % Test,
         library.scalacheck % Test,

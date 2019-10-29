@@ -4,85 +4,81 @@ import com.github.agourlay.cornichon.core.{ CornichonError, Scenario, ScenarioRu
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.cats.{ EffectStep => CEffectStep }
 import monix.eval.Task
-import org.scalatest.{ AsyncWordSpec, Matchers }
+import utest._
 
 import scala.concurrent.Future
 
-class EffectStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+object EffectStepSpec extends TestSuite with StepUtilSpec {
 
-  "EffectStep" when {
-    "Async" must {
-      "return error if an Effect step throw an exception" in {
-        val step = EffectStep(title = "buggy effect", _ => throw new RuntimeException("boom"))
-        val s = Scenario("scenario with broken effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
-
-      "return error if an Effect step for Future.failed" in {
-        val step = EffectStep(title = "buggy effect", _ => Future.failed(new RuntimeException("boom")))
-        val s = Scenario("scenario with broken effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
+  val tests = Tests {
+    test("EffectStep Async - return error if an Effect step throw an exception") {
+      val step = EffectStep(title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val s = Scenario("scenario with broken effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
     }
 
-    "Sync" must {
-      "return error if an Effect step throw an exception" in {
-        val step = EffectStep.fromSync(title = "buggy effect", _ => throw new RuntimeException("boom"))
-        val s = Scenario("scenario with broken effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
+    test("EffectStep Async - return error if an Effect step for Future.failed") {
+      val step = EffectStep(title = "buggy effect", _ => Future.failed(new RuntimeException("boom")))
+      val s = Scenario("scenario with broken effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
     }
 
-    "SyncE" must {
-      "valid if effect is an Either.Right" in {
-        val step = EffectStep.fromSyncE(title = "valid effect", sc => Right(sc.session))
-        val s = Scenario("scenario with valid effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
-      }
-
-      "invalid if effect is an Either.Left" in {
-        val step = EffectStep.fromSyncE(title = "valid effect", _ => Left(CornichonError.fromString("ohh nooes")))
-        val s = Scenario("scenario with invalid effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
-    }
-  }
-
-  "CatsEffectStep" when {
-    "Async" must {
-      "return error if an Effect step throw an exception" in {
-        val step = CEffectStep[Task](title = "buggy effect", _ => throw new RuntimeException("boom"))
-        val s = Scenario("scenario with broken effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
-
-      "return error if an Effect step for Task.raiseError" in {
-        val step = CEffectStep[Task](title = "buggy effect", _ => Task.raiseError(new RuntimeException("boom")))
-        val s = Scenario("scenario with broken effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
+    test("EffectStep Sync - return error if an Effect step throw an exception") {
+      val step = EffectStep.fromSync(title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val s = Scenario("scenario with broken effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
     }
 
-    "Sync" must {
-      "return error if an Effect step throw an exception" in {
-        val step = CEffectStep[Task](title = "buggy effect", _ => throw new RuntimeException("boom"))
-        val s = Scenario("scenario with broken effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
+    test("EffectStep SyncE - valid if effect is an Either.Right") {
+      val step = EffectStep.fromSyncE(title = "valid effect", sc => Right(sc.session))
+      val s = Scenario("scenario with valid effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
     }
 
-    "SyncE" must {
-      "valid if effect is an Either.Right" in {
-        val step = CEffectStep.fromSyncE(title = "valid effect", sc => Right(sc.session))
-        val s = Scenario("scenario with valid effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
-      }
+    test("EffectStep SyncE - invalid if effect is an Either.Left") {
+      val step = EffectStep.fromSyncE(title = "valid effect", _ => Left(CornichonError.fromString("ohh nooes")))
+      val s = Scenario("scenario with invalid effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
+    }
 
-      "invalid if effect is an Either.Left" in {
-        val step = CEffectStep.fromSyncE(title = "valid effect", _ => Left(CornichonError.fromString("ohh nooes")))
-        val s = Scenario("scenario with invalid effect step", step :: Nil)
-        ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
-      }
+    test("CatsEffectStep Async - return error if an Effect step throw an exception") {
+      val step = CEffectStep[Task](title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val s = Scenario("scenario with broken effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
+    }
+
+    test("CatsEffectStep Async - return error if an Effect step for Task.raiseError") {
+      val step = CEffectStep[Task](title = "buggy effect", _ => Task.raiseError(new RuntimeException("boom")))
+      val s = Scenario("scenario with broken effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
+    }
+
+    test("CatsEffectStep Sync - return error if an Effect step throw an exception") {
+      val step = CEffectStep[Task](title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val s = Scenario("scenario with broken effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
+    }
+
+    test("CatsEffectStep SyncE - valid if effect is an Either.Right") {
+      val step = CEffectStep.fromSyncE(title = "valid effect", sc => Right(sc.session))
+      val s = Scenario("scenario with valid effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
+    }
+
+    test("CatsEffectStep SyncE - invalid if effect is an Either.Left") {
+      val step = CEffectStep.fromSyncE(title = "valid effect", _ => Left(CornichonError.fromString("ohh nooes")))
+      val s = Scenario("scenario with invalid effect step", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
     }
   }
 }

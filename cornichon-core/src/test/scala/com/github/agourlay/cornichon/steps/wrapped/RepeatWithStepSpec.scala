@@ -4,40 +4,39 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.util.ScenarioMatchers
-import org.scalatest.{ AsyncWordSpec, Matchers }
+import utest._
 
-class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec with ScenarioMatchers {
+object RepeatWithStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers {
 
-  "RepeatWithStep" must {
-    "fail if 'repeat' block contains a failed step" in {
+  val tests = Tests {
+    test("fails if 'repeat' block contains a failed step") {
       val nested = AssertStep(
         "always fails",
         _ => GenericEqualityAssertion(true, false)
       ) :: Nil
       val repeatStep = RepeatWithStep(nested, List("1", "2", "3"), "index")
       val s = Scenario("with RepeatWith", repeatStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
-        scenarioFailsWithMessage(res) {
-          """Scenario 'with RepeatWith' failed:
-            |
-            |at step:
-            |always fails
-            |
-            |with error(s):
-            |RepeatWith block failed for element '1'
-            |caused by:
-            |expected result was:
-            |'true'
-            |but actual result is:
-            |'false'
-            |
-            |seed for the run was '1'
-            |""".stripMargin
-        }
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      scenarioFailsWithMessage(res) {
+        """Scenario 'with RepeatWith' failed:
+          |
+          |at step:
+          |always fails
+          |
+          |with error(s):
+          |RepeatWith block failed for element '1'
+          |caused by:
+          |expected result was:
+          |'true'
+          |but actual result is:
+          |'false'
+          |
+          |seed for the run was '1'
+          |""".stripMargin
       }
     }
 
-    "repeat steps inside a 'repeat' block" in {
+    test("repeats steps inside a 'repeat' block") {
       var uglyCounter = 0
       val loop = 5
       val nested = AssertStep(
@@ -49,13 +48,12 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       ) :: Nil
       val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), "index")
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
-        res.isSuccess should be(true)
-        uglyCounter should be(loop)
-      }
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
+      assert(uglyCounter == loop)
     }
 
-    "expose index in session" in {
+    test("exposes index in session") {
       var uglyCounter = 0
       val loop = 5
       val indexKeyName = "my-counter"
@@ -68,10 +66,9 @@ class RepeatWithStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec w
       ) :: Nil
       val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), indexKeyName)
       val s = Scenario("scenario with Repeat", repeatStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
-        res.isSuccess should be(true)
-        uglyCounter should be(loop)
-      }
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
+      assert(uglyCounter == loop)
     }
   }
 }

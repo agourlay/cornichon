@@ -6,34 +6,33 @@ import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTi
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
-import org.scalatest.{ AsyncWordSpec, Matchers, OptionValues }
 
-class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with StepUtilSpec {
+import utest._
 
-  "AttachStep" must {
-    "merge nested steps in the parent flow when first" in {
+object AttachStepSpec extends TestSuite with StepUtilSpec {
+
+  val tests = Tests {
+    test("merges nested steps in the parent flow when first") {
       val nested = List.fill(5)(AssertStep("always true", _ => Assertion.alwaysValid))
       val steps = AttachStep(_ => nested) :: Nil
       val s = Scenario("scenario with Attach", steps)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r =>
-        r.isSuccess should be(true)
-        r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
-        r.logs.size should be(7)
-      }
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
+      assert(res.logs.head == ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
+      assert(res.logs.size == 7)
     }
 
-    "merge nested steps in the parent flow when nested" in {
+    test("merges nested steps in the parent flow when nested") {
       val nested = List.fill(5)(AssertStep("always true", _ => Assertion.alwaysValid))
       val steps = AttachStep(_ => nested) :: Nil
       val s = Scenario("scenario with Attach", RepeatStep(steps, 1, None) :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { r =>
-        r.isSuccess should be(true)
-        r.logs.headOption.value should be(ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
-        r.logs.size should be(9)
-      }
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
+      assert(res.logs.head == ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
+      assert(res.logs.size == 9)
     }
 
-    "run all nested valid effects" in {
+    test("runs all nested valid effects") {
       val uglyCounter = new AtomicInteger(0)
       val effectNumber = 5
       val effect = EffectStep.fromSync(
@@ -48,11 +47,9 @@ class AttachStepSpec extends AsyncWordSpec with Matchers with OptionValues with 
       val attached = AttachStep(_ => nestedSteps)
 
       val s = Scenario("scenario with effects", attached :: effect :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map { res =>
-        res.isSuccess should be(true)
-        uglyCounter.get() should be(effectNumber + 1)
-      }
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
+      assert(uglyCounter.get() == effectNumber + 1)
     }
   }
-
 }

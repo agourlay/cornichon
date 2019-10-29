@@ -3,14 +3,14 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import org.scalatest.{ Matchers, AsyncWordSpec }
+import utest._
 
 import scala.concurrent.duration._
 
-class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
+object WithinStepSpec extends TestSuite with StepUtilSpec {
 
-  "WithinStep" must {
-    "control duration of 'within' wrapped steps" in {
+  val tests = Tests {
+    test("controls duration of 'within' wrapped steps") {
       val d = 100.millis
       val nested = AssertStep(
         "possible random value step",
@@ -21,10 +21,11 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val withinStep = WithinStep(nested, d)
       val s = Scenario("scenario with Within", withinStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(true))
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
     }
 
-    "fail if duration of 'within' is exceeded" in {
+    test("fails if duration of 'within' is exceeded") {
       val d = 100.millis
       val nested = AssertStep(
         "possible random value step",
@@ -35,8 +36,8 @@ class WithinStepSpec extends AsyncWordSpec with Matchers with StepUtilSpec {
       ) :: Nil
       val withinStep = WithinStep(nested, d)
       val s = Scenario("scenario with Within", withinStep :: Nil)
-      ScenarioRunner.runScenario(Session.newEmpty)(s).map(_.isSuccess should be(false))
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(!res.isSuccess)
     }
   }
-
 }

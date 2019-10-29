@@ -1,22 +1,25 @@
 package com.github.agourlay.cornichon.util
 
 import com.github.agourlay.cornichon.core.{ FailureScenarioReport, LogInstruction, ScenarioReport }
-import org.scalatest.{ Assertion, AsyncWordSpecLike, Matchers }
+import utest._
 
 trait ScenarioMatchers {
-  this: AsyncWordSpecLike with Matchers =>
+  this: TestSuite =>
 
-  def scenarioFailsWithMessage(report: ScenarioReport)(expectedMessage: String): Assertion =
+  def scenarioFailsWithMessage(report: ScenarioReport)(expectedMessage: String): Unit =
     report match {
       case f: FailureScenarioReport =>
-        withClue(f.msg + "\nwith logs\n" + LogInstruction.renderLogs(f.logs) + "\n\n") {
-          f.msg should be(expectedMessage)
+        def clue = f.msg + "\nwith logs\n" + LogInstruction.renderLogs(f.logs) + "\n\n"
+        if (f.msg != expectedMessage) {
+          println(clue)
         }
+        assert(f.msg == expectedMessage)
       case other =>
-        fail(s"Should have been a FailedScenarioReport but got \n${LogInstruction.renderLogs(other.logs)}")
+        println(s"Should have been a FailedScenarioReport but got \n${LogInstruction.renderLogs(other.logs)}")
+        assert(false)
     }
 
-  def matchLogsWithoutDuration(logs: List[LogInstruction])(expectedRenderedLogs: String): Assertion = {
+  def matchLogsWithoutDuration(logs: List[LogInstruction])(expectedRenderedLogs: String): Unit = {
     val renderedLogs = LogInstruction.renderLogs(logs, colorized = false)
     val cleanedLogs = renderedLogs.split('\n').toList.map { l =>
       // check if duration is present at end
@@ -31,8 +34,6 @@ trait ScenarioMatchers {
         l
     }
     val preparedCleanedLogs = cleanedLogs.mkString("\n")
-    withClue(preparedCleanedLogs + "\n" + expectedRenderedLogs + "\n\n") {
-      preparedCleanedLogs should be(expectedRenderedLogs)
-    }
+    assert(preparedCleanedLogs == expectedRenderedLogs)
   }
 }
