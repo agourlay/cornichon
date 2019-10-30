@@ -1,14 +1,14 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.ScenarioMatchers
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
+
 import utest._
 
 import scala.concurrent.duration._
 
-object EventuallyStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers {
+object EventuallyStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("replays eventually wrapped steps") {

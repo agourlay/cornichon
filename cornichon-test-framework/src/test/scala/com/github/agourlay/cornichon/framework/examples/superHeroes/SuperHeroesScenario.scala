@@ -5,7 +5,8 @@ import java.util.Base64
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.Step
-import com.github.agourlay.cornichon.framework.examples.superHeroes.server.{ HttpServer, SuperHeroesHttpAPI }
+import com.github.agourlay.cornichon.framework.examples.HttpServer
+import com.github.agourlay.cornichon.framework.examples.superHeroes.server.SuperHeroesHttpAPI
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper

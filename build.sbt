@@ -94,7 +94,7 @@ lazy val noPublishSettings = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka, check)
+    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -165,6 +165,7 @@ lazy val testFramework =
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.sbtTest,
+        library.scalacheck % Test,
         library.http4sServer % Test,
         library.http4sCirce % Test,
         library.http4sDsl % Test
@@ -204,31 +205,11 @@ lazy val httpMock =
       )
     )
 
-lazy val check =
-  project
-    .in(file("./cornichon-check"))
-    .dependsOn(core, testFramework % Test)
-    .enablePlugins(SbtScalariform)
-    .settings(commonSettings)
-    .settings(formattingSettings)
-    .settings(
-      name := "cornichon-check",
-      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
-      testFrameworks += new TestFramework("utest.runner.Framework"),
-      libraryDependencies ++= Seq(
-        library.utest % Test,
-        library.scalacheck % Test,
-        library.http4sServer % Test,
-        library.http4sCirce % Test,
-        library.http4sDsl % Test
-      )
-    )
-
 lazy val benchmarks =
   project
     .in(file("./benchmarks"))
     .settings(commonSettings)
-    .dependsOn(core, check)
+    .dependsOn(core)
     .settings(noPublishSettings)
     .enablePlugins(JmhPlugin)
 
@@ -240,7 +221,7 @@ lazy val docs =
       unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks, scalatest),
       micrositeDocumentationLabelDescription := "Scaladoc"
     )
-    .dependsOn(core, testFramework, kafka, check, httpMock)
+    .dependsOn(core, testFramework, kafka, httpMock)
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(ScalaUnidocPlugin)
     .enablePlugins(GhpagesPlugin)

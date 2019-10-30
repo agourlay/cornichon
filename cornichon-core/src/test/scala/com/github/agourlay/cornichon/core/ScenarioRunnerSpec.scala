@@ -2,13 +2,13 @@ package com.github.agourlay.cornichon.core
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.github.agourlay.cornichon.dsl.ProvidedInstances._
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.{ ScenarioMatchers, TaskSpec }
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
+
 import utest._
 
-object ScenarioRunnerSpec extends TestSuite with TaskSpec with ScenarioMatchers {
+object ScenarioRunnerSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("runScenario executes all steps of a scenario in case of success") {

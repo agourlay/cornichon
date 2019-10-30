@@ -3,17 +3,17 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTitleLogInstruction, Session, Step }
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.ScenarioMatchers
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
+
 import utest._
 
-object FlatMapStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers {
+object FlatMapStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("merge nested steps in the parent flow when first") {
-      val dummy = AssertStep("always true", _ => Assertion.alwaysValid)
+      val dummy = alwaysValidAssertStep
       val nested = List.fill(5)(dummy)
       val steps = FlatMapStep(dummy, _ => nested) :: Nil
       val s = Scenario("scenario with FlatMap", steps)
@@ -24,7 +24,7 @@ object FlatMapStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers
     }
 
     test("shortcuts if starting step fails") {
-      val dummy = AssertStep("always true", _ => Assertion.alwaysValid)
+      val dummy = alwaysValidAssertStep
       val nested = List.fill(5)(dummy)
       val steps = FlatMapStep(AssertStep("always fails", _ => Assertion.failWith("Nop!")), _ => nested) :: Nil
       val s = Scenario("with FlatMap", steps)
@@ -59,7 +59,7 @@ object FlatMapStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers
       val e = EffectStep.fromSyncE("set session value", _.session.addValue("number-sub-steps", "5"))
       def nestedBuilder(s: Session): List[Step] = {
         val nb = s.get("number-sub-steps").valueUnsafe.toInt
-        val dummy = AssertStep("always true", _ => Assertion.alwaysValid)
+        val dummy = alwaysValidAssertStep
         List.fill(nb)(dummy)
       }
 
@@ -72,7 +72,7 @@ object FlatMapStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers
     }
 
     test("merge nested steps in the parent flow when nested") {
-      val dummy = AssertStep("always true", _ => Assertion.alwaysValid)
+      val dummy = alwaysValidAssertStep
       val nested = List.fill(5)(dummy)
       val steps = FlatMapStep(dummy, _ => nested) :: Nil
       val s = Scenario("scenario with FlatMap", RepeatStep(steps, 1, None) :: Nil)

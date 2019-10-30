@@ -1,13 +1,13 @@
 package com.github.agourlay.cornichon.steps.regular
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Scenario, ScenarioRunner, Session }
-import com.github.agourlay.cornichon.steps.StepUtilSpec
-import com.github.agourlay.cornichon.util.ScenarioMatchers
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
+
 import utest._
 
 import scala.util.control.NoStackTrace
 
-object DebugStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers {
+object DebugStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("fails scenario if a Debug step throws an exception") {

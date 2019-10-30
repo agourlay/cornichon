@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
-import com.github.agourlay.cornichon.steps.StepUtilSpec
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
 import utest._
 
-object AssertStepSpec extends TestSuite with StepUtilSpec {
+object AssertStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("fail if instruction throws exception") {

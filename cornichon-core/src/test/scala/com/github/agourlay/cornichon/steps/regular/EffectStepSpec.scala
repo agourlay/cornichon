@@ -1,14 +1,14 @@
 package com.github.agourlay.cornichon.steps.regular
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Scenario, ScenarioRunner, Session }
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.cats.{ EffectStep => CEffectStep }
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
 import monix.eval.Task
 import utest._
 
 import scala.concurrent.Future
 
-object EffectStepSpec extends TestSuite with StepUtilSpec {
+object EffectStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("EffectStep Async - return error if an Effect step throw an exception") {

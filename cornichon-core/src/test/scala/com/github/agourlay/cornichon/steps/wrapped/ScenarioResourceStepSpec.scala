@@ -4,16 +4,15 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.function.UnaryOperator
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.EffectStep
-import com.github.agourlay.cornichon.util.ScenarioMatchers
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
 
 import utest._
 
 import scala.concurrent.Future
 import scala.util.Random
 
-object ScenarioResourceStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers {
+object ScenarioResourceStepSpec extends TestSuite with CommonSpec {
   def randomName: String = Random.alphanumeric.take(10).mkString
   import QueueManager._
 

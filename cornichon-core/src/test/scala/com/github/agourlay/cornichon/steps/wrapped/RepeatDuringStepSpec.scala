@@ -1,13 +1,14 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
+
 import utest._
 
 import scala.concurrent.duration._
 
-object RepeatDuringStepSpec extends TestSuite with StepUtilSpec {
+object RepeatDuringStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("fails if 'repeatDuring' block contains a failed step") {

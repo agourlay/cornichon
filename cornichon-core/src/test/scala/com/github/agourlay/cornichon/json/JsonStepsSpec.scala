@@ -1,11 +1,12 @@
 package com.github.agourlay.cornichon.json
 
+import cats.instances.string._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.steps.StepUtilSpec
+import com.github.agourlay.cornichon.testHelpers.TaskSpec
 import utest._
 
-object JsonStepsSpec extends TestSuite with StepUtilSpec {
+object JsonStepsSpec extends TestSuite with TaskSpec {
 
   private val testKey = "test-key"
   private val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))

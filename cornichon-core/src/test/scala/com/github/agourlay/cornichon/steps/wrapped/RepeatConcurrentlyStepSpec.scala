@@ -3,15 +3,14 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.util.ScenarioMatchers
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
 
 import utest._
 
 import scala.concurrent.duration._
 
-object RepeatConcurrentlyStepSpec extends TestSuite with StepUtilSpec with ScenarioMatchers {
+object RepeatConcurrentlyStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("fails if 'repeatConcurrently' block contains a failed step") {

@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
 import utest._
 
-object WithDataInputStepSpec extends TestSuite with StepUtilSpec {
+object WithDataInputStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("fails if table is malformed") {

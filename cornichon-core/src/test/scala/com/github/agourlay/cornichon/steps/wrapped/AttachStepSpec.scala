@@ -3,17 +3,16 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTitleLogInstruction, Session }
-import com.github.agourlay.cornichon.steps.StepUtilSpec
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
+import com.github.agourlay.cornichon.testHelpers.CommonSpec
 
 import utest._
 
-object AttachStepSpec extends TestSuite with StepUtilSpec {
+object AttachStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("merges nested steps in the parent flow when first") {
-      val nested = List.fill(5)(AssertStep("always true", _ => Assertion.alwaysValid))
+      val nested = List.fill(5)(alwaysValidAssertStep)
       val steps = AttachStep(_ => nested) :: Nil
       val s = Scenario("scenario with Attach", steps)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
@@ -23,7 +22,7 @@ object AttachStepSpec extends TestSuite with StepUtilSpec {
     }
 
     test("merges nested steps in the parent flow when nested") {
-      val nested = List.fill(5)(AssertStep("always true", _ => Assertion.alwaysValid))
+      val nested = List.fill(5)(alwaysValidAssertStep)
       val steps = AttachStep(_ => nested) :: Nil
       val s = Scenario("scenario with Attach", RepeatStep(steps, 1, None) :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))

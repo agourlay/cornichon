@@ -1,15 +1,16 @@
 package com.github.agourlay.cornichon.json
 
+import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.steps.StepUtilSpec
+import com.github.agourlay.cornichon.testHelpers.TaskSpec
 import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
 import org.scalacheck.Properties
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim
 
-class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstances with StepUtilSpec {
+class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstances with TaskSpec {
 
   private val testKey = "test-key"
   private val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))

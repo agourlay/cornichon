@@ -5,8 +5,7 @@ import java.util.concurrent.{ ExecutorService, Executors }
 import com.github.agourlay.cornichon.core._
 import monix.execution.Scheduler
 import org.openjdk.jmh.annotations._
-import com.github.agourlay.cornichon.check._
-import com.github.agourlay.cornichon.check.checkModel._
+import com.github.agourlay.cornichon.steps.check.checkModel._
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 
 import scala.concurrent.Await

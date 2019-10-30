@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
 import cats.implicits._
+import com.github.agourlay.cornichon.framework.examples.HttpServer
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -176,8 +177,4 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
       .runToFuture
-}
-
-class HttpServer(signal: Task[Unit])(implicit s: Scheduler) {
-  def shutdown(): CancelableFuture[Unit] = signal.runToFuture
 }
