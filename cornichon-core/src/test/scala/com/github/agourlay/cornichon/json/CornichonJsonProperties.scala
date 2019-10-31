@@ -8,11 +8,14 @@ import cats.instances.int._
 import cats.instances.long._
 import cats.instances.double._
 import cats.instances.bigDecimal._
-import org.scalacheck.{ Gen, Properties }
+import org.scalacheck.{ Gen, Properties, Test }
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim
 
 class CornichonJsonProperties extends Properties("CornichonJson") with CornichonJson with ArbitraryInstances {
+
+  // avoid lists too long (default: 100)
+  override def overrideParameters(p: Test.Parameters): Test.Parameters = super.overrideParameters(p.withMaxSize(10))
 
   property("parseJson Boolean") =
     forAll { bool: Boolean =>
@@ -59,9 +62,7 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
   property("findAllContainingValue find key in any JsonObject") = {
     val targetValue = Json.fromString("target value")
     forAll { jos: List[JsonObject] =>
-
       val json = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch", acc)) }
-
       val path = findAllPathWithValue("target value" :: Nil, json).head
       Claim {
         path.run(json).contains(targetValue)

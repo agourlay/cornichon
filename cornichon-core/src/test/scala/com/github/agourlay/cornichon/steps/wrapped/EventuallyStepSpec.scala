@@ -82,7 +82,7 @@ object EventuallyStepSpec extends TestSuite with CommonSpec {
     //    }
 
     test("reports distinct errors in the logs and only final error in the report") {
-      val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
+      val eventuallyConf = EventuallyConf(maxTime = 200.millis, interval = 10.milliseconds)
       var counter = 0
       val nested = AssertStep(
         "Fail differently", _ => {
@@ -113,7 +113,7 @@ object EventuallyStepSpec extends TestSuite with CommonSpec {
         """
           |   Scenario : scenario with different failures
           |      main steps
-          |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
+          |      Eventually block with maxDuration = 200 milliseconds and interval = 10 milliseconds
           |         Fail differently
           |         *** FAILED ***
           |         Failing 1

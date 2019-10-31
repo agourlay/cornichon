@@ -39,9 +39,9 @@ object ConcurrentlyStepSpec extends TestSuite with CommonSpec {
 
     test("fails if 'Concurrently' block does not complete within 'maxDuration because of a single step duration") {
       val nested = AssertStep(
-        "always succeed after 1000 ms",
+        "always succeed after 500 ms",
         _ => {
-          Thread.sleep(1000)
+          Thread.sleep(500)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil

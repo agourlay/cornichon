@@ -28,7 +28,7 @@ import scala.util.{ Failure, Success }
 
 class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
 
-  val sm = new SuperMicroService()
+  private val sm = new SuperMicroService()
   implicit val s = Scheduler.Implicits.global
 
   implicit val heroJsonDecoder = jsonOf[Task, SuperHero]

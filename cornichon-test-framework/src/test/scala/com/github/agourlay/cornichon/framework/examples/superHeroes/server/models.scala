@@ -29,4 +29,4 @@ case class SuperHeroAlreadyExists(id: String) extends ApiError {
   val msg = s"Publisher $id already exist"
 }
 
-case class HttpError(error: String)
+case class HttpError(error: String) extends AnyVal

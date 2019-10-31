@@ -45,9 +45,9 @@ object RepeatDuringStepSpec extends TestSuite with CommonSpec {
 
     test("repeats steps inside 'repeatDuring' at least once if they take more time than the duration param") {
       val nested = AssertStep(
-        "always valid",
+        "always valid but slow",
         _ => {
-          Thread.sleep(500)
+          Thread.sleep(100)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
@@ -61,7 +61,7 @@ object RepeatDuringStepSpec extends TestSuite with CommonSpec {
       assert(res.isSuccess)
       assert(executionTime.gt(50.millis))
       // empiric values for the upper bound here
-      assert(executionTime.lt(550.millis))
+      assert(executionTime.lt(150.millis))
     }
   }
 }

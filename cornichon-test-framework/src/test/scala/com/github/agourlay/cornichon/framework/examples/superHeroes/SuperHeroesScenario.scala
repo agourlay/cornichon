@@ -478,10 +478,10 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         // To make debugging easier, here are some debug steps printing into console
-        And I show_session
-        And I show_last_status
-        And I show_last_body
-        And I show_last_headers
+        //And I show_session
+        //And I show_last_status
+        //And I show_last_body
+        //And I show_last_headers
       }
 
       Scenario("demonstrate GraphQL support") {
@@ -564,7 +564,7 @@ class SuperHeroesScenario extends CornichonFeature {
         Then assert body.path("name").is("<name>")
 
         // Repeat series of Steps
-        Repeat(3) {
+        Repeat(2) {
 
           When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
 
@@ -580,7 +580,7 @@ class SuperHeroesScenario extends CornichonFeature {
         }
 
         // Nested Repeats
-        Repeat(3) {
+        Repeat(2) {
 
           When I get("/superheroes/Superman").withParams("sessionId" → "<session-id>")
 
@@ -602,7 +602,7 @@ class SuperHeroesScenario extends CornichonFeature {
           Then assert status.is(200)
         }
 
-        // Repeat serie of Steps until it succeed
+        // Repeat series of Steps until it succeed
         Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
 
           When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
@@ -679,10 +679,10 @@ class SuperHeroesScenario extends CornichonFeature {
           )
         }
 
-        // Assert that a serie of Steps succeeds within a given duration
-        Within(maxDuration = 200.millis) {
+        // Assert that a series of Steps succeeds within a given duration
+        Within(maxDuration = 50.millis) {
 
-          When I wait(150.millis)
+          When I wait(10.millis)
 
         }
 
