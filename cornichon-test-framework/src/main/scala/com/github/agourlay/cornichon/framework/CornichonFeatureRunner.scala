@@ -4,25 +4,12 @@ import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import monix.eval
-import monix.execution.Scheduler.Implicits.global
-import sbt.testing._
+import monix.eval.Task
+import sbt.testing.{ Event, EventHandler, Fingerprint, OptionalThrowable, Selector, Status, TestSelector }
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.Await
-
-class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], explicitSeed: Option[Long]) extends Task {
-
-  override def tags(): Array[String] = Array.empty
-  override def taskDef(): TaskDef = task
-
-  override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
-    Await.result(loadAndExecuteFeature(eventHandler).runToFuture, Duration.Inf)
-    Array.empty
-  }
-
-  private def loadAndExecuteFeature(eventHandler: EventHandler): eval.Task[Done] = {
-    val featureClass = Class.forName(task.fullyQualifiedName())
-    val baseFeature = featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
+object CornichonFeatureRunner {
+  def loadAndExecute(featureInfo: FeatureInfo, eventHandler: EventHandler, seed: Option[Long], scenarioNameFilter: Set[String]): eval.Task[Boolean] = {
+    val baseFeature = featureInfo.featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
     Either.catchNonFatal(baseFeature.feature).fold(
       e => {
@@ -36,8 +23,8 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
              |${CornichonError.genStacktrace(e)}
              |""".stripMargin
         println(FailureLogInstruction(banner, 0).colorized)
-        eventHandler.handle(failureEventBuilder(e))
-        Done.taskDone
+        eventHandler.handle(failureEventBuilder(featureInfo, e))
+        Task.now(false)
       },
       feature => {
         val (featureLog, featureRun) = feature.ignored match {
@@ -46,13 +33,13 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
             // This is not emitting the SBT `Status.Ignored` that counts tests.
             val msg = s"${feature.name}: ignored because $reason"
             val featureLog = WarningLogInstruction(msg, 0).colorized
-            (featureLog, Done.taskDone)
+            (featureLog, Task.now(true))
           case None =>
             val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
-            val featureRunner = FeatureRunner(feature, baseFeature, explicitSeed)
-            val run = featureRunner.runFeature(filterScenarios)(generateResultEvent(eventHandler)).map { results =>
-              results.foreach(printResultLogs(featureClass))
-              Done
+            val featureRunner = FeatureRunner(feature, baseFeature, seed)
+            val run = featureRunner.runFeature(filterScenarios(scenarioNameFilter))(generateResultEvent(featureInfo, eventHandler)).map { results =>
+              results.foreach(printResultLogs(featureInfo.featureClass))
+              results.forall(_.isSuccess)
             }
             (featureLog, run)
         }
@@ -62,7 +49,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
     )
   }
 
-  private def filterScenarios(s: Scenario): Boolean =
+  private def filterScenarios(scenarioNameFilter: Set[String])(s: Scenario): Boolean =
     if (scenarioNameFilter.isEmpty)
       true
     else
@@ -71,8 +58,8 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
   private def replayCommand(featureClass: Class[_], scenarioName: String, seed: Long): String =
     s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" "--seed=$seed""""
 
-  private def generateResultEvent(eventHandler: EventHandler)(sr: ScenarioReport) = {
-    eventHandler.handle(eventBuilder(sr, sr.duration.toMillis))
+  private def generateResultEvent(featureInfo: FeatureInfo, eventHandler: EventHandler)(sr: ScenarioReport) = {
+    eventHandler.handle(eventBuilder(featureInfo, sr, sr.duration.toMillis))
     sr
   }
 
@@ -111,7 +98,7 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
         |  ${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
         |  ${replayCommand(featureClass, f.scenarioName, f.seed)}""".stripMargin
 
-  private def eventBuilder(sr: ScenarioReport, durationInMillis: Long) = new Event {
+  private def eventBuilder(featureInfo: FeatureInfo, sr: ScenarioReport, durationInMillis: Long): Event = new Event {
     val status = sr match {
       case _: SuccessScenarioReport => Status.Success
       case _: FailureScenarioReport => Status.Failure
@@ -125,18 +112,24 @@ class CornichonFeatureTask(task: TaskDef, scenarioNameFilter: Set[String], expli
       case _ =>
         new OptionalThrowable()
     }
-    val fullyQualifiedName = task.fullyQualifiedName()
+    val fullyQualifiedName = featureInfo.fullyQualifiedNam
     val selector = new TestSelector(sr.scenarioName) // points to the correct scenario
-    val fingerprint = task.fingerprint()
+    val fingerprint = featureInfo.fingerprint
     val duration = durationInMillis
   }
 
-  private def failureEventBuilder(exception: Throwable) = new Event {
+  private def failureEventBuilder(featureInfo: FeatureInfo, exception: Throwable): Event = new Event {
     val status = Status.Failure
     val throwable = new OptionalThrowable(exception)
-    val fullyQualifiedName = task.fullyQualifiedName()
-    val selector = task.selectors().head
-    val fingerprint = task.fingerprint()
+    val fullyQualifiedName = featureInfo.fullyQualifiedNam
+    val selector = featureInfo.selector
+    val fingerprint = featureInfo.fingerprint
     val duration = 0L
   }
+}
+
+case class FeatureInfo(fullyQualifiedNam: String, featureClass: Class[_], fingerprint: Fingerprint, selector: Selector)
+
+object NoOpEventHandler extends EventHandler {
+  def handle(event: Event): Unit = ()
 }

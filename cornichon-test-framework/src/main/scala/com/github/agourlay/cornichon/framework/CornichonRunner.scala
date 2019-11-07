@@ -27,7 +27,7 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
         println(CornichonError.genStacktrace(e))
         None
     }
-    taskDefs.map(new CornichonFeatureTask(_, scenarioNameFilter, explicitSeed))
+    taskDefs.map(new CornichonFeatureSbtTask(_, scenarioNameFilter, explicitSeed))
   }
 
   override def done(): String = {
