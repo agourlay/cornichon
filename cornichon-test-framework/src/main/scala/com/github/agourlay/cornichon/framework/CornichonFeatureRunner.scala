@@ -58,7 +58,7 @@ object CornichonFeatureRunner {
   private def replayCommand(featureClass: Class[_], scenarioName: String, seed: Long): String =
     s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" "--seed=$seed""""
 
-  private def generateResultEvent(featureInfo: FeatureInfo, eventHandler: EventHandler)(sr: ScenarioReport) = {
+  private def generateResultEvent(featureInfo: FeatureInfo, eventHandler: EventHandler)(sr: ScenarioReport): ScenarioReport = {
     eventHandler.handle(eventBuilder(featureInfo, sr, sr.duration.toMillis))
     sr
   }
@@ -112,7 +112,7 @@ object CornichonFeatureRunner {
       case _ =>
         new OptionalThrowable()
     }
-    val fullyQualifiedName = featureInfo.fullyQualifiedNam
+    val fullyQualifiedName = featureInfo.fullyQualifiedName
     val selector = new TestSelector(sr.scenarioName) // points to the correct scenario
     val fingerprint = featureInfo.fingerprint
     val duration = durationInMillis
@@ -121,15 +121,11 @@ object CornichonFeatureRunner {
   private def failureEventBuilder(featureInfo: FeatureInfo, exception: Throwable): Event = new Event {
     val status = Status.Failure
     val throwable = new OptionalThrowable(exception)
-    val fullyQualifiedName = featureInfo.fullyQualifiedNam
+    val fullyQualifiedName = featureInfo.fullyQualifiedName
     val selector = featureInfo.selector
     val fingerprint = featureInfo.fingerprint
     val duration = 0L
   }
 }
 
-case class FeatureInfo(fullyQualifiedNam: String, featureClass: Class[_], fingerprint: Fingerprint, selector: Selector)
-
-object NoOpEventHandler extends EventHandler {
-  def handle(event: Event): Unit = ()
-}
+case class FeatureInfo(fullyQualifiedName: String, featureClass: Class[_], fingerprint: Fingerprint, selector: Selector)
