@@ -103,11 +103,12 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders returns ResolverError if placeholder not found") =
-    forAll(keyGen, valueGen, keyGen) { (key, value, secondKey) =>
+    forAll(keyGen, valueGen) { (key, value) =>
       val session = Session.newEmpty.addValueUnsafe(key, value)
-      val content = s"This project is named <$secondKey>"
+      val unknownKey = key + "42"
+      val content = s"This project is named <$unknownKey>"
       Claim {
-        fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession(secondKey, session))
+        fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession(unknownKey, session))
       }
     }
 
