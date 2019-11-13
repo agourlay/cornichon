@@ -633,7 +633,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
         for {
           name ← Gen.alphaStr
           description ← Gen.alphaStr
-          price ← Gen.posNum[Int]
+          price ← Gen.choose(1, Int.MaxValue)
         } yield ProductDraft(name, description, price)
       gen(params, Seed(nextSeed))
     }

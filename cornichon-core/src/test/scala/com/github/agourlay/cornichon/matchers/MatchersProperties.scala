@@ -34,7 +34,7 @@ object MatchersProperties extends Properties("Matchers") {
     }
 
   property("any-positive-integer correct for any positive int") =
-    forAll(Gen.posNum[Int]) { int =>
+    forAll(Gen.choose(1, Int.MaxValue)) { int =>
       Claim {
         anyPositiveInteger.predicate(Json.fromInt(int))
       }
