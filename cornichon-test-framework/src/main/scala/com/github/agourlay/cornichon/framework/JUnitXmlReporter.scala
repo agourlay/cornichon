@@ -67,15 +67,26 @@ object JUnitXmlReporter {
 
   private case class TestCase(name: String, duration: Long, pending: Boolean = false, canceled: Boolean = false, ignored: Boolean = false, failure: Option[Throwable] = None)
 
+  def checkReportsFolder(reportsOutputDir: String): Unit = {
+    val outputDir: File = new File(reportsOutputDir)
+    if (outputDir.exists()) {
+      println(s"$reportsOutputDir already exists - will use it")
+    } else {
+      val created = outputDir.mkdir()
+      if (created) {
+        println(s"$reportsOutputDir did not exist so it was created")
+      } else {
+        println(s"ERROR: $reportsOutputDir did not exist and could not be created")
+        sys.exit(1)
+      }
+    }
+  }
+
   def writeJunitReport(directory: String, featureName: String, duration: FiniteDuration, startingTimestamp: Long, events: List[Event]): Either[Throwable, Unit] =
     Either.catchNonFatal {
       val testSuite = TestSuite(featureName, startingTimestamp, duration, events)
       val xmlStr = renderXML(testSuite)
 
-      val outputDir: File = new File(directory)
-      if (!outputDir.exists()) {
-        outputDir.mkdir()
-      }
       val reportFile = new File(directory + "/TEST-" + featureName + ".xml")
       reportFile.createNewFile()
       val out = new PrintWriter(reportFile, "UTF-8")

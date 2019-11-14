@@ -40,6 +40,7 @@ object MainRunner {
       System.err.println(help)
       sys.exit(1)
     case Right((packageToScan, reportsOutputDir, featureParallelism, explicitSeed, scenarioNameFilter)) =>
+      JUnitXmlReporter.checkReportsFolder(reportsOutputDir)
       println("Starting discovery")
       val classes = discoverFeatureClasses(packageToScan)
       println(s"Found ${classes.size} features")
