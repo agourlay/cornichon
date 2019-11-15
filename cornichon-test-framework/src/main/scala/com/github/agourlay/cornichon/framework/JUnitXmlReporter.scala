@@ -72,7 +72,7 @@ object JUnitXmlReporter {
     if (outputDir.exists()) {
       println(s"$reportsOutputDir already exists - will use it")
     } else {
-      val created = outputDir.mkdir()
+      val created = outputDir.mkdirs()
       if (created) {
         println(s"$reportsOutputDir did not exist so it was created")
       } else {
