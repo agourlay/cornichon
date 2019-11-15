@@ -55,16 +55,18 @@ object StatusSteps {
   }
 
   def statusError(expected: Int, actual: String, session: Session): String = {
-    val body = session.get(lastResponseBodyKey).valueUnsafe
+    val responseBody = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe
-    StatusNonExpected(expected, actual.toInt, headers, body).baseErrorMessage
+    val requestDescription = session.get(lastResponseRequestKey).valueUnsafe
+    StatusNonExpected(expected, actual.toInt, headers, responseBody, requestDescription).baseErrorMessage
   }
 
   def statusKindError(expectedKind: Int, actualStatus: String, session: Session): String = {
     val expected = StatusKind.kindDisplay(expectedKind)
     val body = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe
-    StatusNonExpected(expected, actualStatus, headers, body).baseErrorMessage
+    val requestDescription = session.get(lastResponseRequestKey).valueUnsafe
+    StatusNonExpected(expected, actualStatus, headers, body, requestDescription).baseErrorMessage
   }
 
 }

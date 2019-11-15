@@ -65,7 +65,7 @@ class HttpService(
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
       configuredRequest = configureRequest(resolvedRequest, config)
       resp <- client.runRequest(configuredRequest, requestTimeout)
-      newSession <- EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(scenarioContext.session))
+      newSession <- EitherT.fromEither[Task](handleResponse(resp, configuredRequest.show, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 
   private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(scenarioContext: ScenarioContext) =
@@ -73,7 +73,7 @@ class HttpService(
       (url, _, params, headers) <- EitherT.fromEither[Task](resolveRequestParts(r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
       resolvedRequest = HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
       resp <- EitherT(client.openStream(resolvedRequest, requestTimeout))
-      newSession <- EitherT.fromEither[Task](handleResponse(resp, expectedStatus, extractor)(scenarioContext.session))
+      newSession <- EitherT.fromEither[Task](handleResponse(resp, resolvedRequest.show, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 
   private def withBaseUrl(input: String) = {
@@ -149,6 +149,7 @@ object HttpService {
     val lastResponseBodyKey = "last-response-body"
     val lastResponseStatusKey = "last-response-status"
     val lastResponseHeadersKey = "last-response-headers"
+    val lastResponseRequestKey = "last-response-request"
     val withHeadersKey = "with-headers"
     // Using non-ASCII chars to assure that those won't be present inside the headers.
     val headersKeyValueDelim = '→'
@@ -199,17 +200,17 @@ object HttpService {
       case ByNames(names) => headers.filterNot { case (n, _) => names.contains(n) }
     }
 
-  def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int]): Either[CornichonError, CornichonHttpResponse] =
+  def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int], requestDescription: String): Either[CornichonError, CornichonHttpResponse] =
     expected match {
       case None =>
         httpResponse.asRight
       case Some(expectedStatus) if httpResponse.status == expectedStatus =>
         httpResponse.asRight
       case Some(expectedStatus) =>
-        StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body).asLeft
+        StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body, requestDescription).asLeft
     }
 
-  def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor)(response: CornichonHttpResponse): Either[CornichonError, Session] = {
+  def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor, requestDescription: String)(response: CornichonHttpResponse): Either[CornichonError, Session] = {
     val additionalExtractions = extractor match {
       case NoOpExtraction =>
         rightNil
@@ -220,17 +221,18 @@ object HttpService {
           .map(extractedJson => (targetKey -> jsonStringValue(extractedJson)) :: Nil)
     }
     additionalExtractions.flatMap { extra =>
-      val allElementsToAdd = commonSessionExtractions(response) ++ extra
+      val allElementsToAdd = commonSessionExtractions(response, requestDescription) ++ extra
       session.addValues(allElementsToAdd: _*)
     }
   }
 
-  private def handleResponse(resp: CornichonHttpResponse, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
-    expectStatusCode(resp, expectedStatus)
-      .flatMap(fillInSessionWithResponse(session, extractor))
+  private def handleResponse(resp: CornichonHttpResponse, requestDescription: String, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
+    expectStatusCode(resp, expectedStatus, requestDescription)
+      .flatMap(fillInSessionWithResponse(session, extractor, requestDescription))
 
-  private def commonSessionExtractions(response: CornichonHttpResponse): List[(String, String)] =
+  private def commonSessionExtractions(response: CornichonHttpResponse, requestDescription: String): List[(String, String)] =
     (lastResponseStatusKey → response.status.toString) ::
       (lastResponseBodyKey → response.body) ::
-      (lastResponseHeadersKey → encodeSessionHeaders(response.headers)) :: Nil
+      (lastResponseHeadersKey → encodeSessionHeaders(response.headers)) ::
+      (lastResponseRequestKey → requestDescription) :: Nil
 }
