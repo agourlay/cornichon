@@ -165,6 +165,9 @@ lazy val testFramework =
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.sbtTest,
+        library.openPojo,
+        library.decline,
+        library.scalaXml,
         library.scalacheck % Test,
         library.http4sServer % Test,
         library.http4sCirce % Test,
@@ -286,6 +289,9 @@ lazy val library =
       val embeddedKafka = "2.3.1"
       val kafkaClient   = "2.3.1"
       val caffeine      = "2.8.0"
+      val openPojo      = "0.8.13"
+      val decline       = "1.0.0"
+      val scalaXml      = "2.0.0-M1"
     }
     val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
     val catsMacro     = "org.typelevel"                  %% "cats-macros"          % Version.cats
@@ -313,4 +319,7 @@ lazy val library =
     val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
     val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.embeddedKafka
     val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"             % Version.caffeine
+    val openPojo      = "com.openpojo"                   %  "openpojo"             % Version.openPojo
+    val decline       = "com.monovore"                   %% "decline"              % Version.decline
+    val scalaXml      = "org.scala-lang.modules"         %% "scala-xml"            % Version.scalaXml
   }

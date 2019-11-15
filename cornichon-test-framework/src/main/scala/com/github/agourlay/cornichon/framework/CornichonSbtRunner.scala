@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.framework
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.github.agourlay.cornichon.core.CornichonError
-import com.github.agourlay.cornichon.framework.CornichonRunner._
+import com.github.agourlay.cornichon.framework.CornichonSbtRunner._
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import sbt.testing._
 
@@ -11,7 +11,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.util.control.NonFatal
 
-class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) extends Runner {
+class CornichonSbtRunner(val args: Array[String], val remoteArgs: Array[String]) extends Runner {
 
   private val gotTasks = new AtomicBoolean(false)
 
@@ -27,7 +27,7 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
         println(CornichonError.genStacktrace(e))
         None
     }
-    taskDefs.map(new CornichonFeatureTask(_, scenarioNameFilter, explicitSeed))
+    taskDefs.map(new CornichonFeatureSbtTask(_, scenarioNameFilter, explicitSeed))
   }
 
   override def done(): String = {
@@ -40,6 +40,6 @@ class CornichonRunner(val args: Array[String], val remoteArgs: Array[String]) ex
 
 }
 
-object CornichonRunner {
+object CornichonSbtRunner {
   val seedArg = "--seed="
 }
