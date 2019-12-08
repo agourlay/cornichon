@@ -272,7 +272,7 @@ lazy val library =
   new {
     object Version {
       val claimant      = "0.1.2"
-      val scalaTest     = "3.0.8"
+      val scalaTest     = "3.1.0"
       val utest         = "0.7.1"
       val cats          = "2.0.0"
       val parboiled     = "2.1.8"
