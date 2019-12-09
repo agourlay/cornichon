@@ -14,6 +14,7 @@ import monix.execution.Scheduler
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
+import org.scalatest.wordspec.AsyncWordSpecLike
 
 trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: BaseFeature =>
