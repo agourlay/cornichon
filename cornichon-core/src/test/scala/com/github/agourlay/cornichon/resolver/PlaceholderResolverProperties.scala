@@ -113,7 +113,8 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders resolves two placeholders") =
-    forAll(keyGen, valueGen, keyGen, valueGen) { (k1, v1, k2, v2) =>
+    forAll(keyGen, valueGen, valueGen) { (k1, v1, v2) =>
+      val k2 = k1 + "42"
       val session = Session.newEmpty.addValuesUnsafe(k1 → v1, k2 → v2)
       val content = s"This project is named <$k1> and is super <$k2>"
       Claim {
