@@ -102,7 +102,7 @@ object ScenarioResourceStepSpec extends TestSuite with CommonSpec {
     EffectStep(
       s"delete the queue: $key",
       sc => Future {
-        Thread.sleep(Random.nextInt(500).toLong) // To prove that steps are executed in sequence, it's useful to have them take varying amounts of time (so, if they were being executed in parallel the order would be non-deterministic)
+        Thread.sleep(Random.nextInt(50).toLong) // To prove that steps are executed in sequence, it's useful to have them take varying amounts of time (so, if they were being executed in parallel the order would be non-deterministic)
         queueResource.delete(sc.session.get(key).right.get)
         Right(sc.session)
       }

@@ -39,20 +39,20 @@ object ConcurrentlyStepSpec extends TestSuite with CommonSpec {
 
     test("fails if 'Concurrently' block does not complete within 'maxDuration because of a single step duration") {
       val nested = AssertStep(
-        "always succeed after 500 ms",
+        "always succeed after 50 ms",
         _ => {
-          Thread.sleep(500)
+          Thread.sleep(50)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
+      val steps = ConcurrentlyStep(nested, 10.millis) :: Nil
       val s = Scenario("with Concurrently", steps)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       scenarioFailsWithMessage(res) {
         """Scenario 'with Concurrently' failed:
           |
           |at step:
-          |Concurrently block with maxTime '200 milliseconds'
+          |Concurrently block with maxTime '10 milliseconds'
           |
           |with error(s):
           |Concurrently block did not reach completion in time: 0/1 finished

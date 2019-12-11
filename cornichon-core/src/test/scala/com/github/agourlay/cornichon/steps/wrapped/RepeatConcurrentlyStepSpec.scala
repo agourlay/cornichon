@@ -18,7 +18,7 @@ object RepeatConcurrentlyStepSpec extends TestSuite with CommonSpec {
         "always fails",
         _ => GenericEqualityAssertion(true, false)
       ) :: Nil
-      val steps = RepeatConcurrentlyStep(times = 3, nested, parallelism = 1, maxTime = 300.millis) :: Nil
+      val steps = RepeatConcurrentlyStep(times = 2, nested, parallelism = 1, maxTime = 300.millis) :: Nil
       val s = Scenario("with RepeatConcurrently", steps)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       scenarioFailsWithMessage(res) {
@@ -40,20 +40,20 @@ object RepeatConcurrentlyStepSpec extends TestSuite with CommonSpec {
 
     test("fails if 'RepeatConcurrently' block does not complete within 'maxDuration because of a single step duration") {
       val nested = AssertStep(
-        "always succeed after 200 ms",
+        "always succeed after 100 ms",
         _ => {
-          Thread.sleep(200)
+          Thread.sleep(100)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
-      val steps = RepeatConcurrentlyStep(times = 1, nested, parallelism = 1, maxTime = 100.millis) :: Nil
+      val steps = RepeatConcurrentlyStep(times = 1, nested, parallelism = 1, maxTime = 20.millis) :: Nil
       val s = Scenario("with RepeatConcurrently", steps)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       scenarioFailsWithMessage(res) {
         """Scenario 'with RepeatConcurrently' failed:
           |
           |at step:
-          |Repeat concurrently block '1' times with parallel factor '1' and maxTime '100 milliseconds'
+          |Repeat concurrently block '1' times with parallel factor '1' and maxTime '20 milliseconds'
           |
           |with error(s):
           |Repeat concurrently block did not reach completion in time: 0/1 finished
