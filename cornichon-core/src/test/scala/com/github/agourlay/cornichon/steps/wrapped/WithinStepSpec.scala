@@ -11,11 +11,11 @@ object WithinStepSpec extends TestSuite with CommonSpec {
 
   val tests = Tests {
     test("controls duration of 'within' wrapped steps") {
-      val d = 100.millis
+      val d = 50.millis
       val nested = AssertStep(
         "possible random value step",
         _ => {
-          Thread.sleep(50)
+          Thread.sleep(10)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
@@ -26,11 +26,11 @@ object WithinStepSpec extends TestSuite with CommonSpec {
     }
 
     test("fails if duration of 'within' is exceeded") {
-      val d = 100.millis
+      val d = 10.millis
       val nested = AssertStep(
         "possible random value step",
         _ => {
-          Thread.sleep(150)
+          Thread.sleep(20)
           GenericEqualityAssertion(true, true)
         }
       ) :: Nil
