@@ -21,8 +21,6 @@ There are tree concrete instances of `generators`:
 - `OptionalValueGenerator` to fail in a controlled fashion
 
 ```scala
-import com.github.agourlay.cornichon.core.RandomContext
-
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
   gen = () ⇒ rc.alphanumeric.take(20).mkString(""))
@@ -37,7 +35,6 @@ This approach also supports embedding `Scalacheck's Gen` into a `Generator` by p
 ```scala
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
-import com.github.agourlay.cornichon.core.RandomContext
 
 sealed trait Coin
 case object Head extends Coin
@@ -69,12 +66,10 @@ We want to enforce the following invariant `for any string, if we reverse it twi
 The implementation under test is a server accepting `POST` requests to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
 
 ```tut:silent
-import com.github.agourlay.cornichon.core.RandomContext
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.check._
-import com.github.agourlay.cornichon.steps.regular.EffectStep
 
-class StringReverseCheck extends CornichonFeature with CheckDsl {
+class StringReverseCheck extends CornichonFeature {
 
   def feature = Feature("Basic examples of checks") {
 
@@ -162,7 +157,7 @@ In the case of an HTTP API, it is more difficult to perform such operations, you
 
 The key idea is to describe the possible interactions with the API as [Markov chains](https://en.wikipedia.org/wiki/Markov_chain) which can be automatically explored.
 
-The entry point of the `cornichon-check` DSL is reached by mixing the trait `CheckDsl` which exposes the following function:
+The entry point for random model exploration is the following function in the DSL:
 
 `def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int)(modelRunner: ModelRunner[A, B, C, D, E, F])`
 
@@ -363,10 +358,10 @@ The server exposes two endpoints:
 
 ```tut:silent
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.check.checkModel._
-import com.github.agourlay.cornichon.check._
+import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.steps.check.checkModel._
 
-class TurnstileCheck extends CornichonFeature with CheckDsl {
+class TurnstileCheck extends CornichonFeature {
 
   def feature = Feature("Basic examples of checks") {
 
@@ -609,9 +604,8 @@ Let's see if we can test it!
 ```scala
 package com.github.agourlay.cornichon.check.examples.webShop
 
-import com.github.agourlay.cornichon.import 
 
-class WebShopCheck extends CornichonFeature with CheckDsl {
+class WebShopCheck extends CornichonFeature {
 
   def feature = Feature("Advanced example of model checks") {
 

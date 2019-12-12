@@ -222,7 +222,8 @@ lazy val docs =
     .settings(
       name := "cornichon-docs",
       unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks, scalatest),
-      micrositeDocumentationLabelDescription := "Scaladoc"
+      micrositeDocumentationLabelDescription := "Scaladoc",
+      micrositeCompilingDocsTool := WithTut
     )
     .dependsOn(core, testFramework, kafka, httpMock)
     .enablePlugins(MicrositesPlugin)
