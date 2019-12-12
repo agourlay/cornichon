@@ -48,7 +48,7 @@ class WebShopCheck extends CornichonFeature {
   def productDraftGen(rc: RandomContext): Generator[ProductDraft] = OptionalValueGenerator(
     name = "a product draft",
     gen = () => {
-      val nextSeed = rc.seededRandom.nextLong()
+      val nextSeed = rc.nextLong()
       val params = Gen.Parameters.default.withInitialSeed(nextSeed)
       val gen =
         for {

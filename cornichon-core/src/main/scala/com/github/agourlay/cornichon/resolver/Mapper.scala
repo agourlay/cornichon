@@ -1,14 +1,12 @@
 package com.github.agourlay.cornichon.resolver
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Session }
-
-import scala.util.Random
+import com.github.agourlay.cornichon.core.{ CornichonError, RandomContext, Session }
 
 sealed trait Mapper
 
 case class SimpleMapper(generator: () => String) extends Mapper
 
-case class RandomMapper(generator: Random => String) extends Mapper
+case class RandomMapper(generator: RandomContext => String) extends Mapper
 
 case class SessionMapper(generator: Session => Either[CornichonError, String]) extends Mapper
 

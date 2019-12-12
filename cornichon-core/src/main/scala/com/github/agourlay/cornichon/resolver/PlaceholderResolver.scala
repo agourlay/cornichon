@@ -8,8 +8,6 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.util.Caching
 
-import scala.util.Random
-
 object PlaceholderResolver {
 
   private val rightNil = Nil.asRight
@@ -18,13 +16,13 @@ object PlaceholderResolver {
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
     placeholdersCache.get(input, k => PlaceholderParser.parse(k))
 
-  private def resolvePlaceholder(ph: Placeholder)(session: Session, random: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
-    builtInPlaceholders(random.seededRandom).lift(ph.key).map(Right.apply).getOrElse {
+  private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
+    builtInPlaceholders(rc).lift(ph.key).map(Right.apply).getOrElse {
       val otherKeyName = ph.key
       val otherKeyIndex = ph.index
       (session.get(otherKeyName, otherKeyIndex), customExtractors.get(otherKeyName)) match {
         case (v, None)               => v
-        case (Left(_), Some(mapper)) => applyMapper(otherKeyName, mapper, ph)(session, random)
+        case (Left(_), Some(mapper)) => applyMapper(otherKeyName, mapper, ph)(session, rc)
         case (Right(_), Some(_))     => AmbiguousKeyDefinition(otherKeyName).asLeft
       }
     }
@@ -60,13 +58,13 @@ object PlaceholderResolver {
         } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
     }
 
-  private def builtInPlaceholders(seededRandom: Random): PartialFunction[String, String] = {
-    case "random-uuid"             => new UUID(seededRandom.nextLong(), seededRandom.nextLong()).toString
-    case "random-positive-integer" => seededRandom.nextInt(10000).toString
-    case "random-string"           => seededRandom.nextString(5)
-    case "random-alphanum-string"  => seededRandom.alphanumeric.take(5).mkString("")
-    case "random-boolean"          => seededRandom.nextBoolean().toString
-    case "random-timestamp"        => (Math.abs(System.currentTimeMillis - seededRandom.nextLong()) / 1000).toString
+  private def builtInPlaceholders(rc: RandomContext): PartialFunction[String, String] = {
+    case "random-uuid"             => new UUID(rc.nextLong(), rc.nextLong()).toString
+    case "random-positive-integer" => rc.nextInt(10000).toString
+    case "random-string"           => rc.nextString(5)
+    case "random-alphanum-string"  => rc.alphanumeric.take(5).mkString("")
+    case "random-boolean"          => rc.nextBoolean().toString
+    case "random-timestamp"        => (Math.abs(System.currentTimeMillis - rc.nextLong()) / 1000).toString
     case "current-timestamp"       => (System.currentTimeMillis / 1000).toString
   }
 
@@ -76,7 +74,7 @@ object PlaceholderResolver {
     case SessionMapper(gen) =>
       gen(session).leftMap(SessionMapperError(ph.fullKey, _))
     case RandomMapper(gen) =>
-      Either.catchNonFatal(gen(randomContext.seededRandom)).leftMap(RandomMapperError(ph.fullKey, _))
+      Either.catchNonFatal(gen(randomContext)).leftMap(RandomMapperError(ph.fullKey, _))
     case HistoryMapper(key, transform) =>
       session.getHistory(key)
         .leftMap { o: CornichonError => MapperKeyNotFoundInSession(bindingKey, o) }

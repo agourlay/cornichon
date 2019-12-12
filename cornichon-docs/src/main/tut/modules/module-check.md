@@ -25,11 +25,11 @@ import com.github.agourlay.cornichon.core.RandomContext
 
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
-  gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+  gen = () ⇒ rc.alphanumeric.take(20).mkString(""))
 
 def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   name = "integer",
-  gen = () ⇒ rc.seededRandom.nextInt(10000))
+  gen = () ⇒ rc.nextInt(10000))
 ```
 
 This approach also supports embedding `Scalacheck's Gen` into a `Generator` by propagating the initial seed.
@@ -46,7 +46,7 @@ case object Tail extends Coin
 def coinGen(rc: RandomContext): Generator[Coin] = OptionalValueGenerator(
   name = "a Coin",
   gen = () ⇒ {
-    val nextSeed = rc.seededRandom.nextLong()
+    val nextSeed = rc.nextLong()
     val params = Gen.Parameters.default.withInitialSeed(nextSeed)
     val coin = Gen.oneOf[Coin](Head, Tail)
     coin(params, Seed(nextSeed))
@@ -92,7 +92,7 @@ class StringReverseCheck extends CornichonFeature with CheckDsl {
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "alphanumeric String (20)",
-    gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+    gen = () ⇒ rc.alphanumeric.take(20).mkString(""))
   }
 
 ```
@@ -226,11 +226,11 @@ The type inference is sometimes not properly detecting the action type, so it is
 
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String",
-  gen = () ⇒ rc.seededRandom.alphanumeric.take(20).mkString(""))
+  gen = () ⇒ rc.alphanumeric.take(20).mkString(""))
 
 def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   name = "integer",
-  gen = () ⇒ rc.seededRandom.nextInt(10000))
+  gen = () ⇒ rc.nextInt(10000))
 
 val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 
@@ -627,7 +627,7 @@ class WebShopCheck extends CornichonFeature with CheckDsl {
   def productDraftGen(rc: RandomContext): Generator[ProductDraft] = OptionalValueGenerator(
     name = "a product draft",
     gen = () ⇒ {
-      val nextSeed = rc.seededRandom.nextLong()
+      val nextSeed = rc.nextLong()
       val params = Gen.Parameters.default.withInitialSeed(nextSeed)
       val gen =
         for {

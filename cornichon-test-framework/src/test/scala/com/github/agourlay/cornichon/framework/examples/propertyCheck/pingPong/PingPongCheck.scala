@@ -18,7 +18,7 @@ class PingPongCheck extends CornichonFeature {
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "an alphanumeric String",
-    gen = () => rc.seededRandom.alphanumeric.take(20).mkString(""))
+    gen = () => rc.alphanumeric.take(20).mkString(""))
 
   def assert_String_20(s: String) = AssertStep(
     title = s"String has length 20 '$s'",
@@ -27,7 +27,7 @@ class PingPongCheck extends CornichonFeature {
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    gen = () => rc.seededRandom.nextInt(10000))
+    gen = () => rc.nextInt(10000))
 
   def assert_Integer_less_than_10000(i: Int) = AssertStep(
     title = s"Integer less than 10000 '$i'",

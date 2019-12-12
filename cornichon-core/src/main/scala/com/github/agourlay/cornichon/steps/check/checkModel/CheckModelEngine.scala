@@ -5,13 +5,11 @@ import com.github.agourlay.cornichon.core.{ Generator, _ }
 import monix.eval.Task
 import cats.syntax.either._
 
-import scala.util.Random
-
 class CheckModelEngine[A, B, C, D, E, F](
     cs: CheckModelStep[A, B, C, D, E, F],
     model: Model[A, B, C, D, E, F],
     maxNumberOfTransitions: Int,
-    rd: Random,
+    rc: RandomContext,
     genA: Generator[A],
     genB: Generator[B],
     genC: Generator[C],
@@ -65,7 +63,7 @@ class CheckModelEngine[A, B, C, D, E, F](
                   Task.now((newState.recordLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
                 } else {
                   // pick one transition according to the weight
-                  val nextProperty = pickTransitionAccordingToProbability(rd, validNext)
+                  val nextProperty = pickTransitionAccordingToProbability(rc, validNext)
                   loopRun(newState, nextProperty, currentNumberOfTransitions + 1)
                 }
               }
@@ -89,8 +87,8 @@ class CheckModelEngine[A, B, C, D, E, F](
   }
 
   //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability
-  private def pickTransitionAccordingToProbability[Z](rd: Random, inputs: List[(Int, Z, Boolean)]): Z = {
-    val weight = rd.nextInt(100)
+  private def pickTransitionAccordingToProbability[Z](rc: RandomContext, inputs: List[(Int, Z, Boolean)]): Z = {
+    val weight = rc.nextInt(100)
     var cumulativeProbability: Int = 0
     var selected: Option[Z] = None
 
@@ -99,7 +97,7 @@ class CheckModelEngine[A, B, C, D, E, F](
       if (weight <= cumulativeProbability && selected.isEmpty) selected = Some(item._2)
     }
 
-    selected.getOrElse(rd.shuffle(inputs).head._2)
+    selected.getOrElse(rc.shuffle(inputs).head._2)
   }
 
 }

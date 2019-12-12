@@ -211,7 +211,7 @@ object ScenarioRunnerSpec extends TestSuite with CommonSpec {
       })
 
       val rdStep = EffectStep.fromSyncE("pick random int", sc => {
-        val rdInt = sc.randomContext.seededRandom.nextInt()
+        val rdInt = sc.randomContext.nextInt()
         sc.session.addValue("random-int", rdInt.toString)
       })
 

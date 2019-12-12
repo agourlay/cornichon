@@ -80,7 +80,7 @@ case class CheckModelStep[A, B, C, D, E, F](
         val genD = modelRunner.generatorD(randomContext)
         val genE = modelRunner.generatorE(randomContext)
         val genF = modelRunner.generatorF(randomContext)
-        val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext.seededRandom, genA, genB, genC, genD, genE, genF)
+        val checkEngine = new CheckModelEngine(this, model, maxNumberOfTransitions, randomContext, genA, genB, genC, genD, genE, genF)
         repeatModelOnSuccess(checkEngine, runNumber = 1)(runState.nestedContext)
     }
 

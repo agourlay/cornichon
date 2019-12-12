@@ -11,7 +11,7 @@ trait CommonSpec extends ProvidedInstances with TaskSpec {
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
-    gen = () => rc.seededRandom.nextInt(10000))
+    gen = () => rc.nextInt(10000))
 
   def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",
@@ -19,7 +19,7 @@ trait CommonSpec extends ProvidedInstances with TaskSpec {
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "integer",
-    gen = () => rc.seededRandom.nextString(10))
+    gen = () => rc.nextString(10))
 
   val alwaysValidAssertStep = AssertStep("valid", _ => Assertion.alwaysValid)
   val brokenEffect: Step = EffectStep.fromSyncE("always boom", _ => Left(CornichonError.fromString("boom!")))

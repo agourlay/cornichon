@@ -25,7 +25,7 @@ class StringReverseCheck extends CornichonFeature {
 
   def stringGen(rc: RandomContext): Generator[String] = ValueGenerator(
     name = "alphanumeric String (20)",
-    gen = () => rc.seededRandom.alphanumeric.take(20).mkString(""))
+    gen = () => rc.alphanumeric.take(20).mkString(""))
 
   lazy val port = 8080
 

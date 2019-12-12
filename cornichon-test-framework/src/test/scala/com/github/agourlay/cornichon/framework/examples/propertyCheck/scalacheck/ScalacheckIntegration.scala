@@ -25,7 +25,7 @@ class ScalacheckIntegration extends CornichonFeature {
   def coinGen(rc: RandomContext): Generator[Coin] = OptionalValueGenerator(
     name = "a Coin",
     gen = () => {
-      val nextSeed = rc.seededRandom.nextLong()
+      val nextSeed = rc.nextLong()
       val params = Gen.Parameters.default.withInitialSeed(nextSeed)
       val coin = Gen.oneOf[Coin](Head, Tail)
       coin(params, Seed(nextSeed))
