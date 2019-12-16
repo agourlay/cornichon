@@ -123,6 +123,9 @@ trait CornichonJson {
   def decodeAs[A: Decoder](json: Json): Either[CornichonError, A] =
     json.as[A].leftMap(df => JsonDecodingFailure(json, df.message))
 
+  // `first` must be a STRICT subset of `second` in terms of keys.
+  // Returns `first` populated with the missing keys from `second` or an error.
+  // The goal is to perform diffs without providing all the keys.
   def whitelistingValue(first: Json, second: Json): Either[CornichonError, Json] = {
     val diffOps = diffPatch(first, second).ops
     val forbiddenPatchOps = diffOps.collect { case r: Remove[Json] => r }

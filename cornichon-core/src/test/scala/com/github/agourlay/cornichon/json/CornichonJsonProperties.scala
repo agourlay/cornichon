@@ -69,4 +69,58 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
       }
     }
   }
+
+  property("whitelisting on identical JSON has no effect") = {
+    forAll { json: Json =>
+      Claim {
+        whitelistingValue(json, json) == Right(json)
+      }
+    }
+  }
+
+  property("whitelisting improper subset with single added key") = {
+    forAll { jsonObj: JsonObject =>
+      val modifiedObj = jsonObj.add("extraKey", Json.fromString("extraValue"))
+      val json = Json.fromJsonObject(jsonObj)
+      val modifiedJson = Json.fromJsonObject(modifiedObj)
+      Claim {
+        whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
+          whitelistingValue(modifiedJson, json) == Left(WhitelistingError(Seq("/extraKey"), json))
+      }
+    }
+  }
+
+  property("whitelisting arrays with single missing key on each element") = {
+    forAll { jos: List[JsonObject] =>
+      // ==> did not work
+      if (jos.isEmpty) {
+        Claim(true)
+      } else {
+        val modifiedList = jos.map(_.add("extraKey", Json.fromString("extraValue"))).map(Json.fromJsonObject)
+        val json = Json.fromValues(jos.map(Json.fromJsonObject))
+        val modifiedJson = Json.fromValues(modifiedList)
+        val errors = modifiedList.zipWithIndex.map { case (_, i) => s"/$i/extraKey" }
+        Claim {
+          whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
+            whitelistingValue(modifiedJson, json) == Left(WhitelistingError(errors, json))
+        }
+      }
+    }
+  }
+
+  property("whitelisting on JSON Object with improper nested path") = {
+    val targetValue = Json.fromString("target value")
+    forAll { jos: List[JsonObject] =>
+      val json1 = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch1", acc)) }
+      val json2 = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch2", acc)) }
+      // ==> did not work
+      if (jos.isEmpty)
+        Claim(true)
+      else
+        Claim {
+          whitelistingValue(json1, json2) == Left(WhitelistingError("/stitch1" :: Nil, json2)) &&
+            whitelistingValue(json2, json1) == Left(WhitelistingError("/stitch2" :: Nil, json1))
+        }
+    }
+  }
 }
