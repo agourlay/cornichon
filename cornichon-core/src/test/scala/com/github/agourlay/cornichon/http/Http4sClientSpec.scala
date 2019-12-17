@@ -12,7 +12,6 @@ object Http4sClientSpec extends TestSuite {
     test("conserves duplicates http params") {
       val uri = client.parseUri("http://web.com").valueUnsafe
       val finalUri = client.addQueryParams(uri, List("p1" -> "v1", "p1" -> "v1'", "p2" -> "v2"))
-      println(finalUri.query)
       assert(finalUri.query.multiParams("p1") == "v1" :: "v1'" :: Nil)
       assert(finalUri.query.multiParams("p2") == "v2" :: Nil)
     }
