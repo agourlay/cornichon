@@ -83,11 +83,14 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
     headers.toList.map(h => (h.name.value, h.value))(breakOut)
 
-  private def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
+  def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
       uri
-    else
-      moreParams.foldLeft(uri) { case (uri, (k, v)) => uri.withQueryParam(k, v) }
+    else {
+      val q = Query.fromPairs(moreParams: _*)
+      // Not sure it is the most efficient way
+      uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
+    }
 
   override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, CornichonHttpResponse] =
     parseUri(cReq.url).fold(
@@ -170,6 +173,6 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
     else
       rightNil
 
-  private def parseUri(uri: String): Either[CornichonError, Uri] =
+  def parseUri(uri: String): Either[CornichonError, Uri] =
     uriCache.get(uri, u => Uri.fromString(u).leftMap(e => MalformedUriError(u, e.message)))
 }
