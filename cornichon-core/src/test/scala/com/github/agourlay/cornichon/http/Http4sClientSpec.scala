@@ -1,12 +1,16 @@
 package com.github.agourlay.cornichon.http
 
 import com.github.agourlay.cornichon.http.client.Http4sClient
-import monix.execution.Scheduler
+import monix.execution.Scheduler.Implicits.global
 import utest._
 
 object Http4sClientSpec extends TestSuite {
 
-  private val client = new Http4sClient(true, true)(Scheduler.Implicits.global)
+  private val client = new Http4sClient(true, true)
+
+  override def utestAfterAll(): Unit = {
+    client.shutdown().runSyncUnsafe()
+  }
 
   def tests = Tests {
     test("conserves duplicates http params") {
