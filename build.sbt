@@ -3,7 +3,7 @@ import sbt.{Developer, file}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
-lazy val compilerOptions = Seq(
+def compilerOptions(scalaVersion: String) = Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
   "-explaintypes",                     // Explain type errors in more detail.
@@ -39,17 +39,29 @@ lazy val compilerOptions = Seq(
   "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
   "-Ywarn-unused:privates",            // Warn if a private member is unused.
   "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
-)
+) ++ (if (priorTo2_13(scalaVersion))
+  Seq(
+    "-Yno-adapted-args",
+    "-Ypartial-unification",
+    "-Xlint:by-name-right-associative",
+    "-Xfuture"
+  ) else Nil)
+
+def priorTo2_13(scalaVersion: String): Boolean =
+  CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, minor)) if minor < 13 => true
+    case _                              => false
+  }
 
 lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
   scalaVersion := "2.13.1",
-  crossScalaVersions := Seq("2.13.1", "2.12.10"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   fork in Test := true,
-  scalacOptions ++= compilerOptions,
+  scalacOptions ++= compilerOptions(scalaVersion.value),
   // Additional meta-info required by maven central
   startYear := Some(2015),
   organizationHomepage := Some(url("https://github.com/agourlay/cornichon")),
