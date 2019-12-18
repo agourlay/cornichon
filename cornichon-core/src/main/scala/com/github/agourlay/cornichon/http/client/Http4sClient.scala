@@ -25,7 +25,6 @@ import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.middleware.GZip
 
 import scala.concurrent.duration._
-import scala.collection.breakOut
 
 class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerification: Boolean)(implicit scheduler: Scheduler)
   extends HttpClient {
@@ -76,12 +75,12 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
   }
 
   private def toHttp4sHeaders(headers: Seq[(String, String)]): Headers = {
-    val h: List[Header] = headers.map { case (n, v) => Header(n, v).parsed }(breakOut)
+    val h: List[Header] = headers.map { case (n, v) => Header(n, v).parsed }.toList
     Headers(h)
   }
 
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
-    headers.toList.map(h => (h.name.value, h.value))(breakOut)
+    headers.toList.map(h => (h.name.value, h.value))
 
   def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
@@ -123,7 +122,7 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
       }
     )
 
-  private val sseHeader = "text" → "event-stream"
+  private val sseHeader = "text" -> "event-stream"
 
   private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[Task, CornichonError, CornichonHttpResponse] = {
     parseUri(streamReq.url).fold(

@@ -13,8 +13,8 @@ trait RandomContext {
   def nextLong(): Long
   def nextString(length: Int): String
   def nextPrintableChar(): Char
-  def alphanumeric: Stream[Char]
-  def shuffle[T](xs: Traversable[T]): Traversable[T]
+  def alphanumeric(length: Int): String
+  def shuffle[T](xs: Iterable[T]): Iterable[T]
 }
 
 // FIXME seededRandom works through internal mutation https://github.com/agourlay/cornichon/issues/303
@@ -29,8 +29,8 @@ class MutableRandomContext(seed: Long, seededRandom: Random) extends RandomConte
   def nextLong(): Long = seededRandom.nextLong()
   def nextString(length: Int): String = seededRandom.nextString(length)
   def nextPrintableChar(): Char = seededRandom.nextPrintableChar()
-  def alphanumeric: Stream[Char] = seededRandom.alphanumeric
-  def shuffle[T](xs: Traversable[T]): Traversable[T] = seededRandom.shuffle(xs)
+  def alphanumeric(length: Int): String = seededRandom.alphanumeric.take(length).mkString("")
+  def shuffle[T](xs: Iterable[T]): Iterable[T] = seededRandom.shuffle(xs)
 }
 
 object RandomContext {

@@ -115,7 +115,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
   property("fillPlaceholders resolves two placeholders") =
     forAll(keyGen, valueGen, valueGen) { (k1, v1, v2) =>
       val k2 = k1 + "42"
-      val session = Session.newEmpty.addValuesUnsafe(k1 → v1, k2 → v2)
+      val session = Session.newEmpty.addValuesUnsafe(k1 -> v1, k2 -> v2)
       val content = s"This project is named <$k1> and is super <$k2>"
       Claim {
         fillPlaceholders(content)(session, rc, noExtractor) == Right(s"This project is named $v1 and is super $v2")
@@ -133,7 +133,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
 
   property("fillPlaceholders returns ResolverError for the first placeholder not found") =
     forAll(keyGen, valueGen, keyGen, valueGen) { (k1, v1, k2, v2) =>
-      val session = Session.newEmpty.addValuesUnsafe(k1 → v1, k2 → v2)
+      val session = Session.newEmpty.addValuesUnsafe(k1 -> v1, k2 -> v2)
       val content = s"This project is named <$k1> and is super <other-key>"
       Claim {
         fillPlaceholders(content)(session, rc, noExtractor) == Left(KeyNotFoundInSession("other-key", session))

@@ -23,7 +23,6 @@ import sangria.marshalling.queryAst._
 import sangria.marshalling.circe._
 
 import scala.util.{ Failure, Success, Try }
-import scala.collection.breakOut
 
 trait CornichonJson {
 
@@ -69,7 +68,7 @@ trait CornichonJson {
   }
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
-    def parseCol(col: (String, String)) = parseString(col._2).map(col._1 → _)
+    def parseCol(col: (String, String)) = parseString(col._2).map(col._1 -> _)
     def parseRow(row: Map[String, String]) = row.toList.traverse(parseCol) map JsonObject.fromIterable
 
     parseDataTableRaw(table).flatMap(_.traverse(parseRow))
@@ -156,9 +155,9 @@ trait CornichonJson {
           def onString(value: String): List[(String, Json)] =
             leafValue()
           def onArray(elems: Vector[Json]): List[(String, Json)] =
-            elems.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }(breakOut)
+            elems.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }.toList
           def onObject(elems: JsonObject): List[(String, Json)] =
-            elems.toIterable.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }(breakOut)
+            elems.toIterable.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }.toList
         }
       )
     }

@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter
 
 import com.github.agourlay.cornichon.matchers.Matchers._
 import io.circe.Json
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
 import org.scalacheck._
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim
@@ -84,13 +86,15 @@ object MatchersProperties extends Properties("Matchers") {
 
   property("any-date-time correct in parallel") = {
     forAll(reasonablyRandomInstantGen) { instant =>
-      val booleans: List[Boolean] = 1.to(64)
-        .par
-        .map { _ =>
+      val booleans = 1.to(64).map { _ =>
+        Task.delay {
           anyDateTime.predicate(Json.fromString(DateTimeFormatter.ISO_INSTANT.format(instant)))
-        }.foldLeft(List.empty[Boolean]) { case (acc, e) => e :: acc }
+        }
+      }
 
-      Claim(booleans.forall(_ == true))
+      val res = Task.gatherUnordered(booleans).runSyncUnsafe().foldLeft(List.empty[Boolean]) { case (acc, e) => e :: acc }
+
+      Claim(res.forall(_ == true))
     }
   }
 }

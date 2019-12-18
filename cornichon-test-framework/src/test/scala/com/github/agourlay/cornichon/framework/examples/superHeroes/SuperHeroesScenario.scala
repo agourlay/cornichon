@@ -23,7 +23,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate CRUD features") {
 
-        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
         Then assert status.is(200)
 
@@ -135,7 +135,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.path("publisher.foundationYear").isBetween(1933, 1935)
 
-        When I get("/superheroes/Scalaman").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/Scalaman").withParams("sessionId" -> "<session-id>")
 
         Then assert status.is(404)
 
@@ -148,7 +148,7 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         When I post("/superheroes").withParams(
-          "sessionId" → "<session-id>"
+          "sessionId" -> "<session-id>"
         ).withBody(gqljson"""
           {
             name: "Scalaman"
@@ -181,14 +181,14 @@ class SuperHeroesScenario extends CornichonFeature {
             }
           }
           """
-        ).withParams("sessionId" → "<session-id>")
+        ).withParams("sessionId" -> "<session-id>")
           .withHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8))))
 
         Then assert status.is(201)
 
         Then assert status.isSuccess
 
-        When I get("/superheroes/Scalaman").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/Scalaman").withParams("sessionId" -> "<session-id>")
 
         Then assert body.ignoring("publisher", "hasSuperpowers", "city").is(
           """
@@ -201,7 +201,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         // Params can also be passed in the URL
         When I get("/superheroes/Scalaman?sessionId=<session-id>").withParams(
-          "protectIdentity" → "true"
+          "protectIdentity" -> "true"
         )
 
         Then assert body.ignoring("publisher").is(
@@ -216,7 +216,7 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         WithBasicAuth("admin", "cornichon") {
-          When I put("/superheroes").withParams("sessionId" → "<session-id>").withBody(
+          When I put("/superheroes").withParams("sessionId" -> "<session-id>").withBody(
             """
             {
               "name": "Scalaman",
@@ -248,15 +248,15 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        When I get("/superheroes/GreenLantern").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/GreenLantern").withParams("sessionId" -> "<session-id>")
 
         Then assert status.is(200)
 
         Then assert status.isSuccess
 
-        When I delete("/superheroes/GreenLantern").withParams("sessionId" → "<session-id>")
+        When I delete("/superheroes/GreenLantern").withParams("sessionId" -> "<session-id>")
 
-        When I get("/superheroes/GreenLantern").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/GreenLantern").withParams("sessionId" -> "<session-id>")
 
         Then assert status.is(404)
 
@@ -267,8 +267,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         RepeatWith("application/json", "gzip", "deflate")("encoding") {
 
-          When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>").withHeaders(
-            "Accept-Encoding" → "<encoding>"
+          When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>").withHeaders(
+            "Accept-Encoding" -> "<encoding>"
           )
 
           Then assert status.is(200)
@@ -293,7 +293,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate collection features") {
 
-        When I get("/superheroes").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes").withParams("sessionId" -> "<session-id>")
 
         Then assert body.asArray.isNotEmpty
 
@@ -377,7 +377,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.size.isLessThan(6)
 
-        Then I save("5th-name" → "IronMan")
+        Then I save("5th-name" -> "IronMan")
 
         And assert body.asArray.ignoringEach("city", "hasSuperpowers").contains(
           """
@@ -399,11 +399,11 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        When I delete("/superheroes/IronMan").withParams("sessionId" → "<session-id>")
+        When I delete("/superheroes/IronMan").withParams("sessionId" -> "<session-id>")
 
         Then assert status.is(200)
 
-        And I get("/superheroes").withParams("sessionId" → "<session-id>")
+        And I get("/superheroes").withParams("sessionId" -> "<session-id>")
 
         Then assert body.asArray.hasSize(4)
 
@@ -426,7 +426,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate session features") {
 
-        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
         Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
@@ -439,12 +439,12 @@ class SuperHeroesScenario extends CornichonFeature {
         )
 
         // Set a key/value in the Scenario's session
-        And I save("favorite-superhero" → "Batman")
+        And I save("favorite-superhero" -> "Batman")
 
         Then assert session_value("favorite-superhero").is("Batman")
 
         // Retrieve dynamically from session with <key> for URL construction
-        When I get("/superheroes/<favorite-superhero>").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/<favorite-superhero>").withParams("sessionId" -> "<session-id>")
 
         Then assert body.ignoring("hasSuperpowers", "publisher").is(
           """
@@ -459,7 +459,7 @@ class SuperHeroesScenario extends CornichonFeature {
         And assert session_value("batman-city").isAbsent
 
         // Extract value from response into session for reuse
-        And I save_body_path("city" → "batman-city")
+        And I save_body_path("city" -> "batman-city")
 
         And assert session_value("batman-city").isPresent
 
@@ -486,7 +486,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate GraphQL support") {
 
-        When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
+        When I query_gql("/graphql").withVariables("sessionId" -> "<session-id>").withQuery {
           graphql"""
             query($$sessionId: String!) {
              superheroByName(sessionId: $$sessionId, name: "Batman", protectIdentity: false) {
@@ -519,7 +519,7 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        When I query_gql("/graphql").withVariables("sessionId" → "<session-id>").withQuery {
+        When I query_gql("/graphql").withVariables("sessionId" -> "<session-id>").withQuery {
           graphql"""
             mutation ($$sessionId: String!) {
              updateSuperhero(
@@ -558,7 +558,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate wrapping DSL blocks") {
 
-        When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
         // Using registered extractor at the bottom of this file
         Then assert body.path("name").is("<name>")
@@ -566,7 +566,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Repeat series of Steps
         Repeat(2) {
 
-          When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
           Then assert status.is(200)
         }
@@ -574,7 +574,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Repeat series of Steps during a period of time
         RepeatDuring(10.millis) {
 
-          When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
           Then assert status.is(200)
         }
@@ -582,13 +582,13 @@ class SuperHeroesScenario extends CornichonFeature {
         // Nested Repeats
         Repeat(2) {
 
-          When I get("/superheroes/Superman").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/Superman").withParams("sessionId" -> "<session-id>")
 
           Then assert status.is(200)
 
           Repeat(2) {
 
-            When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+            When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
             Then assert status.is(200)
           }
@@ -597,7 +597,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Execute steps 10 times with parallelism factor of 3
         RepeatConcurrently(times = 10, parallelism = 3, maxTime = 20.seconds) {
 
-          When I get("/superheroes/Batman").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
           Then assert status.is(200)
         }
@@ -605,7 +605,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Repeat series of Steps until it succeed
         Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
 
-          When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
 
           Then assert body.path("name").matchesRegex(".*man".r)
 
@@ -623,13 +623,13 @@ class SuperHeroesScenario extends CornichonFeature {
         // Nesting different kind of blocs
         Repeat(1) {
 
-          When I get("/superheroes/Superman").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/Superman").withParams("sessionId" -> "<session-id>")
 
           Then assert status.is(200)
 
           Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
 
-            When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+            When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
 
             Then assert body.ignoring("hasSuperpowers", "publisher").is(
               """
@@ -646,7 +646,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Repeat for each element
         RepeatWith("Superman", "GreenLantern", "Spiderman")("superhero-name") {
 
-          When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/<superhero-name>").withParams("sessionId" -> "<session-id>")
 
           Then assert status.is(200)
 
@@ -656,7 +656,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Repeat for each element
         RepeatFrom("Superman" :: "GreenLantern" :: "Spiderman" :: Nil)("superhero-name") {
 
-          When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/<superhero-name>").withParams("sessionId" -> "<session-id>")
 
           Then assert status.is(200)
 
@@ -666,7 +666,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // Retry series of Steps with a limit
         RetryMax(300) {
 
-          When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+          When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
 
           Then assert body.ignoring("hasSuperpowers", "publisher").is(
             """
@@ -691,7 +691,7 @@ class SuperHeroesScenario extends CornichonFeature {
 
           Eventually(maxDuration = 10.seconds, interval = 10.milliseconds) {
 
-            When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+            When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
 
             Then assert body.ignoring("hasSuperpowers", "publisher").is(
               """
@@ -710,8 +710,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
         // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
         When I open_sse("/sseStream/superheroes", takeWithin = 3.seconds).withParams(
-          "sessionId" → "<session-id>",
-          "justName" → "true"
+          "sessionId" -> "<session-id>",
+          "justName" -> "true"
         )
 
         Then assert body.asArray.hasSize(5)
@@ -738,9 +738,9 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate matchers features") {
 
-        And I save("favorite-superhero" → "Batman")
+        And I save("favorite-superhero" -> "Batman")
 
-        When I get("/superheroes/<favorite-superhero>").withParams("sessionId" → "<session-id>")
+        When I get("/superheroes/<favorite-superhero>").withParams("sessionId" -> "<session-id>")
 
         Then assert status.is(200)
 
@@ -763,13 +763,13 @@ class SuperHeroesScenario extends CornichonFeature {
 
   def superhero_exists(name: String): Step =
     AttachAs("superhero exists") {
-      When I get(s"/superheroes/$name").withParams("sessionId" → "<session-id>")
+      When I get(s"/superheroes/$name").withParams("sessionId" -> "<session-id>")
       Then assert status.is(200)
     }
 
   def random_superheroes_until(name: String): Step =
     Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
-      When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+      When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
       Then assert body.path("name").is(name)
     }
 
@@ -796,7 +796,7 @@ class SuperHeroesScenario extends CornichonFeature {
   def session_resource = ScenarioResourceStep(
     title = "session resource",
     acquire = post("/session"),
-    release = delete("/session").withParams("sessionId" → "<session-id>")
+    release = delete("/session").withParams("sessionId" -> "<session-id>")
   )
 
   // Step to be executed before each scenario
@@ -815,6 +815,6 @@ class SuperHeroesScenario extends CornichonFeature {
   }
 
   override def registerExtractors: Map[String, JsonMapper] = Map(
-    "name" → JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "name")
+    "name" -> JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "name")
   )
 }

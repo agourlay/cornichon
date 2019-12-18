@@ -14,7 +14,8 @@ import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
 import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
 
-import scala.collection.immutable.{ HashMap, StringOps }
+import scala.collection.immutable.HashMap
+
 // TODO try replacing Vector by ArraySeq in Scala 2.13
 // https://www.scala-lang.org/api/2.13.0/scala/collection/immutable/ArraySeq.html
 case class Session(content: Map[String, Vector[String]]) extends AnyVal {
@@ -63,7 +64,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   // Not returning the same key wrapped to avoid allocations
   private def validateKey(key: String): Either[CornichonError, Done] =
     knownKeysCache.get(key, key => {
-      val trimmedKey = new StringOps(key.trim)
+      val trimmedKey = key.trim
       if (trimmedKey.isEmpty)
         EmptyKey.asLeft
       else if (Session.notAllowedInKey.exists(forbidden => key.contains(forbidden)))
@@ -122,8 +123,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 object Session {
   val newEmpty = Session(HashMap.empty)
 
-  // Saved as StringOps as it uses '.exists' extremely often
-  val notAllowedInKey: StringOps = new StringOps("\r\n<>/ []")
+  val notAllowedInKey: String = "\r\n<>/ []"
 
   private val knownKeysCache = Caching.buildCache[String, Either[CornichonError, Done]]()
 
@@ -139,7 +139,7 @@ object Session {
     else
       s.content.toSeq
         .sortBy(_._1)
-        .map(pair => pair._1 + " -> " + pair._2.toIterator.map(_.show).mkString("Values(", ", ", ")"))
+        .map(pair => pair._1 + " -> " + pair._2.iterator.map(_.show).mkString("Values(", ", ", ")"))
         .mkString("\n")
   }
 }

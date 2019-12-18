@@ -62,7 +62,7 @@ object PlaceholderResolver {
     case "random-uuid"             => new UUID(rc.nextLong(), rc.nextLong()).toString
     case "random-positive-integer" => rc.nextInt(10000).toString
     case "random-string"           => rc.nextString(5)
-    case "random-alphanum-string"  => rc.alphanumeric.take(5).mkString("")
+    case "random-alphanum-string"  => rc.alphanumeric(5)
     case "random-boolean"          => rc.nextBoolean().toString
     case "random-timestamp"        => (Math.abs(System.currentTimeMillis - rc.nextLong()) / 1000).toString
     case "current-timestamp"       => (System.currentTimeMillis / 1000).toString

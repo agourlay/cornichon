@@ -8,7 +8,7 @@ object Printing {
     params.map { case (name, value) => s"'$name' -> '$value'" }.mkString(", ")
 
   implicit def showIterable[A: Show]: Show[Iterable[A]] = Show.show { fa =>
-    fa.toIterator.map(_.show).mkString("(", ", ", ")")
+    fa.iterator.map(_.show).mkString("(", ", ", ")")
   }
 
   implicit def showMap[A: Show: Ordering, B: Show]: Show[Map[A, B]] = Show.show { ma =>

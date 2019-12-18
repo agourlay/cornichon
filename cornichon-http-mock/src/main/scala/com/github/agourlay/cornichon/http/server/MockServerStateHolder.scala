@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicLong, AtomicReference }
 
 import com.github.agourlay.cornichon.http
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class MockServerStateHolder {
 

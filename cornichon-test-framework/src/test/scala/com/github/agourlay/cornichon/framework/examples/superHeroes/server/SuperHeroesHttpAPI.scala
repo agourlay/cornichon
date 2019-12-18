@@ -124,12 +124,12 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
         val query = obj.flatMap(_("query")).flatMap(_.asString)
         val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
         val vars = obj.flatMap(_("variables")).getOrElse(Json.fromJsonObject(JsonObject.empty))
-        query.fold(BadRequest(Json.obj("error" → Json.fromString("Query is required")))) { q =>
+        query.fold(BadRequest(Json.obj("error" -> Json.fromString("Query is required")))) { q =>
           QueryParser.parse(q) match {
 
             // can't parse GraphQL query, return error
             case Failure(error) =>
-              BadRequest(Json.obj("error" → Json.fromString(error.getMessage)))
+              BadRequest(Json.obj("error" -> Json.fromString(error.getMessage)))
 
             // query parsed successfully, time to execute it!
             case Success(queryAst) =>
@@ -159,7 +159,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
         superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = sh.name))
       else
         superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = sh.asJson.noSpaces))
-      Ok(fs2.Stream.fromIterator[Task](sse.toIterator))
+      Ok(fs2.Stream.fromIterator[Task](sse.iterator))
   }
 
   private val routes = Router(

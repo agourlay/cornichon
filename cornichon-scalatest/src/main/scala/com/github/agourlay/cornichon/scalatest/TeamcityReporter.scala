@@ -28,28 +28,28 @@ class TeamcityReporter extends Reporter {
 
   def apply(event: Event): Unit = event match {
     case r: RunStarting =>
-      teamcityReport("testCount", "count" → r.testCount.toString)
+      teamcityReport("testCount", "count" -> r.testCount.toString)
     case r: TestStarting =>
-      teamcityReport("testStarted", "name" → r.testName)
+      teamcityReport("testStarted", "name" -> r.testName)
     case r: TestSucceeded =>
-      val attributes = r.duration.map(d => "duration" → d.toString).toList :+ ("name" → r.testName)
+      val attributes = r.duration.map(d => "duration" -> d.toString).toList :+ ("name" -> r.testName)
       teamcityReport("testFinished", attributes: _*)
     case r: TestFailed =>
-      val attributes = r.throwable.map(t => "details" → CornichonError.genStacktrace(t)).toList ::: List("name" → r.testName, "message" → r.message)
+      val attributes = r.throwable.map(t => "details" -> CornichonError.genStacktrace(t)).toList ::: List("name" -> r.testName, "message" -> r.message)
       teamcityReport("testFailed", attributes: _*)
     case r: TestIgnored =>
-      teamcityReport("testIgnored", "name" → r.testName)
+      teamcityReport("testIgnored", "name" -> r.testName)
     case r: TestPending =>
-      teamcityReport("testPending", "name" → r.testName)
+      teamcityReport("testPending", "name" -> r.testName)
     case r: SuiteStarting =>
-      teamcityReport("testSuiteStarted", "name" → r.suiteName)
+      teamcityReport("testSuiteStarted", "name" -> r.suiteName)
     case r: SuiteCompleted =>
-      teamcityReport("testSuiteFinished", "name" → r.suiteName)
+      teamcityReport("testSuiteFinished", "name" -> r.suiteName)
     case r: SuiteAborted =>
-      val attributes = r.throwable.map(t => List("errorDetails" → CornichonError.genStacktrace(t), "statusText" → "ERROR")).toList.flatten :+ ("name" → r.suiteName)
+      val attributes = r.throwable.map(t => List("errorDetails" -> CornichonError.genStacktrace(t), "statusText" -> "ERROR")).toList.flatten :+ ("name" -> r.suiteName)
       teamcityReport("testSuiteAborted", attributes: _*)
     case r: RunAborted =>
-      val attributes = r.throwable.map(t => List("errorDetails" → CornichonError.genStacktrace(t), "statusText" → "ERROR")).toList.flatten :+ ("message" → r.message)
+      val attributes = r.throwable.map(t => List("errorDetails" -> CornichonError.genStacktrace(t), "statusText" -> "ERROR")).toList.flatten :+ ("message" -> r.message)
       teamcityReport("testSuiteAborted", attributes: _*)
 
     case _ => ()

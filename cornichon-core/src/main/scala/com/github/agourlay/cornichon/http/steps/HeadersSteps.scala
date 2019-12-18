@@ -10,8 +10,6 @@ import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Printing._
 
-import scala.collection.breakOut
-
 // The assertion are case-insensitive on the field names.
 // https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
 object HeadersSteps {
@@ -24,7 +22,7 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          lowerCasedExpected: List[(String, String)] = expected.map { case (name, value) => name.toLowerCase -> value }(breakOut)
+          lowerCasedExpected = expected.map { case (name, value) => name.toLowerCase -> value }.toList
         } yield CollectionsContainSameElements(lowerCasedExpected, lowerCasedActual)
       }
     )
