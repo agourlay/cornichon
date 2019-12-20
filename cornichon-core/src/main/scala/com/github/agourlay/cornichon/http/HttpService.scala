@@ -231,8 +231,8 @@ object HttpService {
       .flatMap(fillInSessionWithResponse(session, extractor, requestDescription))
 
   private def commonSessionExtractions(response: CornichonHttpResponse, requestDescription: String): List[(String, String)] =
-    (lastResponseStatusKey → response.status.toString) ::
-      (lastResponseBodyKey → response.body) ::
-      (lastResponseHeadersKey → encodeSessionHeaders(response.headers)) ::
-      (lastResponseRequestKey → requestDescription) :: Nil
+    (lastResponseStatusKey -> response.status.toString) ::
+      (lastResponseBodyKey -> response.body) ::
+      (lastResponseHeadersKey -> encodeSessionHeaders(response.headers)) ::
+      (lastResponseRequestKey -> requestDescription) :: Nil
 }

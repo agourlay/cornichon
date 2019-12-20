@@ -234,6 +234,7 @@ object JsonSteps {
       )
     }
 
+    // unordered by default
     def asArray: JsonArrayStepBuilder =
       if (ignoredKeys.nonEmpty)
         throw UseIgnoringEach.toException

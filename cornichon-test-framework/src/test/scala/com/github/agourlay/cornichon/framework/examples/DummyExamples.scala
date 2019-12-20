@@ -8,7 +8,7 @@ class DummyExamples extends DummyFeatureToTestInheritance {
 
     Scenario("session access") {
 
-      When I save("arg1" → "cornichon")
+      When I save("arg1" -> "cornichon")
 
       Then assert session_value("arg1").is("cornichon")
 

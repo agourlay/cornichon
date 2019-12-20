@@ -10,9 +10,9 @@ class MathScenario extends CornichonFeature with MathSteps {
 
     Scenario("Simple addition") {
 
-      When I save("arg1" → "2")
+      When I save("arg1" -> "2")
 
-      And I save("arg2" → "3")
+      And I save("arg2" -> "3")
 
       Then assert adding_values("arg1", "arg2").equals(5)
 

@@ -37,7 +37,7 @@ object LogInstruction {
   val physicalMargin: StringOps = "   "
 
   def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String =
-    logs.foldLeft(StringBuilder.newBuilder) { (b, l) =>
+    logs.foldLeft(new StringBuilder()) { (b, l) =>
       l match {
         case NoShowLogInstruction(_, _, _) => b
         case l: LogInstruction             => b.append("\n").append(if (colorized) l.colorized else l.completeMessage)

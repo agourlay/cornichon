@@ -13,7 +13,7 @@ abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { ou
   def size: GenericAssertStepBuilder[Int] = new GenericAssertStepBuilder[Int] {
     protected val baseTitle: String = s"$baseTitle's size"
     protected def sessionExtractor(sc: ScenarioContext): Either[CornichonError, (Int, Option[() => String])] =
-      outer.sessionExtractor(sc).map(c => (c.seq.size, None))
+      outer.sessionExtractor(sc).map(c => (c.size, None))
   }
 
   def isNotEmpty: AssertStep = {

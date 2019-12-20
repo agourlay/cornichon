@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
-import utest.{ TestSuite, assert }
+import utest._
 
 trait CommonSpec extends ProvidedInstances with TaskSpec {
   this: TestSuite =>

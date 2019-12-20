@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import io.circe.Json
 import cats.syntax.show._
-import utest.{ TestSuite, Tests, test }
+import utest._
 
 object JsonPathSpec extends TestSuite {
 
@@ -114,27 +114,31 @@ object JsonPathSpec extends TestSuite {
           |   {
           |     "Name": "Bob",
           |     "Age" : 30
+          |   },
+          |   {
+          |     "Name": "Peter",
+          |     "Age" : 20
           |   }
           | ]
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50), Json.fromInt(30))))
+      assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50), Json.fromInt(30), Json.fromInt(20))))
     }
 
     test("select properly nested fields projected in Array with a single value") {
       val input =
         """
           |{
-          | "2LettersName" : false,
-          | "Age": 50,
-          | "Name": "John",
-          | "brothers": [
-          |   {
-          |     "Name" : "Paul",
-          |     "Age": 50
-          |   }
-          | ]
+          |  "2LettersName" : false,
+          |  "Age": 50,
+          |  "Name": "John",
+          |  "brothers": [
+          |    {
+          |      "Name" : "Paul",
+          |      "Age": 50
+          |    }
+          |  ]
           |}
         """.stripMargin
 
@@ -145,15 +149,15 @@ object JsonPathSpec extends TestSuite {
       val input =
         """
           |{
-          | "2LettersName" : false,
-          | "Age": 50,
-          | "Name": "John",
-          | "brothers": [
-          |   {
-          |     "Name" : "Paul",
-          |     "Age": 50
-          |   }
-          | ]
+          |  "2LettersName" : false,
+          |  "Age": 50,
+          |  "Name": "John",
+          |  "brothers": [
+          |    {
+          |      "Name" : "Paul",
+          |      "Age": 50
+          |    }
+          |  ]
           |}
         """.stripMargin
 
@@ -164,10 +168,10 @@ object JsonPathSpec extends TestSuite {
       val input =
         """
           |{
-          | "2LettersName" : false,
-          | "Age": 50,
-          | "Name": "John",
-          | "brothers": []
+          |  "2LettersName" : false,
+          |  "Age": 50,
+          |  "Name": "John",
+          |  "brothers": []
           |}
         """.stripMargin
 
@@ -178,15 +182,15 @@ object JsonPathSpec extends TestSuite {
       val input =
         """
           |{
-          | "2LettersName" : false,
-          | "Age": 50,
-          | "Name": "John",
-          | "brothers": [
-          |   {
-          |     "Name" : "Paul",
-          |     "Age": 50
-          |   }
-          | ]
+          |  "2LettersName" : false,
+          |  "Age": 50,
+          |  "Name": "John",
+          |  "brothers": [
+          |    {
+          |      "Name" : "Paul",
+          |      "Age": 50
+          |    }
+          |  ]
           |}
         """.stripMargin
 
@@ -197,37 +201,37 @@ object JsonPathSpec extends TestSuite {
       val input =
         """
           |{
-          | "2LettersName" : false,
-          | "Age": 50,
-          | "Name": "John",
-          | "Brothers": [
-          |   {
-          |     "Name" : "Paul",
-          |     "Age": 50,
-          |     "Hobbies" : [
-          |       {
-          |         "Name" : "Karate",
-          |         "Level" : "Good"
-          |       },{
-          |         "Name" : "Football",
-          |         "Level" : "Beginner"
-          |       }
-          |     ]
-          |   },
-          |   {
-          |     "Name": "Bob",
-          |     "Age" : 30,
-          |     "Hobbies" : [
-          |       {
-          |         "Name" : "Diving",
-          |         "Level" : "Good"
-          |       },{
-          |         "Name" : "Reading",
-          |         "Level" : "Beginner"
-          |       }
-          |     ]
-          |   }
-          | ]
+          |  "2LettersName" : false,
+          |  "Age": 50,
+          |  "Name": "John",
+          |  "Brothers": [
+          |    {
+          |      "Name" : "Paul",
+          |      "Age": 50,
+          |      "Hobbies" : [
+          |        {
+          |          "Name" : "Karate",
+          |          "Level" : "Good"
+          |        },{
+          |          "Name" : "Football",
+          |          "Level" : "Beginner"
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "Name": "Bob",
+          |      "Age" : 30,
+          |      "Hobbies" : [
+          |        {
+          |          "Name" : "Diving",
+          |          "Level" : "Good"
+          |        },{
+          |          "Name" : "Reading",
+          |          "Level" : "Beginner"
+          |        }
+          |      ]
+          |    }
+          |  ]
           |}
         """.stripMargin
 
@@ -236,24 +240,83 @@ object JsonPathSpec extends TestSuite {
       )))
     }
 
+    test("select properly projected elements of a root Array") {
+      val input =
+        """
+          |[
+          |  {
+          |     "2LettersName" : false,
+          |     "Age": 50,
+          |     "Name": "John",
+          |     "brothers": [
+          |       {
+          |         "Name" : "Paul",
+          |         "Age": 20
+          |       },
+          |       {
+          |         "Name": "Bob",
+          |         "Age" : 30
+          |       }
+          |     ]
+          |  },
+          |  {
+          |   "2LettersName" : false,
+          |   "Age": 20,
+          |   "Name": "Paul",
+          |   "brothers": [
+          |     {
+          |       "Name" : "John",
+          |       "Age": 50
+          |     },
+          |     {
+          |       "Name": "Bob",
+          |       "Age" : 30
+          |     }
+          |   ]
+          |  },
+          |  {
+          |   "2LettersName" : false,
+          |   "Age": 30,
+          |   "Name": "Bob",
+          |   "brothers": [
+          |     {
+          |       "Name" : "John",
+          |       "Age": 50
+          |     },
+          |     {
+          |       "Name": "Paul",
+          |       "Age" : 20
+          |     }
+          |   ]
+          |  }
+          |]
+        """.stripMargin
+
+      val expected = JsonPath.runStrict("$[*].brothers[1].Age", input)
+      val actual = Right(Json.arr(Json.fromInt(30), Json.fromInt(30), Json.fromInt(20)))
+      assert(expected == actual)
+    }
+
     test("select properly element of a root Array") {
       val input =
         """
-          |[{
-          | "2LettersName" : false,
-          | "Age": 50,
-          | "Name": "John",
-          | "brothers": [
-          |   {
-          |     "Name" : "Paul",
-          |     "Age": 50
-          |   },
-          |   {
-          |     "Name": "Bob",
-          |     "Age" : 30
-          |   }
-          | ]
-          |}]
+          |[
+          |  {
+          |     "2LettersName" : false,
+          |     "Age": 50,
+          |     "Name": "John",
+          |     "brothers": [
+          |       {
+          |         "Name" : "Paul",
+          |         "Age": 50
+          |       },
+          |       {
+          |         "Name": "Bob",
+          |         "Age" : 30
+          |       }
+          |     ]
+          |  }
+          |]
         """.stripMargin
 
       assert(JsonPath.runStrict("$[0].brothers[1].Age", input) == Right(Json.fromInt(30)))

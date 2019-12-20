@@ -7,7 +7,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
 
   import c.universe._
 
-  private val initTreeFold: (Tree, List[Tree]) = q"Nil" → Nil
+  private val initTreeFold: (Tree, List[Tree]) = q"Nil" -> Nil
 
   def collectImpl(body: Tree): Tree = {
     val contextType = c.prefix.tree.tpe
@@ -21,9 +21,9 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
         val (finalTree, rest) = elements.foldLeft(initTreeFold) {
           case ((accTree, accSingle), elem) =>
             if (elem.tpe <:< elementType)
-              accTree → (accSingle :+ elem) //todo avoid List.append
+              accTree -> (accSingle :+ elem) //todo avoid List.append
             else
-              q"$accTree ++ $accSingle ++ $elem" → Nil
+              q"$accTree ++ $accSingle ++ $elem" -> Nil
         }
 
         q"${c.prefix.tree}.get($finalTree ++ $rest)"
@@ -73,12 +73,12 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     val checked = c.typecheck(tree)
     // checked.tpe is null if the statement is an import
     if (checked.tpe == null)
-      Left(tree.pos → s"Expected expression of either `$elementType` or `$seq` but found '$tree'")
+      Left(tree.pos -> s"Expected expression of either `$elementType` or `$seq` but found '$tree'")
     else if (checked.tpe <:< elementType || checked.tpe <:< seq)
       Right(checked)
     else
       try Right(c.typecheck(tree, pt = elementType)) catch {
-        case TypecheckException(_, msg) => Left(tree.pos →
+        case TypecheckException(_, msg) => Left(tree.pos ->
           (s"Result of this expression can be either `$elementType` or `$seq`. " + msg))
       }
   }

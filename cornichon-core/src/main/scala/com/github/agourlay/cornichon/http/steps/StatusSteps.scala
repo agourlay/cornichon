@@ -13,11 +13,11 @@ object StatusSteps {
   case object StatusKind {
 
     protected val statusKind = Map(
-      1 → "informational",
-      2 → "success",
-      3 → "redirection",
-      4 → "client error",
-      5 → "server error"
+      1 -> "informational",
+      2 -> "success",
+      3 -> "redirection",
+      4 -> "client error",
+      5 -> "server error"
     )
 
     def computeKind(status: Int) = status / 100

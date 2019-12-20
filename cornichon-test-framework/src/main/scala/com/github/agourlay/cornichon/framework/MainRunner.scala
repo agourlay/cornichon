@@ -13,7 +13,7 @@ import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 import sbt.testing.TestSelector
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 

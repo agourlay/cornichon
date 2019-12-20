@@ -25,35 +25,35 @@ object PlaceholderResolverSpec extends TestSuite {
 
     test("fillPlaceholders fail with clear error message if key is defined in both Session and Extractors") {
       val extractor = JsonMapper("customer", "id")
-      val extractors = Map("customer-id" → extractor)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty.addValueUnsafe("customer-id", "12345")
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Left(AmbiguousKeyDefinition("customer-id")))
     }
 
     test("fillPlaceholders fail with clear error message if key defined in the extractor is not in Session") {
       val extractor = JsonMapper("customer", "id")
-      val extractors = Map("customer-id" → extractor)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors).leftMap(_.renderedMessage) == Left("Error occurred while running Mapper attached to key 'customer-id'\ncaused by:\nkey 'customer' can not be found in session \nempty"))
     }
 
     test("fillPlaceholders use registered SimpleMapper") {
       val extractor = SimpleMapper(() => "magic!")
-      val extractors = Map("customer-id" → extractor)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("magic!"))
     }
 
     test("fillPlaceholders use registered TextMapper") {
       val extractor = TextMapper("customer", customerString => customerString.length.toString)
-      val extractors = Map("customer-id" → extractor)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty.addValueUnsafe("customer", "my-customer-name-of-great-length")
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("32"))
     }
 
     test("fillPlaceholders use registered HistoryMapper") {
       val extractor = HistoryMapper("customer", customers => customers.length.toString)
-      val extractors = Map("customer-id" → extractor)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty.addValuesUnsafe(
         "customer" -> "customer1",
         "customer" -> "customer2",
@@ -64,21 +64,21 @@ object PlaceholderResolverSpec extends TestSuite {
 
     test("fillPlaceholders use registered SessionMapper") {
       val extractor = SessionMapper(s => s.get("other-thing"))
-      val extractors = Map("customer-id" → extractor)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty.addValueUnsafe("other-thing", "other unrelated value")
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("other unrelated value"))
     }
 
     test("fillPlaceholders use registered RandomMapper") {
-      val extractor = RandomMapper(rd => rd.alphanumeric.take(5).mkString("").length.toString)
-      val extractors = Map("customer-id" → extractor)
+      val extractor = RandomMapper(rd => rd.alphanumeric(5).length.toString)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("5"))
     }
 
     test("fillPlaceholders use registered JsonMapper") {
       val extractor = JsonMapper("customer", "id")
-      val extractors = Map("customer-id" → extractor)
+      val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty.addValueUnsafe("customer", """{"id" : "122"}""")
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("122"))
     }

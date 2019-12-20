@@ -12,7 +12,7 @@ import monix.execution.CancelablePromise
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
 import cats.syntax.either._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 
@@ -79,9 +79,9 @@ trait KafkaDsl {
 
   private def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
     session.addValues(
-      s"$topic-topic" → response.topic(),
-      s"$topic-key" → response.key(),
-      s"$topic-value" → response.value()
+      s"$topic-topic" -> response.topic(),
+      s"$topic-key" -> response.key(),
+      s"$topic-value" -> response.value()
     )
 
   // the producer is stopped after all features

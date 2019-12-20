@@ -18,19 +18,19 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
 
   val tests = Tests {
     test("parseJson object String") {
-      val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
+      val expected = mapToJsonObject(Map("name" -> Json.fromString("cornichon")))
       assert(parseDslJson("""{"name":"cornichon"}""") == Right(expected))
     }
 
     test("parseJson object String with spaces") {
-      val expected = mapToJsonObject(Map("name" → Json.fromString("cornichon")))
+      val expected = mapToJsonObject(Map("name" -> Json.fromString("cornichon")))
       assert(parseDslJson("""   {"name":"cornichon"}""") == Right(expected))
     }
 
     test("parseJson JSON Array string") {
       val expected = Json.fromValues(Seq(
-        mapToJsonObject(Map("name" → Json.fromString("cornichon"))),
-        mapToJsonObject(Map("name" → Json.fromString("scala")))
+        mapToJsonObject(Map("name" -> Json.fromString("cornichon"))),
+        mapToJsonObject(Map("name" -> Json.fromString("scala")))
       ))
 
       assert(parseDslJson("""[ {"name":"cornichon"}, {"name":"scala"} ]""") == Right(expected))
@@ -91,8 +91,8 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           | Bob  |   11   |              |
           """
       ) == Right(List(
-          Map("2LettersName" → "false"),
-          Map("Age" → "11", "Name" → "Bob"))))
+          Map("2LettersName" -> "false"),
+          Map("Age" -> "11", "Name" -> "Bob"))))
     }
 
     test("isJsonString detects invalid empty string") {

@@ -29,7 +29,7 @@ case class QueryGQL(
   def withOperationName(operationName: String) = copy(operationName = Some(operationName))
 
   def withVariables(newVariables: (String, VarValue)*) = {
-    val vars: Map[String, Json] = newVariables.map { case (k, v) => k → parseDslJsonUnsafe(v.value)(v.encoder, v.show) }(scala.collection.breakOut)
+    val vars: Map[String, Json] = newVariables.map { case (k, v) => k -> parseDslJsonUnsafe(v.value)(v.encoder, v.show) }.toMap
     copy(variables = variables.fold(Some(vars))(v => Some(v ++ vars)))
   }
 

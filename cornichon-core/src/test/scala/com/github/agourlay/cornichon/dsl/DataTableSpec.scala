@@ -24,7 +24,7 @@ object DataTableSpec extends TestSuite {
                   """
 
       parseDataTable(input) == Right(
-        List(Json.obj("Name" → Json.fromString("John")).asObject.get))
+        List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
     }
 
     test("parser processes a single line with 1 value") {
@@ -34,7 +34,7 @@ object DataTableSpec extends TestSuite {
                   """
 
       parseDataTable(input) == Right(
-        List(Json.obj("Name" → Json.fromString("John")).asObject.get))
+        List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
     }
 
     test("parser processes a single line with 2 values") {
@@ -45,8 +45,8 @@ object DataTableSpec extends TestSuite {
 
       parseDataTable(input) == Right(
         List(Json.obj(
-          "Name" → Json.fromString("John"),
-          "Age" → Json.fromInt(50)
+          "Name" -> Json.fromString("John"),
+          "Age" -> Json.fromInt(50)
         ).asObject.get))
     }
 
@@ -59,8 +59,8 @@ object DataTableSpec extends TestSuite {
 
       parseDataTable(input) == Right(
         List(Json.obj(
-          "Name" → Json.fromString("öÖß \u00DF \" test "),
-          "Größe \u00DF \" | test" → Json.fromInt(50)
+          "Name" -> Json.fromString("öÖß \u00DF \" test "),
+          "Größe \u00DF \" | test" -> Json.fromInt(50)
         ).asObject.get))
     }
 
@@ -74,12 +74,12 @@ object DataTableSpec extends TestSuite {
       parseDataTable(input) == Right(
         List(
           Json.obj(
-            "Name" → Json.fromString("John"),
-            "Age" → Json.fromInt(50)
+            "Name" -> Json.fromString("John"),
+            "Age" -> Json.fromInt(50)
           ).asObject.get,
           Json.obj(
-            "Name" → Json.fromString("Bob"),
-            "Age" → Json.fromInt(11)
+            "Name" -> Json.fromString("Bob"),
+            "Age" -> Json.fromInt(11)
           ).asObject.get))
     }
 

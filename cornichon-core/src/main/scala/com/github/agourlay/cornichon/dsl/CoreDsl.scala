@@ -14,7 +14,6 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
-import scala.collection.breakOut
 import scala.language.{ dynamics, higherKinds }
 import scala.concurrent.duration.FiniteDuration
 
@@ -76,12 +75,12 @@ trait CoreDsl extends ProvidedInstances {
 
   def RepeatWith(elements: ContainerType[Any, Show]*)(index: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps =>
-      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element))(breakOut), index)
+      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element)).toList, index)
     }
 
   def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(index: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps =>
-      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element))(breakOut), index)
+      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element)).toList, index)
     }
 
   def RetryMax(limit: Int): BodyElementCollector[Step, Step] =
@@ -175,7 +174,7 @@ trait CoreDsl extends ProvidedInstances {
   def show_session(
     key: String,
     index: Option[Int] = None,
-    transform: String => Either[CornichonError, String] = _.asRight) =
+    transform: String => Either[CornichonError, String] = _.asRight): DebugStep =
     DebugStep(s"show session value for key $key", sc =>
       for {
         v <- sc.session.get(key, index)

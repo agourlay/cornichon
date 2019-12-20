@@ -93,7 +93,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def body: JsonStepBuilder = jsonStepBuilder
 
   def save_body(target: String): Step =
-    save_body_path(JsonPath.root → target)
+    save_body_path(JsonPath.root -> target)
 
   def save_body_path(args: (String, String)*): Step =
     save_from_session {
