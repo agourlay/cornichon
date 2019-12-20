@@ -11,7 +11,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 case class EffectStep(title: String, effect: ScenarioContext => Future[Either[CornichonError, Session]], show: Boolean = true) extends SessionValueStep {
 
-  def setTitle(newTitle: String) = copy(title = newTitle)
+  def setTitle(newTitle: String): Step = copy(title = newTitle)
 
   override def runSessionValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
     Task.deferFuture(effect(runState.scenarioContext)).map(_.leftMap(NonEmptyList.one))
