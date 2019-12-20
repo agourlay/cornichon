@@ -393,7 +393,7 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        And assert body.path("$[*].name").is(
+        And assert body.path("$[*].name").asArray.is(
           """
             [ "Spiderman", "IronMan", "Superman", "GreenLantern", "Batman"]
           """
