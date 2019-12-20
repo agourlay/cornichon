@@ -10,7 +10,7 @@ import scala.util.Try
 
 case class Matcher(key: String, description: String, predicate: Json => Boolean) {
   val fullKey = s"*$key*"
-  lazy val quotedFullKey = '"' + fullKey + '"'
+  lazy val quotedFullKey = s""""fullKey""""
   lazy val pattern = Pattern.compile(Pattern.quote(fullKey))
 }
 

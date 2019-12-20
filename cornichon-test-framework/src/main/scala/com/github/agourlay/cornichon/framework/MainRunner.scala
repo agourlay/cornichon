@@ -35,7 +35,7 @@ object MainRunner {
     header = "Run your cornichon features without SBT."
   )((packageToScanOpts, reportsOutputDirOpts, featureParallelismOpts, seedOpts, scenarioNameFilterOpts).tupled)
 
-  def main(args: Array[String]): Unit = mainRunnerCommand.parse(args, sys.env) match {
+  def main(args: Array[String]): Unit = mainRunnerCommand.parse(args.toSeq, sys.env) match {
     case Left(help) =>
       System.err.println(help)
       sys.exit(1)

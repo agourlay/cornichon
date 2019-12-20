@@ -33,7 +33,7 @@ object RepeatDuringStepSpec extends TestSuite with CommonSpec {
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
       val (executionTime, res) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
-      def clue() = executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)
+      def clue() = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
       if (!res.isSuccess) {
         clue()
       }
@@ -54,7 +54,7 @@ object RepeatDuringStepSpec extends TestSuite with CommonSpec {
       val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
       val (executionTime, res) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
-      def clue() = executionTime.toMillis + "\n" + LogInstruction.renderLogs(res.logs)
+      def clue() = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
       if (!res.isSuccess) {
         clue()
       }
