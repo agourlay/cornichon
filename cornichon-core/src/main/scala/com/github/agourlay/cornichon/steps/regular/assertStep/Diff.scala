@@ -62,7 +62,7 @@ object Diff {
   }
 
   implicit def arrayDiff[A: Show] = new Diff[Array[A]] {
-    def diff(left: Array[A], right: Array[A]): Option[String] = Some(orderedCollectionDiff(left, right))
+    def diff(left: Array[A], right: Array[A]): Option[String] = Some(orderedCollectionDiff(left.toSeq, right.toSeq))
   }
 
   implicit def immutableSetDiff[A: Show] = new Diff[Set[A]] {
