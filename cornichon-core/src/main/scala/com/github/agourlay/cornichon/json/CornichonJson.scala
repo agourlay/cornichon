@@ -155,9 +155,9 @@ trait CornichonJson {
           def onString(value: String): List[(String, Json)] =
             leafValue()
           def onArray(elems: Vector[Json]): List[(String, Json)] =
-            elems.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }.toList
+            elems.toList.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }
           def onObject(elems: JsonObject): List[(String, Json)] =
-            elems.toIterable.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }.toList
+            elems.toList.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }
         }
       )
     }

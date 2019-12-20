@@ -49,15 +49,16 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 }
 
 case class DataTable(headers: Headers, rows: Seq[Row]) {
-  require(rows.forall(_.fields.size == headers.fields.size), "Datatable is malformed, all rows must have the same number of elements")
+  require(rows.forall(_.fields.size == headers.fields.size), "The data table is malformed, all rows must have the same number of elements")
 
-  def rawStringList: List[Map[String, String]] =
-    rows.map { row =>
-      val map: Map[String, String] = (headers.fields zip row.fields).collect {
-        case (name, value) if value.trim.nonEmpty => name -> value.trim
-      }.toMap
-      map
-    }.toList
+  lazy val rawStringList: List[Map[String, String]] =
+    rows.toList
+      .map { row =>
+        headers.fields.zip(row.fields)
+          .map { case (name, value) => name -> value.trim }
+          .filter(_._2.nonEmpty)
+          .toMap
+      }
 }
 
 case class Headers(fields: Seq[String])
