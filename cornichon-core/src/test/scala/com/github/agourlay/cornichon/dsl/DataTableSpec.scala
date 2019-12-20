@@ -91,7 +91,7 @@ object DataTableSpec extends TestSuite {
 
       parseDataTable(input) match {
         case Right(_) => assert(false)
-        case Left(e)  => assert(e.renderedMessage.contains("requirement failed: Datatable is malformed, all rows must have the same number of elements"))
+        case Left(e)  => assert(e.renderedMessage.contains("requirement failed: the data table is malformed, all rows must have the same number of elements"))
       }
     }
 
