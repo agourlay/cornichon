@@ -17,10 +17,8 @@ import step.JsonStepBench._
 @Warmup(iterations = 10)
 @Measurement(iterations = 10)
 @Fork(value = 1, jvmArgsAppend = Array(
-  "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=duration=60s,filename=./CheckStepBench-profiling-data.jfr,name=profile,settings=profile",
-  "-XX:FlightRecorderOptions=settings=/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/jre/lib/jfr/profile.jfc,samplethreads=true",
+  "-XX:StartFlightRecording=filename=./CheckStepBench-profiling-data.jfr,name=profile,settings=profile",
   "-Xmx1G"))
 class CheckStepBench {
 
