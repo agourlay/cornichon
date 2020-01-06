@@ -3,7 +3,10 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 import cats.Show
 import cats.syntax.show._
 import io.circe.Json
+import io.circe.syntax._
 import com.github.agourlay.cornichon.json.CornichonJson.diffPatch
+import diffson.jsonpatch.JsonPatch
+import diffson.circe._
 
 trait Diff[A] {
   def diff(left: A, right: A): Option[String]
@@ -12,10 +15,16 @@ trait Diff[A] {
 object Diff {
   def apply[A](implicit diff: Diff[A]): Diff[A] = diff
 
+  implicit val showJsonPatch = new Show[JsonPatch[Json]] {
+    def show(jp: JsonPatch[Json]): String = {
+      jp.asJson.spaces2
+    }
+  }
+
   implicit val jsonDiff = new Diff[Json] {
     def diff(left: Json, right: Json): Option[String] = Some(
       s"""|JSON patch between actual result and expected result is :
-          |${diffPatch(left, right).toString}
+          |${diffPatch(left, right).show}
       """.stripMargin.trim
     )
   }

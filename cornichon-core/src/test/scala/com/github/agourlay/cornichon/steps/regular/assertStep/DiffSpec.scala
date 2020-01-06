@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.instances.string._
 import com.github.agourlay.cornichon.steps.regular.assertStep.Diff._
+import io.circe.Json
 import utest._
 
 object DiffSpec extends TestSuite {
@@ -90,5 +91,51 @@ object DiffSpec extends TestSuite {
            |e""".stripMargin
       )
     }
+
+    test("JSON diff for JString is done via JsonPatch") {
+      val diff = jsonDiff.diff(Json.fromString("test"), Json.fromString("test1"))
+      val expected =
+        """|JSON patch between actual result and expected result is :
+           |[
+           |  {
+           |    "op" : "replace",
+           |    "path" : "",
+           |    "value" : "test1",
+           |    "old" : "test"
+           |  }
+           |]""".stripMargin
+      assert(diff.contains(expected))
+    }
+
+    test("JSON diff for JObject is done via JsonPatch") {
+      val diff = jsonDiff.diff(Json.fromFields(("test" -> Json.fromString("value")) :: Nil), Json.fromFields(("test" -> Json.fromString("new value")) :: Nil))
+      val expected =
+        """|JSON patch between actual result and expected result is :
+           |[
+           |  {
+           |    "op" : "replace",
+           |    "path" : "/test",
+           |    "value" : "new value",
+           |    "old" : "value"
+           |  }
+           |]""".stripMargin
+      assert(diff.contains(expected))
+    }
+
+    test("JSON diff for JArray is done via JsonPatch") {
+      val diff = jsonDiff.diff(Json.fromValues(Json.fromFields(("test" -> Json.fromString("value")) :: Nil) :: Nil), Json.fromValues(Json.fromFields(("test" -> Json.fromString("new value")) :: Nil) :: Nil))
+      val expected =
+        """|JSON patch between actual result and expected result is :
+           |[
+           |  {
+           |    "op" : "replace",
+           |    "path" : "/0/test",
+           |    "value" : "new value",
+           |    "old" : "value"
+           |  }
+           |]""".stripMargin
+      assert(diff.contains(expected))
+    }
+
   }
 }
