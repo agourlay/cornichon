@@ -2,12 +2,12 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import utest._
 
 import scala.concurrent.duration._
 
-object WithinStepSpec extends TestSuite with CommonSpec {
+object WithinStepSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("controls duration of 'within' wrapped steps") {

@@ -4,11 +4,11 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTitleLogInstruction, Session }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 
 import utest._
 
-object AttachStepSpec extends TestSuite with CommonSpec {
+object AttachStepSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("merges nested steps in the parent flow when first") {

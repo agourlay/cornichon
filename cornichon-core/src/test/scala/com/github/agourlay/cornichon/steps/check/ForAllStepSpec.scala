@@ -5,10 +5,10 @@ import com.github.agourlay.cornichon.dsl.CheckDsl
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.steps.wrapped.AttachStep
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import utest._
 
-object ForAllStepSpec extends TestSuite with CommonSpec with CheckDsl {
+object ForAllStepSpec extends TestSuite with CommonTestSuite with CheckDsl {
 
   val tests = Tests {
     test("validate invariant - correct") {
@@ -29,7 +29,7 @@ object ForAllStepSpec extends TestSuite with CommonSpec with CheckDsl {
       val incrementEffect: Step = EffectStep.fromSync("identity", sc => { uglyCounter = uglyCounter + 1; sc.session })
 
       val forAllStep = for_all("weird case", maxNumberOfRuns = maxRun, integerGen) { _ =>
-        val assert = if (uglyCounter < 5) alwaysValidAssertStep else brokenEffect
+        val assert = if (uglyCounter < 5) alwaysValidAssertStep else brokenEffectStep
         AttachStep(_ => incrementEffect :: assert :: Nil)
       }
       val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
@@ -72,7 +72,7 @@ object ForAllStepSpec extends TestSuite with CommonSpec with CheckDsl {
     }
 
     test("report failure when a nested step explodes") {
-      val forAllStep = for_all("fails", maxNumberOfRuns = 10, integerGen)(_ => brokenEffect)
+      val forAllStep = for_all("fails", maxNumberOfRuns = 10, integerGen)(_ => brokenEffectStep)
       val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))

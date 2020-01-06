@@ -4,11 +4,11 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 
 import utest._
 
-object ScenarioRunnerSpec extends TestSuite with CommonSpec {
+object ScenarioRunnerSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("runScenario executes all steps of a scenario in case of success") {

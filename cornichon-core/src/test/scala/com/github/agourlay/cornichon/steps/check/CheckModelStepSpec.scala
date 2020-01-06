@@ -3,15 +3,15 @@ package com.github.agourlay.cornichon.steps.check
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.check.checkModel._
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import utest._
 
-object CheckModelStepSpec extends TestSuite with CommonSpec {
+object CheckModelStepSpec extends TestSuite with CommonTestSuite {
 
-  def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = identityStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
+  def dummyProperty1(name: String, preNeverValid: Boolean = false, step: Step = identityEffectStep, callGen: Boolean = false): PropertyN[Int, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property1(
       description = name,
-      preCondition = if (preNeverValid) neverValidAssertStep else identityStep,
+      preCondition = if (preNeverValid) neverValidAssertStep else identityEffectStep,
       invariant = g => if (callGen) { g(); step } else step)
 
   val tests = Tests {
@@ -145,7 +145,7 @@ object CheckModelStepSpec extends TestSuite with CommonSpec {
 
     test("report a failure when an action explodes") {
       val starting = dummyProperty1("starting property")
-      val otherAction = dummyProperty1("other property", step = brokenEffect)
+      val otherAction = dummyProperty1("other property", step = brokenEffectStep)
       val transitions = Map(
         starting -> ((100, otherAction) :: Nil),
         otherAction -> ((100, starting) :: Nil))

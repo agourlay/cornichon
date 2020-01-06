@@ -4,13 +4,13 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 
 import utest._
 
 import scala.concurrent.duration._
 
-object RepeatConcurrentlyStepSpec extends TestSuite with CommonSpec {
+object RepeatConcurrentlyStepSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("fails if 'repeatConcurrently' block contains a failed step") {

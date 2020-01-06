@@ -3,10 +3,10 @@ package com.github.agourlay.cornichon.http
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.HeadersSteps.HeadersStepBuilder
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import utest._
 
-object HeaderStepsSpec extends TestSuite with CommonSpec {
+object HeaderStepsSpec extends TestSuite with CommonTestSuite {
 
   private def addHeaderToSession(s: Session)(headers: (String, String)*) =
     s.addValue(SessionKeys.lastResponseHeadersKey, encodeSessionHeaders(headers)).valueUnsafe

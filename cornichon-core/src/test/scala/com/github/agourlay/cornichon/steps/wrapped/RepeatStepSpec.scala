@@ -2,11 +2,11 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 
 import utest._
 
-object RepeatStepSpec extends TestSuite with CommonSpec {
+object RepeatStepSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("fails if 'repeat' block contains a failed step") {

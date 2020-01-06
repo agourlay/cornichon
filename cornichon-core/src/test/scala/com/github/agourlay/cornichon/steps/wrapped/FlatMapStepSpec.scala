@@ -5,11 +5,11 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTitleLogInstruction, Session, Step }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 
 import utest._
 
-object FlatMapStepSpec extends TestSuite with CommonSpec {
+object FlatMapStepSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("merge nested steps in the parent flow when first") {

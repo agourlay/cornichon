@@ -5,11 +5,11 @@ import java.util.function.UnaryOperator
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.testHelpers.CommonSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 
 import utest._
 
-object ScenarioResourceStepSpec extends TestSuite with CommonSpec {
+object ScenarioResourceStepSpec extends TestSuite with CommonTestSuite {
 
   import QueueManager._
 
@@ -21,7 +21,7 @@ object ScenarioResourceStepSpec extends TestSuite with CommonSpec {
         createAndStoreQueueInSession("the-queue"),
         deleteQueue("the-queue")
       )
-      val scenario = Scenario("", resourceStep :: brokenEffect :: Nil)
+      val scenario = Scenario("", resourceStep :: brokenEffectStep :: Nil)
 
       val report = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
       val qName = report.session.get("the-queue").valueUnsafe
@@ -34,7 +34,7 @@ object ScenarioResourceStepSpec extends TestSuite with CommonSpec {
       implicit val queueResource = new QueueManager
       val resourceStep1 = ScenarioResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
       val resourceStep2 = ScenarioResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), deleteQueue("q2"))
-      val scenario = Scenario("resource step scenario", resourceStep1 :: brokenEffect :: resourceStep2 :: Nil)
+      val scenario = Scenario("resource step scenario", resourceStep1 :: brokenEffectStep :: resourceStep2 :: Nil)
 
       val rep = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
       val q1 = rep.session.get("q1").valueUnsafe
