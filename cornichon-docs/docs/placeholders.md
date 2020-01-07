@@ -14,7 +14,7 @@ Most built-in steps can use placeholders in their arguments, those will be autom
 - HTTP headers (name and value)
 - JSON Path
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
 
 class PlaceholderFeature extends CornichonFeature {
@@ -24,7 +24,7 @@ class PlaceholderFeature extends CornichonFeature {
 
     Scenario("abstract favorite superheroes") {
 
-      Given I save("favorite-superhero" → "Batman")
+      Given I save("favorite-superhero" -> "Batman")
 
       Then assert session_value("favorite-superhero").is("Batman")
 

@@ -4,7 +4,7 @@ How does it look like?
 
 Find below an example of testing the Open Movie Database API.
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
 
 class ReadmeExample extends CornichonFeature {

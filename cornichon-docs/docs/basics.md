@@ -17,7 +17,7 @@ A `feature` can have several `scenarios` which in turn can have several `steps`.
 The example below contains one `feature` with one `scenario` with two `steps`.
 
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
 
 class CornichonExamplesSpec extends CornichonFeature {

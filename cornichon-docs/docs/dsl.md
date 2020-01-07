@@ -67,7 +67,7 @@ patch("http://superhero.io/batman").withBody("JSON description of Batman goes he
 ```
 
 
-There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section [Custom HTTP body type](#custom-http-body-type).
+There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section [Custom HTTP body type](misc.md#custom-http-body-type).
 
 ## HTTP assertions
 
@@ -546,7 +546,7 @@ Series of steps defined with Cornichon's DSL can be reused within different `Sce
 
 Using the keyword `Attach` if the series starts with a `Step` and without if it starts with a wrapping bloc.
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
 import scala.concurrent.duration._
 
@@ -566,13 +566,13 @@ class CompositionFeature extends CornichonFeature {
 
   def superhero_exists(name: String) =
     Attach {
-      When I get(s"/superheroes/$name").withParams("sessionId" → "<session-id>")
+      When I get(s"/superheroes/$name").withParams("sessionId" -> "<session-id>")
       Then assert status.is(200)
     }
 
   def random_superheroes_until(name: String) =
-    Eventually(maxDuration = 3 seconds, interval = 10 milliseconds) {
-      When I get("/superheroes/random").withParams("sessionId" → "<session-id>")
+    Eventually(maxDuration = 3.seconds, interval = 10.milliseconds) {
+      When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
       Then assert body.path("name").is(name)
       Then I print_step("bingo!")
     }

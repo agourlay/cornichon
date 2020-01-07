@@ -226,8 +226,7 @@ lazy val docs =
     .settings(
       name := "cornichon-docs",
       unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks, scalatest),
-      micrositeDocumentationLabelDescription := "Scaladoc",
-      micrositeCompilingDocsTool := WithTut
+      micrositeDocumentationLabelDescription := "Scaladoc"
     )
     .dependsOn(core, testFramework, kafka, httpMock)
     .enablePlugins(MicrositesPlugin)
@@ -241,11 +240,11 @@ lazy val docSettings = Seq(
   micrositeName := "Cornichon",
   micrositeDescription := "An extensible Scala DSL for testing JSON HTTP APIs.",
   micrositeAuthor := "Arnaud Gourlay",
-  micrositeHighlightTheme := "atom-one-light",
   micrositeHomepage := "http://agourlay.github.io/cornichon/",
-  micrositeBaseUrl := "cornichon",
+  micrositeBaseUrl := "/cornichon",
   micrositeGithubOwner := "agourlay",
   micrositeGithubRepo := "cornichon",
+  micrositeTheme := "pattern",
   micrositePalette := Map(
     "brand-primary" -> "#5B5988",
     "brand-secondary" -> "#292E53",
@@ -259,7 +258,6 @@ lazy val docSettings = Seq(
   micrositeDocumentationUrl := "api",
   addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), micrositeDocumentationUrl),
   ghpagesNoJekyll := false,
-  fork in tut := true,
   git.remoteRepo := "git@github.com:agourlay/cornichon.git",
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )

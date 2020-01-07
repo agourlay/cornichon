@@ -27,7 +27,7 @@ Taking a ```Step``` expression similar to the main DSL. You can either pass a si
 Here is an examples with fictitious steps.
 
 ```scala
-beforeEachScenario{
+beforeEachScenario {
   Attach {
     Given I setup_server
     Then assert setup_successful
@@ -65,7 +65,7 @@ The default value for the HTTP request timeout is ```2 seconds```. As always it 
 ```scala
 import scala.concurrent.duration._
 
-override lazy val requestTimeout = 100 millis
+override lazy val requestTimeout = 100.millis
 ```
 
 ## Seed
@@ -135,7 +135,7 @@ or through the command line ```sbt test parallelExecution in Test := true```
 
 ```Feature``` or individual ```scenario``` can also be marked to be ignored.
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
 
 class CornichonExamplesSpec extends CornichonFeature {
@@ -158,16 +158,16 @@ class CornichonExamplesSpec extends CornichonFeature {
 
 During development you want to remember that a `scenario` needs to be created, but you’re not ready to write it yet.
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
 
 class CornichonExamplesSpec extends CornichonFeature {
 
   def feature = Feature("Some title"){
 
-    Scenario("this important use case") pending
+    Scenario("this important use case").pending
 
-    Scenario("that important edge case") pending
+    Scenario("that important edge case").pending
   }
 }
 ```

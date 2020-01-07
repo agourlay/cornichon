@@ -24,7 +24,6 @@ options:
       url: custom-steps/resource-step.html
       menu_section: custom-step
 
-
   - title: Placeholders
     url: placeholders.html
 

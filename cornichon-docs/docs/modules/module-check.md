@@ -23,7 +23,7 @@ There are tree concrete instances of `generators`:
 ```scala
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
-  gen = () ⇒ rc.alphanumeric.take(20).mkString(""))
+  gen = () ⇒ rc.alphanumeric(20))
 
 def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   name = "integer",
@@ -65,7 +65,7 @@ We want to enforce the following invariant `for any string, if we reverse it twi
 
 The implementation under test is a server accepting `POST` requests to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.CornichonFeature
 
@@ -75,7 +75,7 @@ class StringReverseCheck extends CornichonFeature {
 
     Scenario("reverse a string twice yields the same results") {
 
-      Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString ⇒
+      Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString =>
         Attach {
           Given I post("/double-reverse").withParams("word" -> randomString)
           Then assert status.is(200)
@@ -87,7 +87,7 @@ class StringReverseCheck extends CornichonFeature {
 
   def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
     name = "alphanumeric String (20)",
-    gen = () ⇒ rc.alphanumeric.take(20).mkString(""))
+    gen = () => rc.alphanumeric(20))
   }
 
 ```
@@ -356,9 +356,8 @@ The server exposes two endpoints:
 - a `POST` request on `/push-coin` to unlock the gate
 - a `POST` request on `/walk-through` to turn the gate
 
-```tut:silent
+```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.check.checkModel._
 
 class TurnstileCheck extends CornichonFeature {
@@ -376,7 +375,7 @@ class TurnstileCheck extends CornichonFeature {
 
   private val pushCoin = Property0(
     description = "push a coin",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/push-coin")
       Then assert status.is(200)
       And assert body.is("payment accepted")
@@ -384,7 +383,7 @@ class TurnstileCheck extends CornichonFeature {
 
   private val pushCoinBlocked = Property0(
     description = "push a coin is a blocked",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/push-coin")
       Then assert status.is(400)
       And assert body.is("payment refused")
@@ -392,7 +391,7 @@ class TurnstileCheck extends CornichonFeature {
 
   private val walkThroughOk = Property0(
     description = "walk through ok",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/walk-through")
       Then assert status.is(200)
       And assert body.is("door turns")
@@ -400,7 +399,7 @@ class TurnstileCheck extends CornichonFeature {
 
   private val walkThroughBlocked = Property0(
     description = "walk through blocked",
-    invariant = () ⇒ Attach {
+    invariant = () => Attach {
       Given I post("/walk-through")
       Then assert status.is(400)
       And assert body.is("door blocked")
