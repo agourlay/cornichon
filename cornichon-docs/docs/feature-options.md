@@ -111,11 +111,11 @@ It works for all keys in ```Session```, let's say we also have objects registere
 
 ## Execution model
 
-By default the ```features``` are executed sequentially and the ```scenarios``` within are executed in parallel.
+By default the `features` are executed sequentially and the `scenarios` within are executed in parallel.
 
 This execution is configurable if you have specific constraints.
 
-To run ```scenarios``` sequentially it is necessary to declare in your application.conf file
+To run `scenarios` sequentially it is necessary to declare in your application.conf file
 
 ```scala
 cornichon {

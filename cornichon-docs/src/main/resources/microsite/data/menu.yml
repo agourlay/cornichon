@@ -33,6 +33,9 @@ options:
   - title: Feature options
     url: feature-options.html
 
+  - title: Reference configuration
+    url: reference-configuration.html
+
   - title: Misc.
     url: misc.html
 

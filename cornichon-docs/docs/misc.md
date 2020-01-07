@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Misc."
-position: 8
+position: 9
 ---
 
 # Custom HTTP body type
@@ -10,11 +10,11 @@ By default the HTTP DSL expects a String body but in some cases you might want t
 
 In order to use a custom type as body, it is necessary to provide 3 typeclass instances:
 
-- ```cats.Show``` used to print the values
-- ```io.circe.Encoder``` used to convert the values to JSON
-- ```com.github.agourlay.cornichon.resolver.Resolvable``` used to provide a custom String representation in which placeholders can be resolved
+- `cats.Show` used to print the values
+- `io.circe.Encoder` used to convert the values to JSON
+- `com.github.agourlay.cornichon.resolver.Resolvable` used to provide a custom String representation in which placeholders can be resolved
 
-For instance if you wish to use the ```JsObject``` from ```play-json``` as HTTP request's body you can define the following instances in your code:
+For instance if you wish to use the `JsObject` from `play-json` as HTTP request's body you can define the following instances in your code:
 
 ```scala
   lazy implicit val jsonResolvableForm = new Resolvable[JsObject] {
