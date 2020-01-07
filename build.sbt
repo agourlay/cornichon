@@ -240,6 +240,7 @@ lazy val docSettings = Seq(
   micrositeName := "Cornichon",
   micrositeDescription := "An extensible Scala DSL for testing JSON HTTP APIs.",
   micrositeAuthor := "Arnaud Gourlay",
+  micrositeHighlightTheme := "atom-one-light",
   micrositeHomepage := "http://agourlay.github.io/cornichon/",
   micrositeBaseUrl := "/cornichon",
   micrositeGithubOwner := "agourlay",
