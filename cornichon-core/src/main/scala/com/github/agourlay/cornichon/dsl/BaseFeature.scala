@@ -6,6 +6,7 @@ import com.github.agourlay.cornichon.core.{ Config, Done, FeatureDef, Step }
 import com.github.agourlay.cornichon.matchers.Matcher
 import com.github.agourlay.cornichon.resolver.Mapper
 import monix.execution.Scheduler
+import pureconfig.error.{ ConvertFailure, KeyNotFound }
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
@@ -50,9 +51,13 @@ trait BaseFeature {
 object BaseFeature {
   import pureconfig.generic.auto._
   import pureconfig.ConfigSource
+  import pureconfig.error.{ ConfigReaderException, ConfigReaderFailures }
 
-  // the config file must exist with the `cornichon` namespace even if it is empty
-  lazy val config = ConfigSource.default.at("cornichon").loadOrThrow[Config]
+  lazy val config = ConfigSource.default.at("cornichon").load[Config] match {
+    case Right(v)                                                                           => v
+    case Left(ConfigReaderFailures(ConvertFailure(KeyNotFound("cornichon", _), _, _), Nil)) => Config()
+    case Left(failures)                                                                     => throw new ConfigReaderException[Config](failures)
+  }
 
   private val hooks = new ConcurrentLinkedDeque[() => Future[_]]()
 
