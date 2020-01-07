@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Modules"
-position: 10
+position: 11
 ---
 
 # Modules
@@ -10,4 +10,3 @@ Various additional modules are available and offer a set of features which do no
 
 - HTTP mock
 - Kafka integration
-- Property based testing

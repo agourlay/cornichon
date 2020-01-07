@@ -6,23 +6,23 @@ position: 7
 
 # Feature options
 
-To implement a ```CornichonFeature``` it is only required to implement the ```feature``` function. However a number of useful options are available using override.
+To implement a `CornichonFeature` it is only required to implement the `feature` function. However a number of useful options are available using override.
 
 ## Before and after hooks
 
 Hooks are available to set up and tear down things as usual but this feature is not integrated into the DSL.
 
-Four functions are available in ```CornichonFeature``` with self-explanatory names:
+Four functions are available in `CornichonFeature` with self-explanatory names:
 
-Taking ```Unit``` expression
+Taking a `Unit` expression
 
 ```scala
 beforeFeature { // do side effect here }
 
-afterFeature {  // do side effect here }
+afterFeature { // do side effect here }
 ```
 
-Taking a ```Step``` expression similar to the main DSL. You can either pass a single regular ```Step``` or a ```WrapperStep``` like ```Attach```.
+Taking a `Step` expression similar to the main DSL. You can either pass a single regular `Step` or a `WrapperStep` like `Attach`.
 
 Here is an examples with fictitious steps.
 
@@ -60,7 +60,7 @@ You can still override the base URL of a single step by providing the complete U
 
 ## Request timeout
 
-The default value for the HTTP request timeout is ```2 seconds```. As always it can be overridden per scenario.
+The default value for the HTTP request timeout is `2 seconds`. As always it can be overridden per scenario.
 
 ```scala
 import scala.concurrent.duration._
@@ -73,7 +73,7 @@ override lazy val requestTimeout = 100.millis
 On a failure the initial seed will be provided in the error reporting enabling you to replay the exact same test even if it contains source of randomness such as:
 
   - randomized placeholders (random-uuid, random-string, random-boolean etc)
-  - `cornichon-check` value generators & transitions
+  - property based testing generators & transitions
   - custom steps using `ScenarioContext.randomContext`
   - `RandomMapper` as extractor
 
@@ -83,11 +83,11 @@ override lazy val seed: Option[Long] = Some(1L)
 
 ## Register custom extractors
 
-In some cases it makes sense to declare ```extractors``` to avoid code duplication when dealing with ```session``` values.
+In some cases it makes sense to declare `extractors` to avoid code duplication when dealing with `session` values.
 
-An extractor is responsible to describe using a JsonPath how to build a value from an existing value in ```session```.
+An extractor is responsible to describe using a JsonPath how to build a value from an existing value in `session`.
 
-For instance if most of your JSON responses contain a field ```id``` and you want to use it as a placeholder without always having to manually extract and save the value into the ```session``` you can write :
+For instance if most of your JSON responses contain a field `id` and you want to use it as a placeholder without always having to manually extract and save the value into the ```session``` you can write :
 
 ```scala
    override def registerExtractors = Map(
@@ -95,9 +95,9 @@ For instance if most of your JSON responses contain a field ```id``` and you wan
    )
 ```
 
-It is now possible to use ```<response-id>``` or ```<response-id[integer]>``` in the steps definitions.
+It is now possible to use `<response-id>` or `<response-id[integer]>` in the steps definitions.
 
-It works for all keys in ```Session```, let's say we also have objects registered under keys ```customer``` & ```product```:
+It works for all keys in `Session`, let's say we also have objects registered under keys `customer` & `product`:
 
 
 ```scala
@@ -123,17 +123,17 @@ cornichon {
 }
 ```
 
-To run ```features``` in parallel it is necessary to manually set a flag in your SBT build file.
+To run `features` in parallel it is necessary to manually set a flag in your SBT build file.
 
 ```scala
 parallelExecution in Test := true
 ```
 
-or through the command line ```sbt test parallelExecution in Test := true```
+or through the command line `sbt test parallelExecution in Test := true`
 
 ## Ignoring features or scenarios
 
-```Feature``` or individual ```scenario``` can also be marked to be ignored.
+`Feature` or individual `scenario` can also be marked to be ignored.
 
 ```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
@@ -161,7 +161,7 @@ During development you want to remember that a `scenario` needs to be created, b
 ```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
 
-class CornichonExamplesSpec extends CornichonFeature {
+class CornichonPendingExamplesSpec extends CornichonFeature {
 
   def feature = Feature("Some title"){
 

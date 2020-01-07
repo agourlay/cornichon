@@ -1,13 +1,10 @@
 ---
 layout: docs
-title:  "Property based testing support"
+title:  "PBT"
+position: 9
 ---
 
 # Property based testing support
-
-There is support for property based testing through the `cornichon-check` module.
-
-It offers two flavours of testing which can be used in different situations, both are available when mixing the `CheckCheck` trait.
 
 At the center of property based testing lies the capacity to generate arbitrary values that will be used to verify if a given invariant holds.
 
@@ -139,7 +136,7 @@ The logs show that:
 - the string generator has been called for each run
 - no invariants have been broken
 
-The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/stringReverse).
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/stringReverse).
 
 More often than not, using `forAll` is enough to cover the most common use cases. But sometimes we not only want to have random values generated but also random interactions with the system under tests.
 
@@ -344,7 +341,7 @@ It is possible to replay exactly the same run by passing the seed as a parameter
 
 Now that we have a better understanding of the concepts and their semantics, it is time to dive into some concrete examples!
 
-Having `cornichon-check` freely explore the `transitions` of a `model` can create some interesting configurations.
+Having `cornichon` freely explore the `transitions` of a `model` can create some interesting configurations.
 
 #### Turnstile
 
@@ -570,9 +567,9 @@ It is possible to replay exactly this run in a deterministic fashion by using th
 
 `Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(turnstileModel)`
 
-This example shows that designing test scenarios with `cornichon-check` is sometimes challenging in the case of shared mutable states.
+This example shows that designing property based scenarios is sometimes challenging in the case of shared mutable states.
 
-The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/turnstile).
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/turnstile).
 
 #### Web shop Admin (advanced example)
 
@@ -948,7 +945,7 @@ Starting scenario 'WebShop acts according to model'
 
 We can see that we have been interacting with the `CRUD` API using randomly generated `ProductDraft` and that the eventually consistent contracts seem to hold.
 
-The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-check/src/test/scala/com/github/agourlay/cornichon/check/examples/webShop).
+The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/webShop).
 
 ### Caveats
 
