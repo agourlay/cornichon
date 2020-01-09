@@ -9,38 +9,29 @@ import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.json.JsonPath
 import io.circe.Json
 
-trait MatcherAssertion extends Assertion {
-  val negate: Boolean
-  val m: Matcher
-  val input: Json
+case class MatcherAssertion(negate: Boolean, m: Matcher, input: Json, jsonPath: JsonPath) extends Assertion {
 
-  lazy val validated =
-    Either.catchNonFatal(m.predicate(input))
-      .leftMap(e => MatcherAssertionEvaluationError(m, input, e))
-      .fold[ValidatedNel[CornichonError, Done]](
-        errors => errors.invalidNel,
-        matcherResult =>
-          // XNOR condition for not negate
-          if (matcherResult == !negate) validDone else MatcherAssertionError(m, input, negate).invalidNel
-      )
+  lazy val validated: ValidatedNel[CornichonError, Done] =
+    jsonPath.runStrict(input) match {
+      case Left(e) =>
+        MatcherAssertionEvaluationError(m, input, e).invalidNel
+      case Right(focus) =>
+        Either.catchNonFatal(m.predicate(focus))
+          .leftMap(e => MatcherAssertionEvaluationError(m, focus, CornichonError.fromThrowable(e)))
+          .fold[ValidatedNel[CornichonError, Done]](
+            errors => errors.invalidNel,
+            matcherResult =>
+              // XNOR condition for not negate
+              if (matcherResult == !negate) validDone else MatcherAssertionError(m, focus, negate).invalidNel
+          )
+    }
 }
 
-case class MatcherAssertionEvaluationError(m: Matcher, input: Json, error: Throwable) extends CornichonError {
+case class MatcherAssertionEvaluationError(m: Matcher, input: Json, error: CornichonError) extends CornichonError {
   val baseErrorMessage = s"evaluation of matcher '${m.key}' (${m.description}) failed for input '${input.spaces2}'"
-  override val causedBy = CornichonError.fromThrowable(error) :: Nil
+  override val causedBy = error :: Nil
 }
 
 case class MatcherAssertionError(m: Matcher, input: Json, negate: Boolean) extends CornichonError {
   val baseErrorMessage = s"matcher '${m.key}' (${m.description}) ${if (negate) "was expected to fail" else "failed"} for input '${input.spaces2}'"
-}
-
-object MatcherAssertion {
-  def atJsonPath(jsonPath: JsonPath, json: Json, matcher: Matcher, negateMatcher: Boolean): Either[CornichonError, MatcherAssertion] =
-    jsonPath.runStrict(json).map { json =>
-      new MatcherAssertion {
-        val negate = negateMatcher
-        val m = matcher
-        val input = json
-      }
-    }
 }

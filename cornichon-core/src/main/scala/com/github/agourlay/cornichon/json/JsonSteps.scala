@@ -375,7 +375,7 @@ object JsonSteps {
           if (isJsonString(r)) r
           else MatcherResolver.quoteMatchers(r, matchers)
         }
-        resolveAndParseJson(withQuotedMatchers, sc).flatMap {
+        resolveAndParseJson(withQuotedMatchers, sc).map {
           expectedJson => MatcherResolver.prepareMatchers(matchers, expectedJson, sessionValueWithFocusJson, negate)
         }
       } else

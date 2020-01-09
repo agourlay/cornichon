@@ -30,7 +30,7 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
   def runStrict(superSet: Json): Either[CornichonError, Json] =
     run(superSet) match {
       case Some(j) => j.asRight
-      case None    => PathSelectsNothing(JsonPath.showJsonPath.show(this), superSet).asLeft
+      case None    => PathSelectsNothing(JsonPath.show.show(this), superSet).asLeft
     }
 
   def run(json: String): Either[CornichonError, Option[Json]] = parseDslJson(json).map(run)
@@ -91,8 +91,8 @@ object JsonPath {
   private val rightEmptyJsonPath = Right(rootPath)
   private val operationsCache = Caching.buildCache[String, Either[CornichonError, List[JsonPathOperation]]]()
 
-  implicit val showJsonPath: Show[JsonPath] = Show.show[JsonPath] { p =>
-    p.operations.foldLeft(JsonPath.root)((acc, op) => s"$acc.${op.pretty}")
+  implicit val show: Show[JsonPath] = Show.show[JsonPath] { p =>
+    p.operations.map(_.pretty).mkString(".")
   }
 
   def parse(path: String): Either[CornichonError, JsonPath] =

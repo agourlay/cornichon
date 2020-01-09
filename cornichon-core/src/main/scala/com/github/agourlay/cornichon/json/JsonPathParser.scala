@@ -27,7 +27,7 @@ class JsonPathParser(val input: ParserInput) extends Parser {
 
   def Digits = rule { oneOrMore(CharPredicate.Digit) }
 
-  // The value in the Option is constrainted in the parser itself (any Number or '*')
+  // The value in the Option is constrained in the parser itself (any Number or '*')
   private def operation(field: String, index: Option[Any]): JsonPathOperation =
     (field, index) match {
       case (JsonPath.root, None)         => RootSelection

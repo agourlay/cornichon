@@ -52,19 +52,18 @@ object MatcherResolver {
     }
 
   // Removes JSON fields targeted by matchers and builds corresponding matchers assertions
-  def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json, negate: Boolean): Either[CornichonError, (Json, Json, List[MatcherAssertion])] =
+  def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, List[MatcherAssertion]) =
     if (matchers.isEmpty)
-      (expected, actual, Nil).asRight
+      (expected, actual, Nil)
     else {
-      CornichonJson.findAllPathWithValue(matchers.map(_.fullKey), expected)
+      val pathAssertions = CornichonJson.findAllPathWithValue(matchers.map(_.fullKey), expected)
         .zip(matchers)
-        .traverse { case (jsonPath, matcher) => MatcherAssertion.atJsonPath(jsonPath, actual, matcher, negate).map((jsonPath, _)) }
-        .map { pathAssertions =>
-          val jsonPathToIgnore = pathAssertions.map(_._1)
-          val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
-          val newActual = CornichonJson.removeFieldsByPath(actual, jsonPathToIgnore)
-          (newExpected, newActual, pathAssertions.map(_._2))
-        }
+        .map { case (jsonPath, matcher) => MatcherAssertion(negate, matcher, actual, jsonPath) }
+
+      val jsonPathToIgnore = pathAssertions.map(_.jsonPath)
+      val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
+      val newActual = CornichonJson.removeFieldsByPath(actual, jsonPathToIgnore)
+      (newExpected, newActual, pathAssertions)
     }
 }
 

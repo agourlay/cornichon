@@ -323,7 +323,7 @@ object JsonPathSpec extends TestSuite {
     }
 
     test("have a pretty rendering via Show") {
-      assert(JsonPath.parse("a.b[1].d.e[*]").map(_.show) == Right("$.a.b[1].d.e[*]"))
+      assert(JsonPath.parse("a.b[1].d.e[*]").map(_.show) == Right("a.b[1].d.e[*]"))
     }
 
   }
