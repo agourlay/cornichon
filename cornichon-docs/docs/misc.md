@@ -48,51 +48,71 @@ The `steps` execution logs will only be shown if:
 - the scenario fails
 - the scenario succeeded and contains at least one `DebugStep` such as `And I show_last_status`
 
-# Packaging features (only for cornichon-scalatest)
+# Running tests without a build tool
 
-When integrating cornichon features in a build pipeline, it can be interesting to package those features in a runnable forms to avoid the cost of recompilation.
+When integrating cornichon features in a build pipeline, it can be interesting to package those features into a runnable forms to avoid the cost of recompilation.
 
-You can find below an example of Docker packaging done using `sbt-native-packager` and a built-in Teamcity reporter. You can place these settings in a `docker.sbt` in the root of your project.
+The library ships a main runner that can be used to run the tests without build tool.
+
+It can be found as `com.github.agourlay.cornichon.framework.MainRunner`.
+
+Once your project is packaged as a jar file, calling the main runner with `--help` shows the following info:
+
+```
+Usage: cornichon-test-framework --packageToScan <string> [--featureParallelism <integer>] [--seed <integer>] [--scenarioNameFilter <string>]
+
+Run your cornichon features without SBT.
+
+Options and flags:
+    --help
+        Display this help text.
+    --packageToScan <string>
+        Package containing the feature files.
+    --reportsOutputDir <string>
+       Output directory for junit.xml files (default to current).
+    --featureParallelism <integer>
+        Number of feature running in parallel (default=1).
+    --seed <integer>
+        Seed to use for starting random processes.
+    --scenarioNameFilter <string>
+        Filter scenario to run by name.
+```
+
+# Packaging features in a Docker container
+
+You can find below an example of Docker packaging done using `sbt-native-packager`.
+ 
+You can place these settings in a `docker.sbt` in the root of your project.
 
 This should hopefully inspire you to setup your own solution or contribute to improve this one.
 
 ```scala
-import com.typesafe.sbt.packager.docker.Cmd
-import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{Docker => NPDocker}
 import NativePackagerHelper._
 
-enablePlugins(JavaAppPackaging, DockerPlugin)
+lazy val root = (project in file("."))
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
+  .settings(
+    testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
+    mainClass in Compile := Some("com.github.agourlay.cornichon.framework.MainRunner"),
 
-dockerBaseImage := "develar/java"
-dockerUpdateLatest := true
-version in NPDocker := ("git rev-parse HEAD" !!).trim
-mainClass in Compile := Some("org.scalatest.tools.Runner")
+    scriptClasspath ++= {
+      fromClasspath((managedClasspath in Test).value, ".", _ => true).map(_._2) :+
+        (sbt.Keys.`package` in Test).value.getName
+    },
 
-dockerCmd := Seq(
-  "-C",
-  "com.github.agourlay.cornichon.scalatest.TeamcityReporter",
-  "-R",
-  s"lib/${(artifactPath in (Test, packageBin)).value.getName}")
+    mappings in Universal ++= {
+      val testJar = (sbt.Keys.`package` in Test).value
+      val func = testJar -> s"lib/${testJar.getName}"
+      fromClasspath((managedClasspath in Test).value, "lib", _ => true) :+
+        (testJar -> s"lib/${testJar.getName}")
+    },
 
-// Install `bash` to be able to start the application
-
-dockerCommands := Seq(
-  dockerCommands.value.head,
-  Cmd("RUN apk add --update bash && rm -rf /var/cache/apk/*")
-) ++ dockerCommands.value.tail
-
-// Include `Test` classpath
-
-scriptClasspath ++=
-  fromClasspath((managedClasspath in Test).value, ".", _ ⇒ true).map(_._2) :+
-    (sbt.Keys.`package` in Test).value.getName
-
-mappings in Universal ++= {
-  val testJar = (sbt.Keys.`package` in Test).value
-
-  fromClasspath((managedClasspath in Test).value, "lib", _ ⇒ true) :+
-    (testJar → s"lib/${testJar.getName}")
-}
+    noPackageDoc,
+    dockerCmd := Seq(
+      "--packageToScan=$your-root-package",
+      "--reportsOutputDir=/target/test-reports"
+    )
+  )
 ```
 
 After you created the `docker.sbt`, just run `sbt docker:publishLocal` in order to create a docker image locally.
