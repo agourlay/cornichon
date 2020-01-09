@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.core
 
+import java.util.concurrent.atomic.AtomicLong
 import scala.util.Random
 
 trait RandomContext {
@@ -11,6 +12,7 @@ trait RandomContext {
   def nextInt(): Int
   def nextInt(n: Int): Int
   def nextLong(): Long
+  def uniqueLong(): Long
   def nextString(length: Int): String
   def nextPrintableChar(): Char
   def alphanumeric(length: Int): String
@@ -31,6 +33,8 @@ class MutableRandomContext(seed: Long, seededRandom: Random) extends RandomConte
   def nextPrintableChar(): Char = seededRandom.nextPrintableChar()
   def alphanumeric(length: Int): String = seededRandom.alphanumeric.take(length).mkString("")
   def shuffle[T](xs: Iterable[T]): Iterable[T] = seededRandom.shuffle(xs)
+  private val atomicLong = new AtomicLong(1L)
+  def uniqueLong(): Long = atomicLong.getAndIncrement()
 }
 
 object RandomContext {
