@@ -62,13 +62,15 @@ class PlaceholderFeature extends CornichonFeature {
 
 It is also possible to inject random values inside placeholders using:
 
-- ```<random-uuid>``` for a random UUID
-- ```<random-positive-integer>``` for a random Integer between 0-10000
-- ```<random-string>``` for a random String of length 5
-- ```<random-alphanum-string>``` for a random alphanumeric String of length 5
-- ```<random-boolean>``` for a random Boolean string
-- ```<random-timestamp>``` for a random timestamp
-- ```<current-timestamp>``` for the current timestamp
+- `<random-uuid>` for a random UUID
+- `<random-positive-integer>` for a random Integer between 0-10000
+- `<random-string>` for a random String of length 5
+- `<random-alphanum-string>` for a random alphanumeric String of length 5
+- `<random-boolean>` for a random Boolean string
+- `<random-timestamp>` for a random timestamp
+- `<current-timestamp>` for the current timestamp
+- `<scenario-unique-number>` for a unique number scoped per scenario
+- `<global-unique-number>` for a globally unique number across all features
 
 ```scala
 post("http://url.io/somethingWithAnId").withBody(
