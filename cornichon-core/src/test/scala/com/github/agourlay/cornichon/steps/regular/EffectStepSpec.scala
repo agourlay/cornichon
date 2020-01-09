@@ -7,15 +7,28 @@ import monix.eval.Task
 import utest._
 
 import scala.concurrent.Future
+import scala.util.control.NoStackTrace
 
 object EffectStepSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("EffectStep Async - return error if an Effect step throw an exception") {
-      val step = EffectStep(title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val step = EffectStep(title = "buggy effect", _ => throwExceptionWithStackTrace())
       val s = Scenario("scenario with broken effect step", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
-      assert(!res.isSuccess)
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with broken effect step' failed:
+           |
+           |at step:
+           |buggy effect
+           |
+           |with error(s):
+           |exception thrown com.github.agourlay.cornichon.testHelpers.CommonTesting$$anon$1: boom!
+           |
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
     }
 
     test("EffectStep Async - return error if an Effect step for Future.failed") {
@@ -26,7 +39,7 @@ object EffectStepSpec extends TestSuite with CommonTestSuite {
     }
 
     test("EffectStep Sync - return error if an Effect step throw an exception") {
-      val step = EffectStep.fromSync(title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val step = EffectStep.fromSync(title = "buggy effect", _ => throwExceptionWithStackTrace())
       val s = Scenario("scenario with broken effect step", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(!res.isSuccess)
@@ -47,21 +60,21 @@ object EffectStepSpec extends TestSuite with CommonTestSuite {
     }
 
     test("CatsEffectStep Async - return error if an Effect step throw an exception") {
-      val step = CEffectStep[Task](title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val step = CEffectStep[Task](title = "buggy effect", _ => throwExceptionWithStackTrace())
       val s = Scenario("scenario with broken effect step", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(!res.isSuccess)
     }
 
     test("CatsEffectStep Async - return error if an Effect step for Task.raiseError") {
-      val step = CEffectStep[Task](title = "buggy effect", _ => Task.raiseError(new RuntimeException("boom")))
+      val step = CEffectStep[Task](title = "buggy effect", _ => Task.raiseError(new RuntimeException("boom") with NoStackTrace))
       val s = Scenario("scenario with broken effect step", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(!res.isSuccess)
     }
 
     test("CatsEffectStep Sync - return error if an Effect step throw an exception") {
-      val step = CEffectStep[Task](title = "buggy effect", _ => throw new RuntimeException("boom"))
+      val step = CEffectStep[Task](title = "buggy effect", _ => throwExceptionWithStackTrace())
       val s = Scenario("scenario with broken effect step", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(!res.isSuccess)

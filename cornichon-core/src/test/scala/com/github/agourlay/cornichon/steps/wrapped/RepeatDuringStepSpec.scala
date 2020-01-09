@@ -19,7 +19,23 @@ object RepeatDuringStepSpec extends TestSuite with CommonTestSuite {
       val repeatDuring = RepeatDuringStep(nested, 5.millis)
       val s = Scenario("scenario with RepeatDuring", repeatDuring :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
-      assert(!res.isSuccess)
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with RepeatDuring' failed:
+           |
+           |at step:
+           |always fails
+           |
+           |with error(s):
+           |RepeatDuring block failed before '5 milliseconds'
+           |caused by:
+           |expected result was:
+           |'true'
+           |but actual result is:
+           |'false'
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
     }
 
     test("repeat steps inside 'repeatDuring' for at least the duration param") {

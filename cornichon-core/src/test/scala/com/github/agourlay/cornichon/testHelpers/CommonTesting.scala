@@ -7,6 +7,8 @@ import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
 import org.scalacheck.Gen
 
+import scala.util.control.NoStackTrace
+
 trait CommonTesting extends ProvidedInstances with TaskSpec {
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
@@ -29,10 +31,12 @@ trait CommonTesting extends ProvidedInstances with TaskSpec {
   val validStepGen: Gen[Step] = Gen.oneOf(identityEffectStep, addValueToSessionEffectStep, alwaysValidAssertStep, validDebugStep)
   val validStepsGen: Gen[List[Step]] = Gen.nonEmptyListOf(validStepGen)
 
+  def throwExceptionWithStackTrace() = throw new RuntimeException("boom!") with NoStackTrace
+
   val brokenEffectStep: Step = EffectStep.fromSyncE("always boom", _ => Left(CornichonError.fromString("boom!")))
-  val exceptionEffectStep: Step = EffectStep.fromSync("throw exception effect step", _ => throw new RuntimeException("Boom!"))
+  val exceptionEffectStep: Step = EffectStep.fromSync("throw exception effect step", _ => throwExceptionWithStackTrace())
   val neverValidAssertStep: Step = AssertStep("never valid assert step", _ => Assertion.failWith("never valid!"))
-  val failedDebugStep: Step = DebugStep("bad debug", _ => throw new RuntimeException("boom"))
+  val failedDebugStep: Step = DebugStep("bad debug", _ => throwExceptionWithStackTrace())
 
   val invalidStepGen: Gen[Step] = Gen.oneOf(brokenEffectStep, exceptionEffectStep, neverValidAssertStep, failedDebugStep)
   val invalidStepsGen: Gen[List[Step]] = Gen.nonEmptyListOf(invalidStepGen)

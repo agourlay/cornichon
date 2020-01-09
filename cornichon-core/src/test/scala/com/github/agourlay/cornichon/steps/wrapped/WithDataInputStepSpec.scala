@@ -43,7 +43,23 @@ object WithDataInputStepSpec extends TestSuite with CommonTestSuite {
       val withDataInputStep = WithDataInputStep(nested, inputs)
       val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
-      assert(!res.isSuccess)
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with WithDataInput' failed:
+           |
+           |at step:
+           |always fails
+           |
+           |with error(s):
+           |WithDataInput block failed for inputs 'a' -> '1', 'b' -> '3', 'c' -> '3'
+           |caused by:
+           |expected result was:
+           |'true'
+           |but actual result is:
+           |'false'
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
     }
 
     test("executes all steps if successful") {
