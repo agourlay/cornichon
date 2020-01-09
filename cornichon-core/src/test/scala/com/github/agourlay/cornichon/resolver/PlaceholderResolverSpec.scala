@@ -82,5 +82,37 @@ object PlaceholderResolverSpec extends TestSuite {
       val s = Session.newEmpty.addValueUnsafe("customer", """{"id" : "122"}""")
       assert(fillPlaceholders("<customer-id>")(s, rc, extractors) == Right("122"))
     }
+
+    test("fillPlaceholders <scenario-unique-number> starts with 1") {
+      val session = Session.newEmpty
+      val content = "<scenario-unique-number>"
+      assert(fillPlaceholders(content)(session, RandomContext.fromSeed(1L), noExtractor) == Right("1"))
+    }
+
+    test("fillPlaceholders generates unique numbers scoped to the RandomContext with <scenario-unique-number>") {
+      val session = Session.newEmpty
+      val content = "<scenario-unique-number>"
+      val rc = RandomContext.fromSeed(1L)
+      val max = 100
+      for (i <- 1 until max) {
+        assert(fillPlaceholders(content)(session, rc, noExtractor) == Right(i.toString))
+      }
+      assert(rc.uniqueLong() == max)
+      // a different RandomContext is not impacted
+      assert(fillPlaceholders(content)(session, RandomContext.fromSeed(1L), noExtractor) == Right("1"))
+    }
+
+    test("fillPlaceholders <global-unique-number> starts with 1 and is scoped globally") {
+      val session = Session.newEmpty
+      val content = "<global-unique-number>"
+      assert(fillPlaceholders(content)(session, RandomContext.fromSeed(1L), noExtractor) == Right("1"))
+      val rc = RandomContext.fromSeed(1L)
+      val max = 100
+      for (i <- 2 until max) {
+        assert(fillPlaceholders(content)(session, rc, noExtractor) == Right(i.toString))
+      }
+      // the RandomContext is not impacted
+      assert(rc.uniqueLong() == 1L)
+    }
   }
 }

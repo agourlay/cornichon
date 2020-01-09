@@ -126,7 +126,7 @@ object ScenarioRunner {
   }
 
   private def prepareAndRunStep(step: Step, runState: RunState): Task[(RunState, FailedStep Either Done)] =
-    runState.scenarioContext.fillPlaceholders(step.title)
+    runState.scenarioContext.fillSessionPlaceholders(step.title) //resolving only session placeholders as built-in generators have side effects
       .map(step.setTitle)
       .fold(
         ce => Task.now(ScenarioRunner.handleErrors(step, runState, NonEmptyList.one(ce))),

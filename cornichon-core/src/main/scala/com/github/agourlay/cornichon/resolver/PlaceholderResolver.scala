@@ -1,31 +1,53 @@
 package com.github.agourlay.cornichon.resolver
 
-import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Matcher
 
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
 import com.github.agourlay.cornichon.util.Caching
 
 object PlaceholderResolver {
 
   private val rightNil = Nil.asRight
   private val placeholdersCache = Caching.buildCache[String, Either[CornichonError, List[Placeholder]]]()
+  private val globalAtomicLong = new AtomicLong(1L) // can create non deterministic runs
+
+  def globalNextLong(): Long = globalAtomicLong.getAndIncrement()
+
+  private val builtInPlaceholderGenerators: List[PlaceholderGenerator] =
+    randomUUID ::
+      randomPositiveInteger ::
+      randomString ::
+      randomAlphanumString ::
+      randomBoolean ::
+      scenarioUniqueNumber ::
+      globalUniqueNumber ::
+      randomTimestamp ::
+      currentTimestamp ::
+      Nil
+
+  private val placeholderGeneratorsByLabel: Map[String, PlaceholderGenerator] =
+    builtInPlaceholderGenerators.groupBy(_.key).map { case (k, h :: _) => (k, h) }
 
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
     placeholdersCache.get(input, k => PlaceholderParser.parse(k))
 
-  private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
-    builtInPlaceholders(rc).lift(ph.key).map(Right.apply).getOrElse {
-      val otherKeyName = ph.key
-      val otherKeyIndex = ph.index
-      (session.get(otherKeyName, otherKeyIndex), customExtractors.get(otherKeyName)) match {
-        case (v, None)               => v
-        case (Left(_), Some(mapper)) => applyMapper(otherKeyName, mapper, ph)(session, rc)
-        case (Right(_), Some(_))     => AmbiguousKeyDefinition(otherKeyName).asLeft
+  private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =
+    placeholderGeneratorsByLabel.get(ph.key)
+      .map(pg => if (sessionOnlyMode) pg.key else pg.gen(rc)) // in session mode we leave the generators untouched to avoid side effects
+      .map(Right.apply)
+      .getOrElse {
+        val otherKeyName = ph.key
+        val otherKeyIndex = ph.index
+        (session.get(otherKeyName, otherKeyIndex), customExtractors.get(otherKeyName)) match {
+          case (v, None)               => v
+          case (Left(_), Some(mapper)) => applyMapper(otherKeyName, mapper, ph)(session, rc)
+          case (Right(_), Some(_))     => AmbiguousKeyDefinition(otherKeyName).asLeft
+        }
       }
-    }
 
   def fillPlaceholdersResolvable[A: Resolvable](resolvableInput: A)(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, A] = {
     val ri = Resolvable[A]
@@ -38,12 +60,12 @@ object PlaceholderResolver {
     }
   }
 
-  def fillPlaceholders(input: String)(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, String] =
+  def fillPlaceholders(input: String)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean = false): Either[CornichonError, String] =
     findPlaceholders(input).flatMap {
       _.foldLeft(input.asRight[CornichonError]) { (accE, ph) =>
         for {
           acc <- accE
-          resolvedValue <- resolvePlaceholder(ph)(session, randomContext, customExtractors)
+          resolvedValue <- resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
         } yield ph.pattern.matcher(acc).replaceAll(Matcher.quoteReplacement(resolvedValue))
       }
     }
@@ -57,16 +79,6 @@ object PlaceholderResolver {
           resolvedValue <- fillPlaceholders(value)(session, randomContext, customExtractors)
         } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
     }
-
-  private def builtInPlaceholders(rc: RandomContext): PartialFunction[String, String] = {
-    case "random-uuid"             => new UUID(rc.nextLong(), rc.nextLong()).toString
-    case "random-positive-integer" => rc.nextInt(10000).toString
-    case "random-string"           => rc.nextString(5)
-    case "random-alphanum-string"  => rc.alphanumeric(5)
-    case "random-boolean"          => rc.nextBoolean().toString
-    case "random-timestamp"        => (Math.abs(System.currentTimeMillis - rc.nextLong()) / 1000).toString
-    case "current-timestamp"       => (System.currentTimeMillis / 1000).toString
-  }
 
   private def applyMapper(bindingKey: String, m: Mapper, ph: Placeholder)(session: Session, randomContext: RandomContext): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) =>

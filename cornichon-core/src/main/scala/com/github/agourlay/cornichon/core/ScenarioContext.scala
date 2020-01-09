@@ -11,6 +11,7 @@ trait ScenarioContext {
   // PlaceholderResolver
   def fillPlaceholders[A: Resolvable](input: A): Either[CornichonError, A]
   def fillPlaceholders(input: String): Either[CornichonError, String]
+  def fillSessionPlaceholders(input: String): Either[CornichonError, String]
   def fillPlaceholders(params: Seq[(String, String)]): Either[CornichonError, List[(String, String)]]
 
   // MatcherResolver
@@ -25,6 +26,7 @@ object ScenarioContext {
 
     def fillPlaceholders[A: Resolvable](input: A): Either[CornichonError, A] = Right(input)
     def fillPlaceholders(input: String): Either[CornichonError, String] = Right(input)
+    def fillSessionPlaceholders(input: String): Either[CornichonError, String] = Right(input)
     def fillPlaceholders(params: Seq[(String, String)]): Either[CornichonError, List[(String, String)]] = Right(params.toList)
 
     def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] = rightNil
