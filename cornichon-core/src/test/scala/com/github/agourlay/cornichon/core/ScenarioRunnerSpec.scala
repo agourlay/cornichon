@@ -2,10 +2,10 @@ package com.github.agourlay.cornichon.core
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
-
 import utest._
 
 object ScenarioRunnerSpec extends TestSuite with CommonTestSuite {
@@ -226,5 +226,54 @@ object ScenarioRunnerSpec extends TestSuite with CommonTestSuite {
       assert(res.isSuccess)
       assert(res.logs.size == 5)
     }
+
+    test("runScenario resolves session placeholders in steps title - fails if unknown placeholder") {
+      val steps = AssertStep("an assertion <unknown-placeholder>", _ => Assertion.alwaysValid) :: Nil
+      val s = Scenario("casual stuff", steps)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      scenarioFailsWithMessage(res) {
+        """Scenario 'casual stuff' failed:
+          |
+          |at step:
+          |an assertion <unknown-placeholder>
+          |
+          |with error(s):
+          |key 'unknown-placeholder' can not be found in session
+          |empty
+          |
+          |seed for the run was '1'
+          |""".stripMargin
+      }
+    }
+
+    test("runScenario resolves session placeholders in steps title") {
+      val session = Session.newEmpty.addValuesUnsafe("known-placeholder" -> "found!")
+      val steps = AssertStep("an assertion <known-placeholder>", _ => Assertion.alwaysValid) :: Nil
+      val s = Scenario("casual stuff", steps)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+      matchLogsWithoutDuration(res.logs) {
+        """
+          |   Scenario : casual stuff
+          |      main steps
+          |      an assertion found!""".stripMargin
+      }
+    }
+
+    test("runScenario does not resolve non-deterministic built-in placeholders in steps title") {
+      PlaceholderResolver.builtInPlaceholderGenerators.foreach { ph =>
+        val steps = AssertStep(s"an assertion <${ph.key}>", _ => Assertion.alwaysValid) :: Nil
+        val s = Scenario("casual stuff", steps)
+        val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+        assert(res.isSuccess)
+        matchLogsWithoutDuration(res.logs) {
+          s"""
+            |   Scenario : casual stuff
+            |      main steps
+            |      an assertion <${ph.key}>""".stripMargin
+        }
+      }
+    }
+
   }
 }

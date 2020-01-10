@@ -162,9 +162,9 @@ case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError 
     if (similar.isEmpty)
       ""
     else
-      s"maybe you meant ${similar.map(s => s"'$s'").mkString(" or ")}"
+      s" maybe you meant ${similar.map(s => s"'$s'").mkString(" or ")}"
   }
-  lazy val baseErrorMessage = s"key '$key' can not be found in session $similarKeysMsg\n${s.show}"
+  lazy val baseErrorMessage = s"key '$key' can not be found in session$similarKeysMsg\n${s.show}"
 }
 
 case object EmptyKey extends CornichonError {

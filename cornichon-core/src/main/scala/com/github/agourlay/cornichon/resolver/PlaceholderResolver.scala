@@ -17,7 +17,7 @@ object PlaceholderResolver {
 
   def globalNextLong(): Long = globalAtomicLong.getAndIncrement()
 
-  private val builtInPlaceholderGenerators: List[PlaceholderGenerator] =
+  val builtInPlaceholderGenerators: List[PlaceholderGenerator] =
     randomUUID ::
       randomPositiveInteger ::
       randomString ::
@@ -30,14 +30,14 @@ object PlaceholderResolver {
       Nil
 
   private val placeholderGeneratorsByLabel: Map[String, PlaceholderGenerator] =
-    builtInPlaceholderGenerators.groupBy(_.key).map { case (k, h :: _) => (k, h) }
+    builtInPlaceholderGenerators.groupBy(_.key).map { case (k, values) => (k, values.head) } // we know it is not empty
 
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
     placeholdersCache.get(input, k => PlaceholderParser.parse(k))
 
   private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =
     placeholderGeneratorsByLabel.get(ph.key)
-      .map(pg => if (sessionOnlyMode) pg.key else pg.gen(rc)) // in session mode we leave the generators untouched to avoid side effects
+      .map(pg => if (sessionOnlyMode) ph.fullKey else pg.gen(rc)) // in session mode we leave the generators untouched to avoid side effects
       .map(Right.apply)
       .getOrElse {
         val otherKeyName = ph.key

@@ -34,7 +34,7 @@ object PlaceholderResolverSpec extends TestSuite {
       val extractor = JsonMapper("customer", "id")
       val extractors = Map("customer-id" -> extractor)
       val s = Session.newEmpty
-      assert(fillPlaceholders("<customer-id>")(s, rc, extractors).leftMap(_.renderedMessage) == Left("Error occurred while running Mapper attached to key 'customer-id'\ncaused by:\nkey 'customer' can not be found in session \nempty"))
+      assert(fillPlaceholders("<customer-id>")(s, rc, extractors).leftMap(_.renderedMessage) == Left("Error occurred while running Mapper attached to key 'customer-id'\ncaused by:\nkey 'customer' can not be found in session\nempty"))
     }
 
     test("fillPlaceholders use registered SimpleMapper") {
