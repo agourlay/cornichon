@@ -11,7 +11,7 @@ trait CommonTestSuite extends CommonTesting {
       case f: FailureScenarioReport =>
         def clue = f.msg + "\nwith logs\n" + LogInstruction.renderLogs(f.logs) + "\n\n"
         if (f.msg != expectedMessage) {
-          println(s"diff\n${f.msg.toSeq.diff(expectedMessage).unwrap}|END")
+          println(s"diff\n${f.msg.toSeq.diff(expectedMessage)}|END")
           println(clue)
         }
         assert(f.msg == expectedMessage)
