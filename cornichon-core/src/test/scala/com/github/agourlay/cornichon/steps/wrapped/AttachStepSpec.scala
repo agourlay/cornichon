@@ -2,10 +2,9 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTitleLogInstruction, Session }
+import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session, Step }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
-
 import utest._
 
 object AttachStepSpec extends TestSuite with CommonTestSuite {
@@ -17,8 +16,16 @@ object AttachStepSpec extends TestSuite with CommonTestSuite {
       val s = Scenario("scenario with Attach", steps)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(res.isSuccess)
-      assert(res.logs.head == ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
-      assert(res.logs.size == 7)
+      matchLogsWithoutDuration(res.logs) {
+        """
+          |   Scenario : scenario with Attach
+          |      main steps
+          |      valid
+          |      valid
+          |      valid
+          |      valid
+          |      valid""".stripMargin
+      }
     }
 
     test("merges nested steps in the parent flow when nested") {
@@ -27,8 +34,18 @@ object AttachStepSpec extends TestSuite with CommonTestSuite {
       val s = Scenario("scenario with Attach", RepeatStep(steps, 1, None) :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(res.isSuccess)
-      assert(res.logs.head == ScenarioTitleLogInstruction("Scenario : scenario with Attach", 1))
-      assert(res.logs.size == 9)
+      matchLogsWithoutDuration(res.logs) {
+        """
+          |   Scenario : scenario with Attach
+          |      main steps
+          |      Repeat block with occurrence '1'
+          |         valid
+          |         valid
+          |         valid
+          |         valid
+          |         valid
+          |      Repeat block with occurrence '1' succeeded""".stripMargin
+      }
     }
 
     test("runs all nested valid effects") {
@@ -49,6 +66,30 @@ object AttachStepSpec extends TestSuite with CommonTestSuite {
       val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(res.isSuccess)
       assert(uglyCounter.get() == effectNumber + 1)
+      matchLogsWithoutDuration(res.logs) {
+        """
+          |   Scenario : scenario with effects
+          |      main steps
+          |      increment captured counter
+          |      increment captured counter
+          |      increment captured counter
+          |      increment captured counter
+          |      increment captured counter
+          |      increment captured counter""".stripMargin
+      }
+    }
+
+    test("available bia Step.eval") {
+      val steps = Step.eval(alwaysValidAssertStep) :: Nil
+      val s = Scenario("scenario with Attach", steps)
+      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      assert(res.isSuccess)
+      matchLogsWithoutDuration(res.logs) {
+        """
+          |   Scenario : scenario with Attach
+          |      main steps
+          |      valid""".stripMargin
+      }
     }
   }
 }

@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import cats.data.{ NonEmptyList, StateT }
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.steps.wrapped.FlatMapStep
+import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
 import monix.eval.Task
 
 import scala.concurrent.duration.Duration
@@ -15,6 +15,10 @@ sealed trait Step {
   def chain(others: Session => List[Step]): Step = FlatMapStep(this, others)
   def andThen(others: List[Step]): Step = FlatMapStep(this, _ => others)
   def andThen(other: Step): Step = FlatMapStep(this, _ => other :: Nil)
+}
+
+object Step {
+  def eval(f: => Step): Step = AttachStep(_ => f :: Nil)
 }
 
 object NoOpStep extends Step {
