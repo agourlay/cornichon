@@ -36,6 +36,9 @@ options:
   - title: Reference configuration
     url: reference-configuration.html
 
+  - title: Property based testing
+    url: property-based-testing.html
+
   - title: Misc.
     url: misc.html
 
@@ -49,7 +52,4 @@ options:
       menu_section: modules
     - title: Kafka integration
       url: modules/module-kafka.html
-      menu_section: modules
-    - title: Property based testing
-      url: modules/module-check.html
       menu_section: modules
