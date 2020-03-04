@@ -57,7 +57,7 @@ object MainRunner {
               case (duration, res) =>
                 JUnitXmlReporter.writeJunitReport(reportsOutputDir, featureTypeName, duration, startedAt, eventHandler.recorded) match {
                   case Left(e)  => println(s"ERROR: Could not generated JUnit xml report ${CornichonError.genStacktrace(e)}")
-                  case Right(_) => println(s"JUnit xml reports generated into $reportsOutputDir")
+                  case Right(_) => println(s"JUnit XML report for feature $featureTypeName generated into $reportsOutputDir")
                 }
                 res
             }
