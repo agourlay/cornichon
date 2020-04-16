@@ -121,7 +121,6 @@ lazy val core =
         library.http4sClient,
         library.http4sCirce,
         library.catsCore,
-        library.catsMacro,
         library.pureConfig,
         library.parboiled,
         library.fansi,
@@ -298,7 +297,6 @@ lazy val library =
       val scalaXml      = "2.0.0-M1"
     }
     val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
-    val catsMacro     = "org.typelevel"                  %% "cats-macros"          % Version.cats
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
     val scalatest     = "org.scalatest"                  %% "scalatest"            % Version.scalaTest
     val utest         = "com.lihaoyi"                    %% "utest"                % Version.utest
