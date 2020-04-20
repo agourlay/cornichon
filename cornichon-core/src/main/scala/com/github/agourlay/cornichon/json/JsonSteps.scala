@@ -190,7 +190,7 @@ object JsonSteps {
           for {
             sessionValue <- sc.session.get(sessionKey)
             subJson <- resolveRunMandatoryJsonPath(jsonPath, sessionValue, sc)
-          } yield GenericEqualityAssertion(subJson, Json.Null)
+          } yield GenericEqualityAssertion(Json.Null, subJson)
         }
       )
     }

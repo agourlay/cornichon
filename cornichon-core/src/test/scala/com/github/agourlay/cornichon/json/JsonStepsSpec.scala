@@ -121,17 +121,17 @@ object JsonStepsSpec extends TestSuite with CommonTestSuite {
            |
            |with error(s):
            |expected result was:
-           |'"notNull"'
-           |but actual result is:
            |'null'
+           |but actual result is:
+           |'"notNull"'
            |
            |JSON patch between actual result and expected result is :
            |[
            |  {
            |    "op" : "replace",
            |    "path" : "",
-           |    "value" : null,
-           |    "old" : "notNull"
+           |    "value" : "notNull",
+           |    "old" : null
            |  }
            |]
            |
