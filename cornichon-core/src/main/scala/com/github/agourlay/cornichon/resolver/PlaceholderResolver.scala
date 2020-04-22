@@ -36,10 +36,12 @@ object PlaceholderResolver {
     placeholdersCache.get(input, k => PlaceholderParser.parse(k))
 
   private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =
-    placeholderGeneratorsByLabel.get(ph.key)
-      .map(pg => if (sessionOnlyMode) ph.fullKey else pg.gen(rc)) // in session mode we leave the generators untouched to avoid side effects
-      .map(Right.apply)
-      .getOrElse {
+    placeholderGeneratorsByLabel.get(ph.key) match {
+      case Some(pg) =>
+        // in session mode we leave the generators untouched to avoid side effects
+        val v = if (sessionOnlyMode) ph.fullKey else pg.gen(rc)
+        v.asRight
+      case None =>
         val otherKeyName = ph.key
         val otherKeyIndex = ph.index
         (session.get(otherKeyName, otherKeyIndex), customExtractors.get(otherKeyName)) match {
@@ -47,7 +49,7 @@ object PlaceholderResolver {
           case (Left(_), Some(mapper)) => applyMapper(otherKeyName, mapper, ph)(session, rc)
           case (Right(_), Some(_))     => AmbiguousKeyDefinition(otherKeyName).asLeft
         }
-      }
+    }
 
   def fillPlaceholdersResolvable[A: Resolvable](resolvableInput: A)(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, A] = {
     val ri = Resolvable[A]
@@ -101,8 +103,7 @@ object PlaceholderResolver {
         .flatMap { sessionValue =>
           // No placeholders in JsonMapper to avoid accidental infinite recursions.
           JsonPath.runStrict(jsonPath, sessionValue)
-            .map(CornichonJson.jsonStringValue)
-            .map(transform)
+            .map(json => transform(CornichonJson.jsonStringValue(json)))
         }
   }
 }

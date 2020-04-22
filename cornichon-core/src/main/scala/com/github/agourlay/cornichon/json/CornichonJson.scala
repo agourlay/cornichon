@@ -84,7 +84,10 @@ trait CornichonJson {
     }
 
   def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
-    json.asArray.map(Right.apply).getOrElse(Left(NotAnArrayError(json)))
+    json.asArray match {
+      case Some(a) => a.asRight
+      case None    => Left(NotAnArrayError(json))
+    }
 
   def parseArray(input: String): Either[CornichonError, Vector[Json]] =
     parseDslJson(input).flatMap(jsonArrayValues)

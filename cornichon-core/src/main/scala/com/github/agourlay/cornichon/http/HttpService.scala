@@ -36,6 +36,13 @@ class HttpService(
   // Cannot be globally shared because it depends on `baseUrl`
   private val fullUrlCache = Caching.buildCache[String, String]()
 
+  private def resolveAndParseBody[A: Show: Resolvable: Encoder](body: Option[A], scenarioContext: ScenarioContext): Either[CornichonError, Option[Json]] =
+    body.map(scenarioContext.fillPlaceholders(_)) match {
+      case None                      => rightNone
+      case Some(Left(e))             => Left(e)
+      case Some(Right(resolvedBody)) => parseDslJson(resolvedBody).map(Some.apply)
+    }
+
   private def resolveRequestParts[A: Show: Resolvable: Encoder](
     url: String,
     body: Option[A],
@@ -43,10 +50,8 @@ class HttpService(
     headers: Seq[(String, String)],
     ignoreFromWithHeaders: HeaderSelection)(scenarioContext: ScenarioContext): Either[CornichonError, (String, Option[Json], Seq[(String, String)], List[(String, String)])] =
     for {
-      bodyResolved <- body.map(scenarioContext.fillPlaceholders(_).map(Some.apply)).getOrElse(rightNone)
-      jsonBodyResolved <- bodyResolved.map(parseDslJson(_).map(Some.apply)).getOrElse(rightNone)
-      urlResolved <- scenarioContext.fillPlaceholders(url)
-      completeUrlResolved <- scenarioContext.fillPlaceholders(withBaseUrl(urlResolved))
+      jsonBodyResolved <- resolveAndParseBody(body, scenarioContext)
+      completeUrlResolved <- scenarioContext.fillPlaceholders(withBaseUrl(url))
       urlParams <- client.paramsFromUrl(completeUrlResolved)
       explicitParams <- scenarioContext.fillPlaceholders(params)
       allParams = urlParams ++ explicitParams
