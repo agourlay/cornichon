@@ -41,9 +41,9 @@ object MainRunner {
       sys.exit(1)
     case Right((packageToScan, reportsOutputDir, featureParallelism, explicitSeed, scenarioNameFilter)) =>
       JUnitXmlReporter.checkReportsFolder(reportsOutputDir)
-      println("Starting discovery")
+      println("Starting feature classes discovery")
       val classes = discoverFeatureClasses(packageToScan)
-      println(s"Found ${classes.size} features")
+      println(s"Found ${classes.size} feature classes")
       val scenarioNameFilterSet = scenarioNameFilter.toSet
       val f = Observable.fromIterable(classes)
         .mapParallelUnordered(featureParallelism) { featureClass =>
@@ -56,8 +56,10 @@ object MainRunner {
             .map {
               case (duration, res) =>
                 JUnitXmlReporter.writeJunitReport(reportsOutputDir, featureTypeName, duration, startedAt, eventHandler.recorded) match {
-                  case Left(e)  => println(s"ERROR: Could not generated JUnit xml report ${CornichonError.genStacktrace(e)}")
-                  case Right(_) => println(s"JUnit XML report for feature $featureTypeName generated into $reportsOutputDir")
+                  case Left(e) =>
+                    println(s"ERROR: Could not generate JUnit xml report for $featureTypeName due to\n${CornichonError.genStacktrace(e)}")
+                  case Right(_) =>
+                    ()
                 }
                 res
             }
@@ -74,6 +76,6 @@ object MainRunner {
   // https://stackoverflow.com/questions/492184/how-do-you-find-all-subclasses-of-a-given-class-in-java
   def discoverFeatureClasses(packageToExplore: String): List[Class[_]] = {
     val classes: util.List[PojoClass] = PojoClassFactory.enumerateClassesByExtendingType(packageToExplore, classOf[CornichonFeature], null)
-    classes.asScala.toList.filter(_.isConcrete).map(_.getClazz)
+    classes.asScala.toList.collect { case pojo if pojo.isConcrete => pojo.getClazz }
   }
 }
