@@ -43,11 +43,11 @@ class RunScenarioBench {
 
   /*
 [info] Benchmark                     (stepsNumber)   Mode  Cnt       Score     Error  Units
-[info] RunScenarioBench.lotsOfSteps             10  thrpt   10  181242.825 ±  1134.861  ops/s
-[info] RunScenarioBench.lotsOfSteps             20  thrpt   10  111107.596 ±  2055.684  ops/s
-[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   51680.691 ±   139.650  ops/s
-[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   27624.388 ±    49.305  ops/s
-[info] RunScenarioBench.lotsOfSteps            200  thrpt   10   14191.329 ±    72.443  ops/s
+[info] RunScenarioBench.lotsOfSteps             10  thrpt   10   83380,462 ±  1033,896  ops/s
+[info] RunScenarioBench.lotsOfSteps             20  thrpt   10   48664,650 ±   247,033  ops/s
+[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   22002,848 ±    69,904  ops/s
+[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   11607,660 ±    39,119  ops/s
+[info] RunScenarioBench.lotsOfSteps            200  thrpt   10    5021,917 ±    28,668  ops/s
  */
 
   @Benchmark

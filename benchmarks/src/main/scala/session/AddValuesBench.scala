@@ -21,12 +21,12 @@ class AddValuesBench {
 
   /*
   [info] Benchmark                 (insertNumber)   Mode  Cnt        Score       Error  Units
-  [info] AddValuesBench.addValues               1  thrpt   10  7221200.170 ± 25630.672  ops/s
-  [info] AddValuesBench.addValues               2  thrpt   10  4455484.006 ± 16331.895  ops/s
-  [info] AddValuesBench.addValues               3  thrpt   10  2180160.733 ±  3846.665  ops/s
-  [info] AddValuesBench.addValues               4  thrpt   10  1751734.128 ±  6915.557  ops/s
-  [info] AddValuesBench.addValues               5  thrpt   10  1486845.132 ±  6748.036  ops/s
-  [info] AddValuesBench.addValues              10  thrpt   10   784736.989 ± 22766.361  ops/s
+  [info] AddValuesBench.addValues               1  thrpt   10  6139574,714 ± 17220,088  ops/s
+  [info] AddValuesBench.addValues               2  thrpt   10  2720783,933 ±  7727,835  ops/s
+  [info] AddValuesBench.addValues               3  thrpt   10  1699018,869 ±  1625,251  ops/s
+  [info] AddValuesBench.addValues               4  thrpt   10  1301837,618 ±  3594,495  ops/s
+  [info] AddValuesBench.addValues               5  thrpt   10  1098475,777 ±  3929,211  ops/s
+  [info] AddValuesBench.addValues              10  thrpt   10   548834,559 ±  2547,712  ops/s
   */
   @Benchmark
   def addValues() = {

@@ -40,12 +40,12 @@ class JsonStepBench {
 
   /*
 [info] Benchmark                          Mode  Cnt       Score        Error  Units
-[info] JsonStepBench.jsonIgnoreIs        thrpt   10   156868.898 ±  2387.007  ops/s
-[info] JsonStepBench.jsonIs              thrpt   10   149942.604 ±   275.062  ops/s
-[info] JsonStepBench.jsonMatchersIs      thrpt   10    43171.132 ±    99.635  ops/s
-[info] JsonStepBench.jsonPathIs          thrpt   10   318615.786 ±   643.034  ops/s
-[info] JsonStepBench.jsonPlaceholdersIs  thrpt   10    49132.037 ±    70.851  ops/s
-[info] JsonStepBench.jsonWhitelistingIs  thrpt   10   120792.614 ±   516.992  ops/s
+[info] JsonStepBench.jsonIgnoreIs        thrpt   10   130908,081 ±   605,238  ops/s
+[info] JsonStepBench.jsonIs              thrpt   10   121569,233 ±   707,623  ops/s
+[info] JsonStepBench.jsonMatchersIs      thrpt   10    43110,602 ±   181,427  ops/s
+[info] JsonStepBench.jsonPathIs          thrpt   10   188938,186 ±  2098,965  ops/s
+[info] JsonStepBench.jsonPlaceholdersIs  thrpt   10    44403,148 ±   192,549  ops/s
+[info] JsonStepBench.jsonWhitelistingIs  thrpt   10    90015,740 ±   509,389  ops/s
   */
 
   @Benchmark
