@@ -27,7 +27,7 @@ class CheckModelEngine[A, B, C, D, E, F](
         checkStepConditions(runState)(properties.preCondition)
           .map(preConditionsRes => (weight, properties, preConditionsRes.isRight))
     }
-    Task.gather(stepsConditionValidations)
+    Task.parSequence(stepsConditionValidations)
       .map(_.sortBy(_._1)) // We sort the result because `Task.gather` is non-deterministic to not break the seed
   }
 

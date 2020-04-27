@@ -92,7 +92,7 @@ object MatchersProperties extends Properties("Matchers") {
         }
       }
 
-      val res = Task.gatherUnordered(booleans).runSyncUnsafe().foldLeft(List.empty[Boolean]) { case (acc, e) => e :: acc }
+      val res = Task.parSequenceUnordered(booleans).runSyncUnsafe().foldLeft(List.empty[Boolean]) { case (acc, e) => e :: acc }
 
       Claim(res.forall(_ == true))
     }
