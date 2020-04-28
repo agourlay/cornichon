@@ -25,7 +25,7 @@ When I EffectStep.fromSyncE(title = "do nothing", action = scenarioContext => Ri
 When I EffectStep.fromAsync(title = "do nothing", action = scenarioContext => Future(scenarioContext.session))
 ```
 
-Let's try so save a value into the `Session`
+Let's try to save a value into the `Session`
 
 ```scala
 When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.add("result", piComputation())
