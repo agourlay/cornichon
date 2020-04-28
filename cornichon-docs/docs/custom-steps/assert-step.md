@@ -38,7 +38,7 @@ The test engine is responsible to test the validity of the provided `Assertion` 
   * RegexAssertion
 
 
-Below is a longer example showing how to integration an assertion into scenario.
+Below is a longer example showing how to integrate an assertion into a scenario.
 
 ```scala
 When I EffectStep.fromSync(
@@ -56,8 +56,8 @@ Then assert AssertStep(
 
 `Assertions` can also be composed using `and` and `or`, for instance `BetweenAssertion` is the result of `LessThanAssertion` and `GreaterThanAssertion`.
 
-This is rather low level therefore you not should write your steps like that directly inside the DSL but hide them behind functions with appropriate names.
+This is rather low level therefore you should not write your steps like that directly inside the DSL but hide them behind functions with appropriate names.
 
-Fortunately a bunch of built-in steps and primitive building blocs are already available for you.
+Fortunately a bunch of built-in steps and primitive building blocks are already available for you.
 
 Note for advance users: it is also possible to write custom wrapper steps by implementing `WrapperStep`.
