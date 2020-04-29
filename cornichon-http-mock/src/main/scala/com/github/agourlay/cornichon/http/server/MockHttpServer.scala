@@ -38,7 +38,7 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
     }
 
   private def startBlazeServer(port: Int): Task[A] =
-    BlazeServerBuilder[Task]
+    BlazeServerBuilder[Task](executionContext = scheduler)
       .bindHttp(port, selectedInterface)
       .withoutBanner
       .withHttpApp(mockRouter)

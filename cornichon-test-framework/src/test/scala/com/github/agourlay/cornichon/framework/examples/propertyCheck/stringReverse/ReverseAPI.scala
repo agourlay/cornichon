@@ -25,7 +25,7 @@ class ReverseAPI extends Http4sDsl[Task] {
   )
 
   def start(httpPort: Int): CancelableFuture[HttpServer] =
-    BlazeServerBuilder[Task]
+    BlazeServerBuilder[Task](executionContext = s)
       .bindHttp(httpPort, "localhost")
       .withoutBanner
       .withNio2(true)
