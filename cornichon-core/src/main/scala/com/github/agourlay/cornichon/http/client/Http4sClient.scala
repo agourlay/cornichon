@@ -104,12 +104,12 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
           http4sResp
             .bodyAsText
             .compile
-            .fold("")(_ ++ _)
+            .fold(new StringBuilder())(_ ++= _)
             .map { decodedBody =>
               CornichonHttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
-                body = decodedBody
+                body = decodedBody.toString()
               ).asRight[CornichonError]
             }
         }
