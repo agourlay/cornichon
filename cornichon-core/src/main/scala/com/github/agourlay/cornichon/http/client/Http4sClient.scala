@@ -100,7 +100,7 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
           .withUri(addQueryParams(uri, cReq.params))
 
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
-        val cornichonResponse = httpClient.fetch(completeRequest) { http4sResp =>
+        val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
           http4sResp
             .bodyAsText
             .compile
@@ -132,7 +132,7 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
           .withHeaders(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers))
           .withUri(addQueryParams(uri, streamReq.params))
 
-        val cornichonResponse = httpClient.fetch(req) { http4sResp =>
+        val cornichonResponse = httpClient.run(req).use { http4sResp =>
           http4sResp
             .body
             .through(ServerSentEvent.decoder)
