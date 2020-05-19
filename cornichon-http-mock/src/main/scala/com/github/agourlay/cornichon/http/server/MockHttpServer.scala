@@ -7,7 +7,7 @@ import monix.eval.Task
 import monix.execution.Scheduler
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 
 import scala.jdk.CollectionConverters._
@@ -38,12 +38,11 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
     }
 
   private def startBlazeServer(port: Int): Task[A] =
-    BlazeServerBuilder[Task](executionContext = scheduler)
-      .bindHttp(port, selectedInterface)
-      .withoutBanner
+    EmberServerBuilder.default[Task]
+      .withPort(port)
+      .withHost(selectedInterface)
       .withHttpApp(mockRouter)
-      .withNio2(true)
-      .resource
+      .build
       .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
 
   private def bestInterface(): String =

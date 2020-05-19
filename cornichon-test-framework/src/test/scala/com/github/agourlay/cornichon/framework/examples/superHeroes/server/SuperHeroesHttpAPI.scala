@@ -11,13 +11,13 @@ import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s.server.{ AuthMiddleware, Router }
-import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.circe._
 import org.http4s.dsl._
+import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.middleware.GZip
 import sangria.execution._
 import sangria.parser.QueryParser
@@ -169,11 +169,11 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
   )
 
   def start(httpPort: Int): CancelableFuture[HttpServer] =
-    BlazeServerBuilder[Task](executionContext = s)
-      .bindHttp(httpPort, "localhost")
-      .withoutBanner
-      .withNio2(true)
+    EmberServerBuilder.default[Task]
+      .withPort(httpPort)
+      .withHost("localhost")
       .withHttpApp(GZip(routes.orNotFound))
+      .build
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
       .runToFuture
