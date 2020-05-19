@@ -22,11 +22,14 @@ import monix.eval.Task._
 import monix.execution.Scheduler
 import org.http4s._
 import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.client.middleware.GZip
+import org.http4s.client.middleware.{ GZip, FollowRedirect }
 
 import scala.concurrent.duration._
 
-class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerification: Boolean)(implicit scheduler: Scheduler)
+class Http4sClient(
+    addAcceptGzipByDefault: Boolean,
+    disableCertificateVerification: Boolean,
+    followRedirect: Boolean)(implicit scheduler: Scheduler)
   extends HttpClient {
 
   // Disable JDK built-in checks
@@ -58,8 +61,9 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
       .allocated
       .map {
         case (client, shutdown) =>
-          val c = if (addAcceptGzipByDefault) GZip()(client) else client
-          c -> shutdown
+          val c1 = if (addAcceptGzipByDefault) GZip()(client) else client
+          val c2 = if (followRedirect) FollowRedirect(maxRedirects = 10)(client = c1) else c1
+          c2 -> shutdown
       }
       .runSyncUnsafe(10.seconds)
 

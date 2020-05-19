@@ -13,8 +13,8 @@ case class Config(
     warnOnDuplicateHeaders: Boolean = false,
     failOnDuplicateHeaders: Boolean = false,
     addAcceptGzipByDefault: Boolean = true,
-    disableCertificateVerification: Boolean = false
-)
+    disableCertificateVerification: Boolean = false,
+    followRedirect: Boolean = false)
 
 object Config {
   implicit val hint = ProductHint[Config](allowUnknownKeys = false, fieldMapping = ConfigFieldMapping(CamelCase, CamelCase))

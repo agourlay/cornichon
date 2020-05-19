@@ -19,5 +19,6 @@ cornichon {
   warnOnDuplicateHeaders = false
   failOnDuplicateHeaders = false
   disableCertificateVerification = false
+  followRedirect: Boolean = false
 }
 ``` 

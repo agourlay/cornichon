@@ -194,7 +194,7 @@ object HttpDsl {
 
   lazy val globalHttpClient: HttpClient = {
     val config = BaseFeature.config
-    val c = new Http4sClient(config.addAcceptGzipByDefault, config.disableCertificateVerification)(Scheduler.Implicits.global)
+    val c = new Http4sClient(config.addAcceptGzipByDefault, config.disableCertificateVerification, config.followRedirect)(Scheduler.Implicits.global)
     BaseFeature.addShutdownHook(() => c.shutdown().runToFuture(Scheduler.Implicits.global))
     c
   }

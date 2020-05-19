@@ -6,7 +6,7 @@ import utest._
 
 object Http4sClientSpec extends TestSuite {
 
-  private val client = new Http4sClient(true, true)
+  private val client = new Http4sClient(true, true, true)
 
   override def utestAfterAll(): Unit = {
     client.shutdown().runSyncUnsafe()
