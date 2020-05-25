@@ -698,6 +698,70 @@ object JsonStepsSpec extends TestSuite with CommonTestSuite {
       assert(res.isSuccess)
     }
 
+    test("JsonArrayStepBuilder.containsExactly (identical)") {
+      val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
+      val step = jsonStepBuilder.asArray.containsExactly("a", "b", "c")
+      val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+    }
+
+    test("JsonArrayStepBuilder.containsExactly (out of order)") {
+      val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
+      val step = jsonStepBuilder.asArray.containsExactly("b", "a", "c")
+      val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+    }
+
+    test("JsonArrayStepBuilder.containsExactly fail (unknown element)") {
+      val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
+      val step = jsonStepBuilder.asArray.containsExactly("d")
+      val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with JsonArraySteps' failed:
+           |
+           |at step:
+           |test body array contains exactly
+           |d
+           |
+           |with error(s):
+           |Non ordered diff. between actual result and expected result is :
+           |added elements:
+           |"a"
+           |"b"
+           |"c"
+           |deleted elements:
+           |"d"
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
+    }
+
+    test("JsonArrayStepBuilder.containsExactly fail (missing element)") {
+      val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
+      val step = jsonStepBuilder.asArray.containsExactly("a", "c")
+      val s = Scenario("scenario with JsonArraySteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with JsonArraySteps' failed:
+           |
+           |at step:
+           |test body array contains exactly
+           |a and c
+           |
+           |with error(s):
+           |Non ordered diff. between actual result and expected result is :
+           |added elements:
+           |"b"
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
+    }
+
     test("JsonArrayStepBuilder.is json with ignoreEach") {
       val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
       val step = jsonStepBuilder.asArray.ignoringEach("myKey").is("""[{ "myKeyOther" : "myOtherValue" }]""")

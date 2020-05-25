@@ -355,6 +355,25 @@ object JsonSteps {
         }
       )
 
+    def containsExactly[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
+      val prettyElements = elements.mkString(" and ")
+      val title = if (jsonPath == JsonPath.root) s"$target array contains exactly\n$prettyElements" else s"$target's array '$jsonPath' contains exactly\n$prettyElements"
+      bodyContainsExactlyElmt(title, elements)
+    }
+
+    private def bodyContainsExactlyElmt[A: Show: Resolvable: Encoder](title: String, expectedElements: Seq[A]) =
+      AssertStep(
+        title = title,
+        action = sc => Assertion.either {
+          for {
+            sessionValue <- sc.session.get(sessionKey)
+            jArr <- applyPathAndFindArray(jsonPath)(sc, sessionValue)
+            actualValue <- removeIgnoredPathFromElements(sc, jArr)
+            expectedResolvedJson <- expectedElements.toVector.traverse(resolveAndParseJson(_, sc))
+          } yield CollectionsContainSameElements(expectedResolvedJson, actualValue)
+        }
+      )
+
     private def removeIgnoredPathFromElements(scenarioContext: ScenarioContext, jArray: Vector[Json]) =
       ignoredEachKeys.traverse(resolveAndParseJsonPath(_, scenarioContext))
         .map(ignoredPaths => jArray.map(removeFieldsByPath(_, ignoredPaths)))
