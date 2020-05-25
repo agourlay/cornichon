@@ -51,7 +51,8 @@ class HttpService(
     ignoreFromWithHeaders: HeaderSelection)(scenarioContext: ScenarioContext): Either[CornichonError, (String, Option[Json], Seq[(String, String)], List[(String, String)])] =
     for {
       jsonBodyResolved <- resolveAndParseBody(body, scenarioContext)
-      completeUrlResolved <- scenarioContext.fillPlaceholders(withBaseUrl(url))
+      urlResolved <- scenarioContext.fillPlaceholders(url)
+      completeUrlResolved = withBaseUrl(urlResolved)
       urlParams <- client.paramsFromUrl(completeUrlResolved)
       explicitParams <- scenarioContext.fillPlaceholders(params)
       allParams = urlParams ++ explicitParams
