@@ -4,8 +4,6 @@ import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
 import sangria.macros.derive._
 import sangria.schema.Schema
-import sangria.macros.derive._
-import sangria.schema.Schema
 import sangria.schema._
 import sangria.marshalling.circe._
 import io.circe.generic.auto._

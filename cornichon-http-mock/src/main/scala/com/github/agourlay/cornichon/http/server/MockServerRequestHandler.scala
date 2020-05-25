@@ -108,7 +108,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
       .map { decodedBody =>
         val req = HttpRequest[String](
           method = httpMethodMapper(rawReq.method),
-          url = rawReq.uri.path.toString,
+          url = rawReq.uri.path,
           body = Some(decodedBody),
           params = rawReq.params.toList,
           headers = rawReq.headers.toList.map(h => (h.name.value, h.value))

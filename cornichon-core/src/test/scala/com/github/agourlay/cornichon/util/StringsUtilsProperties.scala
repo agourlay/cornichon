@@ -9,7 +9,7 @@ class StringsUtilsProperties extends Properties("StringsUtil") {
   property("levenshtein compute distance zero for identical String") =
     forAll(Gen.alphaStr.filter(_.trim.nonEmpty)) { s =>
       Claim {
-        StringUtils.levenshtein(s, s) == (0)
+        StringUtils.levenshtein(s, s) == 0
       }
     }
 

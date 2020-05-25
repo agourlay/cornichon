@@ -52,16 +52,16 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 head("http://superhero.io/daredevil")
 
 get("http://superhero.io/daredevil").withParams(
-  "firstParam" → "value1",
-  "secondParam" → "value2")
+  "firstParam" -> "value1",
+  "secondParam" -> "value2")
 
 delete("http://superhero.io/daredevil").withHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="))
 
 post("http://superhero.io/batman").withBody("JSON description of Batman goes here")
 
 put("http://superhero.io/batman").withBody("JSON description of Batman goes here").withParams(
-  "firstParam" → "value1",
-  "secondParam" → "value2")
+  "firstParam" -> "value1",
+  "secondParam" -> "value2")
 
 patch("http://superhero.io/batman").withBody("JSON description of Batman goes here")
 ```
@@ -82,11 +82,11 @@ status.is(200)
 ```scala
 headers.name("cache-control").isPresent
 
-headers.contain("cache-control" → "no-cache")
+headers.contain("cache-control" -> "no-cache")
 
 headers.name("cache_control").isAbsent
 
-save_header_value("cache_control" → "my-cache-control-value")
+save_header_value("cache_control" -> "my-cache-control-value")
 ```
 
 - assert response body comes with different flavors (ignoring, whitelisting)
@@ -232,7 +232,7 @@ body.asArray.contains(
 - Server-Sent-Event.
 
 ```scala
-When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" → "true")
+When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" -> "true")
 
 Then assert body.asArray.hasSize(2)
 
@@ -299,7 +299,7 @@ And assert body.ignoring("city", "publisher").is(
 - setting a value in `session`
 
 ```scala
-save("favorite-superhero" → "Batman")
+save("favorite-superhero" -> "Batman")
 ```
 
 - saving value to `session`
@@ -363,7 +363,7 @@ RepeatDuring(300.millis) {
 ```scala
 RepeatWith("Superman", "GreenLantern", "Spiderman")("superhero-name") {
 
-  When I get("/superheroes/<superhero-name>").withParams("sessionId" → "<session-id>")
+  When I get("/superheroes/<superhero-name>").withParams("sessionId" -> "<session-id>")
 
   Then assert status.is(200)
 

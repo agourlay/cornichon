@@ -91,7 +91,7 @@ For instance if most of your JSON responses contain a field `id` and you want to
 
 ```scala
    override def registerExtractors = Map(
-     "response-id" → JsonMapper(HttpService.LastResponseBodyKey, "id")
+     "response-id" -> JsonMapper(HttpService.LastResponseBodyKey, "id")
    )
 ```
 
@@ -102,9 +102,9 @@ It works for all keys in `Session`, let's say we also have objects registered un
 
 ```scala
    override def registerExtractors = Map(
-     "response-version" → JsonMapper(HttpService.LastResponseBodyKey, "version"),
-     "customer-street" → JsonMapper("customer", "address.street"),
-     "product-first-rating" → JsonMapper("product", "rating[0].score")
+     "response-version" -> JsonMapper(HttpService.LastResponseBodyKey, "version"),
+     "customer-street" -> JsonMapper("customer", "address.street"),
+     "product-first-rating" -> JsonMapper("product", "rating[0].score")
    )
 ```
 

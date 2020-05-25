@@ -52,7 +52,7 @@ case class CheckModelStep[A, B, C, D, E, F](
     val emptyTransitionForState: ValidatedNel[CornichonError, Done] = transitions.find(_._2.isEmpty)
       .map(s => EmptyTransitionsDefinitionForProperty(s._1.description)).toInvalidNel(Done)
 
-    val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (transitions.get(model.entryPoint).isEmpty)
+    val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (!transitions.contains(model.entryPoint))
       NoTransitionsDefinitionForStartingProperty(model.entryPoint.description).invalidNel
     else Done.validDone
 

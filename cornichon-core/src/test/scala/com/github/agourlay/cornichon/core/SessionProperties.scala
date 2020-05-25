@@ -18,7 +18,7 @@ object SessionProperties extends Properties("Session") {
   val keyValueGen: Gen[(String, String)] = for {
     k <- keyGen
     v <- valueGen
-  } yield (k -> v)
+  } yield k -> v
 
   val keyValuesGen: Gen[List[(String, String)]] = Gen.nonEmptyListOf(keyValueGen)
 
