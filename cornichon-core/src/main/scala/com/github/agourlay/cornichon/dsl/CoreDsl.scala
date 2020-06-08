@@ -188,20 +188,16 @@ trait CoreDsl extends ProvidedInstances {
 
 object CoreDsl {
 
-  case class FromSessionSetter(
-      fromKey: String,
-      target: String,
-      title: String,
-      trans: (ScenarioContext, String) => Either[CornichonError, String])
+  case class FromSessionSetter(target: String, title: String, trans: (ScenarioContext, String) => Either[CornichonError, String])
 
-  def save_from_session(args: Seq[FromSessionSetter]): Step =
+  def save_many_from_session(fromKey: String)(args: Seq[FromSessionSetter]): Step =
     EffectStep.fromSyncE(
       s"${args.map(_.title).mkString(" and ")}",
       sc => {
         val session = sc.session
         for {
-          allValues <- session.getList(args.map(_.fromKey))
-          extracted <- allValues.zip(args.map(_.trans)).traverse { case (value, extractor) => extractor(sc, value) }
+          sessionValue <- session.get(fromKey)
+          extracted <- args.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
           newSession <- args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }

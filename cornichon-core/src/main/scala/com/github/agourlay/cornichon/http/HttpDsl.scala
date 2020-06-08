@@ -96,10 +96,10 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     save_body_path(JsonPath.root -> target)
 
   def save_body_path(args: (String, String)*): Step =
-    save_from_session {
+    save_many_from_session(lastResponseBodyKey) {
       args.map {
         case (path, target) =>
-          FromSessionSetter(lastResponseBodyKey, target, s"save path '$path' from body to key '$target'", (sc, s) => {
+          FromSessionSetter(target, s"save path '$path' from body to key '$target'", (sc, s) => {
             for {
               resolvedPath <- sc.fillPlaceholders(path)
               jsonPath <- JsonPath.parse(resolvedPath)
@@ -110,10 +110,10 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     }
 
   def save_header_value(args: (String, String)*): Step =
-    save_from_session {
+    save_many_from_session(lastResponseHeadersKey) {
       args.map {
         case (headerFieldName, target) =>
-          FromSessionSetter(lastResponseHeadersKey, target, s"save '$headerFieldName' header value to key '$target'", (_, s) => {
+          FromSessionSetter(target, s"save '$headerFieldName' header value to key '$target'", (_, s) => {
             decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h => h._2).getOrElse(""))
           })
       }
