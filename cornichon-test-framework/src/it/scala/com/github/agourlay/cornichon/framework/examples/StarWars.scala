@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.framework.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
 
-// see https://swapi.co/
+// see https://swapi.dev/
 class StarWars extends CornichonFeature {
 
   def feature =
@@ -10,7 +10,7 @@ class StarWars extends CornichonFeature {
 
       Scenario("check out Luke Skywalker") {
 
-        When I get("https://swapi.co/api/people/1/")
+        When I get("https://swapi.dev/api/people/1/")
 
         Then assert status.is(200)
 
@@ -25,35 +25,30 @@ class StarWars extends CornichonFeature {
             "eye_color": "blue",
             "birth_year": "19BBY",
             "gender": "male",
-            "homeworld": "https://swapi.co/api/planets/1/",
+            "homeworld": "http://swapi.dev/api/planets/1/",
             "films": [
-              "https://swapi.co/api/films/2/",
-              "https://swapi.co/api/films/6/",
-              "https://swapi.co/api/films/3/",
-              "https://swapi.co/api/films/1/",
-              "https://swapi.co/api/films/7/"
+              "http://swapi.dev/api/films/1/",
+              "http://swapi.dev/api/films/2/",
+              "http://swapi.dev/api/films/3/",
+              "http://swapi.dev/api/films/6/"
             ],
-            "species": [
-              "https://swapi.co/api/species/1/"
-            ],
+            "species": [],
             "vehicles": [
-              "https://swapi.co/api/vehicles/14/",
-              "https://swapi.co/api/vehicles/30/"
+              "http://swapi.dev/api/vehicles/14/",
+              "http://swapi.dev/api/vehicles/30/"
             ],
             "starships": [
-              "https://swapi.co/api/starships/12/",
-              "https://swapi.co/api/starships/22/"
+              "http://swapi.dev/api/starships/12/",
+              "http://swapi.dev/api/starships/22/"
             ],
             "created": "2014-12-09T13:50:51.644000Z",
             "edited": "2014-12-20T21:17:56.891000Z",
-            "url": "https://swapi.co/api/people/1/"
+            "url": "http://swapi.dev/api/people/1/"
           }
           """
         )
 
-        And I save_body_path("homeworld" -> "homeworld-url")
-
-        When I get("<homeworld-url>")
+        When I get("https://swapi.dev/api/planets/1/")
 
         Then assert body.is(
           """
@@ -68,36 +63,30 @@ class StarWars extends CornichonFeature {
              "surface_water" : "1",
              "population" : "200000",
              "residents" : [
-               "https://swapi.co/api/people/1/",
-               "https://swapi.co/api/people/2/",
-               "https://swapi.co/api/people/4/",
-               "https://swapi.co/api/people/6/",
-               "https://swapi.co/api/people/7/",
-               "https://swapi.co/api/people/8/",
-               "https://swapi.co/api/people/9/",
-               "https://swapi.co/api/people/11/",
-               "https://swapi.co/api/people/43/",
-               "https://swapi.co/api/people/62/"
+               "http://swapi.dev/api/people/1/",
+               "http://swapi.dev/api/people/2/",
+               "http://swapi.dev/api/people/4/",
+               "http://swapi.dev/api/people/6/",
+               "http://swapi.dev/api/people/7/",
+               "http://swapi.dev/api/people/8/",
+               "http://swapi.dev/api/people/9/",
+               "http://swapi.dev/api/people/11/",
+               "http://swapi.dev/api/people/43/",
+               "http://swapi.dev/api/people/62/"
              ],
              "films" : [
-               "https://swapi.co/api/films/5/",
-               "https://swapi.co/api/films/4/",
-               "https://swapi.co/api/films/6/",
-               "https://swapi.co/api/films/3/",
-               "https://swapi.co/api/films/1/"
+               "http://swapi.dev/api/films/1/",
+               "http://swapi.dev/api/films/3/",
+               "http://swapi.dev/api/films/4/",
+               "http://swapi.dev/api/films/5/",
+               "http://swapi.dev/api/films/6/"
              ],
              "created" : "2014-12-09T13:50:49.641000Z",
-             "edited" : "2014-12-21T20:48:04.175778Z",
-             "url" : "https://swapi.co/api/planets/1/"
+             "edited" : "2014-12-20T20:58:18.411000Z",
+             "url" : "http://swapi.dev/api/planets/1/"
            }
           """
         )
-
-        And I save_body_path("residents[0]" -> "first-resident")
-
-        When I get("<first-resident>")
-
-        Then assert body.path("name").is("Luke Skywalker")
       }
     }
 
