@@ -188,9 +188,9 @@ trait CoreDsl extends ProvidedInstances {
 
 object CoreDsl {
 
-  case class FromSessionSetter(target: String, title: String, trans: (ScenarioContext, String) => Either[CornichonError, String])
+  case class FromSessionSetter[A](target: String, title: String, trans: (ScenarioContext, A) => Either[CornichonError, String])
 
-  def save_many_from_session(fromKey: String)(args: Seq[FromSessionSetter]): Step =
+  def save_many_from_session(fromKey: String)(args: Seq[FromSessionSetter[String]]): Step =
     EffectStep.fromSyncE(
       s"${args.map(_.title).mkString(" and ")}",
       sc => {

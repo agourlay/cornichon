@@ -3,10 +3,13 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.CoreDsl._
+import com.github.agourlay.cornichon.http.HttpDsl._
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -96,14 +99,14 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     save_body_path(JsonPath.root -> target)
 
   def save_body_path(args: (String, String)*): Step =
-    save_many_from_session(lastResponseBodyKey) {
+    save_many_from_session_json(lastResponseBodyKey) {
       args.map {
         case (path, target) =>
-          FromSessionSetter(target, s"save path '$path' from body to key '$target'", (sc, s) => {
+          FromSessionSetter[Json](target, s"save path '$path' from body to key '$target'", (sc, jsonSessionValue) => {
             for {
               resolvedPath <- sc.fillPlaceholders(path)
               jsonPath <- JsonPath.parse(resolvedPath)
-              json <- jsonPath.runStrict(s)
+              json <- jsonPath.runStrict(jsonSessionValue)
             } yield jsonStringValue(json)
           })
       }
@@ -191,6 +194,19 @@ trait HttpDslOps {
 object HttpDsl {
   val lastBodySessionKey = SessionKey(lastResponseBodyKey)
   val bodyBuilderTitle = Some("response body")
+
+  def save_many_from_session_json(fromKey: String)(args: Seq[FromSessionSetter[Json]]): Step =
+    CEffectStep.fromSyncE(
+      s"${args.map(_.title).mkString(" and ")}",
+      sc => {
+        val session = sc.session
+        for {
+          sessionValue <- session.getJson(fromKey)
+          extracted <- args.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
+          newSession <- args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
+        } yield newSession
+      }
+    )
 
   lazy val globalHttpClient: HttpClient = {
     val config = BaseFeature.config
