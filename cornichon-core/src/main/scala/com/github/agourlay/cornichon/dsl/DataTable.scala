@@ -52,13 +52,15 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "the data table is malformed, all rows must have the same number of elements")
 
   lazy val rawStringList: List[Map[String, String]] =
-    rows.toList
+    rows.iterator
       .map { row =>
-        headers.fields.zip(row.fields)
+        headers.fields
+          .iterator
+          .zip(row.fields)
           .map { case (name, value) => name -> value.trim }
           .filter(_._2.nonEmpty)
           .toMap
-      }
+      }.toList
 }
 
 case class Headers(fields: Seq[String])
