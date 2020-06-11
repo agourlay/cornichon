@@ -56,7 +56,7 @@ case class DataTable(headers: Headers, rows: Seq[Row]) {
       .map { row =>
         headers.fields
           .iterator
-          .zip(row.fields)
+          .zip(row.fields.iterator)
           .map { case (name, value) => name -> value.trim }
           .filter(_._2.nonEmpty)
           .toMap
