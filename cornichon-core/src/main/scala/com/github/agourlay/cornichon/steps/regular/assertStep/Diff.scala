@@ -40,8 +40,8 @@ object Diff {
   def orderedCollectionDiff[A: Show](left: Seq[A], right: Seq[A]) = {
     val added = right.diff(left)
     val (deletedTuple, stillPresent) = left.map(e => (e, right.indexWhere(_ == e))).partition(_._2 == -1)
-    val deleted = deletedTuple.map(_._1)
-    val moved = stillPresent.map { case (elem, newIndex) => MovedElement(elem, newIndex, left.indexWhere(_ == elem)) }.filter(_.changed)
+    val deleted = deletedTuple.iterator.map(_._1)
+    val moved = stillPresent.iterator.map { case (elem, newIndex) => MovedElement(elem, newIndex, left.indexWhere(_ == elem)) }.filter(_.changed)
     s"""|Ordered collection diff. between actual result and expected result is :
         |${if (added.isEmpty) "" else "added elements:\n" + added.map(_.show).mkString("\n")}
         |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.map(_.show).mkString("\n")}

@@ -109,11 +109,11 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
       Ok(productsSearch.values.asJson)
 
     case GET -> Root / "products-search" :? NameQueryParamMatcher(name) =>
-      val l = productsSearch.values.filter(_.name == name).toList
+      val l = productsSearch.values.iterator.filter(_.name == name).toList
       Ok(l.asJson)
 
     case GET -> Root / "products-search" :? DescriptionContainsQueryParamMatcher(descriptionContains) =>
-      val l = productsSearch.values.filter(_.description.contains(descriptionContains)).toList
+      val l = productsSearch.values.iterator.filter(_.description.contains(descriptionContains)).toList
       Ok(l.asJson)
 
     case POST -> Root / "products-search" / "reindex" =>

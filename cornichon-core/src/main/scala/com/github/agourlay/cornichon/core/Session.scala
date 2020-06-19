@@ -121,7 +121,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 }
 
 object Session {
-  val newEmpty = Session(HashMap.empty)
+  val newEmpty: Session = Session(HashMap.empty)
 
   val notAllowedInKey: String = "\r\n<>/ []"
 
@@ -145,11 +145,11 @@ object Session {
 }
 
 case class SessionKey(name: String, index: Option[Int] = None) {
-  def atIndex(index: Int) = copy(index = Some(index))
+  def atIndex(index: Int): SessionKey = copy(index = Some(index))
 }
 
 object SessionKey {
-  implicit val showSessionKey = Show.show[SessionKey] { sk =>
+  implicit val showSessionKey: Show[SessionKey] = Show.show[SessionKey] { sk =>
     val key = sk.name
     val index = sk.index
     s"$key${index.map(i => s"[$i]").getOrElse("")}"
@@ -158,7 +158,7 @@ object SessionKey {
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
   lazy val similarKeysMsg = {
-    val similar = s.content.keys.toList.filter(StringUtils.levenshtein(_, key) == 1).sorted
+    val similar = s.content.keys.iterator.filter(StringUtils.levenshtein(_, key) == 1).toList.sorted
     if (similar.isEmpty)
       ""
     else
@@ -177,5 +177,5 @@ case class IllegalKey(key: String) extends CornichonError {
 
 case class IndexNotFoundForKey(key: String, index: Int, values: Vector[String]) extends CornichonError {
   lazy val baseErrorMessage = s"index '$index' not found for key '$key' with values \n" +
-    s"${values.zipWithIndex.map { case (v, i) => s"$i -> $v" }.mkString("\n")}"
+    s"${values.iterator.zipWithIndex.map { case (v, i) => s"$i -> $v" }.mkString("\n")}"
 }

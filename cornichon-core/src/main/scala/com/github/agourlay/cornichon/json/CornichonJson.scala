@@ -22,6 +22,7 @@ import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
 import sangria.marshalling.circe._
 
+import scala.annotation.switch
 import scala.util.{ Failure, Success, Try }
 
 trait CornichonJson {
@@ -36,13 +37,12 @@ trait CornichonJson {
     if (trimmed.isEmpty)
       Json.fromString(s).asRight
     else {
-      val firstChar = trimmed.head
-      if (firstChar == '{' || firstChar == '[')
-        parseString(s) // parse object or array
-      else if (firstChar == '|')
-        parseDataTable(s).map(list => Json.fromValues(list.map(Json.fromJsonObject))) // table is turned into a JArray
-      else
-        Json.fromString(s).asRight // treated as a JString
+      val firstChar = trimmed.charAt(0)
+      (firstChar: @switch) match {
+        case '{' | '[' => parseString(s) // parse object or array
+        case '|'       => parseDataTable(s).map(list => Json.fromValues(list.map(Json.fromJsonObject))) // table is turned into a JArray
+        case _         => Json.fromString(s).asRight // treated as a JString
+      }
     }
   }
 
@@ -62,7 +62,7 @@ trait CornichonJson {
     if (trimmed.isEmpty)
       false
     else {
-      val head = trimmed.head
+      val head = trimmed.charAt(0)
       head != '[' && head != '{' && head != '|'
     }
   }
@@ -158,9 +158,9 @@ trait CornichonJson {
           def onString(value: String): List[(String, Json)] =
             leafValue()
           def onArray(elems: Vector[Json]): List[(String, Json)] =
-            elems.toList.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }
+            elems.iterator.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }.toList
           def onObject(elems: JsonObject): List[(String, Json)] =
-            elems.toList.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }
+            elems.toIterable.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }.toList
         }
       )
     }

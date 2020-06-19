@@ -202,8 +202,8 @@ object HttpDsl {
         val session = sc.session
         for {
           sessionValue <- session.getJson(fromKey)
-          extracted <- args.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
-          newSession <- args.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
+          extracted <- args.iterator.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
+          newSession <- args.iterator.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }
     )

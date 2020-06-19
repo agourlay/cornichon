@@ -99,7 +99,7 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
         val modifiedList = jos.map(_.add("extraKey", Json.fromString("extraValue"))).map(Json.fromJsonObject)
         val json = Json.fromValues(jos.map(Json.fromJsonObject))
         val modifiedJson = Json.fromValues(modifiedList)
-        val errors = modifiedList.zipWithIndex.map { case (_, i) => s"/$i/extraKey" }
+        val errors = modifiedList.iterator.zipWithIndex.map { case (_, i) => s"/$i/extraKey" }.toList
         Claim {
           whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
             whitelistingValue(modifiedJson, json) == Left(WhitelistingError(errors, json))
