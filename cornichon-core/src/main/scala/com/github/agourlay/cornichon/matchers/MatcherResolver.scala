@@ -75,5 +75,5 @@ case class MatcherUndefined(name: String) extends CornichonError {
 
 case class DuplicateMatcherDefinition(name: String, descriptions: List[String]) extends CornichonError {
   lazy val baseErrorMessage = s"there are ${descriptions.size} matchers named '$name': " +
-    s"${descriptions.map(d => s"'$d'").mkString(" and ")}"
+    s"${descriptions.iterator.map(d => s"'$d'").mkString(" and ")}"
 }

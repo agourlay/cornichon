@@ -48,7 +48,7 @@ case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) 
 case class CollectionsContainSameElementsAssertionError[A: Show](added: Seq[A], deleted: Seq[A]) extends CornichonError {
   lazy val baseErrorMessage =
     s"""|Non ordered diff. between actual result and expected result is :
-        |${if (added.isEmpty) "" else "added elements:\n" + added.map(_.show).mkString("\n")}
-        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.map(_.show).mkString("\n")}
+        |${if (added.isEmpty) "" else "added elements:\n" + added.iterator.map(_.show).mkString("\n")}
+        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.iterator.map(_.show).mkString("\n")}
       """.stripMargin.trim
 }

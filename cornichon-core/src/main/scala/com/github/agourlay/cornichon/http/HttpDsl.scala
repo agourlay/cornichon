@@ -197,7 +197,7 @@ object HttpDsl {
 
   def save_many_from_session_json(fromKey: String)(args: Seq[FromSessionSetter[Json]]): Step =
     CEffectStep.fromSyncE(
-      s"${args.map(_.title).mkString(" and ")}",
+      s"${args.iterator.map(_.title).mkString(" and ")}",
       sc => {
         val session = sc.session
         for {

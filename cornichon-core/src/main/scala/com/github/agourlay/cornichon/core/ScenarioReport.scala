@@ -50,7 +50,7 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList
 
   val msg =
     s"""|Scenario '$scenarioName' failed:
-        |${failedSteps.map(_.messageForFailedStep).toList.mkString("\nand\n")}
+        |${failedSteps.toList.iterator.map(_.messageForFailedStep).mkString("\nand\n")}
         |seed for the run was '$seed'
         |""".stripMargin
 
@@ -78,7 +78,7 @@ case class FailedStep(step: Step, errors: NonEmptyList[CornichonError]) {
        |${step.title}
        |
        |with error(s):
-       |${errors.map(_.renderedMessage).toList.mkString("\nand\n")}
+       |${errors.toList.iterator.map(_.renderedMessage).mkString("\nand\n")}
        |""".stripMargin
 
 }

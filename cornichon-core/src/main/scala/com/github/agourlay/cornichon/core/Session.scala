@@ -139,6 +139,7 @@ object Session {
     else
       s.content.toSeq
         .sortBy(_._1)
+        .iterator
         .map(pair => pair._1 + " -> " + pair._2.iterator.map(_.show).mkString("Values(", ", ", ")"))
         .mkString("\n")
   }

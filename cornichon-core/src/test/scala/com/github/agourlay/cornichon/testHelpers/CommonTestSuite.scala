@@ -22,17 +22,18 @@ trait CommonTestSuite extends CommonTesting {
 
   def matchLogsWithoutDuration(logs: List[LogInstruction])(expectedRenderedLogs: String): Unit = {
     val renderedLogs = LogInstruction.renderLogs(logs, colorized = false)
-    val cleanedLogs = renderedLogs.split('\n').toList.map { l =>
+    val cleanedLogs = renderedLogs.split('\n').iterator.map { l =>
       // check if duration is present at end
       if (l.nonEmpty && l.last == ']')
         l.dropRight(1) // drop ']'
-          .reverse
+          .reverseIterator
           .dropWhile(_ != '[') // drop measurement
           .drop(1) // drop '['
           .dropWhile(_ == ' ') // drop whitespaces
-          .reverse
-      else
-        l
+          .toList
+          .reverseIterator
+          .mkString
+      else l
     }
     val preparedCleanedLogs = cleanedLogs.mkString("\n")
     assert(preparedCleanedLogs == expectedRenderedLogs)

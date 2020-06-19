@@ -49,7 +49,7 @@ object JsonAssertionErrors {
   }
 
   def arrayContainsError(expected: Vector[Json], sourceArray: Vector[Json], contains: Boolean): String = {
-    val prettyExpected = expected.map(_.show)
+    val prettyExpected = expected.iterator.map(_.show)
     val prettySource = Json.fromValues(sourceArray).show
     s"""expected array to ${if (contains) "" else "not "}contain
         |'${prettyExpected.mkString(" and ")}'
@@ -58,7 +58,7 @@ object JsonAssertionErrors {
   }
 
   case class MatchersNotSupportedInAsArray(matchers: List[Matcher]) extends CornichonError {
-    lazy val baseErrorMessage: String = s"matchers are not supported in `asArray` assertion but ${matchers.map(_.fullKey).mkString(", ")} found" +
+    lazy val baseErrorMessage: String = s"matchers are not supported in `asArray` assertion but ${matchers.iterator.map(_.fullKey).mkString(", ")} found" +
       s"\nhttps://github.com/agourlay/cornichon/issues/135"
   }
 }

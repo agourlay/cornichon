@@ -192,7 +192,7 @@ object CoreDsl {
 
   def save_many_from_session(fromKey: String)(args: Seq[FromSessionSetter[String]]): Step =
     EffectStep.fromSyncE(
-      s"${args.map(_.title).mkString(" and ")}",
+      s"${args.iterator.map(_.title).mkString(" and ")}",
       sc => {
         val session = sc.session
         for {

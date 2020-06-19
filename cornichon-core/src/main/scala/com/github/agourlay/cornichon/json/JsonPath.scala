@@ -92,7 +92,7 @@ object JsonPath {
   private val operationsCache = Caching.buildCache[String, Either[CornichonError, List[JsonPathOperation]]]()
 
   implicit val show: Show[JsonPath] = Show.show[JsonPath] { p =>
-    p.operations.map(_.pretty).mkString(".")
+    p.operations.iterator.map(_.pretty).mkString(".")
   }
 
   def parse(path: String): Either[CornichonError, JsonPath] =

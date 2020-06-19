@@ -19,7 +19,7 @@ trait CornichonError {
     else
       s"""$baseErrorMessage
       |caused by:
-      |${causedBy.map(c => c.renderedMessage).mkString("\nand\n")}""".stripMargin
+      |${causedBy.iterator.map(c => c.renderedMessage).mkString("\nand\n")}""".stripMargin
   }
 
   def toException = CornichonException(renderedMessage)

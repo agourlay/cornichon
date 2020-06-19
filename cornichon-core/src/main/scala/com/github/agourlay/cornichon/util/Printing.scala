@@ -5,13 +5,13 @@ import cats.syntax.show._
 
 object Printing {
   def printArrowPairs(params: Seq[(String, String)]): String =
-    params.map { case (name, value) => s"'$name' -> '$value'" }.mkString(", ")
+    params.iterator.map { case (name, value) => s"'$name' -> '$value'" }.mkString(", ")
 
   implicit def showIterable[A: Show]: Show[Iterable[A]] = Show.show { fa =>
     fa.iterator.map(_.show).mkString("(", ", ", ")")
   }
 
   implicit def showMap[A: Show: Ordering, B: Show]: Show[Map[A, B]] = Show.show { ma =>
-    ma.toSeq.sortBy(_._1).map(pair => pair._1.show + " -> " + pair._2.show).mkString("\n")
+    ma.toSeq.sortBy(_._1).iterator.map(pair => pair._1.show + " -> " + pair._2.show).mkString("\n")
   }
 }

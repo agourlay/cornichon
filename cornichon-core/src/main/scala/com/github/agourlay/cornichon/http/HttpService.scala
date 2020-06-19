@@ -175,9 +175,9 @@ object HttpService {
     s"$name$headersKeyValueDelim$value"
 
   def encodeSessionHeaders(headers: Seq[(String, String)]): String =
-    headers.map {
-      case (name, value) => encodeSessionHeader(name, value)
-    }.mkString(interHeadersValueDelimString)
+    headers.iterator
+      .map { case (name, value) => encodeSessionHeader(name, value) }
+      .mkString(interHeadersValueDelimString)
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
     headers.split(interHeadersValueDelim).toList.traverse { header =>

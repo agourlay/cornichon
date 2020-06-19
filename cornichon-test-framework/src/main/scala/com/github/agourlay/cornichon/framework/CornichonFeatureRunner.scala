@@ -93,7 +93,7 @@ object CornichonFeatureRunner {
   private def failureErrorMessage(featureClass: Class[_], f: FailureScenarioReport): String =
     s"""|- **failed** ${f.scenarioName} [${f.duration.toMillis} ms]
         |
-        |  ${f.msg.split('\n').toList.mkString("\n  ")}
+        |  ${f.msg.split('\n').iterator.mkString("\n  ")}
         |
         |  ${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
         |  ${replayCommand(featureClass, f.scenarioName, f.seed)}""".stripMargin

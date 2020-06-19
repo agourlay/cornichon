@@ -8,7 +8,7 @@ import org.scalatest.events._
 class TeamcityReporter extends Reporter {
 
   private def teamcityReport(messageName: String, attributes: (String, String)*): Unit = {
-    val attributeString = attributes.map {
+    val attributeString = attributes.iterator.map {
       case (k, v) => s"$k='${tidy(v)}'"
     }.mkString(" ")
     println(s"##teamcity[$messageName $attributeString]")
