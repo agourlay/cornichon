@@ -58,7 +58,7 @@ object MatcherResolver {
     else {
       val pathAssertions = CornichonJson.findAllPathWithValue(matchers.map(_.fullKey), expected)
         .iterator
-        .zip(matchers)
+        .zip(matchers.iterator)
         .map { case (jsonPath, matcher) => MatcherAssertion(negate, matcher, actual, jsonPath) }
         .toList
 

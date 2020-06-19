@@ -198,7 +198,7 @@ object CoreDsl {
         for {
           sessionValue <- session.get(fromKey)
           extracted <- args.iterator.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
-          newSession <- args.iterator.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
+          newSession <- args.iterator.map(_.target).zip(extracted.iterator).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }
     )
