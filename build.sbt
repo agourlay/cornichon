@@ -298,7 +298,7 @@ lazy val library =
     }
     val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
-    val scalatest     = "org.scalatest"                  %% "scalatest"            % Version.scalaTest
+    val scalatest     = "org.scalatest"                  %% "scalatest-wordspec"   % Version.scalaTest
     val utest         = "com.lihaoyi"                    %% "utest"                % Version.utest
     val pureConfig    = "com.github.pureconfig"          %% "pureconfig"           % Version.pureConfig
     val parboiled     = "org.parboiled"                  %% "parboiled"            % Version.parboiled
