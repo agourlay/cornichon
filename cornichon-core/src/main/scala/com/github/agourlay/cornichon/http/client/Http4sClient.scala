@@ -78,10 +78,10 @@ class Http4sClient(
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  private def toHttp4sHeaders(headers: Seq[(String, String)]): Headers = {
-    val h: List[Header] = headers.map { case (n, v) => Header(n, v).parsed }.toList
-    Headers(h)
-  }
+  private def toHttp4sHeaders(headers: Seq[(String, String)]): Headers =
+    Headers(
+      headers.iterator.map { case (n, v) => Header(n, v).parsed }.toList
+    )
 
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
     headers.toList.map(h => (h.name.value, h.value))
@@ -106,14 +106,14 @@ class Http4sClient(
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
         val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
           http4sResp
-            .bodyAsText
+            .bodyText
             .compile
-            .fold(new StringBuilder())(_ ++= _)
+            .string
             .map { decodedBody =>
               CornichonHttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
-                body = decodedBody.toString()
+                body = decodedBody
               ).asRight[CornichonError]
             }
         }

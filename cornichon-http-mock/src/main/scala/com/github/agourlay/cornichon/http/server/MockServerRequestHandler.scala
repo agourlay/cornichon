@@ -45,13 +45,13 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
       Ok()
 
     case r @ POST -> Root / "response" =>
-      r.bodyAsText.compile.fold("")(_ ++ _).flatMap { body =>
+      r.bodyText.compile.string.flatMap { body =>
         mockState.setResponse(body)
         Ok()
       }
 
     case r @ POST -> Root / "delayInMs" =>
-      r.bodyAsText.compile.fold("")(_ ++ _).flatMap { body =>
+      r.bodyText.compile.string.flatMap { body =>
         // Dropping extra quotes
         Either.catchNonFatal(body.substring(1, body.length - 1).toLong) match {
           case Right(delay) =>
@@ -102,9 +102,9 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
 
   def saveRequest(rawReq: Request[Task]): Task[Boolean] =
     rawReq
-      .bodyAsText
+      .bodyText
       .compile
-      .fold("")(_ ++ _)
+      .string
       .map { decodedBody =>
         val req = HttpRequest[String](
           method = httpMethodMapper(rawReq.method),
