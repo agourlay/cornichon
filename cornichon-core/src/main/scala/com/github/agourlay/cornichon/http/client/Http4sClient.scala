@@ -100,10 +100,9 @@ class Http4sClient(
       e => EitherT.left[CornichonHttpResponse](Task.now(e)),
       uri => EitherT {
         val req = Request[Task](toHttp4sMethod(cReq.method))
-          .withHeaders(toHttp4sHeaders(cReq.headers))
-          .withUri(addQueryParams(uri, cReq.params))
-
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
+          .withHeaders(toHttp4sHeaders(cReq.headers)) // `withEntity` adds `Content-Type` so we set the headers afterwards to have the possibility to override it
+          .withUri(addQueryParams(uri, cReq.params))
         val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
           http4sResp
             .bodyText
