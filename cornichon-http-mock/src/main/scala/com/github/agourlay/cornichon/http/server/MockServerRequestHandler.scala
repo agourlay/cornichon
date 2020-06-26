@@ -111,7 +111,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
           url = rawReq.uri.path.toString,
           body = Some(decodedBody),
           params = rawReq.params.toList,
-          headers = rawReq.headers.toList.map(h => (h.name.value, h.value))
+          headers = rawReq.headers.toList.map(h => (h.name.toString, h.value))
         )
         mockState.registerRequest(req)
       }
