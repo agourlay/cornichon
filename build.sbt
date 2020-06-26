@@ -20,7 +20,6 @@ def compilerOptions(scalaVersion: String) = Seq(
   "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
   "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
   "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
-  "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
   "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
   "-Xlint:option-implicit",            // Option.apply used implicit view.
   "-Xlint:package-object-classes",     // Class or object defined in package object. (got a macro there)
@@ -57,7 +56,7 @@ lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
-  scalaVersion := "2.13.2",
+  scalaVersion := "2.13.3",
   crossScalaVersions := Seq(scalaVersion.value, "2.12.11"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   fork in Test := true,
