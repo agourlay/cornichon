@@ -54,9 +54,9 @@ object BaseFeature {
   import pureconfig.error.{ ConfigReaderException, ConfigReaderFailures }
 
   lazy val config = ConfigSource.default.at("cornichon").load[Config] match {
-    case Right(v)                                                                           => v
-    case Left(ConfigReaderFailures(ConvertFailure(KeyNotFound("cornichon", _), _, _), Nil)) => Config()
-    case Left(failures)                                                                     => throw new ConfigReaderException[Config](failures)
+    case Right(v)                                                                          => v
+    case Left(ConfigReaderFailures(ConvertFailure(KeyNotFound("cornichon", _), _, _), _*)) => Config()
+    case Left(failures)                                                                    => throw new ConfigReaderException[Config](failures)
   }
 
   private val hooks = new ConcurrentLinkedDeque[() => Future[_]]()
