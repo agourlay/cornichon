@@ -28,7 +28,7 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
       startServerTryPorts(randomPortOrder)
 
   private def startServerTryPorts(ports: List[Int], retry: Int = 0): Task[A] =
-    startBlazeServer(ports.head).onErrorHandleWith {
+    startBlazeServer(ports.head).onErrorRecoverWith {
       case _: java.net.BindException if ports.length > 1 =>
         startServerTryPorts(ports.tail, retry)
       case _: java.net.BindException if retry < maxRetries =>
