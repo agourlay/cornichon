@@ -37,10 +37,21 @@ object CornichonFeatureRunner {
           case None =>
             val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
             val featureRunner = FeatureRunner(feature, baseFeature, seed)
-            val run = featureRunner.runFeature(filterScenarios(scenarioNameFilter))(generateResultEvent(featureInfo, eventHandler)).map { results =>
-              results.foreach(printResultLogs(featureInfo.featureClass))
-              results.forall(_.isSuccess)
-            }
+            val run = featureRunner.runFeature(filterScenarios(scenarioNameFilter))(generateResultEvent(featureInfo, eventHandler))
+              .map { results =>
+                results.foreach(printResultLogs(featureInfo.featureClass))
+                results.forall(_.isSuccess)
+              }.onErrorRecover {
+                case e: Throwable =>
+                  val banner =
+                    s"""
+                       |exception thrown during Feature execution:
+                       |${CornichonError.genStacktrace(e)}
+                       |""".stripMargin
+                  println(FailureLogInstruction(banner, 0).colorized)
+                  eventHandler.handle(failureEventBuilder(featureInfo, e))
+                  false
+              }
             (featureLog, run)
         }
         println(featureLog)
