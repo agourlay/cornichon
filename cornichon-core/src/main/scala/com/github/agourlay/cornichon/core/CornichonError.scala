@@ -59,3 +59,18 @@ case class BasicError(error: String) extends CornichonError {
 case class CornichonException(m: String) extends Exception with NoStackTrace {
   override def getMessage = m
 }
+
+case class BeforeFeatureError(originalError: CornichonError) extends CornichonError {
+  lazy val baseErrorMessage = s"exception thrown when executing the `beforeFeature` hook"
+  override val causedBy: List[CornichonError] = originalError :: Nil
+}
+
+case class AfterFeatureError(originalError: CornichonError) extends CornichonError {
+  lazy val baseErrorMessage = s"exception thrown when executing the `afterFeature` hook"
+  override val causedBy: List[CornichonError] = originalError :: Nil
+}
+
+case class HooksFeatureError(beforeError: CornichonError, afterError: CornichonError) extends CornichonError {
+  lazy val baseErrorMessage = s"exception thrown when executing the feature hooks"
+  override val causedBy: List[CornichonError] = beforeError :: afterError :: Nil
+}
