@@ -14,7 +14,7 @@ import org.http4s.circe._
 import org.http4s.implicits._
 import org.http4s.dsl._
 import org.http4s.server.Router
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.ember.server.EmberServerBuilder
 
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration.FiniteDuration
@@ -127,11 +127,11 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
   )
 
   def start(httpPort: Int): CancelableFuture[HttpServer] =
-    BlazeServerBuilder[Task](executionContext = s)
-      .bindHttp(httpPort, "localhost")
-      .withoutBanner
-      .withNio2(true)
+    EmberServerBuilder.default[Task]
+      .withPort(httpPort)
+      .withHost("localhost")
       .withHttpApp(routes.orNotFound)
+      .build
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
       .runToFuture
