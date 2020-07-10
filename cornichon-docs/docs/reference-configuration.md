@@ -15,6 +15,7 @@ cornichon {
   requestTimeout = 2000 millis
   globalBaseUrl = ""
   executeScenariosInParallel = true
+  scenarioExecutionParallelismFactor = 1
   traceRequests = false 
   warnOnDuplicateHeaders = false
   failOnDuplicateHeaders = false
