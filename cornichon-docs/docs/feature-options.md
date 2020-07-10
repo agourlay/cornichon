@@ -123,6 +123,14 @@ cornichon {
 }
 ```
 
+The actual number of concurrent scenario is controlled via the configuration field `scenarioExecutionParallelismFactor` which defaults to 1.
+
+```
+number of concurrent scenarios = `scenarioExecutionParallelismFactor` * number of CPU + 1
+```
+
+This means using more powerful machines will automatically trigger more scenarios.
+
 To run `features` in parallel it is necessary to manually set a flag in your SBT build file.
 
 ```scala

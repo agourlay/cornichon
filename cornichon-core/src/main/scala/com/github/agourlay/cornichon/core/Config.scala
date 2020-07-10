@@ -7,6 +7,7 @@ import scala.concurrent.duration._
 
 case class Config(
     executeScenariosInParallel: Boolean = true,
+    scenarioExecutionParallelismFactor: Int = 1,
     requestTimeout: FiniteDuration = 2000.millis,
     globalBaseUrl: String = "",
     traceRequests: Boolean = false,

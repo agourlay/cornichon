@@ -43,7 +43,9 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
         case Left((beforeFeatureError, _)) => Task.raiseError(beforeFeatureError.toException)
         case Right(_) =>
           // featureParallelism is limited to avoid spawning too much work at once
-          val featureParallelism = if (baseFeature.executeScenariosInParallel) Math.min(scenariosToRun.size, FeatureRunner.maxParallelism) else 1
+          val featureParallelism = if (baseFeature.executeScenariosInParallel) {
+            baseFeature.config.scenarioExecutionParallelismFactor * FeatureRunner.availaibleProcessors + 1
+          } else 1
           Observable.fromIterable(scenariosToRun)
             .mapParallelUnordered(featureParallelism)(runScenario(_).map(scenarioResultHandler))
             .toListL
@@ -84,7 +86,6 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
 }
 
 object FeatureRunner {
-  // the tests are mostly IO bound so we can start a bit more on a single core
-  lazy val maxParallelism: Int = Runtime.getRuntime.availableProcessors() + 1
+  lazy val availaibleProcessors: Int = Runtime.getRuntime.availableProcessors()
   private val noop = Task.now(Nil)
 }
