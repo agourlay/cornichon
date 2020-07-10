@@ -78,10 +78,8 @@ class Http4sClient(
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  private def toHttp4sHeaders(headers: Seq[(String, String)]): Headers =
-    Headers(
-      headers.iterator.map { case (n, v) => Header(n, v).parsed }.toList
-    )
+  private def toHttp4sHeaders(headers: Seq[(String, String)]): List[Header] =
+    headers.iterator.map { case (n, v) => Header(n, v).parsed }.toList
 
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
     headers.toList.map(h => (h.name.value, h.value))
@@ -101,7 +99,7 @@ class Http4sClient(
       uri => EitherT {
         val req = Request[Task](toHttp4sMethod(cReq.method))
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
-          .withHeaders(toHttp4sHeaders(cReq.headers)) // `withEntity` adds `Content-Type` so we set the headers afterwards to have the possibility to override it
+          .putHeaders(toHttp4sHeaders(cReq.headers): _*) // `withEntity` adds `Content-Type` so we set the headers afterwards to have the possibility to override it
           .withUri(addQueryParams(uri, cReq.params))
         val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
           http4sResp
@@ -132,7 +130,7 @@ class Http4sClient(
       e => EitherT.left[CornichonHttpResponse](Task.now(e)),
       uri => EitherT {
         val req = Request[Task](org.http4s.Method.GET)
-          .withHeaders(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers))
+          .withHeaders(Headers(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers)))
           .withUri(addQueryParams(uri, streamReq.params))
 
         val cornichonResponse = httpClient.run(req).use { http4sResp =>
