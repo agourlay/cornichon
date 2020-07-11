@@ -84,7 +84,7 @@ class Http4sClient(
     )
 
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
-    headers.toList.map(h => (h.name.value, h.value))
+    headers.toList.map(h => (h.name.toString, h.value))
 
   def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
