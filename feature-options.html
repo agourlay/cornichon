@@ -108,6 +108,13 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
+<p>The actual number of concurrent scenario is controlled via the configuration field <code class="highlighter-rouge">scenarioExecutionParallelismFactor</code> which defaults to 1.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>number of concurrent scenarios = `scenarioExecutionParallelismFactor` * number of CPU + 1
+</code></pre></div></div>
+
+<p>This means using more powerful machines will automatically trigger more scenarios.</p>
+
 <p>To run <code class="highlighter-rouge">features</code> in parallel it is necessary to manually set a flag in your SBT build file.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">parallelExecution</span> <span class="n">in</span> <span class="nc">Test</span> <span class="o">:=</span> <span class="kc">true</span>
