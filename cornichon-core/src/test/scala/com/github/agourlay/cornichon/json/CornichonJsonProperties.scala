@@ -29,7 +29,9 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
 
   property("parseJson alphanumeric String") =
     forAll(Gen.alphaNumStr) { s: String =>
-      Claim(parseDslJson(s) == Right(Json.fromString(s)))
+      val parsed = parseDslJson(s)
+      val expectedQuotedParsed = parsed.map(_.spaces2).getOrElse("")
+      Claim(parsed == Right(Json.fromString(s))) && Claim(expectedQuotedParsed == s""""$s"""")
     }
 
   property("parseJson alphanumeric String conserves spaces") =
