@@ -111,7 +111,7 @@ case class DuplicateTransitionsDefinitionForProperty(description: String) extend
 }
 
 case class IncorrectTransitionsWeightDefinitionForProperty(description: String) extends CornichonError {
-  def baseErrorMessage: String = s"Transitions definition from '$description' contains incorrect weight definition (above 100)"
+  def baseErrorMessage: String = s"Transitions definition from '$description' contains incorrect weight definition (less or above 100)"
 }
 
 case class NoTransitionsDefinitionForStartingProperty(description: String) extends CornichonError {

@@ -84,7 +84,7 @@ object CheckModelStepSpec extends TestSuite with CommonTestSuite {
           |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10
           |
           |with error(s):
-          |Transitions definition from 'other property' contains incorrect weight definition (above 100)
+          |Transitions definition from 'other property' contains incorrect weight definition (less or above 100)
           |
           |seed for the run was '1'
           |""".stripMargin
