@@ -7,13 +7,16 @@ import io.circe.Json
 import monix.eval.Task
 import monix.execution.Scheduler
 
-case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range])
+case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range], maxPortBindingRetries: Int)
   extends BlockScopedResource {
 
   implicit val scheduler = Scheduler.Implicits.global
 
+  private val interfaceInfo = interface.fold("")(i => s" on interface `$i`")
+  private val portsInfo = portRange.fold("")(r => s" using a port in range `${r.start}..${r.end}`")
+
   val sessionTarget: String = label
-  val openingTitle: String = s"Starting HTTP mock server '$label'"
+  val openingTitle: String = s"Starting HTTP mock server '$label'$interfaceInfo$portsInfo"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
   def use[A](outsideRunState: RunState)(f: RunState => Task[A]): Task[(Session, A)] = {
@@ -23,7 +26,7 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
     val resourceContext: RunState => Session => RunState = r1 => s1 => r1.mergeSessions(s1)
     val runWithServer = initSession.andThen(resourceContext(outsideRunState)).andThen(f)
 
-    val mockServer = new MockHttpServer(interface, portRange, mockRequestHandler.mockService)(runWithServer)
+    val mockServer = new MockHttpServer(label, interface, portRange, mockRequestHandler.mockService, maxPortBindingRetries)(runWithServer)
 
     mockServer.useServer().map { res =>
       val resourceResults = requestsResults(mockRequestHandler)
@@ -34,8 +37,10 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
   def requestsResults(mockRequestHandler: MockServerRequestHandler): Session = {
     val jsonRequests = mockRequestHandler.fetchRecordedRequestsAsJson()
     Session.newEmpty
-      .addValueUnsafe(s"$sessionTarget$receivedBodiesSuffix", Json.fromValues(jsonRequests).spaces2)
-      .addValueUnsafe(s"$sessionTarget$nbReceivedCallsSuffix", jsonRequests.size.toString)
+      .addValues(
+        s"$sessionTarget$receivedBodiesSuffix" -> Json.fromValues(jsonRequests).spaces2,
+        s"$sessionTarget$nbReceivedCallsSuffix" -> jsonRequests.size.toString)
+      .valueUnsafe
   }
 }
 
