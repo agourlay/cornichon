@@ -2,7 +2,9 @@ package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ GenericEqualityAssertion, GreaterThanAssertion, LessThanAssertion }
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
+import io.circe.Json
 import utest._
 
 object JsonStepsSpec extends TestSuite with CommonTestSuite {
@@ -381,6 +383,125 @@ object JsonStepsSpec extends TestSuite with CommonTestSuite {
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val res = awaitTask(ScenarioRunner.runScenario(session)(s))
       assert(res.isSuccess)
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue Json") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+      val step = jsonStepBuilder.compareWithPreviousValue[Json] { case (prev, current) => GenericEqualityAssertion(prev, current) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue ignore field Json") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myNewValue" }""")
+      val step = jsonStepBuilder.ignoring("myKeyOther").compareWithPreviousValue[Json] { case (prev, current) => GenericEqualityAssertion(prev, current) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue path to String") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myNewValue" }""")
+      val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[String] { case (prev, current) => GenericEqualityAssertion(prev, current, negate = true) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue path String fail") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myNewValue" }""")
+      val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[String] { case (prev, current) => GenericEqualityAssertion(prev, current) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with JsonSteps' failed:
+           |
+           |at step:
+           |compare previous & current value of test body's field 'myKeyOther'
+           |
+           |with error(s):
+           |expected result was:
+           |'myOtherValue'
+           |but actual result is:
+           |'myNewValue'
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue path to Int") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : 1 }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : 2 }""")
+      val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Int] { case (prev, current) => LessThanAssertion(prev, current) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue path to Int fail") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : 1 }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : 2 }""")
+      val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Int] { case (prev, current) => GreaterThanAssertion(prev, current) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with JsonSteps' failed:
+           |
+           |at step:
+           |compare previous & current value of test body's field 'myKeyOther'
+           |
+           |with error(s):
+           |expected '1' to be greater than '2'
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue path to Boolean") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : true }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : true }""")
+      val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Boolean] { case (prev, current) => GenericEqualityAssertion(prev, current) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      assert(res.isSuccess)
+    }
+
+    test("JsonStepBuilder.compareWithPreviousValue path to Boolean fail") {
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : true }""")
+        .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : false }""")
+      val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Boolean] { case (prev, current) => GenericEqualityAssertion(prev, current) }
+      val s = Scenario("scenario with JsonSteps", step :: Nil)
+      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+      scenarioFailsWithMessage(res) {
+        """|Scenario 'scenario with JsonSteps' failed:
+           |
+           |at step:
+           |compare previous & current value of test body's field 'myKeyOther'
+           |
+           |with error(s):
+           |expected result was:
+           |'true'
+           |but actual result is:
+           |'false'
+           |
+           |seed for the run was '1'
+           |""".stripMargin
+      }
     }
 
     test("JsonArrayStepBuilder.is not an array fail") {

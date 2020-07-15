@@ -173,6 +173,14 @@ object SessionProperties extends Properties("Session") {
       }
     }
 
+  property("getMandatoryPrevious fails if the key has only one value") =
+    forAll(keyGen, valueGen) { (key, firstValue) =>
+      val s = Session.newEmpty.addValueUnsafe(key, firstValue)
+      Claim {
+        s.getMandatoryPrevious(key).leftMap(_.renderedMessage) == Left(s"key '$key' does not have previous value in session\n$key -> Values($firstValue)")
+      }
+    }
+
   property("getList error if one of the key does not exist") =
     forAll(keyGen, keyGen, valueGen, valueGen) { (firstKey, secondKey, firstValue, secondValue) =>
       val s2 = Session
@@ -189,6 +197,14 @@ object SessionProperties extends Properties("Session") {
       val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
       Claim {
         s.getPrevious(key) == Right(Some(firstValue))
+      }
+    }
+
+  property("getMandatoryPrevious returns the previous value in session") =
+    forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) =>
+      val s = Session.newEmpty.addValueUnsafe(key, firstValue).addValueUnsafe(key, secondValue)
+      Claim {
+        s.getMandatoryPrevious(key) == Right(firstValue)
       }
     }
 
