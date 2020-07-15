@@ -4,7 +4,7 @@ import cats.instances.string._
 import cats.instances.boolean._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.SessionKey
-import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
+import com.github.agourlay.cornichon.json.JsonSteps.{ JsonStepBuilder, JsonValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, CustomMessageEqualityAssertion, GenericEqualityAssertion }
 
 object SessionSteps {
@@ -32,6 +32,8 @@ object SessionSteps {
         } yield GenericEqualityAssertion(v1, v2, negate = true)
       }
     )
+
+    def asJson: JsonValuesStepBuilder = JsonValuesStepBuilder(k1, k2)
   }
 
   case class SessionStepBuilder(
