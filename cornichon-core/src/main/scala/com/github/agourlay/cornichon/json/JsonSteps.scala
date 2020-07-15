@@ -25,23 +25,39 @@ object JsonSteps {
   case class JsonValuesStepBuilder(
       private val k1: String,
       private val k2: String,
-      private val ignoredKeys: List[String] = Nil
+      private val ignoredKeys: List[String] = Nil,
+      private val jsonPath: String = JsonPath.root
   ) {
 
     def ignoring(ignoring: String*): JsonValuesStepBuilder = copy(ignoredKeys = ignoring.toList)
+    def path(path: String): JsonValuesStepBuilder = copy(jsonPath = path)
 
-    def areEquals = AssertStep(
-      title = jsonAssertionTitleBuilder(s"JSON content of key '$k1' is equal to JSON content of key '$k2'", ignoredKeys),
+    private def areEqualsImpl(negate: Boolean) = AssertStep(
+      title = jsonAssertionTitleBuilder(
+        {
+          val prefix = if (jsonPath == JsonPath.root) s"JSON content" else s"JSON field '$jsonPath'"
+          s"$prefix of key '$k1' is${if (negate) " not " else " "}equal to $prefix of key '$k2'"
+        }, ignoredKeys),
       action = sc => Assertion.either {
         for {
           ignoredPaths <- ignoredKeys.traverse(resolveAndParseJsonPath(_, sc))
-          v1 <- sc.session.getJson(k1).map(removeFieldsByPath(_, ignoredPaths))
-          v2 <- sc.session.getJson(k2).map(removeFieldsByPath(_, ignoredPaths))
-        } yield GenericEqualityAssertion(v1, v2)
+          v1 <- getParseFocusIgnore(k1, sc, ignoredPaths)
+          v2 <- getParseFocusIgnore(k2, sc, ignoredPaths)
+        } yield GenericEqualityAssertion(v1, v2, negate)
       }
     )
+
+    def areEquals = areEqualsImpl(negate = false)
+    def areNotEquals = areEqualsImpl(negate = true)
+
+    private def getParseFocusIgnore(k: String, context: ScenarioContext, ignoredPaths: Seq[JsonPath]): Either[CornichonError, Json] =
+      for {
+        v <- context.session.get(k)
+        vFocus <- resolveRunMandatoryJsonPath(jsonPath, v, context)
+      } yield removeFieldsByPath(vFocus, ignoredPaths)
   }
 
+  // TODO add support for comparison with previous value (decoding to specific type)
   case class JsonStepBuilder(
       private val sessionKey: SessionKey,
       private val prettySessionKeyTitle: Option[String] = None,
