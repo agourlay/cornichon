@@ -13,7 +13,7 @@ object SessionSteps {
       private val k1: String,
       private val k2: String) {
 
-    def areEquals = AssertStep(
+    def areEquals: AssertStep = AssertStep(
       title = s"content of session key '$k1' is equal to content of key '$k2'",
       action = sc => Assertion.either {
         for {
@@ -23,7 +23,7 @@ object SessionSteps {
       }
     )
 
-    def areNotEquals = AssertStep(
+    def areNotEquals: AssertStep = AssertStep(
       title = s"content of session key '$k1' is not equal to content of key '$k2'",
       action = sc => Assertion.either {
         for {
@@ -55,7 +55,7 @@ object SessionSteps {
       }
     )
 
-    def isPresent = AssertStep(
+    def isPresent: AssertStep = AssertStep(
       title = s"session contains key '$key'",
       action = sc => {
         val predicate = sc.session.getOpt(key, index).isDefined
@@ -63,7 +63,7 @@ object SessionSteps {
       }
     )
 
-    def isAbsent = AssertStep(
+    def isAbsent: AssertStep = AssertStep(
       title = s"session does not contain key '$key'",
       action = sc =>
         sc.session.getOpt(key, index) match {
@@ -72,7 +72,7 @@ object SessionSteps {
         }
     )
 
-    def hasEqualCurrentAndPreviousValues = AssertStep(
+    def hasEqualCurrentAndPreviousValues: AssertStep = AssertStep(
       title = s"session key '$key' has equal current and previous values",
       action = sc => Assertion.either {
         for {
@@ -85,7 +85,7 @@ object SessionSteps {
       }
     )
 
-    def hasDifferentCurrentAndPreviousValues = AssertStep(
+    def hasDifferentCurrentAndPreviousValues: AssertStep = AssertStep(
       title = s"session key '$key' has different current and previous values",
       action = sc => Assertion.either {
         for {
@@ -98,7 +98,21 @@ object SessionSteps {
       }
     )
 
-    def asJson = JsonStepBuilder(SessionKey(key))
+    // (previousValue, currentValue) => Assertion
+    def compareWithPreviousValue(comp: (String, String) => Assertion): AssertStep = AssertStep(
+      title = s"compare previous & current value of session key '$key'",
+      action = sc => Assertion.either {
+        for {
+          current <- sc.session.get(key)
+          previous <- sc.session.getPrevious(key)
+        } yield previous match {
+          case None                => Assertion.failWith(s"no previous value available to compare to current $current")
+          case Some(previousValue) => comp(previousValue, current)
+        }
+      }
+    )
+
+    def asJson: JsonStepBuilder = JsonStepBuilder(SessionKey(key))
 
   }
 
