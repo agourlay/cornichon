@@ -14,7 +14,12 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.util.Random
 
-class MockHttpServer[A](interface: Option[String], port: Option[Range], mockService: HttpRoutes[Task], maxRetries: Int = 5)(useFromAddress: String => Task[A])(implicit scheduler: Scheduler) {
+class MockHttpServer[A](
+    label: String,
+    interface: Option[String],
+    port: Option[Range],
+    mockService: HttpRoutes[Task],
+    maxPortBindingRetries: Int)(useFromAddress: String => Task[A])(implicit scheduler: Scheduler) {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r => Random.shuffle(r.toList))
@@ -31,10 +36,12 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
     startBlazeServer(ports.head).onErrorRecoverWith {
       case _: java.net.BindException if ports.length > 1 =>
         startServerTryPorts(ports.tail, retry)
-      case _: java.net.BindException if retry < maxRetries =>
+      case _: java.net.BindException if retry < maxPortBindingRetries =>
         val sleepFor = retry + 1
-        println(s"Could not start server on any port. Retrying in $sleepFor seconds...")
+        println(s"Could not start server `$label` on any of the provided port(s) on interface $selectedInterface. Retrying in $sleepFor seconds...")
         startServerTryPorts(randomPortOrder, retry = retry + 1).delayExecution(sleepFor.seconds)
+      case e: java.net.BindException if retry == maxPortBindingRetries =>
+        Task.raiseError(MockHttpServerStartError(e, label, maxPortBindingRetries, selectedInterface).toException)
     }
 
   private def startBlazeServer(port: Int): Task[A] =
@@ -57,4 +64,9 @@ class MockHttpServer[A](interface: Option[String], port: Option[Range], mockServ
 
 case object MockHttpServerError extends CornichonError {
   val baseErrorMessage = "the range of ports provided for the HTTP mock is invalid"
+}
+
+case class MockHttpServerStartError(e: Exception, label: String, maxPortBindingRetries: Int, interface: String) extends CornichonError {
+  val baseErrorMessage = s"HTTP server mock `$label` did not start properly after $maxPortBindingRetries port binding delayed retries on interface $interface"
+  override val causedBy: List[CornichonError] = CornichonError.fromThrowable(e) :: Nil
 }

@@ -10,9 +10,9 @@ trait HttpMockDsl {
 
   def httpListen(label: String) = HttpListenStepBuilder(label)
 
-  def HttpListenTo(interface: Option[String], portRange: Option[Range])(label: String): BodyElementCollector[Step, Step] =
+  def HttpListenTo(interface: Option[String], portRange: Option[Range], maxPortBindingRetries: Int = 5)(label: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps =>
-      WithBlockScopedResource(nested = steps, resource = HttpMockServerResource(interface, label, portRange))
+      WithBlockScopedResource(nested = steps, resource = HttpMockServerResource(interface, label, portRange, maxPortBindingRetries))
     }
 
 }
