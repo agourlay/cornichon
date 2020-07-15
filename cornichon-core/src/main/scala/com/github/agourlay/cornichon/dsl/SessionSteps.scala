@@ -77,11 +77,8 @@ object SessionSteps {
       action = sc => Assertion.either {
         for {
           current <- sc.session.get(key)
-          previous <- sc.session.getPrevious(key)
-        } yield previous match {
-          case None                => Assertion.failWith(s"no previous value available to compare to current $current")
-          case Some(previousValue) => GenericEqualityAssertion(current, previousValue)
-        }
+          previous <- sc.session.getMandatoryPrevious(key)
+        } yield GenericEqualityAssertion(current, previous)
       }
     )
 
@@ -90,11 +87,8 @@ object SessionSteps {
       action = sc => Assertion.either {
         for {
           current <- sc.session.get(key)
-          previous <- sc.session.getPrevious(key)
-        } yield previous match {
-          case None                => Assertion.failWith(s"no previous value available to compare to current $current")
-          case Some(previousValue) => GenericEqualityAssertion(current, previousValue, negate = true)
-        }
+          previous <- sc.session.getMandatoryPrevious(key)
+        } yield GenericEqualityAssertion(current, previous, negate = true)
       }
     )
 
@@ -104,11 +98,8 @@ object SessionSteps {
       action = sc => Assertion.either {
         for {
           current <- sc.session.get(key)
-          previous <- sc.session.getPrevious(key)
-        } yield previous match {
-          case None                => Assertion.failWith(s"no previous value available to compare to current $current")
-          case Some(previousValue) => comp(previousValue, current)
-        }
+          previous <- sc.session.getMandatoryPrevious(key)
+        } yield comp(previous, current)
       }
     )
 

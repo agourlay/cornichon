@@ -41,8 +41,9 @@ object JsonSteps {
       action = sc => Assertion.either {
         for {
           ignoredPaths <- ignoredKeys.traverse(resolveAndParseJsonPath(_, sc))
-          v1 <- getParseFocusIgnore(k1, sc, ignoredPaths)
-          v2 <- getParseFocusIgnore(k2, sc, ignoredPaths)
+          jsonPathFocus <- resolveAndParseJsonPath(jsonPath, sc)
+          v1 <- getParseFocusIgnore(k1, sc, ignoredPaths, jsonPathFocus)
+          v2 <- getParseFocusIgnore(k2, sc, ignoredPaths, jsonPathFocus)
         } yield GenericEqualityAssertion(v1, v2, negate)
       }
     )
@@ -50,14 +51,13 @@ object JsonSteps {
     def areEquals = areEqualsImpl(negate = false)
     def areNotEquals = areEqualsImpl(negate = true)
 
-    private def getParseFocusIgnore(k: String, context: ScenarioContext, ignoredPaths: Seq[JsonPath]): Either[CornichonError, Json] =
+    private def getParseFocusIgnore(k: String, context: ScenarioContext, ignoredPaths: Seq[JsonPath], jsonPath: JsonPath): Either[CornichonError, Json] =
       for {
         v <- context.session.get(k)
-        vFocus <- resolveRunMandatoryJsonPath(jsonPath, v, context)
+        vFocus <- jsonPath.runStrict(v)
       } yield removeFieldsByPath(vFocus, ignoredPaths)
   }
 
-  // TODO add support for comparison with previous value (decoding to specific type)
   case class JsonStepBuilder(
       private val sessionKey: SessionKey,
       private val prettySessionKeyTitle: Option[String] = None,
@@ -249,6 +249,31 @@ object JsonSteps {
         }
       )
     }
+
+    // (previousValue, currentValue) => Assertion
+    def compareWithPreviousValue[A: Show: Decoder](comp: (A, A) => Assertion): AssertStep = {
+      val baseTitle = s"compare previous & current value of ${if (jsonPath == JsonPath.root) s"$target content" else s"$target's field '$jsonPath'"}"
+      AssertStep(
+        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        action = sc => Assertion.either {
+          for {
+            ignoredPaths <- ignoredKeys.traverse(resolveAndParseJsonPath(_, sc))
+            jsonPathFocus <- resolveAndParseJsonPath(jsonPath, sc)
+            current <- sc.session.get(sessionKey)
+            previous <- sc.session.getMandatoryPrevious(sessionKey.name)
+            subCurrentTyped <- focusIgnoreDecode(current, jsonPathFocus, ignoredPaths)
+            subPreviousTyped <- focusIgnoreDecode(previous, jsonPathFocus, ignoredPaths)
+          } yield comp(subPreviousTyped, subCurrentTyped)
+        }
+      )
+    }
+
+    private def focusIgnoreDecode[A: Decoder](v: String, jsonPath: JsonPath, ignoredPaths: Seq[JsonPath]): Either[CornichonError, A] =
+      for {
+        subJson <- jsonPath.runStrict(v)
+        subIgnoredJson = removeFieldsByPath(subJson, ignoredPaths)
+        subCurrentTyped <- decodeAs[A](subIgnoredJson)
+      } yield subCurrentTyped
 
     // unordered by default
     def asArray: JsonArrayStepBuilder =

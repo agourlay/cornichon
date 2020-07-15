@@ -61,6 +61,13 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       value <- values.lift(index).asRight
     } yield value
 
+  def getMandatoryPrevious(key: String): Either[CornichonError, String] =
+    for {
+      values <- content.get(key).toRight(KeyNotFoundInSession(key, this))
+      index = values.size - 2
+      value <- values.lift(index).toRight(KeyWithoutPreviousValue(key, this))
+    } yield value
+
   // Not returning the same key wrapped to avoid allocations
   private def validateKey(key: String): Either[CornichonError, Done] =
     knownKeysCache.get(key, key => {
@@ -179,4 +186,8 @@ case class IllegalKey(key: String) extends CornichonError {
 case class IndexNotFoundForKey(key: String, index: Int, values: Vector[String]) extends CornichonError {
   lazy val baseErrorMessage = s"index '$index' not found for key '$key' with values \n" +
     s"${values.iterator.zipWithIndex.map { case (v, i) => s"$i -> $v" }.mkString("\n")}"
+}
+
+case class KeyWithoutPreviousValue(key: String, s: Session) extends CornichonError {
+  lazy val baseErrorMessage = s"key '$key' does not have previous value in session\n${s.show}"
 }
