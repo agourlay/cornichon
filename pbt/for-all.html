@@ -1,0 +1,110 @@
+<!DOCTYPE html><html><head><title>Cornichon: ForAll</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Arnaud Gourlay" /><meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="og:image" content="/cornichon/img/poster.png" /><meta name="image" property="og:image" content="/cornichon/img/poster.png" /><meta name="og:title" content="Cornichon: ForAll" /><meta name="title" property="og:title" content="Cornichon: ForAll" /><meta name="og:site_name" content="Cornichon" /><meta name="og:url" content="http://agourlay.github.io/cornichon/" /><meta name="og:type" content="website" /><meta name="og:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><link rel="icon" type="image/png" href="/cornichon/img/favicon.png" /><meta name="twitter:title" content="Cornichon: ForAll" /><meta name="twitter:image" content="/cornichon/img/poster.png" /><meta name="twitter:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/cornichon/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/cornichon/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/cornichon/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/cornichon/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/cornichon/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/cornichon/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/cornichon/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/cornichon/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/cornichon/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/cornichon/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/cornichon/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/cornichon/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/cornichon/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/cornichon/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/cornichon/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/cornichon/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/cornichon/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/cornichon/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/cornichon/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/cornichon/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/cornichon/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/cornichon/css/pattern-style.css" /><link rel="stylesheet" href="/cornichon/css/override.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/cornichon/" class="brand"><div class="brand-wrapper"><span>Cornichon</span></div></a></li> <li><a href="/cornichon/installation.html" class="">Installation</a></li> <li><a href="/cornichon/basics.html" class="">Basics</a></li> <li><a href="/cornichon/dsl.html" class="">DSL</a></li> <li><a href="/cornichon/custom-steps.html" class="">Custom steps</a> <ul class="sub-section"> <li><a href="/cornichon/custom-steps/effect-step.html" class="">Effect step</a></li> <li><a href="/cornichon/custom-steps/assert-step.html" class="">Assert step</a></li> <li><a href="/cornichon/custom-steps/resource-step.html" class="">Resource step</a></li></ul></li> <li><a href="/cornichon/placeholders.html" class="">Placeholders</a></li> <li><a href="/cornichon/json-matchers.html" class="">JSON matchers</a></li> <li><a href="/cornichon/feature-options.html" class="">Feature options</a></li> <li><a href="/cornichon/reference-configuration.html" class="">Reference configuration</a></li> <li><a href="/cornichon/property-based-testing.html" class="">Property based testing</a> <ul class="sub-section"> <li><a href="/cornichon/pbt/generators.html" class="">Generators</a></li> <li><a href="/cornichon/pbt/for-all.html" class="">For all</a></li> <li><a href="/cornichon/modules/random-model-exploration.html" class="">Random model exploration</a></li></ul></li> <li><a href="/cornichon/misc.html" class="">Misc.</a></li> <li><a href="/cornichon/modules.html" class="">Modules</a> <ul class="sub-section"> <li><a href="/cornichon/modules/module-mock.html" class="">HTTP mock</a></li> <li><a href="/cornichon/modules/module-kafka.html" class="">Kafka integration</a></li></ul></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/agourlay/cornichon" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="agourlay" data-github-repo="cornichon"><div class="content-wrapper"><section><h1 id="forall">ForAll</h1>
+
+<p>The first flavour follows the classical approach found in many testing libraries. That is, for any values from a set of generators, we will validate that a given invariant holds.</p>
+
+<p>Here is the <code class="highlighter-rouge">API</code> available when using a single <code class="highlighter-rouge">generator</code></p>
+
+<p><code class="highlighter-rouge">def for_all[A](description: String, ga: RandomContext ⇒ Generator[A])(f: A ⇒ Step): Step</code></p>
+
+<p>Let’s look at an example to see how to use it!</p>
+
+<p>We want to enforce the following invariant <code class="highlighter-rouge">for any string, if we reverse it twice, it should yield the same value</code>.</p>
+
+<p>The implementation under test is a server accepting <code class="highlighter-rouge">POST</code> requests to <code class="highlighter-rouge">/double-reverse</code> with a query param named <code class="highlighter-rouge">word</code> will return the given <code class="highlighter-rouge">word</code> reversed twice.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.core._</span>
+<span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
+
+<span class="k">class</span> <span class="nc">StringReverseCheck</span> <span class="k">extends</span> <span class="nc">CornichonFeature</span> <span class="o">{</span>
+
+  <span class="k">def</span> <span class="nf">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Basic examples of checks"</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="nc">Scenario</span><span class="o">(</span><span class="s">"reverse a string twice yields the same results"</span><span class="o">)</span> <span class="o">{</span>
+
+      <span class="nc">Given</span> <span class="n">check</span> <span class="nf">for_all</span><span class="o">(</span><span class="s">"reversing twice a string yields the same result"</span><span class="o">,</span> <span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">5</span><span class="o">,</span> <span class="n">stringGen</span><span class="o">)</span> <span class="o">{</span> <span class="n">randomString</span> <span class="k">=&gt;</span>
+        <span class="nc">Attach</span> <span class="o">{</span>
+          <span class="nc">Given</span> <span class="n">I</span> <span class="nf">post</span><span class="o">(</span><span class="s">"/double-reverse"</span><span class="o">).</span><span class="py">withParams</span><span class="o">(</span><span class="s">"word"</span> <span class="o">-&gt;</span> <span class="n">randomString</span><span class="o">)</span>
+          <span class="nc">Then</span> <span class="n">assert</span> <span class="nv">status</span><span class="o">.</span><span class="py">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
+          <span class="nc">Then</span> <span class="n">assert</span> <span class="nv">body</span><span class="o">.</span><span class="py">is</span><span class="o">(</span><span class="n">randomString</span><span class="o">)</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="nf">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
+    <span class="n">name</span> <span class="k">=</span> <span class="s">"alphanumeric String (20)"</span><span class="o">,</span>
+    <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">=&gt;</span> <span class="nv">rc</span><span class="o">.</span><span class="py">alphanumeric</span><span class="o">(</span><span class="mi">20</span><span class="o">))</span>
+  <span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>To understand what is going on, we can have a look at the logs produced by this scenario.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'reverse a string twice yields the same results'
+- reverse a string twice yields the same results (1848 millis)
+
+   Scenario : reverse a string twice yields the same results
+      main steps
+      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' with maxNumberOfRuns=5 and seed=1542985803071
+         Run #0
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'vtKxhkCJaVlAOzhdSCwD' (1257 millis)
+            Then assert status is '200' (7 millis)
+            Then assert response body is vtKxhkCJaVlAOzhdSCwD (32 millis)
+         Run #0
+         Run #1
+            Given I POST /double-reverse with query parameters 'word' -&gt; '1bmmb2urTfJy59J2gGtI' (5 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is 1bmmb2urTfJy59J2gGtI (0 millis)
+         Run #1
+         Run #2
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'Fg3Dzp61as7Pkvvj49ub' (5 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is Fg3Dzp61as7Pkvvj49ub (0 millis)
+         Run #2
+         Run #3
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'bDLbxzMjMgVUP1iRLu4c' (5 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is bDLbxzMjMgVUP1iRLu4c (0 millis)
+         Run #3
+         Run #4
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'byV6Azexsl1AcdatquSJ' (5 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is byV6Azexsl1AcdatquSJ (0 millis)
+         Run #4
+         Run #5
+            Given I POST /double-reverse with query parameters 'word' -&gt; 'pKGqRrbjUV7oMaPJzTJS' (4 millis)
+            Then assert status is '200' (0 millis)
+            Then assert response body is pKGqRrbjUV7oMaPJzTJS (0 millis)
+         Run #5
+      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' block succeeded (1846 millis)
+</code></pre></div></div>
+
+<p>The logs show that:</p>
+
+<ul>
+  <li>the string generator has been called for each run</li>
+  <li>no invariants have been broken</li>
+</ul>
+
+<p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/stringReverse">here</a>.</p>
+
+<p>More often than not, using <code class="highlighter-rouge">forAll</code> is enough to cover the most common use cases. But sometimes we not only want to have random values generated but also random interactions with the system under tests.</p>
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script>
+// For all code blocks, copy the language from the containing div
+// to the inner code tag (where hljs expects it to be)
+const langPrefix = 'language-';
+document.querySelectorAll(`div[class^='${langPrefix}']`).forEach(function(div) {
+  div.classList.forEach(function(cssClass) {
+    if (cssClass.startsWith(langPrefix)) {
+      const lang = cssClass.substring(langPrefix.length);
+      div.querySelectorAll('pre code').forEach(function(code) {
+        code.classList.add(lang);
+      });
+    }
+  });
+});
+
+hljs.configure({languages:['scala','java','bash']});
+hljs.initHighlightingOnLoad();
+      </script><script>console.info('\x57\x65\x62\x73\x69\x74\x65\x20\x62\x75\x69\x6c\x74\x20\x77\x69\x74\x68\x3a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x5f\x5f\x0a\x20\x20\x20\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x5f\x20\x20\x2f\x20\x2f\x5f\x20\x20\x20\x20\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x5f\x5f\x20\x20\x28\x5f\x29\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x28\x5f\x29\x20\x2f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x60\x5f\x5f\x20\x5c\x2f\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x20\x2f\x20\x5f\x5f\x2f\x20\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x0a\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x5f\x2f\x20\x2f\x20\x2f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x5f\x5f\x2f\x20\x2f\x20\x20\x2f\x20\x2f\x5f\x2f\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x20\x2f\x5f\x2f\x20\x20\x5f\x5f\x28\x5f\x5f\x20\x20\x29\x0a\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2e\x5f\x5f\x5f\x2f\x5c\x5f\x5f\x2f\x20\x20\x20\x20\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x2f\x20\x20\x20\x5c\x5f\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x0a\x0a\x68\x74\x74\x70\x73\x3a\x2f\x2f\x34\x37\x64\x65\x67\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x73\x62\x74\x2d\x6d\x69\x63\x72\x6f\x73\x69\x74\x65\x73')</script><script>((window.gitter = {}).chat = {}).options = {
+room: 'agourlay/cornichon'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/cornichon/js/main.js"></script></body></html>
