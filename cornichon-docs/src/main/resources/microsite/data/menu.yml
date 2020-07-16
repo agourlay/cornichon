@@ -48,7 +48,7 @@ options:
         url: pbt/for-all.html
         menu_section: property-based-testing
       - title: Random model exploration
-        url: modules/random-model-exploration.html
+        url: pbt/random-model-exploration.html
         menu_section: property-based-testing
 
   - title: Misc.
