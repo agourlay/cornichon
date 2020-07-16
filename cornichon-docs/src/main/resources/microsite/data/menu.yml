@@ -38,6 +38,18 @@ options:
 
   - title: Property based testing
     url: property-based-testing.html
+    menu_section: property-based-testing
+
+    nested_options:
+      - title: Generators
+        url: pbt/generators.html
+        menu_section: property-based-testing
+      - title: For all
+        url: pbt/for-all.html
+        menu_section: property-based-testing
+      - title: Random model exploration
+        url: modules/random-model-exploration.html
+        menu_section: property-based-testing
 
   - title: Misc.
     url: misc.html
