@@ -48,8 +48,8 @@ object JsonSteps {
       }
     )
 
-    def areEquals = areEqualsImpl(negate = false)
-    def areNotEquals = areEqualsImpl(negate = true)
+    def areEquals: AssertStep = areEqualsImpl(negate = false)
+    def areNotEquals: AssertStep = areEqualsImpl(negate = true)
 
     private def getParseFocusIgnore(k: String, context: ScenarioContext, ignoredPaths: Seq[JsonPath], jsonPath: JsonPath): Either[CornichonError, Json] =
       for {
@@ -297,7 +297,7 @@ object JsonSteps {
 
     def ignoringEach(ignoringEach: String*): JsonArrayStepBuilder = copy(ignoredEachKeys = ignoringEach.toList)
 
-    def isNotEmpty = AssertStep(
+    def isNotEmpty: AssertStep = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is not empty" else s"$target's array '$jsonPath' size is not empty",
       action = sc => Assertion.either {
         for {
@@ -319,7 +319,7 @@ object JsonSteps {
         } yield (elements.size, Some(() => Json.fromValues(elements).show))
     }
 
-    def hasSize(expectedSize: Int) = AssertStep(
+    def hasSize(expectedSize: Int): AssertStep = AssertStep(
       title = if (jsonPath == JsonPath.root) s"$target array size is '$expectedSize'" else s"$target's array '$jsonPath' size is '$expectedSize'",
       action = sc => Assertion.either {
         for {
