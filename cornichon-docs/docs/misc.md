@@ -6,7 +6,7 @@ position: 10
 
 # Custom HTTP body type
 
-By default the HTTP DSL expects a String body but in some cases you might want to work at a higher level of abstraction.
+By default, the HTTP DSL expects a String body but in some cases you might want to work at a higher level of abstraction.
 
 In order to use a custom type as body, it is necessary to provide 3 typeclass instances:
 

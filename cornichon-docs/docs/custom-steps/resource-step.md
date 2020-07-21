@@ -6,7 +6,7 @@ title:  "Resource steps"
 # ScenarioResourceStep
 
 
-A `ScenarioResourceStep` is a way to acquire a resource / create some state and make sure that it gets
+A `ScenarioResourceStep` is a way to acquire a resource / create some state and make sure it gets
 released / cleaned up at the end of the `Scenario` even if normal control flow is interrupted
 (by an error or a failed assertion for example).
 
@@ -35,7 +35,7 @@ def setup_some_fixture_data() = ScenarioResourceStep(
 )
 ```
 
-we can be sure that the `clean up data` step runs regardless of what happens after `insert data`.
+we can be sure the `clean up data` step runs regardless of what happens after `insert data`.
 
 Multiple `SenarioResourceStep`s are allowed in a `Scenario`. In this case, the `release` `Step`
 of the last `ScenarioResourceStep` is run first and we proceed up the `Scenario`.

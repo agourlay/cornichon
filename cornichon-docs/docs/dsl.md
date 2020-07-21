@@ -424,7 +424,7 @@ RepeatConcurrently(times = 10, parallel = 3, maxTime = 10 seconds) {
 }
 ```
 
-- execute a each step in parallel and wait 'maxTime' for completion.
+- execute each step in parallel and wait 'maxTime' for completion.
 
 ```scala
 Concurrently(maxTime = 10 seconds) {
@@ -465,7 +465,7 @@ def a_plus_b_equals_c =
   AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.getUnsafe("a").toInt + s.getUnsafe("b").toInt, s.getUnsafe("c").toInt))
 ```
 
-- WithHeaders automatically sets headers for several steps useful for authenticated scenario.
+- WithHeaders automatically sets headers for several steps useful for an authenticated scenario.
 
 ```scala
 WithHeaders(("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")){
@@ -487,9 +487,9 @@ WithBasicAuth("admin", "root"){
 
 This feature is defined the module `cornichon-http-mock` and requires to extend the trait `HttpMockDsl`.
 
-By default this server responds with 201 to any POST request and 200 for all the rest.
+By default, this server responds with 201 to any POST request and 200 for all the rest.
 
-Additionally it provides three administrations features:
+Additionally, it provides three administrations features:
 - fetching recorded received requests
 - resetting recorded received requests
 - toggling on/off the error mode to return HTTP 500 to incoming requests
@@ -504,7 +504,7 @@ This feature is experimental and subject to changes.
 
 - Log duration
 
-By default all `Step` execution time can be found in the logs, but sometimes one needs to time a series of steps.
+By default, all `Step` execution time can be found in the logs, but sometimes one needs to time a series of steps.
 
 This is where `LogDuration` comes in handy, it requires a label that will be printed as well to identify results.
 
