@@ -67,7 +67,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
     val it = baseFeature.beforeFeature.toList.iterator
     while (it.hasNext && error.isEmpty) {
       val f = it.next()
-      CornichonError.catchThrowable((f())) match {
+      CornichonError.catchThrowable(f()) match {
         case Left(e)  => error = Some(BeforeFeatureError(e))
         case Right(_) => successRun = successRun + 1
       }
