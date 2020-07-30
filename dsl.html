@@ -422,7 +422,7 @@
 </code></pre></div></div>
 
 <ul>
-  <li>execute a each step in parallel and wait ‘maxTime’ for completion.</li>
+  <li>execute each step in parallel and wait ‘maxTime’ for completion.</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Concurrently</span><span class="o">(</span><span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
@@ -465,7 +465,7 @@
 </code></pre></div></div>
 
 <ul>
-  <li>WithHeaders automatically sets headers for several steps useful for authenticated scenario.</li>
+  <li>WithHeaders automatically sets headers for several steps useful for an authenticated scenario.</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">WithHeaders</span><span class="o">((</span><span class="s">"Authorization"</span><span class="o">,</span> <span class="s">"Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="</span><span class="o">)){</span>
@@ -490,9 +490,9 @@
 
 <p>This feature is defined the module <code class="highlighter-rouge">cornichon-http-mock</code> and requires to extend the trait <code class="highlighter-rouge">HttpMockDsl</code>.</p>
 
-<p>By default this server responds with 201 to any POST request and 200 for all the rest.</p>
+<p>By default, this server responds with 201 to any POST request and 200 for all the rest.</p>
 
-<p>Additionally it provides three administrations features:</p>
+<p>Additionally, it provides three administrations features:</p>
 <ul>
   <li>fetching recorded received requests</li>
   <li>resetting recorded received requests</li>
@@ -511,7 +511,7 @@
   <li>Log duration</li>
 </ul>
 
-<p>By default all <code class="highlighter-rouge">Step</code> execution time can be found in the logs, but sometimes one needs to time a series of steps.</p>
+<p>By default, all <code class="highlighter-rouge">Step</code> execution time can be found in the logs, but sometimes one needs to time a series of steps.</p>
 
 <p>This is where <code class="highlighter-rouge">LogDuration</code> comes in handy, it requires a label that will be printed as well to identify results.</p>
 
