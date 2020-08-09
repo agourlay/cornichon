@@ -274,7 +274,7 @@ lazy val library =
   new {
     object Version {
       val claimant      = "0.1.3"
-      val scalaTest     = "3.2.0"
+      val scalaTest     = "3.2.1"
       val utest         = "0.7.4"
       val cats          = "2.1.1"
       val parboiled     = "2.2.0"
@@ -287,9 +287,9 @@ lazy val library =
       val pureConfig    = "0.13.0"
       val monix         = "3.2.2"
       val sbtTest       = "1.0"
-      val http4s        = "0.21.6"
-      val embeddedKafka = "2.6.0"
-      val kafkaClient   = "2.6.0"
+      val http4s        = "0.21.7"
+      val embeddedKafka = "2.5.0"
+      val kafkaClient   = "2.5.0"
       val caffeine      = "2.8.5"
       val openPojo      = "0.8.13"
       val decline       = "1.2.0"
