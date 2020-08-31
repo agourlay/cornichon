@@ -292,7 +292,7 @@ lazy val library =
       val kafkaClient   = "2.5.1"
       val caffeine      = "2.8.5"
       val openPojo      = "0.8.13"
-      val decline       = "1.2.0"
+      val decline       = "1.3.0"
       val scalaXml      = "2.0.0-M1"
     }
     val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
