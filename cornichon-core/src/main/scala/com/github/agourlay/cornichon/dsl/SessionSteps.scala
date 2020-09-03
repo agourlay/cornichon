@@ -1,7 +1,4 @@
 package com.github.agourlay.cornichon.dsl
-
-import cats.instances.string._
-import cats.instances.boolean._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps.{ JsonStepBuilder, JsonValuesStepBuilder }

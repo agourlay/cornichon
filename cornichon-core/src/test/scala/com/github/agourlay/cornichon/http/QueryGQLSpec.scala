@@ -1,6 +1,4 @@
 package com.github.agourlay.cornichon.http
-
-import cats.implicits._
 import io.circe.Json
 import utest._
 

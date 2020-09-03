@@ -4,7 +4,6 @@ import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
-import cats.instances.string._
 
 case class KafkaStepBuilder(sessionKey: String) {
   def topic_is(expected: String) = AssertStep(

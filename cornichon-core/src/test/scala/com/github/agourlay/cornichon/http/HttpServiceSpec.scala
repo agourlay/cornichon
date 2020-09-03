@@ -1,6 +1,4 @@
 package com.github.agourlay.cornichon.http
-
-import cats.instances.string._
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.HttpMethods.GET

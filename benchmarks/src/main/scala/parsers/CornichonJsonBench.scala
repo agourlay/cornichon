@@ -1,6 +1,4 @@
 package parsers
-
-import cats.instances.string._
 import com.github.agourlay.cornichon.json.CornichonJson
 import org.openjdk.jmh.annotations.{ Benchmark, BenchmarkMode, Fork, Measurement, Mode, Scope, State, Warmup }
 

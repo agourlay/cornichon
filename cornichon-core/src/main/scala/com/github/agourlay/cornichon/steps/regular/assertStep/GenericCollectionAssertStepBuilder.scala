@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.{ Eq, Order, Show }
-import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ CornichonError, ScenarioContext }
 
 //experimental and unused ;)

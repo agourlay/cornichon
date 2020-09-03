@@ -4,8 +4,6 @@ import cats.Show
 import cats.syntax.either._
 import cats.syntax.show._
 import cats.syntax.traverse._
-import cats.instances.list._
-import cats.instances.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.cats.EffectStep

@@ -3,8 +3,6 @@ package com.github.agourlay.cornichon.core
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ GenericEqualityAssertion, LessThanAssertion }
 import com.github.agourlay.cornichon.testHelpers.TaskSpec
-import cats.instances.string._
-import cats.instances.int._
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Properties
 import org.typelevel.claimant.Claim

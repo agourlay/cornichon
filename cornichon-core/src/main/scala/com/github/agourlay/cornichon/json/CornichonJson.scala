@@ -3,11 +3,7 @@ package com.github.agourlay.cornichon.json
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-import cats.instances.string._
 import cats.syntax.traverse._
-import cats.instances.list._
-import cats.instances.either._
-import cats.instances.try_._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import diffson._

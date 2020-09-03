@@ -1,6 +1,4 @@
 package com.github.agourlay.cornichon.http.steps
-
-import cats.instances.int._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder

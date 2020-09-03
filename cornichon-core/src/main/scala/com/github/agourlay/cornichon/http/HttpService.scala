@@ -5,10 +5,6 @@ import cats.data.EitherT
 import cats.syntax.traverse._
 import cats.syntax.show._
 import cats.syntax.either._
-import cats.instances.int._
-import cats.instances.list._
-import cats.instances.either._
-import cats.instances.string._
 import org.http4s.circe._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient

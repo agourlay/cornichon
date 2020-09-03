@@ -1,6 +1,4 @@
 package com.github.agourlay.cornichon.http.server
-
-import cats.instances.string._
 import cats.syntax.either._
 
 import com.github.agourlay.cornichon.core.{ CornichonException, Done }

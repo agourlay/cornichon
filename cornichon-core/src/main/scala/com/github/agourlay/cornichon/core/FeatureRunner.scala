@@ -4,8 +4,6 @@ import com.github.agourlay.cornichon.dsl.BaseFeature
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import monix.eval.Task
 import monix.reactive.Observable
-import cats.instances.list._
-import cats.instances.either._
 import cats.syntax.traverse._
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, explicitSeed: Option[Long]) {

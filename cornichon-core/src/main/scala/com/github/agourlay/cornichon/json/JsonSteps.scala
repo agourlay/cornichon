@@ -4,12 +4,6 @@ import cats.{ Order, Show }
 import cats.syntax.show._
 import cats.syntax.either._
 import cats.syntax.traverse._
-import cats.instances.boolean._
-import cats.instances.int._
-import cats.instances.vector._
-import cats.instances.list._
-import cats.instances.either._
-import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done, ScenarioContext, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.Resolvable
