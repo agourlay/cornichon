@@ -41,6 +41,8 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
         singleExpressionList(app, elementType)(typesTreesFn)
       case s @ Select(_, _) =>
         singleExpressionList(s, elementType)(typesTreesFn)
+      case l: Ident =>
+        singleExpressionList(l, elementType)(typesTreesFn)
       case e =>
         val unsupportedMessage = s"Unsupported expression. Only expressions of type `$elementType` are allowed here."
         c.abort(e.pos, s"$unsupportedMessage\nfound '$e' of type '${e.tpe}'")
