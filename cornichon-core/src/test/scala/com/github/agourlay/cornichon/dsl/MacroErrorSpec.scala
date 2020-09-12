@@ -53,5 +53,26 @@ object MacroErrorSpec extends TestSuite {
       """
       }
     }
+
+    test("macro  compiles if the step is reference to identifier `name`") {
+      import com.github.agourlay.cornichon.core.Step
+      import scala.concurrent.duration._
+
+      class Foo extends BaseFeature with CoreDsl {
+
+        def testMethod(foo: Step): Step =
+          Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
+            foo
+          }
+
+        val feature =
+          Feature("foo") {
+            Scenario("aaa") {
+              testMethod(print_step("Hello world!"))
+            }
+          }
+      }
+    }
+
   }
 }
