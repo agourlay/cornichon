@@ -41,6 +41,8 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
         singleExpressionList(app, elementType)(typesTreesFn)
       case s @ Select(_, _) =>
         singleExpressionList(s, elementType)(typesTreesFn)
+      case l: Ident =>
+        singleExpressionList(l, elementType)(typesTreesFn)
       case e =>
         val unsupportedMessage = s"Unsupported expression. Only expressions of type `$elementType` are allowed here."
         c.abort(e.pos, s"$unsupportedMessage\nfound '$e' of type '${e.tpe}'")
@@ -56,17 +58,31 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     c.typecheck(q"Seq[$elementType]()").tpe
 
   private def blockExpressionList(block: Block, elementType: Type)(typesTreesFn: List[Tree] => Tree): c.universe.Tree = {
-    val allStats = block.stats :+ block.expr //todo avoid List.append
     val seq = seqElementType(elementType)
-    val checked = allStats.map(typeCheck(elementType, seq))
+    val validExpressions = List.newBuilder[Tree]
+    val errors = List.newBuilder[(c.universe.Position, String)]
 
-    if (checked.exists(_.isLeft)) {
-      val errors = checked.collect { case Left(error) => error }
-      errors.dropRight(1).foreach { case (pos, error) => c.error(pos, error) }
-      val lastError = errors.last
+    // block.stats (all but last)
+    block.stats.foreach { s =>
+      typeCheck(elementType, seq)(s) match {
+        case Right(tree) => validExpressions += tree
+        case Left(e)     => errors += e
+      }
+    }
+
+    // block.expr (last)
+    typeCheck(elementType, seq)(block.expr) match {
+      case Right(tree) => validExpressions += tree
+      case Left(e)     => errors += e
+    }
+
+    val blockErrors = errors.result()
+    if (blockErrors.nonEmpty) {
+      blockErrors.dropRight(1).foreach { case (pos, error) => c.error(pos, error) }
+      val lastError = blockErrors.last
       c.abort(lastError._1, lastError._2)
     } else
-      typesTreesFn(checked.collect { case Right(typed) => typed })
+      typesTreesFn(validExpressions.result())
   }
 
   private def typeCheck(elementType: Type, seq: Type)(tree: Tree): Either[(c.universe.Position, String), c.Tree] = {
