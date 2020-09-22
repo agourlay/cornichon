@@ -62,19 +62,16 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     val validExpressions = List.newBuilder[Tree]
     val errors = List.newBuilder[(c.universe.Position, String)]
 
-    // block.stats (all but last)
-    block.stats.foreach { s =>
+    def evalTree(s: Tree) =
       typeCheck(elementType, seq)(s) match {
         case Right(tree) => validExpressions += tree
         case Left(e)     => errors += e
       }
-    }
 
+    // block.stats (all but last)
+    block.stats.foreach(evalTree)
     // block.expr (last)
-    typeCheck(elementType, seq)(block.expr) match {
-      case Right(tree) => validExpressions += tree
-      case Left(e)     => errors += e
-    }
+    evalTree(block.expr)
 
     val blockErrors = errors.result()
     if (blockErrors.nonEmpty) {
