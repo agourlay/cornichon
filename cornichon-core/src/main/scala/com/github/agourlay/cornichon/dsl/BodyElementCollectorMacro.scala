@@ -22,7 +22,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
 
         elements.foreach { elem =>
           if (elem.tpe <:< elementType)
-            elementBuffer.addOne(elem)
+            elementBuffer += elem
           else {
             // the only other type authorized here is Seq[Element]
             val elementsSoFar = elementBuffer.result()
@@ -66,7 +66,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
   private def singleExpressionList(app: Tree, elementType: Type)(typesTreesFn: List[Tree] => Tree): c.universe.Tree =
     typeCheck(elementType, seqElementType(elementType))(app) match {
       case Right(checked)     => typesTreesFn(checked :: Nil)
-      case Left(pos -> error) => c.abort(pos, error)
+      case Left((pos, error)) => c.abort(pos, error)
     }
 
   private def seqElementType(elementType: Type): Type =
