@@ -206,7 +206,7 @@ object HttpService {
       case ByNames(names) => headers.filterNot { case (n, _) => names.contains(n) }
     }
 
-  def expectStatusCode(httpResponse: CornichonHttpResponse, expected: Option[Int], requestDescription: String): Either[CornichonError, CornichonHttpResponse] =
+  def expectStatusCode(httpResponse: HttpResponse, expected: Option[Int], requestDescription: String): Either[CornichonError, HttpResponse] =
     expected match {
       case None =>
         httpResponse.asRight
@@ -216,7 +216,7 @@ object HttpService {
         StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body, requestDescription).asLeft
     }
 
-  def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor, requestDescription: String)(response: CornichonHttpResponse): Either[CornichonError, Session] = {
+  def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor, requestDescription: String)(response: HttpResponse): Either[CornichonError, Session] = {
     val additionalExtractions = extractor match {
       case NoOpExtraction =>
         rightNil
@@ -232,11 +232,11 @@ object HttpService {
     }
   }
 
-  private def handleResponse(resp: CornichonHttpResponse, requestDescription: String, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
+  private def handleResponse(resp: HttpResponse, requestDescription: String, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
     expectStatusCode(resp, expectedStatus, requestDescription)
       .flatMap(fillInSessionWithResponse(session, extractor, requestDescription))
 
-  private def commonSessionExtractions(response: CornichonHttpResponse, requestDescription: String): List[(String, String)] =
+  private def commonSessionExtractions(response: HttpResponse, requestDescription: String): List[(String, String)] =
     (lastResponseStatusKey -> response.status.toString) ::
       (lastResponseBodyKey -> response.body) ::
       (lastResponseHeadersKey -> encodeSessionHeaders(response.headers)) ::

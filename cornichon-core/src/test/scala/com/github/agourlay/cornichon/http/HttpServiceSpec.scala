@@ -12,7 +12,7 @@ object HttpServiceSpec extends TestSuite {
 
   val tests = Tests {
     test("fillInSessionWithResponse extracts content with NoOpExtraction") {
-      val resp = CornichonHttpResponse(200, Nil, "hello world")
+      val resp = HttpResponse(200, Nil, "hello world")
       val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, NoOpExtraction, dummyRequest.show)(resp)
       assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
       assert(filledSession.flatMap(_.get("last-response-body")) == Right("hello world"))
@@ -20,7 +20,7 @@ object HttpServiceSpec extends TestSuite {
     }
 
     test("fillInSessionWithResponse extracts content with RootResponseExtraction") {
-      val resp = CornichonHttpResponse(200, Nil, "hello world")
+      val resp = HttpResponse(200, Nil, "hello world")
       val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, RootExtractor("copy-body"), dummyRequest.show)(resp)
       assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
       assert(filledSession.flatMap(_.get("last-response-body")) == Right("hello world"))
@@ -28,7 +28,7 @@ object HttpServiceSpec extends TestSuite {
     }
 
     test("fillInSessionWithResponse extracts content with PathResponseExtraction") {
-      val resp = CornichonHttpResponse(200, Nil, """{ "name" : "batman" }""")
+      val resp = HttpResponse(200, Nil, """{ "name" : "batman" }""")
       val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, PathExtractor("name", "part-of-body"), dummyRequest.show)(resp)
       assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
       assert(filledSession.flatMap(_.get("last-response-body")) == Right("""{ "name" : "batman" }"""))
