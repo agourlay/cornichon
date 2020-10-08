@@ -95,8 +95,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   private lazy val jsonStepBuilder = JsonStepBuilder(HttpDsl.lastBodySessionKey, HttpDsl.bodyBuilderTitle)
   def body: JsonStepBuilder = jsonStepBuilder
 
-  def save_body(target: String): Step =
-    save_body_path(JsonPath.root -> target)
+  def save_body(target: String): Step = HttpDsl.save_body(target)
 
   def save_body_path(args: (String, String)*): Step =
     save_many_from_session_json(lastResponseBodyKey) {
@@ -204,6 +203,17 @@ object HttpDsl {
           sessionValue <- session.getJson(fromKey)
           extracted <- args.iterator.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
           newSession <- args.iterator.map(_.target).zip(extracted.iterator).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
+        } yield newSession
+      }
+    )
+
+  def save_body(target: String): Step =
+    EffectStep.fromSyncE(
+      title = s"save body to key '$target'",
+      effect = sc => {
+        for {
+          sessionValue <- sc.session.get(lastResponseBodyKey)
+          newSession <- sc.session.addValue(target, sessionValue)
         } yield newSession
       }
     )
