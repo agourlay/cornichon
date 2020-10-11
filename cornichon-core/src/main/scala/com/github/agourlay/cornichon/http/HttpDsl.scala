@@ -24,12 +24,11 @@ import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
-
 import io.circe.{ Encoder, Json }
-
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import monix.execution.Scheduler
 
 import scala.concurrent.duration._
@@ -91,9 +90,13 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def headers: HeadersSteps.HeadersStepBuilder.type =
     HeadersStepBuilder
 
-  //FIXME the body is expected to always contains JSON currently
-  private lazy val jsonStepBuilder = JsonStepBuilder(HttpDsl.lastBodySessionKey, HttpDsl.bodyBuilderTitle)
-  def body: JsonStepBuilder = jsonStepBuilder
+  //FIXME the body is expected to always contains JSON currently (use body_raw of non JSON response)
+  private lazy val bodyJsonStepBuilder = JsonStepBuilder(HttpDsl.lastBodySessionKey, HttpDsl.bodySessionKeyTitle)
+  def body: JsonStepBuilder = bodyJsonStepBuilder
+
+  // body_raw to handle non JSON response as String
+  private lazy val bodyRawStepBuilder = SessionStepBuilder(HttpDsl.lastBodySessionKey, HttpDsl.bodySessionKeyTitle)
+  def body_raw: SessionStepBuilder = bodyRawStepBuilder
 
   def save_body(target: String): Step = HttpDsl.save_body(target)
 
@@ -192,7 +195,7 @@ trait HttpDslOps {
 
 object HttpDsl {
   val lastBodySessionKey = SessionKey(lastResponseBodyKey)
-  val bodyBuilderTitle = Some("response body")
+  val bodySessionKeyTitle = Some("response body")
 
   def save_many_from_session_json(fromKey: String)(args: Seq[FromSessionSetter[Json]]): Step =
     CEffectStep.fromSyncE(

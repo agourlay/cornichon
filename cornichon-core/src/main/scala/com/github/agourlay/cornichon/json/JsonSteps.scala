@@ -66,7 +66,7 @@ object JsonSteps {
       private val whitelist: Boolean = false
   ) {
 
-    private val target = prettySessionKeyTitle.getOrElse(sessionKey.name)
+    private val target = prettySessionKeyTitle.getOrElse(s"session key '${sessionKey.name}'")
 
     def path(path: String): JsonStepBuilder = copy(jsonPath = path)
 
