@@ -24,7 +24,7 @@ import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
-import io.circe.{ Encoder, Json }
+import io.circe.Json
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
@@ -33,7 +33,7 @@ import monix.execution.Scheduler
 
 import scala.concurrent.duration._
 
-trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
+trait HttpDsl extends HttpDslOps with DslHttpRequests {
   this: BaseFeature with JsonDsl with CoreDsl =>
 
   lazy val requestTimeout: FiniteDuration = config.requestTimeout
@@ -44,13 +44,13 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
   lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
-  implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): Step =
+  implicit def httpRequestToStep[DSL_INPUT: Show: Resolvable, ENTITY_HTTP: Show](request: DslHttpRequest[DSL_INPUT, ENTITY_HTTP]): Step =
     CEffectStep(
       title = request.compactDescription,
       effect = http.requestEffectTask(request)
     )
 
-  implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): Step =
+  implicit def httpStreamedRequestToStep(request: DslHttpStreamedRequest): Step =
     EffectStep(
       title = request.compactDescription,
       effect = http.streamEffect(request)
@@ -72,7 +72,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     )
   }
 
-  implicit def queryGqlToHttpRequest(queryGQL: QueryGQL): HttpRequest[String] =
+  implicit def queryGqlToHttpRequest(queryGQL: QueryGQL): DslHttpRequest[String, Json] =
     post(queryGQL.url)
       .withBody(queryGQL.payload)
       .withParams(queryGQL.params: _*)
@@ -81,8 +81,8 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def query_gql(url: String): QueryGQL =
     QueryGQL(url, QueryGQL.emptyDocument, None, None, Nil, Nil)
 
-  def open_sse(url: String, takeWithin: FiniteDuration): HttpStreamedRequest =
-    HttpStreamedRequest(SSE, url, takeWithin, Nil, Nil)
+  def open_sse(url: String, takeWithin: FiniteDuration): DslHttpStreamedRequest =
+    DslHttpStreamedRequest(SSE, url, takeWithin, Nil, Nil)
 
   def status: StatusSteps.StatusStepBuilder.type =
     StatusStepBuilder

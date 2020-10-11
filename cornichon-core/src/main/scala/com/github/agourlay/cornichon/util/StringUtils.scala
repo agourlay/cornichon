@@ -1,5 +1,10 @@
 package com.github.agourlay.cornichon.util
 
+import com.github.agourlay.cornichon.core.CornichonError
+import javax.xml.parsers.SAXParserFactory
+
+import scala.xml.{ Elem, InputSource, XML }
+
 object StringUtils {
 
   //https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Scala
@@ -26,5 +31,24 @@ object StringUtils {
 
     d(lenStr1)(lenStr2)
   }
+
+  // from http4s
+  private val saxFactory = {
+    val factory = SAXParserFactory.newInstance
+    // Safer parsing settings to avoid certain class of XML attacks
+    // See https://github.com/scala/scala-xml/issues/17
+    factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+    factory.setFeature("http://xml.org/sax/features/external-general-entities", false)
+    factory.setXIncludeAware(false)
+    factory
+  }
+
+  def parseXml(xmlStr: String): Either[CornichonError, Elem] =
+    CornichonError.catchThrowable {
+      val is = new InputSource(xmlStr)
+      val saxParser = saxFactory.newSAXParser()
+      XML.loadXML(is, saxParser)
+    }
 
 }

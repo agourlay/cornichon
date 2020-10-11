@@ -4,10 +4,11 @@ import java.util.concurrent.{ ExecutorService, Executors }
 
 import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Config, ScenarioContext }
-import com.github.agourlay.cornichon.http.{ HttpMethods, HttpRequest, HttpService }
+import com.github.agourlay.cornichon.http.{ DslHttpRequest, HttpMethods, HttpService }
 import org.openjdk.jmh.annotations._
 import RequestEffectBench._
 import com.github.agourlay.cornichon.http.client.NoOpHttpClient
+import io.circe.Json
 import monix.execution.Scheduler
 
 import scala.concurrent.Await
@@ -55,7 +56,7 @@ class RequestEffectBench {
 
 object RequestEffectBench {
   val scenarioContext = ScenarioContext.empty
-  val request = HttpRequest[String](
+  val request = DslHttpRequest[String, Json](
     method = HttpMethods.GET,
     url = "https://myUrl/my/segment",
     body = Some(""" { "k1":"v1", "k2":"v2","k3":"v3","k4":"v4" } """),

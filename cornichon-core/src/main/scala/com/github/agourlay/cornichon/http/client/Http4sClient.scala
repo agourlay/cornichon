@@ -93,12 +93,12 @@ class Http4sClient(
       uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
     }
 
-  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, HttpResponse] =
+  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, HttpResponse] =
     parseUri(cReq.url).fold(
       e => EitherT.left[HttpResponse](Task.now(e)),
       uri => EitherT {
         val req = Request[Task](toHttp4sMethod(cReq.method))
-        val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
+        val completeRequest = cReq.body.fold(req)(b => req.withEntity(b)(ee))
           .putHeaders(toHttp4sHeaders(cReq.headers): _*) // `withEntity` adds `Content-Type` so we set the headers afterwards to have the possibility to override it
           .withUri(addQueryParams(uri, cReq.params))
         val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
@@ -125,7 +125,7 @@ class Http4sClient(
 
   private val sseHeader = "text" -> "event-stream"
 
-  private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[Task, CornichonError, HttpResponse] = {
+  private def runSSE(streamReq: DslHttpStreamedRequest, t: FiniteDuration): EitherT[Task, CornichonError, HttpResponse] = {
     parseUri(streamReq.url).fold(
       e => EitherT.left[HttpResponse](Task.now(e)),
       uri => EitherT {
@@ -158,7 +158,7 @@ class Http4sClient(
     )
   }
 
-  def openStream(req: HttpStreamedRequest, t: FiniteDuration): Task[Either[CornichonError, HttpResponse]] =
+  def openStream(req: DslHttpStreamedRequest, t: FiniteDuration): Task[Either[CornichonError, HttpResponse]] =
     req.stream match {
       case SSE => runSSE(req, t).value
       case _   => ??? // TODO implement WS support

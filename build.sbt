@@ -119,6 +119,7 @@ lazy val core =
       libraryDependencies ++= Seq(
         library.http4sClient,
         library.http4sCirce,
+        library.http4sXml,
         library.catsCore,
         library.pureConfig,
         library.parboiled,
@@ -132,6 +133,7 @@ lazy val core =
         library.monixExec,
         library.monixReactive,
         library.caffeine,
+        library.scalaXml,
         library.utest % Test,
         library.claimant % Test,
         library.scalacheck % Test,
@@ -169,7 +171,6 @@ lazy val testFramework =
         library.sbtTest,
         library.openPojo,
         library.decline,
-        library.scalaXml,
         library.scalacheck % Test,
         library.http4sServer % Test,
         library.http4sCirce % Test,
@@ -317,6 +318,7 @@ lazy val library =
     val http4sServer  = "org.http4s"                     %% "http4s-blaze-server"  % Version.http4s
     val http4sCirce   = "org.http4s"                     %% "http4s-circe"         % Version.http4s
     val http4sDsl     = "org.http4s"                     %% "http4s-dsl"           % Version.http4s
+    val http4sXml     = "org.http4s"                     %% "http4s-scala-xml"     % Version.http4s
     val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
     val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.embeddedKafka
     val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"             % Version.caffeine

@@ -1,12 +1,15 @@
 package com.github.agourlay.cornichon.resolver
 
+import java.nio.file.{ Path, Paths }
 import java.util.UUID
 
 import com.github.agourlay.cornichon.json.CornichonJson
 import cats.instances.string._
+import com.github.agourlay.cornichon.util.StringUtils
 import io.circe.Json
 
 import scala.annotation.implicitNotFound
+import scala.xml.Elem
 
 @implicitNotFound("No instance of typeclass Resolvable found for type ${A} - this instance is required if you are trying to use ${A} as custom HTTP body type")
 trait Resolvable[A] {
@@ -77,6 +80,33 @@ object Resolvable {
   implicit val jsonResolvable = new Resolvable[Json] {
     def toResolvableForm(j: Json) = j.spaces2
     def fromResolvableForm(j: String) = CornichonJson.parseDslJsonUnsafe(j)
+  }
+
+  implicit def listResolvable[A: Resolvable] = new Resolvable[List[A]] {
+    def toResolvableForm(s: List[A]) = {
+      val res = implicitly[Resolvable[A]]
+      s.iterator.map(e => res.toResolvableForm(e)).mkString(", ")
+    }
+    def fromResolvableForm(u: String) = ???
+  }
+
+  implicit val tupleResolvable = new Resolvable[(String, String)] {
+    def toResolvableForm(t: (String, String)) = {
+      t._1 + "TUPLED" + t._2 // really ugly for now...
+    }
+    def fromResolvableForm(u: String) = u.split("TUPLED").toList match {
+      case one :: two :: Nil => (one, two)
+    }
+  }
+
+  implicit val elemResolvable = new Resolvable[Elem] {
+    def toResolvableForm(e: Elem) = e.text
+    def fromResolvableForm(e: String) = StringUtils.parseXml(e).valueUnsafe
+  }
+
+  implicit val pathResolvable = new Resolvable[Path] {
+    def toResolvableForm(p: Path) = p.toUri.toString
+    def fromResolvableForm(p: String) = Paths.get(p)
   }
 
 }
