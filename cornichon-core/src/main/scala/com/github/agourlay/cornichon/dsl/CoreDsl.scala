@@ -161,7 +161,7 @@ trait CoreDsl extends ProvidedInstances {
   )
 
   def session_value(key: String): SessionStepBuilder =
-    SessionStepBuilder(key)
+    SessionStepBuilder(SessionKey(key))
 
   def session_values(k1: String, k2: String): SessionValuesStepBuilder =
     SessionValuesStepBuilder(k1, k2)

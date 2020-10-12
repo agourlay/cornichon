@@ -23,6 +23,9 @@ trait CommonTesting extends ProvidedInstances with TaskSpec {
     name = "integer",
     gen = () => rc.nextString(10))
 
+  def printScenarioLogs(sr: ScenarioReport): Unit =
+    LogInstruction.printLogs(sr.logs)
+
   val identityEffectStep: Step = EffectStep.fromSync("identity effect step", _.session)
   val addValueToSessionEffectStep: Step = EffectStep.fromSyncE("add value to session effect step", _.session.addValue("my-key", "my-value"))
   val alwaysValidAssertStep: Step = AssertStep("valid", _ => Assertion.alwaysValid)

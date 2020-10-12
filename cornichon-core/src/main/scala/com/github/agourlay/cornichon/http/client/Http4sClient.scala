@@ -93,9 +93,9 @@ class Http4sClient(
       uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
     }
 
-  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, CornichonHttpResponse] =
+  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, HttpResponse] =
     parseUri(cReq.url).fold(
-      e => EitherT.left[CornichonHttpResponse](Task.now(e)),
+      e => EitherT.left[HttpResponse](Task.now(e)),
       uri => EitherT {
         val req = Request[Task](toHttp4sMethod(cReq.method))
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
@@ -107,7 +107,7 @@ class Http4sClient(
             .compile
             .string
             .map { decodedBody =>
-              CornichonHttpResponse(
+              HttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
                 body = decodedBody
@@ -125,9 +125,9 @@ class Http4sClient(
 
   private val sseHeader = "text" -> "event-stream"
 
-  private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[Task, CornichonError, CornichonHttpResponse] = {
+  private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[Task, CornichonError, HttpResponse] = {
     parseUri(streamReq.url).fold(
-      e => EitherT.left[CornichonHttpResponse](Task.now(e)),
+      e => EitherT.left[HttpResponse](Task.now(e)),
       uri => EitherT {
         val req = Request[Task](org.http4s.Method.GET)
           .withHeaders(Headers(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers)))
@@ -141,7 +141,7 @@ class Http4sClient(
             .compile
             .toList
             .map { events =>
-              CornichonHttpResponse(
+              HttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
                 body = Json.fromValues(events.map(_.asJson)).show
@@ -158,7 +158,7 @@ class Http4sClient(
     )
   }
 
-  def openStream(req: HttpStreamedRequest, t: FiniteDuration): Task[Either[CornichonError, CornichonHttpResponse]] =
+  def openStream(req: HttpStreamedRequest, t: FiniteDuration): Task[Either[CornichonError, HttpResponse]] =
     req.stream match {
       case SSE => runSSE(req, t).value
       case _   => ??? // TODO implement WS support

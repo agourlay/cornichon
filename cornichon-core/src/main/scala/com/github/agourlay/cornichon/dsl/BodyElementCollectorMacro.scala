@@ -1,13 +1,12 @@
 package com.github.agourlay.cornichon.dsl
 
+import scala.collection.mutable.ListBuffer
 import scala.reflect.macros.{ TypecheckException, blackbox }
 
 class BodyElementCollectorMacro(context: blackbox.Context) {
   val c: blackbox.Context = context
 
   import c.universe._
-
-  private val initTreeFold: (Tree, List[Tree]) = q"Nil" -> Nil
 
   def collectImpl(body: Tree): Tree = {
     val contextType = c.prefix.tree.tpe
@@ -18,15 +17,31 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     else {
       val elementType = contextType.typeArgs.head
       blockOrApplyExpressionList(body, elementType) { elements =>
-        val (finalTree, rest) = elements.foldLeft(initTreeFold) {
-          case ((accTree, accSingle), elem) =>
-            if (elem.tpe <:< elementType)
-              accTree -> (accSingle :+ elem) //todo avoid List.append
-            else
-              q"$accTree ++ $accSingle ++ $elem" -> Nil
-        }
+        val elementBuffer = ListBuffer.empty[Tree]
+        var seqElementTree: Option[Tree] = None
 
-        q"${c.prefix.tree}.get($finalTree ++ $rest)"
+        elements.foreach { elem =>
+          if (elem.tpe <:< elementType)
+            elementBuffer += elem
+          else {
+            // the only other type authorized here is Seq[Element]
+            val elementsSoFar = elementBuffer.result()
+            elementBuffer.clear()
+            seqElementTree match {
+              case None =>
+                seqElementTree = Some(q"$elementsSoFar ++ $elem")
+              case Some(seqTree) =>
+                seqElementTree = Some(q"$seqTree ++ $elementsSoFar ++ $elem")
+            }
+          }
+        }
+        val elementTrees = elementBuffer.result()
+        seqElementTree match {
+          case None =>
+            q"${c.prefix.tree}.get($elementTrees)"
+          case Some(seqElementTrees) =>
+            q"${c.prefix.tree}.get($seqElementTrees ++ $elementTrees)"
+        }
       }
     }
   }
@@ -62,19 +77,16 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     val validExpressions = List.newBuilder[Tree]
     val errors = List.newBuilder[(c.universe.Position, String)]
 
-    // block.stats (all but last)
-    block.stats.foreach { s =>
+    def evalTree(s: Tree) =
       typeCheck(elementType, seq)(s) match {
         case Right(tree) => validExpressions += tree
         case Left(e)     => errors += e
       }
-    }
 
+    // block.stats (all but last)
+    block.stats.foreach(evalTree)
     // block.expr (last)
-    typeCheck(elementType, seq)(block.expr) match {
-      case Right(tree) => validExpressions += tree
-      case Left(e)     => errors += e
-    }
+    evalTree(block.expr)
 
     val blockErrors = errors.result()
     if (blockErrors.nonEmpty) {

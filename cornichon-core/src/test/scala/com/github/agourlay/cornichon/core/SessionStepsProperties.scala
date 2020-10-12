@@ -2,15 +2,15 @@ package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ GenericEqualityAssertion, LessThanAssertion }
-import com.github.agourlay.cornichon.testHelpers.TaskSpec
+import com.github.agourlay.cornichon.testHelpers.CommonTesting
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Properties
+import org.scalacheck.{ Gen, Properties }
 import org.typelevel.claimant.Claim
 
-class SessionStepsProperties extends Properties("SessionSteps") with TaskSpec {
+class SessionStepsProperties extends Properties("SessionSteps") with CommonTesting {
 
   private val testKey = "test-key"
-  private val sessionStepBuilder = SessionStepBuilder(testKey)
+  private val sessionStepBuilder = SessionStepBuilder(SessionKey(testKey))
 
   property("sessionStep is value") =
     forAll { input: String =>
@@ -95,6 +95,51 @@ class SessionStepsProperties extends Properties("SessionSteps") with TaskSpec {
       val step = sessionStepBuilder.compareWithPreviousValue { case (prev, current) => LessThanAssertion(prev.length, current.length) }
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      Claim(!t.isSuccess)
+    }
+
+  property("sessionStep containsString") =
+    forAll { input: String =>
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> ("prefix" + input + "suffix"))
+      val stepP = sessionStepBuilder.containsString("prefix")
+      val stepI = if (input.nonEmpty) sessionStepBuilder.containsString(input) else alwaysValidAssertStep
+      val stepS = sessionStepBuilder.containsString("suffix")
+      val s = Scenario("scenario with SessionSteps", stepP :: stepI :: stepS :: Nil)
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      Claim(t.isSuccess)
+    }
+
+  property("sessionStep containsString - failure") =
+    forAll { input: String =>
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> input)
+      val step = sessionStepBuilder.containsString(input + "42")
+      val s = Scenario("scenario with SessionSteps", step :: Nil)
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      Claim(!t.isSuccess)
+    }
+
+  property("sessionStep matchesRegex") =
+    forAll(Gen.alphaStr) { input =>
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> ("prefix" + input + "suffix"))
+      val stepP = sessionStepBuilder.matchesRegex(".*pref".r)
+      val stepI = if (input.nonEmpty) sessionStepBuilder.matchesRegex(s".*${input}".r) else alwaysValidAssertStep
+      val stepS = sessionStepBuilder.matchesRegex(".*suff".r)
+      val s = Scenario("scenario with SessionSteps", stepP :: stepI :: stepS :: Nil)
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      Claim(t.isSuccess)
+    }
+
+  property("sessionStep matchesRegex - failure") =
+    forAll(Gen.alphaStr) { input =>
+      val session = Session.newEmpty
+        .addValuesUnsafe(testKey -> input)
+      val step = sessionStepBuilder.matchesRegex(s".*${input}42".r)
+      val s = Scenario("scenario with SessionSteps", step :: Nil)
+      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      if (t.isSuccess) printScenarioLogs(t)
       Claim(!t.isSuccess)
     }
 

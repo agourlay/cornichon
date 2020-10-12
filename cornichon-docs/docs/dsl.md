@@ -227,6 +227,13 @@ body.asArray.contains(
   """)
 ```
 
+It is important to mention that `body` expects a JSON content!
+When receiving non JSON payloads, use `body_raw` which offers `String` like assertions.
+
+```scala
+body_raw.containsString("xml")
+```
+
 ## HTTP streams
 
 - Server-Sent-Event.

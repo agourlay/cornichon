@@ -1,8 +1,10 @@
 package com.github.agourlay.cornichon.dsl
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.SessionKey
-import com.github.agourlay.cornichon.json.JsonSteps.{ JsonStepBuilder, JsonValuesStepBuilder }
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, CustomMessageEqualityAssertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.json.JsonSteps._
+import com.github.agourlay.cornichon.steps.regular.assertStep._
+
+import scala.util.matching.Regex
 
 object SessionSteps {
 
@@ -34,18 +36,20 @@ object SessionSteps {
   }
 
   case class SessionStepBuilder(
-      private val key: String,
-      private val index: Option[Int] = None
-  ) {
+      private val sessionKey: SessionKey,
+      private val prettySessionKeyTitle: Option[String] = None) {
+    private val key = sessionKey.name
+    private val index = sessionKey.index
+    private val target = prettySessionKeyTitle.getOrElse(s"session key '$key'")
 
-    def atIndex(index: Int): SessionStepBuilder = copy(index = Some(index))
+    def atIndex(index: Int): SessionStepBuilder = copy(sessionKey = sessionKey.copy(index = Some(index)))
 
     def is(expected: String): AssertStep = isImpl(expected, negate = false)
 
     def isNot(expected: String): AssertStep = isImpl(expected, negate = true)
 
     private def isImpl(expected: String, negate: Boolean) = AssertStep(
-      title = s"session key '$key' ${if (negate) "is not" else "is"} '$expected'",
+      title = s"$target ${if (negate) "is not" else "is"} '$expected'",
       action = sc => Assertion.either {
         for {
           filledPlaceholders <- sc.fillPlaceholders(expected)
@@ -71,8 +75,27 @@ object SessionSteps {
         }
     )
 
+    def containsString(expectedPart: String): AssertStep = AssertStep(
+      title = s"$target contains string '$expectedPart'",
+      action = sc => Assertion.either {
+        for {
+          sessionValue <- sc.session.get(key)
+          resolvedExpected <- sc.fillPlaceholders(expectedPart)
+        } yield StringContainsAssertion(sessionValue, resolvedExpected)
+      }
+    )
+
+    def matchesRegex(expectedRegex: Regex): AssertStep = AssertStep(
+      title = s"$target matches '$expectedRegex'",
+      action = sc => Assertion.either {
+        for {
+          sessionValue <- sc.session.get(key)
+        } yield RegexAssertion(sessionValue, expectedRegex)
+      }
+    )
+
     def hasEqualCurrentAndPreviousValues: AssertStep = AssertStep(
-      title = s"session key '$key' has equal current and previous values",
+      title = s"$target has equal current and previous values",
       action = sc => Assertion.either {
         for {
           current <- sc.session.get(key)
@@ -82,7 +105,7 @@ object SessionSteps {
     )
 
     def hasDifferentCurrentAndPreviousValues: AssertStep = AssertStep(
-      title = s"session key '$key' has different current and previous values",
+      title = s"$target has different current and previous values",
       action = sc => Assertion.either {
         for {
           current <- sc.session.get(key)
@@ -93,7 +116,7 @@ object SessionSteps {
 
     // (previousValue, currentValue) => Assertion
     def compareWithPreviousValue(comp: (String, String) => Assertion): AssertStep = AssertStep(
-      title = s"compare previous & current value of session key '$key'",
+      title = s"compare previous & current value of $target",
       action = sc => Assertion.either {
         for {
           current <- sc.session.get(key)
@@ -102,8 +125,7 @@ object SessionSteps {
       }
     )
 
-    def asJson: JsonStepBuilder = JsonStepBuilder(SessionKey(key))
-
+    def asJson: JsonStepBuilder = JsonStepBuilder(sessionKey, prettySessionKeyTitle)
   }
 
   def keyIsPresentError(keyName: String, keyValue: String): String = {
