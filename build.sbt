@@ -119,6 +119,7 @@ lazy val core =
       libraryDependencies ++= Seq(
         library.http4sClient,
         library.http4sCirce,
+        library.fs2Io,
         library.catsCore,
         library.pureConfig,
         library.parboiled,
@@ -288,6 +289,7 @@ lazy val library =
       val monix         = "3.2.2"
       val sbtTest       = "1.0"
       val http4s        = "0.21.7"
+      val fs2           = "2.4.4"
       val embeddedKafka = "2.6.0"
       val kafkaClient   = "2.6.0"
       val caffeine      = "2.8.6"
@@ -317,6 +319,7 @@ lazy val library =
     val http4sServer  = "org.http4s"                     %% "http4s-blaze-server"  % Version.http4s
     val http4sCirce   = "org.http4s"                     %% "http4s-circe"         % Version.http4s
     val http4sDsl     = "org.http4s"                     %% "http4s-dsl"           % Version.http4s
+    val fs2Io         = "co.fs2"                         %% "fs2-io"               % Version.fs2
     val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
     val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.embeddedKafka
     val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"             % Version.caffeine
