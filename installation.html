@@ -5,13 +5,13 @@
 <p>The library is compatible with <a href="https://www.scala-sbt.org/">SBT</a> and <a href="http://www.lihaoyi.com/mill/">Mill</a>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// SBT</span>
-<span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.github.agourlay"</span> <span class="o">%%</span> <span class="s">"cornichon-test-framework"</span> <span class="o">%</span> <span class="s">"0.19.4"</span> <span class="o">%</span> <span class="nc">Test</span>
+<span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.github.agourlay"</span> <span class="o">%%</span> <span class="s">"cornichon-test-framework"</span> <span class="o">%</span> <span class="s">"0.19.5"</span> <span class="o">%</span> <span class="nc">Test</span>
 <span class="n">testFrameworks</span> <span class="o">+=</span> <span class="k">new</span> <span class="nc">TestFramework</span><span class="o">(</span><span class="s">"com.github.agourlay.cornichon.framework.CornichonFramework"</span><span class="o">)</span>
 </code></pre></div></div>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Mill</span>
 <span class="k">object</span> <span class="nc">test</span> <span class="k">extends</span> <span class="nc">Tests</span> <span class="o">{</span>
-  <span class="k">def</span> <span class="nf">ivyDeps</span> <span class="k">=</span> <span class="nc">Agg</span><span class="o">(</span><span class="n">ivy</span><span class="s">"com.github.agourlay::cornichon-test-framework:0.19.4"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">ivyDeps</span> <span class="k">=</span> <span class="nc">Agg</span><span class="o">(</span><span class="n">ivy</span><span class="s">"com.github.agourlay::cornichon-test-framework:0.19.5"</span><span class="o">)</span>
   <span class="k">def</span> <span class="nf">testFrameworks</span> <span class="k">=</span> <span class="nc">Seq</span><span class="o">(</span><span class="s">"com.github.agourlay.cornichon.framework.CornichonFramework"</span><span class="o">)</span>
 <span class="o">}</span>
 </code></pre></div></div>

@@ -216,6 +216,12 @@
   """</span><span class="o">)</span>
 </code></pre></div></div>
 
+<p>It is important to mention that <code class="highlighter-rouge">body</code> expects a JSON content!
+When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</code> which offers <code class="highlighter-rouge">String</code> like assertions.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">body_raw</span><span class="o">.</span><span class="py">containsString</span><span class="o">(</span><span class="s">"xml"</span><span class="o">)</span>
+</code></pre></div></div>
+
 <h2 id="http-streams">HTTP streams</h2>
 
 <ul>
