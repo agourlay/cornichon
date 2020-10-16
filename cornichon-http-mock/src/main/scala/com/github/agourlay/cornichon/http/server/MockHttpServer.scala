@@ -3,10 +3,11 @@ package com.github.agourlay.cornichon.http.server
 import java.net.NetworkInterface
 
 import cats.effect.IO
+import com.comcast.ip4s.{ Host, Port }
 import com.github.agourlay.cornichon.core.CornichonError
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
-import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 
 import scala.jdk.CollectionConverters._
@@ -44,12 +45,16 @@ class MockHttpServer[A](
     }
 
   private def startBlazeServer(port: Int): IO[A] =
-    BlazeServerBuilder[IO]
-      .bindHttp(port, selectedInterface)
-      .withoutBanner
-      .withHttpApp(mockRouter)
-      .resource
-      .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
+    Port.fromInt(port) match {
+      case None => IO.raiseError(new IllegalArgumentException(s"Invalid port number $port"))
+      case Some(p) =>
+        EmberServerBuilder.default[IO]
+          .withPort(p)
+          .withHost(Host.fromString(selectedInterface).get) // fixme
+          .withHttpApp(mockRouter)
+          .build
+          .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
+    }
 
   private def bestInterface(): String =
     NetworkInterface.getNetworkInterfaces.asScala
