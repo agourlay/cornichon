@@ -3,13 +3,8 @@ package com.github.agourlay.cornichon.core
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.monoid._
-import cats.instances.string._
-import cats.instances.map._
-import cats.instances.vector._
 import cats.syntax.either._
 import cats.syntax.traverse._
-import cats.instances.list._
-import cats.instances.either._
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
 import com.github.agourlay.cornichon.util.{ Caching, StringUtils }

@@ -53,7 +53,6 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
 trait HttpRequestsDsl {
   import com.github.agourlay.cornichon.http.HttpMethods._
-  import cats.instances.string._
 
   def get(url: String): HttpRequest[String] = HttpRequest[String](GET, url, None, Nil, Nil)
   def head(url: String): HttpRequest[String] = HttpRequest[String](HEAD, url, None, Nil, Nil)

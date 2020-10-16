@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.testHelpers
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.dsl.ProvidedInstances
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
@@ -9,7 +8,7 @@ import org.scalacheck.Gen
 
 import scala.util.control.NoStackTrace
 
-trait CommonTesting extends ProvidedInstances with TaskSpec {
+trait CommonTesting extends TaskSpec {
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",

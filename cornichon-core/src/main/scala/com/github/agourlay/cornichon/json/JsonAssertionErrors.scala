@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.json
 
 import io.circe.Json
 import cats.syntax.show._
-import cats.instances.string._
 import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.matchers.Matcher

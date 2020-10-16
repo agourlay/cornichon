@@ -4,7 +4,6 @@ import java.io.{ PrintWriter, StringWriter }
 
 import cats.data.EitherT
 import cats.syntax.either._
-import cats.instances.future._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.control.NoStackTrace

@@ -2,12 +2,6 @@ package com.github.agourlay.cornichon.json
 
 import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
-import cats.instances.string._
-import cats.instances.boolean._
-import cats.instances.int._
-import cats.instances.long._
-import cats.instances.double._
-import cats.instances.bigDecimal._
 import org.scalacheck.{ Gen, Properties, Test }
 import org.scalacheck.Prop._
 import org.typelevel.claimant.Claim

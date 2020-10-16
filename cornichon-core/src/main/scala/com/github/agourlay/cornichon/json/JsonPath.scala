@@ -1,9 +1,6 @@
 package com.github.agourlay.cornichon.json
 
 import cats.Show
-import cats.instances.string._
-import cats.instances.list._
-import cats.instances.option._
 import cats.syntax.traverse._
 import cats.syntax.either._
 import cats.syntax.option._

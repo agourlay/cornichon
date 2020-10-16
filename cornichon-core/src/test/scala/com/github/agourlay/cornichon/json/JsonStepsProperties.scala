@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.json
 
-import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.testHelpers.TaskSpec

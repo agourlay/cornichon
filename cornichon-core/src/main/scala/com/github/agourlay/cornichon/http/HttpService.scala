@@ -5,10 +5,7 @@ import cats.data.EitherT
 import cats.syntax.traverse._
 import cats.syntax.show._
 import cats.syntax.either._
-import cats.instances.int._
-import cats.instances.list._
-import cats.instances.either._
-import cats.instances.string._
+
 import org.http4s.circe._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
@@ -76,7 +73,7 @@ class HttpService(
 
   private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(scenarioContext: ScenarioContext) =
     for {
-      (url, _, params, headers) <- EitherT.fromEither[Task](resolveRequestParts(r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
+      (url, _, params, headers) <- EitherT.fromEither[Task](resolveRequestParts[String](r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
       resolvedRequest = HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
       resp <- EitherT(client.openStream(resolvedRequest, requestTimeout))
       newSession <- EitherT.fromEither[Task](handleResponse(resp, resolvedRequest.show, expectedStatus, extractor)(scenarioContext.session))
