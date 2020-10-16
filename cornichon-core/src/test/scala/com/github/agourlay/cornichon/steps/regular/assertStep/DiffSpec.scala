@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.instances.string._
 import com.github.agourlay.cornichon.steps.regular.assertStep.Diff._
 import io.circe.Json
 import utest._

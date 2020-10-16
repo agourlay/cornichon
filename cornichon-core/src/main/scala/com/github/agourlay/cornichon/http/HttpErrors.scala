@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.syntax.show._
-import cats.instances.string._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
 import com.github.agourlay.cornichon.util.Printing.printArrowPairs

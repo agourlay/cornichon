@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
-import cats.implicits._
+import cats.syntax.all._
 import com.github.agourlay.cornichon.framework.examples.HttpServer
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._

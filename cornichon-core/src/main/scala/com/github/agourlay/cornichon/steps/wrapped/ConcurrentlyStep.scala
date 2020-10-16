@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.StateT
-import cats.instances.list._
 import cats.syntax.foldable._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._

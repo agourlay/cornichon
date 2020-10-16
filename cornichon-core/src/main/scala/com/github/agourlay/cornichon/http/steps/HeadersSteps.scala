@@ -1,9 +1,5 @@
 package com.github.agourlay.cornichon.http.steps
 
-import cats.instances.tuple._
-import cats.instances.boolean._
-import cats.instances.string._
-
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._

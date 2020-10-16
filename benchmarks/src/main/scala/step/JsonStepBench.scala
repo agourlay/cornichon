@@ -6,7 +6,6 @@ import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session, S
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import monix.execution.Scheduler
 import org.openjdk.jmh.annotations._
-import cats.instances.string._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration

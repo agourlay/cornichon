@@ -1,8 +1,5 @@
 package com.github.agourlay.cornichon.http.steps
 
-import cats.instances.int._
-import cats.instances.string._
-
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.{ HttpService, StatusNonExpected }

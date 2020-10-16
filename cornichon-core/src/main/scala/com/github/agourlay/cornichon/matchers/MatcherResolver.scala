@@ -2,8 +2,6 @@ package com.github.agourlay.cornichon.matchers
 
 import cats.syntax.either._
 import cats.syntax.traverse._
-import cats.instances.list._
-import cats.instances.either._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.matchers.Matchers._

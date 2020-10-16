@@ -2,7 +2,6 @@ package httpService
 
 import java.util.concurrent.{ ExecutorService, Executors }
 
-import cats.instances.string._
 import com.github.agourlay.cornichon.core.{ Config, ScenarioContext }
 import com.github.agourlay.cornichon.http.{ HttpMethods, HttpRequest, HttpService }
 import org.openjdk.jmh.annotations._

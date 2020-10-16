@@ -4,8 +4,6 @@ import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
 import cats.syntax.traverse._
-import cats.instances.list._
-import cats.instances.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.CoreDsl._
