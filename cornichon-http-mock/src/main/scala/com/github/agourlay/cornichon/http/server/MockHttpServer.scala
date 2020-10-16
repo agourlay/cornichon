@@ -4,10 +4,9 @@ import java.net.NetworkInterface
 
 import com.github.agourlay.cornichon.core.CornichonError
 import monix.eval.Task
-import monix.execution.Scheduler
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 
 import scala.jdk.CollectionConverters._
@@ -19,7 +18,7 @@ class MockHttpServer[A](
     interface: Option[String],
     port: Option[Range],
     mockService: HttpRoutes[Task],
-    maxPortBindingRetries: Int)(useFromAddress: String => Task[A])(implicit scheduler: Scheduler) {
+    maxPortBindingRetries: Int)(useFromAddress: String => Task[A]) {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r => Random.shuffle(r.toList))
@@ -45,11 +44,11 @@ class MockHttpServer[A](
     }
 
   private def startBlazeServer(port: Int): Task[A] =
-    BlazeServerBuilder[Task](executionContext = scheduler)
-      .bindHttp(port, selectedInterface)
-      .withoutBanner
+    EmberServerBuilder.default[Task]
+      .withPort(port)
+      .withHost(selectedInterface)
       .withHttpApp(mockRouter)
-      .resource
+      .build
       .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
 
   private def bestInterface(): String =
