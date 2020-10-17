@@ -7,7 +7,9 @@ import cats.syntax.show._
 import com.github.agourlay.cornichon.util.Printing._
 import com.github.agourlay.cornichon.resolver.Resolvable
 import io.circe.Json
+import monix.eval.Task
 import org.http4s.UrlForm
+import org.http4s.multipart.Multipart
 
 import scala.concurrent.duration.FiniteDuration
 import scala.xml.Elem
@@ -62,6 +64,9 @@ trait DslHttpRequests {
   import cats.instances.list._
   import cats.instances.tuple._
 
+  implicit val showPath = Show.fromToString[Path]
+  implicit val showElem = Show.fromToString[Elem]
+
   // JSON
   def get(url: String): DslHttpRequest[String, Json] = DslHttpRequest[String, Json](GET, url, None, Nil, Nil)
   def head(url: String): DslHttpRequest[String, Json] = DslHttpRequest[String, Json](HEAD, url, None, Nil, Nil)
@@ -71,15 +76,15 @@ trait DslHttpRequests {
   def put(url: String): DslHttpRequest[String, Json] = DslHttpRequest[String, Json](PUT, url, None, Nil, Nil)
   def patch(url: String): DslHttpRequest[String, Json] = DslHttpRequest[String, Json](PATCH, url, None, Nil, Nil)
 
-  // Form
-  def postUrlEncodedForm(url: String): DslHttpRequest[List[(String, String)], UrlForm] = DslHttpRequest[List[(String, String)], UrlForm](POST, url, None, Nil, Nil)
+  // Forms
+  def postFormUrlEncoded(url: String): DslHttpRequest[List[(String, String)], UrlForm] = DslHttpRequest[List[(String, String)], UrlForm](POST, url, None, Nil, Nil)
+  def postFormData(url: String): DslHttpRequest[List[(String, String)], Multipart[Task]] = DslHttpRequest[List[(String, String)], Multipart[Task]](POST, url, None, Nil, Nil)
+  def postFileData(url: String): DslHttpRequest[Path, Multipart[Task]] = DslHttpRequest[Path, Multipart[Task]](POST, url, None, Nil, Nil)
 
   // XML
-  implicit val showElem = Show.fromToString[Elem]
-  def postXml(url: String): DslHttpRequest[Elem, Elem] = DslHttpRequest[Elem, Elem](POST, url, None, Nil, Nil)
+  def postXML(url: String): DslHttpRequest[Elem, Elem] = DslHttpRequest[Elem, Elem](POST, url, None, Nil, Nil)
 
   // File/Path
-  implicit val showPath = Show.fromToString[Path]
   def uploadFile(url: String): DslHttpRequest[Path, Path] = DslHttpRequest[Path, Path](POST, url, None, Nil, Nil)
 }
 
