@@ -4,8 +4,8 @@ import java.nio.file.{ Path, Paths }
 import java.util.UUID
 
 import com.github.agourlay.cornichon.json.CornichonJson
-import cats.instances.string._
 import com.github.agourlay.cornichon.util.StringUtils
+
 import io.circe.Json
 
 import scala.annotation.implicitNotFound

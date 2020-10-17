@@ -2,7 +2,6 @@ package scenario
 
 import java.util.concurrent.{ ExecutorService, Executors }
 
-import cats.instances.int._
 import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }

@@ -4,7 +4,6 @@ import cats.Foldable
 import cats.data.{ NonEmptyList, StateT, ValidatedNel }
 import cats.syntax.either._
 import cats.syntax.apply._
-import cats.instances.list._
 import cats.data.NonEmptyList._
 import cats.data.Validated._
 import monix.eval.Task

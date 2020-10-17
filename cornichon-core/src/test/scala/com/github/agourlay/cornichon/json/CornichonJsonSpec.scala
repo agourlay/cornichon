@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.json
 
 import io.circe.{ Json, JsonObject }
-import cats.instances.string._
 import com.github.agourlay.cornichon.json.JsonPath._
 import utest._
 

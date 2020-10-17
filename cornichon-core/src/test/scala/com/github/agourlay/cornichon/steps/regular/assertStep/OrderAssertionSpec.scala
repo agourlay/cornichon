@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.instances.int._
 import utest._
 
 object OrderAssertionSpec extends TestSuite {

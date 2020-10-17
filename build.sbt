@@ -120,6 +120,7 @@ lazy val core =
         library.http4sClient,
         library.http4sCirce,
         library.http4sXml,
+        library.fs2Io,
         library.catsCore,
         library.pureConfig,
         library.parboiled,
@@ -277,7 +278,7 @@ lazy val library =
       val claimant      = "0.1.3"
       val scalaTest     = "3.2.2"
       val utest         = "0.7.5"
-      val cats          = "2.1.1"
+      val cats          = "2.2.0"
       val parboiled     = "2.2.1"
       val scalaCheck    = "1.14.3"
       val sangriaCirce  = "1.3.0"
@@ -288,10 +289,11 @@ lazy val library =
       val pureConfig    = "0.14.0"
       val monix         = "3.2.2"
       val sbtTest       = "1.0"
-      val http4s        = "0.21.7"
+      val http4s        = "0.21.8"
+      val fs2           = "2.4.4"
       val embeddedKafka = "2.6.0"
       val kafkaClient   = "2.6.0"
-      val caffeine      = "2.8.5"
+      val caffeine      = "2.8.6"
       val openPojo      = "0.8.13"
       val decline       = "1.3.0"
       val scalaXml      = "2.0.0-M2"
@@ -319,6 +321,7 @@ lazy val library =
     val http4sCirce   = "org.http4s"                     %% "http4s-circe"         % Version.http4s
     val http4sDsl     = "org.http4s"                     %% "http4s-dsl"           % Version.http4s
     val http4sXml     = "org.http4s"                     %% "http4s-scala-xml"     % Version.http4s
+    val fs2Io         = "co.fs2"                         %% "fs2-io"               % Version.fs2
     val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
     val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.embeddedKafka
     val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"             % Version.caffeine
