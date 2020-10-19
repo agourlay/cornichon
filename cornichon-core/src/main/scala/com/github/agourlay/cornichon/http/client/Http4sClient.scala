@@ -93,9 +93,9 @@ class Http4sClient(
       uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
     }
 
-  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, HttpResponse] =
+  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(ee: EntityEncoder[Task, A]): EitherT[Task, CornichonError, (Request[Task], HttpResponse)] =
     parseUri(cReq.url).fold(
-      e => EitherT.left[HttpResponse](Task.now(e)),
+      e => EitherT.left(Task.now(e)),
       uri => EitherT {
         val req = Request[Task](toHttp4sMethod(cReq.method))
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b)(ee))
@@ -119,6 +119,7 @@ class Http4sClient(
 
         Task.race(cornichonResponse, timeout)
           .map(_.fold(identity, identity))
+          .map(resp => resp.map((completeRequest, _)))
           .onErrorRecover { case t: Throwable => RequestError(cReq, t).asLeft }
       }
     )

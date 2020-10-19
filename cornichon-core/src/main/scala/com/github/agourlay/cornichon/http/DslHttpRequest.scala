@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http
 
-import java.nio.file.Path
+import java.net.URL
 
 import cats.Show
 import cats.syntax.show._
@@ -12,7 +12,6 @@ import org.http4s.UrlForm
 import org.http4s.multipart.Multipart
 
 import scala.concurrent.duration.FiniteDuration
-import scala.xml.Elem
 
 case class HttpMethod(name: String)
 
@@ -37,7 +36,7 @@ trait BaseRequest {
   def headersTitle: String = if (headers.isEmpty) "" else s" with headers ${printArrowPairs(headers)}"
 }
 
-case class DslHttpRequest[DSL_INPUT: Show: Resolvable, ENTITY_HTTP](method: HttpMethod, url: String, body: Option[DSL_INPUT], params: Seq[(String, String)], headers: Seq[(String, String)], hp: HttpPayload[DSL_INPUT, ENTITY_HTTP])
+case class DslHttpRequest[DSL_INPUT: Show: Resolvable, ENTITY_HTTP: Show](method: HttpMethod, url: String, body: Option[DSL_INPUT], params: Seq[(String, String)], headers: Seq[(String, String)], hp: HttpPayload[DSL_INPUT, ENTITY_HTTP])
   extends BaseRequest {
 
   def withParams(params: (String, String)*) = copy(params = params)
@@ -60,12 +59,14 @@ case class DslHttpRequest[DSL_INPUT: Show: Resolvable, ENTITY_HTTP](method: Http
 trait DslHttpRequests {
   import com.github.agourlay.cornichon.http.HttpMethods._
   import com.github.agourlay.cornichon.http.HttpPayload._
-  import cats.instances.string._
-  import cats.instances.list._
-  import cats.instances.tuple._
 
-  implicit val showPath = Show.fromToString[Path]
-  implicit val showElem = Show.fromToString[Elem]
+  implicit val showUrl = new Show[URL] {
+    def show(url: URL): String = s"URL ${url.toString}"
+  }
+
+  implicit val showMultipart = Show.fromToString[Multipart[Task]]
+  implicit val showListTuple = Show.fromToString[List[(String, String)]]
+  implicit val showUrlForm = Show.fromToString[UrlForm]
 
   // JSON
   def get(url: String): DslHttpRequest[String, Json] = DslHttpRequest[String, Json](GET, url, None, Nil, Nil)
@@ -76,20 +77,14 @@ trait DslHttpRequests {
   def put(url: String): DslHttpRequest[String, Json] = DslHttpRequest[String, Json](PUT, url, None, Nil, Nil)
   def patch(url: String): DslHttpRequest[String, Json] = DslHttpRequest[String, Json](PATCH, url, None, Nil, Nil)
 
-  // Forms
-  def postFormUrlEncoded(url: String): DslHttpRequest[List[(String, String)], UrlForm] = DslHttpRequest[List[(String, String)], UrlForm](POST, url, None, Nil, Nil)
-  def postFormData(url: String): DslHttpRequest[List[(String, String)], Multipart[Task]] = DslHttpRequest[List[(String, String)], Multipart[Task]](POST, url, None, Nil, Nil)
-  def postFileData(url: String): DslHttpRequest[Path, Multipart[Task]] = DslHttpRequest[Path, Multipart[Task]](POST, url, None, Nil, Nil)
-
-  // XML
-  def postXML(url: String): DslHttpRequest[Elem, Elem] = DslHttpRequest[Elem, Elem](POST, url, None, Nil, Nil)
-
-  // File/Path
-  def uploadFile(url: String): DslHttpRequest[Path, Path] = DslHttpRequest[Path, Path](POST, url, None, Nil, Nil)
+  // Non-JSON
+  def post_form_url_encoded(url: String): DslHttpRequest[List[(String, String)], UrlForm] = DslHttpRequest[List[(String, String)], UrlForm](POST, url, None, Nil, Nil)
+  def post_form_data(url: String): DslHttpRequest[List[(String, String)], Multipart[Task]] = DslHttpRequest[List[(String, String)], Multipart[Task]](POST, url, None, Nil, Nil)
+  def post_file_form_data(url: String): DslHttpRequest[URL, Multipart[Task]] = DslHttpRequest[URL, Multipart[Task]](POST, url, None, Nil, Nil)
 }
 
 object DslHttpRequest extends DslHttpRequests {
-  def apply[DSL_INPUT: Show: Resolvable, ENTITY_HTTP](method: HttpMethod, url: String, body: Option[DSL_INPUT], params: Seq[(String, String)], headers: Seq[(String, String)])(implicit hp: HttpPayload[DSL_INPUT, ENTITY_HTTP]): DslHttpRequest[DSL_INPUT, ENTITY_HTTP] =
+  def apply[DSL_INPUT: Show: Resolvable, ENTITY_HTTP: Show](method: HttpMethod, url: String, body: Option[DSL_INPUT], params: Seq[(String, String)], headers: Seq[(String, String)])(implicit hp: HttpPayload[DSL_INPUT, ENTITY_HTTP]): DslHttpRequest[DSL_INPUT, ENTITY_HTTP] =
     DslHttpRequest(method, url, body, params, headers, hp)
 }
 

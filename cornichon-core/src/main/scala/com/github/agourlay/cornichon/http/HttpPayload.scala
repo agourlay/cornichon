@@ -1,19 +1,17 @@
 package com.github.agourlay.cornichon.http
 
-import java.nio.file.Path
+import java.net.URL
 
 import cats.Show
 import cats.effect.Blocker
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson
-import com.github.agourlay.cornichon.util.StringUtils
 import io.circe.{ Encoder, Json }
 import monix.eval.Task
-import org.http4s.{ EntityEncoder, UrlForm }
+import org.http4s.{ EntityEncoder, MediaType, UrlForm }
 import org.http4s.EntityEncoder._
+import org.http4s.headers.`Content-Type`
 import org.http4s.multipart.{ Multipart, Part }
-
-import scala.xml.Elem
 
 trait HttpPayload[DSL, ENTITY] {
   implicit val entityEncoder: EntityEncoder[Task, ENTITY]
@@ -49,32 +47,15 @@ object HttpPayload {
       )
   }
 
-  implicit val formFileDataHttpPayload = new HttpPayload[Path, Multipart[Task]] {
+  implicit val formFileDataHttpPayload = new HttpPayload[URL, Multipart[Task]] {
     implicit val entityEncoder: EntityEncoder[Task, Multipart[Task]] = multipartEncoder[Task]
-    def toEntity(p: Path) =
+    def toEntity(url: URL) =
       Right(
         Multipart[Task](
           Vector(
-            Part.fileData[Task](p.getFileName.toString, p.toFile, blocker)
+            Part.fileData[Task](url.getFile, url, blocker, `Content-Type`(MediaType.image.jpeg))
           )
         )
       )
-  }
-
-  implicit val xmlHttpPayload = new HttpPayload[Elem, Elem] {
-    import org.http4s.scalaxml._
-    implicit val entityEncoder: EntityEncoder[Task, Elem] = xmlEncoder[Task]
-    def toEntity(a: Elem) = Right(a)
-  }
-
-  implicit val xmlStringHttpPayload = new HttpPayload[String, Elem] {
-    import org.http4s.scalaxml._
-    implicit val entityEncoder: EntityEncoder[Task, Elem] = xmlEncoder[Task]
-    def toEntity(a: String) = StringUtils.parseXml(a)
-  }
-
-  implicit val filePathHttpPayload = new HttpPayload[Path, Path] {
-    implicit val entityEncoder: EntityEncoder[Task, Path] = filePathEncoder[Task](blocker)
-    def toEntity(p: Path) = Right(p)
   }
 }

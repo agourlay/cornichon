@@ -128,8 +128,7 @@ object SessionSteps {
 
     def asJson: JsonStepBuilder = JsonStepBuilder(sessionKey, prettySessionKeyTitle)
     // TODO
-    // def asXml
-    // def asFile
+    // def asFile (assert name, extension, size)
   }
 
   def keyIsPresentError(keyName: String, keyValue: String): String = {

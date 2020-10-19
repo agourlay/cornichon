@@ -53,12 +53,15 @@ object PlaceholderResolver {
 
   def fillPlaceholdersResolvable[A: Resolvable](resolvableInput: A)(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, A] = {
     val ri = Resolvable[A]
-    val resolvableForm = ri.toResolvableForm(resolvableInput)
-    fillPlaceholders(resolvableForm)(session, randomContext, customExtractors).map { resolved =>
-      // If the input did not contain placeholders,
-      // we can return the original value directly
-      // and avoid an extra transformation from the resolved form
-      if (resolved == resolvableForm) resolvableInput else ri.fromResolvableForm(resolved)
+    ri.toResolvableForm(resolvableInput) match {
+      case None => Right(resolvableInput)
+      case Some(resolvableForm) =>
+        fillPlaceholders(resolvableForm)(session, randomContext, customExtractors).map { resolved =>
+          // If the input did not contain placeholders,
+          // we can return the original value directly
+          // and avoid an extra transformation from the resolved form
+          if (resolved == resolvableForm) resolvableInput else ri.fromResolvableForm(resolved)
+        }
     }
   }
 
