@@ -295,7 +295,7 @@ lazy val library =
       val caffeine      = "2.9.0"
       val openPojo      = "0.8.13"
       val decline       = "1.3.0"
-      val scalaXml      = "2.0.0-M4"
+      val scalaXml      = "2.0.0-M5"
     }
     val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
