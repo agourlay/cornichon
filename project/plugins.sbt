@@ -1,5 +1,5 @@
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.13")
+addSbtPlugin("com.github.sbt" % "sbt-release" % "1.0.15")
 addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.1.2")
 addSbtPlugin("com.47deg"  % "sbt-microsites" % "1.3.2")
 addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.3")
