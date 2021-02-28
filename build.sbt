@@ -118,6 +118,9 @@ lazy val core =
       testFrameworks += new TestFramework("utest.runner.Framework"),
       libraryDependencies ++= Seq(
         library.http4sClient,
+        library.sttp,
+        library.sttpAsync,
+        library.sttpHttp4s,
         library.http4sCirce,
         library.fs2Io,
         library.catsCore,
@@ -296,6 +299,7 @@ lazy val library =
       val openPojo      = "0.8.13"
       val decline       = "1.3.0"
       val scalaXml      = "2.0.0-M5"
+      val sttp          = "3.1.6"
     }
     val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
@@ -316,6 +320,9 @@ lazy val library =
     val monixReactive = "io.monix"                       %% "monix-reactive"       % Version.monix
     val sbtTest       = "org.scala-sbt"                  %  "test-interface"       % Version.sbtTest
     val http4sClient  = "org.http4s"                     %% "http4s-blaze-client"  % Version.http4s
+    val sttp          = "com.softwaremill.sttp.client3"  %% "core"                 % Version.sttp
+    val sttpAsync     = "com.softwaremill.sttp.client3"  %% "async-http-client-backend-monix" % Version.sttp
+    val sttpHttp4s    = "com.softwaremill.sttp.client3"  %% "http4s-backend"       % Version.sttp
     val http4sServer  = "org.http4s"                     %% "http4s-blaze-server"  % Version.http4s
     val http4sCirce   = "org.http4s"                     %% "http4s-circe"         % Version.http4s
     val http4sDsl     = "org.http4s"                     %% "http4s-dsl"           % Version.http4s
