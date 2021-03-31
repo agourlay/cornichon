@@ -18,15 +18,16 @@ import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
 import com.github.agourlay.cornichon.steps.cats.{ EffectStep => CEffectStep }
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
-import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
+import com.github.agourlay.cornichon.http.client.{ HttpClient, SttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
 import io.circe.{ Encoder, Json }
+
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
+import com.github.agourlay.cornichon.http.client.SttpClient.Https4BackendOption
 import monix.execution.Scheduler
 
 import scala.concurrent.duration._
@@ -221,7 +222,9 @@ object HttpDsl {
 
   lazy val globalHttpClient: HttpClient = {
     val config = BaseFeature.config
-    val c = new Http4sClient(config.addAcceptGzipByDefault, config.disableCertificateVerification, config.followRedirect)(Scheduler.Implicits.global)
+    val backendKey = config.httpBackend.orElse(sys.env.get("CORNICHON_HTTP_BACKEND")).getOrElse(Https4BackendOption.key)
+
+    val c = SttpClient(SttpClient.BackendOption(backendKey))(config.addAcceptGzipByDefault, config.disableCertificateVerification, config.followRedirect)(Scheduler.Implicits.global)
     BaseFeature.addShutdownHook(() => c.shutdown().runToFuture(Scheduler.Implicits.global))
     c
   }

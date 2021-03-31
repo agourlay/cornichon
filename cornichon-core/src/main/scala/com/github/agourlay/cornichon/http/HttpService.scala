@@ -5,8 +5,6 @@ import cats.data.EitherT
 import cats.syntax.traverse._
 import cats.syntax.show._
 import cats.syntax.either._
-
-import org.http4s.circe._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
@@ -20,6 +18,7 @@ import io.circe.{ Encoder, Json }
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
+import sttp.client3.{ BasicRequestBody, BodySerializer, StringBody }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -32,6 +31,10 @@ class HttpService(
 
   // Cannot be globally shared because it depends on `baseUrl`
   private val fullUrlCache = Caching.buildCache[String, String]()
+
+  private implicit def bodySerializer[A](implicit encoder: Encoder[A]): BodySerializer[A] = new BodySerializer[A] {
+    override def apply(value: A): BasicRequestBody = StringBody(encoder(value).noSpaces, "UTF-8")
+  }
 
   private def resolveAndParseBody[A: Show: Resolvable: Encoder](body: Option[A], scenarioContext: ScenarioContext): Either[CornichonError, Option[Json]] =
     body.map(scenarioContext.fillPlaceholders(_)) match {
