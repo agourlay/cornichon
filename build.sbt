@@ -59,7 +59,7 @@ lazy val standardSettings = Seq(
   scalaVersion := "2.13.5",
   crossScalaVersions := Seq(scalaVersion.value, "2.12.13"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  fork in Test := true,
+  Test / fork := true,
   scalacOptions ++= compilerOptions(scalaVersion.value),
   // Additional meta-info required by maven central
   startYear := Some(2015),
@@ -77,7 +77,7 @@ lazy val standardSettings = Seq(
 lazy val publishingSettings = Seq(
   releasePublishArtifactsAction := PgpKeys.publishSigned.value, //key and passphrase could be exported/encoded to enable someone else to do a release
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := (_ => false),
   publishTo := Some(
     if (version.value.trim.endsWith("SNAPSHOT"))
@@ -101,8 +101,8 @@ lazy val cornichon =
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
-      unmanagedSourceDirectories.in(Compile) := Nil,
-      unmanagedSourceDirectories.in(Test) := Nil
+      Compile / unmanagedSourceDirectories  := Nil,
+      Test / unmanagedSourceDirectories := Nil
     )
 
 lazy val core =
@@ -114,7 +114,7 @@ lazy val core =
     .settings(formattingSettings)
     .settings(
       name := "cornichon-core",
-      testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
+      Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
       testFrameworks += new TestFramework("utest.runner.Framework"),
       libraryDependencies ++= Seq(
         library.http4sClient,
@@ -224,7 +224,7 @@ lazy val docs =
     .in(file("./cornichon-docs"))
     .settings(
       name := "cornichon-docs",
-      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(benchmarks, scalatest),
+      ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(benchmarks, scalatest),
       micrositeDocumentationLabelDescription := "Scaladoc"
     )
     .dependsOn(core, testFramework, kafka, httpMock)
@@ -256,10 +256,10 @@ lazy val docSettings = Seq(
     "white-color" -> "#FFFFFF"),
   autoAPIMappings := true,
   micrositeDocumentationUrl := "api",
-  addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), micrositeDocumentationUrl),
+  addMappingsToSiteDir(ScalaUnidoc / packageDoc / mappings, micrositeDocumentationUrl),
   ghpagesNoJekyll := false,
   git.remoteRepo := "git@github.com:agourlay/cornichon.git",
-  includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
+  makeSite / includeFilter := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )
 
 lazy val formattingSettings = Seq(
