@@ -5,7 +5,7 @@ import cats.syntax.either._
 import cats.syntax.show._
 import cats.syntax.traverse._
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
-import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionStepBuilder, SessionValuesStepBuilder }
+import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionHistoryStepBuilder, SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.wrapped._
@@ -165,6 +165,9 @@ trait CoreDsl {
 
   def session_values(k1: String, k2: String): SessionValuesStepBuilder =
     SessionValuesStepBuilder(k1, k2)
+
+  def session_history(key: String): SessionHistoryStepBuilder =
+    SessionHistoryStepBuilder(key)
 
   def show_session: Step =
     DebugStep("show session", sc => s"Session content is\n${sc.session.show}".asRight)

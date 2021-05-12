@@ -1,8 +1,13 @@
 package com.github.agourlay.cornichon.dsl
 
+import cats.instances.either._
+import cats.instances.set._
+import cats.instances.vector._
 import cats.syntax.show._
+import cats.syntax.traverse._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps._
+import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 
 import scala.util.matching.Regex
@@ -127,6 +132,27 @@ object SessionSteps {
     )
 
     def asJson: JsonStepBuilder = JsonStepBuilder(sessionKey, prettySessionKeyTitle)
+  }
+
+  case class SessionHistoryStepBuilder(private val sessionKey: String) {
+    def containsExactly[A: Resolvable](elements: A*): AssertStep = {
+      val prettyElements = elements.mkString(" and ")
+      val title = s"$sessionKey history contains exactly\n$prettyElements"
+      historyContainsExactlyElmt(title, elements)
+    }
+
+    private def historyContainsExactlyElmt[A: Resolvable](title: String, expectedElements: Seq[A]) =
+      AssertStep(
+        title = title,
+        action = sc => Assertion.either {
+          for {
+            actualValues <- sc.session.getHistory(sessionKey)
+            expectedResolvedElements <- expectedElements.toVector
+              .traverse(e => sc.fillPlaceholders(e))
+              .map(_.map(Resolvable[A].toResolvableForm))
+          } yield CollectionsContainSameElements(expectedResolvedElements, actualValues)
+        }
+      )
   }
 
   def keyIsPresentError(keyName: String, keyValue: String): String = {
