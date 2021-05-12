@@ -134,14 +134,14 @@ object SessionSteps {
     def asJson: JsonStepBuilder = JsonStepBuilder(sessionKey, prettySessionKeyTitle)
   }
 
-  case class SessionArrayStepBuilder(private val sessionKey: String) {
+  case class SessionHistoryStepBuilder(private val sessionKey: String) {
     def containsExactly[A: Resolvable](elements: A*): AssertStep = {
       val prettyElements = elements.mkString(" and ")
-      val title = s"$sessionKey value contains\n$prettyElements"
-      bodyContainsExactlyElmt(title, elements)
+      val title = s"$sessionKey history contains exactly\n$prettyElements"
+      historyContainsExactlyElmt(title, elements)
     }
 
-    private def bodyContainsExactlyElmt[A: Resolvable](title: String, expectedElements: Seq[A]) =
+    private def historyContainsExactlyElmt[A: Resolvable](title: String, expectedElements: Seq[A]) =
       AssertStep(
         title = title,
         action = sc => Assertion.either {
