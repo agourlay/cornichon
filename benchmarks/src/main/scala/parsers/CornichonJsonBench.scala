@@ -15,29 +15,30 @@ class CornichonJsonBench {
 
   /*
   [info] Benchmark                                     Mode  Cnt          Score        Error  Units
-  [info] CornichonJsonBench.parseDslStringJsonArray   thrpt   10    5100163,535 ±  12479,050  ops/s
-  [info] CornichonJsonBench.parseDslStringJsonString  thrpt   10  377827810,866 ± 684456,674  ops/s
-  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10   46237950,669 ± 191532,790  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonArray   thrpt   10    3509881,308 ±  11500,692  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonString  thrpt   10   57108690,084 ± 236092,062  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10     124675,240 ±   1318,816  ops/s
    */
 
   @Benchmark
   def parseDslStringJsonString() = {
-    val res = CornichonJson.parseDslJson("cornichon")
+    val res = CornichonJson.parseDslJson(" a rather long string about cornichon ")
     assert(res.isRight)
   }
 
   @Benchmark
   def parseDslStringJsonArray() = {
-    val res = CornichonJson.parseDslJson("""[ "cornichon", "cornichon" ] """)
+    val res = CornichonJson.parseDslJson("""[ "a", "very", "cool", "feature" ] """)
     assert(res.isRight)
   }
 
   @Benchmark
   def parseDslStringJsonTable() = {
     val res = CornichonJson.parseDslJson("""
-      Name   |   Age  |
-      "John" |   30   |
-      "Bob"  |   41   |
+      | Name   |  Age | City     |
+      | "John" |  30  | "Paris"  |
+      | "Bob"  |  41  | "Berlin" |
+      | "Carl" |  29  | "Milan"  |
     """)
     assert(res.isRight)
   }
