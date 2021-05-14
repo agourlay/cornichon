@@ -144,7 +144,7 @@ class Http4sClient(
               HttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
-                body = Json.fromValues(events.map(_.asJson)).show
+                body = Json.fromValues(events.iterator.map(_.asJson).toVector).show
               ).asRight[CornichonError]
             }
         }
