@@ -28,19 +28,22 @@ trait CornichonJson {
   // - an array
   // - a string
   // - a data table
-  private def parseDslStringJson(s: String): Either[CornichonError, Json] = {
-    val trimmed = s.trim
-    if (trimmed.isEmpty)
-      Json.fromString(s).asRight
-    else {
-      val firstChar = trimmed.charAt(0)
-      (firstChar: @switch) match {
-        case '{' | '[' => parseString(s) // parse object or array
-        case '|'       => parseDataTable(s).map(list => Json.fromValues(list.map(Json.fromJsonObject))) // table is turned into a JArray
-        case _         => Json.fromString(s).asRight // treated as a JString
-      }
+  private def parseDslStringJson(s: String): Either[CornichonError, Json] =
+    firstNonEmptyChar(s) match {
+      case None => Json.fromString(s).asRight
+      case Some(firstChar) =>
+        (firstChar: @switch) match {
+          // parse object or array
+          case '{' | '[' =>
+            parseString(s)
+          // table is turned into a JArray
+          case '|' =>
+            parseDataTable(s).map(list => Json.fromValues(list.map(Json.fromJsonObject)))
+          // treated as a JString
+          case _ =>
+            Json.fromString(s).asRight
+        }
     }
-  }
 
   def parseDslJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
     case s: String => parseDslStringJson(s)
@@ -53,15 +56,14 @@ trait CornichonJson {
   def parseString(s: String): Either[MalformedJsonError[String], Json] =
     io.circe.parser.parse(s).leftMap(f => MalformedJsonError(s, f.message))
 
-  def isJsonString(s: String): Boolean = {
-    val trimmed = s.trim
-    if (trimmed.isEmpty)
-      false
-    else {
-      val head = trimmed.charAt(0)
-      head != '[' && head != '{' && head != '|'
+  def isJsonString(s: String): Boolean =
+    firstNonEmptyChar(s) match {
+      case None       => false
+      case Some(head) => head != '[' && head != '{' && head != '|'
     }
-  }
+
+  private def firstNonEmptyChar(s: String): Option[Char] =
+    s.find { ch => ch != ' ' && ch != '\t' && !ch.isWhitespace }
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     def parseCol(col: (String, String)) = parseString(col._2).map(col._1 -> _)
