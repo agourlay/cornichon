@@ -87,22 +87,20 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   def addValueUnsafe(key: String, value: String): Session =
     addValue(key, value).valueUnsafe
 
-  def addValues(tuples: (String, String)*): Either[CornichonError, Session] =
-    tuples match {
-      case t :: Nil =>
-        addValue(t._1, t._2)
-      case t1 :: t2 :: Nil =>
-        addValue(t1._1, t1._2).flatMap(_.addValue(t2._1, t2._2))
-      case _ =>
-        tuples
-          .toList
-          .traverse(t => validateKey(t._1)) //validate all keys and then work at the Map level for efficiency
-          .map { _ =>
-            // Idea: this could be a mutable map for the time of the updates
-            val updatedContent = tuples.foldLeft(this.content)((c, t) => updateContent(c)(t._1, t._2))
-            Session(updatedContent)
-          }
+  def addValues(tuples: (String, String)*): Either[CornichonError, Session] = {
+    var resultSession = this
+    var error: Option[Either[CornichonError, Session]] = None
+    val iter = tuples.iterator
+    // no generic cats.traverse for performance
+    while (error.isEmpty && iter.hasNext) {
+      val (k, v) = iter.next()
+      resultSession.addValue(k, v) match {
+        case e @ Left(_)       => error = Some(e)
+        case Right(newSession) => resultSession = newSession
+      }
     }
+    error.getOrElse(resultSession.asRight)
+  }
 
   def addValuesUnsafe(tuples: (String, String)*): Session =
     addValues(tuples: _*).valueUnsafe
