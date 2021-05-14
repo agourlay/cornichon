@@ -38,7 +38,7 @@ trait CornichonJson {
             parseString(s)
           // table is turned into a JArray
           case '|' =>
-            parseDataTable(s).map(list => Json.fromValues(list.map(Json.fromJsonObject)))
+            parseDataTable(s).map(list => Json.fromValues(list.iterator.map(Json.fromJsonObject).toVector))
           // treated as a JString
           case _ =>
             Json.fromString(s).asRight
