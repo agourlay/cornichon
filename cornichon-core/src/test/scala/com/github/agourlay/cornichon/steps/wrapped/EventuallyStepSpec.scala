@@ -42,44 +42,42 @@ object EventuallyStepSpec extends TestSuite with CommonTestSuite {
       assert(executionTime.lt(120.millis))
     }
 
-    // Waiting for Monix 3.1 to interrupt Thread.sleep
-    // https://twitter.com/alexelcu/status/1168428868841213952
-    //    test("replays eventually handle hanging wrapped steps") {
-    //      val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
-    //      val nested = AssertStep(
-    //        "slow always true step", _ => {
-    //          Thread.sleep(1000)
-    //          Assertion.alwaysValid
-    //        }
-    //      ) :: Nil
-    //      val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
-    //      val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
-    //      val (executionTime, rep) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
-    //
-    //      // currently the idle detection is at maxTime * 2
-    //      assert(executionTime.lt(500.millis))
-    //
-    //      scenarioFailsWithMessage(rep) {
-    //        """Scenario 'scenario with eventually that fails' failed:
-    //              |
-    //              |at step:
-    //              |Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
-    //              |
-    //              |with error(s):
-    //              |Eventually block is interrupted due to a long period of inactivity
-    //              |
-    //              |seed for the run was '1'
-    //              |""".stripMargin
-    //      }
-    //
-    //      matchLogsWithoutDuration(rep.logs) {
-    //        """
-    //              |   Scenario : scenario with eventually that fails
-    //              |      main steps
-    //              |      Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
-    //              |      Eventually block did not complete in time after having being tried '1' times with '0' distinct errors""".stripMargin
-    //      }
-    //    }
+    test("replays eventually handle hanging wrapped steps") {
+      val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
+      val nested = AssertStep(
+        "slow always true step", _ => {
+          Thread.sleep(1000)
+          Assertion.alwaysValid
+        }
+      ) :: Nil
+      val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
+      val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
+      val (executionTime, rep) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
+
+      // currently the idle detection is at maxTime * 2
+      assert(executionTime.lt(500.millis))
+
+      scenarioFailsWithMessage(rep) {
+        """Scenario 'scenario with eventually that fails' failed:
+                  |
+                  |at step:
+                  |Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
+                  |
+                  |with error(s):
+                  |Eventually block is interrupted due to a long period of inactivity
+                  |
+                  |seed for the run was '1'
+                  |""".stripMargin
+      }
+
+      matchLogsWithoutDuration(rep.logs) {
+        """
+                  |   Scenario : scenario with eventually that fails
+                  |      main steps
+                  |      Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
+                  |      Eventually block did not complete in time after having being tried '1' times with '0' distinct errors""".stripMargin
+      }
+    }
 
     test("reports distinct errors in the logs and only final error in the report") {
       val eventuallyConf = EventuallyConf(maxTime = 200.millis, interval = 10.milliseconds)
