@@ -49,7 +49,6 @@ class MockHttpServer[A](
       .bindHttp(port, selectedInterface)
       .withoutBanner
       .withHttpApp(mockRouter)
-      .withNio2(true)
       .resource
       .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
 
