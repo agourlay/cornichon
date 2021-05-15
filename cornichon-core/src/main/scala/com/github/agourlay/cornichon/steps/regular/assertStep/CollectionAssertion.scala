@@ -10,7 +10,7 @@ import com.github.agourlay.cornichon.util.Printing._
 
 abstract class CollectionAssertion[A] extends Assertion
 
-case class CollectionNotEmptyAssertion[A: Show](collection: Iterable[A], name: String) extends CollectionAssertion[A] {
+case class CollectionNotEmptyAssertion[A](collection: Iterable[A], name: String) extends CollectionAssertion[A] {
   val validated = if (collection.nonEmpty) validDone else CollectionNotEmptyAssertionError(collection, name).invalidNel
 }
 

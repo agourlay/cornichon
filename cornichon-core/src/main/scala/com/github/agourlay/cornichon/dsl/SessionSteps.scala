@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.dsl
 
 import cats.instances.either._
-import cats.instances.set._
 import cats.instances.vector._
 import cats.syntax.show._
 import cats.syntax.traverse._

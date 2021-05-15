@@ -2,7 +2,7 @@ package com.github.agourlay.kafka.kafka
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.kafka.KafkaDsl
-import net.manub.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
+import io.github.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
 
 class KafkaExample extends CornichonFeature with KafkaDsl {
 

@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.{ Eq, Order, Show }
+import cats.Show
 import com.github.agourlay.cornichon.core.{ CornichonError, ScenarioContext }
 
 //experimental and unused ;)
-abstract class GenericCollectionAssertStepBuilder[A: Show: Order: Eq: Diff] { outer =>
+abstract class GenericCollectionAssertStepBuilder[A: Show] { outer =>
 
   protected val baseTitle: String
   protected def sessionExtractor(sc: ScenarioContext): Either[CornichonError, Iterable[A]]
