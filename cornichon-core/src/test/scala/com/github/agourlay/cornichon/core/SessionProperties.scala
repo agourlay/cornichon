@@ -65,8 +65,8 @@ object SessionProperties extends Properties("Session") {
         if (k1 == k2)
           s2.content.get(k1).contains(Vector(v1, v2))
         else {
-          s2.content.get(k1).contains(Vector(v1))
-          s2.content.get(k2).contains(Vector(v2))
+          s2.content.get(k1).contains(Vector(v1)) &&
+            s2.content.get(k2).contains(Vector(v2))
         }
       }
     }
