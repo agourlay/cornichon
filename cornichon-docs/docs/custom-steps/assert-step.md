@@ -13,7 +13,7 @@ The test engine is responsible to test the validity of the provided `Assertion` 
   * GenericEqualityAssertion to leave all the details to Cornichon
 
     ```scala
-    When I AssertStep("always true!", sc => GenericEqualityAssertion(true, true))
+    When I AssertStep("always true!", _ => GenericEqualityAssertion(true, true))
     ```
 
   * CustomMessageEqualityAssertion to provide a custom error message

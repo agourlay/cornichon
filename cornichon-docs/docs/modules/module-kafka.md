@@ -33,7 +33,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
       When I read_from_topic(
         topic = "cornichon",
-        timeoutMs = 500,
+        timeoutMs = 200,
         atLeastAmount = 1
       )
 
