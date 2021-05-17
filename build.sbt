@@ -293,7 +293,7 @@ lazy val library =
       val embeddedKafka = "2.8.0"
       val kafkaClient   = "2.8.0"
       val caffeine      = "3.0.2"
-      val openPojo      = "0.8.13"
+      val openPojo      = "0.9.1"
       val decline       = "2.0.0"
       val scalaXml      = "2.0.0"
     }
