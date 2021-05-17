@@ -125,7 +125,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> ("prefix" + input + "suffix"))
       val stepP = sessionStepBuilder.matchesRegex(".*pref".r)
-      val stepI = if (input.nonEmpty) sessionStepBuilder.matchesRegex(s".*${input}".r) else alwaysValidAssertStep
+      val stepI = if (input.nonEmpty) sessionStepBuilder.matchesRegex(s".*$input".r) else alwaysValidAssertStep
       val stepS = sessionStepBuilder.matchesRegex(".*suff".r)
       val s = Scenario("scenario with SessionSteps", stepP :: stepI :: stepS :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
