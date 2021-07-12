@@ -131,6 +131,8 @@ object SessionSteps {
     )
 
     def asJson: JsonStepBuilder = JsonStepBuilder(sessionKey, prettySessionKeyTitle)
+    // TODO
+    // def asFile (assert name, extension, size)
   }
 
   case class SessionHistoryStepBuilder(private val sessionKey: String) {
