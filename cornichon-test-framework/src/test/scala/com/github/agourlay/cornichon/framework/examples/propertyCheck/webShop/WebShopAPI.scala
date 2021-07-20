@@ -14,7 +14,7 @@ import org.http4s.circe._
 import org.http4s.implicits._
 import org.http4s.dsl._
 import org.http4s.server.Router
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
 
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration.FiniteDuration

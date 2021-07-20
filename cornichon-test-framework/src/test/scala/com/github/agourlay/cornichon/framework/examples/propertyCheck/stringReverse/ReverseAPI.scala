@@ -7,7 +7,7 @@ import org.http4s._
 import org.http4s.implicits._
 import org.http4s.dsl._
 import org.http4s.server.Router
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
 
 class ReverseAPI extends Http4sDsl[Task] {
 

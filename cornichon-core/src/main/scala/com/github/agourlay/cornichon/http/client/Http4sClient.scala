@@ -21,7 +21,7 @@ import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
 import org.http4s._
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.middleware.{ GZip, FollowRedirect }
 
 import scala.concurrent.duration._

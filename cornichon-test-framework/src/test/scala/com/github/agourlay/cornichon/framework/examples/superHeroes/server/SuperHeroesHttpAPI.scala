@@ -11,7 +11,7 @@ import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s.server.{ AuthMiddleware, Router }
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
