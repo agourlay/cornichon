@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.http.client
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
@@ -13,16 +12,19 @@ import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpStreams.SSE
 import com.github.agourlay.cornichon.util.Caching
+import com.github.agourlay.cornichon.util.CirceUtil._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
+
 import javax.net.ssl.{ SSLContext, TrustManager, X509TrustManager }
 import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.Scheduler
 import org.http4s._
-import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.client.middleware.{ GZip, FollowRedirect }
+import org.http4s.blaze.client.BlazeClientBuilder
+import org.http4s.client.middleware.{ FollowRedirect, GZip }
+import org.typelevel.ci.CIString
 
 import scala.concurrent.duration._
 
@@ -78,11 +80,11 @@ class Http4sClient(
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  private def toHttp4sHeaders(headers: Seq[(String, String)]): List[Header] =
-    headers.iterator.map { case (n, v) => Header(n, v).parsed }.toList
+  private def toHttp4sHeaders(headers: Seq[(String, String)]): List[Header.Raw] =
+    headers.iterator.map { case (n, v) => Header.Raw(CIString(n), v) }.toList
 
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
-    headers.toList.map(h => (h.name.value, h.value))
+    headers.headers.map(h => (h.name.toString, h.value))
 
   def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
@@ -99,7 +101,7 @@ class Http4sClient(
       uri => EitherT {
         val req = Request[Task](toHttp4sMethod(cReq.method))
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
-          .putHeaders(toHttp4sHeaders(cReq.headers): _*) // `withEntity` adds `Content-Type` so we set the headers afterwards to have the possibility to override it
+          .putHeaders(toHttp4sHeaders(cReq.headers)) // `withEntity` adds `Content-Type` so we set the headers afterwards to have the possibility to override it
           .withUri(addQueryParams(uri, cReq.params))
         val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
           http4sResp
@@ -138,6 +140,7 @@ class Http4sClient(
             .body
             .through(ServerSentEvent.decoder)
             .interruptAfter(streamReq.takeWithin)
+            .filter(_ != ServerSentEvent.empty) // filter out empty SSE
             .compile
             .toList
             .map { events =>

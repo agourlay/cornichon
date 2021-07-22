@@ -718,12 +718,12 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.is(
           """
-            |    eventType     |      data      |  id  | retry |
-            | "superhero name" |    "Batman"    | null | null  |
-            | "superhero name" |   "Superman"   | null | null  |
-            | "superhero name" | "GreenLantern" | null | null  |
-            | "superhero name" |   "Spiderman"  | null | null  |
-            | "superhero name" |    "IronMan"   | null | null  |
+            |    eventType     |      data      |  id  | retry | comment |
+            | "superhero name" |    "Batman"    | null | null  |   null  |
+            | "superhero name" |   "Superman"   | null | null  |   null  |
+            | "superhero name" | "GreenLantern" | null | null  |   null  |
+            | "superhero name" |   "Spiderman"  | null | null  |   null  |
+            | "superhero name" |    "IronMan"   | null | null  |   null  |
            """
         )
       }

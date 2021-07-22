@@ -11,7 +11,7 @@ import monix.eval.Task
 import monix.eval.Task._
 import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s.server.{ AuthMiddleware, Router }
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
@@ -156,9 +156,9 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
     case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) :? JustNameQueryParamMatcher(justNameOpt) =>
       val superheroes = sm.allSuperheroes(sessionId)
       val sse = if (justNameOpt.getOrElse(false))
-        superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = sh.name))
+        superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = Some(sh.name)))
       else
-        superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = sh.asJson.noSpaces))
+        superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = Some(sh.asJson.noSpaces)))
       Ok(fs2.Stream.fromIterator[Task](sse.iterator))
   }
 
