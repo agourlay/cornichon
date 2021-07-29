@@ -115,8 +115,14 @@ object ScenarioResourceStepSpec extends TestSuite with CommonTestSuite {
 
   class QueueManager {
     private val state = new AtomicReference[List[Action]](Nil)
-    def create(name: String): Unit = state.getAndUpdate(CreateQueue(name) :: (_: List[Action]))
-    def delete(name: String): Unit = state.getAndUpdate(DeleteQueue(name) :: (_: List[Action]))
+    def create(name: String): Unit = {
+      state.getAndUpdate(CreateQueue(name) :: (_: List[Action]))
+      ()
+    }
+    def delete(name: String): Unit = {
+      state.getAndUpdate(DeleteQueue(name) :: (_: List[Action]))
+      ()
+    }
     def allActions: List[Action] = state.get().reverse
     def actionsFor(name: String): List[Action] = allActions.collect {
       case a @ CreateQueue(`name`) => a

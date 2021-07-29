@@ -10,6 +10,7 @@ object Http4sClientSpec extends TestSuite {
 
   override def utestAfterAll(): Unit = {
     client.shutdown().runSyncUnsafe()
+    ()
   }
 
   def tests = Tests {

@@ -245,7 +245,7 @@ object JsonSteps {
     }
 
     // (previousValue, currentValue) => Assertion
-    def compareWithPreviousValue[A: Show: Decoder](comp: (A, A) => Assertion): AssertStep = {
+    def compareWithPreviousValue[A: Decoder](comp: (A, A) => Assertion): AssertStep = {
       val baseTitle = s"compare previous & current value of ${if (jsonPath == JsonPath.root) s"$target content" else s"$target's field '$jsonPath'"}"
       AssertStep(
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
