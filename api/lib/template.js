@@ -1,7 +1,20 @@
 // © 2009–2010 EPFL/LAMP
 // code by Gilles Dubochet with contributions by Pedro Furlanetto, Marcin Kubala and Felix Mulder
 
+var $panzoom = undefined;
 $(document).ready(function() {
+    // Add zoom functionality to type inheritance diagram
+    $panzoom = $(".diagram-container > .diagram").panzoom({
+        increment: 0.1,
+        minScale: 1,
+        maxScale: 7,
+        transition: true,
+        duration: 200,
+        contain: 'invert',
+        easing: "ease-in-out",
+        $zoomIn: $('#diagram-zoom-in'),
+        $zoomOut: $('#diagram-zoom-out'),
+    });
 
     var oldWidth = $("div#subpackage-spacer").width() + 1 + "px";
     $("div#packages > ul > li.current").on("click", function() {
@@ -11,9 +24,8 @@ $(document).ready(function() {
 
     var controls = {
         visibility: {
-            publicFilter: $("#visbl").find("> ol > li.public"),
-            protectedFilter: $("#visbl").find("> ol > li.protected"),
-            privateFilter: $("#visbl").find("> ol > li.private")
+            publicOnly: $("#visbl").find("> ol > li.public"),
+            all: $("#visbl").find("> ol > li.all")
         }
     };
 
@@ -22,14 +34,21 @@ $(document).ready(function() {
         return str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)=<>\|])/g, '\\$1');
     }
 
-    function toggleVisibilityFilter() {
-        $(this).toggleClass("in").toggleClass("out");
-        filter();
+    function toggleVisibilityFilter(ctrlToEnable, ctrToDisable) {
+        if (ctrlToEnable.hasClass("out")) {
+            ctrlToEnable.removeClass("out").addClass("in");
+            ctrToDisable.removeClass("in").addClass("out");
+            filter();
+        }
     }
 
-    controls.visibility.publicFilter.on("click", toggleVisibilityFilter);
-    controls.visibility.protectedFilter.on("click", toggleVisibilityFilter);
-    controls.visibility.privateFilter.on("click", toggleVisibilityFilter);
+    controls.visibility.publicOnly.on("click", function() {
+        toggleVisibilityFilter(controls.visibility.publicOnly, controls.visibility.all);
+    });
+
+    controls.visibility.all.on("click", function() {
+        toggleVisibilityFilter(controls.visibility.all, controls.visibility.publicOnly);
+    });
 
     function exposeMember(jqElem) {
         var jqElemParent = jqElem.parent(),
@@ -38,7 +57,7 @@ $(document).ready(function() {
 
         // switch visibility filter if necessary
         if (jqElemParent.attr("visbl") == "prt") {
-            controls.visibility.privateFilter.removeClass("out").addClass("in");
+            toggleVisibilityFilter(controls.visibility.all, controls.visibility.publicOnly);
         }
 
         // toggle appropriate ancestor filter buttons
@@ -61,7 +80,7 @@ $(document).ready(function() {
         return $(elem).attr("data-hidden") == 'true';
     };
 
-    $("#linearization li").slice(1).filter(function(){
+    $("#linearization li:gt(0)").filter(function(){
         return isHiddenClass($(this).attr("name"));
     }).removeClass("in").addClass("out");
 
@@ -251,17 +270,18 @@ $(document).ready(function() {
           if (!isMobile()) content.slideUp(100);
           else content.hide();
       } else {
-          // TODO: is there a cleaner way to render the svg only once it's visible?
-          setTimeout(function() {content.trigger('beforeShow');}, 100);
           if (!isMobile()) content.slideDown(100);
           else content.show();
       }
     };
 
-    $(".toggle").on("click", function() {
-      toggleShowContentFct($(this).parent());
-      // Stop propagation so that we don't hide/show the parent (this a use case's full sig, which is nested in a member list)
-      if ($(this).parent().hasClass("full-signature-block")) return false;
+    $(".toggleContainer:not(.diagram-container):not(.full-signature-block)").on("click", function() {
+      toggleShowContentFct($(this));
+    });
+
+    $(".toggleContainer.full-signature-block").on("click", function() {
+      toggleShowContentFct($(this));
+      return false;
     });
 
     if ($("#order > ol > li.group").length == 1) { orderGroup(); };
@@ -274,11 +294,9 @@ $(document).ready(function() {
 
     // highlight and jump to selected member if an anchor is provided
     if (window.location.hash) {
-        var jqElem = findElementByHash(decodeURIComponent(window.location.hash));
-        if (jqElem.length > 0) {
-            if (jqElem.hasClass("toggleContainer")) toggleShowContentFct(jqElem);
-            else exposeMember(jqElem);
-        }
+        var jqElem = findElementByHash(window.location.hash);
+        if (jqElem.length > 0)
+            exposeMember(jqElem);
     }
 
     $("#template span.permalink").on("click", function(e) {
@@ -355,7 +373,7 @@ function initInherit() {
         groupParents[$(this).attr("name")] = $(this);
     });
 
-    $("#types > ol > li").add("#deprecatedTypes > ol > li").each(function(){
+    $("#types > ol > li").each(function(){
         var mbr = $(this);
         this.mbrText = mbr.find("> .fullcomment .cmt").text();
         var qualName = mbr.attr("name");
@@ -432,15 +450,11 @@ function filter() {
     var query = $.trim($("#memberfilter input").val()).toLowerCase();
     query = query.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&").replace(/\s+/g, "|");
     var queryRegExp = new RegExp(query, "i");
-
-    var publicMembersShown = $("#visbl > ol > li.public").hasClass("in");
-    var protectedMembersShown = $("#visbl > ol > li.protected").hasClass("in");
-    var privateMembersShown = $("#visbl > ol > li.private").hasClass("in");
-
+    var privateMembersHidden = $("#visbl > ol > li.public").hasClass("in");
     var orderingAlphabetic = $("#order > ol > li.alpha").hasClass("in");
     var orderingInheritance = $("#order > ol > li.inherit").hasClass("in");
     var orderingGroups = $("#order > ol > li.group").hasClass("in");
-    var hiddenSuperclassElementsLinearization = orderingInheritance ? $("#linearization > li").slice(1) : $("#linearization > li.out");
+    var hiddenSuperclassElementsLinearization = orderingInheritance ? $("#linearization > li:gt(0)") : $("#linearization > li.out");
     var hiddenSuperclassesLinearization = hiddenSuperclassElementsLinearization.map(function() {
       return $(this).attr("name");
     }).get();
@@ -486,16 +500,7 @@ function filter() {
       var members = $(this);
       members.find("> ol > li").each(function() {
         var mbr = $(this);
-        var visibility = mbr.attr("visbl");
-        if (!publicMembersShown && visibility == "pub") {
-          mbr.hide();
-          return;
-        }
-        if (!protectedMembersShown && visibility == "prt") {
-          mbr.hide();
-          return;
-        }
-        if (!privateMembersShown && visibility == "prv") {
+        if (privateMembersHidden && mbr.attr("visbl") == "prt") {
           mbr.hide();
           return;
         }

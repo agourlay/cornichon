@@ -80,7 +80,7 @@
   <li>there is a 10% chance to exit the game after a ping or a pong</li>
 </ul>
 
-<p>Also the DSL is asking for a <code class="highlighter-rouge">modelRunner</code> which is a little helper connecting a <code class="highlighter-rouge">model</code> to its <code class="highlighter-rouge">generators</code>.</p>
+<p>Also, the DSL is asking for a <code class="highlighter-rouge">modelRunner</code> which is a little helper connecting a <code class="highlighter-rouge">model</code> to its <code class="highlighter-rouge">generators</code>.</p>
 
 <p>The type inference is sometimes not properly detecting the action type, so it is recommended to define the <code class="highlighter-rouge">modelRunner</code> and the <code class="highlighter-rouge">model</code> as a single expression to help the typechecker.</p>
 
@@ -130,7 +130,7 @@
 <p>Which gives us the following scenario</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-<span class="nc">Scenario</span><span class="o">(</span><span class="err">"</span><span class="n">ping</span> <span class="n">pong</span> <span class="n">check</span><span class="o">)</span> <span class="o">{</span>
+<span class="nc">Scenario</span><span class="o">(</span><span class="s">"ping pong check"</span><span class="o">)</span> <span class="o">{</span>
 
   <span class="nc">Given</span> <span class="n">I</span> <span class="nf">check_model</span><span class="o">(</span><span class="n">maxNumberOfRuns</span> <span class="k">=</span> <span class="mi">2</span><span class="o">,</span> <span class="n">maxNumberOfTransitions</span> <span class="k">=</span> <span class="mi">10</span><span class="o">)(</span><span class="n">myModelRunner</span><span class="o">)</span>
 

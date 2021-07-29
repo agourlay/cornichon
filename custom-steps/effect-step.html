@@ -6,7 +6,7 @@
 
 <p>A <code class="highlighter-rouge">Session</code> is a Map-like object used to propagate state throughout a <code class="highlighter-rouge">scenario</code>. It is used to resolve <a href="../placeholders.md#placeholders">placeholders</a> and save the result computations for later assertions.</p>
 
-<p>Here is the most simple <code class="highlighter-rouge">EffectStep</code>:</p>
+<p>Here is the simplest <code class="highlighter-rouge">EffectStep</code> possible:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nc">EffectStep</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"do nothing"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">scenarioContext</span> <span class="k">=&gt;</span> <span class="nv">Future</span><span class="o">.</span><span class="py">successful</span><span class="o">(</span><span class="nc">Right</span><span class="o">(</span><span class="nv">scenarioContext</span><span class="o">.</span><span class="py">session</span><span class="o">)))</span>
 </code></pre></div></div>
@@ -20,7 +20,7 @@
 
 <p>Let’s try to save a value into the <code class="highlighter-rouge">Session</code></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nv">EffectStep</span><span class="o">.</span><span class="py">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">scenarioContext</span> <span class="k">=&gt;</span> <span class="nv">scenarioContext</span><span class="o">.</span><span class="py">session</span><span class="o">.</span><span class="py">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="nf">piComputation</span><span class="o">())</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">When</span> <span class="n">I</span> <span class="nv">EffectStep</span><span class="o">.</span><span class="py">fromSync</span><span class="o">(</span><span class="n">title</span> <span class="k">=</span> <span class="s">"estimate PI"</span><span class="o">,</span> <span class="n">action</span> <span class="k">=</span> <span class="n">scenarioContext</span> <span class="k">=&gt;</span> <span class="nv">scenarioContext</span><span class="o">.</span><span class="py">session</span><span class="o">.</span><span class="py">add</span><span class="o">(</span><span class="s">"result"</span><span class="o">,</span> <span class="nf">piComputation</span><span class="o">()))</span>
 </code></pre></div></div>
 
 <p>The test engine is responsible for controlling the execution of the side effect function and to report any error.</p>
@@ -35,19 +35,20 @@
 
 <h1 id="effectstep-using-the-http-service">EffectStep using the HTTP service</h1>
 
-<p>Sometimes you want to perform HTTP calls inside of of an <code class="highlighter-rouge">EffectStep</code>, this is where the <code class="highlighter-rouge">httpService</code> comes in handy.</p>
+<p>Sometimes you want to perform HTTP calls inside an <code class="highlighter-rouge">EffectStep</code>, this is where the <code class="highlighter-rouge">httpService</code> comes in handy.</p>
 
 <p>In order to illustrate its usage let’s take the following example, you would like to write a custom step like:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Customer endpoint"</span><span class="o">){</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">feature</span> <span class="k">=</span> <span class="nc">Feature</span><span class="o">(</span><span class="s">"Customer endpoint"</span><span class="o">)</span> <span class="o">{</span>
 
-  <span class="nc">Scenario</span><span class="o">(</span><span class="s">"create customer"</span><span class="o">){</span>
+  <span class="nc">Scenario</span><span class="o">(</span><span class="s">"create customer"</span><span class="o">)</span> <span class="o">{</span>
 
     <span class="nc">When</span> <span class="n">I</span> <span class="n">create_customer</span>
 
     <span class="nc">Then</span> <span class="n">assert</span> <span class="nv">status</span><span class="o">.</span><span class="py">is</span><span class="o">(</span><span class="mi">201</span><span class="o">)</span>
 
   <span class="o">}</span>
+<span class="o">}</span>
 </code></pre></div></div>
 
 <p>Most of the time you will create your own trait containing your custom steps and declare a self-type on <code class="highlighter-rouge">CornichonFeature</code> to be able to access the <code class="highlighter-rouge">httpService</code>.</p>

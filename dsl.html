@@ -315,7 +315,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
   <li>asserting JSON value in <code class="highlighter-rouge">session</code></li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">session_value</span><span class="o">(</span><span class="s">"my-json-response"</span><span class="o">).</span><span class="py">asJson</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"a.b.c"</span><span class="o">).</span><span class="py">ignoring</span><span class="o">(</span><span class="s">"d"</span><span class="o">).</span><span class="py">is</span><span class="o">(...)</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">session_value</span><span class="o">(</span><span class="s">"my-json-response"</span><span class="o">).</span><span class="py">asJson</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"a.b.c"</span><span class="o">).</span><span class="py">ignoring</span><span class="o">(</span><span class="s">"d"</span><span class="o">).</span><span class="py">is</span><span class="o">(</span><span class="s">"..."</span><span class="o">)</span>
 </code></pre></div></div>
 
 <ul>
@@ -404,7 +404,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
   <span class="o">}</span>
 </code></pre></div></div>
 
-<p>It is also possible to enable the oscillations detector to fail the step in case of oscillation of errors.</p>
+<p>It is also possible to enable the oscillation detector to fail the step in case of oscillation of errors.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Given</span> <span class="n">I</span> <span class="n">send_async_command_updating_search_index</span>
 <span class="nc">Eventually</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mf">1.</span><span class="n">seconds</span><span class="o">,</span> <span class="n">interval</span> <span class="k">=</span> <span class="mf">100.</span><span class="n">ms</span><span class="o">,</span> <span class="n">oscillationAllowed</span> <span class="k">=</span> <span class="kc">false</span><span class="o">)</span> <span class="o">{</span>
@@ -511,7 +511,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 
 <p>Refer to those <a href="https://github.com/agourlay/cornichon-http-mock/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/MockServerExample.scala">examples</a> for more information.</p>
 
-<p>This feature is experimental and subject to changes.</p>
+<p>This feature is experimental and may change in the future.</p>
 
 <ul>
   <li>Log duration</li>

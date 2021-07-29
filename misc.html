@@ -13,8 +13,8 @@
 <p>For instance if you wish to use the <code class="highlighter-rouge">JsObject</code> from <code class="highlighter-rouge">play-json</code> as HTTP request’s body you can define the following instances in your code:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">lazy</span> <span class="k">implicit</span> <span class="k">val</span> <span class="nv">jsonResolvableForm</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Resolvable</span><span class="o">[</span><span class="kt">JsObject</span><span class="o">]</span> <span class="o">{</span>
-    <span class="k">def</span> <span class="nf">toResolvableForm</span><span class="o">(</span><span class="n">s</span><span class="k">:</span> <span class="kt">JsObject</span><span class="o">)</span> <span class="k">=</span> <span class="nv">s</span><span class="o">.</span><span class="py">toString</span><span class="o">()</span>
-    <span class="k">def</span> <span class="nf">fromResolvableForm</span><span class="o">(</span><span class="n">s</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="k">=</span> <span class="nv">Json</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="n">s</span><span class="o">).</span><span class="py">as</span><span class="o">[</span><span class="kt">JsObject</span><span class="o">]</span>
+    <span class="k">override</span> <span class="k">def</span> <span class="nf">toResolvableForm</span><span class="o">(</span><span class="n">s</span><span class="k">:</span> <span class="kt">JsObject</span><span class="o">)</span> <span class="k">=</span> <span class="nv">s</span><span class="o">.</span><span class="py">toString</span><span class="o">()</span>
+    <span class="k">override</span> <span class="k">def</span> <span class="nf">fromResolvableForm</span><span class="o">(</span><span class="n">s</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="k">=</span> <span class="nv">Json</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="n">s</span><span class="o">).</span><span class="py">as</span><span class="o">[</span><span class="kt">JsObject</span><span class="o">]</span>
   <span class="o">}</span>
 
   <span class="k">lazy</span> <span class="k">implicit</span> <span class="k">val</span> <span class="nv">showJson</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Show</span><span class="o">[</span><span class="kt">JsObject</span><span class="o">]</span> <span class="o">{</span>
@@ -81,7 +81,7 @@ Options and flags:
 
 <p>You can place these settings in a <code class="highlighter-rouge">docker.sbt</code> in the root of your project.</p>
 
-<p>This should hopefully inspire you to setup your own solution or contribute to improve this one.</p>
+<p>This should hopefully inspire you to set up your own solution or contribute to improve this one.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">NativePackagerHelper._</span>
 
@@ -98,7 +98,6 @@ Options and flags:
 
     <span class="n">mappings</span> <span class="n">in</span> <span class="nc">Universal</span> <span class="o">++=</span> <span class="o">{</span>
       <span class="k">val</span> <span class="nv">testJar</span> <span class="k">=</span> <span class="o">(</span><span class="nv">sbt</span><span class="o">.</span><span class="py">Keys</span><span class="o">.</span><span class="n">`package`</span> <span class="n">in</span> <span class="nc">Test</span><span class="o">).</span><span class="py">value</span>
-      <span class="k">val</span> <span class="nv">func</span> <span class="k">=</span> <span class="n">testJar</span> <span class="o">-&gt;</span> <span class="n">s</span><span class="s">"lib/${testJar.getName}"</span>
       <span class="nf">fromClasspath</span><span class="o">((</span><span class="n">managedClasspath</span> <span class="n">in</span> <span class="nc">Test</span><span class="o">).</span><span class="py">value</span><span class="o">,</span> <span class="s">"lib"</span><span class="o">,</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="kc">true</span><span class="o">)</span> <span class="o">:+</span>
         <span class="o">(</span><span class="n">testJar</span> <span class="o">-&gt;</span> <span class="n">s</span><span class="s">"lib/${testJar.getName}"</span><span class="o">)</span>
     <span class="o">},</span>
