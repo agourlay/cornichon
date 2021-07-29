@@ -6,7 +6,7 @@ position: 7
 
 # Feature options
 
-To implement a `CornichonFeature` it is only required to implement the `feature` function. However a number of useful options are available using override.
+To implement a `CornichonFeature` it is only required to implement the `feature` function. However, a number of useful options are available using override.
 
 ## Before and after hooks
 
@@ -17,9 +17,13 @@ Four functions are available in `CornichonFeature` with self-explanatory names:
 Taking a `Unit` expression
 
 ```scala
-beforeFeature { // do side effect here }
+beforeFeature {
+  // do side effect here
+}
 
-afterFeature { // do side effect here }
+afterFeature {
+  // do side effect here
+}
 ```
 
 Taking a `Step` expression similar to the main DSL. You can either pass a single regular `Step` or a `WrapperStep` like `Attach`.
@@ -111,7 +115,7 @@ It works for all keys in `Session`, let's say we also have objects registered un
 
 ## Execution model
 
-By default the `features` are executed sequentially and the `scenarios` within are executed in parallel.
+By default, the `features` are executed sequentially and the `scenarios` within are executed in parallel.
 
 This execution is configurable if you have specific constraints.
 
@@ -164,7 +168,7 @@ class CornichonExamplesSpec extends CornichonFeature {
 
 ## Pending scenario
 
-During development you want to remember that a `scenario` needs to be created, but you’re not ready to write it yet.
+During development, you may want to remember that a `scenario` needs to be created, but you’re not ready to write it yet.
 
 ```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature

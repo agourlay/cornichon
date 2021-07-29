@@ -18,8 +18,8 @@ For instance if you wish to use the `JsObject` from `play-json` as HTTP request'
 
 ```scala
   lazy implicit val jsonResolvableForm = new Resolvable[JsObject] {
-    def toResolvableForm(s: JsObject) = s.toString()
-    def fromResolvableForm(s: String) = Json.parse(s).as[JsObject]
+    override def toResolvableForm(s: JsObject) = s.toString()
+    override def fromResolvableForm(s: String) = Json.parse(s).as[JsObject]
   }
 
   lazy implicit val showJson = new Show[JsObject] {
@@ -84,7 +84,7 @@ You can find below an example of Docker packaging done using `sbt-native-package
  
 You can place these settings in a `docker.sbt` in the root of your project.
 
-This should hopefully inspire you to setup your own solution or contribute to improve this one.
+This should hopefully inspire you to set up your own solution or contribute to improve this one.
 
 ```scala
 import NativePackagerHelper._
@@ -102,7 +102,6 @@ lazy val root = (project in file("."))
 
     mappings in Universal ++= {
       val testJar = (sbt.Keys.`package` in Test).value
-      val func = testJar -> s"lib/${testJar.getName}"
       fromClasspath((managedClasspath in Test).value, "lib", _ => true) :+
         (testJar -> s"lib/${testJar.getName}")
     },

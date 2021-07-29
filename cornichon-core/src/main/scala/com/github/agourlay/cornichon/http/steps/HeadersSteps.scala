@@ -54,7 +54,7 @@ object HeadersSteps {
         for {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- HttpService.decodeSessionHeaders(sessionHeaders)
-          predicate <- Right(sessionHeadersValue.exists { case (hname, _) => hname.toLowerCase == name.toLowerCase })
+          predicate <- Right(sessionHeadersValue.exists { case (hName, _) => hName.toLowerCase == name.toLowerCase })
         } yield CustomMessageEqualityAssertion(true, predicate, () => headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
       }
     )

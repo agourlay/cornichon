@@ -42,7 +42,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
         case Right(_) =>
           // featureParallelism is limited to avoid spawning too much work at once
           val featureParallelism = if (baseFeature.executeScenariosInParallel) {
-            baseFeature.config.scenarioExecutionParallelismFactor * FeatureRunner.availaibleProcessors + 1
+            baseFeature.config.scenarioExecutionParallelismFactor * FeatureRunner.availableProcessors + 1
           } else 1
           Observable.fromIterable(scenariosToRun)
             .mapParallelUnordered(featureParallelism)(runScenario(_).map(scenarioResultHandler))
@@ -84,6 +84,6 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
 }
 
 object FeatureRunner {
-  lazy val availaibleProcessors: Int = Runtime.getRuntime.availableProcessors()
+  lazy val availableProcessors: Int = Runtime.getRuntime.availableProcessors()
   private val noop = Task.now(Nil)
 }

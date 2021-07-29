@@ -15,7 +15,7 @@ object ScenarioResourceStepSpec extends TestSuite with CommonTestSuite {
 
   val tests = Tests {
     test("acquire a resource and release it before the end of the run even if something blows up in the middle") {
-      implicit val queueResource = new QueueManager
+      implicit val queueResource: QueueManager = new QueueManager
       val resourceStep = ScenarioResourceStep(
         "ensure queue exists",
         createAndStoreQueueInSession("the-queue"),
@@ -31,7 +31,7 @@ object ScenarioResourceStepSpec extends TestSuite with CommonTestSuite {
     }
 
     test("not run a ResourceStep if a previous step failed but should still clean up the resource steps that did run") {
-      implicit val queueResource = new QueueManager
+      implicit val queueResource: QueueManager = new QueueManager
       val resourceStep1 = ScenarioResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
       val resourceStep2 = ScenarioResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), deleteQueue("q2"))
       val scenario = Scenario("resource step scenario", resourceStep1 :: brokenEffectStep :: resourceStep2 :: Nil)
@@ -43,17 +43,17 @@ object ScenarioResourceStepSpec extends TestSuite with CommonTestSuite {
 
     test("runs all the clean up steps in order") {
       val is = List.range(1, 5)
-      implicit val queueResource = new QueueManager
+      implicit val queueResource: QueueManager = new QueueManager
       val resourceSteps = is.map(i => ScenarioResourceStep(s"ensure q$i exists", createAndStoreQueueInSession(s"q$i"), deleteQueue(s"q$i")))
       val scenario = Scenario("resource step scenario", resourceSteps)
 
       val rep = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
       def q(i: Int) = rep.session.get(s"q$i").valueUnsafe
-      assert(queueResource.allActions == is.map(i => CreateQueue(q(i))) ++ is.reverse.map(i => DeleteQueue(q(i))))
+      assert(queueResource.allActions == is.map(i => CreateQueue(q(i))) ++ is.reverseIterator.map(i => DeleteQueue(q(i))))
     }
 
     test("perform all the release steps even if one fails and report all the ones that failed") {
-      implicit val queueResource = new QueueManager
+      implicit val queueResource: QueueManager = new QueueManager
       val resourceStep1 = ScenarioResourceStep("ensure q1 exists", createAndStoreQueueInSession("q1"), deleteQueue("q1"))
       val resourceStep2 = ScenarioResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), failToDeleteQueue("q2"))
       val resourceStep3 = ScenarioResourceStep("ensure q3 exists", createAndStoreQueueInSession("q3"), failToDeleteQueue("q3"))

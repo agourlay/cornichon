@@ -7,7 +7,7 @@ title:  "Generators"
 
 At the center of property based testing lies the capacity to generate arbitrary values that will be used to verify if a given invariant holds.
 
-A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Ints.
+A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Integers.
 
 There are tree concrete instances of `generators`:
 - `ValueGenerator`

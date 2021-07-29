@@ -73,7 +73,7 @@ We will define the transitions such that:
 - there is no loop from any `property`
 - there is a 10% chance to exit the game after a ping or a pong
 
-Also the DSL is asking for a `modelRunner` which is a little helper connecting a `model` to its `generators`.
+Also, the DSL is asking for a `modelRunner` which is a little helper connecting a `model` to its `generators`.
 
 The type inference is sometimes not properly detecting the action type, so it is recommended to define the `modelRunner` and the `model` as a single expression to help the typechecker.
 
@@ -126,7 +126,7 @@ Which gives us the following scenario
 
 ```scala
 
-Scenario("ping pong check) {
+Scenario("ping pong check") {
 
   Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(myModelRunner)
 

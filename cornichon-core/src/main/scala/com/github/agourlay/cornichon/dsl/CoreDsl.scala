@@ -12,7 +12,7 @@ import com.github.agourlay.cornichon.steps.wrapped._
 import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
-import scala.language.{ dynamics, higherKinds }
+import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
 
 trait CoreDsl {

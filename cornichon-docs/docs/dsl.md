@@ -324,7 +324,7 @@ session_value("favorite-superhero").is("Batman")
 - asserting JSON value in `session`
 
 ```scala
-session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is(...)
+session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is("...")
 ```
 
 
@@ -408,7 +408,7 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-It is also possible to enable the oscillations detector to fail the step in case of oscillation of errors.
+It is also possible to enable the oscillation detector to fail the step in case of oscillation of errors.
 
 ```scala
 Given I send_async_command_updating_search_index
@@ -507,7 +507,7 @@ There are two ways to perform assertions on the server statistics, either by que
 
 Refer to those [examples](https://github.com/agourlay/cornichon-http-mock/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/MockServerExample.scala) for more information.
 
-This feature is experimental and subject to changes.
+This feature is experimental and may change in the future.
 
 - Log duration
 

@@ -11,5 +11,5 @@ To propose a patch, fork the repository and use the following commands:
 A PR should ideally include:
 - a clear description of the problem solved and of the solution implemented
 - unit tests
-- tests example of usage if the PR introduces changes in the DSL (e.g SuperHeroesScenario)
+- tests example of usage if the PR introduces changes in the DSL (e.g. SuperHeroesScenario)
 - an update to the documentation if necessary

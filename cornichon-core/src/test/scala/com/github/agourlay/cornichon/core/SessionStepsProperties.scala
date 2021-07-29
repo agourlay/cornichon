@@ -136,7 +136,8 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     forAll(Gen.alphaStr) { input =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
-      val step = sessionStepBuilder.matchesRegex(s".*${input}42".r)
+      val unknownInput = input + "42"
+      val step = sessionStepBuilder.matchesRegex(s".*${unknownInput}".r)
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       if (t.isSuccess) printScenarioLogs(t)

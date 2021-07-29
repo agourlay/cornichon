@@ -8,9 +8,9 @@ import scala.util.{ Failure, Success }
 object DataTableParser {
   val WhiteSpace = CharPredicate("\u0009\u0020")
 
-  val delimeter = CharPredicate('|')
+  val delimiterChar = CharPredicate('|')
 
-  val delims = CharPredicate(delimeter, '\r', '\n')
+  val delims = CharPredicate(delimiterChar, '\r', '\n')
 
   val Backslash = CharPredicate('\\')
 
@@ -44,7 +44,7 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
   def Spaces = rule { quiet(zeroOrMore(DataTableParser.WhiteSpace)) }
 
-  def Separator = rule { Spaces ~ DataTableParser.delimeter ~ Spaces }
+  def Separator = rule { Spaces ~ DataTableParser.delimiterChar ~ Spaces }
 
 }
 

@@ -32,10 +32,10 @@ class JsonPathParser(val input: ParserInput) extends Parser {
     (field, index) match {
       case (JsonPath.root, None)         => RootSelection
       case (JsonPath.root, Some(i: Int)) => RootArrayElementSelection(i)
+      case (JsonPath.root, _)            => RootArrayFieldProjection
       case (f, None)                     => FieldSelection(f)
       case (f, Some(i: Int))             => ArrayFieldSelection(f, i)
-      case (JsonPath.root, someStar @ _) => RootArrayFieldProjection
-      case (f, someStar @ _)             => ArrayFieldProjection(f)
+      case (f, _)                        => ArrayFieldProjection(f)
     }
 
 }

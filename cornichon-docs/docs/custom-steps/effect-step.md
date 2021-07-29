@@ -11,7 +11,7 @@ This means that an `EffectStep` runs a side effect and populates the `Session` w
 
 A `Session` is a Map-like object used to propagate state throughout a `scenario`. It is used to resolve [placeholders](../placeholders.md#placeholders) and save the result computations for later assertions.
 
-Here is the most simple `EffectStep`:
+Here is the simplest `EffectStep` possible:
 
 ```scala
 When I EffectStep(title = "do nothing", action = scenarioContext => Future.successful(Right(scenarioContext.session)))
@@ -28,7 +28,7 @@ When I EffectStep.fromAsync(title = "do nothing", action = scenarioContext => Fu
 Let's try to save a value into the `Session`
 
 ```scala
-When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.add("result", piComputation())
+When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.add("result", piComputation()))
 ```
 
 The test engine is responsible for controlling the execution of the side effect function and to report any error.
@@ -45,20 +45,21 @@ val myTaskEffect = EffectStep("identity task", scenarioContext => Task.now(Right
 
 # EffectStep using the HTTP service
 
-Sometimes you want to perform HTTP calls inside of of an `EffectStep`, this is where the `httpService` comes in handy.
+Sometimes you want to perform HTTP calls inside an `EffectStep`, this is where the `httpService` comes in handy.
 
 In order to illustrate its usage let's take the following example, you would like to write a custom step like:
 
 ```scala
-def feature = Feature("Customer endpoint"){
+def feature = Feature("Customer endpoint") {
 
-  Scenario("create customer"){
+  Scenario("create customer") {
 
     When I create_customer
 
     Then assert status.is(201)
 
   }
+}
 ```
 
 Most of the time you will create your own trait containing your custom steps and declare a self-type on `CornichonFeature` to be able to access the `httpService`.
