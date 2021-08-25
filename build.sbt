@@ -114,7 +114,6 @@ lazy val core =
     .settings(
       name := "cornichon-core",
       Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
-      testFrameworks += new TestFramework("utest.runner.Framework"),
       libraryDependencies ++= Seq(
         library.http4sClient,
         library.http4sCirce,
@@ -132,7 +131,7 @@ lazy val core =
         library.monixExec,
         library.monixReactive,
         library.caffeine,
-        library.utest % Test,
+        library.munit % Test,
         library.scalacheck % Test,
         library.circeTesting % Test
       )
@@ -273,7 +272,7 @@ lazy val library =
   new {
     object Version {
       val scalaTest     = "3.2.9"
-      val utest         = "0.7.10"
+      val munit         = "0.7.28"
       val cats          = "2.6.1"
       val parboiled     = "2.3.0"
       val scalaCheck    = "1.15.4"
@@ -296,7 +295,7 @@ lazy val library =
     }
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
     val scalatest     = "org.scalatest"                  %% "scalatest-wordspec"   % Version.scalaTest
-    val utest         = "com.lihaoyi"                    %% "utest"                % Version.utest
+    val munit         = "org.scalameta"                  %% "munit"                % Version.munit
     val pureConfig    = "com.github.pureconfig"          %% "pureconfig"           % Version.pureConfig
     val parboiled     = "org.parboiled"                  %% "parboiled"            % Version.parboiled
     val fansi         = "com.lihaoyi"                    %% "fansi"                % Version.fansi

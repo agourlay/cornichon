@@ -1,32 +1,30 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import utest._
+import munit.FunSuite
 
-object OrderAssertionSpec extends TestSuite {
+class OrderAssertionSpec extends FunSuite {
 
-  val tests = Tests {
-    test("LessThenAssertion valid assertion") {
-      assert(LessThanAssertion(2, 3).validated.isValid)
-    }
+  test("LessThenAssertion valid assertion") {
+    assert(LessThanAssertion(2, 3).validated.isValid)
+  }
 
-    test("LessThenAssertion invalid assertion") {
-      assert(LessThanAssertion(3, 2).validated.isInvalid)
-    }
+  test("LessThenAssertion invalid assertion") {
+    assert(LessThanAssertion(3, 2).validated.isInvalid)
+  }
 
-    test("GreaterThenAssertion valid assertion") {
-      assert(GreaterThanAssertion(3, 2).validated.isValid)
-    }
+  test("GreaterThenAssertion valid assertion") {
+    assert(GreaterThanAssertion(3, 2).validated.isValid)
+  }
 
-    test("GreaterThenAssertion invalid assertion") {
-      assert(GreaterThanAssertion(2, 3).validated.isInvalid)
-    }
+  test("GreaterThenAssertion invalid assertion") {
+    assert(GreaterThanAssertion(2, 3).validated.isInvalid)
+  }
 
-    test("BetweenAssertion valid assertion") {
-      assert(BetweenAssertion(2, 3, 4).validated.isValid)
-    }
+  test("BetweenAssertion valid assertion") {
+    assert(BetweenAssertion(2, 3, 4).validated.isValid)
+  }
 
-    test("BetweenAssertion invalid assertion") {
-      assert(BetweenAssertion(4, 3, 2).validated.isInvalid)
-    }
+  test("BetweenAssertion invalid assertion") {
+    assert(BetweenAssertion(4, 3, 2).validated.isInvalid)
   }
 }

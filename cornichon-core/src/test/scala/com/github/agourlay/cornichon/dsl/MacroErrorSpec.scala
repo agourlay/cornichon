@@ -1,13 +1,12 @@
 package com.github.agourlay.cornichon.dsl
 
-import utest._
+import munit.FunSuite
 
-object MacroErrorSpec extends TestSuite {
+class MacroErrorSpec extends FunSuite {
 
-  val tests = Tests {
-    test("macro not compile feature definitions containing imports in DSL") {
-      compileError {
-        """
+  test("macro not compile feature definitions containing imports in DSL") {
+    compileErrors {
+      """
         import com.github.agourlay.cornichon.dsl.BaseFeature
         import com.github.agourlay.cornichon.dsl.CoreDsl
         import com.github.agourlay.cornichon.steps.regular.EffectStep
@@ -26,12 +25,12 @@ object MacroErrorSpec extends TestSuite {
             }
         }
       """
-      }
     }
+  }
 
-    test("macro not compile if feature definition contains invalid expressions") {
-      compileError {
-        """
+  test("macro not compile if feature definition contains invalid expressions") {
+    compileErrors {
+      """
         import com.github.agourlay.cornichon.dsl.BaseFeature
         import com.github.agourlay.cornichon.dsl.CoreDsl
         import com.github.agourlay.cornichon.steps.regular.EffectStep
@@ -51,28 +50,26 @@ object MacroErrorSpec extends TestSuite {
             }
         }
       """
-      }
     }
+  }
 
-    test("macro  compiles if the step is reference to identifier `name`") {
-      import com.github.agourlay.cornichon.core.Step
-      import scala.concurrent.duration._
+  test("macro  compiles if the step is reference to identifier `name`") {
+    import com.github.agourlay.cornichon.core.Step
+    import scala.concurrent.duration._
 
-      class Foo extends BaseFeature with CoreDsl {
+    class Foo extends BaseFeature with CoreDsl {
 
-        def testMethod(foo: Step): Step =
-          Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
-            foo
+      def testMethod(foo: Step): Step =
+        Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
+          foo
+        }
+
+      val feature =
+        Feature("foo") {
+          Scenario("aaa") {
+            testMethod(print_step("Hello world!"))
           }
-
-        val feature =
-          Feature("foo") {
-            Scenario("aaa") {
-              testMethod(print_step("Hello world!"))
-            }
-          }
-      }
+        }
     }
-
   }
 }

@@ -2,14 +2,13 @@ package com.github.agourlay.cornichon.json
 
 import io.circe.Json
 import cats.syntax.show._
-import utest._
+import munit.FunSuite
 
-object JsonPathSpec extends TestSuite {
+class JsonPathSpec extends FunSuite {
 
-  val tests = Tests {
-    test("non strict version returns None if the field does not exist") {
-      val input =
-        """
+  test("non strict version returns None if the field does not exist") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -17,12 +16,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.run("Name2", input) == Right(None))
-    }
+    assert(JsonPath.run("Name2", input) == Right(None))
+  }
 
-    test("select properly null field") {
-      val input =
-        """
+  test("select properly null field") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -30,12 +29,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("Name", input) == Right(Json.Null))
-    }
+    assert(JsonPath.runStrict("Name", input) == Right(Json.Null))
+  }
 
-    test("select properly String based on single field") {
-      val input =
-        """
+  test("select properly String based on single field") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -43,12 +42,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("Name", input) == Right(Json.fromString("John")))
-    }
+    assert(JsonPath.runStrict("Name", input) == Right(Json.fromString("John")))
+  }
 
-    test("select properly Int based on single field") {
-      val input =
-        """
+  test("select properly Int based on single field") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -56,12 +55,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("Age", input) == Right(Json.fromInt(50)))
-    }
+    assert(JsonPath.runStrict("Age", input) == Right(Json.fromInt(50)))
+  }
 
-    test("select properly nested field in Object") {
-      val input =
-        """
+  test("select properly nested field in Object") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -73,12 +72,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("brother.Age", input) == Right(Json.fromInt(50)))
-    }
+    assert(JsonPath.runStrict("brother.Age", input) == Right(Json.fromInt(50)))
+  }
 
-    test("select properly nested field in Array") {
-      val input =
-        """
+  test("select properly nested field in Array") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -96,12 +95,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("brothers[1].Age", input) == Right(Json.fromInt(30)))
-    }
+    assert(JsonPath.runStrict("brothers[1].Age", input) == Right(Json.fromInt(30)))
+  }
 
-    test("select properly nested fields projected in Array") {
-      val input =
-        """
+  test("select properly nested fields projected in Array") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -123,12 +122,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50), Json.fromInt(30), Json.fromInt(20))))
-    }
+    assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50), Json.fromInt(30), Json.fromInt(20))))
+  }
 
-    test("select properly nested fields projected in Array with a single value") {
-      val input =
-        """
+  test("select properly nested fields projected in Array with a single value") {
+    val input =
+      """
           |{
           |  "2LettersName" : false,
           |  "Age": 50,
@@ -142,12 +141,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50))))
-    }
+    assert(JsonPath.runStrict("brothers[*].Age", input) == Right(Json.arr(Json.fromInt(50))))
+  }
 
-    test("return empty array if projection on Array but nested field does not exist") {
-      val input =
-        """
+  test("return empty array if projection on Array but nested field does not exist") {
+    val input =
+      """
           |{
           |  "2LettersName" : false,
           |  "Age": 50,
@@ -161,12 +160,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("brothers[*].age", input) == Right(Json.fromValues(Nil)))
-    }
+    assert(JsonPath.runStrict("brothers[*].age", input) == Right(Json.fromValues(Nil)))
+  }
 
-    test("return empty array if projection on empty Array but nested field does not exist") {
-      val input =
-        """
+  test("return empty array if projection on empty Array but nested field does not exist") {
+    val input =
+      """
           |{
           |  "2LettersName" : false,
           |  "Age": 50,
@@ -175,12 +174,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("brothers[*].age", input) == Right(Json.fromValues(Nil)))
-    }
+    assert(JsonPath.runStrict("brothers[*].age", input) == Right(Json.fromValues(Nil)))
+  }
 
-    test("return None (nonStrict) if the array projected does not exist") {
-      val input =
-        """
+  test("return None (nonStrict) if the array projected does not exist") {
+    val input =
+      """
           |{
           |  "2LettersName" : false,
           |  "Age": 50,
@@ -194,12 +193,12 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.run("sisters[*].age", input) == Right(None))
-    }
+    assert(JsonPath.run("sisters[*].age", input) == Right(None))
+  }
 
-    test("select properly doubly nested fields projected in Array") {
-      val input =
-        """
+  test("select properly doubly nested fields projected in Array") {
+    val input =
+      """
           |{
           |  "2LettersName" : false,
           |  "Age": 50,
@@ -235,14 +234,14 @@ object JsonPathSpec extends TestSuite {
           |}
         """.stripMargin
 
-      assert(JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) == Right(Json.arr(
-        Json.fromString("Karate"), Json.fromString("Football"), Json.fromString("Diving"), Json.fromString("Reading")
-      )))
-    }
+    assert(JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) == Right(Json.arr(
+      Json.fromString("Karate"), Json.fromString("Football"), Json.fromString("Diving"), Json.fromString("Reading")
+    )))
+  }
 
-    test("select properly projected elements of a root Array") {
-      val input =
-        """
+  test("select properly projected elements of a root Array") {
+    val input =
+      """
           |[
           |  {
           |     "2LettersName" : false,
@@ -292,14 +291,14 @@ object JsonPathSpec extends TestSuite {
           |]
         """.stripMargin
 
-      val expected = JsonPath.runStrict("$[*].brothers[1].Age", input)
-      val actual = Right(Json.arr(Json.fromInt(30), Json.fromInt(30), Json.fromInt(20)))
-      assert(expected == actual)
-    }
+    val expected = JsonPath.runStrict("$[*].brothers[1].Age", input)
+    val actual = Right(Json.arr(Json.fromInt(30), Json.fromInt(30), Json.fromInt(20)))
+    assert(expected == actual)
+  }
 
-    test("select properly element of a root Array") {
-      val input =
-        """
+  test("select properly element of a root Array") {
+    val input =
+      """
           |[
           |  {
           |     "2LettersName" : false,
@@ -319,12 +318,10 @@ object JsonPathSpec extends TestSuite {
           |]
         """.stripMargin
 
-      assert(JsonPath.runStrict("$[0].brothers[1].Age", input) == Right(Json.fromInt(30)))
-    }
+    assert(JsonPath.runStrict("$[0].brothers[1].Age", input) == Right(Json.fromInt(30)))
+  }
 
-    test("have a pretty rendering via Show") {
-      assert(JsonPath.parse("a.b[1].d.e[*]").map(_.show) == Right("a.b[1].d.e[*]"))
-    }
-
+  test("have a pretty rendering via Show") {
+    assert(JsonPath.parse("a.b[1].d.e[*]").map(_.show) == Right("a.b[1].d.e[*]"))
   }
 }

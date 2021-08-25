@@ -2,9 +2,9 @@ package com.github.agourlay.cornichon.json
 
 import io.circe.{ Json, JsonObject }
 import com.github.agourlay.cornichon.json.JsonPath._
-import utest._
+import munit.FunSuite
 
-object CornichonJsonSpec extends TestSuite with CornichonJson {
+class CornichonJsonSpec extends FunSuite with CornichonJson {
 
   def refParser(input: String): Json =
     io.circe.parser.parse(input).fold(e => throw e, identity)
@@ -15,29 +15,28 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
   def parseUnsafe(path: String): JsonPath =
     parse(path).valueUnsafe
 
-  val tests = Tests {
-    test("parseJson object String") {
-      val expected = mapToJsonObject(Map("name" -> Json.fromString("cornichon")))
-      assert(parseDslJson("""{"name":"cornichon"}""") == Right(expected))
-    }
+  test("parseJson object String") {
+    val expected = mapToJsonObject(Map("name" -> Json.fromString("cornichon")))
+    assert(parseDslJson("""{"name":"cornichon"}""") == Right(expected))
+  }
 
-    test("parseJson object String with spaces") {
-      val expected = mapToJsonObject(Map("name" -> Json.fromString("cornichon")))
-      assert(parseDslJson("""   {"name":"cornichon"}""") == Right(expected))
-    }
+  test("parseJson object String with spaces") {
+    val expected = mapToJsonObject(Map("name" -> Json.fromString("cornichon")))
+    assert(parseDslJson("""   {"name":"cornichon"}""") == Right(expected))
+  }
 
-    test("parseJson JSON Array string") {
-      val expected = Json.fromValues(Seq(
-        mapToJsonObject(Map("name" -> Json.fromString("cornichon"))),
-        mapToJsonObject(Map("name" -> Json.fromString("scala")))
-      ))
+  test("parseJson JSON Array string") {
+    val expected = Json.fromValues(Seq(
+      mapToJsonObject(Map("name" -> Json.fromString("cornichon"))),
+      mapToJsonObject(Map("name" -> Json.fromString("scala")))
+    ))
 
-      assert(parseDslJson("""[ {"name":"cornichon"}, {"name":"scala"} ]""") == Right(expected))
-    }
+    assert(parseDslJson("""[ {"name":"cornichon"}, {"name":"scala"} ]""") == Right(expected))
+  }
 
-    test("parseJson data-table") {
-      val expected =
-        """
+  test("parseJson data-table") {
+    val expected =
+      """
           |[
           |{
           |"2LettersName" : false,
@@ -52,67 +51,67 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |]
           """.stripMargin
 
-      assert(parseDslJson("""
+    assert(parseDslJson("""
                      |  Name  |   Age  | 2LettersName |
                      | "John" |   50   |    false     |
                      | "Bob"  |   11   |    true      |
          """) == Right(refParser(expected)))
-    }
+  }
 
-    test("parseJson data table with empty cell values") {
-      val parsed = parseDataTable(
-        """
+  test("parseJson data table with empty cell values") {
+    val parsed = parseDataTable(
+      """
           |  Name  |   Age  | 2LettersName |
           |        |        |    false     |
           | "Bob"  |   11   |              |
           """
-      )
+    )
 
-      assert(parsed == Right(List(
-        """
+    assert(parsed == Right(List(
+      """
             {
               "2LettersName" : false
             }
           """,
-        """
+      """
             {
               "Age": 11,
               "Name": "Bob"
             }
           """) map (refParser(_).asObject.get)))
-    }
+  }
 
-    test("parseJson parse data table as a map of raw string values") {
-      assert(parseDataTableRaw(
-        """
+  test("parseJson parse data table as a map of raw string values") {
+    assert(parseDataTableRaw(
+      """
           | Name |   Age  | 2LettersName |
           |      |        |    false     |
           | Bob  |   11   |              |
           """
-      ) == Right(List(
-          Map("2LettersName" -> "false"),
-          Map("Age" -> "11", "Name" -> "Bob"))))
-    }
+    ) == Right(List(
+        Map("2LettersName" -> "false"),
+        Map("Age" -> "11", "Name" -> "Bob"))))
+  }
 
-    test("isJsonString detects invalid empty string") {
-      assert(!isJsonString(""))
-    }
+  test("isJsonString detects invalid empty string") {
+    assert(!isJsonString(""))
+  }
 
-    test("isJsonString detects a string") {
-      assert(isJsonString("a"))
-    }
+  test("isJsonString detects a string") {
+    assert(isJsonString("a"))
+  }
 
-    test("isJsonString detects an object") {
-      assert(!isJsonString(""" { "a" : "v"} """))
-    }
+  test("isJsonString detects an object") {
+    assert(!isJsonString(""" { "a" : "v"} """))
+  }
 
-    test("isJsonString detects an array") {
-      assert(!isJsonString(""" [ "a", "v"] """))
-    }
+  test("isJsonString detects an array") {
+    assert(!isJsonString(""" [ "a", "v"] """))
+  }
 
-    test("removeFieldsByPath removes everything if root path") {
-      val input =
-        """
+  test("removeFieldsByPath removes everything if root path") {
+    val input =
+      """
           |{
           |"2LettersName" : false,
           | "Age": 50,
@@ -120,12 +119,12 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      assert(removeFieldsByPath(refParser(input), Seq(rootPath)) == Json.Null)
-    }
+    assert(removeFieldsByPath(refParser(input), Seq(rootPath)) == Json.Null)
+  }
 
-    test("removeFieldsByPath removes nothing if path does not exist") {
-      val input =
-        """
+  test("removeFieldsByPath removes nothing if path does not exist") {
+    val input =
+      """
           |{
           |"2LettersName" : false,
           | "Age": 50,
@@ -133,12 +132,12 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      assert(removeFieldsByPath(refParser(input), parseUnsafe("blah") :: Nil) == refParser(input))
-    }
+    assert(removeFieldsByPath(refParser(input), parseUnsafe("blah") :: Nil) == refParser(input))
+  }
 
-    test("removeFieldsByPath removes root keys") {
-      val input =
-        """
+  test("removeFieldsByPath removes root keys") {
+    val input =
+      """
           |{
           |"2LettersName" : false,
           | "Age": 50,
@@ -146,19 +145,19 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      val expected =
-        """
+    val expected =
+      """
           |{
           | "Age": 50
           |}
         """.stripMargin
-      val paths = Seq("2LettersName", "Name").map(parseUnsafe)
-      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
-    }
+    val paths = Seq("2LettersName", "Name").map(parseUnsafe)
+    assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
+  }
 
-    test("removeFieldsByPath removes only root keys") {
-      val input =
-        """
+  test("removeFieldsByPath removes only root keys") {
+    val input =
+      """
           |{
           |"name" : "bob",
           |"age": 50,
@@ -170,7 +169,7 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |]
           |} """.stripMargin
 
-      val expected = """
+    val expected = """
                        |{
                        |"age": 50,
                        |"brothers":[
@@ -181,13 +180,13 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
                        |]
                        |} """.stripMargin
 
-      val paths = Seq("name").map(parseUnsafe)
-      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
-    }
+    val paths = Seq("name").map(parseUnsafe)
+    assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
+  }
 
-    test("removeFieldsByPath removes keys inside specific indexed element") {
-      val input =
-        """
+  test("removeFieldsByPath removes keys inside specific indexed element") {
+    val input =
+      """
           |{
           |"name" : "bob",
           |"age": 50,
@@ -204,7 +203,7 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      val expected = """
+    val expected = """
                        |{
                        |"name" : "bob",
                        |"age": 50,
@@ -219,95 +218,95 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
                        |]
                        |} """.stripMargin
 
-      val paths = Seq("brothers[0].name").map(parseUnsafe)
-      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
-    }
+    val paths = Seq("brothers[0].name").map(parseUnsafe)
+    assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
+  }
 
-    //FIXME - done manually in BodyArrayAssertion for now
-    //    test("removeFieldsByPath removes field in each element of a root array") {
-    //      val input =
-    //        """
-    //          |[
-    //          |{
-    //          |  "name" : "bob",
-    //          |  "age": 50
-    //          |},
-    //          |{
-    //          |  "name" : "jim",
-    //          |  "age": 40
-    //          |},
-    //          |{
-    //          |  "name" : "john",
-    //          |  "age": 30
-    //          |}
-    //          |]
-    //          """.stripMargin
-    //
-    //      val expected =
-    //        """
-    //          |[
-    //          |{
-    //          |  "name" : "bob"
-    //          |},
-    //          |{
-    //          |  "name" : "jim"
-    //          |},
-    //          |{
-    //          |  "name" : "john"
-    //          |}
-    //          |]
-    //          """.stripMargin
-    //
-    //      val paths = Seq("age").map(parseUnsafe)
-    //      assert(removeFieldsByPath(refParser(input), paths) == Right(refParser(expected)))
-    //    }
+  //FIXME - done manually in BodyArrayAssertion for now
+  //    test("removeFieldsByPath removes field in each element of a root array") {
+  //      val input =
+  //        """
+  //          |[
+  //          |{
+  //          |  "name" : "bob",
+  //          |  "age": 50
+  //          |},
+  //          |{
+  //          |  "name" : "jim",
+  //          |  "age": 40
+  //          |},
+  //          |{
+  //          |  "name" : "john",
+  //          |  "age": 30
+  //          |}
+  //          |]
+  //          """.stripMargin
+  //
+  //      val expected =
+  //        """
+  //          |[
+  //          |{
+  //          |  "name" : "bob"
+  //          |},
+  //          |{
+  //          |  "name" : "jim"
+  //          |},
+  //          |{
+  //          |  "name" : "john"
+  //          |}
+  //          |]
+  //          """.stripMargin
+  //
+  //      val paths = Seq("age").map(parseUnsafe)
+  //      assert(removeFieldsByPath(refParser(input), paths) == Right(refParser(expected)))
+  //    }
 
-    //FIXME - done manually in BodyArrayAssertion for now
-    //    test("removeFieldsByPath removes field in each element of a nested array") {
-    //      val input =
-    //        """
-    //          |{
-    //          |"people":[
-    //          |{
-    //          |  "name" : "bob",
-    //          |  "age": 50
-    //          |},
-    //          |{
-    //          |  "name" : "jim",
-    //          |  "age": 40
-    //          |},
-    //          |{
-    //          |  "name" : "john",
-    //          |  "age": 30
-    //          |}
-    //          |]
-    //          |}
-    //          """.stripMargin
-    //
-    //      val expected =
-    //        """
-    //          |{
-    //          |"people":[
-    //          |{
-    //          |  "name" : "bob"
-    //          |},
-    //          |{
-    //          |  "name" : "jim"
-    //          |},
-    //          |{
-    //          |  "name" : "john"
-    //          |}
-    //          |]
-    //          |}
-    //          """.stripMargin
-    //
-    //      val paths = Seq("people[*].age").map(parseUnsafe)
-    //      assert(removeFieldsByPath(refParser(input), paths) == Right(refParser(expected)))
-    //    }
+  //FIXME - done manually in BodyArrayAssertion for now
+  //    test("removeFieldsByPath removes field in each element of a nested array") {
+  //      val input =
+  //        """
+  //          |{
+  //          |"people":[
+  //          |{
+  //          |  "name" : "bob",
+  //          |  "age": 50
+  //          |},
+  //          |{
+  //          |  "name" : "jim",
+  //          |  "age": 40
+  //          |},
+  //          |{
+  //          |  "name" : "john",
+  //          |  "age": 30
+  //          |}
+  //          |]
+  //          |}
+  //          """.stripMargin
+  //
+  //      val expected =
+  //        """
+  //          |{
+  //          |"people":[
+  //          |{
+  //          |  "name" : "bob"
+  //          |},
+  //          |{
+  //          |  "name" : "jim"
+  //          |},
+  //          |{
+  //          |  "name" : "john"
+  //          |}
+  //          |]
+  //          |}
+  //          """.stripMargin
+  //
+  //      val paths = Seq("people[*].age").map(parseUnsafe)
+  //      assert(removeFieldsByPath(refParser(input), paths) == Right(refParser(expected)))
+  //    }
 
-    test("removeFieldsByPath is correct even with duplicate Fields") {
-      val input =
-        """
+  test("removeFieldsByPath is correct even with duplicate Fields") {
+    val input =
+      """
           |{
           |"name" : "bob",
           |"age": 50,
@@ -326,8 +325,8 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      val expected =
-        """
+    val expected =
+      """
           |{
           |"name" : "bob",
           |"age": 50,
@@ -345,12 +344,12 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      val paths = Seq("brother[0].name").map(parseUnsafe)
-      assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
-    }
+    val paths = Seq("brother[0].name").map(parseUnsafe)
+    assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
+  }
 
-    test("parseGraphQLJson nominal case") {
-      val in = """
+  test("parseGraphQLJson nominal case") {
+    val in = """
         {
           id: 1
           name: "door"
@@ -363,7 +362,7 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
         }
         """
 
-      val expected = """
+    val expected = """
         {
           "id": 1,
           "name": "door",
@@ -375,28 +374,28 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
         }
         """
 
-      val out = parseGraphQLJson(in)
-      assert(out == Right(refParser(expected)))
-    }
+    val out = parseGraphQLJson(in)
+    assert(out == Right(refParser(expected)))
+  }
 
-    test("findAllContainingValue handles empty values array") {
-      val input = "target value"
-      assert(findAllPathWithValue(Nil, parseDslJsonUnsafe(input)) == Nil)
-    }
+  test("findAllContainingValue handles empty values array") {
+    val input = "target value"
+    assert(findAllPathWithValue(Nil, parseDslJsonUnsafe(input)) == Nil)
+  }
 
-    test("findAllContainingValue find root value") {
-      val input = "target value"
-      assert(findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) == List(rootPath))
-    }
+  test("findAllContainingValue find root value") {
+    val input = "target value"
+    assert(findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) == List(rootPath))
+  }
 
-    test("findAllContainingValue not find root value") {
-      val input = "target values"
-      assert(findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) == Nil)
-    }
+  test("findAllContainingValue not find root value") {
+    val input = "target values"
+    assert(findAllPathWithValue("target value" :: Nil, parseDslJsonUnsafe(input)) == Nil)
+  }
 
-    test("findAllContainingValue find root key") {
-      val input =
-        """
+  test("findAllContainingValue find root key") {
+    val input =
+      """
           |{
           |"2LettersName" : false,
           | "Age": 50,
@@ -404,12 +403,12 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      assert(findAllPathWithValue("John" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Name")))
-    }
+    assert(findAllPathWithValue("John" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Name")))
+  }
 
-    test("findAllContainingValue finds nested key") {
-      val input =
-        """
+  test("findAllContainingValue finds nested key") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -421,12 +420,12 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      assert(findAllPathWithValue("Paul" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Brother.Name")))
-    }
+    assert(findAllPathWithValue("Paul" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Brother.Name")))
+  }
 
-    test("findAllContainingValue finds key in array") {
-      val input =
-        """
+  test("findAllContainingValue finds key in array") {
+    val input =
+      """
           |{
           | "2LettersName": false,
           | "Age": 50,
@@ -444,12 +443,12 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      assert(findAllPathWithValue("Bob" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Brothers[1].Name")))
-    }
+    assert(findAllPathWithValue("Bob" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Brothers[1].Name")))
+  }
 
-    test("findAllContainingValue finds key in array of strings") {
-      val input =
-        """
+  test("findAllContainingValue finds key in array of strings") {
+    val input =
+      """
           |{
           | "2LettersName" : false,
           | "Age": 50,
@@ -458,7 +457,6 @@ object CornichonJsonSpec extends TestSuite with CornichonJson {
           |}
           """.stripMargin
 
-      assert(findAllPathWithValue("Coding" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Hobbies[2]")))
-    }
+    assert(findAllPathWithValue("Coding" :: Nil, parseDslJsonUnsafe(input)) == List(parseUnsafe("$.Hobbies[2]")))
   }
 }

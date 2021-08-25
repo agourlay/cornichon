@@ -1,24 +1,22 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import utest._
+import munit.FunSuite
 
-object StringAssertionSpec extends TestSuite {
+class StringAssertionSpec extends FunSuite {
 
-  val tests = Tests {
-    test("StringContainsAssertion valid assertion") {
-      assert(StringContainsAssertion("the text string", "text").validated.isValid)
-    }
+  test("StringContainsAssertion valid assertion") {
+    assert(StringContainsAssertion("the text string", "text").validated.isValid)
+  }
 
-    test("StringContainsAssertion invalid assertion") {
-      assert(StringContainsAssertion("the text string", "other").validated.isInvalid)
-    }
+  test("StringContainsAssertion invalid assertion") {
+    assert(StringContainsAssertion("the text string", "other").validated.isInvalid)
+  }
 
-    test("RegexAssertion valid assertion") {
-      assert(RegexAssertion("the text string sample 434", "\\d+".r).validated.isValid)
-    }
+  test("RegexAssertion valid assertion") {
+    assert(RegexAssertion("the text string sample 434", "\\d+".r).validated.isValid)
+  }
 
-    test("RegexAssertion invalid assertion") {
-      assert(RegexAssertion("the text string sample 434", "[A-Z]+".r).validated.isInvalid)
-    }
+  test("RegexAssertion invalid assertion") {
+    assert(RegexAssertion("the text string sample 434", "[A-Z]+".r).validated.isInvalid)
   }
 }

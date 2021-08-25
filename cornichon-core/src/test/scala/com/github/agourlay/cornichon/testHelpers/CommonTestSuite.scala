@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.testHelpers
 
 import com.github.agourlay.cornichon.core._
-import utest._
+import munit.FunSuite
 
 trait CommonTestSuite extends CommonTesting {
-  this: TestSuite =>
+  this: FunSuite =>
 
   def scenarioFailsWithMessage(report: ScenarioReport)(expectedMessage: String): Unit =
     report match {

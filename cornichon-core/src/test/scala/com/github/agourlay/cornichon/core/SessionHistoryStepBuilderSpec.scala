@@ -2,20 +2,19 @@ package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionHistoryStepBuilder
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
-import utest._
+import munit.FunSuite
 
-object SessionHistoryStepBuilderSpec extends TestSuite with CommonTestSuite {
+class SessionHistoryStepBuilderSpec extends FunSuite with CommonTestSuite {
   private val testKey = "test-key"
   private val sessionHistoryStepBuilder = SessionHistoryStepBuilder(testKey)
 
-  val tests = Tests {
-    test("SessionHistoryStepBuilder.containsExactly reports added elements") {
-      val session = Session.newEmpty.addValuesUnsafe(testKey -> "test 1").addValuesUnsafe(testKey -> "test 2")
-      val step = sessionHistoryStepBuilder.containsExactly("test 1")
-      val s = Scenario("scenario with SessionHistoryStepBuilder", step :: Nil)
-      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
-      scenarioFailsWithMessage(res) {
-        """|Scenario 'scenario with SessionHistoryStepBuilder' failed:
+  test("SessionHistoryStepBuilder.containsExactly reports added elements") {
+    val session = Session.newEmpty.addValuesUnsafe(testKey -> "test 1").addValuesUnsafe(testKey -> "test 2")
+    val step = sessionHistoryStepBuilder.containsExactly("test 1")
+    val s = Scenario("scenario with SessionHistoryStepBuilder", step :: Nil)
+    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    scenarioFailsWithMessage(res) {
+      """|Scenario 'scenario with SessionHistoryStepBuilder' failed:
            |
            |at step:
            |test-key history contains exactly
@@ -28,16 +27,16 @@ object SessionHistoryStepBuilderSpec extends TestSuite with CommonTestSuite {
            |
            |seed for the run was '1'
            |""".stripMargin
-      }
     }
+  }
 
-    test("SessionHistoryStepBuilder.containsExactly reports deleted elements") {
-      val session = Session.newEmpty.addValuesUnsafe(testKey -> "test 1").addValuesUnsafe(testKey -> "test 2")
-      val step = sessionHistoryStepBuilder.containsExactly("test 1", "test 2", "test 2")
-      val s = Scenario("scenario with SessionHistoryStepBuilder", step :: Nil)
-      val res = awaitTask(ScenarioRunner.runScenario(session)(s))
-      scenarioFailsWithMessage(res) {
-        """|Scenario 'scenario with SessionHistoryStepBuilder' failed:
+  test("SessionHistoryStepBuilder.containsExactly reports deleted elements") {
+    val session = Session.newEmpty.addValuesUnsafe(testKey -> "test 1").addValuesUnsafe(testKey -> "test 2")
+    val step = sessionHistoryStepBuilder.containsExactly("test 1", "test 2", "test 2")
+    val s = Scenario("scenario with SessionHistoryStepBuilder", step :: Nil)
+    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    scenarioFailsWithMessage(res) {
+      """|Scenario 'scenario with SessionHistoryStepBuilder' failed:
            |
            |at step:
            |test-key history contains exactly
@@ -51,7 +50,6 @@ object SessionHistoryStepBuilderSpec extends TestSuite with CommonTestSuite {
            |
            |seed for the run was '1'
            |""".stripMargin
-      }
     }
   }
 }
