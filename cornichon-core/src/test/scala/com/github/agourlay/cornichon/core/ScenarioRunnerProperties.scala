@@ -5,7 +5,6 @@ import com.github.agourlay.cornichon.testHelpers.CommonTesting
 import monix.execution.atomic.AtomicBoolean
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{ Properties, Test }
-import org.typelevel.claimant.Claim
 
 class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonTesting {
 
@@ -16,18 +15,14 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
     forAll(validStepsGen) { validSteps =>
       val s = Scenario("scenario with valid steps", validSteps)
       val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
-      Claim {
-        r.isSuccess
-      }
+      r.isSuccess
     }
 
   property("a scenario containing at least one invalid step should fail") =
     forAll(validStepsGen, invalidStepGen) { (validSteps, invalidStep) =>
       val s = Scenario("scenario with valid steps", validSteps :+ invalidStep)
       val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
-      Claim {
-        !r.isSuccess
-      }
+      !r.isSuccess
     }
 
   property("a scenario stops at the first failed step") =
@@ -42,9 +37,7 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
       )
       val s = Scenario("scenario with valid steps", validSteps :+ invalidStep :+ signalingEffect)
       val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
-      Claim {
-        !r.isSuccess && !signal.get()
-      }
+      !r.isSuccess && !signal.get()
     }
 
   property("a scenario containing at least one invalid step should fail and always execute its finally clause") =
@@ -60,9 +53,7 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
       val context = FeatureContext.empty.copy(finallySteps = signallingEffect :: Nil)
       val s = Scenario("scenario with valid steps", validSteps :+ invalidStep)
       val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, context)(s))
-      Claim {
-        !r.isSuccess && signal.get()
-      }
+      !r.isSuccess && signal.get()
     }
 
   property("a scenario fails if its finally clause contains invalid steps") =
@@ -70,9 +61,7 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
       val context = FeatureContext.empty.copy(finallySteps = invalidStep :: Nil)
       val s = Scenario("scenario with valid steps", validSteps)
       val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, context)(s))
-      Claim {
-        !r.isSuccess
-      }
+      !r.isSuccess
     }
 
   property("runScenario runs `main steps` if there is no failure in `beforeSteps`") =
@@ -88,9 +77,7 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
       val context = FeatureContext.empty.copy(beforeSteps = validSteps)
       val s = Scenario("scenario with valid steps", signalingEffect :: Nil)
       val r = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, context)(s))
-      Claim {
-        r.isSuccess && signal.get()
-      }
+      r.isSuccess && signal.get()
     }
 
 }

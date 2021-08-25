@@ -2,40 +2,31 @@ package com.github.agourlay.cornichon.json
 
 import org.scalacheck.{ Gen, Properties }
 import org.scalacheck.Prop._
-import org.typelevel.claimant.Claim
 import com.github.agourlay.cornichon.json.JsonPathParserProperties._
 
 class JsonPathParserProperties extends Properties("JsonPathParser") {
 
   property("parse JsonPath containing a field without index") = {
     forAll(fieldGen) { field =>
-      Claim {
-        JsonPathParser.parseJsonPath(field) == Right(List(FieldSelection(field)))
-      }
+      JsonPathParser.parseJsonPath(field) == Right(List(FieldSelection(field)))
     }
   }
 
   property("parse JsonPath containing a field with index") = {
     forAll(fieldGen, indexGen) { (field, index) =>
-      Claim {
-        JsonPathParser.parseJsonPath(s"$field[$index]") == Right(List(ArrayFieldSelection(field, index)))
-      }
+      JsonPathParser.parseJsonPath(s"$field[$index]") == Right(List(ArrayFieldSelection(field, index)))
     }
   }
 
   property("parse JsonPath containing two fields without index") = {
     forAll(fieldGen, fieldGen) { (field1, field2) =>
-      Claim {
-        JsonPathParser.parseJsonPath(s"$field1.$field2") == Right(List(FieldSelection(field1), FieldSelection(field2)))
-      }
+      JsonPathParser.parseJsonPath(s"$field1.$field2") == Right(List(FieldSelection(field1), FieldSelection(field2)))
     }
   }
 
   property("parse JsonPath containing a field with projection") = {
     forAll(fieldGen) { field =>
-      Claim {
-        JsonPathParser.parseJsonPath(s"$field[*]") == Right(List(ArrayFieldProjection(field)))
-      }
+      JsonPathParser.parseJsonPath(s"$field[*]") == Right(List(ArrayFieldProjection(field)))
     }
   }
 
@@ -43,9 +34,7 @@ class JsonPathParserProperties extends Properties("JsonPathParser") {
     forAll(fieldGen, fieldGen, fieldGen) { (field1, field2, field3) =>
       val composedPath = s"$field1.$field2"
       val fullPath = s"`$composedPath`.$field3"
-      Claim {
-        JsonPathParser.parseJsonPath(fullPath) == Right(List(FieldSelection(composedPath), FieldSelection(field3)))
-      }
+      JsonPathParser.parseJsonPath(fullPath) == Right(List(FieldSelection(composedPath), FieldSelection(field3)))
     }
   }
 
@@ -53,33 +42,25 @@ class JsonPathParserProperties extends Properties("JsonPathParser") {
     forAll(fieldGen, fieldGen, fieldGen, indexGen) { (field1, field2, field3, index) =>
       val composedPath = s"$field1.$field2"
       val fullPath = s"`$composedPath`.$field3[$index]"
-      Claim {
-        JsonPathParser.parseJsonPath(fullPath) == Right(List(FieldSelection(composedPath), ArrayFieldSelection(field3, index)))
-      }
+      JsonPathParser.parseJsonPath(fullPath) == Right(List(FieldSelection(composedPath), ArrayFieldSelection(field3, index)))
     }
   }
 
   property("return error if it starts with '.'") = {
     forAll(fieldGen) { field =>
-      Claim {
-        JsonPathParser.parseJsonPath(s".$field.").isLeft
-      }
+      JsonPathParser.parseJsonPath(s".$field.").isLeft
     }
   }
 
   property("parse JsonPath containing a missing field") = {
     forAll(fieldGen) { field =>
-      Claim {
-        JsonPathParser.parseJsonPath(s"$field.").isLeft
-      }
+      JsonPathParser.parseJsonPath(s"$field.").isLeft
     }
   }
 
   property("parse JsonPath containing a broken index bracket") = {
     forAll(fieldGen, indexGen) { (field, index) =>
-      Claim {
-        JsonPathParser.parseJsonPath(s"$field[$index[").isLeft
-      }
+      JsonPathParser.parseJsonPath(s"$field[$index[").isLeft
     }
   }
 }

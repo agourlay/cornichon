@@ -7,7 +7,6 @@ import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Properties
-import org.typelevel.claimant.Claim
 
 class JsonValuesStepProperties extends Properties("JsonValuesSteps") with ArbitraryInstances with TaskSpec {
 
@@ -23,7 +22,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
       val step = jsonValuesStepBuilder.areEquals
       val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonValuesStepBuild are not equals") =
@@ -34,7 +33,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
       val step = jsonValuesStepBuilder.areNotEquals
       val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonValuesStepBuild are equals with ignoring fields") =
@@ -47,7 +46,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
       val step = jsonValuesStepBuilder.ignoring("additional").areEquals
       val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonValuesStepBuild are equals with ignoring fields - failure") =
@@ -60,7 +59,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
       val step = jsonValuesStepBuilder.ignoring("additional").areEquals
       val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
   property("JsonValuesStepBuild are equals with focus on path") =
@@ -76,7 +75,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
       val step = jsonValuesStepBuilder.path("important").areEquals
       val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonValuesStepBuild are equals with focus on path - failure") =
@@ -92,7 +91,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
       val step = jsonValuesStepBuilder.path("important").areEquals
       val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
 }

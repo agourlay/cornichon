@@ -4,7 +4,6 @@ import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
 import org.scalacheck.{ Gen, Properties, Test }
 import org.scalacheck.Prop._
-import org.typelevel.claimant.Claim
 
 class CornichonJsonProperties extends Properties("CornichonJson") with CornichonJson with ArbitraryInstances {
 
@@ -13,40 +12,40 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
 
   property("parseJson Boolean") =
     forAll { bool: Boolean =>
-      Claim(parseDslJson(bool) == Right(Json.fromBoolean(bool)))
+      parseDslJson(bool) == Right(Json.fromBoolean(bool))
     }
 
   property("parseJson Int") =
     forAll { int: Int =>
-      Claim(parseDslJson(int) == Right(Json.fromInt(int)))
+      parseDslJson(int) == Right(Json.fromInt(int))
     }
 
   property("parseJson alphanumeric String") =
     forAll(Gen.alphaNumStr) { s: String =>
       val parsed = parseDslJson(s)
       val expectedQuotedParsed = parsed.map(_.spaces2).getOrElse("")
-      Claim(parsed == Right(Json.fromString(s))) && Claim(expectedQuotedParsed == s""""$s"""")
+      parsed == Right(Json.fromString(s)) && expectedQuotedParsed == s""""$s""""
     }
 
   property("parseJson alphanumeric String conserves spaces") =
     forAll(Gen.alphaNumStr) { s: String =>
       val decorated = s"  $s  "
-      Claim(parseDslJson(decorated) == Right(Json.fromString(decorated)))
+      parseDslJson(decorated) == Right(Json.fromString(decorated))
     }
 
   property("parseJson Long") =
     forAll { long: Long =>
-      Claim(parseDslJson(long) == Right(Json.fromLong(long)))
+      parseDslJson(long) == Right(Json.fromLong(long))
     }
 
   property("parseJson Double") =
     forAll { double: Double =>
-      Claim(parseDslJson(double) == Right(Json.fromDoubleOrNull(double)))
+      parseDslJson(double) == Right(Json.fromDoubleOrNull(double))
     }
 
   property("parseJson BigDecimal") =
     forAll { bigDec: BigDecimal =>
-      Claim(parseDslJson(bigDec) == Right(Json.fromBigDecimal(bigDec)))
+      parseDslJson(bigDec) == Right(Json.fromBigDecimal(bigDec))
     }
 
   //  property("parse any Circe Json") = {
@@ -60,17 +59,13 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
     forAll { jos: List[JsonObject] =>
       val json = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch", acc)) }
       val path = findAllPathWithValue("target value" :: Nil, json).head
-      Claim {
-        path.run(json).contains(targetValue)
-      }
+      path.run(json).contains(targetValue)
     }
   }
 
   property("whitelisting on identical JSON has no effect") = {
     forAll { json: Json =>
-      Claim {
-        whitelistingValue(json, json) == Right(json)
-      }
+      whitelistingValue(json, json) == Right(json)
     }
   }
 
@@ -79,10 +74,8 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
       val modifiedObj = jsonObj.add("extraKey", Json.fromString("extraValue"))
       val json = Json.fromJsonObject(jsonObj)
       val modifiedJson = Json.fromJsonObject(modifiedObj)
-      Claim {
-        whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
-          whitelistingValue(modifiedJson, json) == Left(WhitelistingError(Seq("/extraKey"), json))
-      }
+      whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
+        whitelistingValue(modifiedJson, json) == Left(WhitelistingError(Seq("/extraKey"), json))
     }
   }
 
@@ -90,16 +83,14 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
     forAll { jos: List[JsonObject] =>
       // ==> did not work
       if (jos.isEmpty) {
-        Claim(true)
+        true
       } else {
         val modifiedList = jos.map(_.add("extraKey", Json.fromString("extraValue"))).map(Json.fromJsonObject)
         val json = Json.fromValues(jos.map(Json.fromJsonObject))
         val modifiedJson = Json.fromValues(modifiedList)
         val errors = modifiedList.iterator.zipWithIndex.map { case (_, i) => s"/$i/extraKey" }.toList
-        Claim {
-          whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
-            whitelistingValue(modifiedJson, json) == Left(WhitelistingError(errors, json))
-        }
+        whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
+          whitelistingValue(modifiedJson, json) == Left(WhitelistingError(errors, json))
       }
     }
   }
@@ -111,12 +102,10 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
       val json2 = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch2", acc)) }
       // ==> did not work
       if (jos.isEmpty)
-        Claim(true)
+        true
       else
-        Claim {
-          whitelistingValue(json1, json2) == Left(WhitelistingError("/stitch1" :: Nil, json2)) &&
-            whitelistingValue(json2, json1) == Left(WhitelistingError("/stitch2" :: Nil, json1))
-        }
+        whitelistingValue(json1, json2) == Left(WhitelistingError("/stitch1" :: Nil, json2)) &&
+          whitelistingValue(json2, json1) == Left(WhitelistingError("/stitch2" :: Nil, json1))
     }
   }
 }

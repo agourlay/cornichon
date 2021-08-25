@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.json
 import io.circe.{ Json, JsonObject }
 import org.scalacheck.{ Properties, Test }
 import org.scalacheck.Prop._
-import org.typelevel.claimant.Claim
 import io.circe.testing.ArbitraryInstances
 
 class JsonPathProperties extends Properties("JsonPath") with ArbitraryInstances {
@@ -16,9 +15,7 @@ class JsonPathProperties extends Properties("JsonPath") with ArbitraryInstances 
     forAll { jos: List[JsonObject] =>
       val json = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch", acc)) }
       val path = List.fill(jos.size)(FieldSelection("stitch"))
-      Claim {
-        JsonPath(path).run(json).contains(targetValue)
-      }
+      JsonPath(path).run(json).contains(targetValue)
     }
   }
 }

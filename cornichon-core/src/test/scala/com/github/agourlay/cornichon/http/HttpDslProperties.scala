@@ -5,7 +5,6 @@ import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.testHelpers.TaskSpec
 import org.scalacheck.{ Gen, Properties }
 import org.scalacheck.Prop._
-import org.typelevel.claimant.Claim
 
 class HttpDslProperties extends Properties("HttpDsl") with TaskSpec {
 
@@ -13,9 +12,7 @@ class HttpDslProperties extends Properties("HttpDsl") with TaskSpec {
 
   property("removeFromWithHeaders handle no 'with-headers'") =
     forAll(Gen.alphaStr) { header =>
-      Claim {
-        ops.removeFromWithHeaders(header)(Session.newEmpty) == Right(Session.newEmpty)
-      }
+      ops.removeFromWithHeaders(header)(Session.newEmpty) == Right(Session.newEmpty)
     }
 
   property("save_body accepts to save any String as a body") =
@@ -25,6 +22,6 @@ class HttpDslProperties extends Properties("HttpDsl") with TaskSpec {
       val assertStep = SessionStepBuilder(SessionKey("new-key")).is(input)
       val s = Scenario("scenario with any save_body", saveStep :: assertStep :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 }

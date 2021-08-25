@@ -5,7 +5,6 @@ import com.github.agourlay.cornichon.steps.regular.assertStep.{ GenericEqualityA
 import com.github.agourlay.cornichon.testHelpers.CommonTesting
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{ Gen, Properties }
-import org.typelevel.claimant.Claim
 
 class SessionStepsProperties extends Properties("SessionSteps") with CommonTesting {
 
@@ -18,7 +17,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.is(input)
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("sessionStep hasDifferentCurrentAndPreviousValues") =
@@ -29,7 +28,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.hasDifferentCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("sessionStep hasDifferentCurrentAndPreviousValues - failure") =
@@ -40,7 +39,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.hasDifferentCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
   property("sessionStep hasEqualCurrentAndPreviousValues") =
@@ -51,7 +50,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.hasEqualCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("sessionStep hasEqualCurrentAndPreviousValues - failure") =
@@ -62,7 +61,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.hasEqualCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
   property("sessionStep compareWithPreviousValue - equality") =
@@ -73,7 +72,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.compareWithPreviousValue { case (prev, current) => GenericEqualityAssertion(prev, current) }
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("sessionStep compareWithPreviousValue - LessThanAssertion") =
@@ -84,7 +83,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.compareWithPreviousValue { case (prev, current) => LessThanAssertion(prev.length, current.length) }
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("sessionStep compareWithPreviousValue - LessThanAssertion - failure") =
@@ -95,7 +94,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.compareWithPreviousValue { case (prev, current) => LessThanAssertion(prev.length, current.length) }
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
   property("sessionStep containsString") =
@@ -107,7 +106,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val stepS = sessionStepBuilder.containsString("suffix")
       val s = Scenario("scenario with SessionSteps", stepP :: stepI :: stepS :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("sessionStep containsString - failure") =
@@ -117,7 +116,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val step = sessionStepBuilder.containsString(input + "42")
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
   property("sessionStep matchesRegex") =
@@ -129,7 +128,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val stepS = sessionStepBuilder.matchesRegex(".*suff".r)
       val s = Scenario("scenario with SessionSteps", stepP :: stepI :: stepS :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("sessionStep matchesRegex - failure") =
@@ -141,7 +140,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val s = Scenario("scenario with SessionSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
       if (t.isSuccess) printScenarioLogs(t)
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
 }

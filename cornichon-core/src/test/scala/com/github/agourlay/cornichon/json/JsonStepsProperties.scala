@@ -7,7 +7,6 @@ import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
 import org.scalacheck.Properties
 import org.scalacheck.Prop._
-import org.typelevel.claimant.Claim
 
 class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstances with TaskSpec {
 
@@ -20,7 +19,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val step = jsonStepBuilder.is(input)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonStepBuild is value fail") =
@@ -29,7 +28,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val step = jsonStepBuilder.is(input + "42")
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
   property("JsonStepBuild isNot value") =
@@ -38,7 +37,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val step = jsonStepBuilder.isNot(input + "42")
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonStepBuild isNot value fail") =
@@ -47,7 +46,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val step = jsonStepBuilder.isNot(input)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 
   property("JsonStepBuilder is any Circe jsonObject") =
@@ -57,7 +56,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val step = jsonStepBuilder.is(json)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonStepBuilder is any Circe jsonObject with placeholder") =
@@ -71,7 +70,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(t.isSuccess)
+      t.isSuccess
     }
 
   property("JsonStepBuilder is Circe jsonObject with absent placeholder") =
@@ -82,7 +81,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
       val step = jsonStepBuilder.is(Json.fromJsonObject(fullPlaceholderJsonObj))
       val s = Scenario("scenario with JsonSteps", step :: Nil)
       val t = awaitTask(ScenarioRunner.runScenario(session)(s))
-      Claim(!t.isSuccess)
+      !t.isSuccess
     }
 }
 

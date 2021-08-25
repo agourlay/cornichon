@@ -133,7 +133,6 @@ lazy val core =
         library.monixReactive,
         library.caffeine,
         library.utest % Test,
-        library.claimant % Test,
         library.scalacheck % Test,
         library.circeTesting % Test
       )
@@ -273,7 +272,6 @@ lazy val formattingSettings = Seq(
 lazy val library =
   new {
     object Version {
-      val claimant      = "0.2.0"
       val scalaTest     = "3.2.9"
       val utest         = "0.7.10"
       val cats          = "2.6.1"
@@ -296,7 +294,6 @@ lazy val library =
       val decline       = "2.1.0"
       val scalaXml      = "2.0.1"
     }
-    val claimant      = "org.typelevel"                  %% "claimant"             % Version.claimant
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
     val scalatest     = "org.scalatest"                  %% "scalatest-wordspec"   % Version.scalaTest
     val utest         = "com.lihaoyi"                    %% "utest"                % Version.utest
