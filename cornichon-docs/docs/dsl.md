@@ -244,9 +244,9 @@ When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParam
 Then assert body.asArray.hasSize(2)
 
 Then assert body.is("""
-  |   eventType      |    data     |
-  | "superhero name" |  "Batman"   |
-  | "superhero name" | "Superman"  |
+  |   eventType      |    data     |  id  | retry | comment |
+  | "superhero name" |  "Batman"   | null | null  |   null  |
+  | "superhero name" | "Superman"  | null | null  |   null  |
 """)
 ```
 
