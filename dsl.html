@@ -233,9 +233,9 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 <span class="nc">Then</span> <span class="n">assert</span> <span class="nv">body</span><span class="o">.</span><span class="py">asArray</span><span class="o">.</span><span class="py">hasSize</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
 
 <span class="nc">Then</span> <span class="n">assert</span> <span class="nv">body</span><span class="o">.</span><span class="py">is</span><span class="o">(</span><span class="s">"""
-  |   eventType      |    data     |
-  | "superhero name" |  "Batman"   |
-  | "superhero name" | "Superman"  |
+  |   eventType      |    data     |  id  | retry | comment |
+  | "superhero name" |  "Batman"   | null | null  |   null  |
+  | "superhero name" | "Superman"  | null | null  |   null  |
 """</span><span class="o">)</span>
 </code></pre></div></div>
 
