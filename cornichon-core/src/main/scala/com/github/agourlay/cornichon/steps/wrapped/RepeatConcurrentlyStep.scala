@@ -2,11 +2,11 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.StateT
 import cats.syntax.foldable._
+import cats.effect.IO
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import monix.eval.Task
-import monix.reactive.Observable
+import fs2.Stream
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.control.NonFatal
@@ -21,10 +21,11 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
   override val stateUpdate: StepState = StateT { runState =>
     val nestedRunState = runState.nestedContext
     val initialDepth = runState.depth
-    Observable.fromIterable(List.fill(times)(Done))
-      .mapParallelUnordered(parallelism)(_ => ScenarioRunner.runStepsShortCircuiting(nested, nestedRunState))
-      .takeUntil(Observable.evalDelayed(maxTime, Done))
-      .toListL
+    Stream.iterable[IO, Done](List.fill(times)(Done))
+      .mapAsyncUnordered(parallelism)(_ => ScenarioRunner.runStepsShortCircuiting(nested, nestedRunState))
+      .interruptAfter(maxTime)
+      .compile
+      .toList
       .timed
       .flatMap {
         case (executionTime, results) =>
@@ -32,10 +33,10 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
             val error = RepeatConcurrentlyTimeout(times, results.size)
             val errorState = runState.recordLog(failedTitleLog(initialDepth)).recordLog(FailureLogInstruction(error.renderedMessage, initialDepth, Some(executionTime)))
             val failedStep = FailedStep.fromSingle(this, error)
-            Task.now(errorState -> failedStep.asLeft)
+            IO.pure(errorState -> failedStep.asLeft)
           } else {
             val failedStepRuns = results.collect { case (s, r @ Left(_)) => (s, r) }
-            failedStepRuns.headOption.fold[Task[(RunState, Either[FailedStep, Done])]] {
+            failedStepRuns.headOption.fold[IO[(RunState, Either[FailedStep, Done])]] {
               val successStepsRun = results.collect { case (s, r @ Right(_)) => (s, r) }
               val allRunStates = successStepsRun.map(_._1)
               //TODO all logs should be merged?
@@ -47,15 +48,15 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
               // merge all cleanups steps
               val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
               val successState = runState.withSession(updatedSession).recordLogStack(wrappedLogStack).registerCleanupSteps(allCleanupSteps)
-              Task.now(successState -> rightDone)
+              IO.pure(successState -> rightDone)
             } {
               case (s, failedStep) =>
                 val ratio = s"'${failedStepRuns.size}/$times' run(s)"
                 val wrapLogStack = FailureLogInstruction(s"Repeat concurrently block failed for $ratio", initialDepth) +: s.logStack :+ failedTitleLog(initialDepth)
-                Task.now(runState.mergeNested(s, wrapLogStack) -> failedStep)
+                IO.pure(runState.mergeNested(s, wrapLogStack) -> failedStep)
             }
           }
-      }.onErrorRecover {
+      }.handleError {
         case NonFatal(e) =>
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyError(e))
           (runState.recordLog(failedTitleLog(initialDepth)), failedStep.asLeft)

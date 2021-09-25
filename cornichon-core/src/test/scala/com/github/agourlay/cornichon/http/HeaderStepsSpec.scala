@@ -15,7 +15,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
     val step = HeadersStepBuilder.name("test-key").isPresent
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -23,7 +23,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "test")
     val step = HeadersStepBuilder.name("Test-key").isPresent
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -31,7 +31,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
     val step = HeadersStepBuilder.name("test-key2").isAbsent
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -39,7 +39,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test", "test-key2" -> "test")
     val step = HeadersStepBuilder.hasSize(2)
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -47,7 +47,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "Test")
     val step = HeadersStepBuilder.is("test-key" -> "Test")
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -55,7 +55,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "test")
     val step = HeadersStepBuilder.is("Test-key" -> "test")
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -63,7 +63,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
     val step = HeadersStepBuilder.contain("test-key" -> "test")
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -71,7 +71,7 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "test")
     val step = HeadersStepBuilder.contain("Test-key" -> "test")
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 }

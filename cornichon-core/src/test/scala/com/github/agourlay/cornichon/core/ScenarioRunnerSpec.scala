@@ -18,7 +18,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
       finallySteps = finallySteps
     )
     val s = Scenario("casual stuff", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
     assert(res.isSuccess)
     matchLogsWithoutDuration(res.logs) {
       """
@@ -41,7 +41,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
       finallySteps = finallySteps
     )
     val s = Scenario("casual stuff", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'casual stuff' failed:
           |
@@ -79,7 +79,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
     val step3 = AssertStep("third step", _ => GenericEqualityAssertion(1, 1))
     val steps = step1 :: step2 :: step3 :: Nil
     val s = Scenario("early stop", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'early stop' failed:
           |
@@ -115,7 +115,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
     val finalAssertion = AssertStep("finally assertion", _ => GenericEqualityAssertion(true, false))
     val s = Scenario("accumulate", mainStep :: Nil)
     val fc = FeatureContext.empty.copy(finallySteps = finalAssertion :: Nil, withSeed = Some(1))
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'accumulate' failed:
           |
@@ -175,7 +175,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
     )
 
     val s = Scenario("scenario with effects", List.fill(effectNumber)(effect))
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter.get() == effectNumber)
     assert(res.logs.size == effectNumber + 2)
@@ -194,7 +194,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
 
     val context = FeatureContext.empty.copy(finallySteps = List.fill(effectNumber)(effect))
     val s = Scenario("scenario with effects", context.finallySteps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, context)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty, context)(s))
     assert(res.isSuccess)
     assert(uglyCounter.get() == effectNumber * 2)
     assert(res.logs.size == effectNumber * 2 + 3)
@@ -220,7 +220,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
 
     val steps = assertSeed :: rdStep :: rdAssert :: Nil
     val s = Scenario("deterministic test", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty, fc)(s))
     assert(res.isSuccess)
     assert(res.logs.size == 5)
   }
@@ -228,7 +228,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
   test("runScenario resolves session placeholders in steps title - fails if unknown placeholder") {
     val steps = AssertStep("an assertion <unknown-placeholder>", _ => Assertion.alwaysValid) :: Nil
     val s = Scenario("casual stuff", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'casual stuff' failed:
           |
@@ -248,7 +248,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe("known-placeholder" -> "found!")
     val steps = AssertStep("an assertion <known-placeholder>", _ => Assertion.alwaysValid) :: Nil
     val s = Scenario("casual stuff", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
     matchLogsWithoutDuration(res.logs) {
       """
@@ -262,7 +262,7 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
     PlaceholderResolver.builtInPlaceholderGenerators.foreach { ph =>
       val steps = AssertStep(s"an assertion <${ph.key}>", _ => Assertion.alwaysValid) :: Nil
       val s = Scenario("casual stuff", steps)
-      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+      val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
       assert(res.isSuccess)
       matchLogsWithoutDuration(res.logs) {
         s"""

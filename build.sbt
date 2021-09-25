@@ -119,6 +119,7 @@ lazy val core =
         library.http4sCirce,
         library.fs2Io,
         library.catsCore,
+        library.catsEffect,
         library.pureConfig,
         library.parboiled,
         library.fansi,
@@ -128,8 +129,6 @@ lazy val core =
         library.circeGeneric,
         library.circeParser,
         library.diffsonCirce,
-        library.monixExec,
-        library.monixReactive,
         library.caffeine,
         library.munit % Test,
         library.scalacheck % Test,
@@ -165,6 +164,8 @@ lazy val testFramework =
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
         library.sbtTest,
+        library.fs2Core,
+        library.catsEffect,
         library.openPojo,
         library.decline,
         library.scalaXml,
@@ -274,6 +275,7 @@ lazy val library =
       val scalaTest     = "3.2.10"
       val munit         = "0.7.29"
       val cats          = "2.6.1"
+      val catsEffect    = "3.2.9"
       val parboiled     = "2.3.0"
       val scalaCheck    = "1.15.4"
       val sangriaCirce  = "1.3.2"
@@ -282,10 +284,9 @@ lazy val library =
       val sangria       = "2.1.3"
       val fansi         = "0.2.14"
       val pureConfig    = "0.16.0"
-      val monix         = "3.4.0"
       val sbtTest       = "1.0"
-      val http4s        = "0.22.5"
-      val fs2           = "2.5.9"
+      val http4s        = "0.23.4"
+      val fs2           = "3.1.3"
       val embeddedKafka = "2.8.1"
       val kafkaClient   = "2.8.1"
       val caffeine      = "3.0.4"
@@ -294,6 +295,7 @@ lazy val library =
       val scalaXml      = "2.0.1"
     }
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
+    val catsEffect    = "org.typelevel"                  %% "cats-effect"          % Version.catsEffect
     val scalatest     = "org.scalatest"                  %% "scalatest-wordspec"   % Version.scalaTest
     val munit         = "org.scalameta"                  %% "munit"                % Version.munit
     val pureConfig    = "com.github.pureconfig"          %% "pureconfig"           % Version.pureConfig
@@ -307,14 +309,13 @@ lazy val library =
     val circeTesting  = "io.circe"                       %% "circe-testing"        % Version.circe
     val diffsonCirce  = "org.gnieh"                      %% "diffson-circe"        % Version.diffson
     val scalacheck    = "org.scalacheck"                 %% "scalacheck"           % Version.scalaCheck
-    val monixExec     = "io.monix"                       %% "monix-execution"      % Version.monix
-    val monixReactive = "io.monix"                       %% "monix-reactive"       % Version.monix
     val sbtTest       = "org.scala-sbt"                  %  "test-interface"       % Version.sbtTest
     val http4sClient  = "org.http4s"                     %% "http4s-blaze-client"  % Version.http4s
     val http4sServer  = "org.http4s"                     %% "http4s-blaze-server"  % Version.http4s
     val http4sCirce   = "org.http4s"                     %% "http4s-circe"         % Version.http4s
     val http4sDsl     = "org.http4s"                     %% "http4s-dsl"           % Version.http4s
     val fs2Io         = "co.fs2"                         %% "fs2-io"               % Version.fs2
+    val fs2Core       = "co.fs2"                         %% "fs2-core"             % Version.fs2
     val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
     val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.embeddedKafka
     val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"             % Version.caffeine

@@ -1,8 +1,10 @@
 package com.github.agourlay.cornichon.framework.examples
 
-import monix.eval.Task
-import monix.execution.{ CancelableFuture, Scheduler }
+import cats.effect.IO
+import cats.effect.unsafe.IORuntime
 
-class HttpServer(signal: Task[Unit])(implicit s: Scheduler) {
-  def shutdown(): CancelableFuture[Unit] = signal.runToFuture
+import scala.concurrent.Future
+
+class HttpServer(signal: IO[Unit])(implicit s: IORuntime) {
+  def shutdown(): Future[Unit] = signal.unsafeToFuture()
 }

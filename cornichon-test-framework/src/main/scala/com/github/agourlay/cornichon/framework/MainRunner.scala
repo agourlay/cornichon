@@ -1,16 +1,15 @@
 package com.github.agourlay.cornichon.framework
 
 import java.util
-
 import cats.syntax.apply._
+import cats.effect.IO
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.framework.CornichonFeatureRunner._
 import com.monovore.decline._
 import com.openpojo.reflection.PojoClass
 import com.openpojo.reflection.impl.PojoClassFactory
-import monix.execution.Scheduler.Implicits.global
-import monix.reactive.Observable
+import fs2.Stream
 import sbt.testing.TestSelector
 
 import scala.jdk.CollectionConverters._
@@ -45,8 +44,8 @@ object MainRunner {
       val classes = discoverFeatureClasses(packageToScan)
       println(s"Found ${classes.size} feature classes")
       val scenarioNameFilterSet = scenarioNameFilter.toSet
-      val f = Observable.fromIterable(classes)
-        .mapParallelUnordered(featureParallelism) { featureClass =>
+      val f = Stream.iterable[IO, Class[_]](classes)
+        .mapAsyncUnordered(featureParallelism) { featureClass =>
           val startedAt = System.currentTimeMillis()
           val featureTypeName = featureClass.getTypeName
           val featureInfo = FeatureInfo(featureTypeName, featureClass, CornichonFingerprint, new TestSelector(featureTypeName))
@@ -64,8 +63,9 @@ object MainRunner {
                 res
             }
         }
-        .foldLeftL(true)(_ && _)
-        .runToFuture
+        .compile
+        .fold(true)(_ && _)
+        .unsafeToFuture()(cats.effect.unsafe.implicits.global)
 
       if (Await.result(f, Duration.Inf))
         System.exit(0)

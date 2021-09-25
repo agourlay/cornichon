@@ -4,12 +4,12 @@ import cats.Show
 import cats.syntax.either._
 import cats.syntax.show._
 import cats.syntax.traverse._
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionHistoryStepBuilder, SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.wrapped._
-import monix.eval.Task
 
 import scala.annotation.unchecked.uncheckedVariance
 import scala.language.dynamics
@@ -124,7 +124,7 @@ trait CoreDsl {
 
   def wait(duration: FiniteDuration): Step = EffectStep.fromAsync(
     title = s"wait for ${duration.toMillis} millis",
-    effect = sc => Task.delay(sc.session).delayExecution(duration)
+    effect = sc => IO.delay(sc.session).delayBy(duration)
   )
 
   def save(input: (String, String), show: Boolean = true): Step = {

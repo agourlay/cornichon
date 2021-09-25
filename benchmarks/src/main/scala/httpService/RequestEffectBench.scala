@@ -1,13 +1,10 @@
 package httpService
 
-import java.util.concurrent.{ ExecutorService, Executors }
-
+import com.github.agourlay.cornichon.http.client.NoOpHttpClient
 import com.github.agourlay.cornichon.core.{ Config, ScenarioContext }
 import com.github.agourlay.cornichon.http.{ HttpMethods, HttpRequest, HttpService }
 import org.openjdk.jmh.annotations._
 import RequestEffectBench._
-import com.github.agourlay.cornichon.http.client.NoOpHttpClient
-import monix.execution.Scheduler
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -24,21 +21,6 @@ class RequestEffectBench {
 
   //sbt:benchmarks> jmh:run .*RequestEffect.*
 
-  var es: ExecutorService = _
-  val client = new NoOpHttpClient
-  var httpService: HttpService = _
-
-  @Setup(Level.Trial)
-  final def beforeAll(): Unit = {
-    es = Executors.newFixedThreadPool(1)
-    val scheduler = Scheduler(es)
-    httpService = new HttpService("", 2000.millis, client, Config())(scheduler)
-  }
-
-  @TearDown(Level.Trial)
-  final def afterAll(): Unit = {
-    es.shutdown()
-  }
   /*
 [info] Benchmark                          Mode  Cnt        Score      Error  Units
 [info] RequestEffectBench.singleRequest  thrpt   10   256459,872 ±  2002,169  ops/s
@@ -53,6 +35,9 @@ class RequestEffectBench {
 }
 
 object RequestEffectBench {
+  val client = new NoOpHttpClient
+  val httpService = new HttpService("", 2000.millis, client, Config())(cats.effect.unsafe.implicits.global)
+
   val scenarioContext = ScenarioContext.empty
   val request = HttpRequest[String](
     method = HttpMethods.GET,

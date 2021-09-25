@@ -1,14 +1,13 @@
 package com.github.agourlay.cornichon.framework
 
 import cats.syntax.either._
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BaseFeature
-import monix.eval
-import monix.eval.Task
 import sbt.testing.{ Event, EventHandler, Fingerprint, OptionalThrowable, Selector, Status, TestSelector }
 
 object CornichonFeatureRunner {
-  def loadAndExecute(featureInfo: FeatureInfo, eventHandler: EventHandler, seed: Option[Long], scenarioNameFilter: Set[String]): eval.Task[Boolean] = {
+  def loadAndExecute(featureInfo: FeatureInfo, eventHandler: EventHandler, seed: Option[Long], scenarioNameFilter: Set[String]): IO[Boolean] = {
     val baseFeature = featureInfo.featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
     Either.catchNonFatal(baseFeature.feature).fold(
@@ -24,7 +23,7 @@ object CornichonFeatureRunner {
              |""".stripMargin
         println(FailureLogInstruction(banner, 0).colorized)
         eventHandler.handle(failureEventBuilder(featureInfo, e))
-        Task.now(false)
+        IO.pure(false)
       },
       feature => {
         val (featureLog, featureRun) = feature.ignored match {
@@ -33,7 +32,7 @@ object CornichonFeatureRunner {
             // This is not emitting the SBT `Status.Ignored` that counts tests.
             val msg = s"${feature.name}: ignored because $reason"
             val featureLog = WarningLogInstruction(msg, 0).colorized
-            (featureLog, Task.now(true))
+            (featureLog, IO.pure(true))
           case None =>
             val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
             val featureRunner = FeatureRunner(feature, baseFeature, seed)
@@ -41,16 +40,15 @@ object CornichonFeatureRunner {
               .map { results =>
                 results.foreach(printResultLogs(featureInfo.featureClass))
                 results.forall(_.isSuccess)
-              }.onErrorRecover {
-                case e: Throwable =>
-                  val banner =
-                    s"""
+              }.handleError { e =>
+                val banner =
+                  s"""
                        |exception thrown during Feature execution:
                        |${CornichonError.genStacktrace(e)}
                        |""".stripMargin
-                  println(FailureLogInstruction(banner, 0).colorized)
-                  eventHandler.handle(failureEventBuilder(featureInfo, e))
-                  false
+                println(FailureLogInstruction(banner, 0).colorized)
+                eventHandler.handle(failureEventBuilder(featureInfo, e))
+                false
               }
             (featureLog, run)
         }

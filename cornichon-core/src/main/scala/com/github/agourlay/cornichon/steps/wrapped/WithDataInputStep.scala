@@ -1,12 +1,12 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.{ NonEmptyList, StateT }
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.ScenarioRunner._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Printing._
-import monix.eval.Task
 
 case class WithDataInputStep(nested: List[Step], where: String) extends WrapperStep {
 
@@ -14,8 +14,8 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
 
   override val stateUpdate: StepState = StateT { runState =>
 
-    def runInputs(inputs: List[List[(String, String)]], runState: RunState): Task[(RunState, Either[(List[(String, String)], FailedStep), Done])] =
-      if (inputs.isEmpty) Task.now((runState, rightDone))
+    def runInputs(inputs: List[List[(String, String)]], runState: RunState): IO[(RunState, Either[(List[(String, String)], FailedStep), Done])] =
+      if (inputs.isEmpty) IO.pure((runState, rightDone))
       else {
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
@@ -25,7 +25,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
             stepsResult.fold(
               failedStep => {
                 // Prepend previous logs
-                Task.now((runState.mergeNested(filledState), Left((currentInputs, failedStep))))
+                IO.pure((runState.mergeNested(filledState), Left((currentInputs, failedStep))))
               },
               _ => {
                 // Logs are propagated but not the session
@@ -38,7 +38,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
     runState.scenarioContext.fillPlaceholders(where)
       .flatMap(CornichonJson.parseDataTable)
       .fold(
-        t => Task.now(handleErrors(this, runState, NonEmptyList.one(t))),
+        t => IO.pure(handleErrors(this, runState, NonEmptyList.one(t))),
         parsedTable => {
           val inputs = parsedTable.map { line =>
             line.toList.map { case (key, json) => (key, CornichonJson.jsonStringValue(json)) }

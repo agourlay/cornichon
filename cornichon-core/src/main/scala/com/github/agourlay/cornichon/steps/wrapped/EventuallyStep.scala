@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.{ NonEmptyList, StateT }
+import cats.effect.IO
+import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import cats.syntax.either._
-import monix.eval.Task
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
@@ -14,7 +14,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
   override val stateUpdate: StepState = StateT { runState =>
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): IO[(Long, Int, RunState, Either[FailedStep, Done])] = {
 
       def distinctErrorsWith(fs: FailedStep): Int =
         (fs :: knownErrors).toSet.size
@@ -27,7 +27,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
         knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
 
       ScenarioRunner.runStepsShortCircuiting(nested, runState)
-        .delayExecution(if (retriesNumber == 0) Duration.Zero else conf.interval)
+        .delayBy(if (retriesNumber == 0) Duration.Zero else conf.interval)
         .timed
         .flatMap {
           case (executionTime, (newRunState, res)) =>
@@ -46,33 +46,33 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
 
                 if (oscillationDetected) {
                   val fsOscillation = FailedStep.fromSingle(this, EventuallyBlockOscillationDetected(failedStep))
-                  Task.now((retriesNumber, distinctErrors, updatedRunState, fsOscillation.asLeft))
+                  IO.pure((retriesNumber, distinctErrors, updatedRunState, fsOscillation.asLeft))
                 } else if ((remainingTime - conf.interval).gt(Duration.Zero)) // Check that it could go through another loop after the interval
                   retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors)
                 else {
-                  Task.now((retriesNumber, distinctErrorsWith(failedStep), updatedRunState, failedStep.asLeft))
+                  IO.pure((retriesNumber, distinctErrorsWith(failedStep), updatedRunState, failedStep.asLeft))
                 }
 
               case Right(_) =>
                 if (remainingTime.gt(Duration.Zero)) {
                   // In case of success all logs are returned but they are not printed by default.
-                  Task.now((retriesNumber, distinctErrors, newRunState, rightDone))
+                  IO.pure((retriesNumber, distinctErrors, newRunState, rightDone))
                 } else {
                   // Run was a success but the time is up.
                   val failedStep = FailedStep.fromSingle(nested.last, EventuallyBlockSucceedAfterMaxDuration)
-                  Task.now((retriesNumber, distinctErrors, newRunState, failedStep.asLeft))
+                  IO.pure((retriesNumber, distinctErrors, newRunState, failedStep.asLeft))
                 }
             }
         }
     }
 
-    def timeoutFailedResult: Task[(Long, Int, RunState, Either[FailedStep, Done])] = {
+    def timeoutFailedResult: IO[(Long, Int, RunState, Either[FailedStep, Done])] = {
       val fs = FailedStep(this, NonEmptyList.of(EventuallyBlockMaxInactivity))
-      Task.delay((0, 0, runState.nestedContext, fs.asLeft[Done]))
+      IO.delay((0, 0, runState.nestedContext, fs.asLeft[Done]))
     }
 
     retryEventuallySteps(runState.nestedContext, conf, 0, Nil)
-      .timeoutTo(after = conf.maxTime * 2, backup = timeoutFailedResult) // make sure that the inner block does not run forever
+      .timeoutTo(duration = conf.maxTime * 2, fallback = timeoutFailedResult) // make sure that the inner block does not run forever
       .timed
       .map {
         case (executionTime, (retries, distinctErrors, retriedRunState, report)) =>

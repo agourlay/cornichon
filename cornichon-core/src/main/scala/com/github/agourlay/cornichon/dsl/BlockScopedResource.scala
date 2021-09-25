@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.{ RunState, Session }
-import monix.eval.Task
+import cats.effect.IO
 
 trait BlockScopedResource {
 
@@ -10,5 +10,5 @@ trait BlockScopedResource {
   val openingTitle: String
   val closingTitle: String
 
-  def use[A](outsideRunState: RunState)(runInside: RunState => Task[A]): Task[(Session, A)]
+  def use[A](outsideRunState: RunState)(runInside: RunState => IO[A]): IO[(Session, A)]
 }

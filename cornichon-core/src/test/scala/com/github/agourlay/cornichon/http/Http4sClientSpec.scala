@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.http
 
+import cats.effect.unsafe.implicits.global
 import com.github.agourlay.cornichon.http.client.Http4sClient
-import monix.execution.Scheduler.Implicits.global
 import munit.FunSuite
 
 class Http4sClientSpec extends FunSuite {
@@ -9,7 +9,7 @@ class Http4sClientSpec extends FunSuite {
   private val client = new Http4sClient(true, true, true)
 
   override def afterAll(): Unit = {
-    client.shutdown().runSyncUnsafe()
+    client.shutdown().unsafeRunSync()
     ()
   }
 
