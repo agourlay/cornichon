@@ -1,20 +1,21 @@
 package com.github.agourlay.cornichon.kafka
 
-import java.time.Duration
+import cats.syntax.either._
+import cats.effect.IO
 
 import com.github.agourlay.cornichon.core.{ CornichonError, Session, Step }
 import com.github.agourlay.cornichon.dsl.{ BaseFeature, CoreDsl }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
+
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
-import monix.eval.Task
-import monix.execution.CancelablePromise
 import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
-import cats.syntax.either._
 
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
+import scala.concurrent.{ Future, Promise }
+
+import java.time.Duration
 
 trait KafkaDsl {
   this: BaseFeature with CoreDsl =>
@@ -36,7 +37,7 @@ trait KafkaDsl {
     title = s"put message=$message with key=$key to topic=$topic",
     effect = sc => {
       val pr = new ProducerRecord[String, String](topic, key, message)
-      val cp = CancelablePromise[Unit]()
+      val cp = Promise[Unit]()
       featureProducer.send(pr, new Callback {
         def onCompletion(metadata: RecordMetadata, exception: Exception): Unit =
           if (exception == null)
@@ -44,13 +45,13 @@ trait KafkaDsl {
           else
             cp.failure(exception)
       })
-      Task.fromCancelablePromise(cp).map(_ => sc.session)
+      IO.fromFuture(IO.delay(cp.future)).map(_ => sc.session)
     }
   )
 
-  def read_from_topic(topic: String, atLeastAmount: Int = 1, timeoutMs: Int = 500): Step = EffectStep[Task](
+  def read_from_topic(topic: String, atLeastAmount: Int = 1, timeoutMs: Int = 500): Step = EffectStep(
     title = s"reading the last $atLeastAmount messages from topic=$topic",
-    effect = sc => Task.delay {
+    effect = sc => IO.delay {
       featureConsumer.subscribe(Seq(topic).asJava)
       val messages = ListBuffer.empty[ConsumerRecord[String, String]]
       var nothingNewAnymore = false
@@ -93,9 +94,7 @@ trait KafkaDsl {
     )
 
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
-    BaseFeature.addShutdownHook(() => Future {
-      p.close()
-    })
+    BaseFeature.addShutdownHook(() => Future.successful(p.close()))
     p
   }
 
@@ -111,9 +110,7 @@ trait KafkaDsl {
     )
 
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
-    BaseFeature.addShutdownHook(() => Future {
-      c.close()
-    })
+    BaseFeature.addShutdownHook(() => Future.successful(c.close()))
     c
   }
 }

@@ -2,9 +2,8 @@ package com.github.agourlay.cornichon.http.server
 
 import java.net.NetworkInterface
 
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.CornichonError
-import monix.eval.Task
-import monix.execution.Scheduler
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
 import org.http4s.blaze.server.BlazeServerBuilder
@@ -18,34 +17,34 @@ class MockHttpServer[A](
     label: String,
     interface: Option[String],
     port: Option[Range],
-    mockService: HttpRoutes[Task],
-    maxPortBindingRetries: Int)(useFromAddress: String => Task[A])(implicit scheduler: Scheduler) {
+    mockService: HttpRoutes[IO],
+    maxPortBindingRetries: Int)(useFromAddress: String => IO[A]) {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r => Random.shuffle(r.toList))
 
   private val mockRouter = Router("/" -> mockService).orNotFound
 
-  def useServer(): Task[A] =
+  def useServer(): IO[A] =
     if (randomPortOrder.isEmpty)
-      Task.raiseError(MockHttpServerError.toException)
+      IO.raiseError(MockHttpServerError.toException)
     else
       startServerTryPorts(randomPortOrder)
 
-  private def startServerTryPorts(ports: List[Int], retry: Int = 0): Task[A] =
-    startBlazeServer(ports.head).onErrorRecoverWith {
+  private def startServerTryPorts(ports: List[Int], retry: Int = 0): IO[A] =
+    startBlazeServer(ports.head).handleErrorWith {
       case _: java.net.BindException if ports.length > 1 =>
         startServerTryPorts(ports.tail, retry)
       case _: java.net.BindException if retry < maxPortBindingRetries =>
         val sleepFor = retry + 1
         println(s"Could not start server `$label` on any of the provided port(s) on interface $selectedInterface. Retrying in $sleepFor seconds...")
-        startServerTryPorts(randomPortOrder, retry = retry + 1).delayExecution(sleepFor.seconds)
+        startServerTryPorts(randomPortOrder, retry = retry + 1).delayBy(sleepFor.seconds)
       case e: java.net.BindException if retry == maxPortBindingRetries =>
-        Task.raiseError(MockHttpServerStartError(e, label, maxPortBindingRetries, selectedInterface).toException)
+        IO.raiseError(MockHttpServerStartError(e, label, maxPortBindingRetries, selectedInterface).toException)
     }
 
-  private def startBlazeServer(port: Int): Task[A] =
-    BlazeServerBuilder[Task](executionContext = scheduler)
+  private def startBlazeServer(port: Int): IO[A] =
+    BlazeServerBuilder[IO](executionContext = scala.concurrent.ExecutionContext.global)
       .bindHttp(port, selectedInterface)
       .withoutBanner
       .withHttpApp(mockRouter)

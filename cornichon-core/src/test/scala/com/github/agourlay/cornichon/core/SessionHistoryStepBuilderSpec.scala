@@ -12,7 +12,7 @@ class SessionHistoryStepBuilderSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> "test 1").addValuesUnsafe(testKey -> "test 2")
     val step = sessionHistoryStepBuilder.containsExactly("test 1")
     val s = Scenario("scenario with SessionHistoryStepBuilder", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with SessionHistoryStepBuilder' failed:
            |
@@ -34,7 +34,7 @@ class SessionHistoryStepBuilderSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> "test 1").addValuesUnsafe(testKey -> "test 2")
     val step = sessionHistoryStepBuilder.containsExactly("test 1", "test 2", "test 2")
     val s = Scenario("scenario with SessionHistoryStepBuilder", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with SessionHistoryStepBuilder' failed:
            |

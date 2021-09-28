@@ -2,8 +2,8 @@ package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import com.github.agourlay.cornichon.matchers.MatcherResolver
-import monix.eval.Task
-import monix.reactive.Observable
+import cats.effect.IO
+import fs2.Stream
 import cats.syntax.traverse._
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, explicitSeed: Option[Long]) {
@@ -18,12 +18,12 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
     allMatchers = (MatcherResolver.builtInMatchers ::: baseFeature.registerMatchers).groupBy(_.key)
   )
 
-  final def runScenario(s: Scenario): Task[ScenarioReport] = {
+  final def runScenario(s: Scenario): IO[ScenarioReport] = {
     println(s"Starting scenario '${s.name}'")
     ScenarioRunner.runScenario(Session.newEmpty, featureContext)(s)
   }
 
-  final def runFeature(filterScenario: Scenario => Boolean)(scenarioResultHandler: ScenarioReport => ScenarioReport): Task[List[ScenarioReport]] = {
+  final def runFeature(filterScenario: Scenario => Boolean)(scenarioResultHandler: ScenarioReport => ScenarioReport): IO[List[ScenarioReport]] = {
     val scenariosToRun = featureDef.scenarios.filter(filterScenario)
     if (scenariosToRun.isEmpty)
       FeatureRunner.noop
@@ -34,24 +34,26 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
         case Left((beforeFeatureError, successRun)) if successRun >= 1 =>
           println("`beforeFeature` failed partially, let's try to run `afterFeature` to possibly clean things up")
           runAfterFeature() match {
-            case Left(afterFeatureError) => Task.raiseError(HooksFeatureError(beforeFeatureError, afterFeatureError).toException)
-            case Right(_)                => Task.raiseError(beforeFeatureError.toException)
+            case Left(afterFeatureError) => IO.raiseError(HooksFeatureError(beforeFeatureError, afterFeatureError).toException)
+            case Right(_)                => IO.raiseError(beforeFeatureError.toException)
           }
         // Failed completely, nothing to cleanup, fast exit
-        case Left((beforeFeatureError, _)) => Task.raiseError(beforeFeatureError.toException)
+        case Left((beforeFeatureError, _)) => IO.raiseError(beforeFeatureError.toException)
         case Right(_) =>
           // featureParallelism is limited to avoid spawning too much work at once
           val featureParallelism = if (baseFeature.executeScenariosInParallel) {
             baseFeature.config.scenarioExecutionParallelismFactor * FeatureRunner.availableProcessors + 1
           } else 1
-          Observable.fromIterable(scenariosToRun)
-            .mapParallelUnordered(featureParallelism)(runScenario(_).map(scenarioResultHandler))
-            .toListL
+
+          Stream.iterable[IO, Scenario](scenariosToRun)
+            .mapAsyncUnordered(featureParallelism)(runScenario(_).map(scenarioResultHandler))
+            .compile
+            .toList
             .flatMap { results =>
               // Run 'after feature' hooks
               runAfterFeature() match {
-                case Left(afterFeatureError) => Task.raiseError(afterFeatureError.toException)
-                case Right(_)                => Task.now(results)
+                case Left(afterFeatureError) => IO.raiseError(afterFeatureError.toException)
+                case Right(_)                => IO.pure(results)
               }
             }
       }
@@ -85,5 +87,5 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
 
 object FeatureRunner {
   lazy val availableProcessors: Int = Runtime.getRuntime.availableProcessors()
-  private val noop = Task.now(Nil)
+  private val noop = IO.pure(Nil)
 }

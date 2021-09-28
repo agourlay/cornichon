@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.dsl
 
-import java.util.concurrent.ConcurrentLinkedDeque
-
-import com.github.agourlay.cornichon.core.{ Config, Done, FeatureDef, Step }
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.matchers.Matcher
 import com.github.agourlay.cornichon.resolver.Mapper
-import monix.execution.Scheduler
+
+import java.util.concurrent.ConcurrentLinkedDeque
+
 import pureconfig.error.{ ConvertFailure, KeyNotFound }
 
 import scala.annotation.tailrec
@@ -24,9 +24,6 @@ trait BaseFeature {
   lazy val executeScenariosInParallel: Boolean = config.executeScenariosInParallel
 
   lazy val seed: Option[Long] = None
-
-  // Convenient implicits for the custom DSL
-  implicit lazy val ec = Scheduler.Implicits.global
 
   def feature: FeatureDef
 

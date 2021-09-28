@@ -19,7 +19,7 @@ class RetryMaxStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val retryMaxStep = RetryMaxStep(nested, loop)
     val s = Scenario("with RetryMax", retryMaxStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'with RetryMax' failed:
           |
@@ -53,7 +53,7 @@ class RetryMaxStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val retryMaxStep = RetryMaxStep(nested, max)
     val s = Scenario("scenario with RetryMax", retryMaxStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter == max - 2)
   }

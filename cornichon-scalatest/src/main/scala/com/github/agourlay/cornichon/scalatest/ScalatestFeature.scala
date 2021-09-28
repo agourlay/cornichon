@@ -1,20 +1,21 @@
 package com.github.agourlay.cornichon.scalatest
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import com.github.agourlay.cornichon
 import com.github.agourlay.cornichon.core.LogInstruction._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import com.github.agourlay.cornichon.dsl.BaseFeature.shutDownGlobalResources
-import org.scalatest._
 import com.github.agourlay.cornichon.scalatest.ScalatestFeature._
-import monix.execution.Scheduler
+
+import org.scalatest._
+import org.scalatest.wordspec.AsyncWordSpecLike
+
+import java.util
+import java.util.concurrent.atomic.AtomicInteger
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
-import org.scalatest.wordspec.AsyncWordSpecLike
 
 trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: BaseFeature =>
@@ -79,7 +80,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
                   throw new RuntimeException(s"Scalatest filters ignored scenario upstream, this should never happen\n$i")
                 case p: PendingScenarioReport =>
                   throw new RuntimeException(s"Scalatest filters pending scenario upstream, this should never happen\n$p")
-              }.runToFuture
+              }.unsafeToFuture()(cats.effect.unsafe.implicits.global)
             }
         }
       }
@@ -97,15 +98,19 @@ object ScalatestFeature {
 
   // Custom Reaper process for the time being as we want to cleanup afterall Feature
   // Will tear down stuff if no Feature registers during 10 secs
-  Scheduler.Implicits.global.scheduleWithFixedDelay(5.seconds, 5.seconds) {
-    if (registeredUsage.get() == 0) {
-      safePassInRow.incrementAndGet()
-      if (safePassInRow.get() == 2) { shutDownGlobalResources(); () } else ()
-    } else if (safePassInRow.get() > 0) {
-      safePassInRow.decrementAndGet()
-      ()
+  private val timer = new util.Timer()
+  private val timerTask = new util.TimerTask {
+    def run(): Unit = {
+      if (registeredUsage.get() == 0) {
+        safePassInRow.incrementAndGet()
+        if (safePassInRow.get() == 2) { shutDownGlobalResources(); () } else ()
+      } else if (safePassInRow.get() > 0) {
+        safePassInRow.decrementAndGet()
+        ()
+      }
     }
   }
+  timer.scheduleAtFixedRate(timerTask, 5.seconds.toMillis, 5.seconds.toMillis)
 
   def reserveGlobalRuntime(): Unit = {
     registeredUsage.incrementAndGet()

@@ -23,7 +23,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(10, 10, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'scenario with checkStep' failed:
           |
@@ -49,7 +49,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(10, 10, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'scenario with checkStep' failed:
           |
@@ -75,7 +75,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(10, 10, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'scenario with checkStep' failed:
           |
@@ -103,7 +103,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(maxNumberOfRuns = maxRun, 1, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     res match {
       case f: SuccessScenarioReport =>
         assert(f.isSuccess)
@@ -131,7 +131,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxTransition, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     res match {
       case f: SuccessScenarioReport =>
         assert(f.isSuccess)
@@ -153,7 +153,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'scenario with checkStep' failed:
           |
@@ -179,7 +179,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'scenario with checkStep' failed:
           |
@@ -206,7 +206,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     res match {
       case f: SuccessScenarioReport =>
         assert(f.isSuccess)
@@ -227,7 +227,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     val checkStep = CheckModelStep(maxNumberOfRuns = 10, 10, modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     res match {
       case f: FailureScenarioReport =>
         assert(!f.isSuccess)

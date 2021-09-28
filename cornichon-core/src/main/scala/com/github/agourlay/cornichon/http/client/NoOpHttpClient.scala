@@ -3,23 +3,23 @@ package com.github.agourlay.cornichon.http.client
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done
 import com.github.agourlay.cornichon.http.{ HttpResponse, HttpRequest, HttpStreamedRequest }
-import monix.eval.Task
 import org.http4s.EntityEncoder
 
 import scala.concurrent.duration.FiniteDuration
 
 class NoOpHttpClient extends HttpClient {
 
-  def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[Task, A]) =
-    EitherT.apply(Task.now(HttpResponse(200, Nil, "NoOpBody").asRight))
+  def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A]) =
+    EitherT.apply(IO.pure(HttpResponse(200, Nil, "NoOpBody").asRight))
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration) =
-    Task.now(HttpResponse(200, Nil, "NoOpBody").asRight)
+    IO.pure(HttpResponse(200, Nil, "NoOpBody").asRight)
 
   def shutdown() =
-    Done.taskDone
+    Done.ioDone
 
   def paramsFromUrl(url: String) =
     Right(Nil)

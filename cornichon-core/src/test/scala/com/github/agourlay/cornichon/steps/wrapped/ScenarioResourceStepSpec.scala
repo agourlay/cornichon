@@ -20,7 +20,7 @@ class ScenarioResourceStepSpec extends FunSuite with CommonTestSuite {
     )
     val scenario = Scenario("", resourceStep :: brokenEffectStep :: Nil)
 
-    val report = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
+    val report = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
     val qName = report.session.get("the-queue").valueUnsafe
     assert(queueResource.actionsFor(qName) == List(CreateQueue(qName), DeleteQueue(qName)))
     assert(report.logs.contains(InfoLogInstruction("cleanup steps", 2)))
@@ -33,7 +33,7 @@ class ScenarioResourceStepSpec extends FunSuite with CommonTestSuite {
     val resourceStep2 = ScenarioResourceStep("ensure q2 exists", createAndStoreQueueInSession("q2"), deleteQueue("q2"))
     val scenario = Scenario("resource step scenario", resourceStep1 :: brokenEffectStep :: resourceStep2 :: Nil)
 
-    val rep = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
+    val rep = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
     val q1 = rep.session.get("q1").valueUnsafe
     assert(queueResource.actionsFor(q1) == List(CreateQueue(q1), DeleteQueue(q1)))
   }
@@ -44,7 +44,7 @@ class ScenarioResourceStepSpec extends FunSuite with CommonTestSuite {
     val resourceSteps = is.map(i => ScenarioResourceStep(s"ensure q$i exists", createAndStoreQueueInSession(s"q$i"), deleteQueue(s"q$i")))
     val scenario = Scenario("resource step scenario", resourceSteps)
 
-    val rep = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
+    val rep = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
     def q(i: Int) = rep.session.get(s"q$i").valueUnsafe
     assert(queueResource.allActions == is.map(i => CreateQueue(q(i))) ++ is.reverseIterator.map(i => DeleteQueue(q(i))))
   }
@@ -56,7 +56,7 @@ class ScenarioResourceStepSpec extends FunSuite with CommonTestSuite {
     val resourceStep3 = ScenarioResourceStep("ensure q3 exists", createAndStoreQueueInSession("q3"), failToDeleteQueue("q3"))
     val scenario = Scenario("resource step scenario", resourceStep1 :: resourceStep2 :: resourceStep3 :: Nil)
 
-    val rep = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
+    val rep = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(scenario))
     val q1 = rep.session.get("q1").valueUnsafe
     assert(queueResource.actionsFor(q1) == List(CreateQueue(q1), DeleteQueue(q1)))
     scenarioFailsWithMessage(rep) {

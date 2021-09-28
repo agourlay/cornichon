@@ -1,10 +1,10 @@
 package step
 
-import java.util.concurrent.{ ExecutorService, Executors }
+import cats.effect.unsafe.implicits.global
 
 import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session, SessionKey }
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import monix.execution.Scheduler
+
 import org.openjdk.jmh.annotations._
 
 import scala.concurrent.Await
@@ -23,20 +23,6 @@ class JsonStepBench {
 
   //sbt:benchmarks> jmh:run .*JsonStep.* -prof gc -foe true -gc true -rf csv
 
-  var es: ExecutorService = _
-  var scheduler: Scheduler = _
-
-  @Setup(Level.Trial)
-  final def beforeAll(): Unit = {
-    es = Executors.newFixedThreadPool(1)
-    scheduler = Scheduler(es)
-  }
-
-  @TearDown(Level.Trial)
-  final def afterAll(): Unit = {
-    es.shutdown()
-  }
-
   /*
 [info] Benchmark                          Mode  Cnt       Score      Error  Units
 [info] JsonStepBench.jsonIgnoreIs        thrpt   10  105342,213 ±  689,386  ops/s
@@ -52,7 +38,7 @@ class JsonStepBench {
     val step = jsonStepBuilder.is(json)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = ScenarioRunner.runScenario(session)(s)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -82,7 +68,7 @@ class JsonStepBench {
       """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = ScenarioRunner.runScenario(s2)(s)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -104,7 +90,7 @@ class JsonStepBench {
       """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = ScenarioRunner.runScenario(session)(s)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -121,7 +107,7 @@ class JsonStepBench {
     """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = ScenarioRunner.runScenario(session)(s)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -130,7 +116,7 @@ class JsonStepBench {
     val step = jsonStepBuilder.path("publisher.name").is("DC")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = ScenarioRunner.runScenario(session)(s)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 
@@ -139,7 +125,7 @@ class JsonStepBench {
     val step = jsonStepBuilder.whitelisting.is("""{"hasSuperpowers": false}""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val f = ScenarioRunner.runScenario(session)(s)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 }

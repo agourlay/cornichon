@@ -2,14 +2,14 @@ package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.syntax.all._
 import com.github.agourlay.cornichon.framework.examples.HttpServer
+import fs2.Stream
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._
 import io.circe.syntax._
-import monix.eval.Task
-import monix.eval.Task._
-import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s.server.{ AuthMiddleware, Router }
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
@@ -26,25 +26,25 @@ import sangria.marshalling.circe._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success }
 
-class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
+class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
 
   private val sm = new SuperMicroService()
-  implicit val s = Scheduler.Implicits.global
+  private implicit val ec = scala.concurrent.ExecutionContext.global
 
-  implicit val heroJsonDecoder = jsonOf[Task, SuperHero]
-  implicit val publisherJsonDecoder = jsonOf[Task, Publisher]
+  implicit val heroJsonDecoder = jsonOf[IO, SuperHero]
+  implicit val publisherJsonDecoder = jsonOf[IO, Publisher]
 
   object SessionIdQueryParamMatcher extends QueryParamDecoderMatcher[String]("sessionId")
   object ProtectIdentityQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("protectIdentity")
   object JustNameQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("justName")
 
-  private def validatedJsonResponse[A: Encoder](s: Json => Task[Response[Task]])(v: Validated[ApiError, A]): Task[Response[Task]] =
+  private def validatedJsonResponse[A: Encoder](s: Json => IO[Response[IO]])(v: Validated[ApiError, A]): IO[Response[IO]] =
     v match {
       case Valid(a)   => s(a.asJson)
       case Invalid(e) => apiErrorResponse(e)
     }
 
-  private def apiErrorResponse(e: ApiError): Task[Response[Task]] =
+  private def apiErrorResponse(e: ApiError): IO[Response[IO]] =
     e match {
       case SessionNotFound(_)        => NotFound(HttpError(e.msg).asJson)
       case PublisherNotFound(_)      => NotFound(HttpError(e.msg).asJson)
@@ -53,7 +53,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
       case SuperHeroAlreadyExists(_) => Conflict(HttpError(e.msg).asJson)
     }
 
-  private val sessionService = HttpRoutes.of[Task] {
+  private val sessionService = HttpRoutes.of[IO] {
     case POST -> Root / "session" =>
       val sessionId = sm.createSession()
       Created(sessionId)
@@ -64,7 +64,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
       }
   }
 
-  private val publishersService = HttpRoutes.of[Task] {
+  private val publishersService = HttpRoutes.of[IO] {
     case GET -> Root / "publishers" :? SessionIdQueryParamMatcher(sessionId) =>
       Ok(sm.allPublishers(sessionId).asJson)
 
@@ -74,12 +74,12 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
     case req @ POST -> Root / "publishers" :? SessionIdQueryParamMatcher(sessionId) =>
       for {
         p <- req.as[Publisher]
-        created <- Task.delay(sm.addPublisher(sessionId, p))
+        created <- IO.delay(sm.addPublisher(sessionId, p))
         resp <- validatedJsonResponse(Ok(_))(created)
       } yield resp
   }
 
-  private val superHeroesService = HttpRoutes.of[Task] {
+  private val superHeroesService = HttpRoutes.of[IO] {
     case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) =>
       Ok(sm.allSuperheroes(sessionId).asJson)
 
@@ -90,33 +90,33 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
       validatedJsonResponse(Ok(_))(sm.deleteSuperhero(sessionId, name))
   }
 
-  private val authStore: BasicAuthenticator[Task, String] = (creds: BasicCredentials) =>
+  private val authStore: BasicAuthenticator[IO, String] = (creds: BasicCredentials) =>
     if (creds.username == "admin" && creds.password == "cornichon")
-      Task.now(Some(creds.username))
+      IO.pure(Some(creds.username))
     else
-      Task.now(None)
+      IO.pure(None)
 
-  private val authMiddleware: AuthMiddleware[Task, String] = BasicAuth("secure site", authStore)
+  private val authMiddleware: AuthMiddleware[IO, String] = BasicAuth("secure site", authStore)
 
   private val securedSuperHeroesService = authMiddleware {
-    AuthedRoutes.of[String, Task] {
+    AuthedRoutes.of[String, IO] {
       case req @ POST -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ =>
         for {
           s <- req.req.as[SuperHero]
-          created <- Task.delay(sm.addSuperhero(sessionId, s))
+          created <- IO.delay(sm.addSuperhero(sessionId, s))
           resp <- validatedJsonResponse(Created(_))(created)
         } yield resp
 
       case req @ PUT -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) as _ =>
         for {
           s <- req.req.as[SuperHero]
-          updated <- Task.delay(sm.updateSuperhero(sessionId, s))
+          updated <- IO.delay(sm.updateSuperhero(sessionId, s))
           resp <- validatedJsonResponse(Ok(_))(updated)
         } yield resp
     }
   }
 
-  private val gqlService = HttpRoutes.of[Task] {
+  private val gqlService = HttpRoutes.of[IO] {
     case req @ POST -> Root =>
       req.as[Json].flatMap { requestJson =>
 
@@ -141,9 +141,9 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
                 operationName = operation
               )
 
-              Task.fromFuture(f)
+              IO.fromFuture(IO.delay(f))
                 .flatMap(a => Ok(a))
-                .onErrorHandleWith {
+                .handleErrorWith {
                   case e: QueryAnalysisError => BadRequest(e.resolveError)
                   case e: ErrorWithResolver  => InternalServerError(e.resolveError)
                 }
@@ -152,14 +152,14 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
       }
   }
 
-  private val sseSuperHeroesService = HttpRoutes.of[Task] {
+  private val sseSuperHeroesService = HttpRoutes.of[IO] {
     case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) :? JustNameQueryParamMatcher(justNameOpt) =>
       val superheroes = sm.allSuperheroes(sessionId)
       val sse = if (justNameOpt.getOrElse(false))
         superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = Some(sh.name)))
       else
         superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = Some(sh.asJson.noSpaces)))
-      Ok(fs2.Stream.fromIterator[Task](sse.iterator))
+      Ok(Stream.iterable[IO, ServerSentEvent](sse))
   }
 
   private val routes = Router(
@@ -168,12 +168,12 @@ class SuperHeroesHttpAPI() extends Http4sDsl[Task] {
     "/graphql" -> gqlService
   )
 
-  def start(httpPort: Int): CancelableFuture[HttpServer] =
-    BlazeServerBuilder[Task](executionContext = s)
+  def start(httpPort: Int): Future[HttpServer] =
+    BlazeServerBuilder[IO]
       .bindHttp(httpPort, "localhost")
       .withoutBanner
       .withHttpApp(GZip(routes.orNotFound))
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
-      .runToFuture
+      .unsafeToFuture()
 }

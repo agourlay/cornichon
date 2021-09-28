@@ -1,16 +1,13 @@
 package com.github.agourlay.cornichon.http.server
 
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.{ RunState, Session }
 import com.github.agourlay.cornichon.dsl.BlockScopedResource
 import com.github.agourlay.cornichon.http.server.HttpMockServerResource.SessionKeys._
 import io.circe.Json
-import monix.eval.Task
-import monix.execution.Scheduler
 
 case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range], maxPortBindingRetries: Int)
   extends BlockScopedResource {
-
-  implicit val scheduler = Scheduler.Implicits.global
 
   private val interfaceInfo = interface.fold("")(i => s" on interface `$i`")
   private val portsInfo = portRange.fold("")(r => s" using a port in range `${r.start}..${r.end}`")
@@ -19,7 +16,7 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
   val openingTitle: String = s"Starting HTTP mock server '$label'$interfaceInfo$portsInfo"
   val closingTitle: String = s"Shutting down HTTP mock server '$label'"
 
-  def use[A](outsideRunState: RunState)(f: RunState => Task[A]): Task[(Session, A)] = {
+  def use[A](outsideRunState: RunState)(f: RunState => IO[A]): IO[(Session, A)] = {
     val mockRequestHandler = new MockServerRequestHandler()
 
     val initSession: String => Session = id => Session.newEmpty.addValueUnsafe(s"$label-url", id)

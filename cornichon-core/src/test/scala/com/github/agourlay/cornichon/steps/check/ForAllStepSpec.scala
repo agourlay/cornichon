@@ -18,7 +18,7 @@ class ForAllStepSpec extends FunSuite with CommonTestSuite with CheckDsl {
     }
     val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
   }
 
@@ -33,7 +33,7 @@ class ForAllStepSpec extends FunSuite with CommonTestSuite with CheckDsl {
     }
     val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'scenario with forAllStep' failed:
           |
@@ -59,7 +59,7 @@ class ForAllStepSpec extends FunSuite with CommonTestSuite with CheckDsl {
     val forAllStep = for_all("fails", maxNumberOfRuns = maxRun, integerGen)(_ => incrementEffect)
     val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     res match {
       case f: SuccessScenarioReport =>
         assert(f.isSuccess)
@@ -74,7 +74,7 @@ class ForAllStepSpec extends FunSuite with CommonTestSuite with CheckDsl {
     val forAllStep = for_all("fails", maxNumberOfRuns = 10, integerGen)(_ => brokenEffectStep)
     val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'scenario with forAllStep' failed:
           |
@@ -93,7 +93,7 @@ class ForAllStepSpec extends FunSuite with CommonTestSuite with CheckDsl {
     val forAllStep = for_all("fails", maxNumberOfRuns = 10, brokenIntGen)(_ => neverValidAssertStep)
     val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
 
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     res match {
       case f: FailureScenarioReport =>
         assert(!f.isSuccess)

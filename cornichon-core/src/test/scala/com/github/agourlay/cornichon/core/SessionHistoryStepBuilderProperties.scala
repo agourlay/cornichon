@@ -21,7 +21,7 @@ class SessionHistoryStepBuilderProperties extends Properties("SessionHistoryStep
         val session = inputs.foldLeft(Session.newEmpty) { case (s, input) => s.addValuesUnsafe(testKey -> input) }
         val step = sessionHistoryStepBuilder.containsExactly(list: _*)
         val s = Scenario("scenario with SessionHistorySteps", step :: Nil)
-        val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+        val t = awaitIO(ScenarioRunner.runScenario(session)(s))
         t.isSuccess
     }
 

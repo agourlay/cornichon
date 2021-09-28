@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.{ NonEmptyList, StateT }
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import monix.eval.Task
 
 case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
@@ -13,7 +13,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
   override val stateUpdate: StepState = StateT { runState =>
 
-    def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
+    def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): IO[(Long, RunState, Either[FailedStep, Done])] =
       ScenarioRunner.runStepsShortCircuiting(nested, runState.resetLogStack).flatMap {
         case (retriedState, Left(_)) if limit > 0 =>
           // In case of success all logs are returned but they are not printed by default.
@@ -21,11 +21,11 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
 
         case (retriedState, l @ Left(_)) =>
           // In case of failure only the logs of the last run are shown to avoid giant traces.
-          Task.now((retriesNumber, retriedState, l))
+          IO.pure((retriesNumber, retriedState, l))
 
         case (retriedState, _) =>
           val successState = runState.withSession(retriedState.session).recordLogStack(retriedState.logStack)
-          Task.now((retriesNumber, successState, rightDone))
+          IO.pure((retriesNumber, successState, rightDone))
 
       }
 

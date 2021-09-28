@@ -17,7 +17,7 @@ class ConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
     val s = Scenario("with Concurrently", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'with Concurrently' failed:
           |
@@ -45,7 +45,7 @@ class ConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val steps = ConcurrentlyStep(nested, 10.millis) :: Nil
     val s = Scenario("with Concurrently", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'with Concurrently' failed:
           |
@@ -72,7 +72,7 @@ class ConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     )
     val concurrentlyStep = ConcurrentlyStep(List.fill(loop)(nested), 300.millis)
     val s = Scenario("scenario with Concurrently", concurrentlyStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter.intValue() == loop)
   }

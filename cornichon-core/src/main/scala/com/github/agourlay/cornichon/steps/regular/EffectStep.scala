@@ -2,9 +2,9 @@ package com.github.agourlay.cornichon.steps.regular
 
 import cats.data.{ EitherT, NonEmptyList }
 import cats.syntax.either._
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ScenarioRunner._
-import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
@@ -13,8 +13,8 @@ case class EffectStep(title: String, effect: ScenarioContext => Future[Either[Co
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
-  override def runSessionValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], Session]] =
-    Task.deferFuture(effect(runState.scenarioContext)).map(_.leftMap(NonEmptyList.one))
+  override def runSessionValueStep(runState: RunState): IO[Either[NonEmptyList[CornichonError], Session]] =
+    IO.fromFuture(IO.delay(effect(runState.scenarioContext))).map(_.leftMap(NonEmptyList.one))
 
   override def onError(errors: NonEmptyList[CornichonError], runState: RunState, executionTime: Duration): (LogInstruction, FailedStep) =
     errorsToFailureStep(this, runState.depth, errors, Some(executionTime))

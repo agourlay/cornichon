@@ -8,8 +8,8 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.Caching
 import io.circe.{ ACursor, Json }
-import monix.execution.atomic.AtomicBoolean
 
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable.ListBuffer
 
 case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
@@ -58,7 +58,7 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
       }
 
     // using an AtomicBoolean for signaling...
-    val projectionMode = AtomicBoolean(false)
+    val projectionMode = new AtomicBoolean(false)
     val cursors = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) =>
       op match {
         case RootSelection                     => oc

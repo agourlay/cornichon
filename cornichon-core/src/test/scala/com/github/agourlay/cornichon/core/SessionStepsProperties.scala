@@ -16,7 +16,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.is(input)
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       t.isSuccess
     }
 
@@ -27,7 +27,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> (input + "something"))
       val step = sessionStepBuilder.hasDifferentCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       t.isSuccess
     }
 
@@ -38,7 +38,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.hasDifferentCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       !t.isSuccess
     }
 
@@ -49,7 +49,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.hasEqualCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       t.isSuccess
     }
 
@@ -60,7 +60,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> (input + "something"))
       val step = sessionStepBuilder.hasEqualCurrentAndPreviousValues
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       !t.isSuccess
     }
 
@@ -71,7 +71,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.compareWithPreviousValue { case (prev, current) => GenericEqualityAssertion(prev, current) }
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       t.isSuccess
     }
 
@@ -82,7 +82,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> (input + "something"))
       val step = sessionStepBuilder.compareWithPreviousValue { case (prev, current) => LessThanAssertion(prev.length, current.length) }
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       t.isSuccess
     }
 
@@ -93,7 +93,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.compareWithPreviousValue { case (prev, current) => LessThanAssertion(prev.length, current.length) }
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       !t.isSuccess
     }
 
@@ -105,7 +105,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val stepI = if (input.nonEmpty) sessionStepBuilder.containsString(input) else alwaysValidAssertStep
       val stepS = sessionStepBuilder.containsString("suffix")
       val s = Scenario("scenario with SessionSteps", stepP :: stepI :: stepS :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       t.isSuccess
     }
 
@@ -115,7 +115,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
         .addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.containsString(input + "42")
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       !t.isSuccess
     }
 
@@ -127,7 +127,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val stepI = if (input.nonEmpty) sessionStepBuilder.matchesRegex(s".*$input".r) else alwaysValidAssertStep
       val stepS = sessionStepBuilder.matchesRegex(".*suff".r)
       val s = Scenario("scenario with SessionSteps", stepP :: stepI :: stepS :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       t.isSuccess
     }
 
@@ -138,7 +138,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
       val unknownInput = input + "42"
       val step = sessionStepBuilder.matchesRegex(s".*${unknownInput}".r)
       val s = Scenario("scenario with SessionSteps", step :: Nil)
-      val t = awaitTask(ScenarioRunner.runScenario(session)(s))
+      val t = awaitIO(ScenarioRunner.runScenario(session)(s))
       if (t.isSuccess) printScenarioLogs(t)
       !t.isSuccess
     }

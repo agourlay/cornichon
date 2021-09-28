@@ -1,9 +1,10 @@
 package com.github.agourlay.cornichon.steps.check.checkModel
 
+import cats.Parallel
 import cats.data.NonEmptyList
-import com.github.agourlay.cornichon.core.{ Generator, _ }
-import monix.eval.Task
+import cats.effect.IO
 import cats.syntax.either._
+import com.github.agourlay.cornichon.core.{ Generator, _ }
 
 class CheckModelEngine[A, B, C, D, E, F](
     cs: CheckModelStep[A, B, C, D, E, F],
@@ -18,49 +19,49 @@ class CheckModelEngine[A, B, C, D, E, F](
     genF: Generator[F]) {
 
   // Assertions do not propagate their Session!
-  private def checkStepConditions(runState: RunState)(assertion: Step): Task[Either[FailedStep, Done]] =
+  private def checkStepConditions(runState: RunState)(assertion: Step): IO[Either[FailedStep, Done]] =
     assertion.stateUpdate.runA(runState)
 
-  private def validTransitions(runState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): Task[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] = {
+  private def validTransitions(runState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): IO[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] = {
     val stepsConditionValidations = transitions.map {
       case (weight, properties) =>
         checkStepConditions(runState)(properties.preCondition)
           .map(preConditionsRes => (weight, properties, preConditionsRes.isRight))
     }
-    Task.parSequence(stepsConditionValidations)
-      .map(_.sortBy(_._1)) // We sort the result because `Task.gather` is non-deterministic to not break the seed
+    Parallel.parSequence(stepsConditionValidations)
+      .map(_.sortBy(_._1)) // We sort the result because `parSequence` is non-deterministic to not break the seed
   }
 
-  def run(runState: RunState): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  def run(runState: RunState): IO[(RunState, FailedStep Either SuccessEndOfRun)] =
     //check precondition for starting property
     checkStepConditions(runState)(model.entryPoint.preCondition).flatMap {
       case Right(_) =>
         // run first state
         loopRun(runState, model.entryPoint, 0)
       case Left(failedStep) =>
-        Task.now((runState, FailedStep(cs, failedStep.errors).asLeft))
+        IO.pure((runState, FailedStep(cs, failedStep.errors).asLeft))
     }
 
-  private def loopRun(runState: RunState, property: PropertyN[A, B, C, D, E, F], currentNumberOfTransitions: Int): Task[(RunState, FailedStep Either SuccessEndOfRun)] =
+  private def loopRun(runState: RunState, property: PropertyN[A, B, C, D, E, F], currentNumberOfTransitions: Int): IO[(RunState, FailedStep Either SuccessEndOfRun)] =
     if (currentNumberOfTransitions > maxNumberOfTransitions)
-      Task.now((runState, MaxTransitionReached(maxNumberOfTransitions).asRight))
+      IO.pure((runState, MaxTransitionReached(maxNumberOfTransitions).asRight))
     else
       runPropertyAndValidatePostConditions(runState, property).flatMap {
         case (newState, Left(fs)) =>
-          Task.now((newState, fs.asLeft))
+          IO.pure((newState, fs.asLeft))
         case (newState, Right(_)) =>
           // check available outgoing transitions
           model.transitions.get(property) match {
             case None =>
               // no transitions defined -> end of run
-              Task.now((newState, EndPropertyReached(property.description, currentNumberOfTransitions).asRight))
+              IO.pure((newState, EndPropertyReached(property.description, currentNumberOfTransitions).asRight))
             case Some(transitions) =>
               validTransitions(newState)(transitions).flatMap { possibleNextStates =>
                 val validNext = possibleNextStates.filter(_._3)
                 if (validNext.isEmpty) {
                   val error = NoValidTransitionAvailableForState(property.description)
                   val noTransitionLog = FailureLogInstruction(error.baseErrorMessage, runState.depth)
-                  Task.now((newState.recordLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
+                  IO.pure((newState.recordLog(noTransitionLog), FailedStep(cs, NonEmptyList.one(error)).asLeft))
                 } else {
                   // pick one transition according to the weight
                   val nextProperty = pickTransitionAccordingToProbability(rc, validNext)
@@ -71,7 +72,7 @@ class CheckModelEngine[A, B, C, D, E, F](
       }
 
   // Assumes valid pre-conditions
-  private def runPropertyAndValidatePostConditions(runState: RunState, property: PropertyN[A, B, C, D, E, F]): Task[(RunState, FailedStep Either Done)] = {
+  private def runPropertyAndValidatePostConditions(runState: RunState, property: PropertyN[A, B, C, D, E, F]): IO[(RunState, FailedStep Either Done)] = {
     val s = runState.session
     // Init Gens
     val ga = genA.value(s)

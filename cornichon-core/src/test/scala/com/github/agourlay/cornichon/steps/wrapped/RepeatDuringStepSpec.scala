@@ -16,7 +16,7 @@ class RepeatDuringStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val repeatDuring = RepeatDuringStep(nested, 5.millis)
     val s = Scenario("scenario with RepeatDuring", repeatDuring :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with RepeatDuring' failed:
            |
@@ -46,7 +46,7 @@ class RepeatDuringStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
     val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
-    val (executionTime, res) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
+    val (executionTime, res) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
     def clue() = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
     if (!res.isSuccess) {
       clue()
@@ -67,7 +67,7 @@ class RepeatDuringStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
     val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
-    val (executionTime, res) = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
+    val (executionTime, res) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
     def clue() = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
     if (!res.isSuccess) {
       clue()

@@ -6,9 +6,9 @@ import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.validated._
 import cats.syntax.apply._
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
-import monix.eval.Task
 
 case class CheckModelStep[A, B, C, D, E, F](
     maxNumberOfRuns: Int,
@@ -19,9 +19,9 @@ case class CheckModelStep[A, B, C, D, E, F](
 
   val title = s"Checking model '${model.description}' with maxNumberOfRuns=$maxNumberOfRuns and maxNumberOfTransitions=$maxNumberOfTransitions"
 
-  private def repeatModelOnSuccess(checkEngine: CheckModelEngine[A, B, C, D, E, F], runNumber: Int)(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
+  private def repeatModelOnSuccess(checkEngine: CheckModelEngine[A, B, C, D, E, F], runNumber: Int)(runState: RunState): IO[(RunState, Either[FailedStep, Done])] =
     if (runNumber > maxNumberOfRuns)
-      Task.now((runState, rightDone))
+      IO.pure((runState, rightDone))
     else {
       val preRunLog = InfoLogInstruction(s"Run #$runNumber", runState.depth)
       val checkEngineRunState = runState.nestedContext.recordLog(preRunLog)
@@ -29,7 +29,7 @@ case class CheckModelStep[A, B, C, D, E, F](
         case (newState, Left(fs)) =>
           val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", runState.depth)
           val failedState = runState.mergeNested(newState).recordLog(postRunLog)
-          Task.now((failedState, fs.asLeft))
+          IO.pure((failedState, fs.asLeft))
         case (newState, Right(endOfRun)) =>
           // success case we are mot propagating the Session so runs do not interfere with each-others
           val nextRunState = runState.recordLogStack(newState.logStack).registerCleanupSteps(newState.cleanupSteps)
@@ -68,10 +68,10 @@ case class CheckModelStep[A, B, C, D, E, F](
     emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> sumOfWeightIsCorrect
   }
 
-  private def checkModel(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
+  private def checkModel(runState: RunState): IO[(RunState, Either[FailedStep, Done])] =
     validateTransitions(model.transitions) match {
       case Invalid(ce) =>
-        Task.now((runState, FailedStep(this, ce).asLeft))
+        IO.pure((runState, FailedStep(this, ce).asLeft))
       case _ =>
         val randomContext = runState.randomContext
         val genA = modelRunner.generatorA(randomContext)

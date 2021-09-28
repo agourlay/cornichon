@@ -1,10 +1,9 @@
 package step
 
-import java.util.concurrent.{ ExecutorService, Executors }
+import cats.effect.unsafe.implicits.global
 
-import com.github.agourlay.cornichon.core._
-import monix.execution.Scheduler
 import org.openjdk.jmh.annotations._
+import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.check.checkModel._
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 
@@ -27,19 +26,6 @@ class CheckStepBench {
   @Param(Array("10", "20", "50", "100", "200"))
   var transitionNumber: String = ""
 
-  var es: ExecutorService = _
-  var scheduler: Scheduler = _
-
-  @Setup(Level.Trial)
-  final def beforeAll(): Unit = {
-    es = Executors.newFixedThreadPool(1)
-    scheduler = Scheduler(es)
-  }
-
-  @TearDown(Level.Trial)
-  final def afterAll(): Unit = {
-    es.shutdown()
-  }
   /*
 [info] Benchmark                (transitionNumber)   Mode  Cnt      Score     Error  Units
 [info] CheckStepBench.runModel                  10  thrpt   10  24373,402 ±    76,062  ops/s
@@ -54,7 +40,7 @@ class CheckStepBench {
     val checkStep = CheckModelStep(maxNumberOfRuns = 1, maxNumberOfTransitions = transitionNumber.toInt, CheckStepBench.modelRunner)
     val s = Scenario("scenario with checkStep", checkStep :: Nil)
     val f = ScenarioRunner.runScenario(session)(s)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 

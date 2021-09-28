@@ -8,7 +8,7 @@ import org.scalacheck.Gen
 
 import scala.util.control.NoStackTrace
 
-trait CommonTesting extends TaskSpec {
+trait CommonTesting extends IOSpec {
 
   def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
     name = "integer",

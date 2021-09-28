@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.{ NonEmptyList, StateT }
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
-import monix.eval.Task
 
 case class RepeatWithStep(nested: List[Step], elements: List[String], elementName: String) extends WrapperStep {
 
@@ -14,10 +14,10 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
 
   override val stateUpdate: StepState = StateT { runState =>
 
-    def repeatSuccessSteps(remainingElements: List[String], runState: RunState): Task[(RunState, Either[(String, FailedStep), Done])] =
+    def repeatSuccessSteps(remainingElements: List[String], runState: RunState): IO[(RunState, Either[(String, FailedStep), Done])] =
       remainingElements match {
         case Nil =>
-          Task.now((runState, rightDone))
+          IO.pure((runState, rightDone))
         case element :: tail =>
           // reset logs at each loop to have the possibility to not aggregate in failure case
           val rs = runState.resetLogStack
@@ -27,7 +27,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
               stepResult.fold(
                 failed => {
                   // In case of failure only the logs of the last run are shown to avoid giant traces.
-                  Task.now((onceMoreRunState, Left((element, failed))))
+                  IO.pure((onceMoreRunState, Left((element, failed))))
                 },
                 _ => {
                   val successState = runState.mergeNested(onceMoreRunState)

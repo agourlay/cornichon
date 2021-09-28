@@ -1,14 +1,13 @@
 package com.github.agourlay.cornichon.framework.examples.propertyCheck.webShop
 
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-
 import com.github.agourlay.cornichon.framework.examples.HttpServer
 import io.circe.generic.auto._
 import io.circe.syntax._
-import monix.eval.Task
-import monix.eval.Task._
-import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.implicits._
@@ -17,12 +16,11 @@ import org.http4s.server.Router
 import org.http4s.blaze.server.BlazeServerBuilder
 
 import scala.collection.concurrent.TrieMap
+import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
-class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
-
-  implicit val s = Scheduler.Implicits.global
+class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[IO] {
 
   case class Product(id: UUID, name: String, description: String, price: BigInt)
   object Product {
@@ -43,20 +41,20 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
   object NameQueryParamMatcher extends QueryParamDecoderMatcher[String]("name")
   object DescriptionContainsQueryParamMatcher extends QueryParamDecoderMatcher[String]("descriptionContains")
 
-  def indexInSearchWithDelay(p: Product): Task[Product] =
-    Task.eval {
+  def indexInSearchWithDelay(p: Product): IO[Product] =
+    IO.delay {
       productsSearch.remove(p.id)
       productsSearch.put(p.id, p)
       p
-    }.delayExecution(randomDelay())
+    }.delayBy(randomDelay())
 
-  def removeFromSearchIndexWithDelay(p: Product): Task[Product] =
-    Task.eval {
+  def removeFromSearchIndexWithDelay(p: Product): IO[Product] =
+    IO.delay {
       productsSearch.remove(p.id)
       p
-    }.delayExecution(randomDelay())
+    }.delayBy(randomDelay())
 
-  private val productsService = HttpRoutes.of[Task] {
+  private val productsService = HttpRoutes.of[IO] {
     case GET -> Root / "products" =>
       Ok(productsDB.values.asJson)
 
@@ -72,7 +70,7 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
           NotFound()
         case Some(p) =>
           productsDB.remove(p.id)
-          removeFromSearchIndexWithDelay(p).runToFuture
+          removeFromSearchIndexWithDelay(p).unsafeToFuture()
           Ok(s"product ${p.id} deleted")
       }
 
@@ -81,10 +79,10 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
         pd <- req.as[ProductDraft]
         pid = UUID.randomUUID()
         p = Product.fromDraft(pid, pd)
-        _ <- Task.delay(productsDB.put(pid, p))
+        _ <- IO.delay(productsDB.put(pid, p))
         resp <- Created(p.asJson)
       } yield {
-        indexInSearchWithDelay(p).runToFuture
+        indexInSearchWithDelay(p).unsafeToFuture()
         resp
       }
 
@@ -95,13 +93,13 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
         for {
           pd <- req.as[ProductDraft]
           p = Product.fromDraft(pid, pd)
-          _ <- Task.delay {
+          _ <- IO.delay {
             productsDB.remove(pid)
             productsDB.put(pid, p)
           }
           resp <- Created(p.asJson)
         } yield {
-          indexInSearchWithDelay(p).runToFuture
+          indexInSearchWithDelay(p).unsafeToFuture()
           resp
         }
 
@@ -126,18 +124,18 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[Task] {
     "/" -> productsService
   )
 
-  def start(httpPort: Int): CancelableFuture[HttpServer] =
-    BlazeServerBuilder[Task](executionContext = s)
+  def start(httpPort: Int): Future[HttpServer] =
+    BlazeServerBuilder[IO]
       .bindHttp(httpPort, "localhost")
       .withoutBanner
       .withHttpApp(routes.orNotFound)
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
-      .runToFuture
+      .unsafeToFuture()
 }
 
 case class ProductDraft(name: String, description: String, price: BigInt)
 
 object ProductDraft {
-  implicit val productDraftJsonDecoder: EntityDecoder[Task, ProductDraft] = jsonOf[Task, ProductDraft]
+  implicit val productDraftJsonDecoder: EntityDecoder[IO, ProductDraft] = jsonOf[IO, ProductDraft]
 }

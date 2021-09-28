@@ -1,15 +1,12 @@
 package com.github.agourlay.cornichon.http.server
 
 import cats.syntax.either._
-
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.{ CornichonException, Done }
 import com.github.agourlay.cornichon.http.{ HttpMethod, HttpMethods, HttpRequest }
 import com.github.agourlay.cornichon.json.CornichonJson
 
 import io.circe.Json
-
-import monix.eval.Task
-import monix.eval.Task._
 
 import org.http4s._
 import org.http4s.circe._
@@ -17,7 +14,7 @@ import org.http4s.dsl.Http4sDsl
 
 import scala.concurrent.duration._
 
-class MockServerRequestHandler() extends Http4sDsl[Task] {
+class MockServerRequestHandler() extends Http4sDsl[IO] {
 
   private val mockState = new MockServerStateHolder()
 
@@ -33,7 +30,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
     )
   }
 
-  val mockService = HttpRoutes.of[Task] {
+  val mockService = HttpRoutes.of[IO] {
     case GET -> Root / "requests-received" =>
       val reqs = fetchRecordedRequestsAsJson()
       val body = Json.fromValues(reqs)
@@ -82,11 +79,11 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
       saveRequest(r).flatMap(_ => replyWithDelay(Ok(mockState.getResponse)))
   }
 
-  def replyWithDelay(t: Task[Response[Task]]): Task[Response[Task]] =
+  def replyWithDelay(t: IO[Response[IO]]): IO[Response[IO]] =
     if (mockState.getDelay == 0)
       t
     else
-      Task.now(Done).delayExecution(mockState.getDelay.millis).flatMap(_ => t)
+      IO.delay(Done).delayBy(mockState.getDelay.millis).flatMap(_ => t)
 
   def httpMethodMapper(method: Method): HttpMethod = method match {
     case DELETE  => HttpMethods.DELETE
@@ -99,7 +96,7 @@ class MockServerRequestHandler() extends Http4sDsl[Task] {
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  def saveRequest(rawReq: Request[Task]): Task[Boolean] =
+  def saveRequest(rawReq: Request[IO]): IO[Boolean] =
     rawReq
       .bodyText
       .compile

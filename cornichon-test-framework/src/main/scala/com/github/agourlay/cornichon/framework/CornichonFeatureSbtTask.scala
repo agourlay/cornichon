@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.framework
 
+import cats.effect.unsafe.implicits.global
 import com.github.agourlay.cornichon.framework.CornichonFeatureRunner._
-import monix.execution.Scheduler.Implicits.global
 import sbt.testing._
 
 import scala.concurrent.duration.Duration
@@ -16,7 +16,7 @@ class CornichonFeatureSbtTask(task: TaskDef, scenarioNameFilter: Set[String], ex
     val fqn = task.fullyQualifiedName()
     val featureInfo = FeatureInfo(fqn, Class.forName(fqn), task.fingerprint(), task.selectors().head)
     val featureTask = loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilter)
-    Await.result(featureTask.runToFuture, Duration.Inf)
+    Await.result(featureTask.unsafeToFuture(), Duration.Inf)
     Array.empty
   }
 }

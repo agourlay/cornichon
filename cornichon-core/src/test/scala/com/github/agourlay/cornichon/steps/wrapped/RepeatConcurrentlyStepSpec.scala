@@ -17,7 +17,7 @@ class RepeatConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val steps = RepeatConcurrentlyStep(times = 2, nested, parallelism = 1, maxTime = 300.millis) :: Nil
     val s = Scenario("with RepeatConcurrently", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'with RepeatConcurrently' failed:
           |
@@ -45,7 +45,7 @@ class RepeatConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val steps = RepeatConcurrentlyStep(times = 1, nested, parallelism = 1, maxTime = 20.millis) :: Nil
     val s = Scenario("with RepeatConcurrently", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'with RepeatConcurrently' failed:
           |
@@ -72,7 +72,7 @@ class RepeatConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val concurrentlyStep = RepeatConcurrentlyStep(times = loop, nested, parallelism = 2, 300.millis)
     val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter.intValue() == loop)
   }
@@ -88,7 +88,7 @@ class RepeatConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
   //      val repeatFactor = 5
   //      val concurrentlyStep = RepeatConcurrentlyStep(times = repeatFactor, steps.toList, repeatFactor, 300.millis)
   //      val s = Scenario("scenario with RepeatConcurrently", concurrentlyStep :: Nil)
-  //      val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+  //      val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
   //      assert(res.isSuccess)
   //      assert(res.session.getHistory("index").valueUnsafe == Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
   //    }
