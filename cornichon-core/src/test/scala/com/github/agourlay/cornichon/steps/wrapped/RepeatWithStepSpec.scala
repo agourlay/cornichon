@@ -14,7 +14,7 @@ class RepeatWithStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val repeatStep = RepeatWithStep(nested, List("1", "2", "3"), "index")
     val s = Scenario("with RepeatWith", repeatStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """Scenario 'with RepeatWith' failed:
           |
@@ -46,7 +46,7 @@ class RepeatWithStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), "index")
     val s = Scenario("scenario with Repeat", repeatStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter == loop)
   }
@@ -64,7 +64,7 @@ class RepeatWithStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val repeatStep = RepeatWithStep(nested, List("1", "2", "3", "4", "5"), indexKeyName)
     val s = Scenario("scenario with Repeat", repeatStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter == loop)
   }

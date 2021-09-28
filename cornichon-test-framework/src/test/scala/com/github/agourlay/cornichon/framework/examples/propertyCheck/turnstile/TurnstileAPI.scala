@@ -1,22 +1,22 @@
 package com.github.agourlay.cornichon.framework.examples.propertyCheck.turnstile
 
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.github.agourlay.cornichon.framework.examples.HttpServer
-import monix.eval.Task
-import monix.execution.atomic.AtomicBoolean
-import monix.execution.{ CancelableFuture, Scheduler }
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.dsl._
 import org.http4s.server.Router
 import org.http4s.blaze.server.BlazeServerBuilder
 
-class TurnstileAPI extends Http4sDsl[Task] {
+import java.util.concurrent.atomic.AtomicBoolean
+import scala.concurrent.Future
 
-  implicit val s = Scheduler.Implicits.global
+class TurnstileAPI extends Http4sDsl[IO] {
 
-  private val turnstileLocked = AtomicBoolean(true)
+  private val turnstileLocked = new AtomicBoolean(true)
 
-  private val turnstileService = HttpRoutes.of[Task] {
+  private val turnstileService = HttpRoutes.of[IO] {
     case POST -> Root / "push-coin" =>
       if (turnstileLocked.get()) {
         turnstileLocked.set(false)
@@ -37,14 +37,14 @@ class TurnstileAPI extends Http4sDsl[Task] {
     "/" -> turnstileService
   )
 
-  def start(httpPort: Int): CancelableFuture[HttpServer] =
-    BlazeServerBuilder[Task](executionContext = s)
+  def start(httpPort: Int): Future[HttpServer] =
+    BlazeServerBuilder[IO]
       .bindHttp(httpPort, "localhost")
       .withoutBanner
       .withHttpApp(routes.orNotFound)
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
-      .runToFuture
+      .unsafeToFuture()
 
 }
 

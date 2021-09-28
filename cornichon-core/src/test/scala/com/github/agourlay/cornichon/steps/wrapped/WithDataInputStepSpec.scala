@@ -22,7 +22,7 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
 
     val withDataInputStep = WithDataInputStep(nested, inputs)
     val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(!res.isSuccess)
   }
 
@@ -41,7 +41,7 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
 
     val withDataInputStep = WithDataInputStep(nested, inputs)
     val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with WithDataInput' failed:
            |
@@ -80,7 +80,7 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
 
     val withDataInputStep = WithDataInputStep(nested, inputs)
     val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter == 3)
   }
@@ -104,7 +104,7 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
 
     val withDataInputStep = WithDataInputStep(nested, inputs)
     val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
   }
 
@@ -126,7 +126,7 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
 
     val withDataInputStep = WithDataInputStep(nested, inputs)
     val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty.addValueUnsafe("other", "customers"))(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty.addValueUnsafe("other", "customers"))(s))
     assert(res.isSuccess)
   }
 }

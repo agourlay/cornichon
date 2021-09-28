@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.check
 
 import cats.data.StateT
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core.{ Generator, _ }
-import monix.eval.Task
 
 case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int)(ga: RandomContext => Generator[A], gb: RandomContext => Generator[B], gc: RandomContext => Generator[C], gd: RandomContext => Generator[D], ge: RandomContext => Generator[E], gf: RandomContext => Generator[F])(f: A => B => C => D => E => F => Step) extends WrapperStep {
 
@@ -19,9 +19,9 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
     val genE = ge(randomContext)
     val genF = gf(randomContext)
 
-    def repeatEvaluationOnSuccess(runNumber: Int)(runState: RunState): Task[(RunState, Either[FailedStep, Done])] =
+    def repeatEvaluationOnSuccess(runNumber: Int)(runState: RunState): IO[(RunState, Either[FailedStep, Done])] =
       if (runNumber > maxNumberOfRuns)
-        Task.now((runState, rightDone))
+        IO.pure((runState, rightDone))
       else {
         val s = runState.session
         val generatedA = genA.value(s)()
@@ -39,7 +39,7 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
           case (newState, l @ Left(_)) =>
             val postRunLog = InfoLogInstruction(s"Run #$runNumber - Failed", runState.depth)
             val failedState = runState.mergeNested(newState).recordLog(postRunLog)
-            Task.now((failedState, l))
+            IO.pure((failedState, l))
           case (newState, _) =>
             val postRunLog = InfoLogInstruction(s"Run #$runNumber", runState.depth)
             // success case we are not propagating the Session so runs do not interfere with each-others

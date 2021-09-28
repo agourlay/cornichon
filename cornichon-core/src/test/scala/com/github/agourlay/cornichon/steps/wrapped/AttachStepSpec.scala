@@ -12,7 +12,7 @@ class AttachStepSpec extends FunSuite with CommonTestSuite {
     val nested = List.fill(5)(alwaysValidAssertStep)
     val steps = AttachStep(_ => nested) :: Nil
     val s = Scenario("scenario with Attach", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     matchLogsWithoutDuration(res.logs) {
       """
@@ -30,7 +30,7 @@ class AttachStepSpec extends FunSuite with CommonTestSuite {
     val nested = List.fill(5)(alwaysValidAssertStep)
     val steps = AttachStep(_ => nested) :: Nil
     val s = Scenario("scenario with Attach", RepeatStep(steps, 1, None) :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     matchLogsWithoutDuration(res.logs) {
       """
@@ -61,7 +61,7 @@ class AttachStepSpec extends FunSuite with CommonTestSuite {
     val attached = AttachStep(_ => nestedSteps)
 
     val s = Scenario("scenario with effects", attached :: effect :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter.get() == effectNumber + 1)
     matchLogsWithoutDuration(res.logs) {
@@ -80,7 +80,7 @@ class AttachStepSpec extends FunSuite with CommonTestSuite {
   test("available bia Step.eval") {
     val steps = Step.eval(alwaysValidAssertStep) :: Nil
     val s = Scenario("scenario with Attach", steps)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     matchLogsWithoutDuration(res.logs) {
       """

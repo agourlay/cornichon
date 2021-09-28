@@ -2,10 +2,9 @@ package com.github.agourlay.cornichon.steps.regular
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
-
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ScenarioRunner._
-import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 
@@ -13,8 +12,8 @@ case class DebugStep(title: String, message: ScenarioContext => Either[Cornichon
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
-  override def runLogValueStep(runState: RunState): Task[Either[NonEmptyList[CornichonError], String]] =
-    Task.delay {
+  override def runLogValueStep(runState: RunState): IO[Either[NonEmptyList[CornichonError], String]] =
+    IO.delay {
       message(runState.scenarioContext).leftMap(NonEmptyList.one)
     }
 

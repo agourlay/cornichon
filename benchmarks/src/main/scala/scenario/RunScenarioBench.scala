@@ -1,13 +1,11 @@
 package scenario
 
-import java.util.concurrent.{ ExecutorService, Executors }
-
-import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session }
+import cats.effect.unsafe.implicits.global
+import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
 import org.openjdk.jmh.annotations._
 import scenario.RunScenarioBench._
-import monix.execution.Scheduler
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -26,19 +24,6 @@ class RunScenarioBench {
 
   @Param(Array("10", "20", "50", "100", "200"))
   var stepsNumber: String = ""
-  var es: ExecutorService = _
-  var scheduler: Scheduler = _
-
-  @Setup(Level.Trial)
-  final def beforeAll(): Unit = {
-    es = Executors.newFixedThreadPool(1)
-    scheduler = Scheduler(es)
-  }
-
-  @TearDown(Level.Trial)
-  final def afterAll(): Unit = {
-    es.shutdown()
-  }
 
   /*
 [info] Benchmark                     (stepsNumber)   Mode  Cnt       Score     Error  Units
@@ -56,7 +41,7 @@ class RunScenarioBench {
     val effectSteps = List.fill(half)(effectStep)
     val scenario = Scenario("test scenario", setupSession +: (assertSteps ++ effectSteps))
     val f = ScenarioRunner.runScenario(Session.newEmpty)(scenario)
-    val res = Await.result(f.runToFuture(scheduler), Duration.Inf)
+    val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
 }

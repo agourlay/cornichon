@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import cats.data.{ NonEmptyList, StateT }
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import monix.eval.Task
 
 case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[String]) extends WrapperStep {
 
@@ -13,7 +13,7 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[Str
 
   override val stateUpdate: StepState = StateT { runState =>
 
-    def repeatSuccessSteps(retriesNumber: Int, runState: RunState): Task[(Int, RunState, Either[FailedStep, Done])] = {
+    def repeatSuccessSteps(retriesNumber: Int, runState: RunState): IO[(Int, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
       val rs = runState.resetLogStack
       val runStateWithIndex = indexName.fold(rs)(in => rs.addToSession(in, (retriesNumber + 1).toString))
@@ -22,12 +22,12 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[Str
           stepResult.fold(
             failed => {
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              Task.now((retriesNumber, onceMoreRunState, Left(failed)))
+              IO.pure((retriesNumber, onceMoreRunState, Left(failed)))
             },
             _ => {
               val successState = runState.withSession(onceMoreRunState.session).recordLogStack(onceMoreRunState.logStack)
               // only show last successful run to avoid giant traces.
-              if (retriesNumber == occurrence - 1) Task.now((retriesNumber, successState, rightDone))
+              if (retriesNumber == occurrence - 1) IO.pure((retriesNumber, successState, rightDone))
               else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session))
             }
           )

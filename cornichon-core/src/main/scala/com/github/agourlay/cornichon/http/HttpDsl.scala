@@ -4,9 +4,11 @@ import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
 import cats.syntax.traverse._
+
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.CoreDsl._
+import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.http.HttpDsl._
 import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
@@ -22,12 +24,11 @@ import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
+
 import io.circe.{ Encoder, Json }
+
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-
-import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
-import monix.execution.Scheduler
 
 import scala.concurrent.duration._
 
@@ -38,14 +39,14 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   lazy val baseUrl: String = config.globalBaseUrl
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, config)
+    new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, config)(cats.effect.unsafe.implicits.global)
 
   lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
   implicit def httpRequestToStep[A: Show: Resolvable: Encoder](request: HttpRequest[A]): Step =
     CEffectStep(
       title = request.compactDescription,
-      effect = http.requestEffectTask(request)
+      effect = http.requestEffectIO(request)
     )
 
   implicit def httpStreamedRequestToStep(request: HttpStreamedRequest): Step =
@@ -66,7 +67,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
     CEffectStep(
       title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
-      effect = http.requestEffectTask(queryGQL)
+      effect = http.requestEffectIO(queryGQL)
     )
   }
 
@@ -221,8 +222,9 @@ object HttpDsl {
 
   lazy val globalHttpClient: HttpClient = {
     val config = BaseFeature.config
-    val c = new Http4sClient(config.addAcceptGzipByDefault, config.disableCertificateVerification, config.followRedirect)(Scheduler.Implicits.global)
-    BaseFeature.addShutdownHook(() => c.shutdown().runToFuture(Scheduler.Implicits.global))
+    import cats.effect.unsafe.implicits.global
+    val c = new Http4sClient(config.addAcceptGzipByDefault, config.disableCertificateVerification, config.followRedirect)
+    BaseFeature.addShutdownHook(() => c.shutdown().unsafeToFuture())
     c
   }
 }

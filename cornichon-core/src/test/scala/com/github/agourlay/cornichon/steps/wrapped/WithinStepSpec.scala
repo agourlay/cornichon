@@ -20,7 +20,7 @@ class WithinStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val withinStep = WithinStep(nested, d)
     val s = Scenario("scenario with Within", withinStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
   }
 
@@ -35,7 +35,7 @@ class WithinStepSpec extends FunSuite with CommonTestSuite {
     ) :: Nil
     val withinStep = WithinStep(nested, d)
     val s = Scenario("scenario with Within", withinStep :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(!res.isSuccess)
   }
 }

@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.core
 
 import cats.data.{ NonEmptyList, StateT }
+import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
-import monix.eval.Task
 
 import scala.concurrent.duration.Duration
 
@@ -24,13 +24,13 @@ object Step {
 object NoOpStep extends Step {
   val title: String = "noOp"
   def setTitle(newTitle: String): Step = this
-  val stateUpdate: StepState = StateT { runState => Task.now(runState -> rightDone) }
+  val stateUpdate: StepState = StateT { runState => IO.pure(runState -> rightDone) }
 }
 
 //Step that produces a Session
 trait SessionValueStep extends Step {
 
-  def runSessionValueStep(runState: RunState): Task[NonEmptyList[CornichonError] Either Session]
+  def runSessionValueStep(runState: RunState): IO[NonEmptyList[CornichonError] Either Session]
 
   def onError(errors: NonEmptyList[CornichonError], runState: RunState, executionTime: Duration): (LogInstruction, FailedStep)
 
@@ -53,7 +53,7 @@ trait SessionValueStep extends Step {
 //Step that produces a value to create a log
 trait LogValueStep[A] extends Step {
 
-  def runLogValueStep(runState: RunState): Task[NonEmptyList[CornichonError] Either A]
+  def runLogValueStep(runState: RunState): IO[NonEmptyList[CornichonError] Either A]
 
   def onError(errors: NonEmptyList[CornichonError], runState: RunState, executionTime: Duration): (LogInstruction, FailedStep)
 

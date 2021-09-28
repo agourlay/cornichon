@@ -3,9 +3,9 @@ package com.github.agourlay.cornichon.steps.wrapped
 import java.util.concurrent.TimeUnit
 
 import cats.data.{ NonEmptyList, StateT }
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
-import monix.eval.Task
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -16,7 +16,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
   override val stateUpdate: StepState = StateT { runState =>
     val initialDepth = runState.depth
 
-    def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): Task[(Long, RunState, Either[FailedStep, Done])] =
+    def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): IO[(Long, RunState, Either[FailedStep, Done])] =
       ScenarioRunner.runStepsShortCircuiting(nested, runState.resetLogStack) // reset logs at each loop to have the possibility to not aggregate in failure case
         .timed
         .flatMap {
@@ -26,7 +26,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
             res.fold(
               failedStep => {
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                Task.now((retriesNumber, repeatedOnceMore, Left(failedStep)))
+                IO.pure((retriesNumber, repeatedOnceMore, Left(failedStep)))
               },
               _ => {
                 val successState = runState.mergeNested(repeatedOnceMore)
@@ -34,7 +34,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
                   repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
                 else
                   // In case of success all logs are returned but they are not printed by default.
-                  Task.now((retriesNumber, successState, rightDone))
+                  IO.pure((retriesNumber, successState, rightDone))
               }
             )
         }

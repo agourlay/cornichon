@@ -1,12 +1,13 @@
 package com.github.agourlay.cornichon.matchers
 
+import cats.Parallel
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-
 import com.github.agourlay.cornichon.matchers.Matchers._
 import io.circe.Json
-import monix.eval.Task
-import monix.execution.Scheduler.Implicits.global
 import org.scalacheck._
 import org.scalacheck.Prop._
 
@@ -67,13 +68,13 @@ object MatchersProperties extends Properties("Matchers") {
 
   property("any-date-time correct in parallel") = {
     forAll(reasonablyRandomInstantGen) { instant =>
-      val booleans = 1.to(64).map { _ =>
-        Task.delay {
+      val booleans = 1.to(64).iterator.map { _ =>
+        IO.delay {
           anyDateTime.predicate(Json.fromString(DateTimeFormatter.ISO_INSTANT.format(instant)))
         }
-      }
+      }.toList
 
-      val res = Task.parSequenceUnordered(booleans).runSyncUnsafe().foldLeft(List.empty[Boolean]) { case (acc, e) => e :: acc }
+      val res = Parallel.parSequence(booleans).unsafeRunSync().foldLeft(List.empty[Boolean]) { case (acc, e) => e :: acc }
 
       res.forall(_ == true)
     }

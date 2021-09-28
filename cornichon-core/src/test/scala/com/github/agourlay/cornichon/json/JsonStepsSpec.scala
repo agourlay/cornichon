@@ -16,7 +16,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
     val step = jsonStepBuilder.is("{test:")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -39,7 +39,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
     val step = jsonStepBuilder.path("myKey").is("myValue")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -47,7 +47,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
     val step = jsonStepBuilder.path("myKey").isPresent
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -55,7 +55,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
     val step = jsonStepBuilder.path("myKey2").isPresent
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -77,7 +77,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
     val step = jsonStepBuilder.path("myKey2").isAbsent
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -85,7 +85,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
     val step = jsonStepBuilder.path("myKey").isAbsent
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -105,7 +105,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : null }""")
     val step = jsonStepBuilder.path("myKey").isNull
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -113,7 +113,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "notNull" }""")
     val step = jsonStepBuilder.path("myKey").isNull
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -145,7 +145,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "null" }""")
     val step = jsonStepBuilder.path("myKey").isNotNull
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -153,7 +153,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : null }""")
     val step = jsonStepBuilder.path("myKey").isNotNull
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -175,7 +175,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue" }""")
     val step = jsonStepBuilder.path("myKey1").is("myValue")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -198,7 +198,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
     val step = jsonStepBuilder.ignoring("myKey").is("""{ "myKeyOther" : "myOtherValue" }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -206,7 +206,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
     val step = jsonStepBuilder.ignoring("myKey").is("""{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -214,7 +214,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
     val step = jsonStepBuilder.ignoring("myKey", "myKey1").is("""{ "myKeyOther" : "myOtherValue" }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -222,7 +222,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
     val step = jsonStepBuilder.whitelisting.is("""{ "myKeyOther" : "myOtherValue" }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -231,7 +231,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     // forcing whitelisting to false to have the negative test
     val step = jsonStepBuilder.copy(whitelist = false).is("""{ "myKeyOther" : "myOtherValue" }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -268,7 +268,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
     val step = jsonStepBuilder.whitelisting.ignoring("blah").is("""{ "myKeyOther" : "myOtherValue" }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -288,7 +288,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> "myOtherValue")
     val step = jsonStepBuilder.is("*any-string*")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -296,7 +296,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> "myOtherValue")
     val step = jsonStepBuilder.is(" *any-string*")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -329,7 +329,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : 1, "myKeyOther" : "myOtherValue" }""")
     val step = jsonStepBuilder.is("""{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -337,7 +337,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : 1 }""")
     val step = jsonStepBuilder.is("""{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -364,7 +364,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : 1, "myKeyOther" : "myOtherValue" }]""")
     val step = jsonStepBuilder.is("""[{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }]""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -380,7 +380,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
 
     val step = jsonStepBuilder.is(instance.asJson)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -390,7 +390,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
     val step = jsonStepBuilder.compareWithPreviousValue[Json] { case (prev, current) => GenericEqualityAssertion(prev, current) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -400,7 +400,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myNewValue" }""")
     val step = jsonStepBuilder.ignoring("myKeyOther").compareWithPreviousValue[Json] { case (prev, current) => GenericEqualityAssertion(prev, current) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -410,7 +410,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myNewValue" }""")
     val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[String] { case (prev, current) => GenericEqualityAssertion(prev, current, negate = true) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -420,7 +420,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myNewValue" }""")
     val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[String] { case (prev, current) => GenericEqualityAssertion(prev, current) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -444,7 +444,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : 2 }""")
     val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Int] { case (prev, current) => LessThanAssertion(prev, current) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -454,7 +454,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : 2 }""")
     val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Int] { case (prev, current) => GreaterThanAssertion(prev, current) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -475,7 +475,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : true }""")
     val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Boolean] { case (prev, current) => GenericEqualityAssertion(prev, current) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -485,7 +485,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : false }""")
     val step = jsonStepBuilder.path("myKeyOther").compareWithPreviousValue[Boolean] { case (prev, current) => GenericEqualityAssertion(prev, current) }
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
            |
@@ -507,7 +507,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> "test")
     val step = jsonStepBuilder.asArray.is("test")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -528,7 +528,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.is("""["a", "b". "c" ]""")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -551,7 +551,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.hasSize(3)
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -560,7 +560,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.size.is(3)
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -568,7 +568,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.size.isGreaterThan(2)
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -576,7 +576,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.size.isLessThan(4)
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -584,7 +584,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.size.isBetween(2, 4)
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -592,7 +592,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.isNotEmpty
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -600,7 +600,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[]""")
     val step = jsonStepBuilder.asArray.isNotEmpty
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -621,7 +621,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[]""")
     val step = jsonStepBuilder.asArray.isEmpty
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -629,7 +629,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.isEmpty
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -653,7 +653,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.hasSize(2)
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -677,7 +677,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.is("""[ "a", "c", "b" ]""")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -685,7 +685,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.inOrder.is("""[ "a", "c", "b" ]""")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -717,7 +717,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.contains("b", "c")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -725,7 +725,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.contains("d")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -752,7 +752,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.contains("c", "d")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -779,7 +779,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.not_contains("c")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -806,7 +806,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.not_contains("d")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -814,7 +814,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.not_contains("c", "d")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -822,7 +822,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.containsExactly("a", "b", "c")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -830,7 +830,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.containsExactly("b", "a", "c")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -838,7 +838,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.containsExactly("d")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -864,7 +864,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[ "a", "b", "c" ]""")
     val step = jsonStepBuilder.asArray.containsExactly("a", "c")
     val s = Scenario("scenario with JsonArraySteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonArraySteps' failed:
            |
@@ -886,7 +886,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
     val step = jsonStepBuilder.asArray.ignoringEach("myKey").is("""[{ "myKeyOther" : "myOtherValue" }]""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -894,7 +894,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
     val step = jsonStepBuilder.asArray.ignoringEach("myKey").is("""[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
 
@@ -902,7 +902,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }]""")
     val step = jsonStepBuilder.asArray.ignoringEach("$.*.myKey").is("""{ "myKeyOther" : *any-string* }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
-    val res = awaitTask(ScenarioRunner.runScenario(session)(s))
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
 
     scenarioFailsWithMessage(res) {
       """|Scenario 'scenario with JsonSteps' failed:
