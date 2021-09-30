@@ -10,7 +10,7 @@ import pureconfig.error.{ ConvertFailure, KeyNotFound }
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait BaseFeature {
 
@@ -24,6 +24,8 @@ trait BaseFeature {
   lazy val executeScenariosInParallel: Boolean = config.executeScenariosInParallel
 
   lazy val seed: Option[Long] = None
+
+  implicit lazy val ec: ExecutionContext = ExecutionContext.global
 
   def feature: FeatureDef
 
