@@ -99,8 +99,7 @@ class HttpService(
       EitherT(f(sc))
     }
 
-  // Just used for internal optimisation for the time being
-  private[cornichon] def requestEffectIO[A: Show: Resolvable: Encoder](
+  def requestEffectIO[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
     expectedStatus: Option[Int] = None,
