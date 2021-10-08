@@ -51,7 +51,7 @@ class Http4sClient(
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.Inf
   private val (httpClient, safeShutdown) =
-    BlazeClientBuilder[IO](executionContext = scala.concurrent.ExecutionContext.global)
+    BlazeClientBuilder[IO]
       .withSslContext(sslContext)
       .withMaxTotalConnections(300)
       .withMaxWaitQueueLimit(500)

@@ -44,7 +44,7 @@ class MockHttpServer[A](
     }
 
   private def startBlazeServer(port: Int): IO[A] =
-    BlazeServerBuilder[IO](executionContext = scala.concurrent.ExecutionContext.global)
+    BlazeServerBuilder[IO]
       .bindHttp(port, selectedInterface)
       .withoutBanner
       .withHttpApp(mockRouter)
