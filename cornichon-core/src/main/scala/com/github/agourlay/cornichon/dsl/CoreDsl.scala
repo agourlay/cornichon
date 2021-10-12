@@ -73,12 +73,12 @@ trait CoreDsl {
 
   def RepeatWith(elements: ContainerType[Any, Show]*)(index: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps =>
-      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element)).toList, index)
+      RepeatWithStep(steps, elements.iterator.map(c => c.tci.show(c.element)).toList, index)
     }
 
   def RepeatFrom[A](elements: Iterable[ContainerType[A, Show]])(index: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps =>
-      RepeatWithStep(steps, elements.map(c => c.tci.show(c.element)).toList, index)
+      RepeatWithStep(steps, elements.iterator.map(c => c.tci.show(c.element)).toList, index)
     }
 
   def RetryMax(limit: Int): BodyElementCollector[Step, Step] =

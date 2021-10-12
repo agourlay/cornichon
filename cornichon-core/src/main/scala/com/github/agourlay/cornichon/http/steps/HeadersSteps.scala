@@ -18,7 +18,7 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          lowerCasedExpected = expected.map { case (name, value) => name.toLowerCase -> value }.toList
+          lowerCasedExpected = expected.iterator.map { case (name, value) => name.toLowerCase -> value }.toList
         } yield CollectionsContainSameElements(lowerCasedExpected, lowerCasedActual)
       }
     )
