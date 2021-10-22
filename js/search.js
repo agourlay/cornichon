@@ -75,7 +75,7 @@ function prepareIdxAndDocMap() {
     {
       "title": "Installation",
       "url": "/cornichon/installation.html",
-      "content": "Installation Cornichon is available for Scala 2.12 &amp; Scala 2.13. The library is compatible with SBT and Mill. // SBT libraryDependencies += \"com.github.agourlay\" %% \"cornichon-test-framework\" % \"0.19.9\" % Test testFrameworks += new TestFramework(\"com.github.agourlay.cornichon.framework.CornichonFramework\") // Mill object test extends Tests { def ivyDeps = Agg(ivy\"com.github.agourlay::cornichon-test-framework:0.19.9\") def testFrameworks = Seq(\"com.github.agourlay.cornichon.framework.CornichonFramework\") }"
+      "content": "Installation Cornichon is available for Scala 2.12 &amp; Scala 2.13. The library is compatible with SBT and Mill. // SBT libraryDependencies += \"com.github.agourlay\" %% \"cornichon-test-framework\" % \"0.20.0\" % Test testFrameworks += new TestFramework(\"com.github.agourlay.cornichon.framework.CornichonFramework\") // Mill object test extends Tests { def ivyDeps = Agg(ivy\"com.github.agourlay::cornichon-test-framework:0.20.0\") def testFrameworks = Seq(\"com.github.agourlay.cornichon.framework.CornichonFramework\") }"
     } ,    
     {
       "title": "JSON matchers",
