@@ -67,13 +67,13 @@ class Http4sClient(
       }.unsafeRunSync()
 
   private def toHttp4sMethod(method: HttpMethod): Method = method match {
-    case DELETE  => org.http4s.Method.DELETE
     case GET     => org.http4s.Method.GET
+    case POST    => org.http4s.Method.POST
+    case DELETE  => org.http4s.Method.DELETE
+    case PUT     => org.http4s.Method.PUT
     case HEAD    => org.http4s.Method.HEAD
     case OPTIONS => org.http4s.Method.OPTIONS
     case PATCH   => org.http4s.Method.PATCH
-    case POST    => org.http4s.Method.POST
-    case PUT     => org.http4s.Method.PUT
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
