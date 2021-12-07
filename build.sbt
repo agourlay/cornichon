@@ -115,6 +115,7 @@ lazy val core =
       name := "cornichon-core",
       Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
       libraryDependencies ++= Seq(
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value, // macro
         library.http4sClient,
         library.http4sCirce,
         library.fs2Io,
@@ -123,7 +124,9 @@ lazy val core =
         library.pureConfig,
         library.parboiled,
         library.fansi,
-        library.sangria,
+        library.sangriaParser,
+        library.sangriaAst,
+        library.sangriaMarsh,
         library.sangriaCirce,
         library.circeCore,
         library.circeGeneric,
@@ -172,7 +175,8 @@ lazy val testFramework =
         library.scalacheck % Test,
         library.http4sServer % Test,
         library.http4sCirce % Test,
-        library.http4sDsl % Test
+        library.http4sDsl % Test,
+        library.sangriaCore % Test
       )
     )
 
@@ -278,10 +282,11 @@ lazy val library =
       val catsEffect    = "3.3.0"
       val parboiled     = "2.3.0"
       val scalaCheck    = "1.15.4"
-      val sangriaCirce  = "1.3.2"
       val circe         = "0.14.1"
       val diffson       = "4.1.1"
-      val sangria       = "2.1.6"
+      val sangria       = "3.0.0-RC7"
+      val sangriaCirce  = "1.3.2"
+      val sangriaMarsh  = "1.0.7"
       val fansi         = "0.2.14"
       val pureConfig    = "0.17.1"
       val sbtTest       = "1.0"
@@ -294,32 +299,35 @@ lazy val library =
       val decline       = "2.2.0"
       val scalaXml      = "2.0.1"
     }
-    val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
-    val catsEffect    = "org.typelevel"                  %% "cats-effect"          % Version.catsEffect
-    val scalatest     = "org.scalatest"                  %% "scalatest-wordspec"   % Version.scalaTest
-    val munit         = "org.scalameta"                  %% "munit"                % Version.munit
-    val pureConfig    = "com.github.pureconfig"          %% "pureconfig"           % Version.pureConfig
-    val parboiled     = "org.parboiled"                  %% "parboiled"            % Version.parboiled
-    val fansi         = "com.lihaoyi"                    %% "fansi"                % Version.fansi
-    val sangria       = "org.sangria-graphql"            %% "sangria"              % Version.sangria
-    val sangriaCirce  = "org.sangria-graphql"            %% "sangria-circe"        % Version.sangriaCirce
-    val circeCore     = "io.circe"                       %% "circe-core"           % Version.circe
-    val circeGeneric  = "io.circe"                       %% "circe-generic"        % Version.circe
-    val circeParser   = "io.circe"                       %% "circe-parser"         % Version.circe
-    val circeTesting  = "io.circe"                       %% "circe-testing"        % Version.circe
-    val diffsonCirce  = "org.gnieh"                      %% "diffson-circe"        % Version.diffson
-    val scalacheck    = "org.scalacheck"                 %% "scalacheck"           % Version.scalaCheck
-    val sbtTest       = "org.scala-sbt"                  %  "test-interface"       % Version.sbtTest
-    val http4sClient  = "org.http4s"                     %% "http4s-blaze-client"  % Version.http4s
-    val http4sServer  = "org.http4s"                     %% "http4s-blaze-server"  % Version.http4s
-    val http4sCirce   = "org.http4s"                     %% "http4s-circe"         % Version.http4s
-    val http4sDsl     = "org.http4s"                     %% "http4s-dsl"           % Version.http4s
-    val fs2Io         = "co.fs2"                         %% "fs2-io"               % Version.fs2
-    val fs2Core       = "co.fs2"                         %% "fs2-core"             % Version.fs2
-    val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
-    val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.embeddedKafka
-    val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"             % Version.caffeine
-    val openPojo      = "com.openpojo"                   %  "openpojo"             % Version.openPojo
-    val decline       = "com.monovore"                   %% "decline"              % Version.decline
-    val scalaXml      = "org.scala-lang.modules"         %% "scala-xml"            % Version.scalaXml
+    val catsCore      = "org.typelevel"                  %% "cats-core"               % Version.cats
+    val catsEffect    = "org.typelevel"                  %% "cats-effect"             % Version.catsEffect
+    val scalatest     = "org.scalatest"                  %% "scalatest-wordspec"      % Version.scalaTest
+    val munit         = "org.scalameta"                  %% "munit"                   % Version.munit
+    val pureConfig    = "com.github.pureconfig"          %% "pureconfig"              % Version.pureConfig
+    val parboiled     = "org.parboiled"                  %% "parboiled"               % Version.parboiled
+    val fansi         = "com.lihaoyi"                    %% "fansi"                   % Version.fansi
+    val sangriaCore   = "org.sangria-graphql"            %% "sangria"                 % Version.sangria
+    val sangriaParser = "org.sangria-graphql"            %% "sangria-parser"          % Version.sangria
+    val sangriaAst    = "org.sangria-graphql"            %% "sangria-ast"             % Version.sangria
+    val sangriaMarsh  = "org.sangria-graphql"            %% "sangria-marshalling-api" % Version.sangriaMarsh
+    val sangriaCirce  = "org.sangria-graphql"            %% "sangria-circe"           % Version.sangriaCirce
+    val circeCore     = "io.circe"                       %% "circe-core"              % Version.circe
+    val circeGeneric  = "io.circe"                       %% "circe-generic"           % Version.circe
+    val circeParser   = "io.circe"                       %% "circe-parser"            % Version.circe
+    val circeTesting  = "io.circe"                       %% "circe-testing"           % Version.circe
+    val diffsonCirce  = "org.gnieh"                      %% "diffson-circe"           % Version.diffson
+    val scalacheck    = "org.scalacheck"                 %% "scalacheck"              % Version.scalaCheck
+    val sbtTest       = "org.scala-sbt"                  %  "test-interface"          % Version.sbtTest
+    val http4sClient  = "org.http4s"                     %% "http4s-blaze-client"     % Version.http4s
+    val http4sServer  = "org.http4s"                     %% "http4s-blaze-server"     % Version.http4s
+    val http4sCirce   = "org.http4s"                     %% "http4s-circe"            % Version.http4s
+    val http4sDsl     = "org.http4s"                     %% "http4s-dsl"              % Version.http4s
+    val fs2Io         = "co.fs2"                         %% "fs2-io"                  % Version.fs2
+    val fs2Core       = "co.fs2"                         %% "fs2-core"                % Version.fs2
+    val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"           % Version.kafkaClient
+    val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"          % Version.embeddedKafka
+    val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"                % Version.caffeine
+    val openPojo      = "com.openpojo"                   %  "openpojo"                % Version.openPojo
+    val decline       = "com.monovore"                   %% "decline"                 % Version.decline
+    val scalaXml      = "org.scala-lang.modules"         %% "scala-xml"               % Version.scalaXml
   }
