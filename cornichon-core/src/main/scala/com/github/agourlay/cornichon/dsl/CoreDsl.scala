@@ -16,7 +16,6 @@ import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
 
 trait CoreDsl {
-  this: BaseFeature => //baseFeature brings the executionContext
 
   def Feature(name: String) = FeatureBuilder(name)
 
