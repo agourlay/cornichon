@@ -2,13 +2,13 @@
 
 <p>At the center of property based testing lies the capacity to generate arbitrary values that will be used to verify if a given invariant holds.</p>
 
-<p>A <code class="highlighter-rouge">generator</code> is simply a function that accepts a <code class="highlighter-rouge">RandomContext</code> which is propagated throughout the execution, for instance below is an example generating Strings and Integers.</p>
+<p>A <code class="language-plaintext highlighter-rouge">generator</code> is simply a function that accepts a <code class="language-plaintext highlighter-rouge">RandomContext</code> which is propagated throughout the execution, for instance below is an example generating Strings and Integers.</p>
 
-<p>There are tree concrete instances of <code class="highlighter-rouge">generators</code>:</p>
+<p>There are tree concrete instances of <code class="language-plaintext highlighter-rouge">generators</code>:</p>
 <ul>
-  <li><code class="highlighter-rouge">ValueGenerator</code></li>
-  <li><code class="highlighter-rouge">SessionValueGenerator</code> which provides additionally the <code class="highlighter-rouge">Session</code></li>
-  <li><code class="highlighter-rouge">OptionalValueGenerator</code> to fail in a controlled fashion</li>
+  <li><code class="language-plaintext highlighter-rouge">ValueGenerator</code></li>
+  <li><code class="language-plaintext highlighter-rouge">SessionValueGenerator</code> which provides additionally the <code class="language-plaintext highlighter-rouge">Session</code></li>
+  <li><code class="language-plaintext highlighter-rouge">OptionalValueGenerator</code> to fail in a controlled fashion</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
@@ -20,7 +20,7 @@
   <span class="n">gen</span> <span class="k">=</span> <span class="o">()</span> <span class="k">⇒</span> <span class="nv">rc</span><span class="o">.</span><span class="py">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">))</span>
 </code></pre></div></div>
 
-<p>This approach also supports embedding <code class="highlighter-rouge">Scalacheck's Gen</code> into a <code class="highlighter-rouge">Generator</code> by propagating the initial seed.</p>
+<p>This approach also supports embedding <code class="language-plaintext highlighter-rouge">Scalacheck's Gen</code> into a <code class="language-plaintext highlighter-rouge">Generator</code> by propagating the initial seed.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">org.scalacheck.Gen</span>
 <span class="k">import</span> <span class="nn">org.scalacheck.rng.Seed</span>

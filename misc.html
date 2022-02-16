@@ -5,12 +5,12 @@
 <p>In order to use a custom type as body, it is necessary to provide 3 typeclass instances:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">cats.Show</code> used to print the values</li>
-  <li><code class="highlighter-rouge">io.circe.Encoder</code> used to convert the values to JSON</li>
-  <li><code class="highlighter-rouge">com.github.agourlay.cornichon.resolver.Resolvable</code> used to provide a custom String representation in which placeholders can be resolved</li>
+  <li><code class="language-plaintext highlighter-rouge">cats.Show</code> used to print the values</li>
+  <li><code class="language-plaintext highlighter-rouge">io.circe.Encoder</code> used to convert the values to JSON</li>
+  <li><code class="language-plaintext highlighter-rouge">com.github.agourlay.cornichon.resolver.Resolvable</code> used to provide a custom String representation in which placeholders can be resolved</li>
 </ul>
 
-<p>For instance if you wish to use the <code class="highlighter-rouge">JsObject</code> from <code class="highlighter-rouge">play-json</code> as HTTP request’s body you can define the following instances in your code:</p>
+<p>For instance if you wish to use the <code class="language-plaintext highlighter-rouge">JsObject</code> from <code class="language-plaintext highlighter-rouge">play-json</code> as HTTP request’s body you can define the following instances in your code:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">lazy</span> <span class="k">implicit</span> <span class="k">val</span> <span class="nv">jsonResolvableForm</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Resolvable</span><span class="o">[</span><span class="kt">JsObject</span><span class="o">]</span> <span class="o">{</span>
     <span class="k">override</span> <span class="k">def</span> <span class="nf">toResolvableForm</span><span class="o">(</span><span class="n">s</span><span class="k">:</span> <span class="kt">JsObject</span><span class="o">)</span> <span class="k">=</span> <span class="nv">s</span><span class="o">.</span><span class="py">toString</span><span class="o">()</span>
@@ -31,19 +31,19 @@
 <p>It is recommended to use the nice CLI from SBT to trigger tests:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">~test</code> tilde to re-run a command on change.</li>
-  <li><code class="highlighter-rouge">testOnly *CornichonExamplesSpec</code> to run only the feature CornichonExamplesSpec.</li>
-  <li><code class="highlighter-rouge">testOnly *CornichonExamplesSpec -- "Cornichon feature example should CRUD Feature demo"</code> to run only the scenario <code class="highlighter-rouge">CRUD Feature demo</code> from the feature <code class="highlighter-rouge">Cornichon feature example</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">~test</code> tilde to re-run a command on change.</li>
+  <li><code class="language-plaintext highlighter-rouge">testOnly *CornichonExamplesSpec</code> to run only the feature CornichonExamplesSpec.</li>
+  <li><code class="language-plaintext highlighter-rouge">testOnly *CornichonExamplesSpec -- "Cornichon feature example should CRUD Feature demo"</code> to run only the scenario <code class="language-plaintext highlighter-rouge">CRUD Feature demo</code> from the feature <code class="language-plaintext highlighter-rouge">Cornichon feature example</code>.</li>
 </ul>
 
-<p>The full name of a scenario is <code class="highlighter-rouge">feature-name should scenario-name</code>.</p>
+<p>The full name of a scenario is <code class="language-plaintext highlighter-rouge">feature-name should scenario-name</code>.</p>
 
 <p>See <a href="http://www.scala-sbt.org/0.13/docs/Testing.html">SBT doc</a> for more information.</p>
 
-<p>The <code class="highlighter-rouge">steps</code> execution logs will only be shown if:</p>
+<p>The <code class="language-plaintext highlighter-rouge">steps</code> execution logs will only be shown if:</p>
 <ul>
   <li>the scenario fails</li>
-  <li>the scenario succeeded and contains at least one <code class="highlighter-rouge">DebugStep</code> such as <code class="highlighter-rouge">And I show_last_status</code></li>
+  <li>the scenario succeeded and contains at least one <code class="language-plaintext highlighter-rouge">DebugStep</code> such as <code class="language-plaintext highlighter-rouge">And I show_last_status</code></li>
 </ul>
 
 <h1 id="running-tests-without-a-build-tool">Running tests without a build tool</h1>
@@ -52,11 +52,11 @@
 
 <p>The library ships a main runner that can be used to run the tests without build tool.</p>
 
-<p>It can be found as <code class="highlighter-rouge">com.github.agourlay.cornichon.framework.MainRunner</code>.</p>
+<p>It can be found as <code class="language-plaintext highlighter-rouge">com.github.agourlay.cornichon.framework.MainRunner</code>.</p>
 
-<p>Once your project is packaged as a jar file, calling the main runner with <code class="highlighter-rouge">--help</code> shows the following info:</p>
+<p>Once your project is packaged as a jar file, calling the main runner with <code class="language-plaintext highlighter-rouge">--help</code> shows the following info:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Usage: cornichon-test-framework --packageToScan &lt;string&gt; [--featureParallelism &lt;integer&gt;] [--seed &lt;integer&gt;] [--scenarioNameFilter &lt;string&gt;]
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Usage: cornichon-test-framework --packageToScan &lt;string&gt; [--featureParallelism &lt;integer&gt;] [--seed &lt;integer&gt;] [--scenarioNameFilter &lt;string&gt;]
 
 Run your cornichon features without SBT.
 
@@ -77,9 +77,9 @@ Options and flags:
 
 <h1 id="packaging-features-in-a-docker-container">Packaging features in a Docker container</h1>
 
-<p>You can find below an example of Docker packaging done using <code class="highlighter-rouge">sbt-native-packager</code>.</p>
+<p>You can find below an example of Docker packaging done using <code class="language-plaintext highlighter-rouge">sbt-native-packager</code>.</p>
 
-<p>You can place these settings in a <code class="highlighter-rouge">docker.sbt</code> in the root of your project.</p>
+<p>You can place these settings in a <code class="language-plaintext highlighter-rouge">docker.sbt</code> in the root of your project.</p>
 
 <p>This should hopefully inspire you to set up your own solution or contribute to improve this one.</p>
 
@@ -110,7 +110,7 @@ Options and flags:
   <span class="o">)</span>
 </code></pre></div></div>
 
-<p>After you created the <code class="highlighter-rouge">docker.sbt</code>, just run <code class="highlighter-rouge">sbt docker:publishLocal</code> in order to create a docker image locally.</p>
+<p>After you created the <code class="language-plaintext highlighter-rouge">docker.sbt</code>, just run <code class="language-plaintext highlighter-rouge">sbt docker:publishLocal</code> in order to create a docker image locally.</p>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script src="/cornichon/lunr/lunr.js"></script><script>
 // For all code blocks, copy the language from the containing div
 // to the inner code tag (where hljs expects it to be)

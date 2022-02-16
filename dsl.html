@@ -1,10 +1,10 @@
 <!DOCTYPE html><html><head><title>Cornichon: DSL</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Arnaud Gourlay" /><meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="og:image" content="/cornichon/img/poster.png" /><meta name="image" property="og:image" content="/cornichon/img/poster.png" /><meta name="og:title" content="Cornichon: DSL" /><meta name="title" property="og:title" content="Cornichon: DSL" /><meta name="og:site_name" content="Cornichon" /><meta name="og:url" content="http://agourlay.github.io/cornichon/" /><meta name="og:type" content="website" /><meta name="og:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><link rel="icon" type="image/png" href="/cornichon/img/favicon.png" /><meta name="twitter:title" content="Cornichon: DSL" /><meta name="twitter:image" content="/cornichon/img/poster.png" /><meta name="twitter:description" content="An extensible Scala DSL for testing JSON HTTP APIs." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/cornichon/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/cornichon/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/cornichon/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/cornichon/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/cornichon/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/cornichon/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/cornichon/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/cornichon/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/cornichon/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/cornichon/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/cornichon/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/cornichon/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/cornichon/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/cornichon/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/cornichon/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/cornichon/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/cornichon/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/cornichon/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/cornichon/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/cornichon/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/cornichon/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/cornichon/css/pattern-style.css" /><link rel="stylesheet" href="/cornichon/css/override.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/cornichon/" class="brand"><div class="brand-wrapper"><span>Cornichon</span></div></a></li> <li><a href="/cornichon/installation.html" class="">Installation</a></li> <li><a href="/cornichon/basics.html" class="">Basics</a></li> <li><a href="/cornichon/dsl.html" class=" active ">DSL</a></li> <li><a href="/cornichon/custom-steps.html" class="">Custom steps</a> <ul class="sub-section"> <li><a href="/cornichon/custom-steps/effect-step.html" class="">Effect step</a></li> <li><a href="/cornichon/custom-steps/assert-step.html" class="">Assert step</a></li> <li><a href="/cornichon/custom-steps/resource-step.html" class="">Resource step</a></li></ul></li> <li><a href="/cornichon/placeholders.html" class="">Placeholders</a></li> <li><a href="/cornichon/json-matchers.html" class="">JSON matchers</a></li> <li><a href="/cornichon/feature-options.html" class="">Feature options</a></li> <li><a href="/cornichon/reference-configuration.html" class="">Reference configuration</a></li> <li><a href="/cornichon/property-based-testing.html" class="">Property based testing</a> <ul class="sub-section"> <li><a href="/cornichon/pbt/generators.html" class="">Generators</a></li> <li><a href="/cornichon/pbt/for-all.html" class="">For all</a></li> <li><a href="/cornichon/pbt/random-model-exploration.html" class="">Random model exploration</a></li></ul></li> <li><a href="/cornichon/misc.html" class="">Misc.</a></li> <li><a href="/cornichon/modules.html" class="">Modules</a> <ul class="sub-section"> <li><a href="/cornichon/modules/module-mock.html" class="">HTTP mock</a></li> <li><a href="/cornichon/modules/module-kafka.html" class="">Kafka integration</a></li></ul></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="search-nav hidden-xs hidden-sm"><div id="search-dropdown"><label><i class="fa fa-search"></i>Search</label><input id="search-bar" type="text" placeholder="Enter keywords here..." onclick="displayToggleSearch(event)" /><ul id="search-dropdown-content" class="dropdown dropdown-content"></ul></div></li><li id="gh-eyes-item" class="hidden-xs to-uppercase"><a href="https://github.com/agourlay/cornichon" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs to-uppercase"><a href="https://github.com/agourlay/cornichon" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Cornichon An extensible Scala DSL for testing JSON HTTP APIs.');"><i class="fa fa-facebook"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="agourlay" data-github-repo="cornichon"><div class="content-wrapper"><section><h1 id="dsl">DSL</h1>
 
-<p>The content of a <code class="highlighter-rouge">feature</code> is described using a domain-specific language (DSL) providing a clear structure for statement definitions.</p>
+<p>The content of a <code class="language-plaintext highlighter-rouge">feature</code> is described using a domain-specific language (DSL) providing a clear structure for statement definitions.</p>
 
 <p>The structure of a step statement is the following:</p>
 
-<p>1 - starts with either <code class="highlighter-rouge">Given</code> - <code class="highlighter-rouge">When</code> - <code class="highlighter-rouge">And</code> - <code class="highlighter-rouge">Then</code></p>
+<p>1 - starts with either <code class="language-plaintext highlighter-rouge">Given</code> - <code class="language-plaintext highlighter-rouge">When</code> - <code class="language-plaintext highlighter-rouge">And</code> - <code class="language-plaintext highlighter-rouge">Then</code></p>
 
 <p>The prefixes do not change the behavior of the steps but are present to improve the readability.</p>
 
@@ -12,9 +12,9 @@
 
 <p>This structure was chosen to increase the freedom of customization while still benefiting from Scala’s infix notation.</p>
 
-<p>3 - ending with a <code class="highlighter-rouge">step</code> definition</p>
+<p>3 - ending with a <code class="language-plaintext highlighter-rouge">step</code> definition</p>
 
-<p>The usage pattern is often to first run a <code class="highlighter-rouge">step</code> with a side effect then assert an expected state in a second <code class="highlighter-rouge">step</code>.</p>
+<p>The usage pattern is often to first run a <code class="language-plaintext highlighter-rouge">step</code> with a side effect then assert an expected state in a second <code class="language-plaintext highlighter-rouge">step</code>.</p>
 
 <p>For example :</p>
 
@@ -27,7 +27,7 @@
 <span class="nc">Then</span> <span class="n">assert</span> <span class="n">step_definition</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">step_definition</code> stands here for any object of type <code class="highlighter-rouge">Step</code>, those can be manually defined or simply built-in in Cornichon.</p>
+<p><code class="language-plaintext highlighter-rouge">step_definition</code> stands here for any object of type <code class="language-plaintext highlighter-rouge">Step</code>, those can be manually defined or simply built-in in Cornichon.</p>
 
 <h1 id="built-in-steps">Built-in steps</h1>
 
@@ -124,11 +124,11 @@
 
 <p>Ignored keys and extractors are JsonPaths following the format “a.b.c[index].d”.</p>
 
-<p>The <code class="highlighter-rouge">index</code> value is either:</p>
+<p>The <code class="language-plaintext highlighter-rouge">index</code> value is either:</p>
 
 <ul>
   <li>an Integer addressing the array position.</li>
-  <li>a <code class="highlighter-rouge">*</code> to target all values, the result will be an array of the projected values.</li>
+  <li>a <code class="language-plaintext highlighter-rouge">*</code> to target all values, the result will be an array of the projected values.</li>
 </ul>
 
 <p>JsonPath can also be used to only assert part of the response</p>
@@ -150,7 +150,7 @@
 <span class="nv">body</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"publisher.foundationMonth"</span><span class="o">).</span><span class="py">isAbsent</span>
 </code></pre></div></div>
 
-<p>It is possible to handle null values, given the following response body <code class="highlighter-rouge">{ “data” : null }</code></p>
+<p>It is possible to handle null values, given the following response body <code class="language-plaintext highlighter-rouge">{ “data” : null }</code></p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">body</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="py">isAbsent</span>  <span class="c1">//incorrect</span>
 <span class="nv">body</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"data"</span><span class="o">).</span><span class="py">isPresent</span> <span class="c1">//correct</span>
@@ -165,7 +165,7 @@
 <span class="nv">body</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"`message.fr`"</span><span class="o">).</span><span class="py">isAbsent</span>
 </code></pre></div></div>
 
-<p>To address a root array use <code class="highlighter-rouge">$</code> followed by the index the access.</p>
+<p>To address a root array use <code class="language-plaintext highlighter-rouge">$</code> followed by the index the access.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
 <span class="nv">body</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"$[2].name"</span><span class="o">)</span>
@@ -216,8 +216,8 @@
   """</span><span class="o">)</span>
 </code></pre></div></div>
 
-<p>It is important to mention that <code class="highlighter-rouge">body</code> expects a JSON content!
-When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</code> which offers <code class="highlighter-rouge">String</code> like assertions.</p>
+<p>It is important to mention that <code class="language-plaintext highlighter-rouge">body</code> expects a JSON content!
+When receiving non JSON payloads, use <code class="language-plaintext highlighter-rouge">body_raw</code> which offers <code class="language-plaintext highlighter-rouge">String</code> like assertions.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">body_raw</span><span class="o">.</span><span class="py">containsString</span><span class="o">(</span><span class="s">"xml"</span><span class="o">)</span>
 </code></pre></div></div>
@@ -268,13 +268,13 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
     <span class="o">)</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">query_gql</code> can also be used for mutation query.</p>
+<p><code class="language-plaintext highlighter-rouge">query_gql</code> can also be used for mutation query.</p>
 
 <ul>
   <li>GraphQL JSON</li>
 </ul>
 
-<p>all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the <code class="highlighter-rouge">gqljson</code> StringContext.</p>
+<p>all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the <code class="language-plaintext highlighter-rouge">gqljson</code> StringContext.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.json.CornichonJson._</span>
 
@@ -291,35 +291,35 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 <h2 id="session-steps">Session steps</h2>
 
 <ul>
-  <li>setting a value in <code class="highlighter-rouge">session</code></li>
+  <li>setting a value in <code class="language-plaintext highlighter-rouge">session</code></li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">save</span><span class="o">(</span><span class="s">"favorite-superhero"</span> <span class="o">-&gt;</span> <span class="s">"Batman"</span><span class="o">)</span>
 </code></pre></div></div>
 
 <ul>
-  <li>saving value to <code class="highlighter-rouge">session</code></li>
+  <li>saving value to <code class="language-plaintext highlighter-rouge">session</code></li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">save_body_path</span><span class="o">(</span><span class="s">"city"</span> <span class="o">-&gt;</span> <span class="s">"batman-city"</span><span class="o">)</span>
 </code></pre></div></div>
 
 <ul>
-  <li>asserting value in <code class="highlighter-rouge">session</code></li>
+  <li>asserting value in <code class="language-plaintext highlighter-rouge">session</code></li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="py">is</span><span class="o">(</span><span class="s">"Batman"</span><span class="o">)</span>
 </code></pre></div></div>
 
 <ul>
-  <li>asserting JSON value in <code class="highlighter-rouge">session</code></li>
+  <li>asserting JSON value in <code class="language-plaintext highlighter-rouge">session</code></li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">session_value</span><span class="o">(</span><span class="s">"my-json-response"</span><span class="o">).</span><span class="py">asJson</span><span class="o">.</span><span class="py">path</span><span class="o">(</span><span class="s">"a.b.c"</span><span class="o">).</span><span class="py">ignoring</span><span class="o">(</span><span class="s">"d"</span><span class="o">).</span><span class="py">is</span><span class="o">(</span><span class="s">"..."</span><span class="o">)</span>
 </code></pre></div></div>
 
 <ul>
-  <li>asserting existence of value in <code class="highlighter-rouge">session</code></li>
+  <li>asserting existence of value in <code class="language-plaintext highlighter-rouge">session</code></li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">session_value</span><span class="o">(</span><span class="s">"favorite-superhero"</span><span class="o">).</span><span class="py">isPresent</span>
@@ -327,7 +327,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 </code></pre></div></div>
 
 <ul>
-  <li>transforming a value in <code class="highlighter-rouge">session</code></li>
+  <li>transforming a value in <code class="language-plaintext highlighter-rouge">session</code></li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">transform_session</span><span class="o">(</span><span class="s">"my-key"</span><span class="o">)(</span><span class="nv">_</span><span class="o">.</span><span class="py">toUpperCase</span><span class="o">)</span>
@@ -338,7 +338,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 <p>Wrapper steps allow to control the execution of a series of steps to build more powerful tests.</p>
 
 <ul>
-  <li>repeating a series of <code class="highlighter-rouge">steps</code></li>
+  <li>repeating a series of <code class="language-plaintext highlighter-rouge">steps</code></li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Repeat</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
@@ -349,7 +349,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 </code></pre></div></div>
 
 <ul>
-  <li>repeating a series of <code class="highlighter-rouge">steps</code> during a period of time</li>
+  <li>repeating a series of <code class="language-plaintext highlighter-rouge">steps</code> during a period of time</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatDuring</span><span class="o">(</span><span class="mf">300.</span><span class="n">millis</span><span class="o">)</span> <span class="o">{</span>
@@ -360,7 +360,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 </code></pre></div></div>
 
 <ul>
-  <li>repeat a series of <code class="highlighter-rouge">steps</code> for each input element</li>
+  <li>repeat a series of <code class="language-plaintext highlighter-rouge">steps</code> for each input element</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatWith</span><span class="o">(</span><span class="s">"Superman"</span><span class="o">,</span> <span class="s">"GreenLantern"</span><span class="o">,</span> <span class="s">"Spiderman"</span><span class="o">)(</span><span class="s">"superhero-name"</span><span class="o">)</span> <span class="o">{</span>
@@ -374,7 +374,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 </code></pre></div></div>
 
 <ul>
-  <li>retry a series of <code class="highlighter-rouge">steps</code> until it succeeds or reaches the limit</li>
+  <li>retry a series of <code class="language-plaintext highlighter-rouge">steps</code> until it succeeds or reaches the limit</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RetryMax</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
@@ -385,7 +385,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 </code></pre></div></div>
 
 <ul>
-  <li>repeating a series of <code class="highlighter-rouge">steps</code> until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)</li>
+  <li>repeating a series of <code class="language-plaintext highlighter-rouge">steps</code> until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Eventually</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mf">15.</span><span class="n">seconds</span><span class="o">,</span> <span class="n">interval</span> <span class="k">=</span> <span class="mf">200.</span><span class="n">milliseconds</span><span class="o">)</span> <span class="o">{</span>
@@ -416,7 +416,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 <p>Here an oscillation could be seen in the status with something like 404 -&gt; 500 -&gt; 404 -&gt; 200.</p>
 
 <ul>
-  <li>execute a series of steps ‘n’ times by batch of <code class="highlighter-rouge">p</code> in parallel and wait ‘maxTime’ for completion.</li>
+  <li>execute a series of steps ‘n’ times by batch of <code class="language-plaintext highlighter-rouge">p</code> in parallel and wait ‘maxTime’ for completion.</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">RepeatConcurrently</span><span class="o">(</span><span class="n">times</span> <span class="k">=</span> <span class="mi">10</span><span class="o">,</span> <span class="n">parallel</span> <span class="k">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">maxTime</span> <span class="k">=</span> <span class="mi">10</span> <span class="n">seconds</span><span class="o">)</span> <span class="o">{</span>
@@ -494,7 +494,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
   <li>HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.</li>
 </ul>
 
-<p>This feature is defined the module <code class="highlighter-rouge">cornichon-http-mock</code> and requires to extend the trait <code class="highlighter-rouge">HttpMockDsl</code>.</p>
+<p>This feature is defined the module <code class="language-plaintext highlighter-rouge">cornichon-http-mock</code> and requires to extend the trait <code class="language-plaintext highlighter-rouge">HttpMockDsl</code>.</p>
 
 <p>By default, this server responds with 201 to any POST request and 200 for all the rest.</p>
 
@@ -517,9 +517,9 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
   <li>Log duration</li>
 </ul>
 
-<p>By default, all <code class="highlighter-rouge">Step</code> execution time can be found in the logs, but sometimes one needs to time a series of steps.</p>
+<p>By default, all <code class="language-plaintext highlighter-rouge">Step</code> execution time can be found in the logs, but sometimes one needs to time a series of steps.</p>
 
-<p>This is where <code class="highlighter-rouge">LogDuration</code> comes in handy, it requires a label that will be printed as well to identify results.</p>
+<p>This is where <code class="language-plaintext highlighter-rouge">LogDuration</code> comes in handy, it requires a label that will be printed as well to identify results.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">LogDuration</span><span class="o">(</span><span class="n">label</span> <span class="k">=</span> <span class="s">"my experiment"</span><span class="o">)</span> <span class="o">{</span>
 
@@ -554,9 +554,9 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 
 <h2 id="dsl-composition">DSL composition</h2>
 
-<p>Series of steps defined with Cornichon’s DSL can be reused within different <code class="highlighter-rouge">Scenarios</code>.</p>
+<p>Series of steps defined with Cornichon’s DSL can be reused within different <code class="language-plaintext highlighter-rouge">Scenarios</code>.</p>
 
-<p>Using the keyword <code class="highlighter-rouge">Attach</code> if the series starts with a <code class="highlighter-rouge">Step</code> and without if it starts with a wrapping bloc.</p>
+<p>Using the keyword <code class="language-plaintext highlighter-rouge">Attach</code> if the series starts with a <code class="language-plaintext highlighter-rouge">Step</code> and without if it starts with a wrapping bloc.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
 <span class="k">import</span> <span class="nn">scala.concurrent.duration._</span>
@@ -590,7 +590,7 @@ When receiving non JSON payloads, use <code class="highlighter-rouge">body_raw</
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>It is possible to give a title to an attached bloc using <code class="highlighter-rouge">AttachAs(title)</code>.</p>
+<p>It is possible to give a title to an attached bloc using <code class="language-plaintext highlighter-rouge">AttachAs(title)</code>.</p>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script src="/cornichon/lunr/lunr.js"></script><script>
 // For all code blocks, copy the language from the containing div
 // to the inner code tag (where hljs expects it to be)

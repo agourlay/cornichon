@@ -6,7 +6,7 @@
 
 <h2 id="concepts">Concepts</h2>
 
-<p>Performing property based testing of a pure function is quite easy, for <code class="highlighter-rouge">all</code> possible values, check that a given invariant is valid.</p>
+<p>Performing property based testing of a pure function is quite easy, for <code class="language-plaintext highlighter-rouge">all</code> possible values, check that a given invariant is valid.</p>
 
 <p>In the case of an HTTP API, it is more difficult to perform such operations, you are more often than not testing that a set of invariants are valid throughout a workflow.</p>
 
@@ -14,60 +14,60 @@
 
 <p>The entry point for random model exploration is the following function in the DSL:</p>
 
-<p><code class="highlighter-rouge">def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int)(modelRunner: ModelRunner[A, B, C, D, E, F])</code></p>
+<p><code class="language-plaintext highlighter-rouge">def check_model[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int)(modelRunner: ModelRunner[A, B, C, D, E, F])</code></p>
 
 <p>Let’s unpack this signature:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">maxNumberOfRuns</code> refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant</li>
-  <li><code class="highlighter-rouge">maxNumberOfTransition</code> is useful when the <code class="highlighter-rouge">model</code> contains cycles in order to ensure termination</li>
-  <li><code class="highlighter-rouge">modelRunner</code> is the actual definition of the <code class="highlighter-rouge">model</code></li>
-  <li><code class="highlighter-rouge">A B C D E F</code> refers to the types of the <code class="highlighter-rouge">generators</code> used in <code class="highlighter-rouge">model</code> definition (maximum of 6 for the moment)</li>
+  <li><code class="language-plaintext highlighter-rouge">maxNumberOfRuns</code> refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant</li>
+  <li><code class="language-plaintext highlighter-rouge">maxNumberOfTransition</code> is useful when the <code class="language-plaintext highlighter-rouge">model</code> contains cycles in order to ensure termination</li>
+  <li><code class="language-plaintext highlighter-rouge">modelRunner</code> is the actual definition of the <code class="language-plaintext highlighter-rouge">model</code></li>
+  <li><code class="language-plaintext highlighter-rouge">A B C D E F</code> refers to the types of the <code class="language-plaintext highlighter-rouge">generators</code> used in <code class="language-plaintext highlighter-rouge">model</code> definition (maximum of 6 for the moment)</li>
 </ul>
 
-<p>Such a Markov chain wires together a set of <code class="highlighter-rouge">properties</code> that relate to each other through <code class="highlighter-rouge">transitions</code> which are chosen according to a given <code class="highlighter-rouge">probability</code> (between 0 and 100).</p>
+<p>Such a Markov chain wires together a set of <code class="language-plaintext highlighter-rouge">properties</code> that relate to each other through <code class="language-plaintext highlighter-rouge">transitions</code> which are chosen according to a given <code class="language-plaintext highlighter-rouge">probability</code> (between 0 and 100).</p>
 
-<p>A <code class="highlighter-rouge">property</code> is composed of:</p>
+<p>A <code class="language-plaintext highlighter-rouge">property</code> is composed of:</p>
 <ul>
   <li>a description</li>
-  <li>an optional <code class="highlighter-rouge">pre-condition</code> which is a <code class="highlighter-rouge">step</code> checking that the <code class="highlighter-rouge">property</code> can be run (sometimes useful to target error cases)</li>
-  <li>an <code class="highlighter-rouge">invariant</code> which is a function from a number of <code class="highlighter-rouge">generators</code> to a <code class="highlighter-rouge">step</code> performing whatever side effect and assertions necessary</li>
+  <li>an optional <code class="language-plaintext highlighter-rouge">pre-condition</code> which is a <code class="language-plaintext highlighter-rouge">step</code> checking that the <code class="language-plaintext highlighter-rouge">property</code> can be run (sometimes useful to target error cases)</li>
+  <li>an <code class="language-plaintext highlighter-rouge">invariant</code> which is a function from a number of <code class="language-plaintext highlighter-rouge">generators</code> to a <code class="language-plaintext highlighter-rouge">step</code> performing whatever side effect and assertions necessary</li>
 </ul>
 
-<p>The number of generators is defined in the <code class="highlighter-rouge">property</code> type:</p>
+<p>The number of generators is defined in the <code class="language-plaintext highlighter-rouge">property</code> type:</p>
 <ul>
-  <li><code class="highlighter-rouge">Property0</code> an action which accepts a function from <code class="highlighter-rouge">() =&gt; Step</code></li>
-  <li><code class="highlighter-rouge">Property1[A]</code> an action which accepts a function from <code class="highlighter-rouge">() ⇒ A =&gt; Step</code></li>
-  <li><code class="highlighter-rouge">Property2[A, B]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B) =&gt; Step</code></li>
-  <li><code class="highlighter-rouge">Property3[A, B, C]</code> an action which accepts a function from <code class="highlighter-rouge">(() ⇒ A, () =&gt; B, () =&gt; C) =&gt; Step</code></li>
-  <li>up to <code class="highlighter-rouge">Property6[A, B, C, D, E, F]</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Property0</code> an action which accepts a function from <code class="language-plaintext highlighter-rouge">() =&gt; Step</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Property1[A]</code> an action which accepts a function from <code class="language-plaintext highlighter-rouge">() ⇒ A =&gt; Step</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Property2[A, B]</code> an action which accepts a function from <code class="language-plaintext highlighter-rouge">(() ⇒ A, () =&gt; B) =&gt; Step</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Property3[A, B, C]</code> an action which accepts a function from <code class="language-plaintext highlighter-rouge">(() ⇒ A, () =&gt; B, () =&gt; C) =&gt; Step</code></li>
+  <li>up to <code class="language-plaintext highlighter-rouge">Property6[A, B, C, D, E, F]</code></li>
 </ul>
 
-<p>It is of course not required to call a generator when building a <code class="highlighter-rouge">Step</code>.</p>
+<p>It is of course not required to call a generator when building a <code class="language-plaintext highlighter-rouge">Step</code>.</p>
 
-<p><em>However it is required to have the same <code class="highlighter-rouge">Property</code> type for all properties within a <code class="highlighter-rouge">model</code> definition.</em></p>
+<p><em>However it is required to have the same <code class="language-plaintext highlighter-rouge">Property</code> type for all properties within a <code class="language-plaintext highlighter-rouge">model</code> definition.</em></p>
 
-<p>Having <code class="highlighter-rouge">generators</code> as input enables the <code class="highlighter-rouge">action</code> to introduce some randomness in its effect.</p>
+<p>Having <code class="language-plaintext highlighter-rouge">generators</code> as input enables the <code class="language-plaintext highlighter-rouge">action</code> to introduce some randomness in its effect.</p>
 
-<p>A <code class="highlighter-rouge">run</code> terminates successfully if the max number of transition reached, this means we were not able to break any invariants.</p>
+<p>A <code class="language-plaintext highlighter-rouge">run</code> terminates successfully if the max number of transition reached, this means we were not able to break any invariants.</p>
 
-<p>A <code class="highlighter-rouge">run</code> fails if one of the following conditions is met:</p>
+<p>A <code class="language-plaintext highlighter-rouge">run</code> fails if one of the following conditions is met:</p>
 <ul>
-  <li>an error is thrown from a <code class="highlighter-rouge">property</code></li>
-  <li>no <code class="highlighter-rouge">properties</code> with a valid <code class="highlighter-rouge">pre-condition</code> can be found, this is generally a sign of a malformed <code class="highlighter-rouge">model</code></li>
-  <li>a <code class="highlighter-rouge">generator</code> throws an error</li>
+  <li>an error is thrown from a <code class="language-plaintext highlighter-rouge">property</code></li>
+  <li>no <code class="language-plaintext highlighter-rouge">properties</code> with a valid <code class="language-plaintext highlighter-rouge">pre-condition</code> can be found, this is generally a sign of a malformed <code class="language-plaintext highlighter-rouge">model</code></li>
+  <li>a <code class="language-plaintext highlighter-rouge">generator</code> throws an error</li>
 </ul>
 
-<p>A <code class="highlighter-rouge">model</code> exploration terminates successfully if the max number of runs is reached or with an error if a run fails.</p>
+<p>A <code class="language-plaintext highlighter-rouge">model</code> exploration terminates successfully if the max number of runs is reached or with an error if a run fails.</p>
 
-<p>Let’s create our first <code class="highlighter-rouge">model</code>!</p>
+<p>Let’s create our first <code class="language-plaintext highlighter-rouge">model</code>!</p>
 
 <p>It will be a basic chain which will not enforce any invariants; it will have:</p>
 
 <ul>
   <li>an entry point</li>
-  <li>a ping <code class="highlighter-rouge">property</code> printing a random String</li>
-  <li>a pong <code class="highlighter-rouge">property</code> printing a random Int</li>
+  <li>a ping <code class="language-plaintext highlighter-rouge">property</code> printing a random String</li>
+  <li>a pong <code class="language-plaintext highlighter-rouge">property</code> printing a random Int</li>
   <li>an exit point</li>
 </ul>
 
@@ -76,13 +76,13 @@
 <ul>
   <li>there is a 50% chance to start with ping or pong following the entry point</li>
   <li>there is 90% to go from a ping/pong to a pong/ping</li>
-  <li>there is no loop from any <code class="highlighter-rouge">property</code></li>
+  <li>there is no loop from any <code class="language-plaintext highlighter-rouge">property</code></li>
   <li>there is a 10% chance to exit the game after a ping or a pong</li>
 </ul>
 
-<p>Also, the DSL is asking for a <code class="highlighter-rouge">modelRunner</code> which is a little helper connecting a <code class="highlighter-rouge">model</code> to its <code class="highlighter-rouge">generators</code>.</p>
+<p>Also, the DSL is asking for a <code class="language-plaintext highlighter-rouge">modelRunner</code> which is a little helper connecting a <code class="language-plaintext highlighter-rouge">model</code> to its <code class="language-plaintext highlighter-rouge">generators</code>.</p>
 
-<p>The type inference is sometimes not properly detecting the action type, so it is recommended to define the <code class="highlighter-rouge">modelRunner</code> and the <code class="highlighter-rouge">model</code> as a single expression to help the typechecker.</p>
+<p>The type inference is sometimes not properly detecting the action type, so it is recommended to define the <code class="language-plaintext highlighter-rouge">modelRunner</code> and the <code class="language-plaintext highlighter-rouge">model</code> as a single expression to help the typechecker.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
 <span class="k">def</span> <span class="nf">stringGen</span><span class="o">(</span><span class="n">rc</span><span class="k">:</span> <span class="kt">RandomContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">ValueGenerator</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">ValueGenerator</span><span class="o">(</span>
@@ -139,7 +139,7 @@
 
 <p>Running this scenario outputs:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'ping pong check'
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'ping pong check'
 - ping pong check (10 millis)
 
    Scenario : ping pong check
@@ -200,7 +200,7 @@
 <p>The logs give us:</p>
 <ul>
   <li>a detailed description of the runs execution</li>
-  <li>the seed used to create the <code class="highlighter-rouge">Generators</code></li>
+  <li>the seed used to create the <code class="language-plaintext highlighter-rouge">Generators</code></li>
 </ul>
 
 <p>It is possible to replay exactly the same run by passing the seed as a parameter of the feature or by a CLI argument.</p>
@@ -209,7 +209,7 @@
 
 <p>Now that we have a better understanding of the concepts and their semantics, it is time to dive into some concrete examples!</p>
 
-<p>Having <code class="highlighter-rouge">cornichon</code> freely explore the <code class="highlighter-rouge">transitions</code> of a <code class="highlighter-rouge">model</code> can create some interesting configurations.</p>
+<p>Having <code class="language-plaintext highlighter-rouge">cornichon</code> freely explore the <code class="language-plaintext highlighter-rouge">transitions</code> of a <code class="language-plaintext highlighter-rouge">model</code> can create some interesting configurations.</p>
 
 <h3 id="turnstile">Turnstile</h3>
 
@@ -219,8 +219,8 @@
 
 <p>The server exposes two endpoints:</p>
 <ul>
-  <li>a <code class="highlighter-rouge">POST</code> request on <code class="highlighter-rouge">/push-coin</code> to unlock the gate</li>
-  <li>a <code class="highlighter-rouge">POST</code> request on <code class="highlighter-rouge">/walk-through</code> to turn the gate</li>
+  <li>a <code class="language-plaintext highlighter-rouge">POST</code> request on <code class="language-plaintext highlighter-rouge">/push-coin</code> to unlock the gate</li>
+  <li>a <code class="language-plaintext highlighter-rouge">POST</code> request on <code class="language-plaintext highlighter-rouge">/walk-through</code> to turn the gate</li>
 </ul>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.github.agourlay.cornichon.CornichonFeature</span>
@@ -289,7 +289,7 @@
 
 <p>Again let’s have a look at the logs to see how things go.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'Turnstile acts according to model'
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'Turnstile acts according to model'
 - Turnstile acts according to model (55 millis)
 
    Scenario : Turnstile acts according to model
@@ -346,11 +346,11 @@
 
 <p>It is interesting to note that we are executing a single run on purpose, as the server is stateful, any subsequent runs would share the global state of the turnstile.</p>
 
-<p>This is an issue because we are starting our model with <code class="highlighter-rouge">pushCoinAction</code> which is always expected to succeed.</p>
+<p>This is an issue because we are starting our model with <code class="language-plaintext highlighter-rouge">pushCoinAction</code> which is always expected to succeed.</p>
 
 <p>Let’s try to test the same model with more runs to see if it breaks!</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'Turnstile acts according to model'
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting scenario 'Turnstile acts according to model'
 - **failed** Turnstile acts according to model (74 millis)
 
   Scenario 'Turnstile acts according to model' failed:
@@ -430,9 +430,9 @@
 
 <p>Using 2 runs, we already found the problem because the first run finished by introducing a coin.</p>
 
-<p>It is possible to replay exactly this run in a deterministic fashion by using the <code class="highlighter-rouge">seed</code> printed in the logs and feed it to the DSL.</p>
+<p>It is possible to replay exactly this run in a deterministic fashion by using the <code class="language-plaintext highlighter-rouge">seed</code> printed in the logs and feed it to the DSL.</p>
 
-<p><code class="highlighter-rouge">Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(turnstileModel)</code></p>
+<p><code class="language-plaintext highlighter-rouge">Given I check_model(maxNumberOfRuns = 2, maxNumberOfTransitions = 10)(turnstileModel)</code></p>
 
 <p>This example shows that designing property based scenarios is sometimes challenging in the case of shared mutable states.</p>
 
@@ -442,7 +442,7 @@
 
 <p>In this example we are going to test an HTTP API implementing a basic web shop.</p>
 
-<p>This web shop offers the possibility to <code class="highlighter-rouge">CRUD</code> products and to search them via an index that is eventually consistent.</p>
+<p>This web shop offers the possibility to <code class="language-plaintext highlighter-rouge">CRUD</code> products and to search them via an index that is eventually consistent.</p>
 
 <p>A product is defined by the following case class.</p>
 
@@ -453,12 +453,12 @@
 
 <p>The server exposes the following endpoint:</p>
 <ul>
-  <li>a <code class="highlighter-rouge">POST</code> request on <code class="highlighter-rouge">/products</code> to create a product via productDraft</li>
-  <li>a <code class="highlighter-rouge">POST</code> request on <code class="highlighter-rouge">/products/&lt;id&gt;</code> to update a product</li>
-  <li>a <code class="highlighter-rouge">DELETE</code> request on <code class="highlighter-rouge">/products/&lt;id&gt;</code> to delete a product</li>
-  <li>a <code class="highlighter-rouge">GET</code> request on <code class="highlighter-rouge">/products</code> to get all products</li>
-  <li>a <code class="highlighter-rouge">GET</code> request on <code class="highlighter-rouge">/products/&lt;id&gt;</code> to get a single product</li>
-  <li>a <code class="highlighter-rouge">GET</code> request on <code class="highlighter-rouge">products-search</code> to get all the products in the search index</li>
+  <li>a <code class="language-plaintext highlighter-rouge">POST</code> request on <code class="language-plaintext highlighter-rouge">/products</code> to create a product via productDraft</li>
+  <li>a <code class="language-plaintext highlighter-rouge">POST</code> request on <code class="language-plaintext highlighter-rouge">/products/&lt;id&gt;</code> to update a product</li>
+  <li>a <code class="language-plaintext highlighter-rouge">DELETE</code> request on <code class="language-plaintext highlighter-rouge">/products/&lt;id&gt;</code> to delete a product</li>
+  <li>a <code class="language-plaintext highlighter-rouge">GET</code> request on <code class="language-plaintext highlighter-rouge">/products</code> to get all products</li>
+  <li>a <code class="language-plaintext highlighter-rouge">GET</code> request on <code class="language-plaintext highlighter-rouge">/products/&lt;id&gt;</code> to get a single product</li>
+  <li>a <code class="language-plaintext highlighter-rouge">GET</code> request on <code class="language-plaintext highlighter-rouge">products-search</code> to get all the products in the search index</li>
 </ul>
 
 <p>The contract is that the consistency delay should always be under 10 seconds for all operations being mirrored in the search index.</p>
@@ -588,7 +588,7 @@
 
 <p>Again, let’s have a look at the logs to see how things go.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Advanced example of model checks:
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Advanced example of model checks:
 Starting scenario 'WebShop acts according to model'
 - WebShop acts according to model (42747 millis)
 
@@ -809,16 +809,16 @@ Starting scenario 'WebShop acts according to model'
       Check block succeeded (42662 millis)
 </code></pre></div></div>
 
-<p>We can see that we have been interacting with the <code class="highlighter-rouge">CRUD</code> API using randomly generated <code class="highlighter-rouge">ProductDraft</code> and that the eventually consistent contracts seem to hold.</p>
+<p>We can see that we have been interacting with the <code class="language-plaintext highlighter-rouge">CRUD</code> API using randomly generated <code class="language-plaintext highlighter-rouge">ProductDraft</code> and that the eventually consistent contracts seem to hold.</p>
 
 <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/webShop">here</a>.</p>
 
 <h2 id="caveats">Caveats</h2>
 
 <ul>
-  <li>all <code class="highlighter-rouge">properties</code> must have the same types within a <code class="highlighter-rouge">model</code> definition</li>
-  <li>the API has a few rough edges, especially regarding type inference for the <code class="highlighter-rouge">modelRunner</code> definition</li>
-  <li>the max number of <code class="highlighter-rouge">generators</code> is hard-coded to 6</li>
+  <li>all <code class="language-plaintext highlighter-rouge">properties</code> must have the same types within a <code class="language-plaintext highlighter-rouge">model</code> definition</li>
+  <li>the API has a few rough edges, especially regarding type inference for the <code class="language-plaintext highlighter-rouge">modelRunner</code> definition</li>
+  <li>the max number of <code class="language-plaintext highlighter-rouge">generators</code> is hard-coded to 6</li>
 </ul>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/cornichon/highlight/highlight.pack.js"></script><script src="/cornichon/lunr/lunr.js"></script><script>
 // For all code blocks, copy the language from the containing div
