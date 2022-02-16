@@ -101,7 +101,7 @@ function prepareIdxAndDocMap() {
       "title": "Modules",
       "url": "/cornichon/modules.html",
       "content": "Modules Various additional modules are available and offer a set of features which do not fit in the core domain of the library. HTTP mock Kafka integration"
-    } ,    
+    } ,      
     {
       "title": "Placeholders",
       "url": "/cornichon/placeholders.html",
