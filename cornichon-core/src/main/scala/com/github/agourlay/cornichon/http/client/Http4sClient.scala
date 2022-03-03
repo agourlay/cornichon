@@ -55,7 +55,7 @@ class Http4sClient(
       .withSslContext(sslContext)
       .withMaxTotalConnections(300)
       .withMaxWaitQueueLimit(500)
-      .withIdleTimeout(defaultHighTimeout)
+      .withIdleTimeout(2.minute)
       .withResponseHeaderTimeout(defaultHighTimeout)
       .withRequestTimeout(defaultHighTimeout)
       .withRetries(0)
