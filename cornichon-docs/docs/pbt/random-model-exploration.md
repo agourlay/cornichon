@@ -44,7 +44,7 @@ The number of generators is defined in the `property` type:
 
 It is of course not required to call a generator when building a `Step`.
 
-*However it is required to have the same `Property` type for all properties within a `model` definition.*
+*However, it is required to have the same `Property` type for all properties within a `model` definition.*
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 

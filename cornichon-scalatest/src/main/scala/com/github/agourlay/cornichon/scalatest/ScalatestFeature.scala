@@ -96,7 +96,7 @@ object ScalatestFeature {
   private val registeredUsage = new AtomicInteger
   private val safePassInRow = new AtomicInteger
 
-  // Custom Reaper process for the time being as we want to cleanup afterall Feature
+  // Custom Reaper process for the time being as we want to cleanup after all Feature
   // Will tear down stuff if no Feature registers during 10 secs
   private val timer = new util.Timer()
   private val timerTask = new util.TimerTask {

@@ -136,7 +136,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
       first == second
     }
 
-  property("fillPlaceholders generates random alphanum string if <random-alphanum-string> - fixed by seed") =
+  property("fillPlaceholders generates random alphanumeric string if <random-alphanum-string> - fixed by seed") =
     forAll { seed: Long =>
       val session = Session.newEmpty
       val content = "<random-alphanum-string>"
