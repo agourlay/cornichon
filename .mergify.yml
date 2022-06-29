@@ -6,3 +6,10 @@ pull_request_rules:
     actions:
       merge:
         method: merge
+  - name: automatically merge dependabot's PRs
+    conditions:
+      - author=dependabot[bot]
+      - status-success=Scala CI
+    actions:
+      merge:
+        method: merge
