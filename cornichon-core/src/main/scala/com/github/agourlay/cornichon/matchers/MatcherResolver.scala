@@ -54,10 +54,18 @@ object MatcherResolver {
     if (matchers.isEmpty)
       (expected, actual, Nil)
     else {
-      val pathAssertions = CornichonJson.findAllPathWithValue(matchers.map(_.fullKey), expected)
+      val matcherKeys = matchers.iterator.map(_.fullKey).toSet
+      val pathAssertions = CornichonJson.findAllPathWithValue(matcherKeys, expected)
         .iterator
-        .zip(matchers.iterator)
-        .map { case (jsonPath, matcher) => MatcherAssertion(negate, matcher, actual, jsonPath) }
+        .map {
+          case (matcherKey, jsonPath) =>
+            // find corresponding matcher for the tuple
+            val matcher = matchers.find(_.fullKey == matcherKey) match {
+              case Some(value) => value
+              case None        => throw new IllegalStateException(s"Matchers $matchers must contain an entry for $matcherKey")
+            }
+            MatcherAssertion(negate, matcher, actual, jsonPath)
+        }
         .toList
 
       val jsonPathToIgnore = pathAssertions.map(_.jsonPath)
