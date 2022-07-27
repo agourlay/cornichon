@@ -42,6 +42,7 @@ class TurnstileAPI extends Http4sDsl[IO] {
       .bindHttp(httpPort, "localhost")
       .withoutBanner
       .withHttpApp(routes.orNotFound)
+      .resource
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
       .unsafeToFuture()

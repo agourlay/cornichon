@@ -173,6 +173,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
       .bindHttp(httpPort, "localhost")
       .withoutBanner
       .withHttpApp(GZip(routes.orNotFound))
+      .resource
       .allocated
       .map { case (_, stop) => new HttpServer(stop) }
       .unsafeToFuture()

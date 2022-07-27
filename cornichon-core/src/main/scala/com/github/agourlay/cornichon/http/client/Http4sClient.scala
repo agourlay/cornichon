@@ -59,6 +59,7 @@ class Http4sClient(
       .withResponseHeaderTimeout(defaultHighTimeout)
       .withRequestTimeout(defaultHighTimeout)
       .withRetries(0)
+      .resource
       .allocated
       .map {
         case (client, shutdown) =>
