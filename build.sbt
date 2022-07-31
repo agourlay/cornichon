@@ -275,7 +275,7 @@ lazy val formattingSettings = Seq(
 lazy val library =
   new {
     object Version {
-      val scalaTest     = "3.2.12"
+      val scalaTest     = "3.2.13"
       val munit         = "1.0.0-M6"
       val cats          = "2.8.0"
       val catsEffect    = "3.3.14"
