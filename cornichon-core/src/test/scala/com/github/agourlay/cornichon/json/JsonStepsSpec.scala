@@ -326,8 +326,16 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
   }
 
   test("JsonStepBuilder.is json with matcher in object") {
-    val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : 1, "myKeyOther" : "myOtherValue" }""")
-    val step = jsonStepBuilder.is("""{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }""")
+    val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKeyInt" : 1, "myKeyStr" : "myOtherValue", "myKeyObj" : {"objKey" : "objValue" } }""")
+    val step = jsonStepBuilder.is("""{ "myKeyInt" : *any-integer*, "myKeyStr" : *any-string*, "myKeyObj" : *any-object* }""")
+    val s = Scenario("scenario with JsonSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
+    assert(res.isSuccess)
+  }
+
+  test("JsonStepBuilder.is json with duplicate matchers in object") {
+    val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKeyInt" : 1, "myKeyObj1" : {"objKey" : "objValue" } , "myKeyObj2" : {"objKey" : "objValue" } }""")
+    val step = jsonStepBuilder.is("""{ "myKeyInt" : *any-integer*, "myKeyObj1" : *any-object*, "myKeyObj2" : *any-object* }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)

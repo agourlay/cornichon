@@ -3,15 +3,15 @@ package com.github.agourlay.cornichon.matchers
 import cats.Parallel
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import com.github.agourlay.cornichon.matchers.Matchers._
-import io.circe.Json
+import io.circe.{ Json, JsonObject }
+import io.circe.testing.ArbitraryInstances
 import org.scalacheck._
 import org.scalacheck.Prop._
 
-object MatchersProperties extends Properties("Matchers") {
+object MatchersProperties extends Properties("Matchers") with ArbitraryInstances {
 
   val reasonablyRandomInstantGen: Gen[Instant] = for {
     randomOffset <- Arbitrary.arbLong.arbitrary
@@ -79,4 +79,14 @@ object MatchersProperties extends Properties("Matchers") {
       res.forall(_ == true)
     }
   }
+
+  property("any-object correct for any JsonObject") =
+    forAll { jsonObj: JsonObject =>
+      anyObject.predicate(Json.fromJsonObject(jsonObj))
+    }
+
+  property("any-string correct for any asciiPrintableStr") =
+    forAll(Gen.asciiPrintableStr) { asciiPrintableStr =>
+      anyString.predicate(Json.fromString(asciiPrintableStr))
+    }
 }

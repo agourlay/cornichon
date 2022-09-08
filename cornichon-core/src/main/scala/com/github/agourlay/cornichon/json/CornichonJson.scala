@@ -136,37 +136,33 @@ trait CornichonJson {
       WhitelistingError(forbiddenPatchOps.map(_.path.show), second).asLeft
   }
 
-  def findAllPathWithValue(values: List[String], json: Json): List[JsonPath] = {
+  def findAllPathWithValue(values: Set[String], json: Json): List[(String, JsonPath)] = {
     def keyValues(currentPath: String, json: Json, level: Int): List[(String, Json)] = {
-
-      def leafValue(): List[(String, Json)] = if (level == 0) (currentPath -> json) :: Nil else Nil
-
-      def keyValuesHelper(key: String, value: Json, level: Int): List[(String, Json)] =
-        (key, value) :: keyValues(key, value, level + 1)
-
       // Use Json.Folder for performance https://github.com/circe/circe/pull/656
       json.foldWith(
         new Json.Folder[List[(String, Json)]] {
           def onNull: List[(String, Json)] =
             Nil
           def onBoolean(value: Boolean): List[(String, Json)] =
-            leafValue()
+            (currentPath -> json) :: Nil
           def onNumber(value: JsonNumber): List[(String, Json)] =
-            leafValue()
+            (currentPath -> json) :: Nil
           def onString(value: String): List[(String, Json)] =
-            leafValue()
+            (currentPath -> json) :: Nil
           def onArray(elems: Vector[Json]): List[(String, Json)] =
-            elems.iterator.zipWithIndex.flatMap { case (e, index) => keyValuesHelper(s"$currentPath[$index]", e, level) }.toList
+            elems.iterator.zipWithIndex.flatMap { case (e, index) => keyValues(s"$currentPath[$index]", e, level + 1) }.toList
           def onObject(elems: JsonObject): List[(String, Json)] =
-            elems.toIterable.flatMap { case (k, v) => keyValuesHelper(s"$currentPath.$k", v, level) }.toList
+            elems.toIterable.flatMap { case (k, v) => keyValues(s"$currentPath.$k", v, level + 1) }.toList
         }
       )
     }
 
     // Do not traverse the JSON if there are no values to find
-    if (values.nonEmpty)
-      keyValues(JsonPath.root, json, level = 0).collect { case (k, v) if values.exists(v.asString.contains) => JsonPath.parse(k).valueUnsafe }
-    else
+    if (values.nonEmpty) {
+      keyValues(JsonPath.root, json, level = 0).collect {
+        case (path, value) if value.asString.exists(values.contains) => (value.asString.get, JsonPath.parse(path).valueUnsafe)
+      }
+    } else
       Nil
   }
 }
