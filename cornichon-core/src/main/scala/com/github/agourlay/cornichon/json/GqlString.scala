@@ -9,14 +9,14 @@ case class GqlString(input: String) extends AnyVal
 
 object GqlString {
 
-  implicit val gqlResolvableForm = new Resolvable[GqlString] {
+  implicit val gqlResolvableForm: Resolvable[GqlString] = new Resolvable[GqlString] {
     def toResolvableForm(g: GqlString) = g.input
     def fromResolvableForm(s: String) = GqlString(s)
   }
 
-  implicit val gqlShow =
+  implicit val gqlShow: Show[GqlString] =
     Show.show[GqlString](g => s"GraphQl JSON ${g.input}")
 
-  implicit val gqlEncode =
+  implicit val gqlEncode: Encoder[GqlString] =
     Encoder.instance[GqlString](g => parseGraphQLJson(g.input).valueUnsafe)
 }

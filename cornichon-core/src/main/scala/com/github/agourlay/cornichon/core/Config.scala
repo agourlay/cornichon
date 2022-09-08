@@ -18,5 +18,5 @@ case class Config(
     followRedirect: Boolean = false)
 
 object Config {
-  implicit val hint = ProductHint[Config](allowUnknownKeys = false, fieldMapping = ConfigFieldMapping(CamelCase, CamelCase))
+  implicit val hint: ProductHint[Config] = ProductHint[Config](allowUnknownKeys = false, fieldMapping = ConfigFieldMapping(CamelCase, CamelCase))
 }

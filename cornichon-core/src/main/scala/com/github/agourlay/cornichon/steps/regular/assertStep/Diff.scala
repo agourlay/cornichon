@@ -15,29 +15,21 @@ trait Diff[A] {
 object Diff {
   def apply[A](implicit diff: Diff[A]): Diff[A] = diff
 
-  implicit val showJsonPatch = new Show[JsonPatch[Json]] {
-    def show(jp: JsonPatch[Json]): String = {
-      jp.asJson.spaces2
-    }
+  implicit val showJsonPatch: Show[JsonPatch[Json]] = (jp: JsonPatch[Json]) => {
+    jp.asJson.spaces2
   }
 
-  implicit val jsonDiff = new Diff[Json] {
-    def diff(left: Json, right: Json): Option[String] = Some(
-      s"""|JSON patch between actual result and expected result is :
-          |${diffPatch(left, right).show}
+  implicit val jsonDiff: Diff[Json] = (left: Json, right: Json) => Some(
+    s"""|JSON patch between actual result and expected result is :
+        |${diffPatch(left, right).show}
       """.stripMargin.trim
-    )
-  }
+  )
 
-  implicit val stringDiff = new Diff[String] {
-    def diff(left: String, right: String): Option[String] = None
-  }
+  implicit val stringDiff: Diff[String] = (left: String, right: String) => None
 
-  implicit val booleanDiff = new Diff[Boolean] {
-    def diff(left: Boolean, right: Boolean): Option[String] = None
-  }
+  implicit val booleanDiff: Diff[Boolean] = (left: Boolean, right: Boolean) => None
 
-  def orderedCollectionDiff[A: Show](left: Seq[A], right: Seq[A]) = {
+  def orderedCollectionDiff[A: Show](left: Seq[A], right: Seq[A]): String = {
     val added = right.diff(left).iterator
     val (deletedTuple, stillPresent) = left.map(e => (e, right.indexWhere(_ == e))).partition(_._2 == -1)
     val deleted = deletedTuple.iterator.map(_._1)
@@ -49,7 +41,7 @@ object Diff {
       """.stripMargin.trim
   }
 
-  def notOrderedCollectionDiff[A: Show](left: Set[A], right: Set[A]) = {
+  def notOrderedCollectionDiff[A: Show](left: Set[A], right: Set[A]): String = {
     val added = right.diff(left)
     val deleted = left.diff(right)
     s"""|Not ordered collection diff. between actual result and expected result is :
@@ -58,41 +50,23 @@ object Diff {
       """.stripMargin.trim
   }
 
-  implicit def seqDiff[A: Show] = new Diff[Seq[A]] {
-    def diff(left: Seq[A], right: Seq[A]): Option[String] = Some(orderedCollectionDiff(left, right))
-  }
+  implicit def seqDiff[A: Show]: Diff[Seq[A]] = (left: Seq[A], right: Seq[A]) => Some(orderedCollectionDiff(left, right))
 
-  implicit def listDiff[A: Show] = new Diff[List[A]] {
-    def diff(left: List[A], right: List[A]): Option[String] = Some(orderedCollectionDiff(left, right))
-  }
+  implicit def listDiff[A: Show]: Diff[List[A]] = (left: List[A], right: List[A]) => Some(orderedCollectionDiff(left, right))
 
-  implicit def vectorDiff[A: Show] = new Diff[Vector[A]] {
-    def diff(left: Vector[A], right: Vector[A]): Option[String] = Some(orderedCollectionDiff(left, right))
-  }
+  implicit def vectorDiff[A: Show]: Diff[Vector[A]] = (left: Vector[A], right: Vector[A]) => Some(orderedCollectionDiff(left, right))
 
-  implicit def arrayDiff[A: Show] = new Diff[Array[A]] {
-    def diff(left: Array[A], right: Array[A]): Option[String] = Some(orderedCollectionDiff(left.toSeq, right.toSeq))
-  }
+  implicit def arrayDiff[A: Show]: Diff[Array[A]] = (left: Array[A], right: Array[A]) => Some(orderedCollectionDiff(left.toSeq, right.toSeq))
 
-  implicit def immutableSetDiff[A: Show] = new Diff[Set[A]] {
-    def diff(left: Set[A], right: Set[A]): Option[String] = Some(notOrderedCollectionDiff(left, right))
-  }
+  implicit def immutableSetDiff[A: Show]: Diff[Set[A]] = (left: Set[A], right: Set[A]) => Some(notOrderedCollectionDiff(left, right))
 
-  implicit val intDiff = new Diff[Int] {
-    def diff(left: Int, right: Int): Option[String] = None
-  }
+  implicit val intDiff: Diff[Int] = (left: Int, right: Int) => None
 
-  implicit val doubleDiff = new Diff[Double] {
-    def diff(left: Double, right: Double): Option[String] = None
-  }
+  implicit val doubleDiff: Diff[Double] = (left: Double, right: Double) => None
 
-  implicit val longDiff = new Diff[Long] {
-    def diff(left: Long, right: Long): Option[String] = None
-  }
+  implicit val longDiff: Diff[Long] = (left: Long, right: Long) => None
 
-  implicit val intFloat = new Diff[Float] {
-    def diff(left: Float, right: Float): Option[String] = None
-  }
+  implicit val intFloat: Diff[Float] = (left: Float, right: Float) => None
 
 }
 

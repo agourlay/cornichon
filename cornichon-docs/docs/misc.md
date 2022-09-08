@@ -17,16 +17,16 @@ In order to use a custom type as body, it is necessary to provide 3 typeclass in
 For instance if you wish to use the `JsObject` from `play-json` as HTTP request's body you can define the following instances in your code:
 
 ```scala
-  lazy implicit val jsonResolvableForm = new Resolvable[JsObject] {
+  lazy implicit val jsonResolvableForm: Resolvable[JsObject] = new Resolvable[JsObject] {
     override def toResolvableForm(s: JsObject) = s.toString()
     override def fromResolvableForm(s: String) = Json.parse(s).as[JsObject]
   }
 
-  lazy implicit val showJson = new Show[JsObject] {
+  lazy implicit val showJson: Show[JsObject] = new Show[JsObject] {
     override def show(f: JsObject): String = f.toString()
   }
 
-  lazy implicit val JsonEncoder:Encoder[JsObject] = new Encoder[JsObject] {
+  lazy implicit val JsonEncoder: Encoder[JsObject] = new Encoder[JsObject] {
     override def apply(a: JsObject): Json = parse(a.toString()).getOrElse(cJson.Null)
   }
 ```
