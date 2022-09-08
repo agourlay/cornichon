@@ -23,8 +23,8 @@ import org.http4s.server.middleware.GZip
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
-
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 
 class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
@@ -177,6 +177,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
           .withPort(port)
           .withHost(Host.fromString("localhost").get)
           .withHttpApp(GZip(routes.orNotFound))
+          .withShutdownTimeout(1.seconds)
           .build
           .allocated
           .map { case (_, stop) => new HttpServer(stop) }

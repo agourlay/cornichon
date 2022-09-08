@@ -33,7 +33,7 @@ class MockHttpServer[A](
       startServerTryPorts(randomPortOrder)
 
   private def startServerTryPorts(ports: List[Int], retry: Int = 0): IO[A] =
-    startBlazeServer(ports.head).handleErrorWith {
+    startServer(ports.head).handleErrorWith {
       case _: java.net.BindException if ports.length > 1 =>
         startServerTryPorts(ports.tail, retry)
       case _: java.net.BindException if retry < maxPortBindingRetries =>
@@ -44,7 +44,7 @@ class MockHttpServer[A](
         IO.raiseError(MockHttpServerStartError(e, label, maxPortBindingRetries, selectedInterface).toException)
     }
 
-  private def startBlazeServer(port: Int): IO[A] =
+  private def startServer(port: Int): IO[A] =
     Port.fromInt(port) match {
       case None => IO.raiseError(new IllegalArgumentException(s"Invalid port number $port"))
       case Some(p) =>
@@ -52,6 +52,7 @@ class MockHttpServer[A](
           .withPort(p)
           .withHost(Host.fromString(selectedInterface).get) // fixme
           .withHttpApp(mockRouter)
+          .withShutdownTimeout(1.seconds) // The time to wait for a graceful shutdown
           .build
           .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
     }

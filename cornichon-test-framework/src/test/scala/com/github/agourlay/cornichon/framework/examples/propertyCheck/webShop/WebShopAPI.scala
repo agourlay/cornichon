@@ -132,6 +132,7 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[IO] {
         EmberServerBuilder.default[IO]
           .withPort(port)
           .withHost(Host.fromString("localhost").get)
+          .withShutdownTimeout(1.seconds)
           .withHttpApp(routes.orNotFound)
           .build
           .allocated

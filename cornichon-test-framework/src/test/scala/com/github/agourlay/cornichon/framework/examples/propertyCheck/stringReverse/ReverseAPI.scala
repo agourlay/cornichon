@@ -9,8 +9,8 @@ import org.http4s.implicits._
 import org.http4s.dsl._
 import org.http4s.server.Router
 import org.http4s.ember.server.EmberServerBuilder
-
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class ReverseAPI extends Http4sDsl[IO] {
 
@@ -32,6 +32,7 @@ class ReverseAPI extends Http4sDsl[IO] {
         EmberServerBuilder.default[IO]
           .withPort(port)
           .withHost(Host.fromString("localhost").get)
+          .withShutdownTimeout(1.seconds)
           .withHttpApp(routes.orNotFound)
           .build
           .allocated
