@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.http.steps
 
+import cats.syntax.traverse._
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
@@ -18,7 +19,11 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          lowerCasedExpected = expected.iterator.map { case (name, value) => name.toLowerCase -> value }.toList
+          expectedWithResolvedPlaceholders <- expected.traverse {
+            case (name, value) =>
+              sc.fillPlaceholders(value).map(v => (name, v))
+          }
+          lowerCasedExpected = expectedWithResolvedPlaceholders.iterator.map { case (name, value) => name.toLowerCase -> value }.toList
         } yield CollectionsContainSameElements(lowerCasedExpected, lowerCasedActual)
       }
     )
@@ -39,7 +44,11 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          predicate = elements.forall { case (name, value) => lowerCasedActual.contains(name.toLowerCase -> value) }
+          elementsWithResolvedPlaceholders <- elements.traverse {
+            case (name, value) =>
+              sc.fillPlaceholders(value).map(v => (name, v))
+          }
+          predicate = elementsWithResolvedPlaceholders.forall { case (name, value) => lowerCasedActual.contains(name.toLowerCase -> value) }
         } yield CustomMessageEqualityAssertion(true, predicate, () => headersDoesNotContainError(printArrowPairs(elements), sessionHeaders))
       }
     )
