@@ -5,13 +5,14 @@ import cats.data.Validated.{ Invalid, Valid }
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.syntax.all._
+import com.comcast.ip4s.{ Host, Port }
 import com.github.agourlay.cornichon.framework.examples.HttpServer
 import fs2.Stream
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.http4s.server.{ AuthMiddleware, Router }
-import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
 import org.http4s._
@@ -22,8 +23,8 @@ import org.http4s.server.middleware.GZip
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
-
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 
 class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
@@ -169,12 +170,17 @@ class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
   )
 
   def start(httpPort: Int): Future[HttpServer] =
-    BlazeServerBuilder[IO]
-      .bindHttp(httpPort, "localhost")
-      .withoutBanner
-      .withHttpApp(GZip(routes.orNotFound))
-      .resource
-      .allocated
-      .map { case (_, stop) => new HttpServer(stop) }
-      .unsafeToFuture()
+    Port.fromInt(httpPort) match {
+      case None => Future.failed(new IllegalArgumentException("Invalid port number"))
+      case Some(port) =>
+        EmberServerBuilder.default[IO]
+          .withPort(port)
+          .withHost(Host.fromString("localhost").get)
+          .withHttpApp(GZip(routes.orNotFound))
+          .withShutdownTimeout(1.seconds)
+          .build
+          .allocated
+          .map { case (_, stop) => new HttpServer(stop) }
+          .unsafeToFuture()
+    }
 }

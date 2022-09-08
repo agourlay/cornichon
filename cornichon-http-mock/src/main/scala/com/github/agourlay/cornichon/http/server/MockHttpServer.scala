@@ -3,10 +3,11 @@ package com.github.agourlay.cornichon.http.server
 import java.net.NetworkInterface
 
 import cats.effect.IO
+import com.comcast.ip4s.{ Host, Port }
 import com.github.agourlay.cornichon.core.CornichonError
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
-import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 
 import scala.jdk.CollectionConverters._
@@ -32,7 +33,7 @@ class MockHttpServer[A](
       startServerTryPorts(randomPortOrder)
 
   private def startServerTryPorts(ports: List[Int], retry: Int = 0): IO[A] =
-    startBlazeServer(ports.head).handleErrorWith {
+    startServer(ports.head).handleErrorWith {
       case _: java.net.BindException if ports.length > 1 =>
         startServerTryPorts(ports.tail, retry)
       case _: java.net.BindException if retry < maxPortBindingRetries =>
@@ -43,13 +44,18 @@ class MockHttpServer[A](
         IO.raiseError(MockHttpServerStartError(e, label, maxPortBindingRetries, selectedInterface).toException)
     }
 
-  private def startBlazeServer(port: Int): IO[A] =
-    BlazeServerBuilder[IO]
-      .bindHttp(port, selectedInterface)
-      .withoutBanner
-      .withHttpApp(mockRouter)
-      .resource
-      .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
+  private def startServer(port: Int): IO[A] =
+    Port.fromInt(port) match {
+      case None => IO.raiseError(new IllegalArgumentException(s"Invalid port number $port"))
+      case Some(p) =>
+        EmberServerBuilder.default[IO]
+          .withPort(p)
+          .withHost(Host.fromString(selectedInterface).get) // fixme
+          .withHttpApp(mockRouter)
+          .withShutdownTimeout(1.seconds) // The time to wait for a graceful shutdown
+          .build
+          .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
+    }
 
   private def bestInterface(): String =
     NetworkInterface.getNetworkInterfaces.asScala
