@@ -19,7 +19,7 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          expectedWithResolvedPlaceholders <- expected.traverse {
+          expectedWithResolvedPlaceholders <- expected.toList.traverse {
             case (name, value) =>
               sc.fillPlaceholders(value).map(v => (name, v))
           }
@@ -44,7 +44,7 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          elementsWithResolvedPlaceholders <- elements.traverse {
+          elementsWithResolvedPlaceholders <- elements.toList.traverse {
             case (name, value) =>
               sc.fillPlaceholders(value).map(v => (name, v))
           }
