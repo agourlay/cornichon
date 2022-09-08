@@ -33,34 +33,33 @@ class GraphQLSuperMicroService(sm: SuperMicroService) {
 
 object GraphQlSchema {
 
-  implicit val PublisherType = deriveObjectType[Unit, Publisher](
+  implicit val PublisherType: ObjectType[Unit, Publisher] = deriveObjectType[Unit, Publisher](
     ObjectTypeDescription("A comics publisher.")
   )
 
-  implicit val SuperHeroType = deriveObjectType[Unit, SuperHero](
+  implicit val SuperHeroType: ObjectType[Unit, SuperHero] = deriveObjectType[Unit, SuperHero](
     ObjectTypeDescription("A superhero.")
   )
 
-  implicit val PublisherInputType = deriveInputObjectType[Publisher](
+  implicit val PublisherInputType: InputObjectType[Publisher] = deriveInputObjectType[Publisher](
     InputObjectTypeName("PublisherInput")
   )
 
-  implicit val SuperHeroInputType = deriveInputObjectType[SuperHero](
+  implicit val SuperHeroInputType: InputObjectType[SuperHero] = deriveInputObjectType[SuperHero](
     InputObjectTypeName("SuperHeroInput")
   )
 
-  val QueryType = deriveObjectType[Unit, GraphQLSuperMicroService](
+  val QueryType: ObjectType[Unit, GraphQLSuperMicroService] = deriveObjectType[Unit, GraphQLSuperMicroService](
     ObjectTypeName("Root"),
     ObjectTypeDescription("Gateway to awesomeness."),
     IncludeMethods("publisherByName", "superheroByName")
   )
 
-  val MutationType = deriveObjectType[Unit, GraphQLSuperMicroService](
+  val MutationType: ObjectType[Unit, GraphQLSuperMicroService] = deriveObjectType[Unit, GraphQLSuperMicroService](
     ObjectTypeName("RootMut"),
     ObjectTypeDescription("Gateway to mutation awesomeness!"),
     IncludeMethods("updateSuperhero")
   )
 
-  val SuperHeroesSchema = Schema(QueryType, Some(MutationType))
+  val SuperHeroesSchema: Schema[Unit, GraphQLSuperMicroService] = Schema(QueryType, Some(MutationType))
 }
-

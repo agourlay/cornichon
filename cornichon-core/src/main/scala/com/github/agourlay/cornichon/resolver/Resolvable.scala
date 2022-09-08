@@ -28,52 +28,52 @@ object Resolvable {
 
   def apply[A](implicit resolvable: Resolvable[A]): Resolvable[A] = resolvable
 
-  implicit val stringResolvable = new Resolvable[String] {
+  implicit val stringResolvable: Resolvable[String] = new Resolvable[String] {
     def toResolvableForm(s: String) = s
     def fromResolvableForm(s: String) = s
   }
 
-  implicit val booleanResolvable = new Resolvable[Boolean] {
+  implicit val booleanResolvable: Resolvable[Boolean] = new Resolvable[Boolean] {
     def toResolvableForm(b: Boolean) = b.toString
     def fromResolvableForm(b: String) = java.lang.Boolean.parseBoolean(b)
   }
 
-  implicit val intResolvable = new Resolvable[Int] {
+  implicit val intResolvable: Resolvable[Int] = new Resolvable[Int] {
     def toResolvableForm(i: Int) = i.toString
     def fromResolvableForm(i: String) = java.lang.Integer.parseInt(i)
   }
 
-  implicit val shortResolvable = new Resolvable[Short] {
+  implicit val shortResolvable: Resolvable[Short] = new Resolvable[Short] {
     def toResolvableForm(s: Short) = s.toString
     def fromResolvableForm(s: String) = java.lang.Short.parseShort(s)
   }
 
-  implicit val doubleResolvable = new Resolvable[Double] {
+  implicit val doubleResolvable: Resolvable[Double] = new Resolvable[Double] {
     def toResolvableForm(d: Double) = d.toString
     def fromResolvableForm(d: String) = java.lang.Double.parseDouble(d)
   }
 
-  implicit val floatResolvable = new Resolvable[Float] {
+  implicit val floatResolvable: Resolvable[Float] = new Resolvable[Float] {
     def toResolvableForm(f: Float) = f.toString
     def fromResolvableForm(f: String) = java.lang.Float.parseFloat(f)
   }
 
-  implicit val longResolvable = new Resolvable[Long] {
+  implicit val longResolvable: Resolvable[Long] = new Resolvable[Long] {
     def toResolvableForm(l: Long) = l.toString
     def fromResolvableForm(l: String) = java.lang.Long.parseLong(l)
   }
 
-  implicit val bigDecResolvable = new Resolvable[BigDecimal] {
+  implicit val bigDecResolvable: Resolvable[BigDecimal] = new Resolvable[BigDecimal] {
     def toResolvableForm(b: BigDecimal) = b.toString
     def fromResolvableForm(b: String) = BigDecimal(b)
   }
 
-  implicit val uuidResolvable = new Resolvable[UUID] {
+  implicit val uuidResolvable: Resolvable[UUID] = new Resolvable[UUID] {
     def toResolvableForm(u: UUID) = u.toString
     def fromResolvableForm(u: String) = UUID.fromString(u)
   }
 
-  implicit val jsonResolvable = new Resolvable[Json] {
+  implicit val jsonResolvable: Resolvable[Json] = new Resolvable[Json] {
     def toResolvableForm(j: Json) = j.spaces2
     def fromResolvableForm(j: String) = CornichonJson.parseDslJsonUnsafe(j)
   }

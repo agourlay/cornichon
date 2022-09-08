@@ -65,7 +65,7 @@ case object Done extends Done {
   val validDone = Valid(Done)
   val futureDone = Future.successful(Done)
   val ioDone = IO.pure(Done)
-  implicit val monoid = new Monoid[Done] {
+  implicit val monoid: Monoid[Done] = new Monoid[Done] {
     def empty: Done = Done
     def combine(x: Done, y: Done): Done = x
   }

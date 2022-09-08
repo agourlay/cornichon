@@ -104,15 +104,13 @@ case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: Fini
 
 object HttpStreamedRequest {
 
-  implicit val showStreamedRequest = new Show[HttpStreamedRequest] {
-    def show(r: HttpStreamedRequest): String = {
-      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"
-      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${printArrowPairs(r.headers)}"
+  implicit val showStreamedRequest: Show[HttpStreamedRequest] = (r: HttpStreamedRequest) => {
+    val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"
+    val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${printArrowPairs(r.headers)}"
 
-      s"""|${r.stream.name} request to ${r.url}
-          |$params
-          |$headers""".stripMargin
-    }
+    s"""|${r.stream.name} request to ${r.url}
+        |$params
+        |$headers""".stripMargin
   }
 
 }
