@@ -59,6 +59,15 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     assert(res.isSuccess)
   }
 
+  test("HeaderStepBuilder is (value from session)") {
+    val initialSession = Session.newEmpty.addValueUnsafe("header-value", "test")
+    val session = addHeaderToSession(initialSession)("test-key" -> "test")
+    val step = HeadersStepBuilder.is("test-key" -> "<header-value>")
+    val s = Scenario("scenario with HeaderSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
+    assert(res.isSuccess)
+  }
+
   test("HeaderStepBuilder contain") {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
     val step = HeadersStepBuilder.contain("test-key" -> "test")
@@ -70,6 +79,15 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
   test("HeaderStepBuilder contain (case-insensitive)") {
     val session = addHeaderToSession(Session.newEmpty)("test-Key" -> "test")
     val step = HeadersStepBuilder.contain("Test-key" -> "test")
+    val s = Scenario("scenario with HeaderSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
+    assert(res.isSuccess)
+  }
+
+  test("HeaderStepBuilder contain (value from session)") {
+    val initialSession = Session.newEmpty.addValueUnsafe("header-value", "test")
+    val session = addHeaderToSession(initialSession)("test-key" -> "test")
+    val step = HeadersStepBuilder.contain("test-key" -> "<header-value>")
     val s = Scenario("scenario with HeaderSteps", step :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
