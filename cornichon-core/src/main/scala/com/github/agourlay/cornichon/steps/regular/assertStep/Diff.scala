@@ -25,9 +25,13 @@ object Diff {
       """.stripMargin.trim
   )
 
-  implicit val stringDiff: Diff[String] = (left: String, right: String) => None
+  implicit val stringDiff: Diff[String] = new Diff[String] {
+    override def diff(left: String, right: String): Option[String] = None
+  }
 
-  implicit val booleanDiff: Diff[Boolean] = (left: Boolean, right: Boolean) => None
+  implicit val booleanDiff: Diff[Boolean] = new Diff[Boolean] {
+    override def diff(left: Boolean, right: Boolean): Option[String] = None
+  }
 
   def orderedCollectionDiff[A: Show](left: Seq[A], right: Seq[A]): String = {
     val added = right.diff(left).iterator
@@ -60,13 +64,21 @@ object Diff {
 
   implicit def immutableSetDiff[A: Show]: Diff[Set[A]] = (left: Set[A], right: Set[A]) => Some(notOrderedCollectionDiff(left, right))
 
-  implicit val intDiff: Diff[Int] = (left: Int, right: Int) => None
+  implicit val intDiff: Diff[Int] = new Diff[Int] {
+    override def diff(left: Int, right: Int): Option[String] = None
+  }
 
-  implicit val doubleDiff: Diff[Double] = (left: Double, right: Double) => None
+  implicit val doubleDiff: Diff[Double] = new Diff[Double] {
+    override def diff(left: Double, right: Double): Option[String] = None
+  }
 
-  implicit val longDiff: Diff[Long] = (left: Long, right: Long) => None
+  implicit val longDiff: Diff[Long] = new Diff[Long] {
+    override def diff(left: Long, right: Long): Option[String] = None
+  }
 
-  implicit val intFloat: Diff[Float] = (left: Float, right: Float) => None
+  implicit val intFloat: Diff[Float] = new Diff[Float] {
+    override def diff(left: Float, right: Float): Option[String] = None
+  }
 
 }
 
