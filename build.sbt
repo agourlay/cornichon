@@ -57,7 +57,7 @@ lazy val standardSettings = Seq(
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
   scalaVersion := "2.13.8",
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.16"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.17"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   Test / fork := true,
   scalacOptions ++= compilerOptions(scalaVersion.value),
@@ -71,8 +71,7 @@ lazy val standardSettings = Seq(
     browseUrl = url("https://github.com/agourlay/cornichon.git"),
     connection = "scm:git:git@github.com:agourlay/cornichon.git"
   )),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-  libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always" // scala-compiler:2.12.14 depends on scala-xml:1.0.6
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
 lazy val publishingSettings = Seq(
@@ -280,17 +279,17 @@ lazy val library =
       val cats          = "2.8.0"
       val catsEffect    = "3.3.14"
       val parboiled     = "2.4.0"
-      val scalaCheck    = "1.16.0"
+      val scalaCheck    = "1.17.0"
       val sangriaCirce  = "1.3.2"
-      val circe         = "0.14.2"
+      val circe         = "0.14.3"
       val diffson       = "4.1.1"
       val sangria       = "3.2.0"
       val fansi         = "0.4.0"
       val pureConfig    = "0.17.1"
       val sbtTest       = "1.0"
-      val http4s        = "0.23.15"
+      val http4s        = "0.23.16"
       val http4sBlaze   = "0.23.12"
-      val fs2           = "3.2.14"
+      val fs2           = "3.3.0"
       val embeddedKafka = "3.2.1"
       val kafkaClient   = "3.2.1"
       val caffeine      = "3.1.1"
