@@ -71,8 +71,7 @@ lazy val standardSettings = Seq(
     browseUrl = url("https://github.com/agourlay/cornichon.git"),
     connection = "scm:git:git@github.com:agourlay/cornichon.git"
   )),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-  libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always" // scala-compiler:2.12.14 depends on scala-xml:1.0.6
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
 lazy val publishingSettings = Seq(
