@@ -354,7 +354,8 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
            |{ "myKey" : *any-integer*, "myKeyOther" : *any-string* }
            |
            |with error(s):
-           |evaluation of matcher 'any-string' (checks if the field is a String) failed for input '{
+           |evaluation of matcher 'any-string' (checks if the field is a String) failed
+           |for path $.myKeyOther with value '{
            |  "myKey" : 1
            |}'
            |caused by:
