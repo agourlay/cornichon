@@ -99,6 +99,11 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
   def save_body(target: String): Step = HttpDsl.save_body(target)
 
+  /**
+   * Save part of the body into the session
+   * @param args variadic tuples with (jsonPath, targetSessionKey)
+   * @return a Step
+   */
   def save_body_path(args: (String, String)*): Step =
     save_many_from_session_json(lastResponseBodyKey) {
       args.map {

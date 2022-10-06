@@ -126,6 +126,12 @@ trait CoreDsl {
     effect = sc => IO.delay(sc.session).delayBy(duration)
   )
 
+  /**
+   * Save value into session
+   * @param input tuple (sessionKey, value)
+   * @param show whether to show this step in the debug output
+   * @return a Step
+   */
   def save(input: (String, String), show: Boolean = true): Step = {
     val (key, value) = input
     EffectStep.fromSyncE(
