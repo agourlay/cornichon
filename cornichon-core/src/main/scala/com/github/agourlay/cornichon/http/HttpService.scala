@@ -38,7 +38,7 @@ class HttpService(
       case Some(Right(resolvedBody)) => parseDslJson(resolvedBody).map(Some.apply)
     }
 
-  private def resolveRequestParts[A: Show: Resolvable: Encoder](
+  private[http] def resolveRequestParts[A: Show: Resolvable: Encoder](
     url: String,
     body: Option[A],
     params: Seq[(String, String)],
@@ -49,12 +49,13 @@ class HttpService(
       urlResolved <- scenarioContext.fillPlaceholders(url)
       completeUrlResolved = withBaseUrl(urlResolved)
       urlParams <- client.paramsFromUrl(completeUrlResolved)
+      completeUrlResolvedNoParams = completeUrlResolved.split('?').head
       explicitParams <- scenarioContext.fillPlaceholders(params)
       allParams = urlParams ++ explicitParams
       extractedWithHeaders <- extractWithHeadersSession(scenarioContext.session)
       allHeaders = headers ++ ignoreHeadersSelection(extractedWithHeaders, ignoreFromWithHeaders)
       headersResolved <- scenarioContext.fillPlaceholders(allHeaders)
-    } yield (completeUrlResolved, jsonBodyResolved, allParams, headersResolved)
+    } yield (completeUrlResolvedNoParams, jsonBodyResolved, allParams, headersResolved)
 
   private def runRequest[A: Show: Resolvable: Encoder](
     r: HttpRequest[A],
