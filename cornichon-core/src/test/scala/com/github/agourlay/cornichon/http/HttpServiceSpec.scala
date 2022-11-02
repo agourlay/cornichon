@@ -50,7 +50,7 @@ class HttpServiceSpec extends FunSuite {
         assert(completeUrlResolvedNoParams == "http://base-url/a/b")
         assert(jsonBodyResolved.isEmpty)
         assert(headersResolved == Nil)
-        assert(allParams == Seq("p1" -> "v1", "p2" -> "v2"))
+        assert(allParams.toSet == Set("p1" -> "v1", "p2" -> "v2"))
     }
   }
 
@@ -61,7 +61,7 @@ class HttpServiceSpec extends FunSuite {
         assert(completeUrlResolvedNoParams == "http://base-url/a/b")
         assert(jsonBodyResolved.isEmpty)
         assert(headersResolved == Nil)
-        assert(allParams == Seq("p1" -> "v1", "p2" -> "v2", "p3" -> "v3", "p4" -> "v4"))
+        assert(allParams.toSet == Set("p1" -> "v1", "p2" -> "v2", "p3" -> "v3", "p4" -> "v4"))
     }
   }
 }
