@@ -57,7 +57,7 @@ case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: I
             }
           }
       }.handleError {
-        case NonFatal(e) =>
+        case e if NonFatal(e) =>
           val failedStep = FailedStep.fromSingle(this, RepeatConcurrentlyError(e))
           (runState.recordLog(failedTitleLog(initialDepth)), failedStep.asLeft)
       }

@@ -53,7 +53,7 @@ case class ConcurrentlyStep(nested: List[Step], maxTime: FiniteDuration) extends
             }
           }
       }.handleError {
-        case NonFatal(e) =>
+        case e if NonFatal(e) =>
           val failedStep = FailedStep.fromSingle(this, ConcurrentlyError(e))
           (runState.recordLog(failedTitleLog(initialDepth)), Left(failedStep))
       }

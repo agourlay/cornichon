@@ -22,7 +22,7 @@ class CornichonSbtRunner(val args: Array[String], val remoteArgs: Array[String])
     val explicitSeed = try {
       seeds.headOption.map(_.split(seedArg)(1).toLong) //YOLO
     } catch {
-      case NonFatal(e) =>
+      case e if NonFatal(e) =>
         println(s"Could not parse seed from args ${args.toList}")
         println(CornichonError.genStacktrace(e))
         None

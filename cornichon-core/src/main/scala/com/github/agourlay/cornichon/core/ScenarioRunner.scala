@@ -120,7 +120,7 @@ object ScenarioRunner {
     }
 
     stepResult
-      .handleError { case NonFatal(ex) => (runState, FailedStep.fromSingle(currentStep, StepExecutionError(ex))).asLeft[(RunState, Done)] }
+      .handleError { case ex if NonFatal(ex) => (runState, FailedStep.fromSingle(currentStep, StepExecutionError(ex))).asLeft[(RunState, Done)] }
       .map(res => (res.toValidatedNel <* failureOrDoneWithRunState.toValidated).toEither) // if current step is successful, it is propagated
   }
 
@@ -137,6 +137,6 @@ object ScenarioRunner {
       .catchNonFatal(step.runStep(runState))
       .fold(
         e => IO.pure(handleThrowable(step, runState, e)),
-        _.handleError { case NonFatal(t) => handleThrowable(step, runState, t) }
+        _.handleError { case t if NonFatal(t) => handleThrowable(step, runState, t) }
       )
 }
