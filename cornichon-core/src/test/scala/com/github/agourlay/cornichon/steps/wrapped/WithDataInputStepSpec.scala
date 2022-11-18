@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
+import io.circe.{ Json, parser }
 import munit.FunSuite
 
 class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
@@ -127,6 +128,54 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
     val withDataInputStep = WithDataInputStep(nested, inputs)
     val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty.addValueUnsafe("other", "customers"))(s))
+    assert(res.isSuccess)
+  }
+
+  test("convert json to strings if rawJson=false") {
+    val strConversionStep = AssertStep(
+      "string conversion",
+      sc => {
+        val s = sc.session
+        GenericEqualityAssertion(s.getUnsafe("str"), s.getUnsafe("json"))
+      }
+    ) :: Nil
+    val inputs =
+      """
+        | json   | str     |
+        | null   | ""      |
+        | 123    | "123"   |
+        | "test" | "test"  |
+        | [1, 2] | "[1,2]" |
+        """
+
+    val withDataInputStep = WithDataInputStep(strConversionStep, inputs)
+    val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+  }
+
+  test("save raw json if rawJson=true") {
+    val strConversionStep = AssertStep(
+      "raw json data equality",
+      sc => {
+        val s = sc.session
+        val str: String = parser.parse(s.getUnsafe("str")).fold[String](ex => throw ex, _.asString.get)
+        GenericEqualityAssertion(str, s.getUnsafe("json"))
+      }
+    ) :: Nil
+
+    val inputs =
+      """
+        | json   | str        |
+        | null   | "null"     |
+        | 123    | "123"      |
+        | "test" | "\"test\"" |
+        | [1, 2] | "[1,2]"    |
+        """
+
+    val withDataInputStep = WithDataInputStep(strConversionStep, inputs, rawJson = true)
+    val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
   }
 }

@@ -121,6 +121,11 @@ trait CoreDsl {
       WithDataInputStep(steps, where)
     }
 
+  def WithJsonDataInputs(where: String): BodyElementCollector[Step, Step] =
+    BodyElementCollector[Step, Step] { steps =>
+      WithDataInputStep(steps, where, rawJson = true)
+    }
+
   def wait(duration: FiniteDuration): Step = EffectStep.fromAsync(
     title = s"wait for ${duration.toMillis} millis",
     effect = sc => IO.delay(sc.session).delayBy(duration)
