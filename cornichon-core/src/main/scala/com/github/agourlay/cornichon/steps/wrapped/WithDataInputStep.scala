@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.core.ScenarioRunner._
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.util.Printing._
 
-case class WithDataInputStep(nested: List[Step], where: String) extends WrapperStep {
+case class WithDataInputStep(nested: List[Step], where: String, rawJson: Boolean = false) extends WrapperStep {
 
   val title = s"With data input block $where"
 
@@ -41,7 +41,7 @@ case class WithDataInputStep(nested: List[Step], where: String) extends WrapperS
         t => IO.pure(handleErrors(this, runState, NonEmptyList.one(t))),
         parsedTable => {
           val inputs = parsedTable.map { line =>
-            line.toList.map { case (key, json) => (key, CornichonJson.jsonStringValue(json)) }
+            line.toList.map { case (key, json) => (key, if (rawJson) json.noSpacesSortKeys else CornichonJson.jsonStringValue(json)) }
           }
 
           runInputs(inputs, runState.nestedContext)
