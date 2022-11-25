@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import scala.collection.immutable.StringOps
+import scala.collection.mutable
 import scala.concurrent.duration.Duration
 
 sealed trait LogInstruction {
@@ -37,7 +38,7 @@ object LogInstruction {
   val physicalMargin: StringOps = "   "
 
   def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String =
-    logs.foldLeft(new StringBuilder()) { (b, l) =>
+    logs.foldLeft(new mutable.StringBuilder()) { (b, l) =>
       l match {
         case NoShowLogInstruction(_, _, _) => b
         case l: LogInstruction             => b.append("\n").append(if (colorized) l.colorized else l.completeMessage)

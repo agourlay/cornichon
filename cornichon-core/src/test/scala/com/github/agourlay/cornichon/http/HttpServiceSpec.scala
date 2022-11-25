@@ -12,7 +12,7 @@ class HttpServiceSpec extends FunSuite {
 
   private val dummyRequest = HttpRequest[String](GET, "http://a/b", Some("a test request body"), Nil, Nil)
   implicit val scheduler: IORuntime = cats.effect.unsafe.implicits.global
-  private val client = new Http4sClient(true, true, true);
+  private val client = new Http4sClient(true, true, true)
   private val httpService = new HttpService("http://base-url/", 10.seconds, client, new Config())
 
   test("fillInSessionWithResponse extracts content with NoOpExtraction") {
