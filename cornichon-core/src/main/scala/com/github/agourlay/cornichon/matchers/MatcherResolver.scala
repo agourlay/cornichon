@@ -56,7 +56,6 @@ object MatcherResolver {
     else {
       val matcherKeys = matchers.iterator.map(_.fullKey).toSet
       val pathAssertions = CornichonJson.findAllPathWithValue(matcherKeys, expected)
-        .iterator
         .map {
           case (matcherKey, jsonPath) =>
             // find corresponding matcher for the tuple
@@ -66,7 +65,6 @@ object MatcherResolver {
             }
             MatcherAssertion(negate, matcher, actual, jsonPath)
         }
-        .toList
 
       val jsonPathToIgnore = pathAssertions.map(_.jsonPath)
       val newExpected = CornichonJson.removeFieldsByPath(expected, jsonPathToIgnore)
