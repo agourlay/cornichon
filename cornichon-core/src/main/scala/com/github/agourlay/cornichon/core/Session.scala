@@ -30,8 +30,9 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       case None =>
         KeyNotFoundInSession(key, this).asLeft
       case Some(values) =>
-        val index = stackingIndex.getOrElse(values.size - 1)
-        if (values.size < index)
+        val valueCount = values.length
+        val index = stackingIndex.getOrElse(valueCount - 1)
+        if (valueCount < index)
           IndexNotFoundForKey(key, index, values).asLeft
         else
           values(index).asRight
