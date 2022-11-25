@@ -16,11 +16,17 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
   def run(superSet: Json): Option[Json] = {
     val (allCursors, projectionMode) = cursors(superSet)
-    allCursors.traverse(c => c.focus) match {
-      case Some(focused) if projectionMode => Json.fromValues(focused).some
-      case Some(focused)                   => focused.headOption
-      case None if projectionMode          => Json.fromValues(Nil).some // this choice could be discussed
-      case _                               => None
+    allCursors match {
+      case head :: Nil if !projectionMode =>
+        // fast path for single cursor without projection
+        head.focus
+      case _ =>
+        allCursors.traverse(c => c.focus) match {
+          case Some(focused) if projectionMode => Json.fromValues(focused).some
+          case Some(focused)                   => focused.headOption
+          case None if projectionMode          => Json.fromValues(Nil).some // this choice could be discussed
+          case _                               => None
+        }
     }
   }
 
