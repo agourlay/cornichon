@@ -15,9 +15,9 @@ class CornichonJsonBench {
 
   /*
   [info] Benchmark                                     Mode  Cnt          Score        Error  Units
-  [info] CornichonJsonBench.parseDslStringJsonArray   thrpt   10    3789623,689 ±  18608,502  ops/s
-  [info] CornichonJsonBench.parseDslStringJsonString  thrpt   10  110534818,941 ± 788300,991  ops/s
-  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10     125283,927 ±   1468,178  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonArray   thrpt   10    4722289.135 ±  19887.492  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonString  thrpt   10  370379006.290 ± 696433.299  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10     161969.138 ±    622.116  ops/s
    */
 
   @Benchmark

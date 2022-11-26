@@ -27,12 +27,12 @@ class CheckStepBench {
   var transitionNumber: String = ""
 
   /*
-[info] Benchmark                (transitionNumber)   Mode  Cnt      Score     Error  Units
-[info] CheckStepBench.runModel                  10  thrpt   10  24373,402 ±    76,062  ops/s
-[info] CheckStepBench.runModel                  20  thrpt   10  17233,994 ±    86,985  ops/s
-[info] CheckStepBench.runModel                  50  thrpt   10   8127,272 ±    24,738  ops/s
-[info] CheckStepBench.runModel                 100  thrpt   10   4297,297 ±    25,334  ops/s
-[info] CheckStepBench.runModel                 200  thrpt   10   2275,879 ±     7,023  ops/s
+[info] Benchmark                (transitionNumber)   Mode  Cnt      Score       Error  Units
+[info] CheckStepBench.runModel                  10  thrpt   10  37030.557 ±   568.813  ops/s
+[info] CheckStepBench.runModel                  20  thrpt   10  24614.253 ±   176.178  ops/s
+[info] CheckStepBench.runModel                  50  thrpt   10  11962.518 ±   330.872  ops/s
+[info] CheckStepBench.runModel                 100  thrpt   10   4408.554 ±  3011.852  ops/s
+[info] CheckStepBench.runModel                 200  thrpt   10   2309.124 ±   763.173  ops/s
   */
 
   @Benchmark
