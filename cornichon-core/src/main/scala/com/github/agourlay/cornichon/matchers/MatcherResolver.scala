@@ -45,7 +45,7 @@ object MatcherResolver {
 
   // Add quotes around known matchers
   def quoteMatchers(input: String, matchersToQuote: List[Matcher]): String =
-    matchersToQuote.distinct.foldLeft(input) {
+    matchersToQuote.iterator.distinct.foldLeft(input) {
       case (input, m) => StringUtils.replace_all(input, m.fullKey, m.quotedFullKey)
     }
 
