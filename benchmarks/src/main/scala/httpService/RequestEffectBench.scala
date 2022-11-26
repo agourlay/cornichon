@@ -22,8 +22,8 @@ class RequestEffectBench {
   //sbt:benchmarks> jmh:run .*RequestEffect.*
 
   /*
-[info] Benchmark                          Mode  Cnt        Score        Error  Units
-[info] RequestEffectBench.singleRequest  thrpt   10    78910.415 ±   3431.953  ops/s
+[info] Benchmark                          Mode  Cnt        Score      Error  Units
+[info] RequestEffectBench.singleRequest  thrpt   10    88365.217 ± 2134.601  ops/s
 */
 
   @Benchmark
