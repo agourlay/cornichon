@@ -19,4 +19,11 @@ class StringsUtilsProperties extends Properties("StringsUtil") {
     forAll(Gen.alphaStr.filter(_.trim.nonEmpty)) { s =>
       StringUtils.levenshtein(s, s.tail) == 1
     }
+
+  property("replace_all replaces values in a String") =
+    forAll(Gen.alphaStr, Gen.alphaStr) { (ph, value) =>
+      val content = s"This project is <$ph> and <$ph>"
+      val result = StringUtils.replace_all(content, s"<$ph>", value)
+      result == s"This project is $value and $value"
+    }
 }

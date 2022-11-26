@@ -5,7 +5,7 @@ import cats.syntax.traverse._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.matchers.Matchers._
-import com.github.agourlay.cornichon.util.Caching
+import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
 import io.circe.Json
 
 object MatcherResolver {
@@ -46,7 +46,7 @@ object MatcherResolver {
   // Add quotes around known matchers
   def quoteMatchers(input: String, matchersToQuote: List[Matcher]): String =
     matchersToQuote.distinct.foldLeft(input) {
-      case (i, m) => m.pattern.matcher(i).replaceAll(m.quotedFullKey)
+      case (input, m) => StringUtils.replace_all(input, m.fullKey, m.quotedFullKey)
     }
 
   // Removes JSON fields targeted by matchers and builds corresponding matchers assertions

@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.matchers
 
 import java.time.format.DateTimeFormatter
 import java.util.UUID
-import java.util.regex.Pattern
 
 import io.circe.Json
 
@@ -11,7 +10,6 @@ import scala.util.Try
 case class Matcher(key: String, description: String, predicate: Json => Boolean) {
   val fullKey = s"*$key*"
   val quotedFullKey = s""""$fullKey""""
-  val pattern = Pattern.compile(Pattern.quote(fullKey))
 }
 
 object Matchers {

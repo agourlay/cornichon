@@ -51,7 +51,6 @@ object PlaceholderParser {
 
 case class Placeholder(key: String, index: Option[Int]) {
   val fullKey = index.fold(s"<$key>") { index => s"<$key[$index]>" }
-  lazy val pattern = Pattern.compile(Pattern.quote(fullKey))
 }
 
 case class PlaceholderError(input: String, error: Throwable) extends CornichonError {

@@ -1,13 +1,11 @@
 package com.github.agourlay.cornichon.resolver
 
 import java.util.concurrent.atomic.AtomicLong
-import java.util.regex.Matcher
-
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
-import com.github.agourlay.cornichon.util.Caching
+import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
 
 object PlaceholderResolver {
 
@@ -68,7 +66,7 @@ object PlaceholderResolver {
         for {
           acc <- accE
           resolvedValue <- resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
-        } yield ph.pattern.matcher(acc).replaceAll(Matcher.quoteReplacement(resolvedValue))
+        } yield StringUtils.replace_all(acc, ph.fullKey, resolvedValue)
       }
     }
 

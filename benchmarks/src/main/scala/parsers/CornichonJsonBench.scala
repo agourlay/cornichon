@@ -9,7 +9,7 @@ import org.openjdk.jmh.annotations.{ Benchmark, BenchmarkMode, Fork, Measurement
 @Measurement(iterations = 10)
 @Fork(value = 1, jvmArgsAppend = Array(
   "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=filename=./CornichonJSonBench-profiling-data.jfr,name=profile,settings=profile",
+  "-XX:StartFlightRecording=filename=./CornichonJsonBench-profiling-data.jfr,name=profile,settings=profile",
   "-Xmx1G"))
 class CornichonJsonBench {
 
