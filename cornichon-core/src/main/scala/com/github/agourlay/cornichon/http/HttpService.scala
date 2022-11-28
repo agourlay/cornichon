@@ -212,17 +212,18 @@ object HttpService {
     }
 
   def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor, requestDescription: String)(response: HttpResponse): Either[CornichonError, Session] = {
-    val additionalExtractions = extractor match {
+    val additionalExtraction = extractor match {
       case NoOpExtraction =>
-        rightNil
+        rightNone
       case RootExtractor(targetKey) =>
-        Right((targetKey -> response.body) :: Nil)
+        Right(Some(targetKey -> response.body))
       case PathExtractor(path, targetKey) =>
         JsonPath.runStrict(path, response.body)
-          .map(extractedJson => (targetKey -> jsonStringValue(extractedJson)) :: Nil)
+          .map(extractedJson => Some(targetKey -> jsonStringValue(extractedJson)))
     }
-    additionalExtractions.flatMap { extra =>
-      val allElementsToAdd = commonSessionExtractions(response, requestDescription) ++ extra
+    additionalExtraction.flatMap { extra =>
+      val common = commonSessionExtractions(response, requestDescription)
+      val allElementsToAdd = extra.fold(common)(e => e +: common)
       session.addValues(allElementsToAdd: _*)
     }
   }
@@ -232,7 +233,7 @@ object HttpService {
       .flatMap(fillInSessionWithResponse(session, extractor, requestDescription))
 
   private def commonSessionExtractions(response: HttpResponse, requestDescription: String): List[(String, String)] =
-    (lastResponseStatusKey -> response.status.toString) ::
+    (lastResponseStatusKey -> Integer.toString(response.status)) ::
       (lastResponseBodyKey -> response.body) ::
       (lastResponseHeadersKey -> encodeSessionHeaders(response.headers)) ::
       (lastResponseRequestKey -> requestDescription) :: Nil
