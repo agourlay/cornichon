@@ -113,7 +113,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
     val input =
       """
           |{
-          |"2LettersName" : false,
+          | "2LettersName" : false,
           | "Age": 50,
           | "Name": "John"
           |}
@@ -126,7 +126,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
     val input =
       """
           |{
-          |"2LettersName" : false,
+          | "2LettersName" : false,
           | "Age": 50,
           | "Name": "John"
           |}
@@ -139,7 +139,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
     val input =
       """
           |{
-          |"2LettersName" : false,
+          | "2LettersName" : false,
           | "Age": 50,
           | "Name": "John"
           |}

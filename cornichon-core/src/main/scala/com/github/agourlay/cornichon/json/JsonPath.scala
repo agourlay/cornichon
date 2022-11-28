@@ -80,9 +80,10 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
   def removeFromJson(input: Json): Json =
     cursors(input)._1.foldLeft(input) { (j, c) =>
-      c.focus match {
-        case None    => j // path does not exist in input
-        case Some(_) => c.delete.top.getOrElse(Json.Null) //drop path and back to top
+      if (c.succeeded) {
+        c.delete.top.getOrElse(Json.Null) // drop path and back to top
+      } else {
+        j // path does not exist in input
       }
     }
 

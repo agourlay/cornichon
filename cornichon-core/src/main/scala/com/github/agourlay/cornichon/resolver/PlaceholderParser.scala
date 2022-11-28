@@ -1,7 +1,5 @@
 package com.github.agourlay.cornichon.resolver
 
-import java.util.regex.Pattern
-
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.resolver.PlaceholderParser._
 import org.parboiled2._
