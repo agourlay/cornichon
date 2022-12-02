@@ -45,7 +45,8 @@ object MatcherResolver {
 
   // Add quotes around known matchers
   def quoteMatchers(input: String, matchersToQuote: List[Matcher]): String =
-    matchersToQuote.iterator.distinct.foldLeft(input) {
+    // can't use an Iterator with distinct because of Scala 2.12 :s
+    matchersToQuote.distinct.foldLeft(input) {
       case (input, m) => StringUtils.replace_all(input, m.fullKey, m.quotedFullKey)
     }
 
