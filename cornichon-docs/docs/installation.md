@@ -14,14 +14,14 @@ The library is compatible with [SBT](https://www.scala-sbt.org/) and [Mill](http
 
 ``` scala
 // SBT
-libraryDependencies += "com.github.agourlay" %% "cornichon-test-framework" % "0.20.4" % Test
+libraryDependencies += "com.github.agourlay" %% "cornichon-test-framework" % "0.20.5" % Test
 testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework")
 ```
 
 ```scala
 // Mill
 object test extends Tests {
-  def ivyDeps = Agg(ivy"com.github.agourlay::cornichon-test-framework:0.20.4")
+  def ivyDeps = Agg(ivy"com.github.agourlay::cornichon-test-framework:0.20.5")
   def testFrameworks = Seq("com.github.agourlay.cornichon.framework.CornichonFramework")
 }
 ```
