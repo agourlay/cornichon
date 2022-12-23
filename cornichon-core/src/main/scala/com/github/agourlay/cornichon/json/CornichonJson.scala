@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.json
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-import cats.syntax.traverse._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
 import com.github.agourlay.cornichon.dsl.DataTableParser
 import diffson._
@@ -17,8 +16,8 @@ import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
 import sangria.marshalling.circe._
-
 import scala.annotation.switch
+import scala.collection.mutable.ListBuffer
 import scala.util.{ Failure, Success, Try }
 
 trait CornichonJson {
@@ -66,10 +65,28 @@ trait CornichonJson {
     s.find { ch => ch != ' ' && ch != '\t' && !ch.isWhitespace }
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
-    def parseCol(col: (String, String)) = parseString(col._2).map(col._1 -> _)
-    def parseRow(row: Map[String, String]) = row.toList.traverse(parseCol) map JsonObject.fromIterable
+    def parseRow(rawRow: Map[String, String]): Either[MalformedJsonError[String], JsonObject] = {
+      val cells = Map.newBuilder[String, Json]
+      rawRow.foreach {
+        case (name, rawValue) =>
+          parseString(rawValue) match {
+            case Right(json) => cells += (name -> json)
+            case Left(e)     => return Left(e)
+          }
+      }
+      JsonObject.fromMap(cells.result()).asRight
+    }
 
-    parseDataTableRaw(table).flatMap(_.traverse(parseRow))
+    parseDataTableRaw(table).flatMap { rawRows =>
+      val rows = new ListBuffer[JsonObject]()
+      rawRows.foreach { rawRow =>
+        parseRow(rawRow) match {
+          case Right(r) => rows += r
+          case Left(e)  => return Left(e)
+        }
+      }
+      rows.toList.asRight
+    }
   }
 
   def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
