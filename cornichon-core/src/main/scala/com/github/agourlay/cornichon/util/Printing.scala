@@ -4,8 +4,25 @@ import cats.Show
 import cats.syntax.show._
 
 object Printing {
-  def printArrowPairs(params: Seq[(String, String)]): String =
-    params.iterator.map { case (name, value) => s"'$name' -> '$value'" }.mkString(", ")
+  def printArrowPairs(params: Seq[(String, String)]): String = {
+    val len = params.length
+    if (len == 0) {
+      return ""
+    }
+    // custom mkString for performance
+    val builder = new StringBuilder(len * 16)
+    var i = 0
+    params.foreach {
+      case (name, value) =>
+        if (i < len - 1) {
+          builder.append(s"'$name' -> '$value', ")
+        } else {
+          builder.append(s"'$name' -> '$value'")
+        }
+        i += 1
+    }
+    builder.result()
+  }
 
   implicit def showIterable[A: Show]: Show[Iterable[A]] = Show.show { fa =>
     fa.iterator.map(_.show).mkString("(", ", ", ")")

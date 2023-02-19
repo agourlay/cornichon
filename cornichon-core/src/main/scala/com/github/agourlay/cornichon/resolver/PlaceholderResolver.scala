@@ -5,6 +5,7 @@ import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
+import com.github.agourlay.cornichon.resolver.PlaceholderParser.noPlaceholders
 import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
 
 object PlaceholderResolver {
@@ -31,7 +32,12 @@ object PlaceholderResolver {
     builtInPlaceholderGenerators.groupBy(_.key).map { case (k, values) => (k, values.head) } // we know it is not empty
 
   def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
-    placeholdersCache.get(input, k => PlaceholderParser.parse(k))
+    if (!input.contains("<")) {
+      // don't fill cache with useless entries
+      noPlaceholders
+    } else {
+      placeholdersCache.get(input, k => PlaceholderParser.parse(k))
+    }
 
   private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =
     placeholderGeneratorsByLabel.get(ph.key) match {
@@ -62,7 +68,8 @@ object PlaceholderResolver {
 
   def fillPlaceholders(input: String)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean = false): Either[CornichonError, String] =
     findPlaceholders(input).flatMap {
-      _.foldLeft(input.asRight[CornichonError]) { (accE, ph) =>
+      case Nil => input.asRight[CornichonError]
+      case list => list.foldLeft(input.asRight[CornichonError]) { (accE, ph) =>
         for {
           acc <- accE
           resolvedValue <- resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)

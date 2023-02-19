@@ -7,7 +7,7 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
-import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
+import com.github.agourlay.cornichon.util.StringUtils
 
 import scala.collection.immutable.HashMap
 
@@ -64,26 +64,19 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       value <- values.lift(index).toRight(KeyWithoutPreviousValue(key, this))
     } yield value
 
-  // Not returning the same key wrapped to avoid allocations
-  private def validateKey(key: String): Either[CornichonError, Done] =
-    knownKeysCache.get(key, key => {
-      val trimmedKey = key.trim
-      if (trimmedKey.isEmpty)
-        EmptyKey.asLeft
-      else if (Session.notAllowedInKey.exists(forbidden => key.contains(forbidden)))
-        IllegalKey(key).asLeft
-      else
-        Done.rightDone
-    })
-
   private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
     c1.get(key) match {
       case None         => c1.updated(key, Vector(value))
-      case Some(values) => (c1 - key).updated(key, values :+ value)
+      case Some(values) => c1.updated(key, values :+ value)
     }
 
   def addValue(key: String, value: String): Either[CornichonError, Session] =
-    validateKey(key).map(_ => Session(updateContent(content)(key, value)))
+    if (key.isBlank)
+      EmptyKey.asLeft
+    else if (Session.notAllowedInKey.exists(forbidden => key.contains(forbidden)))
+      IllegalKey(key).asLeft
+    else
+      Session(updateContent(content)(key, value)).asRight
 
   def addValueUnsafe(key: String, value: String): Session =
     addValue(key, value).valueUnsafe
@@ -125,8 +118,6 @@ object Session {
   val newEmpty: Session = Session(HashMap.empty)
 
   val notAllowedInKey: String = "\r\n<>/ []"
-
-  private val knownKeysCache = Caching.buildCache[String, Either[CornichonError, Done]]()
 
   implicit val monoidSession: Monoid[Session] = new Monoid[Session] {
     def empty: Session = newEmpty

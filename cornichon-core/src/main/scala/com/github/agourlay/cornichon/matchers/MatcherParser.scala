@@ -25,7 +25,7 @@ class MatcherParser(val input: ParserInput) extends Parser {
 
 object MatcherParser {
   val notAllowedInMatchers = "\r\n<>* "
-  private val noMatchers = Right(Nil)
+  val noMatchers = Right(Nil)
   private val allowedCharsInMatcher: CharPredicate = CharPredicate.Visible -- MatcherParser.notAllowedInMatchers
 
   def parse(input: String): Either[CornichonError, List[MatcherKey]] =

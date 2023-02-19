@@ -27,7 +27,7 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 
 object PlaceholderParser {
 
-  private val noPlaceholders = Right(Nil)
+  val noPlaceholders = Right(Nil)
   private val allowedCharsInPlaceholdersPredicate: CharPredicate = CharPredicate.Visible -- Session.notAllowedInKey
 
   def parse(input: String): Either[CornichonError, List[Placeholder]] =

@@ -222,9 +222,13 @@ object HttpService {
           .map(extractedJson => Some(targetKey -> jsonStringValue(extractedJson)))
     }
     additionalExtraction.flatMap { extra =>
-      val common = commonSessionExtractions(response, requestDescription)
-      val allElementsToAdd = extra.fold(common)(e => e +: common)
-      session.addValues(allElementsToAdd: _*)
+      for {
+        session <- session.addValue(lastResponseStatusKey, statusToString(response.status))
+        session <- session.addValue(lastResponseBodyKey, response.body)
+        session <- session.addValue(lastResponseHeadersKey, encodeSessionHeaders(response.headers))
+        session <- session.addValue(lastResponseRequestKey, requestDescription)
+        session <- extra.fold(session.asRight[CornichonError])(e => session.addValue(e._1, e._2))
+      } yield session
     }
   }
 
@@ -232,9 +236,17 @@ object HttpService {
     expectStatusCode(resp, expectedStatus, requestDescription)
       .flatMap(fillInSessionWithResponse(session, extractor, requestDescription))
 
-  private def commonSessionExtractions(response: HttpResponse, requestDescription: String): List[(String, String)] =
-    (lastResponseStatusKey -> Integer.toString(response.status)) ::
-      (lastResponseBodyKey -> response.body) ::
-      (lastResponseHeadersKey -> encodeSessionHeaders(response.headers)) ::
-      (lastResponseRequestKey -> requestDescription) :: Nil
+  // Avoid reallocating known strings
+  private def statusToString(status: Int): String =
+    status match {
+      case 200   => "200"
+      case 201   => "201"
+      case 400   => "400"
+      case 401   => "401"
+      case 404   => "404"
+      case 500   => "500"
+      case 502   => "502"
+      case 503   => "503"
+      case other => Integer.toString(other)
+    }
 }
