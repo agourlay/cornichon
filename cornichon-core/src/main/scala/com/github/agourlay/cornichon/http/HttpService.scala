@@ -18,7 +18,7 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpRequest._
 import com.github.agourlay.cornichon.util.Caching
 import io.circe.{ Encoder, Json }
-
+import org.http4s.EntityEncoder
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -146,6 +146,8 @@ case class ByNames(names: Seq[String]) extends HeaderSelection
 object HttpService {
   val rightNil = Right(Nil)
   val rightNone = Right(None)
+  // cache json encoder to avoid recreating it for each request
+  implicit val circeJsonEncoder: EntityEncoder[IO, Json] = jsonEncoder[IO]
   object SessionKeys {
     val lastResponseBodyKey = "last-response-body"
     val lastResponseStatusKey = "last-response-status"

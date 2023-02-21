@@ -23,7 +23,7 @@ class RequestEffectBench {
 
   /*
 [info] Benchmark                          Mode  Cnt        Score      Error  Units
-[info] RequestEffectBench.singleRequest  thrpt   10    86815.373 ± 1642.420  ops/s
+[info] RequestEffectBench.singleRequest  thrpt   10    94277.221 ± 2672.121  ops/s
 */
 
   @Benchmark
