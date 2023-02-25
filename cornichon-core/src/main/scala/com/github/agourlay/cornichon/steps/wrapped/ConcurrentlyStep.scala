@@ -37,10 +37,11 @@ case class ConcurrentlyStep(nested: List[Step], maxTime: FiniteDuration) extends
               val allRunStates = successStepsRun.map(_._1)
               //TODO all logs should be merged?
               // all runs were successful, we pick the first one for the logs
-              val firstStateLog = allRunStates.head.logStack
+              val firstState = allRunStates.head
+              val firstStateLog = firstState.logStack
               val wrappedLogStack = SuccessLogInstruction(s"Concurrently block succeeded", initialDepth, Some(executionTime)) +: firstStateLog :+ successTitleLog(initialDepth)
               // TODO merge all sessions together - require diffing Sessions or it produces a huge map full of duplicate as they all started from the same.
-              val updatedSession = allRunStates.head.session
+              val updatedSession = firstState.session
               // merge all cleanups steps
               val allCleanupSteps = allRunStates.foldMap(_.cleanupSteps)
               val successState = runState.withSession(updatedSession).recordLogStack(wrappedLogStack).registerCleanupSteps(allCleanupSteps)

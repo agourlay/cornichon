@@ -3,15 +3,14 @@ package com.github.agourlay.cornichon.json
 import cats.{ Order, Show }
 import cats.syntax.show._
 import cats.syntax.either._
-import cats.syntax.traverse._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done, ScenarioContext, SessionKey }
 import com.github.agourlay.cornichon.json.JsonAssertionErrors._
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.matchers.{ MatcherAssertion, MatcherResolver }
 import com.github.agourlay.cornichon.steps.regular.assertStep._
+import com.github.agourlay.cornichon.util.TraverseUtils.{ traverse, traverseIV }
 import io.circe.{ Decoder, Encoder, Json }
-
 import scala.util.matching.Regex
 
 object JsonSteps {
@@ -34,7 +33,7 @@ object JsonSteps {
         }, ignoredKeys),
       action = sc => Assertion.either {
         for {
-          ignoredPaths <- ignoredKeys.traverse(resolveAndParseJsonPath(_, sc))
+          ignoredPaths <- traverse(ignoredKeys)(resolveAndParseJsonPath(_, sc))
           jsonPathFocus <- resolveAndParseJsonPath(jsonPath, sc)
           v1 <- getParseFocusIgnore(k1, sc, ignoredPaths, jsonPathFocus)
           v2 <- getParseFocusIgnore(k2, sc, ignoredPaths, jsonPathFocus)
@@ -90,7 +89,7 @@ object JsonSteps {
           whitelistingValue(expected, actual).map(expectedWhitelistedValue => (expectedWhitelistedValue, actual))
         else if (ignoredKeys.nonEmpty)
           // remove ignore fields from the actual result
-          ignoredKeys.traverse(resolveAndParseJsonPath(_, sc))
+          traverse(ignoredKeys)(resolveAndParseJsonPath(_, sc))
             .map(ignoredPaths => (removeFieldsByPath(expected, ignoredPaths), removeFieldsByPath(actual, ignoredPaths)))
         else
           // nothing to prepare
@@ -251,7 +250,7 @@ object JsonSteps {
         title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
-            ignoredPaths <- ignoredKeys.traverse(resolveAndParseJsonPath(_, sc))
+            ignoredPaths <- traverse(ignoredKeys)(resolveAndParseJsonPath(_, sc))
             jsonPathFocus <- resolveAndParseJsonPath(jsonPath, sc)
             current <- sc.session.get(sessionKey)
             previous <- sc.session.getMandatoryPrevious(sessionKey.name)
@@ -384,7 +383,7 @@ object JsonSteps {
             sessionValue <- sc.session.get(sessionKey)
             jArr <- applyPathAndFindArray(jsonPath)(sc, sessionValue)
             actualValue <- removeIgnoredPathFromElements(sc, jArr)
-            resolvedJson <- expectedElements.toVector.traverse(resolveAndParseJson(_, sc))
+            resolvedJson <- traverseIV(expectedElements.iterator)(resolveAndParseJson(_, sc))
             containsAll = resolvedJson.forall(actualValue.contains)
           } yield CustomMessageEqualityAssertion(expected, containsAll, () => arrayContainsError(resolvedJson, jArr, expected))
         }
@@ -404,13 +403,13 @@ object JsonSteps {
             sessionValue <- sc.session.get(sessionKey)
             jArr <- applyPathAndFindArray(jsonPath)(sc, sessionValue)
             actualValue <- removeIgnoredPathFromElements(sc, jArr)
-            expectedResolvedJson <- expectedElements.toVector.traverse(resolveAndParseJson(_, sc))
+            expectedResolvedJson <- traverseIV(expectedElements.iterator)(resolveAndParseJson(_, sc))
           } yield CollectionsContainSameElements(expectedResolvedJson, actualValue)
         }
       )
 
     private def removeIgnoredPathFromElements(scenarioContext: ScenarioContext, jArray: Vector[Json]) =
-      ignoredEachKeys.traverse(resolveAndParseJsonPath(_, scenarioContext))
+      traverse(ignoredEachKeys)(resolveAndParseJsonPath(_, scenarioContext))
         .map(ignoredPaths => jArray.map(removeFieldsByPath(_, ignoredPaths)))
 
     private def applyPathAndFindArray(path: String)(scenarioContext: ScenarioContext, sessionValue: String): Either[CornichonError, Vector[Json]] =

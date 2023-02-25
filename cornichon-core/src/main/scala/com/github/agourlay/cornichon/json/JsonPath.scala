@@ -1,14 +1,13 @@
 package com.github.agourlay.cornichon.json
 
 import cats.Show
-import cats.syntax.traverse._
 import cats.syntax.either._
 import cats.syntax.option._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.Caching
+import com.github.agourlay.cornichon.util.TraverseUtils.traverseLO
 import io.circe.{ ACursor, Json }
-
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable.ListBuffer
 
@@ -21,7 +20,7 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
         // fast path for single cursor without projection
         head.focus
       case _ =>
-        allCursors.traverse(c => c.focus) match {
+        traverseLO(allCursors)(c => c.focus) match {
           case Some(focused) if projectionMode => Json.fromValues(focused).some
           case Some(focused)                   => focused.headOption
           case None if projectionMode          => Json.fromValues(Nil).some // this choice could be discussed

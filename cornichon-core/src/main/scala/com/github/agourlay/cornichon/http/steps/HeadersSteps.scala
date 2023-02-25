@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.http.steps
 
-import cats.syntax.traverse._
 import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 import com.github.agourlay.cornichon.util.Printing._
+import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 
 // The assertion are case-insensitive on the field names.
 // https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
@@ -19,7 +19,7 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          expectedWithResolvedPlaceholders <- expected.toList.traverse {
+          expectedWithResolvedPlaceholders <- traverseIL(expected.iterator) {
             case (name, value) =>
               sc.fillPlaceholders(value).map(v => (name, v))
           }
@@ -44,7 +44,7 @@ object HeadersSteps {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
           lowerCasedActual = sessionHeadersValue.map { case (name, value) => name.toLowerCase -> value }
-          elementsWithResolvedPlaceholders <- elements.toList.traverse {
+          elementsWithResolvedPlaceholders <- traverseIL(elements.iterator) {
             case (name, value) =>
               sc.fillPlaceholders(value).map(v => (name, v))
           }

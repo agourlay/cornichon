@@ -64,6 +64,7 @@ trait CornichonJson {
   private def firstNonEmptyChar(s: String): Option[Char] =
     s.find { ch => ch != ' ' && ch != '\t' && !ch.isWhitespace }
 
+  // TODO 0.21 return Vector to accommodate Json.fromValues
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     def parseRow(rawRow: Map[String, String]): Either[MalformedJsonError[String], JsonObject] = {
       val cells = Map.newBuilder[String, Json]
@@ -157,6 +158,7 @@ trait CornichonJson {
     def keyValues(currentPath: String, json: Json, level: Int): List[(String, Json)] = {
       // Use Json.Folder for performance https://github.com/circe/circe/pull/656
       json.foldWith(
+        // TODO folder on ListBuffer for performance
         new Json.Folder[List[(String, Json)]] {
           def onNull: List[(String, Json)] =
             Nil
@@ -166,10 +168,24 @@ trait CornichonJson {
             (currentPath -> json) :: Nil
           def onString(value: String): List[(String, Json)] =
             (currentPath -> json) :: Nil
-          def onArray(elems: Vector[Json]): List[(String, Json)] =
-            elems.iterator.zipWithIndex.flatMap { case (e, index) => keyValues(s"$currentPath[$index]", e, level + 1) }.toList
-          def onObject(elems: JsonObject): List[(String, Json)] =
-            elems.toIterable.flatMap { case (k, v) => keyValues(s"$currentPath.$k", v, level + 1) }.toList
+          def onArray(elems: Vector[Json]): List[(String, Json)] = {
+            val listBuffer = new ListBuffer[(String, Json)]
+            var index = 0
+            val nextLevel = level + 1
+            for (e <- elems) {
+              listBuffer ++= keyValues(s"$currentPath[$index]", e, nextLevel)
+              index += 1
+            }
+            listBuffer.toList
+          }
+          def onObject(elems: JsonObject): List[(String, Json)] = {
+            val listBuffer = new ListBuffer[(String, Json)]
+            val nextLevel = level + 1
+            for ((k, v) <- elems.toIterable) {
+              listBuffer ++= keyValues(s"$currentPath.$k", v, nextLevel)
+            }
+            listBuffer.toList
+          }
         }
       )
     }

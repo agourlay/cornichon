@@ -3,14 +3,13 @@ package com.github.agourlay.cornichon.dsl
 import cats.Show
 import cats.syntax.either._
 import cats.syntax.show._
-import cats.syntax.traverse._
 import cats.effect.IO
 import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionHistoryStepBuilder, SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.wrapped._
-
+import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import scala.annotation.unchecked.uncheckedVariance
 import scala.language.dynamics
 import scala.concurrent.duration.FiniteDuration
@@ -208,7 +207,7 @@ object CoreDsl {
         val session = sc.session
         for {
           sessionValue <- session.get(fromKey)
-          extracted <- args.iterator.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
+          extracted <- traverseIL(args.iterator.map(_.trans))(extractor => extractor(sc, sessionValue))
           newSession <- args.iterator.map(_.target).zip(extracted.iterator).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }

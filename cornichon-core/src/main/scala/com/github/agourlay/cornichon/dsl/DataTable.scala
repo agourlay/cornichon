@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2._
-
+import scala.collection.mutable.ListBuffer
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
@@ -51,16 +51,21 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "the data table is malformed, all rows must have the same number of elements")
 
-  lazy val rawStringList: List[Map[String, String]] =
-    rows.iterator
-      .map { row =>
-        headers.fields
-          .iterator
-          .zip(row.fields.iterator)
-          .map { case (name, value) => name -> value.trim }
-          .filter(_._2.nonEmpty)
-          .toMap
-      }.toList
+  // TODO 0.21 return List[List] instead of List[Map] as the Map is not used
+  lazy val rawStringList: List[Map[String, String]] = {
+    val listBuffer = new ListBuffer[Map[String, String]]()
+    for (row <- rows) {
+      val mapBuilder = Map.newBuilder[String, String]
+      for ((name, value) <- headers.fields.iterator.zip(row.fields.iterator)) {
+        val stripped = value.stripTrailing()
+        if (stripped.nonEmpty) {
+          mapBuilder += name -> stripped
+        }
+      }
+      listBuffer += mapBuilder.result()
+    }
+    listBuffer.toList
+  }
 }
 
 case class Headers(fields: Seq[String])
@@ -70,7 +75,7 @@ trait StringHeaderParserSupport extends StringBuilding {
   this: Parser =>
 
   def HeaderValue = rule {
-    atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.trim))
+    atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.stripTrailing()))
   }
 
   def Characters = rule { oneOrMore(NormalChar | '\\' ~ EscapedChar) }

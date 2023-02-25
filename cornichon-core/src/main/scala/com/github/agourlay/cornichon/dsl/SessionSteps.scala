@@ -1,14 +1,11 @@
 package com.github.agourlay.cornichon.dsl
 
-import cats.instances.either._
-import cats.instances.vector._
 import cats.syntax.show._
-import cats.syntax.traverse._
 import com.github.agourlay.cornichon.core.SessionKey
 import com.github.agourlay.cornichon.json.JsonSteps._
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-
+import com.github.agourlay.cornichon.util.TraverseUtils.traverseIV
 import scala.util.matching.Regex
 
 object SessionSteps {
@@ -146,8 +143,7 @@ object SessionSteps {
         action = sc => Assertion.either {
           for {
             actualValues <- sc.session.getHistory(sessionKey)
-            expectedResolvedElements <- expectedElements.toVector
-              .traverse(e => sc.fillPlaceholders(e))
+            expectedResolvedElements <- traverseIV(expectedElements.iterator)(e => sc.fillPlaceholders(e))
               .map(_.map(Resolvable[A].toResolvableForm))
           } yield CollectionsContainSameElements(expectedResolvedElements, actualValues)
         }

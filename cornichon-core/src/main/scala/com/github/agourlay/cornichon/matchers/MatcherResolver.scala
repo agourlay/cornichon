@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.matchers
 
 import cats.syntax.either._
-import cats.syntax.traverse._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.matchers.MatcherParser.noMatchers
 import com.github.agourlay.cornichon.matchers.Matchers._
+import com.github.agourlay.cornichon.util.TraverseUtils.traverse
 import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
 import io.circe.Json
 
@@ -46,7 +46,8 @@ object MatcherResolver {
       // don't fill cache with useless entries
       noMatchers
     } else {
-      matchersCache.get(input, i => findMatcherKeys(i)).flatMap(_.traverse(resolveMatcherKeys(allMatchers)))
+      matchersCache.get(input, i => findMatcherKeys(i))
+        .flatMap { traverse(_)(resolveMatcherKeys(allMatchers)) }
     }
 
   // Add quotes around known matchers

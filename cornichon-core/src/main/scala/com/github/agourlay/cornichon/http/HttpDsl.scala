@@ -3,8 +3,6 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.either._
-import cats.syntax.traverse._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl._
 import com.github.agourlay.cornichon.dsl.CoreDsl._
@@ -24,12 +22,10 @@ import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.Printing._
-
+import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import io.circe.{ Encoder, Json }
-
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
@@ -208,7 +204,7 @@ object HttpDsl {
         val session = sc.session
         for {
           sessionValue <- session.getJson(fromKey)
-          extracted <- args.iterator.map(_.trans).toList.traverse { extractor => extractor(sc, sessionValue) }
+          extracted <- traverseIL(args.iterator.map(_.trans))(extractor => extractor(sc, sessionValue))
           newSession <- args.iterator.map(_.target).zip(extracted.iterator).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }

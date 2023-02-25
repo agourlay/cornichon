@@ -30,7 +30,7 @@ object ScenarioRunner {
       NoShowLogInstruction(title, depth, Some(duration))
 
   def errorsToFailureStep(currentStep: Step, depth: Int, errors: NonEmptyList[CornichonError], duration: Option[Duration] = None): (LogInstruction, FailedStep) = {
-    val errorLogs = errors.toList.map(_.renderedMessage).reverse.mkString("\n")
+    val errorLogs = errors.toList.reverseIterator.map(_.renderedMessage).mkString("\n")
     val runLog = FailureLogInstruction(s"${currentStep.title}\n*** FAILED ***\n$errorLogs", depth, duration)
     val failedStep = FailedStep(currentStep, errors)
     (runLog, failedStep)

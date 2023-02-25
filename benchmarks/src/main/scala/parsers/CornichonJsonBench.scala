@@ -17,7 +17,7 @@ class CornichonJsonBench {
   [info] Benchmark                                     Mode  Cnt          Score         Error  Units
   [info] CornichonJsonBench.parseDslStringJsonArray   thrpt   10    4814974.461 ±   10930.338  ops/s
   [info] CornichonJsonBench.parseDslStringJsonString  thrpt   10  369873879.147 ±  827367.051  ops/s
-  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10     214073.174 ±     572.270  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10     227069.925 ±     542.258  ops/s
    */
 
   @Benchmark

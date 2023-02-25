@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.dsl.BaseFeature
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import cats.effect.IO
 import fs2.Stream
-import cats.syntax.traverse._
+import com.github.agourlay.cornichon.util.TraverseUtils.traverse
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, explicitSeed: Option[Long]) {
 
@@ -79,7 +79,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
   }
 
   private def runAfterFeature(): Either[CornichonError, Done] =
-    baseFeature.afterFeature.toList.traverse(f => CornichonError.catchThrowable(f())) match {
+    traverse(baseFeature.afterFeature.toList)(f => CornichonError.catchThrowable(f())) match {
       case Left(e)  => Left(AfterFeatureError(e))
       case Right(_) => Done.rightDone
     }

@@ -42,7 +42,7 @@ object PlaceholderParser {
         case Failure(e: Throwable) =>
           Left(PlaceholderError(input, e))
         case Success(dt) =>
-          Right(dt.toList.distinct)
+          Right(dt.toList)
       }
     }
 }

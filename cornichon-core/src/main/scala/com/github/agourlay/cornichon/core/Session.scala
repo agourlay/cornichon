@@ -4,11 +4,10 @@ import cats.Show
 import cats.syntax.show._
 import cats.syntax.monoid._
 import cats.syntax.either._
-import cats.syntax.traverse._
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
 import com.github.agourlay.cornichon.util.StringUtils
-
+import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import scala.collection.immutable.HashMap
 
 // TODO try replacing Vector by ArraySeq in Scala 2.13
@@ -45,7 +44,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
     get(key, stackingIndex).valueUnsafe
 
   def getList(keys: Seq[String]): Either[CornichonError, List[String]] =
-    keys.toList.traverse(get(_))
+    traverseIL(keys.iterator)(get(_))
 
   def getHistory(key: String): Either[KeyNotFoundInSession, Vector[String]] =
     content.get(key).toRight(KeyNotFoundInSession(key, this))
@@ -83,17 +82,13 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   def addValues(tuples: (String, String)*): Either[CornichonError, Session] = {
     var resultSession = this
-    var error: Option[Either[CornichonError, Session]] = None
-    val iter = tuples.iterator
-    // no generic cats.traverse for performance
-    while (error.isEmpty && iter.hasNext) {
-      val (k, v) = iter.next()
+    for ((k, v) <- tuples) {
       resultSession.addValue(k, v) match {
-        case e @ Left(_)       => error = Some(e)
+        case e @ Left(_)       => return e
         case Right(newSession) => resultSession = newSession
       }
     }
-    error.getOrElse(resultSession.asRight)
+    resultSession.asRight
   }
 
   def addValuesUnsafe(tuples: (String, String)*): Session =

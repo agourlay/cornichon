@@ -27,8 +27,8 @@ class JsonStepBench {
   [info] Benchmark                          Mode  Cnt      Score      Error  Units
   [info] JsonStepBench.jsonIgnoreIs        thrpt   10  61534.328 ± 1076.157  ops/s
   [info] JsonStepBench.jsonIs              thrpt   10  61452.807 ± 1458.903  ops/s
-  [info] JsonStepBench.jsonMatchersIs      thrpt   10  35494.248 ± 1349.875  ops/s
-  [info] JsonStepBench.jsonPathIs          thrpt   10  77451.698 ± 1606.326  ops/s
+  [info] JsonStepBench.jsonMatchersIs      thrpt   10  37250.987 ± 1195.539  ops/s
+  [info] JsonStepBench.jsonPathIs          thrpt   10  80718.339 ± 2156.393  ops/s
   [info] JsonStepBench.jsonPlaceholdersIs  thrpt   10  48710.808 ± 1671.528  ops/s
   [info] JsonStepBench.jsonWhitelistingIs  thrpt   10  52029.586 ± 1425.700  ops/s
 
@@ -97,13 +97,11 @@ class JsonStepBench {
 
   @Benchmark
   def jsonIgnoreIs() = {
-    val step = jsonStepBuilder.ignoring("publisher").is(
+    val step = jsonStepBuilder.ignoring("publisher", "hasSuperpowers", "realName").is(
       """
       {
         "name": "Batman",
-        "realName": "Bruce Wayne",
-        "city": "Gotham city",
-        "hasSuperpowers": false
+        "city": "Gotham city"
       }
     """)
     val s = Scenario("scenario with JsonSteps", step :: Nil)

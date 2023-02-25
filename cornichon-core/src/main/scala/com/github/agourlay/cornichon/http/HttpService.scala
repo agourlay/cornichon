@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.data.EitherT
-import cats.syntax.traverse._
 import cats.syntax.show._
 import cats.syntax.either._
 import cats.effect.IO
@@ -17,6 +16,7 @@ import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpRequest._
 import com.github.agourlay.cornichon.util.Caching
+import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import io.circe.{ Encoder, Json }
 import org.http4s.EntityEncoder
 import scala.concurrent.Future
@@ -177,7 +177,7 @@ object HttpService {
       .mkString(interHeadersValueDelimString)
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
-    headers.split(interHeadersValueDelim).toList.traverse { header =>
+    traverseIL(headers.split(interHeadersValueDelim).iterator) { header =>
       val elms = header.split(headersKeyValueDelim)
       if (elms.length != 2)
         BadSessionHeadersEncoding(header).asLeft

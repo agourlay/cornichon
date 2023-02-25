@@ -18,13 +18,12 @@ import com.github.agourlay.cornichon.util.CirceUtil._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
-
 import javax.net.ssl.{ SSLContext, TrustManager, X509TrustManager }
 import org.http4s._
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.middleware.{ FollowRedirect, GZip }
 import org.typelevel.ci.CIString
-
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
 class Http4sClient(
@@ -79,8 +78,17 @@ class Http4sClient(
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  private def toHttp4sHeaders(headers: Seq[(String, String)]): List[Header.Raw] =
-    headers.iterator.map { case (n, v) => Header.Raw(CIString(n), v) }.toList
+  private def toHttp4sHeaders(headers: Seq[(String, String)]): List[Header.Raw] = {
+    if (headers.isEmpty)
+      Nil
+    else {
+      val listBuffer = ListBuffer.empty[Header.Raw]
+      for ((n, v) <- headers.iterator) {
+        listBuffer += Header.Raw(CIString(n), v)
+      }
+      listBuffer.toList
+    }
+  }
 
   private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
     headers.headers.map(h => (h.name.toString, h.value))
@@ -89,9 +97,9 @@ class Http4sClient(
     if (moreParams.isEmpty)
       uri
     else {
-      val q = Query.fromPairs(moreParams: _*)
-      // Not sure it is the most efficient way
-      uri.copy(query = Query.fromVector(uri.query.toVector ++ q.toVector))
+      val allParams = uri.query.pairs.appendedAll(moreParams.iterator.map { case (k, v) => (k, Some(v)) })
+      val newQuery = Query.fromVector(allParams)
+      uri.copy(query = newQuery)
     }
 
   override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A]): EitherT[IO, CornichonError, HttpResponse] =
@@ -141,12 +149,12 @@ class Http4sClient(
             .interruptAfter(streamReq.takeWithin)
             .filter(_ != ServerSentEvent.empty) // filter out empty SSE
             .compile
-            .toList
+            .toVector
             .map { events =>
               HttpResponse(
                 status = http4sResp.status.code,
                 headers = fromHttp4sHeaders(http4sResp.headers),
-                body = Json.fromValues(events.iterator.map(_.asJson).toVector).show
+                body = Json.fromValues(events.map(_.asJson)).show
               ).asRight[CornichonError]
             }
         }
