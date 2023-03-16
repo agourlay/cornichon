@@ -97,12 +97,12 @@ class Http4sClient(
     if (moreParams.isEmpty)
       uri
     else {
-      val allParams = uri.query.pairs.appendedAll(moreParams.iterator.map { case (k, v) => (k, Some(v)) })
+      val allParams = uri.query.pairs ++ moreParams.iterator.map { case (k, v) => (k, Some(v)) }
       val newQuery = Query.fromVector(allParams)
       uri.copy(query = newQuery)
     }
 
-  override def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A]): EitherT[IO, CornichonError, HttpResponse] =
+  override def runRequest[A](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A], sh: Show[A]): EitherT[IO, CornichonError, HttpResponse] =
     parseUri(cReq.url).fold(
       e => EitherT.left[HttpResponse](IO.pure(e)),
       uri => EitherT {

@@ -12,7 +12,7 @@ import scala.concurrent.duration.FiniteDuration
 
 class NoOpHttpClient extends HttpClient {
 
-  def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A]) =
+  def runRequest[A](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A], sh: Show[A]) =
     EitherT.apply(IO.pure(HttpResponse(200, Nil, "NoOpBody").asRight))
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration) =

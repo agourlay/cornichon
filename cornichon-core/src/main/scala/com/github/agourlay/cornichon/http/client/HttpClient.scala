@@ -11,7 +11,7 @@ import scala.concurrent.duration.FiniteDuration
 
 trait HttpClient {
 
-  def runRequest[A: Show](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A]): EitherT[IO, CornichonError, HttpResponse]
+  def runRequest[A](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A], sh: Show[A]): EitherT[IO, CornichonError, HttpResponse]
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration): IO[Either[CornichonError, HttpResponse]]
 
