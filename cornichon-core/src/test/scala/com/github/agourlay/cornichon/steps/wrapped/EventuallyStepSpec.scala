@@ -40,7 +40,8 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
     assert(executionTime.lt(120.millis))
   }
 
-  test("replays eventually handle hanging wrapped steps") {
+  // Ignored because not cancellable since CE 3.5.0
+  test("replays eventually handle hanging wrapped steps".ignore) {
     val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
     val nested = AssertStep(
       "slow always true step", _ => {
