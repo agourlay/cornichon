@@ -52,7 +52,7 @@ class MockHttpServer[A](
           .withPort(p)
           .withHost(Host.fromString(selectedInterface).get) // fixme
           .withHttpApp(mockRouter)
-          .withShutdownTimeout(1.seconds) // The time to wait for a graceful shutdown
+          .withShutdownTimeout(0.seconds) // disable graceful shutdown
           .build
           .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))
     }
