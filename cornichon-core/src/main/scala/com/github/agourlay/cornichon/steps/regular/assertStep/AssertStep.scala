@@ -14,7 +14,7 @@ case class AssertStep(title: String, action: ScenarioContext => Assertion, show:
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
   override def runLogValueStep(runState: RunState): IO[Either[NonEmptyList[CornichonError], Done]] =
-    IO.delay {
+    IO.interruptible {
       val assertion = action(runState.scenarioContext)
       assertion.validated match {
         case Invalid(e) => e.asLeft
