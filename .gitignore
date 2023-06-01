@@ -21,3 +21,5 @@ project/plugins/project/
 .DS_Store
 .idea/
 *.iml
+
+benchmarks/*.csv

@@ -145,8 +145,8 @@ object SessionKey {
 }
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
-  lazy val similarKeysMsg = {
-    val similar = s.content.keys.iterator.filter(StringUtils.levenshtein(_, key) == 1).toList.sorted
+  private lazy val similarKeysMsg = {
+    val similar = s.content.keysIterator.filter(StringUtils.levenshtein(_, key) == 1).toSeq.sorted
     if (similar.isEmpty)
       ""
     else
