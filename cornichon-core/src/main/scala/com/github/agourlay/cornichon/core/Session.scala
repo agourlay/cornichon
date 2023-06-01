@@ -121,14 +121,38 @@ object Session {
   }
 
   implicit val showSession: Show[Session] = Show.show[Session] { s =>
-    if (s.content.isEmpty)
+    val keyCount = s.content.size
+    if (keyCount == 0)
       "empty"
-    else
-      s.content.toSeq
-        .sortBy(_._1)
-        .iterator
-        .map(pair => pair._1 + " -> " + pair._2.iterator.map(_.show).mkString("Values(", ", ", ")"))
-        .mkString("\n")
+    else {
+      // custom unrolled nested mkString for performance
+      val keyCount = s.content.size
+      val averageLen = s.content.valuesIterator.map(_.size).sum / keyCount
+      // best effort sizing
+      val builder = new StringBuilder(keyCount * averageLen * 32)
+      val sortedPairs = s.content.toSeq.sortBy(_._1)
+      var i = 0
+      for ((key, values) <- sortedPairs) {
+        builder.append(key)
+        builder.append(" -> ")
+        // inner values
+        builder.append("Values(")
+        var j = 0
+        for (v <- values) {
+          builder.append(v)
+          if (j < values.size - 1) {
+            builder.append(", ")
+          }
+          j += 1
+        }
+        builder.append(")")
+        if (i < keyCount - 1) {
+          builder.append('\n')
+        }
+        i += 1
+      }
+      builder.toString()
+    }
   }
 }
 
