@@ -19,11 +19,12 @@ class SessionShowBench {
 
   /*
   [info] Benchmark                                   Mode  Cnt         Score      Error   Units
-  [info] SessionShowBench.show                      thrpt   10        14.925 ±    1.277   ops/s
-  [info] SessionShowBench.show:·gc.alloc.rate       thrpt   10      1394.874 ±  119.315  MB/sec
-  [info] SessionShowBench.show:·gc.alloc.rate.norm  thrpt   10  98004361.523 ± 1800.175    B/op
-  [info] SessionShowBench.show:·gc.count            thrpt   10      1137.000             counts
-  [info] SessionShowBench.show:·gc.time             thrpt   10      1065.000                 ms
+  [info] Benchmark                                   Mode  Cnt         Score      Error   Units
+  [info] SessionShowBench.show                      thrpt   10        21.646 ±    0.637   ops/s
+  [info] SessionShowBench.show:·gc.alloc.rate       thrpt   10       868.195 ±   25.567  MB/sec
+  [info] SessionShowBench.show:·gc.alloc.rate.norm  thrpt   10  42059242.169 ± 1005.786    B/op
+  [info] SessionShowBench.show:·gc.count            thrpt   10       805.000             counts
+  [info] SessionShowBench.show:·gc.time             thrpt   10       706.000                 ms
    */
 
   @Benchmark
