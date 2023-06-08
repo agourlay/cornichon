@@ -26,12 +26,12 @@ class RunScenarioBench {
   var stepsNumber: String = ""
 
   /*
-[info] Benchmark                     (stepsNumber)   Mode  Cnt       Score        Error  Units
-[info] RunScenarioBench.lotsOfSteps             10  thrpt   10   53265.071 ±   1511.802  ops/s
-[info] RunScenarioBench.lotsOfSteps             20  thrpt   10   43345.911 ±    572.614  ops/s
-[info] RunScenarioBench.lotsOfSteps             50  thrpt   10   24381.110 ±    243.375  ops/s
-[info] RunScenarioBench.lotsOfSteps            100  thrpt   10   13711.398 ±    382.285  ops/s
-[info] RunScenarioBench.lotsOfSteps            200  thrpt   10    7542.240 ±    282.016  ops/s
+  [info] Benchmark                     (stepsNumber)   Mode  Cnt      Score     Error  Units
+  [info] RunScenarioBench.lotsOfSteps             10  thrpt   10  10889.865 ± 164.778  ops/s
+  [info] RunScenarioBench.lotsOfSteps             20  thrpt   10   6483.009 ±  14.795  ops/s
+  [info] RunScenarioBench.lotsOfSteps             50  thrpt   10   2746.851 ±   9.887  ops/s
+  [info] RunScenarioBench.lotsOfSteps            100  thrpt   10   1449.041 ±   4.556  ops/s
+  [info] RunScenarioBench.lotsOfSteps            200  thrpt   10    728.018 ±   1.367  ops/s
  */
 
   @Benchmark
