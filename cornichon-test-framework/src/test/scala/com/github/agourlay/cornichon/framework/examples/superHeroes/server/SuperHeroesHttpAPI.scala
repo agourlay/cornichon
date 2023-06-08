@@ -23,17 +23,17 @@ import org.http4s.server.middleware.GZip
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 
 class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
 
   private val sm = new SuperMicroService()
-  private implicit val ec = scala.concurrent.ExecutionContext.global
+  private implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
-  implicit val heroJsonDecoder = jsonOf[IO, SuperHero]
-  implicit val publisherJsonDecoder = jsonOf[IO, Publisher]
+  private implicit val heroJsonDecoder: EntityDecoder[IO, SuperHero] = jsonOf[IO, SuperHero]
+  private implicit val publisherJsonDecoder: EntityDecoder[IO, Publisher] = jsonOf[IO, Publisher]
 
   object SessionIdQueryParamMatcher extends QueryParamDecoderMatcher[String]("sessionId")
   object ProtectIdentityQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("protectIdentity")
