@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.http.server
 
 import java.net.NetworkInterface
-
 import cats.effect.IO
 import com.comcast.ip4s.{ Host, Port }
 import com.github.agourlay.cornichon.core.CornichonError
@@ -9,7 +8,7 @@ import org.http4s.HttpRoutes
 import org.http4s.server.Router
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
-
+import org.http4s.server.middleware.ResponseTiming
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.util.Random
@@ -51,7 +50,7 @@ class MockHttpServer[A](
         EmberServerBuilder.default[IO]
           .withPort(p)
           .withHost(Host.fromString(selectedInterface).get) // fixme
-          .withHttpApp(mockRouter)
+          .withHttpApp(ResponseTiming(mockRouter))
           .withShutdownTimeout(0.seconds) // disable graceful shutdown
           .build
           .use(server => useFromAddress(s"http://${server.address.getHostString}:${server.address.getPort}"))

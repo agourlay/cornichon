@@ -19,7 +19,7 @@ import org.http4s._
 import org.http4s.implicits._
 import org.http4s.circe._
 import org.http4s.dsl._
-import org.http4s.server.middleware.GZip
+import org.http4s.server.middleware.{ GZip, ResponseTiming }
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
@@ -176,7 +176,7 @@ class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
         EmberServerBuilder.default[IO]
           .withPort(port)
           .withHost(Host.fromString("localhost").get)
-          .withHttpApp(GZip(routes.orNotFound))
+          .withHttpApp(ResponseTiming(GZip(routes.orNotFound)))
           .withShutdownTimeout(1.seconds)
           .build
           .allocated
