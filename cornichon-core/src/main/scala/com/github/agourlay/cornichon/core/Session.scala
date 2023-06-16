@@ -69,6 +69,11 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       case Some(values) => c1.updated(key, values :+ value)
     }
 
+  // No need for key validation when used with built-in keys
+  protected[cornichon] def addValueInternal(key: String, value: String): Session =
+    Session(updateContent(content)(key, value))
+
+  // Validate the key adding it to the session
   def addValue(key: String, value: String): Either[CornichonError, Session] =
     if (key.isBlank)
       EmptyKey.asLeft

@@ -214,23 +214,20 @@ object HttpService {
     }
 
   def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor, requestDescription: String)(response: HttpResponse): Either[CornichonError, Session] = {
-    val additionalExtraction = extractor match {
+    val updatedSession = session
+      .addValueInternal(lastResponseStatusKey, statusToString(response.status))
+      .addValueInternal(lastResponseBodyKey, response.body)
+      .addValueInternal(lastResponseHeadersKey, encodeSessionHeaders(response.headers))
+      .addValueInternal(lastResponseRequestKey, requestDescription)
+
+    extractor match {
       case NoOpExtraction =>
-        rightNone
+        updatedSession.asRight
       case RootExtractor(targetKey) =>
-        Right(Some(targetKey -> response.body))
+        updatedSession.addValue(targetKey, response.body)
       case PathExtractor(path, targetKey) =>
         JsonPath.runStrict(path, response.body)
-          .map(extractedJson => Some(targetKey -> jsonStringValue(extractedJson)))
-    }
-    additionalExtraction.flatMap { extra =>
-      for {
-        session <- session.addValue(lastResponseStatusKey, statusToString(response.status))
-        session <- session.addValue(lastResponseBodyKey, response.body)
-        session <- session.addValue(lastResponseHeadersKey, encodeSessionHeaders(response.headers))
-        session <- session.addValue(lastResponseRequestKey, requestDescription)
-        session <- extra.fold(session.asRight[CornichonError])(e => session.addValue(e._1, e._2))
-      } yield session
+          .flatMap(extractedJson => updatedSession.addValue(targetKey, jsonStringValue(extractedJson)))
     }
   }
 
