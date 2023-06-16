@@ -31,8 +31,8 @@ case class QueryGQL(
   def withVariables(newVariables: (String, VarValue)*) = {
     val vars = newVariables.iterator
       .map { case (k, v) => k -> parseDslJsonUnsafe(v.value)(v.encoder, v.show) }
-      .toMap
-    copy(variables = variables.fold(Some(vars))(v => Some(v ++ vars)))
+
+    copy(variables = variables.fold(Some(vars.toMap))(v => Some(v ++ vars)))
   }
 
   lazy val querySource = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))

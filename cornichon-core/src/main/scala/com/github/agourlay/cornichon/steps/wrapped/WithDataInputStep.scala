@@ -41,7 +41,9 @@ case class WithDataInputStep(nested: List[Step], where: String, rawJson: Boolean
         t => IO.pure(handleErrors(this, runState, NonEmptyList.one(t))),
         parsedTable => {
           val inputs = parsedTable.map { line =>
-            line.toList.map { case (key, json) => (key, if (rawJson) json.noSpacesSortKeys else CornichonJson.jsonStringValue(json)) }
+            line.toIterable
+              .map { case (key, json) => (key, if (rawJson) json.noSpacesSortKeys else CornichonJson.jsonStringValue(json)) }
+              .toList
           }
 
           runInputs(inputs, runState.nestedContext)
