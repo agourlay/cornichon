@@ -19,8 +19,10 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
       blockOrApplyExpressionList(body, elementType) { elements =>
         val elementBuffer = ListBuffer.empty[Tree]
         var seqElementTree: Option[Tree] = None
-
-        elements.foreach { elem =>
+        val elementsCount = elements.length
+        var i = 0
+        while (i < elementsCount) {
+          val elem = elements(i)
           if (elem.tpe <:< elementType)
             elementBuffer += elem
           else {
@@ -34,6 +36,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
                 seqElementTree = Some(q"$seqTree ++ $elementsSoFar ++ $elem")
             }
           }
+          i += 1
         }
         val elementTrees = elementBuffer.result()
         seqElementTree match {
@@ -46,7 +49,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     }
   }
 
-  private def blockOrApplyExpressionList(body: Tree, elementType: Type)(typesTreesFn: List[Tree] => Tree): c.universe.Tree =
+  private def blockOrApplyExpressionList(body: Tree, elementType: Type)(typesTreesFn: Array[Tree] => Tree): c.universe.Tree =
     body match {
       case block: Block =>
         blockExpressionList(block, elementType)(typesTreesFn)
@@ -63,19 +66,19 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
         c.abort(e.pos, s"$unsupportedMessage\nfound '$e' of type '${e.tpe}'")
     }
 
-  private def singleExpressionList(app: Tree, elementType: Type)(typesTreesFn: List[Tree] => Tree): c.universe.Tree =
+  private def singleExpressionList(app: Tree, elementType: Type)(typesTreesFn: Array[Tree] => Tree): c.universe.Tree =
     typeCheck(elementType, seqElementType(elementType))(app) match {
-      case Right(checked)     => typesTreesFn(checked :: Nil)
+      case Right(checked)     => typesTreesFn(Array(checked))
       case Left((pos, error)) => c.abort(pos, error)
     }
 
   private def seqElementType(elementType: Type): Type =
     c.typecheck(q"Seq[$elementType]()").tpe
 
-  private def blockExpressionList(block: Block, elementType: Type)(typesTreesFn: List[Tree] => Tree): c.universe.Tree = {
+  private def blockExpressionList(block: Block, elementType: Type)(typesTreesFn: Array[Tree] => Tree): c.universe.Tree = {
     val seq = seqElementType(elementType)
-    val validExpressions = List.newBuilder[Tree]
-    val errors = List.newBuilder[(c.universe.Position, String)]
+    val validExpressions = Array.newBuilder[Tree]
+    val errors = Array.newBuilder[(c.universe.Position, String)]
 
     def evalTree(s: Tree) =
       typeCheck(elementType, seq)(s) match {
