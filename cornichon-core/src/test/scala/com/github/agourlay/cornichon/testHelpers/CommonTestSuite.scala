@@ -16,8 +16,7 @@ trait CommonTestSuite extends CommonTesting {
         }
         assert(f.msg == expectedMessage)
       case other =>
-        println(s"Should have been a FailedScenarioReport but got \n${LogInstruction.renderLogs(other.logs)}")
-        assert(false)
+        fail(s"Should have been a FailedScenarioReport but got \n${LogInstruction.renderLogs(other.logs)}")
     }
 
   def matchLogsWithoutDuration(logs: List[LogInstruction])(expectedRenderedLogs: String): Unit = {
@@ -36,6 +35,6 @@ trait CommonTestSuite extends CommonTesting {
       else l
     }
     val preparedCleanedLogs = cleanedLogs.mkString("\n")
-    assert(preparedCleanedLogs == expectedRenderedLogs)
+    assertEquals(preparedCleanedLogs, expectedRenderedLogs)
   }
 }

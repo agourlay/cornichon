@@ -16,7 +16,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
       _ => GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
     ) :: Nil
 
-    val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true) :: Nil
+    val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false) :: Nil
     val s = Scenario("scenario with eventually", steps)
     val (executionTime, res) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
     assert(res.isSuccess)
@@ -32,7 +32,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
         Assertion.failWith("nop!")
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false)
     val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
     val (executionTime, r) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
     assert(!r.isSuccess)
@@ -48,7 +48,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
         Assertion.alwaysValid
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false)
     val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
     val (_, rep) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
 
@@ -86,7 +86,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
           Assertion.failWith("Failing forever")
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false)
     val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
@@ -137,7 +137,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
           Assertion.failWith("Failure mode one")
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = false)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = false, discardStateOnError = false)
     val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
@@ -175,6 +175,32 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
             |         *** FAILED ***
             |         Failure mode one
             |      Eventually block did not complete in time after having being tried '3' times with '2' distinct errors""".stripMargin
+    }
+  }
+
+  test("discard state on error") {
+    val eventuallyConf = EventuallyConf(maxTime = 100.millis, interval = 10.milliseconds)
+    var counter = 0
+    val nested = AssertStep(
+      "Fails at first", _ => {
+        if (counter == 0 || counter == 1 || counter == 2) {
+          counter += 1
+          Assertion.failWith(s"Failing $counter")
+        } else
+          Assertion.alwaysValid
+      }
+    ) :: Nil
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = true)
+    val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+
+    matchLogsWithoutDuration(res.logs.dropRight(1)) {
+      """
+        |   Scenario : scenario with different failures
+        |      main steps
+        |      Eventually block with maxDuration = 200 milliseconds and interval = 10 milliseconds
+        |         Fails at first""".stripMargin
     }
   }
 }
