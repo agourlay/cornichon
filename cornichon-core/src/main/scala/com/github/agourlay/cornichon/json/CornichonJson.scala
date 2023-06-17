@@ -172,7 +172,8 @@ trait CornichonJson {
             val listBuffer = new ListBuffer[(String, Json)]
             var index = 0
             val nextLevel = level + 1
-            for (e <- elems) {
+            while (index < elems.length) {
+              val e = elems(index)
               listBuffer ++= keyValues(s"$currentPath[$index]", e, nextLevel)
               index += 1
             }
