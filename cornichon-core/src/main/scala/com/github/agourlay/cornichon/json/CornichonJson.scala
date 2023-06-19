@@ -78,7 +78,7 @@ trait CornichonJson {
       JsonObject.fromMap(cells.result()).asRight
     }
 
-    parseDataTableRaw(table).flatMap { rawRows =>
+    parseDataTableRaw(table).map { rawRows =>
       val rows = new ListBuffer[JsonObject]()
       rawRows.foreach { rawRow =>
         parseRow(rawRow) match {
@@ -86,7 +86,7 @@ trait CornichonJson {
           case Left(e)  => return Left(e)
         }
       }
-      rows.toList.asRight
+      rows.toList
     }
   }
 
