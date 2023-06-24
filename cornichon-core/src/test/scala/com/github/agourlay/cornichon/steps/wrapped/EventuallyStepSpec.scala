@@ -178,12 +178,12 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
     }
   }
 
-  test("discard state on error") {
-    val eventuallyConf = EventuallyConf(maxTime = 100.millis, interval = 10.milliseconds)
+  test("show last error with `discardStateOnError` on success") {
+    val eventuallyConf = EventuallyConf(maxTime = 200.millis, interval = 10.milliseconds)
     var counter = 0
     val nested = AssertStep(
       "Fails at first", _ => {
-        if (counter == 0 || counter == 1 || counter == 2) {
+        if (counter < 2) {
           counter += 1
           Assertion.failWith(s"Failing $counter")
         } else
@@ -200,7 +200,49 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
         |   Scenario : scenario with different failures
         |      main steps
         |      Eventually block with maxDuration = 200 milliseconds and interval = 10 milliseconds
+        |         Fails at first
+        |         *** FAILED ***
+        |         Failing 2
         |         Fails at first""".stripMargin
+    }
+  }
+
+  test("show last error with `discardStateOnError` on error") {
+    val eventuallyConf = EventuallyConf(maxTime = 200.millis, interval = 10.milliseconds)
+    var counter = 0
+    val nested = AssertStep(
+      "Fail differently", _ => {
+        if (counter == 0 || counter == 1 || counter == 2) {
+          counter += 1
+          Assertion.failWith(s"Failing $counter")
+        } else
+          Assertion.failWith("Failing forever")
+      }
+    ) :: Nil
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = true)
+    val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    scenarioFailsWithMessage(res) {
+      """Scenario 'scenario with different failures' failed:
+        |
+        |at step:
+        |Fail differently
+        |
+        |with error(s):
+        |Failing forever
+        |
+        |seed for the run was '1'
+        |""".stripMargin
+    }
+
+    matchLogsWithoutDuration(res.logs.dropRight(1)) {
+      """
+        |   Scenario : scenario with different failures
+        |      main steps
+        |      Eventually block with maxDuration = 200 milliseconds and interval = 10 milliseconds
+        |         Fail differently
+        |         *** FAILED ***
+        |         Failing forever""".stripMargin
     }
   }
 }
