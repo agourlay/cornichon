@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.http.client
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import javax.net.ssl.{ SSLContext, TrustManager, X509TrustManager }
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
@@ -15,12 +16,12 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpStreams.SSE
 import com.github.agourlay.cornichon.util.Caching
 import com.github.agourlay.cornichon.util.CirceUtil._
+import fs2.io.net.tls.TLSContext
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
-import javax.net.ssl.{ SSLContext, TrustManager, X509TrustManager }
 import org.http4s._
-import org.http4s.blaze.client.BlazeClientBuilder
+import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.client.middleware.{ FollowRedirect, GZip }
 import org.typelevel.ci.CIString
 import scala.collection.mutable.ListBuffer
@@ -50,15 +51,12 @@ class Http4sClient(
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.Inf
   private val (httpClient, safeShutdown) =
-    BlazeClientBuilder[IO]
-      .withSslContext(sslContext)
-      .withMaxTotalConnections(300)
-      .withMaxWaitQueueLimit(500)
-      .withIdleTimeout(2.minute)
-      .withResponseHeaderTimeout(defaultHighTimeout)
-      .withRequestTimeout(defaultHighTimeout)
-      .withRetries(0)
-      .resource
+    EmberClientBuilder.default[IO]
+      .withTLSContext(TLSContext.Builder.forAsync[IO].fromSSLContext(sslContext))
+      .withMaxTotal(300)
+      .withIdleTimeInPool(2.minute)
+      .withTimeout(defaultHighTimeout)
+      .build
       .allocated
       .map {
         case (client, shutdown) =>
