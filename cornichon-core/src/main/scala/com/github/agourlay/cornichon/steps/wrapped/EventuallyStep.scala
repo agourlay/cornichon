@@ -8,13 +8,13 @@ import com.github.agourlay.cornichon.core.Done._
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationAllowed: Boolean) extends WrapperStep {
+case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationAllowed: Boolean, discardStateOnError: Boolean) extends WrapperStep {
 
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
   override val stateUpdate: StepState = StateT { runState =>
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep]): IO[(Long, Int, RunState, Either[FailedStep, Done])] = {
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep], lastErrorState: Option[RunState]): IO[(Long, Int, RunState, Either[FailedStep, Done])] = {
 
       def distinctErrorsWith(fs: FailedStep): Int =
         (fs :: knownErrors).toSet.size
@@ -35,28 +35,51 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
             res match {
               case Left(failedStep) =>
                 val oscillationDetected = !oscillationAllowed && oscillationDetectedForFailedStep(failedStep)
-                val updatedRunState = {
-                  if (oscillationDetected) //oscillation detected - return the whole thing
-                    newRunState
-                  else if (!knownErrors.contains(failedStep)) //new error - return the whole thing
-                    newRunState
-                  else // known error only propagate cleanup steps and session as we know the logs already
-                    runState.registerCleanupSteps(newRunState.cleanupSteps).withSession(newRunState.session)
-                }
-
+                // early exit for oscillation detection
                 if (oscillationDetected) {
                   val fsOscillation = FailedStep.fromSingle(this, EventuallyBlockOscillationDetected(failedStep))
-                  IO.pure((retriesNumber, distinctErrors, updatedRunState, fsOscillation.asLeft))
-                } else if ((remainingTime - conf.interval).gt(Duration.Zero)) // Check that it could go through another loop after the interval
-                  retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors)
-                else {
-                  IO.pure((retriesNumber, distinctErrorsWith(failedStep), updatedRunState, failedStep.asLeft))
+                  IO.pure((retriesNumber, distinctErrors, newRunState, fsOscillation.asLeft))
+                } else {
+                  // control precisely which state is propagated
+                  val updatedRunState = {
+                    if (discardStateOnError) {
+                      // discard inner session and logs
+                      runState.registerCleanupSteps(newRunState.cleanupSteps)
+                    } else if (knownErrors.contains(failedStep)) {
+                      // known error only propagate cleanup steps and session as we know the logs already
+                      runState.registerCleanupSteps(newRunState.cleanupSteps).withSession(newRunState.session)
+                    } else {
+                      // new error - return the whole inner state
+                      newRunState
+                    }
+                  }
+
+                  // Check that it could go through another loop after the interval
+                  if ((remainingTime - conf.interval).gt(Duration.Zero))
+                    retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors, Some(newRunState))
+                  else {
+                    // no time for another loop
+                    if (discardStateOnError) {
+                      // return last state fully because intermediate states were discarded
+                      IO.pure((retriesNumber, distinctErrorsWith(failedStep), newRunState, failedStep.asLeft))
+                    } else {
+                      // return subset of error state
+                      IO.pure((retriesNumber, distinctErrorsWith(failedStep), updatedRunState, failedStep.asLeft))
+                    }
+                  }
                 }
 
               case Right(_) =>
                 if (remainingTime.gt(Duration.Zero)) {
-                  // In case of success all logs are returned but they are not printed by default.
-                  IO.pure((retriesNumber, distinctErrors, newRunState, rightDone))
+                  lastErrorState match {
+                    case Some(prevErrorState) if discardStateOnError =>
+                      // only show the last error
+                      val mergedState = prevErrorState.mergeNested(newRunState)
+                      IO.pure((retriesNumber, distinctErrors, mergedState, Done.rightDone))
+                    case _ =>
+                      // In case of success all logs are returned but they are not printed by default.
+                      IO.pure((retriesNumber, distinctErrors, newRunState, rightDone))
+                  }
                 } else {
                   // Run was a success but the time is up.
                   val failedStep = FailedStep.fromSingle(nested.last, EventuallyBlockSucceedAfterMaxDuration)
@@ -71,7 +94,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
       IO.delay((0, 0, runState.nestedContext, fs.asLeft[Done]))
     }
 
-    retryEventuallySteps(runState.nestedContext, conf, 0, Nil)
+    retryEventuallySteps(runState.nestedContext, conf, 0, Nil, None)
       .timeoutTo(duration = conf.maxTime * 2, fallback = timeoutFailedResult) // make sure that the inner block does not run forever
       .timed
       .map {
