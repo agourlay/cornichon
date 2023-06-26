@@ -51,11 +51,10 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 case class DataTable(headers: Headers, rows: Seq[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "the data table is malformed, all rows must have the same number of elements")
 
-  // TODO 0.21 return List[List] instead of List[Map] as the Map is not used
-  lazy val rawStringList: List[Map[String, String]] = {
-    val listBuffer = new ListBuffer[Map[String, String]]()
+  lazy val rawStringList: List[List[(String, String)]] = {
+    val listBuffer = new ListBuffer[List[(String, String)]]()
     for (row <- rows) {
-      val mapBuilder = Map.newBuilder[String, String]
+      val mapBuilder = new ListBuffer[(String, String)]
       for ((name, value) <- headers.fields.iterator.zip(row.fields.iterator)) {
         val stripped = value.stripTrailing()
         if (stripped.nonEmpty) {

@@ -89,8 +89,8 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
           | Bob  |   11   |              |
           """
     ) == Right(List(
-        Map("2LettersName" -> "false"),
-        Map("Age" -> "11", "Name" -> "Bob"))))
+        List("2LettersName" -> "false"),
+        List("Name" -> "Bob", "Age" -> "11"))))
   }
 
   test("isJsonString detects invalid empty string") {

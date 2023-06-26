@@ -14,10 +14,10 @@ import org.openjdk.jmh.annotations.{ Benchmark, BenchmarkMode, Fork, Measurement
 class CornichonJsonBench {
 
   /*
-  [info] Benchmark                                     Mode  Cnt          Score         Error  Units
-  [info] CornichonJsonBench.parseDslStringJsonArray   thrpt   10    4814974.461 ±   10930.338  ops/s
-  [info] CornichonJsonBench.parseDslStringJsonString  thrpt   10  369873879.147 ±  827367.051  ops/s
-  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10     227069.925 ±     542.258  ops/s
+  [info] Benchmark                                     Mode  Cnt          Score        Error  Units
+  [info] CornichonJsonBench.parseDslStringJsonArray   thrpt   10    4765581.366 ±  12997.172  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonString  thrpt   10  365911238.561 ± 837323.084  ops/s
+  [info] CornichonJsonBench.parseDslStringJsonTable   thrpt   10     234341.469 ±    410.392  ops/s
    */
 
   @Benchmark

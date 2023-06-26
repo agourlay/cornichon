@@ -64,9 +64,8 @@ trait CornichonJson {
   private def firstNonEmptyChar(s: String): Option[Char] =
     s.find { ch => ch != ' ' && ch != '\t' && !ch.isWhitespace }
 
-  // TODO 0.21 return Vector to accommodate Json.fromValues
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
-    def parseRow(rawRow: Map[String, String]): Either[MalformedJsonError[String], JsonObject] = {
+    def parseRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
       val cells = Map.newBuilder[String, Json]
       rawRow.foreach {
         case (name, rawValue) =>
@@ -90,7 +89,8 @@ trait CornichonJson {
     }
   }
 
-  def parseDataTableRaw(table: String): Either[CornichonError, List[Map[String, String]]] =
+  // Returns raw data with duplicates and initial ordering
+  def parseDataTableRaw(table: String): Either[CornichonError, List[List[(String, String)]]] =
     DataTableParser.parse(table).map(_.rawStringList)
 
   def parseGraphQLJson(input: String): Either[MalformedGraphQLJsonError[String], Json] =
