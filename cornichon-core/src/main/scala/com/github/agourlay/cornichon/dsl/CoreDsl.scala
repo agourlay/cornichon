@@ -89,18 +89,10 @@ trait CoreDsl {
       RepeatDuringStep(steps, duration)
     }
 
-  def Eventually(maxDuration: FiniteDuration, interval: FiniteDuration, oscillationAllowed: Boolean = true): BodyElementCollector[Step, Step] =
+  def Eventually(maxDuration: FiniteDuration, interval: FiniteDuration): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps =>
       val conf = EventuallyConf(maxDuration, interval)
-      EventuallyStep(steps, conf, oscillationAllowed, discardStateOnError = false)
-    }
-
-  // Same as Eventually but will discard the resulting inner state (session & logs) if one of the wrapped step fails.
-  // This prevents the session to grow excessively in case of long wait times.
-  def EventuallyDiscard(maxDuration: FiniteDuration, interval: FiniteDuration): BodyElementCollector[Step, Step] =
-    BodyElementCollector[Step, Step] { steps =>
-      val conf = EventuallyConf(maxDuration, interval)
-      EventuallyStep(steps, conf, oscillationAllowed = true, discardStateOnError = true)
+      EventuallyStep(steps, conf)
     }
 
   def RepeatConcurrently(times: Int, parallelism: Int, maxTime: FiniteDuration): BodyElementCollector[Step, Step] =

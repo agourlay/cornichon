@@ -8,24 +8,13 @@ import com.github.agourlay.cornichon.core.Done._
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
-case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationAllowed: Boolean, discardStateOnError: Boolean) extends WrapperStep {
+case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
 
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
   override val stateUpdate: StepState = StateT { runState =>
 
-    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, knownErrors: List[FailedStep], lastErrorState: Option[RunState]): IO[(Long, Int, RunState, Either[FailedStep, Done])] = {
-
-      def distinctErrorsWith(fs: FailedStep): Int =
-        (fs :: knownErrors).toSet.size
-
-      def distinctErrors: Int =
-        knownErrors.toSet.size
-
-      // Error already seen in the past with another error in between
-      def oscillationDetectedForFailedStep(fs: FailedStep): Boolean =
-        knownErrors.nonEmpty && fs != knownErrors.head && knownErrors.tail.contains(fs)
-
+    def retryEventuallySteps(runState: RunState, conf: EventuallyConf, retriesNumber: Long, lastErrorState: Option[RunState]): IO[(Long, RunState, Either[FailedStep, Done])] = {
       ScenarioRunner.runStepsShortCircuiting(nested, runState)
         .delayBy(if (retriesNumber == 0) Duration.Zero else conf.interval)
         .timed
@@ -34,77 +23,53 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf, oscillationA
             val remainingTime = conf.maxTime - executionTime
             res match {
               case Left(failedStep) =>
-                val oscillationDetected = !oscillationAllowed && oscillationDetectedForFailedStep(failedStep)
-                // early exit for oscillation detection
-                if (oscillationDetected) {
-                  val fsOscillation = FailedStep.fromSingle(this, EventuallyBlockOscillationDetected(failedStep))
-                  IO.pure((retriesNumber, distinctErrors, newRunState, fsOscillation.asLeft))
-                } else {
-                  // control precisely which state is propagated
-                  val updatedRunState = {
-                    if (discardStateOnError) {
-                      // discard inner session and logs
-                      runState.registerCleanupSteps(newRunState.cleanupSteps)
-                    } else if (knownErrors.contains(failedStep)) {
-                      // known error only propagate cleanup steps and session as we know the logs already
-                      runState.registerCleanupSteps(newRunState.cleanupSteps).withSession(newRunState.session)
-                    } else {
-                      // new error - return the whole inner state
-                      newRunState
-                    }
-                  }
-
-                  // Check that it could go through another loop after the interval
-                  if ((remainingTime - conf.interval).gt(Duration.Zero))
-                    retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, failedStep :: knownErrors, Some(newRunState))
-                  else {
-                    // no time for another loop
-                    if (discardStateOnError) {
-                      // return last state fully because intermediate states were discarded
-                      IO.pure((retriesNumber, distinctErrorsWith(failedStep), newRunState, failedStep.asLeft))
-                    } else {
-                      // return subset of error state
-                      IO.pure((retriesNumber, distinctErrorsWith(failedStep), updatedRunState, failedStep.asLeft))
-                    }
-                  }
+                // discard inner session and logs
+                val updatedRunState = runState.registerCleanupSteps(newRunState.cleanupSteps)
+                // Check that it could go through another loop after the interval
+                if ((remainingTime - conf.interval).gt(Duration.Zero))
+                  retryEventuallySteps(updatedRunState, conf.consume(executionTime), retriesNumber + 1, Some(newRunState))
+                else {
+                  // no time for another loop
+                  // return last state fully because intermediate states were discarded
+                  IO.pure((retriesNumber, newRunState, failedStep.asLeft))
                 }
 
               case Right(_) =>
                 if (remainingTime.gt(Duration.Zero)) {
                   lastErrorState match {
-                    case Some(prevErrorState) if discardStateOnError =>
+                    case Some(prevErrorState) =>
                       // only show the last error
                       val mergedState = prevErrorState.mergeNested(newRunState)
-                      IO.pure((retriesNumber, distinctErrors, mergedState, Done.rightDone))
+                      IO.pure((retriesNumber, mergedState, Done.rightDone))
                     case _ =>
-                      // In case of success all logs are returned but they are not printed by default.
-                      IO.pure((retriesNumber, distinctErrors, newRunState, rightDone))
+                      // return last state fully
+                      IO.pure((retriesNumber, newRunState, rightDone))
                   }
                 } else {
                   // Run was a success but the time is up.
                   val failedStep = FailedStep.fromSingle(nested.last, EventuallyBlockSucceedAfterMaxDuration)
-                  IO.pure((retriesNumber, distinctErrors, newRunState, failedStep.asLeft))
+                  IO.pure((retriesNumber, newRunState, failedStep.asLeft))
                 }
             }
         }
     }
 
-    def timeoutFailedResult: IO[(Long, Int, RunState, Either[FailedStep, Done])] = {
+    def timeoutFailedResult: IO[(Long, RunState, Either[FailedStep, Done])] = {
       val fs = FailedStep(this, NonEmptyList.of(EventuallyBlockMaxInactivity))
-      IO.delay((0, 0, runState.nestedContext, fs.asLeft[Done]))
+      IO.delay((0, runState.nestedContext, fs.asLeft[Done]))
     }
 
-    retryEventuallySteps(runState.nestedContext, conf, 0, Nil, None)
+    retryEventuallySteps(runState.nestedContext, conf, 0, None)
       .timeoutTo(duration = conf.maxTime * 2, fallback = timeoutFailedResult) // make sure that the inner block does not run forever
       .timed
       .map {
-        case (executionTime, (retries, distinctErrors, retriedRunState, report)) =>
+        case (executionTime, (retries, retriedRunState, report)) =>
           val initialDepth = runState.depth
           val wrappedLogStack = report match {
             case Left(_) =>
-              FailureLogInstruction(s"Eventually block did not complete in time after having being tried '${retries + 1}' times with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
+              FailureLogInstruction(s"Eventually block did not complete in time after having being tried '${retries + 1}' times", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)
             case _ =>
-              SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries with '$distinctErrors' distinct errors", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ successTitleLog(initialDepth)
+              SuccessLogInstruction(s"Eventually block succeeded after '$retries' retries", initialDepth, Some(executionTime)) +: retriedRunState.logStack :+ successTitleLog(initialDepth)
           }
           (runState.mergeNested(retriedRunState, wrappedLogStack), report)
       }
@@ -120,7 +85,7 @@ case class EventuallyConf(maxTime: FiniteDuration, interval: FiniteDuration) {
 }
 
 object EventuallyConf {
-  val empty = EventuallyConf(Duration.Zero, Duration.Zero)
+  val empty: EventuallyConf = EventuallyConf(Duration.Zero, Duration.Zero)
 }
 
 case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
@@ -129,8 +94,4 @@ case object EventuallyBlockSucceedAfterMaxDuration extends CornichonError {
 
 case object EventuallyBlockMaxInactivity extends CornichonError {
   lazy val baseErrorMessage = "Eventually block is interrupted due to a long period of inactivity"
-}
-
-case class EventuallyBlockOscillationDetected(failedStep: FailedStep) extends CornichonError {
-  lazy val baseErrorMessage = s"Eventually block failed because it detected an oscillation of errors\n${failedStep.messageForFailedStep}"
 }

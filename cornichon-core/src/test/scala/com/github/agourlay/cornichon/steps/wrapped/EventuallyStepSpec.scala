@@ -16,7 +16,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
       _ => GenericEqualityAssertion(scala.util.Random.nextInt(10), 5)
     ) :: Nil
 
-    val steps = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false) :: Nil
+    val steps = EventuallyStep(nested, eventuallyConf) :: Nil
     val s = Scenario("scenario with eventually", steps)
     val (executionTime, res) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
     assert(res.isSuccess)
@@ -32,7 +32,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
         Assertion.failWith("nop!")
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf)
     val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
     val (executionTime, r) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
     assert(!r.isSuccess)
@@ -48,7 +48,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
         Assertion.alwaysValid
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf)
     val s = Scenario("scenario with eventually that fails", eventuallyStep :: Nil)
     val (_, rep) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
 
@@ -70,111 +70,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
                   |   Scenario : scenario with eventually that fails
                   |      main steps
                   |      Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
-                  |      Eventually block did not complete in time after having being tried '1' times with '0' distinct errors""".stripMargin
-    }
-  }
-
-  test("reports distinct errors in the logs and only final error in the report") {
-    val eventuallyConf = EventuallyConf(maxTime = 200.millis, interval = 10.milliseconds)
-    var counter = 0
-    val nested = AssertStep(
-      "Fail differently", _ => {
-        if (counter == 0 || counter == 1 || counter == 2) {
-          counter += 1
-          Assertion.failWith(s"Failing $counter")
-        } else
-          Assertion.failWith("Failing forever")
-      }
-    ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = false)
-    val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
-    scenarioFailsWithMessage(res) {
-      """Scenario 'scenario with different failures' failed:
-          |
-          |at step:
-          |Fail differently
-          |
-          |with error(s):
-          |Failing forever
-          |
-          |seed for the run was '1'
-          |""".stripMargin
-    }
-
-    matchLogsWithoutDuration(res.logs.dropRight(1)) {
-      """
-          |   Scenario : scenario with different failures
-          |      main steps
-          |      Eventually block with maxDuration = 200 milliseconds and interval = 10 milliseconds
-          |         Fail differently
-          |         *** FAILED ***
-          |         Failing 1
-          |         Fail differently
-          |         *** FAILED ***
-          |         Failing 2
-          |         Fail differently
-          |         *** FAILED ***
-          |         Failing 3
-          |         Fail differently
-          |         *** FAILED ***
-          |         Failing forever""".stripMargin
-    }
-  }
-
-  test("detects oscillation in wrapped step") {
-    val eventuallyConf = EventuallyConf(maxTime = 1.seconds, interval = 10.milliseconds)
-    var counter = 1
-    val nested = AssertStep(
-      "Fail with oscillation", _ => {
-        if (counter == 1) {
-          counter += 1
-          Assertion.failWith(s"Failure mode one")
-        } else if (counter == 2) {
-          counter += 1
-          Assertion.failWith(s"Failure mode two")
-        } else
-          Assertion.failWith("Failure mode one")
-      }
-    ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = false, discardStateOnError = false)
-    val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
-    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
-    scenarioFailsWithMessage(res) {
-      """Scenario 'scenario with different failures' failed:
-            |
-            |at step:
-            |Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-            |
-            |with error(s):
-            |Eventually block failed because it detected an oscillation of errors
-            |
-            |at step:
-            |Fail with oscillation
-            |
-            |with error(s):
-            |Failure mode one
-            |
-            |
-            |seed for the run was '1'
-            |""".stripMargin
-    }
-
-    matchLogsWithoutDuration(res.logs) {
-      """
-            |   Scenario : scenario with different failures
-            |      main steps
-            |      Eventually block with maxDuration = 1 second and interval = 10 milliseconds
-            |         Fail with oscillation
-            |         *** FAILED ***
-            |         Failure mode one
-            |         Fail with oscillation
-            |         *** FAILED ***
-            |         Failure mode two
-            |         Fail with oscillation
-            |         *** FAILED ***
-            |         Failure mode one
-            |      Eventually block did not complete in time after having being tried '3' times with '2' distinct errors""".stripMargin
+                  |      Eventually block did not complete in time after having being tried '1' times""".stripMargin
     }
   }
 
@@ -190,7 +86,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
           Assertion.alwaysValid
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = true)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf)
     val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
@@ -219,7 +115,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
           Assertion.failWith("Failing forever")
       }
     ) :: Nil
-    val eventuallyStep = EventuallyStep(nested, eventuallyConf, oscillationAllowed = true, discardStateOnError = true)
+    val eventuallyStep = EventuallyStep(nested, eventuallyConf)
     val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     scenarioFailsWithMessage(res) {
