@@ -171,10 +171,18 @@ object HttpService {
   def encodeSessionHeader(name: String, value: String) =
     s"$name$headersKeyValueDelim$value"
 
-  def encodeSessionHeaders(headers: Seq[(String, String)]): String =
-    headers.iterator
-      .map { case (name, value) => encodeSessionHeader(name, value) }
-      .mkString(interHeadersValueDelimString)
+  def encodeSessionHeaders(headers: Seq[(String, String)]): String = {
+    val len = headers.length
+    val builder = new StringBuilder(len * 10)
+    var i = 0
+    for ((name, value) <- headers) {
+      builder.append(encodeSessionHeader(name, value))
+      if (i < len - 1)
+        builder.append(interHeadersValueDelim)
+      i += 1
+    }
+    builder.toString
+  }
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
     traverseIL(headers.split(interHeadersValueDelim).iterator) { header =>
