@@ -20,6 +20,7 @@ case class RunState(
   // Only the session is propagated downstream as it is.
   lazy val nestedContext: RunState = copy(depth = depth + 1, logStack = Nil, cleanupSteps = Nil)
   lazy val sameLevelContext: RunState = copy(logStack = Nil, cleanupSteps = Nil)
+  lazy val upperLevelContext: RunState = copy(depth = depth - 1, logStack = Nil, cleanupSteps = Nil)
 
   def withSession(s: Session): RunState = copy(session = s)
   def addToSession(tuples: Seq[(String, String)]): RunState = withSession(session.addValuesUnsafe(tuples: _*))

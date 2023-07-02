@@ -2,9 +2,9 @@ package com.github.agourlay.cornichon.framework.examples.superHeroes
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.Step
+import com.github.agourlay.cornichon.core.Resource
 import com.github.agourlay.cornichon.framework.examples.HttpServer
 import com.github.agourlay.cornichon.framework.examples.superHeroes.server.SuperHeroesHttpAPI
 import com.github.agourlay.cornichon.http.HttpService
@@ -12,7 +12,6 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.resolver.JsonMapper
 import com.github.agourlay.cornichon.steps.wrapped.ScenarioResourceStep
 import sangria.macros._
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -759,6 +758,21 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
       }
+
+      Scenario("demonstrate resource steps") {
+        When I get("/superheroes/Flash").withParams("sessionId" -> "<session-id>")
+        Then assert status.is(404)
+
+        WithSuperhero("Flash") {
+
+          When I get("/superheroes/Flash").withParams("sessionId" -> "<session-id>")
+
+          Then assert status.is(200)
+        }
+
+        When I get("/superheroes/Flash").withParams("sessionId" -> "<session-id>")
+        Then assert status.is(404)
+      }
     }
 
   def superhero_exists(name: String): Step =
@@ -772,6 +786,31 @@ class SuperHeroesScenario extends CornichonFeature {
       When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
       Then assert body.path("name").is(name)
     }
+
+  // Create a superhero resource that will be cleaned up at the end of the scope
+  def WithSuperhero(name: String) = WithResource(superhero_resource(name))
+
+  def superhero_resource(name: String) = Resource(
+    title = s"superhero $name resource",
+    acquire = post("/superheroes")
+      .withBody(
+        s"""
+        {
+          "name": "$name",
+          "realName": "unknown",
+          "city": "Berlin",
+          "hasSuperpowers": true,
+          "publisher": {
+            "name":"DC",
+            "foundationYear":1934,
+            "location":"Burbank, California"
+          }
+        }
+        """)
+      .withParams("sessionId" -> "<session-id>")
+      .withHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8)))),
+    release = delete(s"/superheroes/<name>").withParams("sessionId" -> "<session-id>")
+  )
 
   lazy val port = 8080
 
