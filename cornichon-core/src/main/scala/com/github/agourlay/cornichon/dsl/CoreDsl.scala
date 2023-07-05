@@ -4,7 +4,7 @@ import cats.Show
 import cats.syntax.either._
 import cats.syntax.show._
 import cats.effect.IO
-import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
+import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Resource, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
 import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionHistoryStepBuilder, SessionStepBuilder, SessionValuesStepBuilder }
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
@@ -123,6 +123,11 @@ trait CoreDsl {
   def WithJsonDataInputs(where: String): BodyElementCollector[Step, Step] =
     BodyElementCollector[Step, Step] { steps =>
       WithDataInputStep(steps, where, rawJson = true)
+    }
+
+  def WithResource(resource: Resource): BodyElementCollector[Step, Step] =
+    BodyElementCollector[Step, Step] { steps =>
+      WithResourceStep(steps, resource)
     }
 
   def wait(duration: FiniteDuration): Step = EffectStep.fromAsync(

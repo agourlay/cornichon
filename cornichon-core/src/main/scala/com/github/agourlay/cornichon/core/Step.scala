@@ -139,3 +139,5 @@ trait WrapperStep extends Step {
   def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
 }
 
+// Describes the lifecycle of a resource
+case class Resource(title: String, acquire: Step, release: Step)
