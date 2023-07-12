@@ -125,12 +125,14 @@ object ScenarioRunner {
   }
 
   private def prepareAndRunStep(step: Step, runState: RunState): IO[(RunState, FailedStep Either Done)] =
-    runState.scenarioContext.fillSessionPlaceholders(step.title) //resolving only session placeholders as built-in generators have side effects
-      .map(step.setTitle)
-      .fold(
-        ce => IO.pure(ScenarioRunner.handleErrors(step, runState, NonEmptyList.one(ce))),
-        ps => runStepSafe(runState, ps)
-      )
+    // resolving only session placeholders as built-in generators have side effects
+    runState.scenarioContext.fillSessionPlaceholders(step.title) match {
+      case Left(ce) => IO.pure(ScenarioRunner.handleErrors(step, runState, NonEmptyList.one(ce)))
+      case Right(newTitle) =>
+        // detect if title has changed and update it
+        val ps = if (newTitle == step.title) step else step.setTitle(newTitle)
+        runStepSafe(runState, ps)
+    }
 
   private def runStepSafe(runState: RunState, step: Step): IO[(RunState, FailedStep Either Done)] =
     Either
