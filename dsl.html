@@ -404,17 +404,6 @@ When receiving non JSON payloads, use <code class="language-plaintext highlighte
   <span class="o">}</span>
 </code></pre></div></div>
 
-<p>It is also possible to enable the oscillation detector to fail the step in case of oscillation of errors.</p>
-
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Given</span> <span class="n">I</span> <span class="n">send_async_command_updating_search_index</span>
-<span class="nc">Eventually</span><span class="o">(</span><span class="n">maxDuration</span> <span class="k">=</span> <span class="mf">1.</span><span class="n">seconds</span><span class="o">,</span> <span class="n">interval</span> <span class="k">=</span> <span class="mf">100.</span><span class="n">ms</span><span class="o">,</span> <span class="n">oscillationAllowed</span> <span class="k">=</span> <span class="kc">false</span><span class="o">)</span> <span class="o">{</span>
-  <span class="nc">Given</span> <span class="n">I</span> <span class="n">search_for_new_state</span>
-  <span class="nc">Then</span> <span class="n">assert</span> <span class="nv">status</span><span class="o">.</span><span class="py">is</span><span class="o">(</span><span class="mi">200</span><span class="o">)</span>
-<span class="o">}</span>
-</code></pre></div></div>
-
-<p>Here an oscillation could be seen in the status with something like 404 -&gt; 500 -&gt; 404 -&gt; 200.</p>
-
 <ul>
   <li>execute a series of steps ‘n’ times by batch of <code class="language-plaintext highlighter-rouge">p</code> in parallel and wait ‘maxTime’ for completion.</li>
 </ul>
