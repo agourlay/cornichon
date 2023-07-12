@@ -408,18 +408,6 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-It is also possible to enable the oscillation detector to fail the step in case of oscillation of errors.
-
-```scala
-Given I send_async_command_updating_search_index
-Eventually(maxDuration = 1.seconds, interval = 100.ms, oscillationAllowed = false) {
-  Given I search_for_new_state
-  Then assert status.is(200)
-}
-```
-
-Here an oscillation could be seen in the status with something like 404 -> 500 -> 404 -> 200.
-
 - execute a series of steps 'n' times by batch of `p` in parallel and wait 'maxTime' for completion.
 
 ```scala
