@@ -6,12 +6,10 @@ import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.matchers.MatcherParser.noMatchers
 import com.github.agourlay.cornichon.matchers.Matchers._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverse
-import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
+import com.github.agourlay.cornichon.util.StringUtils
 import io.circe.Json
 
 object MatcherResolver {
-
-  private val matchersCache = Caching.buildCache[String, Either[CornichonError, List[MatcherKey]]]()
 
   val builtInMatchers: List[Matcher] =
     isPresent ::
@@ -46,8 +44,7 @@ object MatcherResolver {
       // don't fill cache with useless entries
       noMatchers
     } else {
-      matchersCache.get(input, i => findMatcherKeys(i))
-        .flatMap { traverse(_)(resolveMatcherKeys(allMatchers)) }
+      findMatcherKeys(input).flatMap { traverse(_)(resolveMatcherKeys(allMatchers)) }
     }
 
   // Add quotes around known matchers

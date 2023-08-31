@@ -14,7 +14,6 @@ import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpStreams.SSE
-import com.github.agourlay.cornichon.util.Caching
 import com.github.agourlay.cornichon.util.CirceUtil._
 import fs2.io.net.tls.TLSContext
 import io.circe.Json
@@ -46,8 +45,6 @@ class Http4sClient(
     } else SSLContext.getDefault
   }
 
-  // Lives for the duration of the test run
-  private val uriCache = Caching.buildCache[String, Either[CornichonError, Uri]]()
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.Inf
   private val (httpClient, safeShutdown) =
@@ -173,7 +170,7 @@ class Http4sClient(
     }
 
   def shutdown(): IO[Done] =
-    safeShutdown.map { _ => uriCache.invalidateAll(); Done }
+    safeShutdown.map { _ => Done }
 
   def paramsFromUrl(url: String): Either[CornichonError, List[(String, String)]] =
     if (url.contains('?'))
@@ -182,5 +179,5 @@ class Http4sClient(
       rightNil
 
   def parseUri(uri: String): Either[CornichonError, Uri] =
-    uriCache.get(uri, u => Uri.fromString(u).leftMap(e => MalformedUriError(u, e.message)))
+    Uri.fromString(uri).leftMap(e => MalformedUriError(uri, e.message))
 }

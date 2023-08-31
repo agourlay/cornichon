@@ -6,12 +6,11 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
 import com.github.agourlay.cornichon.resolver.PlaceholderParser.noPlaceholders
-import com.github.agourlay.cornichon.util.{ Caching, StringUtils }
+import com.github.agourlay.cornichon.util.StringUtils
 
 object PlaceholderResolver {
 
   private val rightNil = Nil.asRight
-  private val placeholdersCache = Caching.buildCache[String, Either[CornichonError, List[Placeholder]]]()
   private val globalAtomicLong = new AtomicLong(1L) // can create non deterministic runs
 
   def globalNextLong(): Long = globalAtomicLong.getAndIncrement()
@@ -36,7 +35,7 @@ object PlaceholderResolver {
       // don't fill cache with useless entries
       noPlaceholders
     } else {
-      placeholdersCache.get(input, k => PlaceholderParser.parse(k))
+      PlaceholderParser.parse(input)
     }
 
   private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =

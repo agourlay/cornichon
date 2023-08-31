@@ -15,7 +15,6 @@ import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpRequest._
-import com.github.agourlay.cornichon.util.Caching
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import io.circe.{ Encoder, Json }
 import org.http4s.EntityEncoder
@@ -27,9 +26,6 @@ class HttpService(
     requestTimeout: FiniteDuration,
     client: HttpClient,
     config: Config)(implicit ioRuntime: IORuntime) {
-
-  // Cannot be globally shared because it depends on `baseUrl`
-  private val fullUrlCache = Caching.buildCache[String, String]()
 
   private def resolveAndParseBody[A: Show: Resolvable: Encoder](body: Option[A], scenarioContext: ScenarioContext): Either[CornichonError, Option[Json]] =
     body.map(scenarioContext.fillPlaceholders(_)) match {
@@ -79,15 +75,11 @@ class HttpService(
     } yield newSession
 
   private def withBaseUrl(input: String) = {
-    def urlBuilder(url: String) = {
-      val trimmedUrl = url.trim
-      if (baseUrl.isEmpty) trimmedUrl
-      // the base URL is not applied if the input URL already starts with the protocol
-      else if (trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://")) trimmedUrl
-      else baseUrl + trimmedUrl
-    }
-
-    fullUrlCache.get(input, k => urlBuilder(k))
+    val trimmedUrl = input.trim
+    if (baseUrl.isEmpty) trimmedUrl
+    // the base URL is not applied if the input URL already starts with the protocol
+    else if (trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://")) trimmedUrl
+    else baseUrl + trimmedUrl
   }
 
   def requestEffectT[A: Show: Resolvable: Encoder](

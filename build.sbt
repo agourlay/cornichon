@@ -131,7 +131,6 @@ lazy val core =
         library.circeGeneric,
         library.circeParser,
         library.diffsonCirce,
-        library.caffeine,
         library.munit % Test,
         library.scalacheck % Test,
         library.circeTesting % Test
@@ -290,7 +289,6 @@ lazy val library =
       val http4s        = "0.23.23"
       val fs2           = "3.9.1"
       val kafkaClient   = "3.5.1"
-      val caffeine      = "3.1.8"
       val openPojo      = "0.9.1"
       val decline       = "2.4.1"
       val scalaXml      = "2.2.0"
@@ -319,7 +317,6 @@ lazy val library =
     val fs2Core       = "co.fs2"                         %% "fs2-core"             % Version.fs2
     val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
     val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.kafkaClient
-    val caffeine      = "com.github.ben-manes.caffeine"  %  "caffeine"             % Version.caffeine
     val openPojo      = "com.openpojo"                   %  "openpojo"             % Version.openPojo
     val decline       = "com.monovore"                   %% "decline"              % Version.decline
     val scalaXml      = "org.scala-lang.modules"         %% "scala-xml"            % Version.scalaXml

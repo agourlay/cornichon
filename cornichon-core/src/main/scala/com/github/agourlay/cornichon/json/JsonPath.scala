@@ -5,7 +5,6 @@ import cats.syntax.either._
 import cats.syntax.option._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.util.Caching
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseLO
 import io.circe.{ ACursor, Json }
 import java.util.concurrent.atomic.AtomicBoolean
@@ -92,7 +91,6 @@ object JsonPath {
   val root = "$"
   val rootPath = JsonPath(Nil)
   private val rightEmptyJsonPath = Right(rootPath)
-  private val operationsCache = Caching.buildCache[String, Either[CornichonError, List[JsonPathOperation]]]()
 
   implicit val show: Show[JsonPath] = Show.show[JsonPath] { p =>
     p.operations.iterator.map(_.pretty).mkString(".")
@@ -102,7 +100,7 @@ object JsonPath {
     if (path == root)
       rightEmptyJsonPath
     else
-      operationsCache.get(path, p => JsonPathParser.parseJsonPath(p)).map(JsonPath(_))
+      JsonPathParser.parseJsonPath(path).map(JsonPath(_))
 
   def run(path: String, json: Json): Either[CornichonError, Option[Json]] =
     JsonPath.parse(path).map(_.run(json))
