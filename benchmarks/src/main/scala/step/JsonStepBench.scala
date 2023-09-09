@@ -130,8 +130,8 @@ class JsonStepBench {
 }
 
 object JsonStepBench {
-  val testKey = "test-key"
-  val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))
+  private val testKey = "test-key"
+  private val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))
   val json = """
     {
       "name": "Batman",

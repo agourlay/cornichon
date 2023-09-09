@@ -5,12 +5,13 @@ import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
-import com.github.agourlay.cornichon.resolver.PlaceholderParser.noPlaceholders
 import com.github.agourlay.cornichon.util.StringUtils
+
+import scala.collection.mutable.ListBuffer
 
 object PlaceholderResolver {
 
-  private val rightNil = Nil.asRight
+  private val rightNil = Right(Nil)
   private val globalAtomicLong = new AtomicLong(1L) // can create non deterministic runs
 
   def globalNextLong(): Long = globalAtomicLong.getAndIncrement()
@@ -30,27 +31,22 @@ object PlaceholderResolver {
   private val placeholderGeneratorsByLabel: Map[String, PlaceholderGenerator] =
     builtInPlaceholderGenerators.groupBy(_.key).map { case (k, values) => (k, values.head) } // we know it is not empty
 
-  def findPlaceholders(input: String): Either[CornichonError, List[Placeholder]] =
-    if (!input.contains("<")) {
-      // don't fill cache with useless entries
-      noPlaceholders
-    } else {
-      PlaceholderParser.parse(input)
-    }
+  def findPlaceholders(input: String): Either[CornichonError, Vector[Placeholder]] =
+    PlaceholderParser.parse(input)
 
   private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =
     placeholderGeneratorsByLabel.get(ph.key) match {
       case Some(pg) =>
         // in session mode we leave the generators untouched to avoid side effects
         val v = if (sessionOnlyMode) ph.fullKey else pg.gen(rc)
-        v.asRight
+        Right(v)
       case None =>
         val otherKeyName = ph.key
         val otherKeyIndex = ph.index
         (session.get(otherKeyName, otherKeyIndex), customExtractors.get(otherKeyName)) match {
           case (v, None)               => v
           case (Left(_), Some(mapper)) => applyMapper(otherKeyName, mapper, ph)(session, rc)
-          case (Right(_), Some(_))     => AmbiguousKeyDefinition(otherKeyName).asLeft
+          case (Right(_), Some(_))     => Left(AmbiguousKeyDefinition(otherKeyName))
         }
     }
 
@@ -66,25 +62,44 @@ object PlaceholderResolver {
   }
 
   def fillPlaceholders(input: String)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean = false): Either[CornichonError, String] =
-    findPlaceholders(input).flatMap {
-      case Nil => input.asRight[CornichonError]
-      case list => list.foldLeft(input.asRight[CornichonError]) { (accE, ph) =>
-        for {
-          acc <- accE
-          resolvedValue <- resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
-        } yield StringUtils.replace_all(acc, ph.fullKey, resolvedValue)
+    findPlaceholders(input).flatMap { placeholders =>
+      if (placeholders.isEmpty)
+        Right(input)
+      else {
+        val len = placeholders.length
+        var acc = input
+        var i = 0
+        while (i < len) {
+          val ph = placeholders(i)
+          val resolvedValue = resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
+          resolvedValue match {
+            case Right(resolved) => acc = StringUtils.replace_all(acc, ph.fullKey, resolved)
+            case Left(err)       => return Left(err)
+          }
+          i = i + 1
+        }
+        Right(acc)
       }
     }
 
-  def fillPlaceholdersMany(params: Seq[(String, String)])(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, List[(String, String)]] =
-    params.foldRight[Either[CornichonError, List[(String, String)]]](rightNil) {
-      case ((name, value), accE) =>
-        for {
-          acc <- accE
+  def fillPlaceholdersPairs(pairs: Seq[(String, String)])(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, List[(String, String)]] = {
+    if (pairs.isEmpty)
+      rightNil
+    else {
+      val acc = new ListBuffer[(String, String)]()
+      for ((name, value) <- pairs) {
+        val res = for {
           resolvedName <- fillPlaceholders(name)(session, randomContext, customExtractors)
           resolvedValue <- fillPlaceholders(value)(session, randomContext, customExtractors)
-        } yield (resolvedName, resolvedValue) :: acc // foldRight + prepend
+        } yield (resolvedName, resolvedValue)
+        res match {
+          case Right(tuple) => acc += tuple
+          case Left(err)    => return Left(err)
+        }
+      }
+      Right(acc.toList)
     }
+  }
 
   private def applyMapper(bindingKey: String, m: Mapper, ph: Placeholder)(session: Session, randomContext: RandomContext): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) =>

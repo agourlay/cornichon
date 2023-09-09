@@ -29,7 +29,7 @@ trait CornichonJson {
   // - a data table
   private def parseDslStringJson(s: String): Either[CornichonError, Json] =
     firstNonEmptyChar(s) match {
-      case None => Json.fromString(s).asRight
+      case None => Right(Json.fromString(s))
       case Some(firstChar) =>
         (firstChar: @switch) match {
           // parse object or array
@@ -40,7 +40,7 @@ trait CornichonJson {
             parseDataTable(s).map(list => Json.fromValues(list.iterator.map(Json.fromJsonObject).toVector))
           // treated as a JString
           case _ =>
-            Json.fromString(s).asRight
+            Right(Json.fromString(s))
         }
     }
 
@@ -61,8 +61,18 @@ trait CornichonJson {
       case Some(head) => head != '[' && head != '{' && head != '|'
     }
 
-  private def firstNonEmptyChar(s: String): Option[Char] =
-    s.find { ch => ch != ' ' && ch != '\t' && !ch.isWhitespace }
+  private def firstNonEmptyChar(s: String): Option[Char] = {
+    val len = s.length
+    var i = 0
+    while (i < len) {
+      val ch = s.charAt(i)
+      if (ch != ' ' && ch != '\t' && !ch.isWhitespace) {
+        return Some(ch)
+      }
+      i += 1
+    }
+    None
+  }
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     def parseRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
@@ -101,8 +111,8 @@ trait CornichonJson {
 
   def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
     json.asArray match {
-      case Some(a) => a.asRight
-      case None    => Left(NotAnArrayError(json))
+      case Some(arr) => Right(arr)
+      case None      => Left(NotAnArrayError(json))
     }
 
   def parseArray(input: String): Either[CornichonError, Vector[Json]] =

@@ -15,37 +15,37 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
 
   property("findPlaceholders finds placeholder in content solely containing a placeholder without index") =
     forAll(keyGen) { key =>
-      findPlaceholders(s"<$key>") == Right(List(Placeholder(key, None)))
+      findPlaceholders(s"<$key>") == Right(Vector(Placeholder(key, None)))
     }
 
   property("findPlaceholders find placeholder in content solely containing a placeholder with index") =
     forAll(keyGen, indexGen) { (key, index) =>
-      findPlaceholders(s"<$key[$index]>") == Right(List(Placeholder(key, Some(index))))
+      findPlaceholders(s"<$key[$index]>") == Right(Vector(Placeholder(key, Some(index))))
     }
 
   property("findPlaceholders find placeholder in content starting with whitespace and containing a placeholder") =
     forAll(keyGen) { key =>
-      findPlaceholders(s" <$key>") == Right(List(Placeholder(key, None)))
+      findPlaceholders(s" <$key>") == Right(Vector(Placeholder(key, None)))
     }
 
   property("findPlaceholders find placeholder in content starting with 2 whitespaces and containing a placeholder") =
     forAll(keyGen) { key =>
-      findPlaceholders(s"  <$key>") == Right(List(Placeholder(key, None)))
+      findPlaceholders(s"  <$key>") == Right(Vector(Placeholder(key, None)))
     }
 
   property("findPlaceholders find placeholder in content finishing with whitespace and containing a placeholder") =
     forAll(keyGen) { key =>
-      findPlaceholders(s"<$key> ") == Right(List(Placeholder(key, None)))
+      findPlaceholders(s"<$key> ") == Right(Vector(Placeholder(key, None)))
     }
 
   property("findPlaceholders find placeholder in content finishing with 2 whitespaces and containing a placeholder") =
     forAll(keyGen) { key =>
-      findPlaceholders(s"<$key>  ") == Right(List(Placeholder(key, None)))
+      findPlaceholders(s"<$key>  ") == Right(Vector(Placeholder(key, None)))
     }
 
   property("findPlaceholders find placeholder in random content containing a placeholder with index") =
     forAll(keyGen, indexGen, Gen.alphaStr) { (key, index, content) =>
-      findPlaceholders(s"$content<$key[$index]>$content") == Right(List(Placeholder(key, Some(index))))
+      findPlaceholders(s"$content<$key[$index]>$content") == Right(Vector(Placeholder(key, Some(index))))
     }
 
   // FIXME '<' is always accepted inside the key, the parser backtracks and consumes it twice??

@@ -12,25 +12,24 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
     Ignore ~ zeroOrMore(PlaceholderRule).separatedBy(Ignore) ~ Ignore ~ EOI
   }
 
-  def PlaceholderRule = rule('<' ~ PlaceholderTXT ~ optIndex ~ '>' ~> Placeholder)
+  private def PlaceholderRule = rule('<' ~ PlaceholderTXT ~ OptIndex ~ '>' ~> Placeholder)
 
-  def optIndex = rule(optional('[' ~ Number ~ ']'))
+  private def OptIndex = rule(optional('[' ~ Number ~ ']'))
 
-  def PlaceholderTXT = rule(capture(oneOrMore(allowedCharsInPlaceholdersPredicate)))
+  private def PlaceholderTXT = rule(capture(oneOrMore(allowedCharsInPlaceholdersPredicate)))
 
-  def Ignore = rule { zeroOrMore(!PlaceholderRule ~ ANY) }
+  private def Ignore = rule { zeroOrMore(!PlaceholderRule ~ ANY) }
 
-  def Number = rule { capture(Digits) ~> (_.toInt) }
+  private def Number = rule { capture(Digits) ~> (_.toInt) }
 
-  def Digits = rule { oneOrMore(CharPredicate.Digit) }
+  private def Digits = rule { oneOrMore(CharPredicate.Digit) }
 }
 
 object PlaceholderParser {
-
-  val noPlaceholders = Right(Nil)
+  private val noPlaceholders = Right(Vector.empty)
   private val allowedCharsInPlaceholdersPredicate: CharPredicate = CharPredicate.Visible -- Session.notAllowedInKey
 
-  def parse(input: String): Either[CornichonError, List[Placeholder]] =
+  def parse(input: String): Either[CornichonError, Vector[Placeholder]] =
     if (!input.contains("<"))
       // No need to parse the whole thing
       noPlaceholders
@@ -42,13 +41,16 @@ object PlaceholderParser {
         case Failure(e: Throwable) =>
           Left(PlaceholderError(input, e))
         case Success(dt) =>
-          Right(dt.toList)
+          Right(dt.toVector) // parser produces a vector under the hood
       }
     }
 }
 
 case class Placeholder(key: String, index: Option[Int]) {
-  val fullKey = index.fold(s"<$key>") { index => s"<$key[$index]>" }
+  val fullKey = index match {
+    case Some(i) => s"<$key[$i]>"
+    case None    => s"<$key>"
+  }
 }
 
 case class PlaceholderError(input: String, error: Throwable) extends CornichonError {

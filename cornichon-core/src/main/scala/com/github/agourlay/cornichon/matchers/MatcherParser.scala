@@ -12,23 +12,19 @@ class MatcherParser(val input: ParserInput) extends Parser {
     Ignore ~ zeroOrMore(MatcherRule).separatedBy(Ignore) ~ Ignore ~ EOI
   }
 
-  def MatcherRule = rule("*" ~ MatcherTXT ~ "*" ~> MatcherKey)
+  private def MatcherRule = rule("*" ~ MatcherTXT ~ "*" ~> MatcherKey)
 
-  def MatcherTXT = rule(capture(oneOrMore(allowedCharsInMatcher)))
+  private def MatcherTXT = rule(capture(oneOrMore(allowedCharsInMatcher)))
 
-  def Ignore = rule { zeroOrMore(!MatcherRule ~ ANY) }
-
-  def Number = rule { capture(Digits) ~> (_.toInt) }
-
-  def Digits = rule { oneOrMore(CharPredicate.Digit) }
+  private def Ignore = rule { zeroOrMore(!MatcherRule ~ ANY) }
 }
 
 object MatcherParser {
-  val notAllowedInMatchers = "\r\n<>* "
-  val noMatchers = Right(Nil)
+  private val notAllowedInMatchers = "\r\n<>* "
+  private val noMatchers = Right(Vector.empty)
   private val allowedCharsInMatcher: CharPredicate = CharPredicate.Visible -- MatcherParser.notAllowedInMatchers
 
-  def parse(input: String): Either[CornichonError, List[MatcherKey]] =
+  def parse(input: String): Either[CornichonError, Vector[MatcherKey]] =
     if (!input.contains("*"))
       // No need to parse the whole thing
       noMatchers
@@ -40,7 +36,7 @@ object MatcherParser {
         case Failure(e: Throwable) =>
           Left(MatcherError(input, e))
         case Success(dt) =>
-          Right(dt.toList)
+          Right(dt.toVector) // parser produces a vector under the hood
       }
     }
 }

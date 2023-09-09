@@ -40,13 +40,13 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
         // Failed completely, nothing to cleanup, fast exit
         case Left((beforeFeatureError, _)) => IO.raiseError(beforeFeatureError.toException)
         case Right(_) =>
-          // featureParallelism is limited to avoid spawning too much work at once
-          val featureParallelism = if (baseFeature.executeScenariosInParallel) {
+          // `concurrentScenarios` is limited to avoid spawning too much work at once
+          val concurrentScenarios = if (baseFeature.executeScenariosInParallel) {
             baseFeature.config.scenarioExecutionParallelismFactor * FeatureRunner.availableProcessors + 1
           } else 1
 
           Stream.iterable[IO, Scenario](scenariosToRun)
-            .mapAsyncUnordered(featureParallelism)(runScenario(_).map(scenarioResultHandler))
+            .mapAsyncUnordered(concurrentScenarios)(runScenario(_).map(scenarioResultHandler))
             .compile
             .toList
             .flatMap { results =>

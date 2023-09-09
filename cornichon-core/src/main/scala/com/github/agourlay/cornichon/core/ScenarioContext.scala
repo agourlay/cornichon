@@ -15,11 +15,11 @@ trait ScenarioContext {
   def fillPlaceholders(params: Seq[(String, String)]): Either[CornichonError, List[(String, String)]]
 
   // MatcherResolver
-  def findAllMatchers(input: String): Either[CornichonError, List[Matcher]]
+  def findAllMatchers(input: String): Either[CornichonError, Vector[Matcher]]
 }
 
 object ScenarioContext {
-  private val rightNil = Right(Nil)
+  private val rightEmptyVec = Right(Vector.empty)
   val empty: ScenarioContext = new ScenarioContext {
     val randomContext: RandomContext = RandomContext.fromSeed(1L)
     val session: Session = Session.newEmpty
@@ -29,6 +29,6 @@ object ScenarioContext {
     def fillSessionPlaceholders(input: String): Either[CornichonError, String] = Right(input)
     def fillPlaceholders(params: Seq[(String, String)]): Either[CornichonError, List[(String, String)]] = Right(params.toList)
 
-    def findAllMatchers(input: String): Either[CornichonError, List[Matcher]] = rightNil
+    def findAllMatchers(input: String): Either[CornichonError, Vector[Matcher]] = rightEmptyVec
   }
 }

@@ -32,19 +32,19 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
     zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> DataTable
   }
 
-  def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
+  private def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
 
-  def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> Row }
+  private def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> Row }
 
-  def CellContent = rule { !NL ~ capture(zeroOrMore(ContentsChar)) }
+  private def CellContent = rule { !NL ~ capture(zeroOrMore(ContentsChar)) }
 
-  def ContentsChar = rule { !DataTableParser.delims ~ ANY }
+  private def ContentsChar = rule { !DataTableParser.delims ~ ANY }
 
-  def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
+  private def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
 
-  def Spaces = rule { quiet(zeroOrMore(DataTableParser.WhiteSpace)) }
+  private def Spaces = rule { quiet(zeroOrMore(DataTableParser.WhiteSpace)) }
 
-  def Separator = rule { Spaces ~ DataTableParser.delimiterChar ~ Spaces }
+  private def Separator = rule { Spaces ~ DataTableParser.delimiterChar ~ Spaces }
 
 }
 
@@ -77,11 +77,11 @@ trait StringHeaderParserSupport extends StringBuilding {
     atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.stripTrailing()))
   }
 
-  def Characters = rule { oneOrMore(NormalChar | '\\' ~ EscapedChar) }
+  private def Characters = rule { oneOrMore(NormalChar | '\\' ~ EscapedChar) }
 
-  def NormalChar = rule { !(DataTableParser.delims | DataTableParser.Backslash) ~ ANY ~ appendSB() }
+  private def NormalChar = rule { !(DataTableParser.delims | DataTableParser.Backslash) ~ ANY ~ appendSB() }
 
-  def EscapedChar = rule {
+  private def EscapedChar = rule {
     DataTableParser.Backslash ~ appendSB() |
       'b' ~ appendSB('\b') |
       'f' ~ appendSB('\f') |
@@ -92,7 +92,7 @@ trait StringHeaderParserSupport extends StringBuilding {
       Unicode ~> { code => sb.append(code.asInstanceOf[Char]); () }
   }
 
-  def Unicode = rule { 'u' ~ capture(4 times CharPredicate.HexDigit) ~> (Integer.parseInt(_, 16)) }
+  private def Unicode = rule { 'u' ~ capture(4 times CharPredicate.HexDigit) ~> (Integer.parseInt(_, 16)) }
 }
 
 case class DataTableError(error: Throwable, input: String) extends CornichonError {

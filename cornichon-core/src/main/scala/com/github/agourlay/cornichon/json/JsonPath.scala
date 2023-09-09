@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.json
 
 import cats.Show
-import cats.syntax.either._
 import cats.syntax.option._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -10,7 +9,7 @@ import io.circe.{ ACursor, Json }
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable.ListBuffer
 
-case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
+case class JsonPath(operations: Vector[JsonPathOperation]) extends AnyVal {
 
   def run(superSet: Json): Option[Json] = {
     val (allCursors, projectionMode) = cursors(superSet)
@@ -30,8 +29,8 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
   def runStrict(superSet: Json): Either[CornichonError, Json] =
     run(superSet) match {
-      case Some(j) => j.asRight
-      case None    => PathSelectsNothing(JsonPath.show.show(this), superSet).asLeft
+      case Some(j) => Right(j)
+      case None    => Left(PathSelectsNothing(JsonPath.show.show(this), superSet))
     }
 
   def run(json: String): Either[CornichonError, Option[Json]] = parseDslJson(json).map(run)
@@ -89,7 +88,7 @@ case class JsonPath(operations: List[JsonPathOperation]) extends AnyVal {
 
 object JsonPath {
   val root = "$"
-  val rootPath = JsonPath(Nil)
+  val rootPath = JsonPath(Vector.empty)
   private val rightEmptyJsonPath = Right(rootPath)
 
   implicit val show: Show[JsonPath] = Show.show[JsonPath] { p =>

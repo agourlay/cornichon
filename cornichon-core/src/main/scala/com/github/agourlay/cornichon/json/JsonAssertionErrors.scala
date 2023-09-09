@@ -56,7 +56,7 @@ object JsonAssertionErrors {
         |$prettySource""".stripMargin
   }
 
-  case class MatchersNotSupportedInAsArray(matchers: List[Matcher]) extends CornichonError {
+  case class MatchersNotSupportedInAsArray(matchers: Vector[Matcher]) extends CornichonError {
     lazy val baseErrorMessage: String = s"matchers are not supported in `asArray` assertion but ${matchers.iterator.map(_.fullKey).mkString(", ")} found" +
       s"\nhttps://github.com/agourlay/cornichon/issues/135"
   }

@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.show._
-import cats.syntax.either._
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime
 import org.http4s.circe._
@@ -180,9 +179,9 @@ object HttpService {
     traverseIL(headers.split(interHeadersValueDelim).iterator) { header =>
       val elms = header.split(headersKeyValueDelim)
       if (elms.length != 2)
-        BadSessionHeadersEncoding(header).asLeft
+        Left(BadSessionHeadersEncoding(header))
       else
-        (elms(0) -> elms(1)).asRight
+        Right(elms(0) -> elms(1))
     }
 
   def configureRequest[A: Show](req: HttpRequest[A], config: Config): HttpRequest[A] = {
@@ -203,14 +202,14 @@ object HttpService {
       case ByNames(names) => headers.filterNot { case (n, _) => names.contains(n) }
     }
 
-  def expectStatusCode(httpResponse: HttpResponse, expected: Option[Int], requestDescription: String): Either[CornichonError, HttpResponse] =
+  private def expectStatusCode(httpResponse: HttpResponse, expected: Option[Int], requestDescription: String): Either[CornichonError, HttpResponse] =
     expected match {
       case None =>
-        httpResponse.asRight
+        Right(httpResponse)
       case Some(expectedStatus) if httpResponse.status == expectedStatus =>
-        httpResponse.asRight
+        Right(httpResponse)
       case Some(expectedStatus) =>
-        StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body, requestDescription).asLeft
+        Left(StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body, requestDescription))
     }
 
   def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor, requestDescription: String)(response: HttpResponse): Either[CornichonError, Session] = {
@@ -222,7 +221,7 @@ object HttpService {
 
     extractor match {
       case NoOpExtraction =>
-        updatedSession.asRight
+        Right(updatedSession)
       case RootExtractor(targetKey) =>
         updatedSession.addValue(targetKey, response.body)
       case PathExtractor(path, targetKey) =>

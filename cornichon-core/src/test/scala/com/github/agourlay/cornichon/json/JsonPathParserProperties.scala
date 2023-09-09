@@ -8,25 +8,25 @@ class JsonPathParserProperties extends Properties("JsonPathParser") {
 
   property("parse JsonPath containing a field without index") = {
     forAll(fieldGen) { field =>
-      JsonPathParser.parseJsonPath(field) == Right(List(FieldSelection(field)))
+      JsonPathParser.parseJsonPath(field) == Right(Vector(FieldSelection(field)))
     }
   }
 
   property("parse JsonPath containing a field with index") = {
     forAll(fieldGen, indexGen) { (field, index) =>
-      JsonPathParser.parseJsonPath(s"$field[$index]") == Right(List(ArrayFieldSelection(field, index)))
+      JsonPathParser.parseJsonPath(s"$field[$index]") == Right(Vector(ArrayFieldSelection(field, index)))
     }
   }
 
   property("parse JsonPath containing two fields without index") = {
     forAll(fieldGen, fieldGen) { (field1, field2) =>
-      JsonPathParser.parseJsonPath(s"$field1.$field2") == Right(List(FieldSelection(field1), FieldSelection(field2)))
+      JsonPathParser.parseJsonPath(s"$field1.$field2") == Right(Vector(FieldSelection(field1), FieldSelection(field2)))
     }
   }
 
   property("parse JsonPath containing a field with projection") = {
     forAll(fieldGen) { field =>
-      JsonPathParser.parseJsonPath(s"$field[*]") == Right(List(ArrayFieldProjection(field)))
+      JsonPathParser.parseJsonPath(s"$field[*]") == Right(Vector(ArrayFieldProjection(field)))
     }
   }
 
@@ -34,7 +34,7 @@ class JsonPathParserProperties extends Properties("JsonPathParser") {
     forAll(fieldGen, fieldGen, fieldGen) { (field1, field2, field3) =>
       val composedPath = s"$field1.$field2"
       val fullPath = s"`$composedPath`.$field3"
-      JsonPathParser.parseJsonPath(fullPath) == Right(List(FieldSelection(composedPath), FieldSelection(field3)))
+      JsonPathParser.parseJsonPath(fullPath) == Right(Vector(FieldSelection(composedPath), FieldSelection(field3)))
     }
   }
 
@@ -42,7 +42,7 @@ class JsonPathParserProperties extends Properties("JsonPathParser") {
     forAll(fieldGen, fieldGen, fieldGen, indexGen) { (field1, field2, field3, index) =>
       val composedPath = s"$field1.$field2"
       val fullPath = s"`$composedPath`.$field3[$index]"
-      JsonPathParser.parseJsonPath(fullPath) == Right(List(FieldSelection(composedPath), ArrayFieldSelection(field3, index)))
+      JsonPathParser.parseJsonPath(fullPath) == Right(Vector(FieldSelection(composedPath), ArrayFieldSelection(field3, index)))
     }
   }
 

@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import cats.Show
 import cats.syntax.show._
 import cats.syntax.monoid._
-import cats.syntax.either._
+
 import cats.kernel.Monoid
 import com.github.agourlay.cornichon.core.Session._
 import com.github.agourlay.cornichon.util.StringUtils
@@ -27,14 +27,14 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   def get(key: String, stackingIndex: Option[Int] = None): Either[CornichonError, String] =
     content.get(key) match {
       case None =>
-        KeyNotFoundInSession(key, this).asLeft
+        Left(KeyNotFoundInSession(key, this))
       case Some(values) =>
         val valueCount = values.length
         val index = stackingIndex.getOrElse(valueCount - 1)
         if (valueCount < index)
-          IndexNotFoundForKey(key, index, values).asLeft
+          Left(IndexNotFoundForKey(key, index, values))
         else
-          values(index).asRight
+          Right(values(index))
     }
 
   def get(sessionKey: SessionKey): Either[CornichonError, String] =
@@ -50,18 +50,17 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
     content.get(key).toRight(KeyNotFoundInSession(key, this))
 
   def getPrevious(key: String): Either[CornichonError, Option[String]] =
-    for {
-      values <- content.get(key).toRight(KeyNotFoundInSession(key, this))
-      index = values.size - 2
-      value <- values.lift(index).asRight
-    } yield value
+    getHistory(key).map { values =>
+      val index = values.size - 2
+      values.lift(index)
+    }
 
-  def getMandatoryPrevious(key: String): Either[CornichonError, String] =
-    for {
-      values <- content.get(key).toRight(KeyNotFoundInSession(key, this))
-      index = values.size - 2
-      value <- values.lift(index).toRight(KeyWithoutPreviousValue(key, this))
-    } yield value
+  def getMandatoryPrevious(key: String): Either[CornichonError, String] = {
+    getPrevious(key).flatMap {
+      case None        => Left(KeyWithoutPreviousValue(key, this))
+      case Some(value) => Right(value)
+    }
+  }
 
   private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
     c1.get(key) match {
@@ -76,11 +75,11 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   // Validate the key adding it to the session
   def addValue(key: String, value: String): Either[CornichonError, Session] =
     if (key.isBlank)
-      EmptyKey.asLeft
+      Left(EmptyKey)
     else if (Session.notAllowedInKey.exists(forbidden => key.contains(forbidden)))
-      IllegalKey(key).asLeft
+      Left(IllegalKey(key))
     else
-      Session(updateContent(content)(key, value)).asRight
+      Right(Session(updateContent(content)(key, value)))
 
   def addValueUnsafe(key: String, value: String): Session =
     addValue(key, value).valueUnsafe
@@ -93,7 +92,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
         case Right(newSession) => resultSession = newSession
       }
     }
-    resultSession.asRight
+    Right(resultSession)
   }
 
   def addValuesUnsafe(tuples: (String, String)*): Session =

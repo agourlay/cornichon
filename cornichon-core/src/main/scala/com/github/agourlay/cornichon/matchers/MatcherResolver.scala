@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.matchers
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson
-import com.github.agourlay.cornichon.matchers.MatcherParser.noMatchers
 import com.github.agourlay.cornichon.matchers.Matchers._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverse
 import com.github.agourlay.cornichon.util.StringUtils
@@ -28,7 +27,7 @@ object MatcherResolver {
       anyTime ::
       Nil
 
-  def findMatcherKeys(input: String): Either[CornichonError, List[MatcherKey]] =
+  def findMatcherKeys(input: String): Either[CornichonError, Vector[MatcherKey]] =
     MatcherParser.parse(input)
 
   def resolveMatcherKeys(allMatchers: Map[String, List[Matcher]])(mk: MatcherKey): Either[CornichonError, Matcher] =
@@ -39,23 +38,18 @@ object MatcherResolver {
       case Some(m :: others) => DuplicateMatcherDefinition(m.key, (m :: others).map(_.description)).asLeft
     }
 
-  def findAllMatchers(allMatchers: Map[String, List[Matcher]])(input: String): Either[CornichonError, List[Matcher]] =
-    if (!input.contains("*")) {
-      // don't fill cache with useless entries
-      noMatchers
-    } else {
-      findMatcherKeys(input).flatMap { traverse(_)(resolveMatcherKeys(allMatchers)) }
-    }
+  def findAllMatchers(allMatchers: Map[String, List[Matcher]])(input: String): Either[CornichonError, Vector[Matcher]] =
+    findMatcherKeys(input).flatMap { traverse(_)(resolveMatcherKeys(allMatchers)) }
 
   // Add quotes around known matchers
-  def quoteMatchers(input: String, matchersToQuote: List[Matcher]): String =
+  def quoteMatchers(input: String, matchersToQuote: Vector[Matcher]): String =
     // can't use an Iterator with distinct because of Scala 2.12 :s
     matchersToQuote.distinct.foldLeft(input) {
       case (input, m) => StringUtils.replace_all(input, m.fullKey, m.quotedFullKey)
     }
 
   // Removes JSON fields targeted by matchers and builds corresponding matchers assertions
-  def prepareMatchers(matchers: List[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, List[MatcherAssertion]) =
+  def prepareMatchers(matchers: Vector[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, List[MatcherAssertion]) =
     if (matchers.isEmpty)
       (expected, actual, Nil)
     else {
