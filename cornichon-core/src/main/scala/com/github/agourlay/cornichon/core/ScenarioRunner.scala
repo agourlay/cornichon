@@ -41,7 +41,7 @@ object ScenarioRunner {
     (runState.recordLog(errorLogStack), failedStep.asLeft)
   }
 
-  def handleThrowable(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) = {
+  private def handleThrowable(currentStep: Step, runState: RunState, error: Throwable): (RunState, FailedStep Either Done) = {
     val (errorLogStack, failedStep) = errorsToFailureStep(currentStep, runState.depth, NonEmptyList.one(CornichonError.fromThrowable(error)))
     (runState.recordLog(errorLogStack), failedStep.asLeft)
   }
@@ -134,11 +134,12 @@ object ScenarioRunner {
         runStepSafe(runState, ps)
     }
 
-  private def runStepSafe(runState: RunState, step: Step): IO[(RunState, FailedStep Either Done)] =
-    Either
-      .catchNonFatal(step.runStep(runState))
-      .fold(
-        e => IO.pure(handleThrowable(step, runState, e)),
-        _.handleError { case t if NonFatal(t) => handleThrowable(step, runState, t) }
-      )
+  private def runStepSafe(runState: RunState, step: Step): IO[(RunState, FailedStep Either Done)] = {
+    Either.catchNonFatal(step.runStep(runState)) match {
+      case Left(e) => IO.pure(handleThrowable(step, runState, e))
+      case Right(s) => s.handleError {
+        case t if NonFatal(t) => handleThrowable(step, runState, t)
+      }
+    }
+  }
 }

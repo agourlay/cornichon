@@ -9,32 +9,32 @@ class MatcherResolverProperties extends Properties("MatcherResolver") {
 
   property("find matcher in content solely containing a matcher") = {
     forAll(keyGen) { key =>
-      MatcherResolver.findMatcherKeys(s"*$key*") == Right(List(MatcherKey(key)))
+      MatcherResolver.findMatcherKeys(s"*$key*") == Right(Vector(MatcherKey(key)))
     }
   }
 
   property("find matcher in content starting with whitespace and containing a matcher") = {
     forAll(keyGen) { key =>
-      MatcherResolver.findMatcherKeys(s" *$key*") == Right(List(MatcherKey(key)))
+      MatcherResolver.findMatcherKeys(s" *$key*") == Right(Vector(MatcherKey(key)))
     }
   }
 
   property("find matcher in content starting with 2 whitespaces and containing a matcher") = {
     forAll(keyGen) { key =>
-      MatcherResolver.findMatcherKeys(s"  *$key*") == Right(List(MatcherKey(key)))
+      MatcherResolver.findMatcherKeys(s"  *$key*") == Right(Vector(MatcherKey(key)))
 
     }
   }
 
   property("find matcher in content finishing with whitespace and containing a matcher") = {
     forAll(keyGen) { key =>
-      MatcherResolver.findMatcherKeys(s"*$key* ") == Right(List(MatcherKey(key)))
+      MatcherResolver.findMatcherKeys(s"*$key* ") == Right(Vector(MatcherKey(key)))
     }
   }
 
   property("find matcher in content finishing with 2 whitespaces and containing a matcher") = {
     forAll(keyGen) { key =>
-      MatcherResolver.findMatcherKeys(s"*$key*  ") == Right(List(MatcherKey(key)))
+      MatcherResolver.findMatcherKeys(s"*$key*  ") == Right(Vector(MatcherKey(key)))
     }
   }
 

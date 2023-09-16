@@ -21,7 +21,7 @@ trait CornichonError {
       |${causedBy.iterator.map(c => c.renderedMessage).mkString("\nand\n")}""".stripMargin
   }
 
-  def toException = CornichonException(renderedMessage)
+  def toException: CornichonException = CornichonException(renderedMessage)
 }
 
 object CornichonError {

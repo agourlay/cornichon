@@ -29,12 +29,12 @@ object DataTableParser {
 
 class DataTableParser(val input: ParserInput) extends Parser with StringHeaderParserSupport {
   def dataTableRule = rule {
-    zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> DataTable
+    zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> ((h, r) => DataTable(h, r.toVector))
   }
 
-  private def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> Headers }
+  private def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> (h => Headers(h.toVector)) }
 
-  private def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> Row }
+  private def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> (r => Row(r.toVector)) }
 
   private def CellContent = rule { !NL ~ capture(zeroOrMore(ContentsChar)) }
 
@@ -48,27 +48,36 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
 }
 
-case class DataTable(headers: Headers, rows: Seq[Row]) {
+case class DataTable(headers: Headers, rows: Vector[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "the data table is malformed, all rows must have the same number of elements")
 
   lazy val rawStringList: List[List[(String, String)]] = {
-    val listBuffer = new ListBuffer[List[(String, String)]]()
-    for (row <- rows) {
-      val mapBuilder = new ListBuffer[(String, String)]
-      for ((name, value) <- headers.fields.iterator.zip(row.fields.iterator)) {
+    val rowsBuffer = new ListBuffer[List[(String, String)]]()
+    var i = 0
+    val rowsLen = rows.length
+    while (i < rowsLen) {
+      val row = rows(i)
+      val fieldsBuffer = new ListBuffer[(String, String)]()
+      var j = 0
+      val fieldLen = row.fields.length
+      while (j < fieldLen) {
+        val value = row.fields(j)
         val stripped = value.stripTrailing()
         if (stripped.nonEmpty) {
-          mapBuilder += name -> stripped
+          val name = headers.fields(j)
+          fieldsBuffer += name -> stripped
         }
+        j += 1
       }
-      listBuffer += mapBuilder.result()
+      i += 1
+      rowsBuffer += fieldsBuffer.toList
     }
-    listBuffer.toList
+    rowsBuffer.toList
   }
 }
 
-case class Headers(fields: Seq[String])
-case class Row(fields: Seq[String])
+case class Headers(fields: Vector[String]) extends AnyVal
+case class Row(fields: Vector[String]) extends AnyVal
 
 trait StringHeaderParserSupport extends StringBuilding {
   this: Parser =>

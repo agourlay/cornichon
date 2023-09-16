@@ -35,7 +35,7 @@ sealed trait LogInstruction {
 }
 
 object LogInstruction {
-  val physicalMargin: StringOps = "   "
+  private val physicalMargin: StringOps = "   "
 
   def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String =
     logs.foldLeft(new mutable.StringBuilder()) { (b, l) =>

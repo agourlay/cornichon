@@ -10,8 +10,8 @@ case class GqlString(input: String) extends AnyVal
 object GqlString {
 
   implicit val gqlResolvableForm: Resolvable[GqlString] = new Resolvable[GqlString] {
-    def toResolvableForm(g: GqlString) = g.input
-    def fromResolvableForm(s: String) = GqlString(s)
+    def toResolvableForm(g: GqlString): String = g.input
+    def fromResolvableForm(s: String): GqlString = GqlString(s)
   }
 
   implicit val gqlShow: Show[GqlString] =

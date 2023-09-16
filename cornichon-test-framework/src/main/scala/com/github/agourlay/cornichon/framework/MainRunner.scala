@@ -74,7 +74,7 @@ object MainRunner {
   }
 
   // https://stackoverflow.com/questions/492184/how-do-you-find-all-subclasses-of-a-given-class-in-java
-  def discoverFeatureClasses(packageToExplore: String): List[Class[_]] = {
+  private def discoverFeatureClasses(packageToExplore: String): List[Class[_]] = {
     val classes: util.List[PojoClass] = PojoClassFactory.enumerateClassesByExtendingType(packageToExplore, classOf[CornichonFeature], null)
     classes.iterator().asScala.collect { case pojo if pojo.isConcrete => pojo.getClazz }.toList
   }

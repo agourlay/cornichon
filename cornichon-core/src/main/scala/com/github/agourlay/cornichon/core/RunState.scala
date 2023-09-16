@@ -59,7 +59,7 @@ case class RunState(
     def fillSessionPlaceholders(input: String): Either[CornichonError, String] =
       PlaceholderResolver.fillPlaceholders(input)(session, randomContext, customExtractors, sessionOnlyMode = true)
 
-    def fillPlaceholders(params: Seq[(String, String)]): Either[CornichonError, List[(String, String)]] =
+    def fillPlaceholdersPairs(params: Seq[(String, String)]): Either[CornichonError, List[(String, String)]] =
       PlaceholderResolver.fillPlaceholdersPairs(params)(session, randomContext, customExtractors)
 
     def findAllMatchers(input: String): Either[CornichonError, Vector[Matcher]] =

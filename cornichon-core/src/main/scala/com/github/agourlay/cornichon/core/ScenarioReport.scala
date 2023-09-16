@@ -5,7 +5,6 @@ import cats.data.{ NonEmptyList, ValidatedNel }
 import cats.kernel.Monoid
 import cats.effect.IO
 
-import scala.concurrent.Future
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 sealed trait ScenarioReport {
@@ -63,7 +62,6 @@ sealed abstract class Done
 case object Done extends Done {
   val rightDone = Right(Done)
   val validDone = Valid(Done)
-  val futureDone = Future.successful(Done)
   val ioDone = IO.pure(Done)
   implicit val monoid: Monoid[Done] = new Monoid[Done] {
     def empty: Done = Done

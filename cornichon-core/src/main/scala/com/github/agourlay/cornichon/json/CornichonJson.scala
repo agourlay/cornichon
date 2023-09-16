@@ -37,7 +37,7 @@ trait CornichonJson {
             parseString(s)
           // table is turned into a JArray
           case '|' =>
-            parseDataTable(s).map(list => Json.fromValues(list.iterator.map(Json.fromJsonObject).toVector))
+            parseDataTable(s).map(jObjs => Json.fromValues(jObjs.iterator.map(Json.fromJsonObject).toVector))
           // treated as a JString
           case _ =>
             Right(Json.fromString(s))
@@ -77,6 +77,7 @@ trait CornichonJson {
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     def parseRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
       val cells = Map.newBuilder[String, Json]
+      // TODO while loop on Vec
       rawRow.foreach {
         case (name, rawValue) =>
           parseString(rawValue) match {
@@ -89,6 +90,7 @@ trait CornichonJson {
 
     parseDataTableRaw(table).map { rawRows =>
       val rows = new ListBuffer[JsonObject]()
+      // TODO while loop on Vec
       rawRows.foreach { rawRow =>
         parseRow(rawRow) match {
           case Right(r) => rows += r

@@ -30,7 +30,7 @@ case class FeatureContext(
 }
 
 object FeatureContext {
-  val empty = FeatureContext(
+  val empty: FeatureContext = FeatureContext(
     beforeSteps = Nil,
     finallySteps = Nil,
     featureIgnored = false,

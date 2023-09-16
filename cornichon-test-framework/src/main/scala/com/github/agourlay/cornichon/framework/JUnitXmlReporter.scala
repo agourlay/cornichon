@@ -101,7 +101,7 @@ object JUnitXmlReporter {
     dateFmt.format(timeStamp) + "T" + timeFmt.format(timeStamp)
   }
 
-  def getStackTrace(throwable: Throwable): String = {
+  private def getStackTrace(throwable: Throwable): String = {
     "" + throwable +
       Array.concat(throwable.getStackTrace).mkString(
         "\n      at ",
@@ -130,7 +130,7 @@ object JUnitXmlReporter {
     }
   }
 
-  def renderXML(testSuite: TestSuite): String = {
+  private def renderXML(testSuite: TestSuite): String = {
     val xmlVal =
       <testsuite errors={ "" + testSuite.errors } failures={ "" + testSuite.failures } hostname={ "" + hostname } name={ "" + testSuite.name } tests={ "" + testSuite.testCases.size } duration={ "" + testSuite.duration } timestamp={ "" + formatTimeStamp(testSuite.timeStamp) }>
         { propertiesXml }

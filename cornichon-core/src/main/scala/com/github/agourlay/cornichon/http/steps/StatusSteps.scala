@@ -51,14 +51,14 @@ object StatusSteps {
     def isServerError: AssertStep = isByKind(5)
   }
 
-  def statusError(expected: Int, actual: String, session: Session): String = {
+  private def statusError(expected: Int, actual: String, session: Session): String = {
     val responseBody = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe
     val requestDescription = session.get(lastResponseRequestKey).valueUnsafe
     StatusNonExpected(expected, actual.toInt, headers, responseBody, requestDescription).baseErrorMessage
   }
 
-  def statusKindError(expectedKind: Int, actualStatus: String, session: Session): String = {
+  private def statusKindError(expectedKind: Int, actualStatus: String, session: Session): String = {
     val expected = StatusKind.kindDisplay(expectedKind)
     val body = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe

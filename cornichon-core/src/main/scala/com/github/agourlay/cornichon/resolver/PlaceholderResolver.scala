@@ -76,7 +76,7 @@ object PlaceholderResolver {
             case Right(resolved) => acc = StringUtils.replace_all(acc, ph.fullKey, resolved)
             case Left(err)       => return Left(err)
           }
-          i = i + 1
+          i += 1
         }
         Right(acc)
       }

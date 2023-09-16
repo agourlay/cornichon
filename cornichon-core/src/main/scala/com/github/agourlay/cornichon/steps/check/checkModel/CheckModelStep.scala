@@ -118,6 +118,3 @@ case class NoTransitionsDefinitionForStartingProperty(description: String) exten
   def baseErrorMessage: String = s"No outgoing transitions definition found for starting property '$description'"
 }
 
-case class InvalidTransitionDefinitionForProperty(description: String) extends CornichonError {
-  def baseErrorMessage: String = s"Invalid transition definition for property '$description'"
-}

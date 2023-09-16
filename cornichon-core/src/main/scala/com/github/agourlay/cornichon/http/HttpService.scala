@@ -45,11 +45,11 @@ class HttpService(
       completeUrlResolved = withBaseUrl(urlResolved)
       urlParams <- client.paramsFromUrl(completeUrlResolved)
       completeUrlResolvedNoParams = completeUrlResolved.split('?').head
-      explicitParams <- scenarioContext.fillPlaceholders(params)
+      explicitParams <- scenarioContext.fillPlaceholdersPairs(params)
       allParams = urlParams ++ explicitParams
       extractedWithHeaders <- extractWithHeadersSession(scenarioContext.session)
       allHeaders = headers ++ ignoreHeadersSelection(extractedWithHeaders, ignoreFromWithHeaders)
-      headersResolved <- scenarioContext.fillPlaceholders(allHeaders)
+      headersResolved <- scenarioContext.fillPlaceholdersPairs(allHeaders)
     } yield (completeUrlResolvedNoParams, jsonBodyResolved, allParams, headersResolved)
 
   private def runRequest[A: Show: Resolvable: Encoder](
@@ -136,7 +136,7 @@ case class ByNames(names: Seq[String]) extends HeaderSelection
 
 object HttpService {
   val rightNil = Right(Nil)
-  val rightNone = Right(None)
+  private val rightNone = Right(None)
   // cache json encoder to avoid recreating it for each request
   implicit val circeJsonEncoder: EntityEncoder[IO, Json] = jsonEncoder[IO]
   object SessionKeys {
@@ -184,7 +184,7 @@ object HttpService {
         Right(elms(0) -> elms(1))
     }
 
-  def configureRequest[A: Show](req: HttpRequest[A], config: Config): HttpRequest[A] = {
+  private def configureRequest[A: Show](req: HttpRequest[A], config: Config): HttpRequest[A] = {
     if (config.traceRequests)
       println(DebugLogInstruction(req.show, 1).colorized)
     if (config.warnOnDuplicateHeaders && req.headers.groupBy(_._1).exists(_._2.size > 1))
@@ -195,7 +195,7 @@ object HttpService {
       req
   }
 
-  def ignoreHeadersSelection(headers: Seq[(String, String)], ignore: HeaderSelection): Seq[(String, String)] =
+  private def ignoreHeadersSelection(headers: Seq[(String, String)], ignore: HeaderSelection): Seq[(String, String)] =
     ignore match {
       case SelectNone     => headers
       case SelectAll      => Nil

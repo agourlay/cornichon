@@ -86,6 +86,6 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
 }
 
 object FeatureRunner {
-  lazy val availableProcessors: Int = Runtime.getRuntime.availableProcessors()
+  private lazy val availableProcessors = Runtime.getRuntime.availableProcessors()
   private val noop = IO.pure(Nil)
 }

@@ -30,10 +30,10 @@ trait Assertion { self =>
 object Assertion {
 
   val alwaysValid: Assertion = new Assertion { val validated = validDone }
-  def failWith(error: String) = new Assertion { val validated = BasicError(error).invalidNel }
-  def failWith(error: CornichonError) = new Assertion { val validated = error.invalidNel }
+  def failWith(error: String): Assertion = new Assertion { val validated = BasicError(error).invalidNel }
+  def failWith(error: CornichonError): Assertion = new Assertion { val validated = error.invalidNel }
 
-  def either(v: Either[CornichonError, Assertion]) = v.fold(e => failWith(e), identity)
+  def either(v: Either[CornichonError, Assertion]): Assertion = v.fold(e => failWith(e), identity)
 
   def all(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) => acc.and(assertion))
   def any(assertions: Seq[Assertion]): Assertion = assertions.reduce((acc, assertion) => acc.or(assertion))

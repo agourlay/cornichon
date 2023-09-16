@@ -34,10 +34,6 @@ case class SseError(e: Throwable) extends HttpError {
        |${CornichonError.genStacktrace(e)}""".trim.stripMargin
 }
 
-case class WsUpgradeError(status: Int) extends HttpError {
-  lazy val baseErrorMessage = s"Websocket upgrade error - status received '$status'"
-}
-
 case class StatusNonExpected[A: Show](expectedStatus: A, actualStatus: A, headers: Seq[(String, String)], rawBody: String, requestDescription: String) extends HttpError {
   lazy val baseErrorMessage = {
     // TODO do not assume that body is JSON - use content-type
@@ -51,12 +47,6 @@ case class StatusNonExpected[A: Show](expectedStatus: A, actualStatus: A, header
        |
        |$requestDescription""".stripMargin
   }
-}
-
-case class MalformedHeadersError(error: String) extends CornichonError {
-  lazy val baseErrorMessage =
-    s"""parsing headers generated error:
-       |$error""".trim.stripMargin
 }
 
 case class MalformedUriError(uri: String, error: String) extends CornichonError {

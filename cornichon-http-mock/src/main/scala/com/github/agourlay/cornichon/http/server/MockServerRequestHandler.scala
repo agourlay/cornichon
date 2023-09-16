@@ -79,13 +79,13 @@ class MockServerRequestHandler() extends Http4sDsl[IO] {
       saveRequest(r).flatMap(_ => replyWithDelay(Ok(mockState.getResponse)))
   }
 
-  def replyWithDelay(t: IO[Response[IO]]): IO[Response[IO]] =
+  private def replyWithDelay(t: IO[Response[IO]]): IO[Response[IO]] =
     if (mockState.getDelay == 0)
       t
     else
       IO.delay(Done).delayBy(mockState.getDelay.millis).flatMap(_ => t)
 
-  def httpMethodMapper(method: Method): HttpMethod = method match {
+  private def httpMethodMapper(method: Method): HttpMethod = method match {
     case DELETE  => HttpMethods.DELETE
     case GET     => HttpMethods.GET
     case HEAD    => HttpMethods.HEAD
@@ -96,7 +96,7 @@ class MockServerRequestHandler() extends Http4sDsl[IO] {
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  def saveRequest(rawReq: Request[IO]): IO[Boolean] =
+  private def saveRequest(rawReq: Request[IO]): IO[Boolean] =
     rawReq
       .bodyText
       .compile

@@ -31,7 +31,7 @@ case class HttpMockServerResource(interface: Option[String], label: String, port
     }
   }
 
-  def requestsResults(mockRequestHandler: MockServerRequestHandler): Session = {
+  private def requestsResults(mockRequestHandler: MockServerRequestHandler): Session = {
     val jsonRequests = mockRequestHandler.fetchRecordedRequestsAsJson()
     Session.newEmpty
       .addValues(

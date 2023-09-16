@@ -41,5 +41,5 @@ class CornichonSbtRunner(val args: Array[String], val remoteArgs: Array[String])
 }
 
 object CornichonSbtRunner {
-  val seedArg = "--seed="
+  private val seedArg = "--seed="
 }

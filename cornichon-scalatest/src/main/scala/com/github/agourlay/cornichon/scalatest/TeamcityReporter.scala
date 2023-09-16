@@ -15,7 +15,7 @@ class TeamcityReporter extends Reporter {
   }
 
   // http://confluence.jetbrains.net/display/TCD65/Build+Script+Interaction+with+TeamCity
-  def tidy(s: String) = s
+  private def tidy(s: String) = s
     .replace("|", "||")
     .replace("'", "|'")
     .replace("\n", "|n")

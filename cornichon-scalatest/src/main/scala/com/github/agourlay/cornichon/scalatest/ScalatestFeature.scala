@@ -112,12 +112,12 @@ object ScalatestFeature {
   }
   timer.scheduleAtFixedRate(timerTask, 5.seconds.toMillis, 5.seconds.toMillis)
 
-  def reserveGlobalRuntime(): Unit = {
+  private def reserveGlobalRuntime(): Unit = {
     registeredUsage.incrementAndGet()
     ()
   }
 
-  def releaseGlobalRuntime(): Unit = {
+  private def releaseGlobalRuntime(): Unit = {
     registeredUsage.decrementAndGet()
     ()
   }

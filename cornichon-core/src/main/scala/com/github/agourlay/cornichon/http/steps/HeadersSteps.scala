@@ -80,19 +80,19 @@ object HeadersSteps {
     )
   }
 
-  def headersDoesNotContainError(expected: String, sourceArray: String): String = {
+  private def headersDoesNotContainError(expected: String, sourceArray: String): String = {
     val prettyHeaders = printArrowPairs(decodeSessionHeaders(sourceArray).valueUnsafe)
     s"""expected headers to contain '$expected' but it is not the case with headers:
        |$prettyHeaders""".stripMargin
   }
 
-  def headersDoesNotContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): String = {
+  private def headersDoesNotContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): String = {
     val prettyHeaders = printArrowPairs(sourceHeaders)
     s"""expected headers to contain field with name '$name' but it is not the case with headers:
        |$prettyHeaders""".stripMargin
   }
 
-  def headersContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): String = {
+  private def headersContainFieldWithNameError(name: String, sourceHeaders: Seq[(String, String)]): String = {
     val prettyHeaders = printArrowPairs(sourceHeaders)
     s"""expected headers to not contain field with name '$name' but it is not the case with headers:
        |$prettyHeaders""".stripMargin
