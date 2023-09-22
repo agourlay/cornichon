@@ -37,7 +37,7 @@ trait CornichonJson {
             parseString(s)
           // table is turned into a JArray
           case '|' =>
-            parseDataTable(s).map(jObjs => Json.fromValues(jObjs.iterator.map(Json.fromJsonObject).toVector))
+            parseDataTableJson(s)
           // treated as a JString
           case _ =>
             Right(Json.fromString(s))
@@ -74,36 +74,74 @@ trait CornichonJson {
     None
   }
 
-  def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
-    def parseRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
-      val cells = Map.newBuilder[String, Json]
-      // TODO while loop on Vec
-      rawRow.foreach {
-        case (name, rawValue) =>
-          parseString(rawValue) match {
-            case Right(json) => cells += (name -> json)
-            case Left(e)     => return Left(e)
-          }
-      }
-      JsonObject.fromMap(cells.result()).asRight
+  private def parseDataTableRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
+    val cells = List.newBuilder[(String, Json)]
+    rawRow.foreach {
+      case (name, rawValue) =>
+        parseString(rawValue) match {
+          case Right(json) => cells += (name -> json)
+          case Left(e)     => return Left(e)
+        }
     }
+    // `fromIterable` is faster than `fromMap`
+    Right(JsonObject.fromIterable(cells.result()))
+  }
 
+  private def parseDataTableJson(table: String): Either[CornichonError, Json] = {
+    parseDataTableRaw(table).map { rawRows =>
+      val rows = Vector.newBuilder[Json]
+      rawRows.foreach { rawRow =>
+        parseDataTableRow(rawRow) match {
+          case Right(r) => rows += Json.fromJsonObject(r)
+          case Left(e)  => return Left(e)
+        }
+      }
+      // `fromValues` wants a Vector as a concrete type
+      Json.fromValues(rows.result())
+    }
+  }
+
+  def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] = {
     parseDataTableRaw(table).map { rawRows =>
       val rows = new ListBuffer[JsonObject]()
-      // TODO while loop on Vec
       rawRows.foreach { rawRow =>
-        parseRow(rawRow) match {
+        parseDataTableRow(rawRow) match {
           case Right(r) => rows += r
           case Left(e)  => return Left(e)
         }
       }
-      rows.toList
+      rows.result()
     }
   }
 
   // Returns raw data with duplicates and initial ordering
-  def parseDataTableRaw(table: String): Either[CornichonError, List[List[(String, String)]]] =
-    DataTableParser.parse(table).map(_.rawStringList)
+  def parseDataTableRaw(table: String): Either[CornichonError, List[List[(String, String)]]] = {
+    DataTableParser.parse(table).map { dataTable =>
+      val rows = dataTable.rows
+      val headers = dataTable.headers
+      val rowsBuffer = new ListBuffer[List[(String, String)]]()
+      var i = 0
+      val rowsLen = rows.length
+      while (i < rowsLen) {
+        val row = rows(i)
+        val fieldsBuffer = new ListBuffer[(String, String)]()
+        var j = 0
+        val fieldLen = row.fields.length
+        while (j < fieldLen) {
+          val value = row.fields(j)
+          val stripped = value.stripTrailing()
+          if (stripped.nonEmpty) {
+            val name = headers.fields(j)
+            fieldsBuffer += name -> stripped
+          }
+          j += 1
+        }
+        i += 1
+        rowsBuffer += fieldsBuffer.toList
+      }
+      rowsBuffer.toList
+    }
+  }
 
   def parseGraphQLJson(input: String): Either[MalformedGraphQLJsonError[String], Json] =
     QueryParser.parseInput(input) match {

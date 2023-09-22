@@ -10,7 +10,7 @@ import io.circe.Encoder
 
 import scala.concurrent.duration.FiniteDuration
 
-case class HttpMethod(name: String)
+case class HttpMethod(name: String) extends AnyVal
 
 object HttpMethods {
   val DELETE = HttpMethod("DELETE")

@@ -89,7 +89,7 @@ class DataTableSpec extends FunSuite {
       """
 
     parseDataTable(input) match {
-      case Right(_) => assert(false)
+      case Right(_) => assert(cond = false)
       case Left(e)  => assert(e.renderedMessage.contains("requirement failed: the data table is malformed, all rows must have the same number of elements"))
     }
   }

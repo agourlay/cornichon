@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Asse
 
 object HttpListenSteps {
 
-  case class HttpListenStepBuilder(name: String) {
+  case class HttpListenStepBuilder(name: String) extends AnyVal {
     def received_calls(count: Int) = AssertStep(
       title = s"HTTP mock server '$name' received '$count' calls",
       action = sc => Assertion.either {

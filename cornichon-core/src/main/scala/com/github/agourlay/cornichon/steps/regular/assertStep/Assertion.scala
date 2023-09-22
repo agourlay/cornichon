@@ -3,7 +3,6 @@ package com.github.agourlay.cornichon.steps.regular.assertStep
 import cats.data._
 import cats.syntax.validated._
 import cats.syntax.apply._
-
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.Done._
 
@@ -14,9 +13,13 @@ trait Assertion { self =>
     val validated = self.validated *> other.validated
   }
 
-  def andAll(others: Seq[Assertion]): Assertion = new Assertion {
-    val validated = others.fold(self)(_ and _).validated
-  }
+  def andAll(others: Seq[Assertion]): Assertion =
+    if (others.isEmpty)
+      self
+    else
+      new Assertion {
+        val validated = others.fold(self)(_ and _).validated
+      }
 
   def or(other: Assertion): Assertion = new Assertion {
     val validated =

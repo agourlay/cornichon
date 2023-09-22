@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2._
-import scala.collection.mutable.ListBuffer
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
@@ -50,30 +49,6 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
 case class DataTable(headers: Headers, rows: Vector[Row]) {
   require(rows.forall(_.fields.size == headers.fields.size), "the data table is malformed, all rows must have the same number of elements")
-
-  lazy val rawStringList: List[List[(String, String)]] = {
-    val rowsBuffer = new ListBuffer[List[(String, String)]]()
-    var i = 0
-    val rowsLen = rows.length
-    while (i < rowsLen) {
-      val row = rows(i)
-      val fieldsBuffer = new ListBuffer[(String, String)]()
-      var j = 0
-      val fieldLen = row.fields.length
-      while (j < fieldLen) {
-        val value = row.fields(j)
-        val stripped = value.stripTrailing()
-        if (stripped.nonEmpty) {
-          val name = headers.fields(j)
-          fieldsBuffer += name -> stripped
-        }
-        j += 1
-      }
-      i += 1
-      rowsBuffer += fieldsBuffer.toList
-    }
-    rowsBuffer.toList
-  }
 }
 
 case class Headers(fields: Vector[String]) extends AnyVal

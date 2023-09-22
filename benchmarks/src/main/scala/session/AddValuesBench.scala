@@ -16,14 +16,13 @@ class AddValuesBench {
 
   //sbt:benchmarks> jmh:run .*AddValues.* -prof gc -foe true -gc true -rf csv
 
-  @Param(Array("1", "2", "3", "4", "5", "10"))
+  @Param(Array("1", "2", "4", "5", "10"))
   var insertNumber: String = ""
 
   /*
   [info] Benchmark                 (insertNumber)   Mode  Cnt         Score        Error  Units
   [info] AddValuesBench.addValues               1  thrpt   10  13374739.456 ±  87290.955  ops/s
   [info] AddValuesBench.addValues               2  thrpt   10   5622516.701 ±   4825.476  ops/s
-  [info] AddValuesBench.addValues               3  thrpt   10   3957480.216 ±   6816.605  ops/s
   [info] AddValuesBench.addValues               4  thrpt   10   3055828.945 ±   3980.667  ops/s
   [info] AddValuesBench.addValues               5  thrpt   10   2510529.320 ±   4932.346  ops/s
   [info] AddValuesBench.addValues              10  thrpt   10   1175018.124 ±   2182.672  ops/s
@@ -33,7 +32,6 @@ class AddValuesBench {
     val values = insertNumber match {
       case "1" => oneEntry
       case "2" => twoEntries
-      case "3" => threeEntries
       case "4" => fourEntries
       case "5" => fiveEntries
       case "10" => tenEntries
@@ -48,7 +46,6 @@ object AddValuesBench {
 
   val oneEntry = tupleEntry :: Nil
   val twoEntries = List.fill(2)(tupleEntry)
-  val threeEntries = List.fill(3)(tupleEntry)
   val fourEntries = List.fill(4)(tupleEntry)
   val fiveEntries = List.fill(5)(tupleEntry)
   val tenEntries = List.fill(10)(tupleEntry)

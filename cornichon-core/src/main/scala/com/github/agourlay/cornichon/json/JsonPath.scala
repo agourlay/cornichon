@@ -6,7 +6,6 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseLO
 import io.circe.{ ACursor, Json }
-import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable.ListBuffer
 
 case class JsonPath(operations: Vector[JsonPathOperation]) extends AnyVal {
@@ -39,40 +38,52 @@ case class JsonPath(operations: Vector[JsonPathOperation]) extends AnyVal {
   // Boolean flag to indicate if the operations contain a valid projection segment.
   // If it is the case, the result must be interpreted as a List otherwise it is always a List of one element.
   private def cursors(input: Json): (List[ACursor], Boolean) = {
+    // captured in def to avoid passing it around
+    var projectionMode = false
 
-    def expandCursors(arrayFieldCursor: ACursor, signalValidProjection: AtomicBoolean): List[ACursor] =
-      arrayFieldCursor.values.fold[List[ACursor]](Nil) { values =>
-        // the projection is valid because there was an array
-        signalValidProjection.set(true)
-        if (values.isEmpty)
-          Nil
-        else {
-          // Better be fast here...
-          val lb = ListBuffer.empty[ACursor]
-          var arrayElementsCursor = arrayFieldCursor.downArray
-          var i = 0
-          while (i < values.size) {
-            lb += arrayElementsCursor
-            arrayElementsCursor = arrayElementsCursor.right
-            i += 1
+    def expandCursors(arrayFieldCursor: ACursor): List[ACursor] =
+      arrayFieldCursor.values match {
+        case None => Nil
+        case Some(values) =>
+          // the projection is valid because there was an array
+          projectionMode = true
+          val size = values.size
+          if (size == 0)
+            Nil
+          else {
+            val lb = ListBuffer.empty[ACursor]
+            var arrayElementsCursor = arrayFieldCursor.downArray
+            var i = 0
+            while (i < size) {
+              lb += arrayElementsCursor
+              arrayElementsCursor = arrayElementsCursor.right
+              i += 1
+            }
+            lb.toList
           }
-          lb.toList
-        }
       }
 
-    // using an AtomicBoolean for signaling...
-    val projectionMode = new AtomicBoolean(false)
-    val cursors = operations.foldLeft[List[ACursor]](input.hcursor :: Nil) { (oc, op) =>
-      op match {
-        case RootSelection                     => oc
-        case FieldSelection(field)             => oc.map(_.downField(field))
-        case RootArrayElementSelection(index)  => oc.map(_.downN(index))
-        case ArrayFieldSelection(field, index) => oc.map(_.downField(field).downN(index))
-        case RootArrayFieldProjection          => oc.flatMap(o => expandCursors(o, projectionMode))
-        case ArrayFieldProjection(field)       => oc.flatMap(o => expandCursors(o.downField(field), projectionMode))
+    val operationsLen = operations.length
+    var i = 0
+    var acc: List[ACursor] = input.hcursor :: Nil
+    while (i < operationsLen) {
+      operations(i) match {
+        case RootSelection =>
+        // do nothing
+        case FieldSelection(field) =>
+          acc = acc.map(_.downField(field))
+        case RootArrayElementSelection(index) =>
+          acc = acc.map(_.downN(index))
+        case ArrayFieldSelection(field, index) =>
+          acc = acc.map(_.downField(field).downN(index))
+        case RootArrayFieldProjection =>
+          acc = acc.flatMap(o => expandCursors(o))
+        case ArrayFieldProjection(field) =>
+          acc = acc.flatMap(o => expandCursors(o.downField(field)))
       }
+      i += 1
     }
-    (cursors, projectionMode.get())
+    (acc, projectionMode)
   }
 
   def removeFromJson(input: Json): Json =
