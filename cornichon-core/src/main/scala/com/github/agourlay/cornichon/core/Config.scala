@@ -15,7 +15,8 @@ case class Config(
     failOnDuplicateHeaders: Boolean = false,
     addAcceptGzipByDefault: Boolean = true,
     disableCertificateVerification: Boolean = false,
-    followRedirect: Boolean = false)
+    followRedirect: Boolean = false,
+    enableHttp2: Boolean = false)
 
 object Config {
   implicit val hint: ProductHint[Config] = ProductHint[Config](allowUnknownKeys = false, fieldMapping = ConfigFieldMapping(CamelCase, CamelCase))

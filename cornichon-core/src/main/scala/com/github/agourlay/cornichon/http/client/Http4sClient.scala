@@ -29,7 +29,8 @@ import scala.concurrent.duration._
 class Http4sClient(
     addAcceptGzipByDefault: Boolean,
     disableCertificateVerification: Boolean,
-    followRedirect: Boolean)(implicit ioRuntime: IORuntime)
+    followRedirect: Boolean,
+    enableHttp2: Boolean)(implicit ioRuntime: IORuntime)
   extends HttpClient {
   // Disable JDK built-in checks
   private val sslContext = {
@@ -47,20 +48,27 @@ class Http4sClient(
 
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.Inf
-  private val (httpClient, safeShutdown) =
-    EmberClientBuilder.default[IO]
+  private val (httpClient, safeShutdown) = {
+    var builder = EmberClientBuilder.default[IO]
       .withTLSContext(TLSContext.Builder.forAsync[IO].fromSSLContext(sslContext))
       .withMaxTotal(300)
       .withIdleTimeInPool(2.minute)
       .withTimeout(defaultHighTimeout)
-      .build
+
+    if (enableHttp2) {
+      builder = builder.withHttp2
+    }
+
+    builder.build
       .allocated
       .map {
         case (client, shutdown) =>
+          // add middlewares
           val c1 = if (addAcceptGzipByDefault) GZip()(client) else client
           val c2 = if (followRedirect) FollowRedirect(maxRedirects = 10)(client = c1) else c1
           c2 -> shutdown
       }.unsafeRunSync()
+  }
 
   private def toHttp4sMethod(method: HttpMethod): Method = method match {
     case GET     => org.http4s.Method.GET

@@ -6,7 +6,7 @@ import munit.FunSuite
 
 class Http4sClientSpec extends FunSuite {
 
-  private val client = new Http4sClient(true, true, true)
+  private val client = new Http4sClient(true, true, true, false)
 
   override def afterAll(): Unit = {
     client.shutdown().unsafeRunSync()
