@@ -24,14 +24,13 @@ class JsonStepBench {
   //sbt:benchmarks> jmh:run .*JsonStep.* -prof gc -foe true -gc true -rf csv
 
   /*
-  [info] Benchmark                          Mode  Cnt      Score     Error  Units
-  [info] JsonStepBench.jsonIgnoreIs        thrpt   10  24521.948 ± 304.138  ops/s
-  [info] JsonStepBench.jsonIs              thrpt   10  25427.102 ± 118.097  ops/s
-  [info] JsonStepBench.jsonMatchersIs      thrpt   10  19038.504 ±  67.252  ops/s
-  [info] JsonStepBench.jsonPathIs          thrpt   10  31766.481 ± 466.595  ops/s
-  [info] JsonStepBench.jsonPlaceholdersIs  thrpt   10  21585.309 ± 388.866  ops/s
-  [info] JsonStepBench.jsonWhitelistingIs  thrpt   10  22548.300 ± 116.347  ops/s
-
+  [info] Benchmark                          Mode  Cnt      Score      Error  Units
+  [info] JsonStepBench.jsonIgnoreIs        thrpt   10  23355.574 ±  222.982  ops/s
+  [info] JsonStepBench.jsonIs              thrpt   10  25757.022 ± 1792.488  ops/s
+  [info] JsonStepBench.jsonMatchersIs      thrpt   10  16163.791 ±   57.145  ops/s
+  [info] JsonStepBench.jsonPathIs          thrpt   10  31617.127 ±  159.856  ops/s
+  [info] JsonStepBench.jsonPlaceholdersIs  thrpt   10  17828.979 ±  564.443  ops/s
+  [info] JsonStepBench.jsonWhitelistingIs  thrpt   10  23417.323 ±  104.329  ops/s
   */
 
   @Benchmark

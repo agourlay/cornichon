@@ -23,8 +23,13 @@ import scala.concurrent.duration._
   "-Xmx1G"))
 class RunFeatureBench {
 
-  // sbt -Dcats.effect.tracing.mode=none
-  //sbt:benchmarks> jmh:run .*RunFeature.* -prof gc -foe true -gc true -rf csv
+  // comment beforehand `println(s"Starting scenario '${s.name}'")`
+  //sbt:benchmarks> jmh:run .*RunFeature.*
+
+  /*
+  [info] Benchmark                 Mode  Cnt    Score   Error  Units
+  [info] RunFeatureBench.feature  thrpt   10  216.702 ± 4.261  ops/s
+  */
 
   @Benchmark
   def feature() = {

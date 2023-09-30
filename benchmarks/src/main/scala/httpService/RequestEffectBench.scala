@@ -22,9 +22,9 @@ class RequestEffectBench {
   //sbt:benchmarks> jmh:run .*RequestEffect.*
 
   /*
-[info] Benchmark                          Mode  Cnt        Score      Error  Units
-[info] RequestEffectBench.singleRequest  thrpt   10    95729.065 ± 1888.774  ops/s
-*/
+  [info] Benchmark                                      Mode  Cnt      Score      Error  Units
+  [info] httpService.RequestEffectBench.singleRequest  thrpt   10  80577.700 ± 3650.924  ops/s
+  */
 
   @Benchmark
   def singleRequest() = {

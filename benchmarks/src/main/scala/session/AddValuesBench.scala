@@ -16,16 +16,15 @@ class AddValuesBench {
 
   //sbt:benchmarks> jmh:run .*AddValues.* -prof gc -foe true -gc true -rf csv
 
-  @Param(Array("1", "2", "4", "5", "10"))
+  @Param(Array("1", "2", "4", "8"))
   var insertNumber: String = ""
 
   /*
-  [info] Benchmark                 (insertNumber)   Mode  Cnt         Score        Error  Units
-  [info] AddValuesBench.addValues               1  thrpt   10  13374739.456 ±  87290.955  ops/s
-  [info] AddValuesBench.addValues               2  thrpt   10   5622516.701 ±   4825.476  ops/s
-  [info] AddValuesBench.addValues               4  thrpt   10   3055828.945 ±   3980.667  ops/s
-  [info] AddValuesBench.addValues               5  thrpt   10   2510529.320 ±   4932.346  ops/s
-  [info] AddValuesBench.addValues              10  thrpt   10   1175018.124 ±   2182.672  ops/s
+  [info] Benchmark                 (insertNumber)   Mode  Cnt         Score       Error  Units
+  [info] AddValuesBench.addValues               1  thrpt   10  10595265.115 ± 32853.337  ops/s
+  [info] AddValuesBench.addValues               2  thrpt   10   5642418.788 ± 24496.068  ops/s
+  [info] AddValuesBench.addValues               4  thrpt   10   3074429.617 ±  4732.138  ops/s
+  [info] AddValuesBench.addValues               8  thrpt   10   2493099.455 ± 62374.398  ops/s
   */
   @Benchmark
   def addValues() = {
@@ -33,8 +32,7 @@ class AddValuesBench {
       case "1" => oneEntry
       case "2" => twoEntries
       case "4" => fourEntries
-      case "5" => fiveEntries
-      case "10" => tenEntries
+      case "8" => eightEntries
     }
     val s2 = Session.newEmpty.addValues(values: _*)
     assert(s2.isRight)
@@ -42,12 +40,11 @@ class AddValuesBench {
 }
 
 object AddValuesBench {
-  val tupleEntry = "key" -> "value"
+  private val tupleEntry = "key" -> "value"
 
-  val oneEntry = tupleEntry :: Nil
-  val twoEntries = List.fill(2)(tupleEntry)
-  val fourEntries = List.fill(4)(tupleEntry)
-  val fiveEntries = List.fill(5)(tupleEntry)
-  val tenEntries = List.fill(10)(tupleEntry)
+  private val oneEntry = tupleEntry :: Nil
+  private val twoEntries = List.fill(2)(tupleEntry)
+  private val fourEntries = List.fill(4)(tupleEntry)
+  private val eightEntries = List.fill(5)(tupleEntry)
 }
 
