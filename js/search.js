@@ -75,7 +75,7 @@ function prepareIdxAndDocMap() {
     {
       "title": "Installation",
       "url": "/cornichon/installation.html",
-      "content": "Installation Cornichon is available for Scala 2.12 &amp; Scala 2.13. It requires Java 11 or higher. The library is compatible with SBT and Mill. // SBT libraryDependencies += \"com.github.agourlay\" %% \"cornichon-test-framework\" % \"0.21.0\" % Test testFrameworks += new TestFramework(\"com.github.agourlay.cornichon.framework.CornichonFramework\") // Mill object test extends Tests { def ivyDeps = Agg(ivy\"com.github.agourlay::cornichon-test-framework:0.21.0\") def testFrameworks = Seq(\"com.github.agourlay.cornichon.framework.CornichonFramework\") }"
+      "content": "Installation Cornichon is available for Scala 2.12 &amp; Scala 2.13. It requires Java 11 or higher. The library is compatible with SBT and Mill. // SBT libraryDependencies += \"com.github.agourlay\" %% \"cornichon-test-framework\" % \"0.21.1\" % Test testFrameworks += new TestFramework(\"com.github.agourlay.cornichon.framework.CornichonFramework\") // Mill object test extends Tests { def ivyDeps = Agg(ivy\"com.github.agourlay::cornichon-test-framework:0.21.1\") def testFrameworks = Seq(\"com.github.agourlay.cornichon.framework.CornichonFramework\") }"
     } ,    
     {
       "title": "JSON matchers",
@@ -120,7 +120,7 @@ function prepareIdxAndDocMap() {
     {
       "title": "Reference configuration",
       "url": "/cornichon/reference-configuration.html",
-      "content": "Reference configuration It is possible to configure various aspects of the runs via a /src/test/resources/reference.conf file. You will find below the available keys and their respective default values. cornichon { requestTimeout = 2000 millis globalBaseUrl = \"\" executeScenariosInParallel = true scenarioExecutionParallelismFactor = 1 traceRequests = false warnOnDuplicateHeaders = false failOnDuplicateHeaders = false disableCertificateVerification = false followRedirect = false }"
+      "content": "Reference configuration It is possible to configure various aspects of the runs via a /src/test/resources/reference.conf file. You will find below the available keys and their respective default values. cornichon { requestTimeout = 2000 millis // timeout for each request globalBaseUrl = \"\" // base url for all requests executeScenariosInParallel = true // execute scenarios in parallel within a feature scenarioExecutionParallelismFactor = 1 // number of concurrent scenarios = `scenarioExecutionParallelismFactor` * number of CPU + 1 traceRequests = false // log trace requests and responses warnOnDuplicateHeaders = false // warn if a header is duplicated in a request failOnDuplicateHeaders = false // fail if a header is duplicated in a request disableCertificateVerification = false // disable certificate verification for https requests followRedirect = false, // follow Http redirects enableHttp2 = false // enable Http2 for requests }"
     } ,    
     {
       "title": "Resource steps",
