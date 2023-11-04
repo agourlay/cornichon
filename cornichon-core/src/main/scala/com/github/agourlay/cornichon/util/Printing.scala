@@ -4,24 +4,29 @@ import cats.Show
 import cats.syntax.show._
 
 object Printing {
+  private val arrow = " -> "
   def printArrowPairs(params: Seq[(String, String)]): String = {
-    val len = params.length
-    if (len == 0) {
+    if (params.isEmpty) {
       return ""
     }
-    // custom mkString for performance
-    val builder = new StringBuilder(len * 16)
+    val builder = new StringBuilder()
+    printArrowPairsBuilder(params, builder)
+    builder.result()
+  }
+
+  protected[cornichon] def printArrowPairsBuilder(params: Seq[(String, String)], builder: StringBuilder): Unit = {
+    val len = params.length
     var i = 0
     params.foreach {
       case (name, value) =>
+        builder.append(s"'$name'")
+        builder.append(arrow)
+        builder.append(s"'$value'")
         if (i < len - 1) {
-          builder.append(s"'$name' -> '$value', ")
-        } else {
-          builder.append(s"'$name' -> '$value'")
+          builder.append(", ")
         }
         i += 1
     }
-    builder.result()
   }
 
   implicit def showIterable[A: Show]: Show[Iterable[A]] = Show.show { fa =>
@@ -29,6 +34,6 @@ object Printing {
   }
 
   implicit def showMap[A: Show: Ordering, B: Show]: Show[Map[A, B]] = Show.show { ma =>
-    ma.toSeq.sortBy(_._1).iterator.map(pair => pair._1.show + " -> " + pair._2.show).mkString("\n")
+    ma.toSeq.sortBy(_._1).iterator.map(pair => pair._1.show + arrow + pair._2.show).mkString("\n")
   }
 }

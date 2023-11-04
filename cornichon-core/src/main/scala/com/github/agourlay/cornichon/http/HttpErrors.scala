@@ -10,28 +10,17 @@ import scala.concurrent.duration.FiniteDuration
 
 sealed trait HttpError extends CornichonError
 
-case class TimeoutErrorAfter[A: Show](request: A, after: FiniteDuration) extends HttpError {
+case class TimeoutErrorAfter(request: String, after: FiniteDuration) extends HttpError {
   lazy val baseErrorMessage =
-    s"""|${request.show}
+    s"""|$request
         |connection timed out error after ${after.toMillis} ms""".trim.stripMargin
 }
 
-case class RequestError[A: Show](request: A, e: Throwable) extends HttpError {
+case class RequestError(request: String, e: Throwable) extends HttpError {
   lazy val baseErrorMessage =
-    s"""|${request.show}
+    s"""|request
         |encountered the following error:
         |${CornichonError.genStacktrace(e)}""".trim.stripMargin
-}
-
-case class UnmarshallingResponseError(e: Throwable, response: String) extends HttpError {
-  lazy val baseErrorMessage = s"""HTTP response '$response' generated error:
-               |${CornichonError.genStacktrace(e)}""".trim.stripMargin
-}
-
-case class SseError(e: Throwable) extends HttpError {
-  lazy val baseErrorMessage =
-    s"""expected SSE connection but got error:
-       |${CornichonError.genStacktrace(e)}""".trim.stripMargin
 }
 
 case class StatusNonExpected[A: Show](expectedStatus: A, actualStatus: A, headers: Seq[(String, String)], rawBody: String, requestDescription: String) extends HttpError {

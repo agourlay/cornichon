@@ -161,7 +161,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def WithHeaders(headers: (String, String)*): BodyElementCollector[Step, Seq[Step]] =
     BodyElementCollector[Step, Seq[Step]] { steps =>
       // the surrounding steps are hidden from the logs
-      val saveStep = save((withHeadersKey, encodeSessionHeaders(headers)), show = false)
+      val saveStep = save((withHeadersKey, encodeSessionHeaders(headers.toVector)), show = false)
       val rollbackStep = rollback(withHeadersKey, show = false)
       saveStep +: steps :+ rollbackStep
     }
@@ -188,7 +188,7 @@ trait HttpDslOps {
             else if (keep.isEmpty)
               s.removeKey(withHeadersKey).asRight
             else
-              s.addValue(withHeadersKey, encodeSessionHeaders(keep))
+              s.addValue(withHeadersKey, encodeSessionHeaders(keep.toVector))
           }
       }
 }
@@ -199,7 +199,7 @@ object HttpDsl {
 
   def save_many_from_session_json(fromKey: String)(args: Seq[FromSessionSetter[Json]]): Step =
     CEffectStep.fromSyncE(
-      s"${args.iterator.map(_.title).mkString(" and ")}",
+      title = args.iterator.map(_.title).mkString(" and "),
       sc => {
         val session = sc.session
         for {

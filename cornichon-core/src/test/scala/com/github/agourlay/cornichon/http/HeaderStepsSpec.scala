@@ -9,7 +9,7 @@ import munit.FunSuite
 class HeaderStepsSpec extends FunSuite with CommonTestSuite {
 
   private def addHeaderToSession(s: Session)(headers: (String, String)*) =
-    s.addValue(SessionKeys.lastResponseHeadersKey, encodeSessionHeaders(headers)).valueUnsafe
+    s.addValue(SessionKeys.lastResponseHeadersKey, encodeSessionHeaders(headers.toVector)).valueUnsafe
 
   test("HeadersNameStepBuilder is present") {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")

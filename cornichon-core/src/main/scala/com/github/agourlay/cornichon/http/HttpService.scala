@@ -2,7 +2,6 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.data.EitherT
-import cats.syntax.show._
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime
 import org.http4s.circe._
@@ -13,7 +12,6 @@ import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.http.HttpService._
-import com.github.agourlay.cornichon.http.HttpRequest._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import io.circe.{ Encoder, Json }
 import org.http4s.EntityEncoder
@@ -62,7 +60,7 @@ class HttpService(
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
       configuredRequest = configureRequest(resolvedRequest, config)
       resp <- client.runRequest(configuredRequest, requestTimeout)(circeJsonEncoder, Json.showJson) // TODO remove implicits when removing Scala 2.12
-      newSession <- EitherT.fromEither[IO](handleResponse(resp, configuredRequest.show, expectedStatus, extractor)(scenarioContext.session))
+      newSession <- EitherT.fromEither[IO](handleResponse(resp, configuredRequest.detailedDescription, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 
   private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(scenarioContext: ScenarioContext) =
@@ -70,7 +68,7 @@ class HttpService(
       (url, _, params, headers) <- EitherT.fromEither[IO](resolveRequestParts[String](r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
       resolvedRequest = HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
       resp <- EitherT(client.openStream(resolvedRequest, requestTimeout))
-      newSession <- EitherT.fromEither[IO](handleResponse(resp, resolvedRequest.show, expectedStatus, extractor)(scenarioContext.session))
+      newSession <- EitherT.fromEither[IO](handleResponse(resp, resolvedRequest.detailedDescription, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 
   private def withBaseUrl(input: String) = {
@@ -162,12 +160,16 @@ object HttpService {
   def encodeSessionHeader(name: String, value: String) =
     s"$name$headersKeyValueDelim$value"
 
-  def encodeSessionHeaders(headers: Seq[(String, String)]): String = {
+  def encodeSessionHeaders(headers: Vector[(String, String)]): String = {
     val len = headers.length
     val builder = new StringBuilder(len * 10)
     var i = 0
-    for ((name, value) <- headers) {
-      builder.append(encodeSessionHeader(name, value))
+    while (i < len) {
+      val (name, value) = headers(i)
+      // unroll `encodeSessionHeader` to avoid creating intermediate strings
+      builder.append(name);
+      builder.append(headersKeyValueDelim);
+      builder.append(value)
       if (i < len - 1)
         builder.append(interHeadersValueDelim)
       i += 1
@@ -184,13 +186,13 @@ object HttpService {
         Right(elms(0) -> elms(1))
     }
 
-  private def configureRequest[A: Show](req: HttpRequest[A], config: Config): HttpRequest[A] = {
+  private def configureRequest[A](req: HttpRequest[A], config: Config): HttpRequest[A] = {
     if (config.traceRequests)
-      println(DebugLogInstruction(req.show, 1).colorized)
+      println(DebugLogInstruction(req.detailedDescription, 1).colorized)
     if (config.warnOnDuplicateHeaders && req.headers.groupBy(_._1).exists(_._2.size > 1))
-      println(WarningLogInstruction(s"\n**Warning**\nduplicate headers detected in request:\n${req.show}", 1).colorized)
+      println(WarningLogInstruction(s"\n**Warning**\nduplicate headers detected in request:\n${req.detailedDescription}", 1).colorized)
     if (config.failOnDuplicateHeaders && req.headers.groupBy(_._1).exists(_._2.size > 1))
-      throw BasicError(s"duplicate headers detected in request:\n${req.show}").toException
+      throw BasicError(s"duplicate headers detected in request:\n${req.detailedDescription}").toException
     else
       req
   }
@@ -202,17 +204,7 @@ object HttpService {
       case ByNames(names) => headers.filterNot { case (n, _) => names.contains(n) }
     }
 
-  private def expectStatusCode(httpResponse: HttpResponse, expected: Option[Int], requestDescription: String): Either[CornichonError, HttpResponse] =
-    expected match {
-      case None =>
-        Right(httpResponse)
-      case Some(expectedStatus) if httpResponse.status == expectedStatus =>
-        Right(httpResponse)
-      case Some(expectedStatus) =>
-        Left(StatusNonExpected(expectedStatus, httpResponse.status, httpResponse.headers, httpResponse.body, requestDescription))
-    }
-
-  def fillInSessionWithResponse(session: Session, extractor: ResponseExtractor, requestDescription: String)(response: HttpResponse): Either[CornichonError, Session] = {
+  def fillInSessionWithResponse(response: HttpResponse, session: Session, extractor: ResponseExtractor, requestDescription: String): Either[CornichonError, Session] = {
     val updatedSession = session
       .addValueInternal(lastResponseStatusKey, statusToString(response.status))
       .addValueInternal(lastResponseBodyKey, response.body)
@@ -231,8 +223,11 @@ object HttpService {
   }
 
   private def handleResponse(resp: HttpResponse, requestDescription: String, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
-    expectStatusCode(resp, expectedStatus, requestDescription)
-      .flatMap(fillInSessionWithResponse(session, extractor, requestDescription))
+    expectedStatus match {
+      case Some(expectedStatus) if resp.status != expectedStatus =>
+        Left(StatusNonExpected(expectedStatus, resp.status, resp.headers, resp.body, requestDescription))
+      case _ => fillInSessionWithResponse(resp, session, extractor, requestDescription)
+    }
 
   // Avoid reallocating known strings
   private def statusToString(status: Int): String =

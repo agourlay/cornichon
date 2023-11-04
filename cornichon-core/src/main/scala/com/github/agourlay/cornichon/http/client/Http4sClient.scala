@@ -93,8 +93,8 @@ class Http4sClient(
     }
   }
 
-  private def fromHttp4sHeaders(headers: Headers): Seq[(String, String)] =
-    headers.headers.map(h => (h.name.toString, h.value))
+  private def fromHttp4sHeaders(headers: Headers): Vector[(String, String)] =
+    headers.headers.iterator.map(h => (h.name.toString, h.value)).toVector
 
   def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
@@ -127,11 +127,11 @@ class Http4sClient(
             }
         }
 
-        val timeout = IO.delay(TimeoutErrorAfter(cReq, t).asLeft).delayBy(t)
+        val timeout = IO.delay(TimeoutErrorAfter(cReq.detailedDescription, t).asLeft).delayBy(t)
 
         IO.race(cornichonResponse, timeout)
           .map(_.fold(identity, identity))
-          .handleError { t => RequestError(cReq, t).asLeft }
+          .handleError { t => RequestError(cReq.detailedDescription, t).asLeft }
       }
     )
 
@@ -162,11 +162,11 @@ class Http4sClient(
             }
         }
 
-        val timeout = IO.delay(TimeoutErrorAfter(streamReq, t).asLeft).delayBy(t)
+        val timeout = IO.delay(TimeoutErrorAfter(streamReq.detailedDescription, t).asLeft).delayBy(t)
 
         IO.race(cornichonResponse, timeout)
           .map(_.fold(identity, identity))
-          .handleError { t => RequestError(streamReq, t).asLeft }
+          .handleError { t => RequestError(streamReq.detailedDescription, t).asLeft }
       }
     )
   }

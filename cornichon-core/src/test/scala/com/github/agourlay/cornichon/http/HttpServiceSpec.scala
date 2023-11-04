@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.http
 
 import cats.effect.unsafe.IORuntime
-import cats.syntax.show._
 import com.github.agourlay.cornichon.core.{ Config, ScenarioContext, Session }
 import com.github.agourlay.cornichon.http.HttpMethods.GET
 import com.github.agourlay.cornichon.http.client.Http4sClient
@@ -16,24 +15,24 @@ class HttpServiceSpec extends FunSuite {
   private val httpService = new HttpService("http://base-url/", 10.seconds, client, new Config())
 
   test("fillInSessionWithResponse extracts content with NoOpExtraction") {
-    val resp = HttpResponse(200, Nil, "hello world")
-    val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, NoOpExtraction, dummyRequest.show)(resp)
+    val resp = HttpResponse(200, Vector.empty, "hello world")
+    val filledSession = HttpService.fillInSessionWithResponse(resp, Session.newEmpty, NoOpExtraction, dummyRequest.detailedDescription)
     assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
     assert(filledSession.flatMap(_.get("last-response-body")) == Right("hello world"))
-    assert(filledSession.flatMap(_.get("last-response-request")) == Right(dummyRequest.show))
+    assert(filledSession.flatMap(_.get("last-response-request")) == Right(dummyRequest.detailedDescription))
   }
 
   test("fillInSessionWithResponse extracts content with RootResponseExtraction") {
-    val resp = HttpResponse(200, Nil, "hello world")
-    val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, RootExtractor("copy-body"), dummyRequest.show)(resp)
+    val resp = HttpResponse(200, Vector.empty, "hello world")
+    val filledSession = HttpService.fillInSessionWithResponse(resp, Session.newEmpty, RootExtractor("copy-body"), dummyRequest.detailedDescription)
     assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
     assert(filledSession.flatMap(_.get("last-response-body")) == Right("hello world"))
     assert(filledSession.flatMap(_.get("copy-body")) == Right("hello world"))
   }
 
   test("fillInSessionWithResponse extracts content with PathResponseExtraction") {
-    val resp = HttpResponse(200, Nil, """{ "name" : "batman" }""")
-    val filledSession = HttpService.fillInSessionWithResponse(Session.newEmpty, PathExtractor("name", "part-of-body"), dummyRequest.show)(resp)
+    val resp = HttpResponse(200, Vector.empty, """{ "name" : "batman" }""")
+    val filledSession = HttpService.fillInSessionWithResponse(resp, Session.newEmpty, PathExtractor("name", "part-of-body"), dummyRequest.detailedDescription)
     assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
     assert(filledSession.flatMap(_.get("last-response-body")) == Right("""{ "name" : "batman" }"""))
     assert(filledSession.flatMap(_.get("part-of-body")) == Right("batman"))

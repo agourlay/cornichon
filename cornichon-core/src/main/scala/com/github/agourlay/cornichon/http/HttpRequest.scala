@@ -27,10 +27,11 @@ trait BaseRequest {
   def params: Seq[(String, String)]
   def headers: Seq[(String, String)]
 
+  // used for step title log display
   def compactDescription: String
 
-  def paramsTitle: String = if (params.isEmpty) "" else s" with query parameters ${printArrowPairs(params)}"
-  def headersTitle: String = if (headers.isEmpty) "" else s" with headers ${printArrowPairs(headers)}"
+  // used for request session storage
+  def detailedDescription: String
 }
 
 case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
@@ -44,10 +45,65 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
   def withBody[B: Show: Resolvable: Encoder](body: B) = copy(body = Some(body))
 
-  lazy val compactDescription: String = {
-    val base = s"${method.name} $url"
-    val payloadTitle = body.fold("")(p => s" with body\n${p.show}")
-    base + payloadTitle + paramsTitle + headersTitle
+  def compactDescription: String = {
+    val builder = new StringBuilder()
+    builder.append(method.name)
+    builder.append(" ")
+    builder.append(url)
+    body.foreach { p =>
+      builder.append(" with body\n")
+      builder.append(p.show)
+    }
+    if (params.nonEmpty) {
+      builder.append(" with query parameters ")
+      printArrowPairsBuilder(params, builder)
+    }
+
+    if (headers.nonEmpty) {
+      builder.append(" with headers ")
+      printArrowPairsBuilder(headers, builder)
+    }
+    builder.toString()
+  }
+
+  def detailedDescription: String = {
+    val builder = new StringBuilder()
+    builder.append("HTTP ")
+
+    // method
+    builder.append(method.name)
+
+    // URL
+    builder.append(" request to ")
+    builder.append(url)
+    builder.append("\n")
+
+    // parameters
+    if (params.isEmpty)
+      builder.append("without parameters")
+    else {
+      builder.append("with parameters ")
+      printArrowPairsBuilder(params, builder)
+    }
+    builder.append("\n")
+
+    // headers
+    if (headers.isEmpty)
+      builder.append("without headers")
+    else {
+      builder.append("with headers ")
+      printArrowPairsBuilder(headers, builder)
+    }
+    builder.append("\n")
+
+    // body
+    body match {
+      case Some(b) =>
+        builder.append("with body\n")
+        builder.append(b.show)
+      case None => builder.append("without body")
+    }
+    builder.result()
   }
 }
 
@@ -61,20 +117,6 @@ trait HttpRequestsDsl {
   def post(url: String): HttpRequest[String] = HttpRequest[String](POST, url, None, Nil, Nil)
   def put(url: String): HttpRequest[String] = HttpRequest[String](PUT, url, None, Nil, Nil)
   def patch(url: String): HttpRequest[String] = HttpRequest[String](PATCH, url, None, Nil, Nil)
-}
-
-object HttpRequest extends HttpRequestsDsl {
-
-  implicit def showRequest[A: Show]: Show[HttpRequest[A]] = new Show[HttpRequest[A]] {
-    def show(r: HttpRequest[A]): String = {
-      val body = r.body.fold("without body")(b => s"with body\n${b.show}")
-      val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"
-      val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${printArrowPairs(r.headers)}"
-
-      s"HTTP ${r.method.name} request to ${r.url}\n$params\n$headers\n$body"
-    }
-  }
-
 }
 
 case class HttpStream(name: String) extends AnyVal
@@ -93,19 +135,48 @@ case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: Fini
   def withHeaders(headers: (String, String)*) = copy(headers = headers)
   def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
 
-  lazy val compactDescription: String = {
-    val base = s"open ${stream.name} to $url"
-    base + paramsTitle + headersTitle
+  def compactDescription: String = {
+    val builder = new StringBuilder()
+    builder.append("open ")
+    builder.append(stream.name)
+    builder.append(" to ")
+    builder.append(url)
+    if (params.nonEmpty) {
+      builder.append(" with query parameters ")
+      printArrowPairsBuilder(params, builder)
+    }
+    if (headers.nonEmpty) {
+      builder.append(" with headers ")
+      printArrowPairsBuilder(headers, builder)
+    }
+    builder.result()
   }
-}
 
-object HttpStreamedRequest {
+  def detailedDescription: String = {
+    val builder = new StringBuilder()
+    builder.append(stream.name)
+    builder.append(" request to ")
+    builder.append(url)
+    builder.append("\n")
 
-  implicit val showStreamedRequest: Show[HttpStreamedRequest] = (r: HttpStreamedRequest) => {
-    val params = if (r.params.isEmpty) "without parameters" else s"with parameters ${printArrowPairs(r.params)}"
-    val headers = if (r.headers.isEmpty) "without headers" else s"with headers ${printArrowPairs(r.headers)}"
+    // parameters
+    if (params.isEmpty)
+      builder.append("without parameters")
+    else {
+      builder.append("with parameters ")
+      printArrowPairsBuilder(params, builder)
+    }
+    builder.append("\n")
 
-    s"${r.stream.name} request to ${r.url}\n$params\n$headers"
+    // headers
+    if (headers.isEmpty)
+      builder.append("without headers")
+    else {
+      builder.append("with headers ")
+      printArrowPairsBuilder(headers, builder)
+    }
+    builder.append("\n")
+
+    builder.result()
   }
-
 }
