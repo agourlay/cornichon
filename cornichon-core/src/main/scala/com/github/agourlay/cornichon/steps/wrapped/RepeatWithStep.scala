@@ -9,7 +9,7 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
 
   require(elements.nonEmpty, "repeatWith block must contain a non empty sequence of elements")
 
-  val printElements = s"[${elements.mkString(", ")}]"
+  private val printElements = s"[${elements.mkString(", ")}]"
   val title = s"RepeatWith block with elements $printElements"
 
   override val stateUpdate: StepState = StateT { runState =>

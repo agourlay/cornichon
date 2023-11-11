@@ -72,6 +72,7 @@ object PlaceholderResolver {
         while (i < len) {
           val ph = placeholders(i)
           val resolvedValue = resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
+          // TODO use incremental StringBuilder instead of re-allocating new string for each replacement
           resolvedValue match {
             case Right(resolved) => acc = StringUtils.replace_all(acc, ph.fullKey, resolved)
             case Left(err)       => return Left(err)

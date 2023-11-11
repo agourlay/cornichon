@@ -147,7 +147,7 @@ trait DeckSteps {
   )
 
   def is_blackjack = AssertStep(
-    title = s"current hand is Blackjack!",
+    title = "current hand is Blackjack!",
     action = sc => Assertion.either {
       for {
         c1 <- sc.session.get("c1")

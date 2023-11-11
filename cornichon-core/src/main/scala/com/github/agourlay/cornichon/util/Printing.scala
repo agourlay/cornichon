@@ -19,9 +19,13 @@ object Printing {
     var i = 0
     params.foreach {
       case (name, value) =>
-        builder.append(s"'$name'")
+        builder.append("'")
+        builder.append(name)
+        builder.append("'")
         builder.append(arrow)
-        builder.append(s"'$value'")
+        builder.append("'")
+        builder.append(value)
+        builder.append("'")
         if (i < len - 1) {
           builder.append(", ")
         }

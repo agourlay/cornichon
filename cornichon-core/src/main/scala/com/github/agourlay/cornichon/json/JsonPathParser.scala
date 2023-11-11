@@ -8,7 +8,7 @@ import com.github.agourlay.cornichon.json.JsonPathParser._
 
 class JsonPathParser(val input: ParserInput) extends Parser {
 
-  def placeholdersRule = rule {
+  protected def placeholdersRule = rule {
     oneOrMore(SegmentRule).separatedBy('.') ~ EOI
   }
 

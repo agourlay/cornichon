@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.core
 
 case class FeatureDef(name: String, scenarios: List[Scenario], ignored: Option[String] = None) {
   require(
-    scenarios.map(s => s.name).distinct.length == scenarios.length,
+    scenarios.iterator.map(_.name).toSet.size == scenarios.length,
     s"Scenarios name must be unique within a Feature - error caused by duplicated declaration of scenarios '${scenarios.map(s => s.name).diff(scenarios.map(s => s.name).distinct).mkString(", ")}'"
   )
 

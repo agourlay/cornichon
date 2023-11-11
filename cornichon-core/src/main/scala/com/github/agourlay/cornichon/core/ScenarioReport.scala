@@ -25,7 +25,6 @@ object ScenarioReport {
 
 case class SuccessScenarioReport(scenarioName: String, session: Session, logStack: List[LogInstruction], duration: FiniteDuration, seed: Long) extends ScenarioReport {
   val isSuccess = true
-
   // keeping it lazy to avoid the reverse in case of no rendering
   lazy val logs = logStack.reverse
   // In case of success, logs are only shown if the scenario contains DebugLogInstruction

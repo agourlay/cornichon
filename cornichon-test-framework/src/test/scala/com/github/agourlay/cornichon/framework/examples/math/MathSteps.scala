@@ -45,7 +45,7 @@ trait MathSteps {
   }
 
   def calculate_point_in_circle(target: String): Step = EffectStep.fromSyncE(
-    title = s"calculate points inside circle",
+    title = "calculate points inside circle",
     effect = sc => {
       for {
         x <- sc.session.get("x").map(_.toDouble)

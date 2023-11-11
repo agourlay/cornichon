@@ -10,7 +10,7 @@ trait Assertion { self =>
   def validated: ValidatedNel[CornichonError, Done]
 
   def and(other: Assertion): Assertion = new Assertion {
-    val validated = self.validated *> other.validated
+    lazy val validated = self.validated *> other.validated
   }
 
   def andAll(others: Seq[Assertion]): Assertion =
@@ -18,11 +18,11 @@ trait Assertion { self =>
       self
     else
       new Assertion {
-        val validated = others.fold(self)(_ and _).validated
+        lazy val validated = others.fold(self)(_ and _).validated
       }
 
   def or(other: Assertion): Assertion = new Assertion {
-    val validated =
+    lazy val validated =
       if (self.validated.isValid || other.validated.isValid)
         validDone
       else

@@ -86,7 +86,7 @@ class Http4sClient(
       Nil
     else {
       val listBuffer = ListBuffer.empty[Header.Raw]
-      for ((n, v) <- headers.iterator) {
+      for ((n, v) <- headers) {
         listBuffer += Header.Raw(CIString(n), v)
       }
       listBuffer.toList
@@ -106,9 +106,9 @@ class Http4sClient(
     }
 
   override def runRequest[A](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A], sh: Show[A]): EitherT[IO, CornichonError, HttpResponse] =
-    parseUri(cReq.url).fold(
-      e => EitherT.left[HttpResponse](IO.pure(e)),
-      uri => EitherT {
+    parseUri(cReq.url) match {
+      case Left(e) => EitherT.left[HttpResponse](IO.pure(e))
+      case Right(uri) => EitherT {
         val req = Request[IO](toHttp4sMethod(cReq.method))
         val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
           .putHeaders(toHttp4sHeaders(cReq.headers)) // `withEntity` adds `Content-Type` so we set the headers afterwards to have the possibility to override it
@@ -133,14 +133,14 @@ class Http4sClient(
           .map(_.fold(identity, identity))
           .handleError { t => RequestError(cReq.detailedDescription, t).asLeft }
       }
-    )
+    }
 
   private val sseHeader = "text" -> "event-stream"
 
   private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[IO, CornichonError, HttpResponse] = {
-    parseUri(streamReq.url).fold(
-      e => EitherT.left[HttpResponse](IO.pure(e)),
-      uri => EitherT {
+    parseUri(streamReq.url) match {
+      case Left(e) => EitherT.left[HttpResponse](IO.pure(e))
+      case Right(uri) => EitherT {
         val req = Request[IO](org.http4s.Method.GET)
           .withHeaders(Headers(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers)))
           .withUri(addQueryParams(uri, streamReq.params))
@@ -168,7 +168,7 @@ class Http4sClient(
           .map(_.fold(identity, identity))
           .handleError { t => RequestError(streamReq.detailedDescription, t).asLeft }
       }
-    )
+    }
   }
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration): IO[Either[CornichonError, HttpResponse]] =

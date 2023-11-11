@@ -8,7 +8,7 @@ import scala.util.{ Failure, Success }
 
 class PlaceholderParser(val input: ParserInput) extends Parser {
 
-  def placeholdersRule = rule {
+  protected def placeholdersRule = rule {
     Ignore ~ zeroOrMore(PlaceholderRule).separatedBy(Ignore) ~ Ignore ~ EOI
   }
 

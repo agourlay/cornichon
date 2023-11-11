@@ -146,7 +146,6 @@ object HttpService {
     // Using non-ASCII chars to assure that those won't be present inside the headers.
     val headersKeyValueDelim = '→'
     val interHeadersValueDelim = '¦'
-    val interHeadersValueDelimString = interHeadersValueDelim.toString
   }
 
   import HttpService.SessionKeys._
@@ -167,8 +166,8 @@ object HttpService {
     while (i < len) {
       val (name, value) = headers(i)
       // unroll `encodeSessionHeader` to avoid creating intermediate strings
-      builder.append(name);
-      builder.append(headersKeyValueDelim);
+      builder.append(name)
+      builder.append(headersKeyValueDelim)
       builder.append(value)
       if (i < len - 1)
         builder.append(interHeadersValueDelim)

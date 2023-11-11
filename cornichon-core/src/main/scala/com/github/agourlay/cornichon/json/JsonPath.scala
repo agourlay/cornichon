@@ -98,12 +98,19 @@ case class JsonPath(operations: Vector[JsonPathOperation]) extends AnyVal {
 }
 
 object JsonPath {
-  val root = "$"
-  val rootPath = JsonPath(Vector.empty)
+  protected[cornichon] val root = "$"
+  protected[cornichon] val rootPath = JsonPath(Vector.empty)
   private val rightEmptyJsonPath = Right(rootPath)
 
   implicit val show: Show[JsonPath] = Show.show[JsonPath] { p =>
-    p.operations.iterator.map(_.pretty).mkString(".")
+    p.operations.iterator.map {
+      case RootSelection                     => root
+      case FieldSelection(field)             => field
+      case RootArrayElementSelection(index)  => s"$root[$index]"
+      case ArrayFieldSelection(field, index) => s"$field[$index]"
+      case RootArrayFieldProjection          => s"$root[*]"
+      case ArrayFieldProjection(field)       => s"$field[*]"
+    }.mkString(".")
   }
 
   def parse(path: String): Either[CornichonError, JsonPath] =
@@ -132,34 +139,10 @@ object JsonPath {
     } yield res
 }
 
-sealed trait JsonPathOperation {
-  def field: String
-  def pretty: String
-}
-
-case object RootSelection extends JsonPathOperation {
-  val field = JsonPath.root
-  val pretty = field
-}
-
-case class FieldSelection(field: String) extends JsonPathOperation {
-  val pretty = field
-}
-
-case class RootArrayElementSelection(index: Int) extends JsonPathOperation {
-  val field = JsonPath.root
-  val pretty = s"$field[$index]"
-}
-
-case class ArrayFieldSelection(field: String, index: Int) extends JsonPathOperation {
-  val pretty = s"$field[$index]"
-}
-
-case class ArrayFieldProjection(field: String) extends JsonPathOperation {
-  val pretty = s"$field[*]"
-}
-
-case object RootArrayFieldProjection extends JsonPathOperation {
-  val field = JsonPath.root
-  val pretty = s"$field[*]"
-}
+sealed trait JsonPathOperation
+case object RootSelection extends JsonPathOperation
+case class FieldSelection(field: String) extends JsonPathOperation
+case class RootArrayElementSelection(index: Int) extends JsonPathOperation
+case class ArrayFieldSelection(field: String, index: Int) extends JsonPathOperation
+case class ArrayFieldProjection(field: String) extends JsonPathOperation
+case object RootArrayFieldProjection extends JsonPathOperation

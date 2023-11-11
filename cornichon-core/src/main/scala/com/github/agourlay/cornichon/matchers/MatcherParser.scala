@@ -8,7 +8,7 @@ import scala.util.{ Failure, Success }
 
 class MatcherParser(val input: ParserInput) extends Parser {
 
-  def matchersRule = rule {
+  protected def matchersRule = rule {
     Ignore ~ zeroOrMore(MatcherRule).separatedBy(Ignore) ~ Ignore ~ EOI
   }
 

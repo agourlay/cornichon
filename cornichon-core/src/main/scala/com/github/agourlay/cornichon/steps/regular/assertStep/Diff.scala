@@ -39,9 +39,9 @@ object Diff {
     val deleted = deletedTuple.iterator.map(_._1)
     val moved = stillPresent.iterator.map { case (elem, newIndex) => MovedElement(elem, newIndex, left.indexWhere(_ == elem)) }.filter(_.changed)
     s"""|Ordered collection diff. between actual result and expected result is :
-        |${if (added.isEmpty) "" else "added elements:\n" + added.map(_.show).mkString("\n")}
-        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.map(_.show).mkString("\n")}
-        |${if (moved.isEmpty) "" else "moved elements:\n" + moved.map(_.show).mkString("\n")}
+        |${if (added.isEmpty) "" else "added elements:\n" + added.iterator.map(_.show).mkString("\n")}
+        |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.iterator.map(_.show).mkString("\n")}
+        |${if (moved.isEmpty) "" else "moved elements:\n" + moved.iterator.map(_.show).mkString("\n")}
       """.stripMargin.trim
   }
 

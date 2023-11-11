@@ -438,9 +438,24 @@ object JsonSteps {
     }
 
   private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
-    val baseWithWhite = if (withWhiteListing) baseTitle + " with white listing" else baseTitle
-    if (ignoring.isEmpty) baseWithWhite
-    else s"$baseWithWhite ignoring keys ${ignoring.mkString(", ")}"
+    val builder = new StringBuilder(baseTitle)
+    // whitelisting
+    if (withWhiteListing)
+      builder.append(" with white listing")
+
+    // ignored keys
+    if (ignoring.nonEmpty) {
+      builder.append(" ignoring keys ")
+      val len = ignoring.length
+      var i = 0
+      ignoring.foreach { key =>
+        builder.append(key)
+        if (i < len - 1) builder.append(", ")
+        i += 1
+      }
+    }
+
+    builder.toString()
   }
 
   private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, sc: ScenarioContext): Either[CornichonError, Json] =

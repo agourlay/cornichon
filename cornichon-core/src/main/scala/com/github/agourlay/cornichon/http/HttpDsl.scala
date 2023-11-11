@@ -52,17 +52,28 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     )
 
   implicit def queryGqlToStep(queryGQL: QueryGQL): Step = {
-    // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
-    val prettyPayload = queryGQL.querySource
+    val builder = new StringBuilder()
+    builder.append("query GraphQL endpoint ")
+    builder.append(queryGQL.url)
+    builder.append(" with query ")
 
-    val prettyVar = queryGQL.variables.fold("") { variables =>
-      " and with variables " + variables.show
+    // Used only for display - problem being that the query is a String and looks ugly inside the full JSON object.
+    builder.append(queryGQL.querySource)
+
+    // variables
+    queryGQL.variables.foreach { variables =>
+      builder.append(" and with variables ")
+      builder.append(variables.show)
     }
 
-    val prettyOp = queryGQL.operationName.fold("")(o => s" and with operationName $o")
+    // operation
+    queryGQL.operationName.foreach { operationName =>
+      builder.append(" and with operationName ")
+      builder.append(operationName)
+    }
 
     CEffectStep(
-      title = s"query GraphQL endpoint ${queryGQL.url} with query $prettyPayload$prettyVar$prettyOp",
+      title = builder.result(),
       effect = http.requestEffectIO(queryGQL)
     )
   }
@@ -214,10 +225,10 @@ object HttpDsl {
     EffectStep.fromSyncE(
       title = s"save body to key '$target'",
       effect = sc => {
-        for {
-          sessionValue <- sc.session.get(lastResponseBodyKey)
-          newSession <- sc.session.addValue(target, sessionValue)
-        } yield newSession
+        val session = sc.session
+        session.get(lastResponseBodyKey).flatMap { sessionValue =>
+          session.addValue(target, sessionValue)
+        }
       }
     )
 

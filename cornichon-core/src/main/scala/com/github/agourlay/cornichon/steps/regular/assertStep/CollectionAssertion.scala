@@ -11,7 +11,7 @@ import com.github.agourlay.cornichon.util.Printing._
 abstract class CollectionAssertion[A] extends Assertion
 
 case class CollectionNotEmptyAssertion[A](collection: Iterable[A], name: String) extends CollectionAssertion[A] {
-  val validated = if (collection.nonEmpty) validDone else CollectionNotEmptyAssertionError(collection, name).invalidNel
+  lazy val validated = if (collection.nonEmpty) validDone else CollectionNotEmptyAssertionError(collection, name).invalidNel
 }
 
 case class CollectionNotEmptyAssertionError[A](collection: Iterable[A], name: String) extends CornichonError {
@@ -19,7 +19,7 @@ case class CollectionNotEmptyAssertionError[A](collection: Iterable[A], name: St
 }
 
 case class CollectionEmptyAssertion[A: Show](collection: Iterable[A], name: String) extends CollectionAssertion[A] {
-  val validated = if (collection.isEmpty) validDone else CollectionEmptyAssertionError(collection, name).invalidNel
+  lazy val validated = if (collection.isEmpty) validDone else CollectionEmptyAssertionError(collection, name).invalidNel
 }
 
 case class CollectionEmptyAssertionError[A: Show](collection: Iterable[A], name: String) extends CornichonError {
@@ -27,7 +27,7 @@ case class CollectionEmptyAssertionError[A: Show](collection: Iterable[A], name:
 }
 
 case class CollectionSizeAssertion[A: Show](collection: Iterable[A], size: Int, name: String) extends CollectionAssertion[A] {
-  val validated = if (collection.size == size) validDone else CollectionSizeAssertionError(collection, size, name).invalidNel
+  lazy val validated = if (collection.size == size) validDone else CollectionSizeAssertionError(collection, size, name).invalidNel
 }
 
 case class CollectionSizeAssertionError[A: Show](collection: Iterable[A], size: Int, name: String) extends CornichonError {
@@ -35,7 +35,7 @@ case class CollectionSizeAssertionError[A: Show](collection: Iterable[A], size: 
 }
 
 case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) extends CollectionAssertion[A] {
-  val validated = {
+  lazy val validated = {
     val deleted = right.diff(left)
     val added = left.diff(right)
     if (added.isEmpty && deleted.isEmpty)

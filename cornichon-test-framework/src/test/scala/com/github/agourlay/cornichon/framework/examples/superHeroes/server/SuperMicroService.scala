@@ -58,10 +58,10 @@ class SuperMicroService {
             .toValid(SuperHeroNotFound(name))
         }
     }
-    sh.map { c =>
-      if (protectIdentity) c.copy(realName = "XXXXX")
-      else c
-    }
+    if (protectIdentity)
+      sh.map(c => c.copy(realName = "XXXXX"))
+    else
+      sh
   }
 
   def addPublisher(sessionId: String, p: Publisher): Validated[PublisherAlreadyExists, Publisher] =

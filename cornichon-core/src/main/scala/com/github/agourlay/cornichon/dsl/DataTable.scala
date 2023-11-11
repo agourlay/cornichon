@@ -27,7 +27,7 @@ object DataTableParser {
 }
 
 class DataTableParser(val input: ParserInput) extends Parser with StringHeaderParserSupport {
-  def dataTableRule = rule {
+  protected def dataTableRule = rule {
     zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> ((h, r) => DataTable(h, r.toVector))
   }
 

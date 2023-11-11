@@ -1,7 +1,6 @@
 package com.github.agourlay.cornichon.core
 
 import scala.collection.immutable.StringOps
-import scala.collection.mutable
 import scala.concurrent.duration.Duration
 
 sealed trait LogInstruction {
@@ -11,39 +10,70 @@ sealed trait LogInstruction {
   def colorized: String
   lazy val fullMargin: String = LogInstruction.physicalMargin * marginNb
   lazy val completeMessage: String = {
-
-    def withMarginAndDuration(line: String): String = {
-      val d = duration match {
-        case None                             => ""
-        case Some(dur) if dur.toMillis == 0   => s" [${dur.toMicros} μs]"
-        case Some(dur) if dur.toSeconds >= 10 => s" [${dur.toSeconds} s]"
-        case Some(dur)                        => s" [${dur.toMillis} ms]"
+    // Inject human readable duration at the end of the line
+    def withMarginAndDuration(builder: StringBuilder, line: String): Unit = {
+      builder.append(fullMargin)
+      builder.append(line)
+      duration.foreach { dur =>
+        val inMillis = dur.toMillis
+        builder.append(" [")
+        if (inMillis == 0) {
+          // duration is less than 1ms, show in micros
+          builder.append(dur.toMicros)
+          builder.append(" μs")
+        } else if (dur.toSeconds >= 10) {
+          // duration is more than 10s, show in seconds
+          builder.append(dur.toSeconds)
+          builder.append(" s")
+        } else {
+          // duration is between 1ms and 10s, show in millis
+          builder.append(inMillis)
+          builder.append(" ms")
+        }
+        builder.append("]")
       }
-      fullMargin + line + d
     }
 
     // Inject duration at the end of the first line
-    message.split('\n').toList match {
-      case Nil =>
-        withMarginAndDuration(message)
-      case head :: Nil =>
-        withMarginAndDuration(head)
-      case head :: tail =>
-        (withMarginAndDuration(head) :: tail.map(l => fullMargin + l)).mkString("\n")
+    val builder = new StringBuilder()
+    val lines = message.split('\n')
+    val linesLen = lines.length
+    linesLen match {
+      case 0 => withMarginAndDuration(builder, "") // message was empty
+      case 1 => withMarginAndDuration(builder, lines.head)
+      case _ =>
+        // multi-line message
+        withMarginAndDuration(builder, lines.head)
+        // not zero by construction
+        val tailLen = linesLen - 1
+        // non-empty tail, add a newline
+        builder.append("\n")
+        var i = 0
+        lines.tail.foreach { l =>
+          builder.append(fullMargin)
+          builder.append(l)
+          if (i < tailLen - 1) {
+            builder.append("\n")
+          }
+          i += 1
+        }
     }
+    builder.result()
   }
 }
 
 object LogInstruction {
   private val physicalMargin: StringOps = "   "
 
-  def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String =
-    logs.foldLeft(new mutable.StringBuilder()) { (b, l) =>
-      l match {
-        case NoShowLogInstruction(_, _, _) => b
-        case l: LogInstruction             => b.append("\n").append(if (colorized) l.colorized else l.completeMessage)
-      }
-    }.append("\n").result()
+  def renderLogs(logs: List[LogInstruction], colorized: Boolean = true): String = {
+    val builder = new StringBuilder()
+    logs.foreach {
+      case NoShowLogInstruction(_, _, _) => ()
+      case l: LogInstruction             => builder.append("\n").append(if (colorized) l.colorized else l.completeMessage)
+    }
+    builder.append("\n")
+    builder.result()
+  }
 
   def printLogs(logs: List[LogInstruction]): Unit =
     println(renderLogs(logs))

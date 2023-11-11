@@ -10,7 +10,7 @@ import com.github.agourlay.cornichon.core.Done._
 abstract class OrderAssertion[A] extends Assertion
 
 case class LessThanAssertion[A: Show: Order](left: A, right: A) extends OrderAssertion[A] {
-  val validated = if (Order[A].lt(left, right)) validDone else LessThanAssertionError(left, right).invalidNel
+  lazy val validated = if (Order[A].lt(left, right)) validDone else LessThanAssertionError(left, right).invalidNel
 }
 
 case class LessThanAssertionError[A: Show](left: A, right: A) extends CornichonError {
@@ -18,7 +18,7 @@ case class LessThanAssertionError[A: Show](left: A, right: A) extends CornichonE
 }
 
 case class GreaterThanAssertion[A: Show: Order](left: A, right: A) extends OrderAssertion[A] {
-  val validated = if (Order[A].gt(left, right)) validDone else GreaterThanAssertionError(left, right).invalidNel
+  lazy val validated = if (Order[A].gt(left, right)) validDone else GreaterThanAssertionError(left, right).invalidNel
 }
 
 case class GreaterThanAssertionError[A: Show](left: A, right: A) extends CornichonError {
@@ -26,5 +26,5 @@ case class GreaterThanAssertionError[A: Show](left: A, right: A) extends Cornich
 }
 
 case class BetweenAssertion[A: Show: Order](low: A, inspected: A, high: A) extends OrderAssertion[A] {
-  val validated = LessThanAssertion(inspected, high).and(GreaterThanAssertion(inspected, low)).validated
+  lazy val validated = LessThanAssertion(inspected, high).and(GreaterThanAssertion(inspected, low)).validated
 }

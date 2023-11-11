@@ -45,6 +45,7 @@ object MatcherResolver {
   def quoteMatchers(input: String, matchersToQuote: Vector[Matcher]): String =
     // can't use an Iterator with distinct because of Scala 2.12 :s
     matchersToQuote.distinct.foldLeft(input) {
+      // TODO use incremental StringBuilder instead of re-allocating new string for each replacement
       case (input, m) => StringUtils.replace_all(input, m.fullKey, m.quotedFullKey)
     }
 

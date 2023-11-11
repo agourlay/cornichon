@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.core
 
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicLong
 import scala.util.Random
 
@@ -31,7 +32,7 @@ class MutableRandomContext(seed: Long, seededRandom: Random) extends RandomConte
   def nextLong(): Long = seededRandom.nextLong()
   def nextString(length: Int): String = seededRandom.nextString(length)
   def nextPrintableChar(): Char = seededRandom.nextPrintableChar()
-  def alphanumeric(length: Int): String = seededRandom.alphanumeric.take(length).mkString("")
+  def alphanumeric(length: Int): String = RandomContext.mkAlphaNumStr(seededRandom, length)
   def shuffle[T](xs: Iterable[T]): Iterable[T] = seededRandom.shuffle(xs)
   private val atomicLong = new AtomicLong(1L)
   def uniqueLong(): Long = atomicLong.getAndIncrement()
@@ -45,5 +46,14 @@ object RandomContext {
 
   def fromSeed(seed: Long): RandomContext = {
     new MutableRandomContext(seed, new Random(new java.util.Random(seed)))
+  }
+
+  private val alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".getBytes
+
+  // Faster than Randon.alphanumeric
+  protected[cornichon] def mkAlphaNumStr(rand: Random, length: Int): String = {
+    val bytes = new Array[Byte](length)
+    for (i <- 0 until length) bytes(i) = alphanumeric(rand.nextInt(alphanumeric.length))
+    new String(bytes, StandardCharsets.US_ASCII)
   }
 }

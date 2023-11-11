@@ -14,7 +14,7 @@ abstract class EqualityAssertion[A: Eq] extends Assertion {
   val negate: Boolean
   val assertionError: CornichonError
 
-  val validated = {
+  lazy val validated = {
     val expectedEqualsActual = Eq[A].eqv(expected, actual)
     val succeedAsExpected = expectedEqualsActual && !negate
     val failedAsExpected = !expectedEqualsActual && negate

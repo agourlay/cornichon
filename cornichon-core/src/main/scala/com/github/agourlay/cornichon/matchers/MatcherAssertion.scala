@@ -29,10 +29,10 @@ case class MatcherAssertion(negate: Boolean, m: Matcher, input: Json, jsonPath: 
 }
 
 case class MatcherAssertionEvaluationError(m: Matcher, jsonPath: JsonPath, input: Json, error: CornichonError) extends CornichonError {
-  val baseErrorMessage = s"evaluation of matcher '${m.key}' (${m.description}) failed\nfor path ${jsonPath.show} with value '${input.spaces2}'"
+  lazy val baseErrorMessage = s"evaluation of matcher '${m.key}' (${m.description}) failed\nfor path ${jsonPath.show} with value '${input.spaces2}'"
   override val causedBy = error :: Nil
 }
 
 case class MatcherAssertionError(m: Matcher, jsonPath: JsonPath, input: Json, negate: Boolean) extends CornichonError {
-  val baseErrorMessage = s"matcher '${m.key}' (${m.description}) ${if (negate) "was expected to fail" else "failed"}\nfor path ${jsonPath.show} with value '${input.spaces2}'"
+  lazy val baseErrorMessage = s"matcher '${m.key}' (${m.description}) ${if (negate) "was expected to fail" else "failed"}\nfor path ${jsonPath.show} with value '${input.spaces2}'"
 }
