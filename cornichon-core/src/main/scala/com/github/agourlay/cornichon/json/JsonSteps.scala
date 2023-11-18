@@ -9,8 +9,10 @@ import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.matchers.{ MatcherAssertion, MatcherResolver }
 import com.github.agourlay.cornichon.steps.regular.assertStep._
+import com.github.agourlay.cornichon.util.StringUtils.quoteInto
 import com.github.agourlay.cornichon.util.TraverseUtils.{ traverse, traverseIV }
 import io.circe.{ Decoder, Encoder, Json }
+
 import scala.util.matching.Regex
 
 object JsonSteps {
@@ -25,21 +27,25 @@ object JsonSteps {
     def ignoring(ignoring: String*): JsonValuesStepBuilder = copy(ignoredKeys = ignoring.toList)
     def path(path: String): JsonValuesStepBuilder = copy(jsonPath = path)
 
-    private def areEqualsImpl(negate: Boolean) = AssertStep(
-      title = jsonAssertionTitleBuilder(
-        {
-          val prefix = if (jsonPath == JsonPath.root) s"JSON content" else s"JSON field '$jsonPath'"
-          s"$prefix of key '$k1' is${if (negate) " not " else " "}equal to $prefix of key '$k2'"
-        }, ignoredKeys),
-      action = sc => Assertion.either {
-        for {
-          ignoredPaths <- traverse(ignoredKeys)(resolveAndParseJsonPath(_, sc))
-          jsonPathFocus <- resolveAndParseJsonPath(jsonPath, sc)
-          v1 <- getParseFocusIgnore(k1, sc, ignoredPaths, jsonPathFocus)
-          v2 <- getParseFocusIgnore(k2, sc, ignoredPaths, jsonPathFocus)
-        } yield GenericEqualityAssertion(v1, v2, negate)
-      }
-    )
+    private def areEqualsImpl(negate: Boolean) = {
+      val prefix = if (jsonPath == JsonPath.root) s"JSON content" else s"JSON field '$jsonPath'"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(prefix)
+      titleBuilder.append(s" of key '$k1' is ")
+      if (negate) titleBuilder.append("not ")
+      titleBuilder.append(s"equal to $prefix of key '$k2'")
+      AssertStep(
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys),
+        action = sc => Assertion.either {
+          for {
+            ignoredPaths <- traverse(ignoredKeys)(resolveAndParseJsonPath(_, sc))
+            jsonPathFocus <- resolveAndParseJsonPath(jsonPath, sc)
+            v1 <- getParseFocusIgnore(k1, sc, ignoredPaths, jsonPathFocus)
+            v2 <- getParseFocusIgnore(k2, sc, ignoredPaths, jsonPathFocus)
+          } yield GenericEqualityAssertion(v1, v2, negate)
+        }
+      )
+    }
 
     def areEquals: AssertStep = areEqualsImpl(negate = false)
     def areNotEquals: AssertStep = areEqualsImpl(negate = true)
@@ -69,8 +75,10 @@ object JsonSteps {
 
     def is[A: Show: Resolvable: Encoder](expected: Either[CornichonError, A]): AssertStep = expected match {
       case Left(e) =>
-        val baseTitle = if (jsonPath == JsonPath.root) s"$target " else s"$target's field '$jsonPath'"
-        AssertStep(jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist), _ => Assertion.either(Left(e)))
+        val titleBuilder = new StringBuilder()
+        titleBuilder.append(target)
+        if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+        AssertStep(jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist), _ => Assertion.either(Left(e)))
       case Right(a) =>
         is(a)
     }
@@ -80,8 +88,18 @@ object JsonSteps {
 
     private def isImpl[A: Show: Resolvable: Encoder](expected: A, negate: Boolean = false): AssertStep = {
       val expectedShow = expected.show
-      val isOrNot = if (negate) "is not" else "is"
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target $isOrNot\n$expectedShow" else s"$target's field '$jsonPath' $isOrNot\n$expectedShow"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) {
+        titleBuilder.append("'s field ")
+        quoteInto(titleBuilder, jsonPath)
+      }
+      if (negate)
+        titleBuilder.append(" is not")
+      else
+        titleBuilder.append(" is")
+      titleBuilder.append("\n")
+      titleBuilder.append(expectedShow)
 
       def handleIgnoredFields(sc: ScenarioContext, expected: Json, actual: Json) =
         if (whitelist)
@@ -96,7 +114,7 @@ object JsonSteps {
           (expected, actual).asRight
 
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           if (whitelist && ignoredKeys.nonEmpty)
             InvalidIgnoringConfigError.asLeft
@@ -118,9 +136,13 @@ object JsonSteps {
     }
 
     def isLessThan[A: Show: Resolvable: Order: Decoder](lessThan: A): AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is less than '$lessThan'" else s"$target's field '$jsonPath' is less than '$lessThan'"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" is less than ")
+      quoteInto(titleBuilder, lessThan.toString)
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -134,9 +156,13 @@ object JsonSteps {
     }
 
     def isGreaterThan[A: Show: Order: Resolvable: Decoder](greaterThan: A): AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is greater than '$greaterThan'" else s"$target's field '$jsonPath' is greater than '$greaterThan'"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" is greater than ")
+      quoteInto(titleBuilder, greaterThan.toString)
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -149,9 +175,12 @@ object JsonSteps {
     }
 
     def isBetween[A: Show: Order: Resolvable: Decoder](less: A, greater: A): AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is between '$less' and '$greater'" else s"$target's field '$jsonPath'  is between '$less' and '$greater'"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(s" is between '$less' and '$greater'")
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -165,9 +194,13 @@ object JsonSteps {
     }
 
     def containsString(expectedPart: String): AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target contains '$expectedPart'" else s"$target's field '$jsonPath' contains '$expectedPart'"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" contains ")
+      quoteInto(titleBuilder, expectedPart)
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -179,9 +212,13 @@ object JsonSteps {
     }
 
     def matchesRegex(expectedRegex: Regex): AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target matches '$expectedRegex'" else s"$target's field '$jsonPath' matches '$expectedRegex'"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" matches ")
+      quoteInto(titleBuilder, expectedRegex.toString)
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -192,9 +229,12 @@ object JsonSteps {
     }
 
     def isNull: AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is null" else s"$target's field '$jsonPath' is null"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" is null")
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -205,9 +245,12 @@ object JsonSteps {
     }
 
     def isNotNull: AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is not null" else s"$target's field '$jsonPath' is not null"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" is not null")
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -218,9 +261,12 @@ object JsonSteps {
     }
 
     def isAbsent: AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is absent" else s"$target's field '$jsonPath' is absent"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" is absent")
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -231,9 +277,12 @@ object JsonSteps {
     }
 
     def isPresent: AssertStep = {
-      val baseTitle = if (jsonPath == JsonPath.root) s"$target is present" else s"$target's field '$jsonPath' is present"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
+      titleBuilder.append(" is present")
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             sessionValue <- sc.session.get(sessionKey)
@@ -245,9 +294,12 @@ object JsonSteps {
 
     // (previousValue, currentValue) => Assertion
     def compareWithPreviousValue[A: Decoder](comp: (A, A) => Assertion): AssertStep = {
-      val baseTitle = s"compare previous & current value of ${if (jsonPath == JsonPath.root) s"$target content" else s"$target's field '$jsonPath'"}"
+      val titleBuilder = new StringBuilder()
+      titleBuilder.append("compare previous & current value of ")
+      titleBuilder.append(target)
+      if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
       AssertStep(
-        title = jsonAssertionTitleBuilder(baseTitle, ignoredKeys, whitelist),
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
         action = sc => Assertion.either {
           for {
             ignoredPaths <- traverse(ignoredKeys)(resolveAndParseJsonPath(_, sc))
@@ -324,25 +376,45 @@ object JsonSteps {
 
     def is[A: Show: Resolvable: Encoder](expected: Either[CornichonError, A]): AssertStep = expected match {
       case Left(e) =>
-        val baseTitle = if (jsonPath == JsonPath.root) s"$target array " else s"$target's array '$jsonPath'"
-        AssertStep(jsonAssertionTitleBuilder(baseTitle, ignoredEachKeys), _ => Assertion.either(e.asLeft))
+        val titleBuilder = new StringBuilder()
+        titleBuilder.append(target)
+        if (jsonPath == JsonPath.root)
+          titleBuilder.append(" array ")
+        else {
+          titleBuilder.append("'s array ")
+          quoteInto(titleBuilder, jsonPath)
+          titleBuilder.append(" ")
+        }
+        AssertStep(jsonAssertionTitleBuilder(titleBuilder, ignoredEachKeys), _ => Assertion.either(e.asLeft))
       case Right(a) =>
         is(a)
     }
 
     def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = {
       val expectedShow = expected.show
-      val assertionTitle = {
-        val expectedSentence = if (ordered) s"in order is\n$expectedShow" else s"is\n$expectedShow"
-        val titleString = if (jsonPath == JsonPath.root)
-          s"$target array $expectedSentence"
-        else
-          s"$target's array '$jsonPath' $expectedSentence"
-        jsonAssertionTitleBuilder(titleString, ignoredEachKeys)
+
+      val titleBuilder = new StringBuilder()
+      // target
+      titleBuilder.append(target)
+
+      // target path
+      if (jsonPath == JsonPath.root)
+        titleBuilder.append(" array ")
+      else {
+        titleBuilder.append("'s array ")
+        quoteInto(titleBuilder, jsonPath)
+        titleBuilder.append(" ")
       }
 
+      // ordered
+      if (ordered) titleBuilder.append("in order ")
+
+      // expected
+      titleBuilder.append("is\n")
+      titleBuilder.append(expectedShow)
+
       AssertStep(
-        title = assertionTitle,
+        title = jsonAssertionTitleBuilder(titleBuilder, ignoredEachKeys),
         action = sc => Assertion.either {
           for {
             matchers <- sc.findAllMatchers(expectedShow)
@@ -364,18 +436,16 @@ object JsonSteps {
     }
 
     def not_contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val prettyElements = elements.mkString(" and ")
-      val title = if (jsonPath == JsonPath.root) s"$target array does not contain\n$prettyElements" else s"$target's array '$jsonPath' does not contain\n$prettyElements"
-      bodyContainsElmt(title, elements, expected = false)
+      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = true, target.toString, jsonPath, elements: _*)
+      bodyContainsElements(title, elements, expected = false)
     }
 
     def contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val prettyElements = elements.mkString(" and ")
-      val title = if (jsonPath == JsonPath.root) s"$target array contains\n$prettyElements" else s"$target's array '$jsonPath' contains\n$prettyElements"
-      bodyContainsElmt(title, elements, expected = true)
+      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = false, target.toString, jsonPath, elements: _*)
+      bodyContainsElements(title, elements, expected = true)
     }
 
-    private def bodyContainsElmt[A: Show: Resolvable: Encoder](title: String, expectedElements: Seq[A], expected: Boolean) =
+    private def bodyContainsElements[A: Show: Resolvable: Encoder](title: String, expectedElements: Seq[A], expected: Boolean) =
       AssertStep(
         title = title,
         action = sc => Assertion.either {
@@ -390,12 +460,11 @@ object JsonSteps {
       )
 
     def containsExactly[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val prettyElements = elements.mkString(" and ")
-      val title = if (jsonPath == JsonPath.root) s"$target array contains exactly\n$prettyElements" else s"$target's array '$jsonPath' contains exactly\n$prettyElements"
-      bodyContainsExactlyElmt(title, elements)
+      val title = jsonArrayContainsTitleBuilder(exactly = true, negate = false, target.toString, jsonPath, elements: _*)
+      bodyContainsExactlyElements(title, elements)
     }
 
-    private def bodyContainsExactlyElmt[A: Show: Resolvable: Encoder](title: String, expectedElements: Seq[A]) =
+    private def bodyContainsExactlyElements[A: Show: Resolvable: Encoder](title: String, expectedElements: Seq[A]) =
       AssertStep(
         title = title,
         action = sc => Assertion.either {
@@ -408,9 +477,13 @@ object JsonSteps {
         }
       )
 
-    private def removeIgnoredPathFromElements(scenarioContext: ScenarioContext, jArray: Vector[Json]) =
-      traverse(ignoredEachKeys)(resolveAndParseJsonPath(_, scenarioContext))
-        .map(ignoredPaths => jArray.map(removeFieldsByPath(_, ignoredPaths)))
+    private def removeIgnoredPathFromElements(scenarioContext: ScenarioContext, jArray: Vector[Json]): Either[CornichonError, Vector[Json]] = {
+      if (ignoredEachKeys.isEmpty)
+        Right(jArray)
+      else
+        traverse(ignoredEachKeys)(resolveAndParseJsonPath(_, scenarioContext))
+          .map(ignoredPaths => jArray.map(removeFieldsByPath(_, ignoredPaths)))
+    }
 
     private def applyPathAndFindArray(path: String)(scenarioContext: ScenarioContext, sessionValue: String): Either[CornichonError, Vector[Json]] =
       if (path == JsonPath.root)
@@ -437,25 +510,61 @@ object JsonSteps {
         }
     }
 
-  private def jsonAssertionTitleBuilder(baseTitle: String, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
-    val builder = new StringBuilder(baseTitle)
+  private def jsonArrayContainsTitleBuilder[A: Show](exactly: Boolean, negate: Boolean, target: String, jsonPath: String, elements: A*): String = {
+    val builder = new StringBuilder()
+    // target
+    builder.append(target)
+
+    // path
+    if (jsonPath == JsonPath.root) {
+      builder.append(" array ")
+    } else {
+      builder.append("'s array ")
+      quoteInto(builder, jsonPath)
+      builder.append(" ")
+    }
+
+    // negate
+    if (negate) {
+      builder.append("does not contain")
+    } else {
+      builder.append("contains")
+    }
+
+    // exactly
+    if (exactly) builder.append(" exactly")
+    builder.append("\n")
+
+    // elements
+    val count = elements.length
+    var i = 0
+    elements.foreach { e =>
+      builder.append(e.show)
+      if (i < count - 1) builder.append(" and ")
+      i += 1
+    }
+
+    builder.result()
+  }
+
+  private def jsonAssertionTitleBuilder(titleBuilder: StringBuilder, ignoring: Seq[String], withWhiteListing: Boolean = false): String = {
     // whitelisting
     if (withWhiteListing)
-      builder.append(" with white listing")
+      titleBuilder.append(" with white listing")
 
     // ignored keys
     if (ignoring.nonEmpty) {
-      builder.append(" ignoring keys ")
+      titleBuilder.append(" ignoring keys ")
       val len = ignoring.length
       var i = 0
       ignoring.foreach { key =>
-        builder.append(key)
-        if (i < len - 1) builder.append(", ")
+        titleBuilder.append(key)
+        if (i < len - 1) titleBuilder.append(", ")
         i += 1
       }
     }
 
-    builder.toString()
+    titleBuilder.toString()
   }
 
   private def resolveAndParseJson[A: Show: Encoder: Resolvable](input: A, sc: ScenarioContext): Either[CornichonError, Json] =

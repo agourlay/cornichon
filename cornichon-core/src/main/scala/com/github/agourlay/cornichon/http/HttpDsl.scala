@@ -21,9 +21,10 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
 import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
-import com.github.agourlay.cornichon.util.Printing._
+import com.github.agourlay.cornichon.util.StringUtils.printArrowPairs
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import io.circe.{ Encoder, Json }
+
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import scala.concurrent.duration._
@@ -63,7 +64,18 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     // variables
     queryGQL.variables.foreach { variables =>
       builder.append(" and with variables ")
-      builder.append(variables.show)
+      val len = variables.size
+      var i = 0
+      variables.foreach {
+        case (name, value) =>
+          builder.append(name)
+          builder.append(" -> ")
+          builder.append(value.show)
+          if (i < len - 1) {
+            builder.append("\n")
+          }
+          i += 1
+      }
     }
 
     // operation
@@ -206,9 +218,9 @@ trait HttpDslOps {
 
 object HttpDsl {
   val lastBodySessionKey = SessionKey(lastResponseBodyKey)
-  val bodySessionKeyTitle = Some("response body")
+  private val bodySessionKeyTitle = Some("response body")
 
-  def save_many_from_session_json(fromKey: String)(args: Seq[FromSessionSetter[Json]]): Step =
+  private def save_many_from_session_json(fromKey: String)(args: Seq[FromSessionSetter[Json]]): Step =
     CEffectStep.fromSyncE(
       title = args.iterator.map(_.title).mkString(" and "),
       sc => {

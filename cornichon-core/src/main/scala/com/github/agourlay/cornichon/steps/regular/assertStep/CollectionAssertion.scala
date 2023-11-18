@@ -6,7 +6,7 @@ import cats.syntax.validated._
 
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.util.Printing._
+import CollectionAssertionInstances._
 
 abstract class CollectionAssertion[A] extends Assertion
 
@@ -51,4 +51,11 @@ case class CollectionsContainSameElementsAssertionError[A: Show](added: Seq[A], 
         |${if (added.isEmpty) "" else "added elements:\n" + added.iterator.map(_.show).mkString("\n")}
         |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.iterator.map(_.show).mkString("\n")}
       """.stripMargin.trim
+}
+
+object CollectionAssertionInstances {
+  // only used for error rendering
+  implicit def showIterable[A: Show]: Show[Iterable[A]] = Show.show { fa =>
+    fa.iterator.map(_.show).mkString("(", ", ", ")")
+  }
 }

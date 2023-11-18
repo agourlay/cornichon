@@ -4,7 +4,7 @@ import cats.Show
 import cats.syntax.show._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
-import com.github.agourlay.cornichon.util.Printing.printArrowPairs
+import com.github.agourlay.cornichon.util.StringUtils.printArrowPairs
 
 import scala.concurrent.duration.FiniteDuration
 

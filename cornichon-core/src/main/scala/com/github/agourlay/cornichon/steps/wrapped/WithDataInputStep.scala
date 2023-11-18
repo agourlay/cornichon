@@ -6,7 +6,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.core.ScenarioRunner._
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.util.Printing._
+import com.github.agourlay.cornichon.util.StringUtils.printArrowPairs
 
 case class WithDataInputStep(nested: List[Step], where: String, rawJson: Boolean = false) extends WrapperStep {
 

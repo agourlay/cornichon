@@ -6,12 +6,18 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import sbt.testing.{ Event, EventHandler, Fingerprint, OptionalThrowable, Selector, Status, TestSelector }
 
+import scala.concurrent.duration.Duration
+
 object CornichonFeatureRunner {
   def loadAndExecute(featureInfo: FeatureInfo, eventHandler: EventHandler, seed: Option[Long], scenarioNameFilter: Set[String]): IO[Boolean] = {
     val baseFeature = featureInfo.featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
-    Either.catchNonFatal(baseFeature.feature).fold(
-      e => {
+    // load feature
+    val now = System.nanoTime()
+    val feature = Either.catchNonFatal(baseFeature.feature)
+    val loadingDuration = Some(Duration.fromNanos(System.nanoTime() - now))
+    feature match {
+      case Left(e) =>
         val msg = e match {
           case c: CornichonError => c.renderedMessage
           case e: Throwable      => e.getMessage
@@ -24,17 +30,16 @@ object CornichonFeatureRunner {
         println(FailureLogInstruction(banner, 0).colorized)
         eventHandler.handle(failureEventBuilder(featureInfo, e))
         IO.pure(false)
-      },
-      feature => {
+      case Right(feature) =>
         val (featureLog, featureRun) = feature.ignored match {
           case Some(reason) =>
             // Early detection of ignored feature to not generate logs for each scenario
             // This is not emitting the SBT `Status.Ignored` that counts tests.
             val msg = s"${feature.name}: ignored because $reason"
-            val featureLog = WarningLogInstruction(msg, 0).colorized
+            val featureLog = WarningLogInstruction(msg, 0, loadingDuration).colorized
             (featureLog, IO.pure(true))
           case None =>
-            val featureLog = SuccessLogInstruction(s"${feature.name}:", 0).colorized
+            val featureLog = SuccessLogInstruction(s"${feature.name}", 0, loadingDuration).colorized
             val featureRunner = FeatureRunner(feature, baseFeature, seed)
             val run = featureRunner.runFeature(filterScenarios(scenarioNameFilter))(generateResultEvent(featureInfo, eventHandler))
               .map { results =>
@@ -43,9 +48,9 @@ object CornichonFeatureRunner {
               }.handleError { e =>
                 val banner =
                   s"""
-                       |exception thrown during Feature execution:
-                       |${CornichonError.genStacktrace(e)}
-                       |""".stripMargin
+                     |exception thrown during Feature execution:
+                     |${CornichonError.genStacktrace(e)}
+                     |""".stripMargin
                 println(FailureLogInstruction(banner, 0).colorized)
                 eventHandler.handle(failureEventBuilder(featureInfo, e))
                 false
@@ -54,8 +59,7 @@ object CornichonFeatureRunner {
         }
         println(featureLog)
         featureRun
-      }
-    )
+    }
   }
 
   private def filterScenarios(scenarioNameFilter: Set[String])(s: Scenario): Boolean =

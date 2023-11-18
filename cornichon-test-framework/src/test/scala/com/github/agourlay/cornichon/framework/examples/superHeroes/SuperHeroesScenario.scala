@@ -707,8 +707,8 @@ class SuperHeroesScenario extends CornichonFeature {
 
       Scenario("demonstrate streaming support") {
 
-        // SSE streams are aggregated over a period of time in an Array, the array predicate can be reused :)
-        When I open_sse("/sseStream/superheroes", takeWithin = 3.seconds).withParams(
+        // SSE streams are aggregated over a period of time into a JSON Array
+        When I open_sse("/sseStream/superheroes", takeWithin = 1.seconds).withParams(
           "sessionId" -> "<session-id>",
           "justName" -> "true"
         )

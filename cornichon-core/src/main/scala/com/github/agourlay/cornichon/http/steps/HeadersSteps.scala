@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.http.HttpService
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.steps.regular.assertStep._
-import com.github.agourlay.cornichon.util.Printing._
+import com.github.agourlay.cornichon.util.StringUtils.printArrowPairs
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 
 // The assertion are case-insensitive on the field names.
@@ -60,10 +60,11 @@ object HeadersSteps {
     def isPresent = AssertStep(
       title = s"headers contain field with name '$name'",
       action = sc => Assertion.either {
+        val nameLowerCase = name.toLowerCase
         for {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- HttpService.decodeSessionHeaders(sessionHeaders)
-          predicate <- Right(sessionHeadersValue.exists { case (hName, _) => hName.toLowerCase == name.toLowerCase })
+          predicate <- Right(sessionHeadersValue.exists { case (hName, _) => hName.toLowerCase == nameLowerCase })
         } yield CustomMessageEqualityAssertion(true, predicate, () => headersDoesNotContainFieldWithNameError(name, sessionHeadersValue))
       }
     )
@@ -71,10 +72,11 @@ object HeadersSteps {
     def isAbsent = AssertStep(
       title = s"headers do not contain field with name '$name'",
       action = sc => Assertion.either {
+        val nameLowerCase = name.toLowerCase
         for {
           sessionHeaders <- sc.session.get(lastResponseHeadersKey)
           sessionHeadersValue <- HttpService.decodeSessionHeaders(sessionHeaders)
-          predicate <- Right(!sessionHeadersValue.exists { case (hName, _) => hName.toLowerCase == name.toLowerCase })
+          predicate <- Right(!sessionHeadersValue.exists { case (hName, _) => hName.toLowerCase == nameLowerCase })
         } yield CustomMessageEqualityAssertion(true, predicate, () => headersContainFieldWithNameError(name, sessionHeadersValue))
       }
     )

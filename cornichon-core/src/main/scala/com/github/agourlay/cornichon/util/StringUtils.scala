@@ -2,6 +2,32 @@ package com.github.agourlay.cornichon.util
 
 object StringUtils {
 
+  private val arrow = " -> "
+
+  def printArrowPairs(params: Seq[(String, String)]): String = {
+    if (params.isEmpty) {
+      return ""
+    }
+    val builder = new StringBuilder()
+    printArrowPairsBuilder(params, builder)
+    builder.result()
+  }
+
+  protected[cornichon] def printArrowPairsBuilder(params: Seq[(String, String)], builder: StringBuilder): Unit = {
+    val len = params.length
+    var i = 0
+    params.foreach {
+      case (name, value) =>
+        quoteInto(builder, name)
+        builder.append(arrow)
+        quoteInto(builder, value)
+        if (i < len - 1) {
+          builder.append(", ")
+        }
+        i += 1
+    }
+  }
+
   //https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Scala
   def levenshtein(str1: String, str2: String): Int = {
     def min(nums: Int*): Int = nums.min
@@ -61,6 +87,13 @@ object StringUtils {
     // append any characters to the right of a match
     sb.append(inString, pos, inString.length)
     sb.toString
+  }
+
+  // add single quoted input into builder
+  def quoteInto(builder: StringBuilder, input: String): Unit = {
+    builder.append('\'')
+    builder.append(input)
+    builder.append('\'')
   }
 
 }

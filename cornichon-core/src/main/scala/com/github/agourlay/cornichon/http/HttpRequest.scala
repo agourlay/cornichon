@@ -2,10 +2,8 @@ package com.github.agourlay.cornichon.http
 
 import cats.Show
 import cats.syntax.show._
-
-import com.github.agourlay.cornichon.util.Printing._
 import com.github.agourlay.cornichon.resolver.Resolvable
-
+import com.github.agourlay.cornichon.util.StringUtils.printArrowPairsBuilder
 import io.circe.Encoder
 
 import scala.concurrent.duration.FiniteDuration

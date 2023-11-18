@@ -43,7 +43,7 @@ case class RunState(
       randomContext = r.randomContext, // nested randomContext is built on top of the initial one
       session = r.session, // no need to combine, nested session is built on top of the initial one
       cleanupSteps = r.cleanupSteps ::: this.cleanupSteps, // prepend cleanup steps
-      logStack = extraLogStack ++ this.logStack // logs are often built manually and not extracted from RunState
+      logStack = extraLogStack ::: this.logStack // logs are often built manually and not extracted from RunState
     )
 
   lazy val scenarioContext: ScenarioContext = new ScenarioContext {

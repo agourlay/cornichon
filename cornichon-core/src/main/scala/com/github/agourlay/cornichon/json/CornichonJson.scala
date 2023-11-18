@@ -149,7 +149,7 @@ trait CornichonJson {
       case Failure(e)     => MalformedGraphQLJsonError(input, e).asLeft
     }
 
-  def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
+  private def jsonArrayValues(json: Json): Either[CornichonError, Vector[Json]] =
     json.asArray match {
       case Some(arr) => Right(arr)
       case None      => Left(NotAnArrayError(json))
@@ -161,8 +161,12 @@ trait CornichonJson {
   def selectMandatoryArrayJsonPath(json: String, path: JsonPath): Either[CornichonError, Vector[Json]] =
     path.runStrict(json).flatMap(jsonArrayValues)
 
-  def removeFieldsByPath(input: Json, paths: Seq[JsonPath]): Json =
-    paths.foldLeft(input) { (json, path) => path.removeFromJson(json) }
+  def removeFieldsByPath(input: Json, paths: Seq[JsonPath]): Json = {
+    if (paths.isEmpty)
+      input
+    else
+      paths.foldLeft(input) { (json, path) => path.removeFromJson(json) }
+  }
 
   def jsonStringValue(j: Json): String =
     // Use Json.Folder for performance https://github.com/circe/circe/pull/656

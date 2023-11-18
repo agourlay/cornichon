@@ -136,7 +136,7 @@ object HttpService {
   val rightNil = Right(Nil)
   private val rightNone = Right(None)
   // cache json encoder to avoid recreating it for each request
-  implicit val circeJsonEncoder: EntityEncoder[IO, Json] = jsonEncoder[IO]
+  implicit lazy val circeJsonEncoder: EntityEncoder[IO, Json] = jsonEncoder[IO]
   object SessionKeys {
     val lastResponseBodyKey = "last-response-body"
     val lastResponseStatusKey = "last-response-status"
