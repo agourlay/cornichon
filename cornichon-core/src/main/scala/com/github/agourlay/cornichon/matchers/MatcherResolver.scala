@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.matchers.Matchers._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverse
-import com.github.agourlay.cornichon.util.StringUtils
+import com.github.agourlay.cornichon.util.StringUtils._
 import io.circe.Json
 
 object MatcherResolver {
@@ -42,12 +42,10 @@ object MatcherResolver {
     findMatcherKeys(input).flatMap { traverse(_)(resolveMatcherKeys(allMatchers)) }
 
   // Add quotes around known matchers
-  def quoteMatchers(input: String, matchersToQuote: Vector[Matcher]): String =
-    // can't use an Iterator with distinct because of Scala 2.12 :s
-    matchersToQuote.distinct.foldLeft(input) {
-      // TODO use incremental StringBuilder instead of re-allocating new string for each replacement
-      case (input, m) => StringUtils.replace_all(input, m.fullKey, m.quotedFullKey)
-    }
+  def quoteMatchers(input: String, matchersToQuote: Vector[Matcher]): String = {
+    val pairs = matchersToQuote.map(m => (m.fullKey, m.quotedFullKey))
+    replace_patterns_in_order(input, pairs)
+  }
 
   // Removes JSON fields targeted by matchers and builds corresponding matchers assertions
   def prepareMatchers(matchers: Vector[Matcher], expected: Json, actual: Json, negate: Boolean): (Json, Json, List[MatcherAssertion]) =

@@ -63,23 +63,24 @@ object PlaceholderResolver {
 
   def fillPlaceholders(input: String)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean = false): Either[CornichonError, String] =
     findPlaceholders(input).flatMap { placeholders =>
-      if (placeholders.isEmpty)
+      val len = placeholders.length
+      if (len == 0)
         Right(input)
       else {
-        val len = placeholders.length
-        var acc = input
         var i = 0
+        val patterns = Vector.newBuilder[(String, String)]
         while (i < len) {
           val ph = placeholders(i)
           val resolvedValue = resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
-          // TODO use incremental StringBuilder instead of re-allocating new string for each replacement
           resolvedValue match {
-            case Right(resolved) => acc = StringUtils.replace_all(acc, ph.fullKey, resolved)
+            case Right(resolved) => patterns += ((ph.fullKey, resolved))
             case Left(err)       => return Left(err)
           }
           i += 1
         }
-        Right(acc)
+        val patternsResult = patterns.result()
+        val updatedInput = StringUtils.replace_patterns_in_order(input, patternsResult)
+        Right(updatedInput)
       }
     }
 

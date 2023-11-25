@@ -54,35 +54,36 @@ object StringUtils {
   }
 
   /**
-   * Replace all occurrences of a substring within a string with another string.
+   * Replace sequentially each pattern in the input string with the corresponding value.
    *
-   * credit:
-   *  - https://github.com/spring-projects/spring-framework/blob/main/spring-core/src/main/java/org/springframework/util/StringUtils.java#L423
-   *  - https://medium.com/javarevisited/micro-optimizations-in-java-string-replaceall-c6d0edf2ef6
+   * This method expects all patterns to be contained in the input string.
    *
-   * @param inString String to examine
-   * @param oldPattern String to replace
-   * @param newPattern String to insert
-   * @return a String with the replacements
+   * The goals are:
+   * - avoid multiple passes on the input string
+   * - avoid creating intermediate strings
    */
-  def replace_all(inString: String, oldPattern: String, newPattern: String): String = {
-    def hasLength(str: String) = str != null && str.nonEmpty
-
-    if (!hasLength(inString) || !hasLength(oldPattern) || newPattern == null) return inString
-    var index = inString.indexOf(oldPattern)
-    if (index == -1) { // no occurrence -> can return input as-is
-      return inString
-    }
-    var capacity = inString.length
-    if (newPattern.length > oldPattern.length) capacity += 16
-    val sb = new java.lang.StringBuilder(capacity)
-    var pos = 0 // our position in the old string
-    val patLen = oldPattern.length
-    while (index >= 0) {
+  def replace_patterns_in_order(inString: String, pattern_and_replacements: Vector[(String, String)]): String = {
+    val patternsLen = pattern_and_replacements.length
+    if (patternsLen == 0) return inString
+    // assume a similar length for the output string
+    val sb = new java.lang.StringBuilder(inString.length)
+    // our position in the old string
+    var pos = 0
+    var i = 0
+    while (i < patternsLen) {
+      val next = pattern_and_replacements(i)
+      val (pattern, newValue) = next
+      val index = inString.indexOf(pattern, pos)
+      if (index == -1) {
+        // this should never happen by contract
+        throw new IllegalArgumentException(s"pattern '$pattern' not found in input string '$inString'")
+      }
+      // append any characters to the left of a match
       sb.append(inString, pos, index)
-      sb.append(newPattern)
-      pos = index + patLen
-      index = inString.indexOf(oldPattern, pos)
+      // append the new value
+      sb.append(newValue)
+      pos = index + pattern.length
+      i += 1
     }
     // append any characters to the right of a match
     sb.append(inString, pos, inString.length)
