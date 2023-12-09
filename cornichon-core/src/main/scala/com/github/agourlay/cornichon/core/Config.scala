@@ -13,7 +13,7 @@ case class Config(
     traceRequests: Boolean = false,
     warnOnDuplicateHeaders: Boolean = false,
     failOnDuplicateHeaders: Boolean = false,
-    addAcceptGzipByDefault: Boolean = true,
+    addAcceptGzipByDefault: Boolean = false, // kinda slow
     disableCertificateVerification: Boolean = false,
     followRedirect: Boolean = false,
     enableHttp2: Boolean = false)

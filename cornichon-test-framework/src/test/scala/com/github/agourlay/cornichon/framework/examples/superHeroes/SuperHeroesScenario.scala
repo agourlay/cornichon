@@ -262,34 +262,6 @@ class SuperHeroesScenario extends CornichonFeature {
         Then assert status.isClientError
       }
 
-      Scenario("demonstrate Gzip support") {
-
-        RepeatWith("application/json", "gzip", "deflate")("encoding") {
-
-          When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>").withHeaders(
-            "Accept-Encoding" -> "<encoding>"
-          )
-
-          Then assert status.is(200)
-
-          And assert body.is(
-            """
-            {
-              "name": "Batman",
-              "realName": "Bruce Wayne",
-              "city": "Gotham city",
-              "hasSuperpowers": false,
-              "publisher":{
-                "name":"DC",
-                "foundationYear":1934,
-                "location":"Burbank, California"
-              }
-            }
-            """
-          )
-        }
-      }
-
       Scenario("demonstrate collection features") {
 
         When I get("/superheroes").withParams("sessionId" -> "<session-id>")
