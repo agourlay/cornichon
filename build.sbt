@@ -94,6 +94,11 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
+// disable cats-effect IO stack traces to avoid polluting the bench/profiling results
+lazy val noCatsEffectTracing = Seq(
+  javaOptions += "-Dcats.effect.tracing.mode=none",
+)
+
 lazy val cornichon =
   project
     .in(file("."))
@@ -157,6 +162,7 @@ lazy val testFramework =
     .dependsOn(core)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings : _*)
+    .settings(noCatsEffectTracing)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(formattingSettings)
@@ -214,6 +220,7 @@ lazy val benchmarks =
   project
     .in(file("./benchmarks"))
     .settings(commonSettings)
+    .settings(noCatsEffectTracing)
     .dependsOn(core)
     .settings(noPublishSettings)
     .enablePlugins(JmhPlugin)
