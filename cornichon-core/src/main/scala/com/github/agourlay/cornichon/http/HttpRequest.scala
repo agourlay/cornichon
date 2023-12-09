@@ -43,14 +43,17 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
 
   def withBody[B: Show: Resolvable: Encoder](body: B) = copy(body = Some(body))
 
+  // compute once and cache
+  private lazy val bodyAsString: Option[String] = body.map(_.show)
+
   def compactDescription: String = {
     val builder = new StringBuilder()
     builder.append(method.name)
     builder.append(" ")
     builder.append(url)
-    body.foreach { p =>
+    bodyAsString.foreach { p =>
       builder.append(" with body\n")
-      builder.append(p.show)
+      builder.append(p)
     }
     if (params.nonEmpty) {
       builder.append(" with query parameters ")
@@ -95,10 +98,10 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
     builder.append("\n")
 
     // body
-    body match {
+    bodyAsString match {
       case Some(b) =>
         builder.append("with body\n")
-        builder.append(b.show)
+        builder.append(b)
       case None => builder.append("without body")
     }
     builder.result()
