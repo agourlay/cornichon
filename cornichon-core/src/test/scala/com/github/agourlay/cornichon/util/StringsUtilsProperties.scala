@@ -23,7 +23,7 @@ class StringsUtilsProperties extends Properties("StringsUtil") {
   property("replace_patterns_in_order replaces values in a String") =
     forAll(Gen.alphaStr.filter(_.trim.nonEmpty), Gen.alphaStr.filter(_.trim.nonEmpty)) { (ph, value) =>
       val content = s"This project is <$ph> and <$ph>"
-      val result = StringUtils.replace_patterns_in_order(content, Vector((s"<$ph>", value), (s"<$ph>", value)))
+      val result = StringUtils.replacePatternsInOrder(content, Vector((s"<$ph>", value), (s"<$ph>", value)))
       result == s"This project is $value and $value"
     }
 }

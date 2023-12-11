@@ -78,8 +78,7 @@ object PlaceholderResolver {
           }
           i += 1
         }
-        val patternsResult = patterns.result()
-        val updatedInput = StringUtils.replace_patterns_in_order(input, patternsResult)
+        val updatedInput = StringUtils.replacePatternsInOrder(input, patterns.result())
         Right(updatedInput)
       }
     }

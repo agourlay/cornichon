@@ -194,8 +194,17 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 trait HttpDslOps {
 
   def addToWithHeaders(name: String, value: String)(s: Session): Either[CornichonError, Session] = {
-    val currentHeader = s.getOpt(withHeadersKey).fold("")(v => s"$v$interHeadersValueDelim")
-    s.addValue(withHeadersKey, s"$currentHeader${encodeSessionHeader(name, value)}")
+    val newWithHeadersValue = s.getOpt(withHeadersKey) match {
+      case None => encodeSessionHeader(name, value)
+      case Some(currentHeadersString) =>
+        // concat existing headers with new one
+        val builder = new StringBuilder()
+        builder.append(currentHeadersString)
+        builder.append(interHeadersValueDelim)
+        builder.append(encodeSessionHeader(name, value))
+        builder.result()
+    }
+    s.addValue(withHeadersKey, newWithHeadersValue)
   }
 
   def removeFromWithHeaders(name: String)(s: Session): Either[CornichonError, Session] =

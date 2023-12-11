@@ -62,7 +62,7 @@ object StringUtils {
    * - avoid multiple passes on the input string
    * - avoid creating intermediate strings
    */
-  def replace_patterns_in_order(inString: String, pattern_and_replacements: Vector[(String, String)]): String = {
+  def replacePatternsInOrder(inString: String, pattern_and_replacements: Vector[(String, String)]): String = {
     val patternsLen = pattern_and_replacements.length
     if (patternsLen == 0) return inString
     // assume a similar length for the output string

@@ -44,7 +44,7 @@ object MatcherResolver {
   // Add quotes around known matchers
   def quoteMatchers(input: String, matchersToQuote: Vector[Matcher]): String = {
     val pairs = matchersToQuote.map(m => (m.fullKey, m.quotedFullKey))
-    replace_patterns_in_order(input, pairs)
+    replacePatternsInOrder(input, pairs)
   }
 
   // Removes JSON fields targeted by matchers and builds corresponding matchers assertions
