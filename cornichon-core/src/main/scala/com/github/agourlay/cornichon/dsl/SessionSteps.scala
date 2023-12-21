@@ -134,10 +134,10 @@ object SessionSteps {
     def containsExactly[A: Resolvable](elements: A*): AssertStep = {
       val prettyElements = elements.mkString(" and ")
       val title = s"$sessionKey history contains exactly\n$prettyElements"
-      historyContainsExactlyElmt(title, elements)
+      historyContainsExactlyElements(title, elements)
     }
 
-    private def historyContainsExactlyElmt[A: Resolvable](title: String, expectedElements: Seq[A]) =
+    private def historyContainsExactlyElements[A: Resolvable](title: String, expectedElements: Seq[A]) =
       AssertStep(
         title = title,
         action = sc => Assertion.either {

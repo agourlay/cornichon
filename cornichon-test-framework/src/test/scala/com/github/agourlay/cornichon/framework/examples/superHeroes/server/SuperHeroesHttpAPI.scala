@@ -27,7 +27,7 @@ import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success }
 
-class SuperHeroesHttpAPI() extends Http4sDsl[IO] {
+class SuperHeroesHttpAPI extends Http4sDsl[IO] {
 
   private val sm = new SuperMicroService()
   private implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global

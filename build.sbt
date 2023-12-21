@@ -61,7 +61,6 @@ lazy val standardSettings = Seq(
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   Test / fork := true,
   scalacOptions ++= compilerOptions(scalaVersion.value),
-  scalacOptions += "-release:11", // caffeine requires Java 11
   javacOptions ++= Seq("-source", "8", "-target", "8"),
   // Additional meta-info required by maven central
   startYear := Some(2015),

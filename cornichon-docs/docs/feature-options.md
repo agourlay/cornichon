@@ -76,7 +76,7 @@ override lazy val requestTimeout = 100.millis
 
 On a failure the initial seed will be provided in the error reporting enabling you to replay the exact same test even if it contains source of randomness such as:
 
-  - randomized placeholders (random-uuid, random-string, random-boolean etc)
+  - randomized placeholders (random-uuid, random-string, random-boolean etc.)
   - property based testing generators & transitions
   - custom steps using `ScenarioContext.randomContext`
   - `RandomMapper` as extractor

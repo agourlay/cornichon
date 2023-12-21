@@ -14,7 +14,7 @@ import org.http4s.dsl.Http4sDsl
 
 import scala.concurrent.duration._
 
-class MockServerRequestHandler() extends Http4sDsl[IO] {
+class MockServerRequestHandler extends Http4sDsl[IO] {
 
   private val mockState = new MockServerStateHolder()
 
