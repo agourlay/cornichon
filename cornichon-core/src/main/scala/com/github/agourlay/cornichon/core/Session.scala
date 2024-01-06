@@ -193,7 +193,7 @@ case class IllegalKey(key: String) extends CornichonError {
 
 case class IndexNotFoundForKey(key: String, index: Int, values: Vector[String]) extends CornichonError {
   lazy val baseErrorMessage = s"index '$index' not found for key '$key' with values \n" +
-    s"${values.iterator.zipWithIndex.map { case (v, i) => s"$i -> $v" }.mkString("\n")}"
+    values.iterator.zipWithIndex.map { case (v, i) => s"$i -> $v" }.mkString("\n")
 }
 
 case class KeyWithoutPreviousValue(key: String, s: Session) extends CornichonError {

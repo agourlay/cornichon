@@ -12,7 +12,7 @@ import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 object HeadersSteps {
 
   case object HeadersStepBuilder {
-    def is(expected: (String, String)*) = AssertStep(
+    def is(expected: (String, String)*): AssertStep = AssertStep(
       title = s"headers is ${printArrowPairs(expected)}",
       action = sc => Assertion.either {
         for {
@@ -28,7 +28,7 @@ object HeadersSteps {
       }
     )
 
-    def hasSize(expectedSize: Int) = AssertStep(
+    def hasSize(expectedSize: Int): AssertStep = AssertStep(
       title = s"headers size is '$expectedSize'",
       action = sc => Assertion.either {
         sc.session.get(lastResponseHeadersKey).map { sessionHeaders =>
@@ -37,7 +37,7 @@ object HeadersSteps {
       }
     )
 
-    def contain(elements: (String, String)*) = AssertStep(
+    def contain(elements: (String, String)*): AssertStep = AssertStep(
       title = s"headers contain ${printArrowPairs(elements)}",
       action = sc => Assertion.either {
         for {
@@ -53,11 +53,11 @@ object HeadersSteps {
       }
     )
 
-    def name(name: String) = HeadersNameStepBuilder(name)
+    def name(name: String): HeadersNameStepBuilder = HeadersNameStepBuilder(name)
   }
 
   case class HeadersNameStepBuilder(name: String) {
-    def isPresent = AssertStep(
+    def isPresent: AssertStep = AssertStep(
       title = s"headers contain field with name '$name'",
       action = sc => Assertion.either {
         val nameLowerCase = name.toLowerCase
@@ -69,7 +69,7 @@ object HeadersSteps {
       }
     )
 
-    def isAbsent = AssertStep(
+    def isAbsent: AssertStep = AssertStep(
       title = s"headers do not contain field with name '$name'",
       action = sc => Assertion.either {
         val nameLowerCase = name.toLowerCase

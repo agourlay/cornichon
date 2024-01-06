@@ -7,9 +7,9 @@ import com.github.agourlay.cornichon.steps.regular.assertStep._
 
 object StatusSteps {
 
-  case object StatusKind {
+  private case object StatusKind {
 
-    protected val statusKind = Map(
+    private val statusKind = Map(
       1 -> "informational",
       2 -> "success",
       3 -> "redirection",
@@ -17,16 +17,15 @@ object StatusSteps {
       5 -> "server error"
     )
 
-    def computeKind(status: Int) = status / 100
+    def computeKind(status: Int): Int = status / 100
 
     def kindDisplay(status: Int) = s"${status}xx"
 
     def kindLabel(status: Int) = statusKind.getOrElse(status, "unknown")
-
   }
 
   case object StatusStepBuilder {
-    def is(expected: Int) = AssertStep(
+    def is(expected: Int): AssertStep = AssertStep(
       title = s"status is '$expected'",
       action = sc => Assertion.either {
         sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>

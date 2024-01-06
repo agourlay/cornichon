@@ -17,5 +17,5 @@ trait HttpClient {
 
   def shutdown(): IO[Done]
 
-  def paramsFromUrl(url: String): Either[CornichonError, Seq[(String, String)]]
+  def paramsFromUrl(url: String): Either[CornichonError, List[(String, String)]]
 }

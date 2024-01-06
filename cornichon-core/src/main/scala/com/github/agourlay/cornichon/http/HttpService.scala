@@ -31,6 +31,11 @@ class HttpService(
       case Some(Right(resolvedBody)) => parseDslJson(resolvedBody).map(Some.apply)
     }
 
+  private def urlWithoutParams(url: String): String = {
+    val index = url.indexOf('?')
+    if (index == -1) url else url.substring(0, index)
+  }
+
   private[http] def resolveRequestParts[A: Show: Resolvable: Encoder](
     url: String,
     body: Option[A],
@@ -42,7 +47,7 @@ class HttpService(
       urlResolved <- scenarioContext.fillPlaceholders(url)
       completeUrlResolved = withBaseUrl(urlResolved)
       urlParams <- client.paramsFromUrl(completeUrlResolved)
-      completeUrlResolvedNoParams = completeUrlResolved.split('?').head
+      completeUrlResolvedNoParams = urlWithoutParams(completeUrlResolved)
       explicitParams <- scenarioContext.fillPlaceholdersPairs(params)
       allParams = urlParams ++ explicitParams
       extractedWithHeaders <- extractWithHeadersSession(scenarioContext.session)
@@ -178,11 +183,11 @@ object HttpService {
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
     traverseIL(headers.split(interHeadersValueDelim).iterator) { header =>
-      val elms = header.split(headersKeyValueDelim)
-      if (elms.length != 2)
+      val index = header.indexOf(headersKeyValueDelim)
+      if (index == -1)
         Left(BadSessionHeadersEncoding(header))
       else
-        Right(elms(0) -> elms(1))
+        Right(header.substring(0, index) -> header.substring(index + 1))
     }
 
   private def configureRequest[A](req: HttpRequest[A], config: Config): HttpRequest[A] = {

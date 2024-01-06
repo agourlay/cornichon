@@ -18,24 +18,24 @@ case class QueryGQL(
     params: Seq[(String, String)],
     headers: Seq[(String, String)]) {
 
-  def withParams(params: (String, String)*) = copy(params = params)
-  def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+  def withParams(params: (String, String)*): QueryGQL = copy(params = params)
+  def addParams(params: (String, String)*): QueryGQL = copy(params = this.params ++ params)
 
-  def withHeaders(headers: (String, String)*) = copy(headers = headers)
-  def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
+  def withHeaders(headers: (String, String)*): QueryGQL = copy(headers = headers)
+  def addHeaders(headers: (String, String)*): QueryGQL = copy(headers = this.headers ++ headers)
 
-  def withQuery(query: Document) = copy(query = query)
+  def withQuery(query: Document): QueryGQL = copy(query = query)
 
-  def withOperationName(operationName: String) = copy(operationName = Some(operationName))
+  def withOperationName(operationName: String): QueryGQL = copy(operationName = Some(operationName))
 
-  def withVariables(newVariables: (String, VarValue)*) = {
+  def withVariables(newVariables: (String, VarValue)*): QueryGQL = {
     val vars = newVariables.iterator
       .map { case (k, v) => k -> parseDslJsonUnsafe(v.value)(v.encoder, v.show) }
 
     copy(variables = variables.fold(Some(vars.toMap))(v => Some(v ++ vars)))
   }
 
-  lazy val querySource = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
+  lazy val querySource: String = query.source.getOrElse(QueryRenderer.render(query, QueryRenderer.Pretty))
 
   lazy val payload: String = {
     import io.circe.generic.auto._

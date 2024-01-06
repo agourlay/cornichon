@@ -8,8 +8,6 @@ position: 1
 
 Cornichon is available for Scala 2.12 & Scala 2.13.
 
-It requires Java 11 or higher.
-
 The library is compatible with [SBT](https://www.scala-sbt.org/) and [Mill](http://www.lihaoyi.com/mill/).
 
 ``` scala

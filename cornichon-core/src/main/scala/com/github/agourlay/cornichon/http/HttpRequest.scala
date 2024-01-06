@@ -35,13 +35,13 @@ trait BaseRequest {
 case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: String, body: Option[A], params: Seq[(String, String)], headers: Seq[(String, String)])
   extends BaseRequest {
 
-  def withParams(params: (String, String)*) = copy(params = params)
-  def addParams(params: (String, String)*) = copy(params = this.params ++ params)
+  def withParams(params: (String, String)*): HttpRequest[A] = copy(params = params)
+  def addParams(params: (String, String)*): HttpRequest[A] = copy(params = this.params ++ params)
 
-  def withHeaders(headers: (String, String)*) = copy(headers = headers)
-  def addHeaders(headers: (String, String)*) = copy(headers = this.headers ++ headers)
+  def withHeaders(headers: (String, String)*): HttpRequest[A] = copy(headers = headers)
+  def addHeaders(headers: (String, String)*): HttpRequest[A] = copy(headers = this.headers ++ headers)
 
-  def withBody[B: Show: Resolvable: Encoder](body: B) = copy(body = Some(body))
+  def withBody[B: Show: Resolvable: Encoder](body: B): HttpRequest[B] = copy(body = Some(body))
 
   // compute once and cache
   private lazy val bodyAsString: Option[String] = body.map(_.show)

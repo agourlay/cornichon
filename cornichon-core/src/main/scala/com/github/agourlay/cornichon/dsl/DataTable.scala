@@ -5,11 +5,11 @@ import org.parboiled2._
 import scala.util.{ Failure, Success }
 
 object DataTableParser {
-  val WhiteSpace = CharPredicate("\u0009\u0020")
+  private val WhiteSpace = CharPredicate("\u0009\u0020")
 
-  val delimiterChar = CharPredicate('|')
+  private val DelimiterChar = CharPredicate('|')
 
-  val delims = CharPredicate(delimiterChar, '\r', '\n')
+  val Delimiters = CharPredicate(DelimiterChar, '\r', '\n')
 
   val Backslash = CharPredicate('\\')
 
@@ -37,13 +37,13 @@ class DataTableParser(val input: ParserInput) extends Parser with StringHeaderPa
 
   private def CellContent = rule { !NL ~ capture(zeroOrMore(ContentsChar)) }
 
-  private def ContentsChar = rule { !DataTableParser.delims ~ ANY }
+  private def ContentsChar = rule { !DataTableParser.Delimiters ~ ANY }
 
   private def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
 
   private def Spaces = rule { quiet(zeroOrMore(DataTableParser.WhiteSpace)) }
 
-  private def Separator = rule { Spaces ~ DataTableParser.delimiterChar ~ Spaces }
+  private def Separator = rule { Spaces ~ DataTableParser.DelimiterChar ~ Spaces }
 
 }
 
@@ -63,7 +63,7 @@ trait StringHeaderParserSupport extends StringBuilding {
 
   private def Characters = rule { oneOrMore(NormalChar | '\\' ~ EscapedChar) }
 
-  private def NormalChar = rule { !(DataTableParser.delims | DataTableParser.Backslash) ~ ANY ~ appendSB() }
+  private def NormalChar = rule { !(DataTableParser.Delimiters | DataTableParser.Backslash) ~ ANY ~ appendSB() }
 
   private def EscapedChar = rule {
     DataTableParser.Backslash ~ appendSB() |
