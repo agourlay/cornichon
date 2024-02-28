@@ -253,7 +253,7 @@ object HttpDsl {
       }
     )
 
-  lazy val globalHttpClient: HttpClient = {
+  private lazy val globalHttpClient: HttpClient = {
     val config = BaseFeature.config
     import cats.effect.unsafe.implicits.global
     val c = new Http4sClient(config.addAcceptGzipByDefault, config.disableCertificateVerification, config.followRedirect, config.enableHttp2)
