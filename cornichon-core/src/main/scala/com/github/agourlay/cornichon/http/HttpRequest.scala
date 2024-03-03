@@ -120,6 +120,9 @@ trait HttpRequestsDsl {
   def patch(url: String): HttpRequest[String] = HttpRequest[String](PATCH, url, None, Nil, Nil)
 }
 
+// Enable using the DSL without importing the trait
+object HttpRequest extends HttpRequestsDsl
+
 case class HttpStream(name: String) extends AnyVal
 
 object HttpStreams {

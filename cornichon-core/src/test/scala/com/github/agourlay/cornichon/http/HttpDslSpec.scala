@@ -25,4 +25,10 @@ class HttpDslSpec extends FunSuite {
     val ns2 = ops.removeFromWithHeaders("header1")(ns1).valueUnsafe
     assert(HttpService.extractWithHeadersSession(ns2) == Right(Nil))
   }
+
+  test("DSL available on HttRequest object") {
+    val req = HttpRequest.get("http://test.com")
+    assert(req.method.name == "GET")
+    assert(req.url == "http://test.com")
+  }
 }
