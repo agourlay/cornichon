@@ -4,6 +4,12 @@
 
 Please see [http://agourlay.github.io/cornichon/](http://agourlay.github.io/cornichon/) for all documentation.
 
+## Status
+
+Project in maintenance mode, only bug fixes and dependency updates done actively.
+
+New features from external contributors are accepted.
+
 ## License
 
 **Cornichon** is licensed under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
