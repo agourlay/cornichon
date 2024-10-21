@@ -16,7 +16,7 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): IO[(Long, RunState, Either[FailedStep, Done])] =
       ScenarioRunner.runStepsShortCircuiting(nested, runState.resetLogStack).flatMap {
         case (retriedState, Left(_)) if limit > 0 =>
-          // In case of success all logs are returned but they are not printed by default.
+          // In case of success all logs are returned, but they are not printed by default.
           retryMaxSteps(runState.recordLogStack(retriedState.logStack), limit - 1, retriesNumber + 1)
 
         case (retriedState, l @ Left(_)) =>

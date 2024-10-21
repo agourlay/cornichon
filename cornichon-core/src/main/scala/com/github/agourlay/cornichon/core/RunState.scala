@@ -16,7 +16,7 @@ case class RunState(
   lazy val goDeeper: RunState = copy(depth = depth + 1)
   lazy val resetLogStack: RunState = copy(logStack = Nil)
 
-  // Helper fct to setup up a child nested context for a run which result must be merged back in using 'mergeNested'.
+  // Helper fct to set up up a child nested context for a run which result must be merged back in using 'mergeNested'.
   // Only the session is propagated downstream as it is.
   lazy val nestedContext: RunState = copy(depth = depth + 1, logStack = Nil, cleanupSteps = Nil)
   lazy val sameLevelContext: RunState = copy(logStack = Nil, cleanupSteps = Nil)

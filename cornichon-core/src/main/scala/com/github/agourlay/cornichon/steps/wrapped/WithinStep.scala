@@ -25,7 +25,7 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
             case Right(_) =>
               if (executionTime.gt(maxDuration)) {
                 val wrappedLogStack = FailureLogInstruction("Within block did not complete in time", initialDepth, Some(executionTime)) +: withinState.logStack :+ successTitleLog(initialDepth)
-                // The nested steps were successful but the did not finish in time, the last step is picked as failed step
+                // The nested steps were successful, but they did not finish in time, the last step is picked as failed step
                 val artificialFailedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
                 (wrappedLogStack, Left(artificialFailedStep))
               } else {

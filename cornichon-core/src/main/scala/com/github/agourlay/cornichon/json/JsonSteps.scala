@@ -497,7 +497,7 @@ object JsonSteps {
     sc.findAllMatchers(expectedShow).flatMap { matchers =>
       if (matchers.nonEmpty) {
         val withQuotedMatchers = Resolvable[A].transformResolvableForm(expected) { r =>
-          // don't add quotes if is not a complex JsonObject otherwise it would produce a double quoted string
+          // don't add quotes if is not a complex JsonObject otherwise it would produce a double-quoted string
           if (isJsonString(r)) r
           else MatcherResolver.quoteMatchers(r, matchers)
         }

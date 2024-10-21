@@ -228,7 +228,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
 
   test("JsonStepBuilder.is json without whitelisting enabled") {
     val session = Session.newEmpty.addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
-    // forcing whitelisting to false to have the negative test
+    // forcing whitelisting to 'false' to have the negative test
     val step = jsonStepBuilder.copy(whitelist = false).is("""{ "myKeyOther" : "myOtherValue" }""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(session)(s))

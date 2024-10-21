@@ -97,8 +97,8 @@ trait LogDecoratorStep extends Step {
 
   // Without effect by default - wrapper steps usually build dynamically their title
   def setTitle(newTitle: String): Step = this
-  def failedTitleLog(depth: Int) = FailureLogInstruction(title, depth)
-  def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
+  def failedTitleLog(depth: Int): FailureLogInstruction = FailureLogInstruction(title, depth)
+  def successTitleLog(depth: Int): SuccessLogInstruction = SuccessLogInstruction(title, depth)
 }
 
 //Step that delegate the execution of nested steps and enable to inspect RunState and FailedStep
@@ -127,16 +127,16 @@ trait SimpleWrapperStep extends Step {
 
   // Without effect by default - wrapper steps usually build dynamically their title
   def setTitle(newTitle: String): Step = this
-  def failedTitleLog(depth: Int) = FailureLogInstruction(title, depth)
-  def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
+  def failedTitleLog(depth: Int): FailureLogInstruction = FailureLogInstruction(title, depth)
+  def successTitleLog(depth: Int): SuccessLogInstruction = SuccessLogInstruction(title, depth)
 }
 
 //Step that gives full control over the execution of nested steps and their error reporting
 trait WrapperStep extends Step {
   // Without effect by default - wrapper steps usually build dynamically their title
   def setTitle(newTitle: String): Step = this
-  def failedTitleLog(depth: Int) = FailureLogInstruction(title, depth)
-  def successTitleLog(depth: Int) = SuccessLogInstruction(title, depth)
+  def failedTitleLog(depth: Int): FailureLogInstruction = FailureLogInstruction(title, depth)
+  def successTitleLog(depth: Int): SuccessLogInstruction = SuccessLogInstruction(title, depth)
 }
 
 // Describes the lifecycle of a resource

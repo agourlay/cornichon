@@ -14,7 +14,7 @@ case class AssertStep(title: String, action: ScenarioContext => Assertion, show:
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
   override def runLogValueStep(runState: RunState): IO[Either[NonEmptyList[CornichonError], Done]] = {
-    // IO.interruptible is much slower than IO.delay but it is needed to be able to cancel the execution of the assertion
+    // IO.interruptible is much slower than 'IO.delay' but it is needed to be able to cancel the execution of the assertion
     IO.interruptible {
       val assertion = action(runState.scenarioContext)
       assertion.validated match {

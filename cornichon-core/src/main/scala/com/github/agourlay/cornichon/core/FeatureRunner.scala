@@ -37,7 +37,7 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
             case Left(afterFeatureError) => IO.raiseError(HooksFeatureError(beforeFeatureError, afterFeatureError).toException)
             case Right(_)                => IO.raiseError(beforeFeatureError.toException)
           }
-        // Failed completely, nothing to cleanup, fast exit
+        // Failed completely, nothing to clean up, fast exit
         case Left((beforeFeatureError, _)) => IO.raiseError(beforeFeatureError.toException)
         case Right(_) =>
           // `concurrentScenarios` is limited to avoid spawning too much work at once

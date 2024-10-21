@@ -158,7 +158,7 @@ trait DeckSteps {
 
   def scoreBlackjackHand(c1: String, c2: String): Int = scoreCards(c1) + scoreCards(c2)
 
-  // Yes I know "ACE" is 11 or 1 but we are having a simplified example for fun :)
+  // Yes I know "ACE" is 11 or 1, but we are having a simplified example for fun :)
   def scoreCards(c: String): Int = c match {
     case "1"     => 1
     case "2"     => 2

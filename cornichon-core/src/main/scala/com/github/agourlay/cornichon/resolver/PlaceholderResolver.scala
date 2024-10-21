@@ -12,7 +12,7 @@ import scala.collection.mutable.ListBuffer
 object PlaceholderResolver {
 
   private val rightNil = Right(Nil)
-  private val globalAtomicLong = new AtomicLong(1L) // can create non deterministic runs
+  private val globalAtomicLong = new AtomicLong(1L) // can create non-deterministic runs
 
   def globalNextLong(): Long = globalAtomicLong.getAndIncrement()
 

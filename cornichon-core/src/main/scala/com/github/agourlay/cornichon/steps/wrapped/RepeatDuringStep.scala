@@ -33,7 +33,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
                 if (remainingTime.gt(FiniteDuration(0, TimeUnit.MILLISECONDS)))
                   repeatStepsDuring(successState, remainingTime, retriesNumber + 1)
                 else
-                  // In case of success all logs are returned but they are not printed by default.
+                  // In case of success all logs are returned, but they are not printed by default.
                   IO.pure((retriesNumber, successState, rightDone))
               }
             )
