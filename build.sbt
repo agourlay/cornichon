@@ -37,7 +37,8 @@ def compilerOptions(scalaVersion: String) = Seq(
   "-Ywarn-unused:params",              // Warn if a value parameter is unused.
   "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
   "-Ywarn-unused:privates",            // Warn if a private member is unused.
-  "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
+  "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
+  "-Wnonunit-statement"                // Warn when non-unit statements are discarded.
 ) ++ (if (priorTo2_13(scalaVersion))
   Seq(
     "-Yno-adapted-args",
@@ -61,6 +62,7 @@ lazy val standardSettings = Seq(
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   Test / fork := true,
   scalacOptions ++= compilerOptions(scalaVersion.value),
+  Test / scalacOptions -= "-Wnonunit-statement", // too noisy with Scalacheck
   javacOptions ++= Seq("-source", "8", "-target", "8"),
   // Additional meta-info required by maven central
   startYear := Some(2015),

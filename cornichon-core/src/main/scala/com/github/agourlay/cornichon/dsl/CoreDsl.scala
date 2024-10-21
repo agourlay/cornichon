@@ -16,7 +16,7 @@ import scala.concurrent.duration.FiniteDuration
 
 trait CoreDsl {
 
-  def Feature(name: String) = FeatureBuilder(name)
+  def Feature(name: String): FeatureBuilder = FeatureBuilder(name)
 
   private[dsl] case class FeatureBuilder(name: String, ignored: Option[String] = None) {
     def ignoredBecause(reason: String): FeatureBuilder = copy(ignored = Some(reason))
@@ -26,14 +26,14 @@ trait CoreDsl {
   implicit final def featureBuilder(f: FeatureBuilder): BodyElementCollector[ScenarioDef, FeatureDef] =
     BodyElementCollector[ScenarioDef, FeatureDef](scenarios => FeatureDef(f.name, scenarios, f.ignored))
 
-  def Scenario(name: String) = ScenarioBuilder(name)
+  def Scenario(name: String): ScenarioBuilder = ScenarioBuilder(name)
 
   private[dsl] case class ScenarioBuilder(name: String, ignored: Option[String] = None, focus: Boolean = false) {
     def ignoredBecause(reason: String): ScenarioBuilder = copy(ignored = Some(reason))
     def ignoredIfDefined(reason: Option[String]): ScenarioBuilder = copy(ignored = reason)
     /** Focus on this scenario ignoring all other scenarios withing a `Feature` */
     def focused: ScenarioBuilder = copy(focus = true)
-    def pending = ScenarioDef(name, Nil, pending = true)
+    def pending: ScenarioDef = ScenarioDef(name, Nil, pending = true)
   }
 
   implicit final def scenarioBuilder(s: ScenarioBuilder): BodyElementCollector[Step, ScenarioDef] =

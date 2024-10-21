@@ -12,7 +12,7 @@ class MatcherParser(val input: ParserInput) extends Parser {
     Ignore ~ zeroOrMore(MatcherRule).separatedBy(Ignore) ~ Ignore ~ EOI
   }
 
-  private def MatcherRule = rule("*" ~ MatcherTXT ~ "*" ~> MatcherKey)
+  private def MatcherRule = rule('*' ~ MatcherTXT ~ '*' ~> MatcherKey)
 
   private def MatcherTXT = rule(capture(oneOrMore(allowedCharsInMatcher)))
 

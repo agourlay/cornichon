@@ -6,31 +6,29 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import com.github.agourlay.cornichon.dsl.BaseFeature.shutDownGlobalResources
 import com.github.agourlay.cornichon.scalatest.ScalatestFeature._
-
 import org.scalatest._
 import org.scalatest.wordspec.AsyncWordSpecLike
 
 import java.util
 import java.util.concurrent.atomic.AtomicInteger
-
-import scala.concurrent.Future
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.util.{ Failure, Success, Try }
 
 trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: BaseFeature =>
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     reserveGlobalRuntime()
     beforeFeature.foreach(f => f())
   }
 
-  override def afterAll() = {
+  override def afterAll(): Unit = {
     afterFeature.foreach(f => f())
     releaseGlobalRuntime()
   }
 
-  override def run(testName: Option[String], args: Args) =
+  override def run(testName: Option[String], args: Args): Status =
     if (executeScenariosInParallel) super.run(testName, args)
     else super.run(testName, args.copy(distributor = None))
 
@@ -96,14 +94,16 @@ object ScalatestFeature {
   private val registeredUsage = new AtomicInteger
   private val safePassInRow = new AtomicInteger
 
-  // Custom Reaper process for the time being as we want to cleanup after all Feature
+  // Custom Reaper process for the time being as we want to clean up after all Feature
   // Will tear down stuff if no Feature registers during 10 secs
   private val timer = new util.Timer()
   private val timerTask = new util.TimerTask {
     def run(): Unit = {
       if (registeredUsage.get() == 0) {
         safePassInRow.incrementAndGet()
-        if (safePassInRow.get() == 2) { shutDownGlobalResources(); () } else ()
+        if (safePassInRow.get() == 2) {
+          Await.result(shutDownGlobalResources(), Duration.Inf)
+        }
       } else if (safePassInRow.get() > 0) {
         safePassInRow.decrementAndGet()
         ()

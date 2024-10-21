@@ -61,7 +61,7 @@ object BaseFeature {
   def addShutdownHook(h: () => Future[_]): Unit =
     hooks.push(h)
 
-  def shutDownGlobalResources(): Future[Done] = {
+  def shutDownGlobalResources(): Future[Unit] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     @tailrec
     def clearHooks(previous: Future[Any] = Future.successful[Any](())): Future[Any] =
@@ -69,10 +69,10 @@ object BaseFeature {
         case None => previous
         case Some(f) =>
           clearHooks {
-            previous.flatMap { _ => f().recover { case _ => Done } }
+            previous.flatMap { _ => f().recover { case _ => () } }
           }
       }
 
-    clearHooks().map(_ => Done)
+    clearHooks().map(_ => ())
   }
 }

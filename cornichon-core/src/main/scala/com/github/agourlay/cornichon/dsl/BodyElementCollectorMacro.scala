@@ -80,7 +80,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     val validExpressions = Array.newBuilder[Tree]
     val errors = Array.newBuilder[(c.universe.Position, String)]
 
-    def evalTree(s: Tree) =
+    def evalTree(s: Tree): Unit =
       typeCheck(elementType, seq)(s) match {
         case Right(tree) => validExpressions += tree
         case Left(e)     => errors += e

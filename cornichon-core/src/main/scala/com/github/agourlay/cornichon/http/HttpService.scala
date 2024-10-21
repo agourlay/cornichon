@@ -183,7 +183,7 @@ object HttpService {
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
     traverseIL(headers.split(interHeadersValueDelim).iterator) { header =>
-      val index = header.indexOf(headersKeyValueDelim)
+      val index = header.indexOf(headersKeyValueDelim.toInt)
       if (index == -1)
         Left(BadSessionHeadersEncoding(header))
       else

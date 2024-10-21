@@ -67,7 +67,6 @@ trait KafkaDsl {
       if (messages.size < atLeastAmount)
         NotEnoughMessagesPolled(atLeastAmount, messages.toList).asLeft
       else {
-        messages.drop(messages.size - atLeastAmount)
         val newSession = messages.foldLeft(sc.session) { (session, value) =>
           commonSessionExtraction(session, topic, value).valueUnsafe
         }
@@ -76,7 +75,7 @@ trait KafkaDsl {
     }
   )
 
-  def kafka(topic: String) = KafkaStepBuilder(sessionKey = topic)
+  def kafka(topic: String): KafkaStepBuilder = KafkaStepBuilder(sessionKey = topic)
 
   private def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
     session.addValues(
