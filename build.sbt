@@ -298,7 +298,7 @@ lazy val library =
       val fs2           = "3.11.0"
       val kafkaClient   = "3.9.0"
       val openPojo      = "0.9.1"
-      val decline       = "2.4.1"
+      val decline       = "2.5.0"
       val scalaXml      = "2.3.0"
     }
     val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
