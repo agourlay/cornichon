@@ -122,8 +122,10 @@ object JsonSteps {
             for {
               sessionValue <- sc.session.get(sessionKey)
               sessionValueWithFocusJson <- resolveRunMandatoryJsonPath(jsonPath, sessionValue, sc)
-              (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) <- handleMatchers(sc, sessionValueWithFocusJson)(expected, expectedShow, negate)
-              (expectedPrepared, actualPrepared) <- handleIgnoredFields(sc, expectedWithoutMatchers, actualWithoutMatchers)
+              tuple1 <- handleMatchers(sc, sessionValueWithFocusJson)(expected, expectedShow, negate)
+              (expectedWithoutMatchers, actualWithoutMatchers, matcherAssertions) = tuple1
+              tuple2 <- handleIgnoredFields(sc, expectedWithoutMatchers, actualWithoutMatchers)
+              (expectedPrepared, actualPrepared) = tuple2
             } yield {
               if (negate && matcherAssertions.nonEmpty && expectedPrepared.isNull && actualPrepared.isNull)
                 // Handles annoying edge case of no payload remaining once all matched keys have been removed for negated assertion

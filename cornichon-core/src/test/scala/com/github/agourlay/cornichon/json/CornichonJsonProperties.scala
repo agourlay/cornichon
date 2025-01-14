@@ -11,40 +11,40 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
   override def overrideParameters(p: Test.Parameters): Test.Parameters = super.overrideParameters(p.withMaxSize(10))
 
   property("parseJson Boolean") =
-    forAll { bool: Boolean =>
+    forAll { (bool: Boolean) =>
       parseDslJson(bool) == Right(Json.fromBoolean(bool))
     }
 
   property("parseJson Int") =
-    forAll { int: Int =>
+    forAll { (int: Int) =>
       parseDslJson(int) == Right(Json.fromInt(int))
     }
 
   property("parseJson alphanumeric String") =
-    forAll(Gen.alphaNumStr) { s: String =>
+    forAll(Gen.alphaNumStr) { (s: String) =>
       val parsed = parseDslJson(s)
       val expectedQuotedParsed = parsed.map(_.spaces2).getOrElse("")
       parsed == Right(Json.fromString(s)) && expectedQuotedParsed == s""""$s""""
     }
 
   property("parseJson alphanumeric String conserves spaces") =
-    forAll(Gen.alphaNumStr) { s: String =>
+    forAll(Gen.alphaNumStr) { (s: String) =>
       val decorated = s"  $s  "
       parseDslJson(decorated) == Right(Json.fromString(decorated))
     }
 
   property("parseJson Long") =
-    forAll { long: Long =>
+    forAll { (long: Long) =>
       parseDslJson(long) == Right(Json.fromLong(long))
     }
 
   property("parseJson Double") =
-    forAll { double: Double =>
+    forAll { (double: Double) =>
       parseDslJson(double) == Right(Json.fromDoubleOrNull(double))
     }
 
   property("parseJson BigDecimal") =
-    forAll { bigDec: BigDecimal =>
+    forAll { (bigDec: BigDecimal) =>
       parseDslJson(bigDec) == Right(Json.fromBigDecimal(bigDec))
     }
 
@@ -56,7 +56,7 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
 
   property("findAllContainingValue find key in any JsonObject") = {
     val targetValue = Json.fromString("target value")
-    forAll { jos: List[JsonObject] =>
+    forAll { (jos: List[JsonObject]) =>
       val json = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch", acc)) }
       val (value, path) = findAllPathWithValue(Set("target value"), json).head
       value == "target value" && path.run(json).contains(targetValue)
@@ -64,13 +64,13 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
   }
 
   property("whitelisting on identical JSON has no effect") = {
-    forAll { json: Json =>
+    forAll { (json: Json) =>
       whitelistingValue(json, json) == Right(json)
     }
   }
 
   property("whitelisting improper subset with single added key") = {
-    forAll { jsonObj: JsonObject =>
+    forAll { (jsonObj: JsonObject) =>
       val modifiedObj = jsonObj.add("extraKey", Json.fromString("extraValue"))
       val json = Json.fromJsonObject(jsonObj)
       val modifiedJson = Json.fromJsonObject(modifiedObj)
@@ -80,7 +80,7 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
   }
 
   property("whitelisting arrays with single missing key on each element") = {
-    forAll { jos: List[JsonObject] =>
+    forAll { (jos: List[JsonObject]) =>
       // ==> did not work
       if (jos.isEmpty) {
         true
@@ -97,7 +97,7 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
 
   property("whitelisting on JSON Object with improper nested path") = {
     val targetValue = Json.fromString("target value")
-    forAll { jos: List[JsonObject] =>
+    forAll { (jos: List[JsonObject]) =>
       val json1 = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch1", acc)) }
       val json2 = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch2", acc)) }
       // ==> did not work

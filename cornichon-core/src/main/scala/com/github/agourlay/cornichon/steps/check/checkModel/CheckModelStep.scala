@@ -59,11 +59,11 @@ case class CheckModelStep[A, B, C, D, E, F](
     val duplicateEntries: ValidatedNel[CornichonError, Done] = transitions.find { e =>
       val allProperties = e._2.map(_._2)
       allProperties.distinct.size != allProperties.size
-    }.map(_._1.description).map(DuplicateTransitionsDefinitionForProperty).toInvalidNel(Done)
+    }.map(_._1.description).map(DuplicateTransitionsDefinitionForProperty.apply).toInvalidNel(Done)
 
     val sumOfWeightIsCorrect: ValidatedNel[CornichonError, Done] = transitions.find { e =>
       e._2.map(_._1).sum != 100
-    }.map(_._1.description).map(IncorrectTransitionsWeightDefinitionForProperty).toInvalidNel(Done)
+    }.map(_._1.description).map(IncorrectTransitionsWeightDefinitionForProperty.apply).toInvalidNel(Done)
 
     emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> sumOfWeightIsCorrect
   }

@@ -81,7 +81,7 @@ object MatchersProperties extends Properties("Matchers") with ArbitraryInstances
   }
 
   property("any-object correct for any JsonObject") =
-    forAll { jsonObj: JsonObject =>
+    forAll { (jsonObj: JsonObject) =>
       anyObject.predicate(Json.fromJsonObject(jsonObj))
     }
 

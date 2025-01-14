@@ -16,7 +16,7 @@ class HttpDslProperties extends Properties("HttpDsl") with IOSpec {
     }
 
   property("save_body accepts to save any String as a body") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty.addValuesUnsafe(HttpDsl.lastBodySessionKey.name -> input)
       val saveStep = HttpDsl.save_body("new-key")
       val assertStep = SessionStepBuilder(SessionKey("new-key")).is(input)

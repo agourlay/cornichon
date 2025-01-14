@@ -30,3 +30,15 @@ case class SuperHeroAlreadyExists(id: String) extends ApiError {
 }
 
 case class HttpError(error: String) extends AnyVal
+object HttpError {
+
+  implicit val httpErrorCodec: io.circe.Codec[HttpError] = {
+    val decoder: io.circe.Decoder[HttpError] =
+      (c: io.circe.HCursor) => c.downField("error").as[String].map(HttpError.apply)
+    val encoder: io.circe.Encoder[HttpError] =
+      (a: HttpError) => io.circe.Json.obj("error" -> io.circe.Json.fromString(a.error))
+
+    io.circe.Codec.from(decoder, encoder)
+  }
+
+}

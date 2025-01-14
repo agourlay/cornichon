@@ -110,7 +110,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders generates random uuid if <random-uuid> - fixed by seed") =
-    forAll { seed: Long =>
+    forAll { (seed: Long) =>
       val session = Session.newEmpty
       val content = "<random-uuid>"
       val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
@@ -119,7 +119,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders generates random positive integer if <random-positive-integer> - fixed by seed") =
-    forAll { seed: Long =>
+    forAll { (seed: Long) =>
       val session = Session.newEmpty
       val content = "<random-positive-integer>"
       val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
@@ -128,7 +128,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders generates random string if <random-string> - fixed by seed") =
-    forAll { seed: Long =>
+    forAll { (seed: Long) =>
       val session = Session.newEmpty
       val content = "<random-string>"
       val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
@@ -137,7 +137,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders generates random alphanumeric string if <random-alphanum-string> - fixed by seed") =
-    forAll { seed: Long =>
+    forAll { (seed: Long) =>
       val session = Session.newEmpty
       val content = "<random-alphanum-string>"
       val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
@@ -146,7 +146,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders generates random boolean if <random-boolean> - fixed by seed") =
-    forAll { seed: Long =>
+    forAll { (seed: Long) =>
       val session = Session.newEmpty
       val content = "<random-boolean>"
       val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
@@ -155,7 +155,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders generates random timestamp string if <random-timestamp>") =
-    forAll { seed: Long =>
+    forAll { (seed: Long) =>
       val session = Session.newEmpty
       val content = "<random-timestamp>"
       val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe
@@ -164,7 +164,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
     }
 
   property("fillPlaceholders generate current timestamp string if <current-timestamp>") =
-    forAll { seed: Long =>
+    forAll { (seed: Long) =>
       val session = Session.newEmpty
       val content = "<current-timestamp>"
       val first = fillPlaceholders(content)(session, RandomContext.fromSeed(seed), noExtractor).valueUnsafe

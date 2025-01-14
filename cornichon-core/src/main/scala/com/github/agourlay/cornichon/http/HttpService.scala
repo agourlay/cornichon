@@ -61,7 +61,8 @@ class HttpService(
     extractor: ResponseExtractor,
     ignoreFromWithHeaders: HeaderSelection)(scenarioContext: ScenarioContext): EitherT[IO, CornichonError, Session] =
     for {
-      (url, jsonBody, params, headers) <- EitherT.fromEither[IO](resolveRequestParts(r.url, r.body, r.params, r.headers, ignoreFromWithHeaders)(scenarioContext))
+      tuple <- EitherT.fromEither[IO](resolveRequestParts(r.url, r.body, r.params, r.headers, ignoreFromWithHeaders)(scenarioContext))
+      (url, jsonBody, params, headers) = tuple
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
       configuredRequest = configureRequest(resolvedRequest, config)
       resp <- client.runRequest(configuredRequest, requestTimeout)(circeJsonEncoder, Json.showJson) // TODO remove implicits when removing Scala 2.12
@@ -70,7 +71,8 @@ class HttpService(
 
   private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(scenarioContext: ScenarioContext) =
     for {
-      (url, _, params, headers) <- EitherT.fromEither[IO](resolveRequestParts[String](r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
+      tuple <- EitherT.fromEither[IO](resolveRequestParts[String](r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
+      (url, _, params, headers) = tuple
       resolvedRequest = HttpStreamedRequest(r.stream, url, r.takeWithin, params, headers)
       resp <- EitherT(client.openStream(resolvedRequest, requestTimeout))
       newSession <- EitherT.fromEither[IO](handleResponse(resp, resolvedRequest.detailedDescription, expectedStatus, extractor)(scenarioContext.session))

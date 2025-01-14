@@ -15,7 +15,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
   private val jsonValuesStepBuilder = JsonValuesStepBuilder(testKey, otherTestKey)
 
   property("JsonValuesStepBuild are equals") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(otherTestKey -> input)
@@ -26,7 +26,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
     }
 
   property("JsonValuesStepBuild are not equals") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(otherTestKey -> (input + "something"))
@@ -37,7 +37,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
     }
 
   property("JsonValuesStepBuild are equals with ignoring fields") =
-    forAll { jsonOb: JsonObject =>
+    forAll { (jsonOb: JsonObject) =>
       val json = Json.fromJsonObject(jsonOb)
       val jsonBonus = Json.fromJsonObject(jsonOb.add("additional", Json.fromString("bonus to ignore")))
       val session = Session.newEmpty
@@ -50,7 +50,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
     }
 
   property("JsonValuesStepBuild are equals with ignoring fields - failure") =
-    forAll { jsonOb: JsonObject =>
+    forAll { (jsonOb: JsonObject) =>
       val json = Json.fromJsonObject(jsonOb.add("other-detail", Json.fromString("important thing")))
       val jsonBonus = Json.fromJsonObject(jsonOb.add("additional", Json.fromString("bonus to ignore")))
       val session = Session.newEmpty
@@ -63,7 +63,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
     }
 
   property("JsonValuesStepBuild are equals with focus on path") =
-    forAll { jsonOb: JsonObject =>
+    forAll { (jsonOb: JsonObject) =>
       val json = Json.fromJsonObject(jsonOb.add("important", Json.fromString("important thing")))
       val jsonBonus = Json.fromJsonObject(
         jsonOb.add("important", Json.fromString("important thing"))
@@ -79,7 +79,7 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
     }
 
   property("JsonValuesStepBuild are equals with focus on path - failure") =
-    forAll { jsonOb: JsonObject =>
+    forAll { (jsonOb: JsonObject) =>
       val json = Json.fromJsonObject(jsonOb.add("important", Json.fromString("important thing")))
       val jsonBonus = Json.fromJsonObject(
         jsonOb.add("important", Json.fromString("very important thing"))
