@@ -19,6 +19,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
+
       - name: Cache sbt
         uses: actions/cache@v4
         with:
