@@ -38,14 +38,15 @@ def compilerOptions(scalaVersion: String) = Seq(
   "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
   "-Ywarn-unused:privates",            // Warn if a private member is unused.
   "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
-  "-Wnonunit-statement"                // Warn when non-unit statements are discarded.
 ) ++ (if (priorTo2_13(scalaVersion))
   Seq(
     "-Yno-adapted-args",
     "-Ypartial-unification",
     "-Xlint:by-name-right-associative",
     "-Xfuture"
-  ) else Nil)
+  ) else Seq(
+    "-Wnonunit-statement" // Warn when non-unit statements are discarded.
+  ))
 
 def priorTo2_13(scalaVersion: String): Boolean =
   CrossVersion.partialVersion(scalaVersion) match {
