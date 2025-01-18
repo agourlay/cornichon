@@ -55,7 +55,7 @@ class MacroErrorSpec extends FunSuite {
     }
   }
 
-  test("macro  compiles if the step is reference to identifier `name`") {
+  test("macro compiles if the step is reference to identifier `name`") {
     import com.github.agourlay.cornichon.core.Step
     import scala.concurrent.duration._
 
@@ -81,8 +81,6 @@ class MacroErrorSpec extends FunSuite {
   }
 
   test("macro compiles and includes multiple steps") {
-    import com.github.agourlay.cornichon.core.Step
-    import scala.concurrent.duration._
 
     object Foo extends BaseFeature with CoreDsl {
 
@@ -100,8 +98,6 @@ class MacroErrorSpec extends FunSuite {
   }
 
   test("macro compiles and includes multiple steps as a seq (literal)") {
-    import com.github.agourlay.cornichon.core.Step
-    import scala.concurrent.duration._
 
     object Foo extends BaseFeature with CoreDsl {
 
@@ -121,8 +117,6 @@ class MacroErrorSpec extends FunSuite {
   }
 
   test("macro compiles and includes multiple steps as a seq (non-literal)") {
-    import com.github.agourlay.cornichon.core.Step
-    import scala.concurrent.duration._
 
     object Foo extends BaseFeature with CoreDsl {
 
@@ -145,8 +139,6 @@ class MacroErrorSpec extends FunSuite {
   }
 
   test("macro preserves order") {
-    import com.github.agourlay.cornichon.core.Step
-    import scala.concurrent.duration._
 
     object Foo extends BaseFeature with CoreDsl {
       val steps =
