@@ -97,6 +97,26 @@ class MacroErrorSpec extends FunSuite {
     assert(Foo.feature.scenarios.head.steps.size == 3, "size is " + Foo.feature.scenarios.head.steps.size)
   }
 
+  test("macro compiles and includes nested steps") {
+
+    object Foo extends BaseFeature with CoreDsl {
+
+      val feature =
+        Feature("foo") {
+          Scenario("aaa") {
+            print_step("Hello world!")
+            AttachAs("nested steps") {
+              print_step("Hello world!")
+              print_step("Hello world!")
+            }
+          }
+        }
+    }
+
+    assert(Foo.feature.scenarios.head.steps.size == 2, "size is " + Foo.feature.scenarios.head.steps.size)
+    assert(Foo.feature.scenarios.head.steps.map(_.title) == List("print step", "nested steps"))
+  }
+
   test("macro compiles and includes multiple steps as a seq (literal)") {
 
     object Foo extends BaseFeature with CoreDsl {
