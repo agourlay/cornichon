@@ -14,7 +14,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
   private val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))
 
   property("JsonStepBuild is value") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.is(input)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -23,7 +23,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     }
 
   property("JsonStepBuild is value fail") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.is(input + "42")
       val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -32,7 +32,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     }
 
   property("JsonStepBuild isNot value") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.isNot(input + "42")
       val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -41,7 +41,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     }
 
   property("JsonStepBuild isNot value fail") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = jsonStepBuilder.isNot(input)
       val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -50,7 +50,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     }
 
   property("JsonStepBuilder is any Circe jsonObject") =
-    forAll { jsonOb: JsonObject =>
+    forAll { (jsonOb: JsonObject) =>
       val json = Json.fromJsonObject(jsonOb)
       val session = Session.newEmpty.addValuesUnsafe(testKey -> json.spaces2)
       val step = jsonStepBuilder.is(json)
@@ -60,7 +60,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     }
 
   property("JsonStepBuilder is any Circe jsonObject with placeholder") =
-    forAll { jsonOb: JsonObject =>
+    forAll { (jsonOb: JsonObject) =>
       val fullJsonObj = jsonOb.add("myKeyOther", Json.fromString("myOtherValue"))
       val session = Session.newEmpty.addValuesUnsafe(
         testKey -> Json.fromJsonObject(fullJsonObj).spaces2,
@@ -74,7 +74,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     }
 
   property("JsonStepBuilder is Circe jsonObject with absent placeholder") =
-    forAll { jsonOb: JsonObject =>
+    forAll { (jsonOb: JsonObject) =>
       val fullJsonObj = jsonOb.add("myKeyOther", Json.fromString("myOtherValue"))
       val session = Session.newEmpty.addValuesUnsafe(testKey -> Json.fromJsonObject(fullJsonObj).spaces2)
       val fullPlaceholderJsonObj = jsonOb.add("myKeyOther", Json.fromString("<a-placeholder>"))

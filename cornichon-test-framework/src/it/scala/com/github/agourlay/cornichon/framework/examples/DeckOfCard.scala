@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 //see  http://deckofcardsapi.com/
 class DeckOfCard extends CornichonFeature with DeckSteps {
 
-  override lazy val baseUrl = "http://deckofcardsapi.com/api"
+  override lazy val baseUrl = "https://deckofcardsapi.com/api"
 
   def feature =
     Feature("Deck of Card API") {

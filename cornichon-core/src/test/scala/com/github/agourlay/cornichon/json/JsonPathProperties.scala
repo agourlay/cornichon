@@ -12,7 +12,7 @@ class JsonPathProperties extends Properties("JsonPath") with ArbitraryInstances 
 
   property("select properly in any JsonObject") = {
     val targetValue = Json.fromString("target value")
-    forAll { jos: List[JsonObject] =>
+    forAll { (jos: List[JsonObject]) =>
       val json = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch", acc)) }
       val path = Vector.fill(jos.size)(FieldSelection("stitch"))
       JsonPath(path).run(json).contains(targetValue)

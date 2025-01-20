@@ -46,11 +46,9 @@ trait BaseFeature {
 
 // Protect and free resources
 object BaseFeature {
-  import pureconfig.generic.auto._
-  import pureconfig.ConfigSource
   import pureconfig.error.{ ConfigReaderException, ConfigReaderFailures }
 
-  lazy val config = ConfigSource.default.at("cornichon").load[Config] match {
+  lazy val config: Config = Config.load("cornichon") match {
     case Right(v)                                                                          => v
     case Left(ConfigReaderFailures(ConvertFailure(KeyNotFound("cornichon", _), _, _), _*)) => Config()
     case Left(failures)                                                                    => throw new ConfigReaderException[Config](failures)

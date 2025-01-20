@@ -111,15 +111,15 @@ object PlaceholderResolver {
       Either.catchNonFatal(gen(randomContext)).leftMap(RandomMapperError(ph.fullKey, _))
     case HistoryMapper(key, transform) =>
       session.getHistory(key)
-        .leftMap { o: CornichonError => MapperKeyNotFoundInSession(bindingKey, o) }
+        .leftMap { (o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o) }
         .map(transform)
     case TextMapper(key, transform) =>
       session.get(key, ph.index)
-        .leftMap { o: CornichonError => MapperKeyNotFoundInSession(bindingKey, o) }
+        .leftMap { (o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o) }
         .map(transform)
     case JsonMapper(key, jsonPath, transform) =>
       session.get(key, ph.index)
-        .leftMap { o: CornichonError => MapperKeyNotFoundInSession(bindingKey, o) }
+        .leftMap { (o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o) }
         .flatMap { sessionValue =>
           // No placeholders in JsonMapper to avoid accidental infinite recursions.
           JsonPath.runStrict(jsonPath, sessionValue)

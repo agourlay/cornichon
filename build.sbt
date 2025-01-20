@@ -3,7 +3,7 @@ import sbt.{Developer, file}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
 //https://tpolecat.github.io/2017/04/25/scalac-flags.html
-def compilerOptions(scalaVersion: String) = Seq(
+val compilerOptions_scala2 = Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
   "-explaintypes",                     // Explain type errors in more detail.
@@ -38,28 +38,32 @@ def compilerOptions(scalaVersion: String) = Seq(
   "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
   "-Ywarn-unused:privates",            // Warn if a private member is unused.
   "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
-) ++ (if (priorTo2_13(scalaVersion))
-  Seq(
+)
+val compilerOptions_lt_scala2_13 =
+   Seq(
     "-Yno-adapted-args",
     "-Ypartial-unification",
     "-Xlint:by-name-right-associative",
     "-Xfuture"
-  ) else Seq(
-    "-Wnonunit-statement" // Warn when non-unit statements are discarded.
-  ))
+   )
+ val compilerOptions_gte_scala2_13 = Seq(
+   "-Wnonunit-statement"                // Warn when non-unit statements are discarded.
+ )
 
-def priorTo2_13(scalaVersion: String): Boolean =
+def compilerOptions(scalaVersion: String) =
   CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, minor)) if minor < 13 => true
-    case _                              => false
-  }
+      case Some((2, minor)) =>
+        compilerOptions_scala2 ++ (if (minor < 13) compilerOptions_lt_scala2_13 else compilerOptions_gte_scala2_13)
+      case Some((3, _))  =>
+        Seq()
+    }
 
 lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
-  scalaVersion := "2.13.16",
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.20"),
+  scalaVersion := "3.3.4",
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.16", "2.12.20"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   Test / fork := true,
   scalacOptions ++= compilerOptions(scalaVersion.value),
@@ -73,7 +77,16 @@ lazy val standardSettings = Seq(
     browseUrl = url("https://github.com/agourlay/cornichon.git"),
     connection = "scm:git:git@github.com:agourlay/cornichon.git"
   )),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, _)) =>
+        Seq(
+          compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+        )
+      case _ =>
+        Seq.empty
+    }
+  }
 )
 
 lazy val publishingSettings = Seq(
@@ -123,13 +136,11 @@ lazy val core =
       name := "cornichon-core",
       Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
       libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value, // macro
         library.http4sClient,
         library.http4sCirce,
         library.fs2Io,
         library.catsCore,
         library.catsEffect,
-        library.pureConfig,
         library.parboiled,
         library.fansi,
         library.sangria,
@@ -140,8 +151,18 @@ lazy val core =
         library.diffsonCirce,
         library.munit % Test,
         library.scalacheck % Test,
-        library.circeTesting % Test
-      )
+        library.circeTesting % Test,
+      ),
+      libraryDependencies ++= {
+        CrossVersion.partialVersion(scalaVersion.value) match {
+          case Some((3, _)) => Seq(library.pureConfigCore, library.pureConfigGenS3)
+          case Some((2, _))            => Seq(
+            library.pureConfig,
+            "org.scala-lang" % "scala-reflect" % scalaVersion.value, // macro
+          )
+          case _ => Seq.empty
+        }
+      }
     )
 
 lazy val scalatest =
@@ -196,8 +217,10 @@ lazy val kafka =
       name := "cornichon-kafka",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
       libraryDependencies ++= Seq(
+        library.kafka,
         library.kafkaClient,
-        library.kafkaBroker % Test
+        library.kafkaBroker % Test,
+        library.collectionCompat % Test // embedded-kafka depends on scala-collection-compat but uses kafka in scala 2.13
       )
     )
 
@@ -282,51 +305,56 @@ lazy val formattingSettings = Seq(
 lazy val library =
   new {
     object Version {
-      val scalaTest     = "3.2.19"
-      val munit         = "1.0.4"
-      val cats          = "2.12.0"
-      val catsEffect    = "3.5.7"
-      val parboiled     = "2.5.1"
-      val scalaCheck    = "1.18.1"
-      val sangriaCirce  = "1.3.2"
-      val circe         = "0.14.10"
-      val diffson       = "4.6.0"
-      val sangria       = "4.2.5"
-      val fansi         = "0.5.0"
-      val pureConfig    = "0.17.8"
-      val sbtTest       = "1.0"
-      val http4s        = "0.23.30"
-      val fs2           = "3.11.0"
-      val kafkaClient   = "3.9.0"
-      val openPojo      = "0.9.1"
-      val decline       = "2.5.0"
-      val scalaXml      = "2.3.0"
+      val scalaTest        = "3.2.19"
+      val munit            = "1.0.4"
+      val cats             = "2.12.0"
+      val catsEffect       = "3.5.7"
+      val parboiled        = "2.5.1"
+      val scalaCheck       = "1.18.1"
+      val sangriaCirce     = "1.3.2"
+      val circe            = "0.14.10"
+      val diffson          = "4.6.0"
+      val sangria          = "4.2.5"
+      val fansi            = "0.5.0"
+      val pureConfig       = "0.17.8"
+      val sbtTest          = "1.0"
+      val http4s           = "0.23.30"
+      val fs2              = "3.11.0"
+      val kafka            = "3.9.0"
+      val openPojo         = "0.9.1"
+      val decline          = "2.5.0"
+      val scalaXml         = "2.3.0"
+      val collectionCompat = "2.12.0"
     }
-    val catsCore      = "org.typelevel"                  %% "cats-core"            % Version.cats
-    val catsEffect    = "org.typelevel"                  %% "cats-effect"          % Version.catsEffect
-    val scalatest     = "org.scalatest"                  %% "scalatest-wordspec"   % Version.scalaTest
-    val munit         = "org.scalameta"                  %% "munit"                % Version.munit
-    val pureConfig    = "com.github.pureconfig"          %% "pureconfig"           % Version.pureConfig
-    val parboiled     = "org.parboiled"                  %% "parboiled"            % Version.parboiled
-    val fansi         = "com.lihaoyi"                    %% "fansi"                % Version.fansi
-    val sangria       = "org.sangria-graphql"            %% "sangria"              % Version.sangria
-    val sangriaCirce  = "org.sangria-graphql"            %% "sangria-circe"        % Version.sangriaCirce
-    val circeCore     = "io.circe"                       %% "circe-core"           % Version.circe
-    val circeGeneric  = "io.circe"                       %% "circe-generic"        % Version.circe
-    val circeParser   = "io.circe"                       %% "circe-parser"         % Version.circe
-    val circeTesting  = "io.circe"                       %% "circe-testing"        % Version.circe
-    val diffsonCirce  = "org.gnieh"                      %% "diffson-circe"        % Version.diffson
-    val scalacheck    = "org.scalacheck"                 %% "scalacheck"           % Version.scalaCheck
-    val sbtTest       = "org.scala-sbt"                  %  "test-interface"       % Version.sbtTest
-    val http4sClient  = "org.http4s"                     %% "http4s-ember-client"  % Version.http4s
-    val http4sServer  = "org.http4s"                     %% "http4s-ember-server"  % Version.http4s
-    val http4sCirce   = "org.http4s"                     %% "http4s-circe"         % Version.http4s
-    val http4sDsl     = "org.http4s"                     %% "http4s-dsl"           % Version.http4s
-    val fs2Io         = "co.fs2"                         %% "fs2-io"               % Version.fs2
-    val fs2Core       = "co.fs2"                         %% "fs2-core"             % Version.fs2
-    val kafkaClient   = "org.apache.kafka"               %  "kafka-clients"        % Version.kafkaClient
-    val kafkaBroker   = "io.github.embeddedkafka"        %% "embedded-kafka"       % Version.kafkaClient
-    val openPojo      = "com.openpojo"                   %  "openpojo"             % Version.openPojo
-    val decline       = "com.monovore"                   %% "decline"              % Version.decline
-    val scalaXml      = "org.scala-lang.modules"         %% "scala-xml"            % Version.scalaXml
+    val catsCore         = "org.typelevel"                  %% "cats-core"                 % Version.cats
+    val catsEffect       = "org.typelevel"                  %% "cats-effect"               % Version.catsEffect
+    val scalatest        = "org.scalatest"                  %% "scalatest-wordspec"        % Version.scalaTest
+    val munit            = "org.scalameta"                  %% "munit"                     % Version.munit
+    val pureConfig       = "com.github.pureconfig"          %% "pureconfig"                % Version.pureConfig // scala 2
+    val pureConfigCore   =  "com.github.pureconfig"         %% "pureconfig-core"           % Version.pureConfig // scala 3
+    val pureConfigGenS3  = "com.github.pureconfig"          %% "pureconfig-generic-scala3" % Version.pureConfig // scala 3
+    val parboiled        = "org.parboiled"                  %% "parboiled"                 % Version.parboiled
+    val fansi            = "com.lihaoyi"                    %% "fansi"                     % Version.fansi
+    val sangria          = "org.sangria-graphql"            %% "sangria"                   % Version.sangria
+    val sangriaCirce     = "org.sangria-graphql"            %% "sangria-circe"             % Version.sangriaCirce
+    val circeCore        = "io.circe"                       %% "circe-core"                % Version.circe
+    val circeGeneric     = "io.circe"                       %% "circe-generic"             % Version.circe
+    val circeParser      = "io.circe"                       %% "circe-parser"              % Version.circe
+    val circeTesting     = "io.circe"                       %% "circe-testing"             % Version.circe
+    val diffsonCirce     = "org.gnieh"                      %% "diffson-circe"             % Version.diffson
+    val scalacheck       = "org.scalacheck"                 %% "scalacheck"                % Version.scalaCheck
+    val sbtTest          = "org.scala-sbt"                  %  "test-interface"            % Version.sbtTest
+    val http4sClient     = "org.http4s"                     %% "http4s-ember-client"       % Version.http4s
+    val http4sServer     = "org.http4s"                     %% "http4s-ember-server"       % Version.http4s
+    val http4sCirce      = "org.http4s"                     %% "http4s-circe"              % Version.http4s
+    val http4sDsl        = "org.http4s"                     %% "http4s-dsl"                % Version.http4s
+    val fs2Io            = "co.fs2"                         %% "fs2-io"                    % Version.fs2
+    val fs2Core          = "co.fs2"                         %% "fs2-core"                  % Version.fs2
+    val kafkaClient      = "org.apache.kafka"               %  "kafka-clients"             % Version.kafka
+    val kafka            = ("org.apache.kafka"              %% "kafka"                     % Version.kafka cross CrossVersion.for3Use2_13).exclude("org.scala-lang.modules", "scala-collection-compat_2.13")
+    val kafkaBroker      = ("io.github.embeddedkafka"       %% "embedded-kafka"            % Version.kafka).exclude("org.scala-lang.modules", "scala-collection-compat_2.13")
+    val collectionCompat = "org.scala-lang.modules"         %% "scala-collection-compat"   % Version.collectionCompat
+    val openPojo         = "com.openpojo"                   %  "openpojo"                  % Version.openPojo
+    val decline          = "com.monovore"                   %% "decline"                   % Version.decline
+    val scalaXml         = "org.scala-lang.modules"         %% "scala-xml"                 % Version.scalaXml
   }

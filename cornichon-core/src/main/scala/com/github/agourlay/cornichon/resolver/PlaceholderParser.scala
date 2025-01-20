@@ -12,7 +12,7 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
     Ignore ~ zeroOrMore(PlaceholderRule).separatedBy(Ignore) ~ Ignore ~ EOI
   }
 
-  private def PlaceholderRule = rule('<' ~ PlaceholderTXT ~ OptIndex ~ '>' ~> Placeholder)
+  private def PlaceholderRule = rule('<' ~ PlaceholderTXT ~ OptIndex ~ '>' ~> ((k: String, i: Option[Int]) => Placeholder(k, i)))
 
   private def OptIndex = rule(optional('[' ~ Number ~ ']'))
 

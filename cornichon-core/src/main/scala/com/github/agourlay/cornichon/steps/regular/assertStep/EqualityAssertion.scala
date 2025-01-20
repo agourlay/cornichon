@@ -12,7 +12,7 @@ abstract class EqualityAssertion[A: Eq] extends Assertion {
   val actual: A
 
   val negate: Boolean
-  val assertionError: CornichonError
+  def assertionError: CornichonError
 
   lazy val validated = {
     val expectedEqualsActual = Eq[A].eqv(expected, actual)
@@ -27,7 +27,7 @@ abstract class EqualityAssertion[A: Eq] extends Assertion {
 }
 
 case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends EqualityAssertion[A] {
-  lazy val assertionError = GenericEqualityAssertionError(expected, actual, negate)
+  lazy val assertionError: GenericEqualityAssertionError[A] = GenericEqualityAssertionError(expected, actual, negate)
 }
 
 case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
@@ -38,7 +38,7 @@ case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, 
         |'${actual.show}'
         |""".stripMargin.trim
 
-  lazy val baseErrorMessage = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg =>
+  lazy val baseErrorMessage: String = Diff[A].diff(expected, actual).fold(baseMsg) { diffMsg =>
     s"""|$baseMsg
         |
         |$diffMsg
@@ -47,9 +47,9 @@ case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, 
 }
 
 case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customMessage: () => String, negate: Boolean = false) extends EqualityAssertion[A] {
-  lazy val assertionError = CustomMessageAssertionError(expected, actual, customMessage)
+  lazy val assertionError: CustomMessageAssertionError[A] = CustomMessageAssertionError(expected, actual, customMessage)
 }
 
 case class CustomMessageAssertionError[A](expected: A, actual: A, customMessage: () => String) extends CornichonError {
-  lazy val baseErrorMessage = customMessage()
+  lazy val baseErrorMessage: String = customMessage()
 }

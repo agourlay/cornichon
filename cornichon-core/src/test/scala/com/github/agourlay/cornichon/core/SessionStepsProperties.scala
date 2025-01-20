@@ -12,7 +12,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
   private val sessionStepBuilder = SessionStepBuilder(SessionKey(testKey))
 
   property("sessionStep is value") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.is(input)
       val s = Scenario("scenario with SessionSteps", step :: Nil)
@@ -21,7 +21,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep hasDifferentCurrentAndPreviousValues") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(testKey -> (input + "something"))
@@ -32,7 +32,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep hasDifferentCurrentAndPreviousValues - failure") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(testKey -> input)
@@ -43,7 +43,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep hasEqualCurrentAndPreviousValues") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(testKey -> input)
@@ -54,7 +54,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep hasEqualCurrentAndPreviousValues - failure") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(testKey -> (input + "something"))
@@ -65,7 +65,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep compareWithPreviousValue - equality") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(testKey -> input)
@@ -76,7 +76,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep compareWithPreviousValue - LessThanAssertion") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(testKey -> (input + "something"))
@@ -87,7 +87,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep compareWithPreviousValue - LessThanAssertion - failure") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
         .addValuesUnsafe(testKey -> input)
@@ -98,7 +98,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep containsString") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> ("prefix" + input + "suffix"))
       val stepP = sessionStepBuilder.containsString("prefix")
@@ -110,7 +110,7 @@ class SessionStepsProperties extends Properties("SessionSteps") with CommonTesti
     }
 
   property("sessionStep containsString - failure") =
-    forAll { input: String =>
+    forAll { (input: String) =>
       val session = Session.newEmpty
         .addValuesUnsafe(testKey -> input)
       val step = sessionStepBuilder.containsString(input + "42")
