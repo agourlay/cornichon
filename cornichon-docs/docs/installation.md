@@ -12,7 +12,7 @@ The library is compatible with [SBT](https://www.scala-sbt.org/) and [Mill](http
 
 ``` scala
 // SBT
-libraryDependencies += "com.github.agourlay" %% "cornichon-test-framework" % "0.21.4" % Test
+libraryDependencies += "com.github.agourlay" %% "cornichon-test-framework" % "0.22.0" % Test
 testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework")
 ```
 
