@@ -324,7 +324,7 @@ lazy val library =
       val openPojo         = "0.9.1"
       val decline          = "2.5.0"
       val scalaXml         = "2.3.0"
-      val collectionCompat = "2.12.0"
+      val collectionCompat = "2.13.0"
     }
     val catsCore         = "org.typelevel"                  %% "cats-core"                 % Version.cats
     val catsEffect       = "org.typelevel"                  %% "cats-effect"               % Version.catsEffect
