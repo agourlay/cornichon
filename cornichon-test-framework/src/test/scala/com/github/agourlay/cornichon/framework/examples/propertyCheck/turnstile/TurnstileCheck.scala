@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 
 class TurnstileCheck extends CornichonFeature {
 
-  def feature = Feature("Basic examples of checks") {
+  def feature = Feature("Turnstile model checks") {
 
     Scenario("Turnstile acts according to model") {
 
@@ -18,7 +18,7 @@ class TurnstileCheck extends CornichonFeature {
     }
   }
 
-  lazy val port = 8080
+  lazy val port = 8081
 
   // Base url used for all HTTP steps
   override lazy val baseUrl = s"http://localhost:$port"

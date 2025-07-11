@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 
 class StringReverseCheck extends CornichonFeature {
 
-  def feature = Feature("Basic examples of checks") {
+  def feature = Feature("String reverse for_all checks") {
 
     Scenario("reverse a string twice yields the same results") {
 

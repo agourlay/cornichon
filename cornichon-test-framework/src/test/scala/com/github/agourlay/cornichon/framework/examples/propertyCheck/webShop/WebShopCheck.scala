@@ -23,7 +23,7 @@ class WebShopCheck extends CornichonFeature {
     }
   }
 
-  lazy val port = 8080
+  lazy val port = 8082
 
   // Base url used for all HTTP steps
   override lazy val baseUrl = s"http://localhost:$port"
