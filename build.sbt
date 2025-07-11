@@ -94,11 +94,11 @@ lazy val publishingSettings = Seq(
   publishMavenStyle := true,
   Test / publishArtifact := false,
   pomIncludeRepository := (_ => false),
-  publishTo := Some(
-    if (version.value.trim.endsWith("SNAPSHOT"))
-      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
-    else
-      "releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+  publishTo := {
+    val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+    if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+    else localStaging.value
+  },
 )
 
 lazy val commonSettings = standardSettings ++ publishingSettings
