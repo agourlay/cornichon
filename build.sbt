@@ -95,8 +95,9 @@ lazy val publishingSettings = Seq(
   Test / publishArtifact := false,
   pomIncludeRepository := (_ => false),
   publishTo := {
-    if (isSnapshot.value) Some(Resolver.sonatypeCentralSnapshots)
-    else Some(Resolver.sonatypeCentralRepo("staging"))
+    val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+    if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+    else localStaging.value
   },
 )
 
