@@ -46,7 +46,7 @@ case class RunState(
       logStack = extraLogStack ::: this.logStack // logs are often built manually and not extracted from RunState
     )
 
-  lazy val scenarioContext: ScenarioContext = new ScenarioContext {
+  val scenarioContext: ScenarioContext = new ScenarioContext {
     val randomContext: RandomContext = rs.randomContext
     val session: Session = rs.session
 
