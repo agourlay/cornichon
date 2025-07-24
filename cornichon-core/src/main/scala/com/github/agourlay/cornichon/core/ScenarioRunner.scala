@@ -91,14 +91,18 @@ object ScenarioRunner {
   }
 
   final def runStepsShortCircuiting(steps: List[Step], runState: RunState): StepResult = {
-    val initAcc = IO.pure(runState -> Done.rightDone)
-    steps.foldLeft[IO[(RunState, FailedStep Either Done)]](initAcc) {
-      case (runStateF, currentStep) =>
-        runStateF.flatMap {
-          case (rs, Right(_))    => prepareAndRunStep(currentStep, rs)
-          case (rs, l @ Left(_)) => IO.pure((rs, l))
-        }
+    def loop(remaining: List[Step], rs: RunState): IO[(RunState, Either[FailedStep, Done])] = {
+      remaining match {
+        case Nil => IO.pure(rs -> rightDone)
+        case step :: tail =>
+          prepareAndRunStep(step, rs).flatMap {
+            case (newRs, Right(_))         => loop(tail, newRs)
+            case failed @ (newRs, Left(_)) => IO.pure(failed)
+          }
+      }
     }
+
+    loop(steps, runState)
   }
 
   private def runStepsWithoutShortCircuiting(steps: List[Step], runState: RunState): IO[(RunState, Either[NonEmptyList[FailedStep], Done])] = {
