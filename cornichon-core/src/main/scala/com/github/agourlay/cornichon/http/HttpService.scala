@@ -164,7 +164,7 @@ object HttpService {
     }
 
   def encodeSessionHeader(name: String, value: String) =
-    s"$name$headersKeyValueDelim$value"
+    name + headersKeyValueDelim + value
 
   def encodeSessionHeaders(headers: Vector[(String, String)]): String = {
     val len = headers.length
