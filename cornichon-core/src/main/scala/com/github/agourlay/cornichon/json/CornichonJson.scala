@@ -66,9 +66,7 @@ trait CornichonJson {
     var i = 0
     while (i < len) {
       val ch = s.charAt(i)
-      if (ch != ' ' && ch != '\t' && !ch.isWhitespace) {
-        return Some(ch)
-      }
+      if (!ch.isWhitespace) return Some(ch)
       i += 1
     }
     None
