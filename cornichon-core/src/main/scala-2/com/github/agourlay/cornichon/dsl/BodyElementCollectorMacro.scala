@@ -17,34 +17,23 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     else {
       val elementType = contextType.typeArgs.head
       blockOrApplyExpressionList(body, elementType) { elements =>
-        val elementBuffer = ListBuffer.empty[Tree]
-        var seqElementTree: Option[Tree] = None
+        val allSequences = ListBuffer.empty[Tree]
         val elementsCount = elements.length
         var i = 0
         while (i < elementsCount) {
           val elem = elements(i)
-          if (elem.tpe <:< elementType)
-            elementBuffer += elem
-          else {
-            // the only other type authorized here is Seq[Element]
-            val elementsSoFar = elementBuffer.result()
-            elementBuffer.clear()
-            seqElementTree match {
-              case None =>
-                seqElementTree = Some(q"$elementsSoFar ++ $elem")
-              case Some(seqTree) =>
-                seqElementTree = Some(q"$seqTree ++ $elementsSoFar ++ $elem")
-            }
+          if (elem.tpe <:< elementType) {
+            // Wrap single elements in a Seq
+            allSequences += q"Seq($elem)"
+          } else {
+            // `elem` is already a Seq[Element]
+            allSequences += elem
           }
           i += 1
         }
-        val elementTrees = elementBuffer.result()
-        seqElementTree match {
-          case None =>
-            q"${c.prefix.tree}.get($elementTrees)"
-          case Some(seqElementTrees) =>
-            q"${c.prefix.tree}.get($seqElementTrees ++ $elementTrees)"
-        }
+
+        val combinedSeq = q"_root_.scala.collection.immutable.List.concat(..$allSequences)"
+        q"${c.prefix.tree}.get($combinedSeq)"
       }
     }
   }
