@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
+import scala.collection.mutable.ListBuffer
+
 object BodyElementCollectorMacro {
 
   import scala.quoted.*
@@ -82,34 +84,31 @@ object BodyElementCollectorMacro {
   def mergeAllBodies[Body: Type](extracted: List[ExtractedBodies[Body]])(using Quotes): Expr[List[Body]] = {
     import quotes.reflect.*
 
-    // the final expression we will return
-    var finalExpr: Expr[List[Body]] = '{ List.empty[Body] }
-    // compile time accumulation (not an expression)
-    var compileTimeAcc = List.empty[Expr[Body]]
+    val listsToConcat = ListBuffer.empty[Expr[List[Body]]]
+    val compileTimeAcc = ListBuffer.empty[Expr[Body]]
 
-    def flushCompileTimeToFinal(): Unit = {
+    def flushCompileTimeToConcat(): Unit = {
       if (compileTimeAcc.nonEmpty) {
-        val ctExpr: Expr[List[Body]] = Expr.ofList(compileTimeAcc)
-        finalExpr = '{ $finalExpr ++ $ctExpr }
-        compileTimeAcc = Nil
+        listsToConcat += Expr.ofList(compileTimeAcc.toList)
+        compileTimeAcc.clear()
       }
     }
 
-    for (ex <- extracted) {
-      ex match {
-        // compile time accumulation
-        case CompileTimeBodies(items) => compileTimeAcc = compileTimeAcc ++ items
-        // runtime accumulation
-        case RuntimeBodies(rExpr) =>
-          flushCompileTimeToFinal()
-          finalExpr = '{ $finalExpr ++ $rExpr }
-      }
+    extracted.foreach {
+      case CompileTimeBodies(items) => compileTimeAcc.addAll(items)
+      case RuntimeBodies(rExpr) =>
+        flushCompileTimeToConcat()
+        listsToConcat += rExpr
     }
 
-    // flush to ensure we don't forget the last compile-time accumulation
-    flushCompileTimeToFinal()
+    flushCompileTimeToConcat()
 
-    finalExpr
+    // Generate a single, efficient concat call
+    // The 'val listArgs' represents the arguments for the concat method.
+    val listArgs = Varargs(listsToConcat.toSeq)
+
+    // Use List.concat to combine all collected lists.
+    '{ _root_.scala.collection.immutable.List.concat($listArgs: _*) }
   }
 
 
