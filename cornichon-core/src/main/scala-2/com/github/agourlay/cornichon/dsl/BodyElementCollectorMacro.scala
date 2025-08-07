@@ -33,7 +33,9 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
               case None =>
                 seqElementTree = Some(q"$elementsSoFar ++ $elem")
               case Some(seqTree) =>
-                seqElementTree = Some(q"$seqTree ++ $elementsSoFar ++ $elem")
+                // combine the previous sequence tree, the collected elements, and the current sequence.
+                val mergedElems = q"_root_.scala.collection.immutable.List.concat($seqTree, $elementsSoFar, $elem)"
+                seqElementTree = Some(mergedElems)
             }
           }
           i += 1
