@@ -24,7 +24,7 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
         while (i < elementsCount) {
           val elem = elements(i)
           if (elem.tpe <:< elementType)
-            elementBuffer += elem
+            elementBuffer.addOne(elem)
           else {
             // the only other type authorized here is Seq[Element]
             val elementsSoFar = elementBuffer.result()

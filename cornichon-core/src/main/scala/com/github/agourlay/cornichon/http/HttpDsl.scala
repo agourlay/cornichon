@@ -141,7 +141,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
     save_many_from_session(lastResponseHeadersKey) {
       args.map {
         case (headerFieldName, target) =>
-          FromSessionSetter(target, s"save '$headerFieldName' header value to key '$target'", (_, s: String) => {
+          FromSessionSetter(target, s"save '$headerFieldName' header value to key '$target'", (_, s) => {
             decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h => h._2).getOrElse(""))
           })
       }
@@ -237,7 +237,7 @@ object HttpDsl {
         for {
           sessionValue <- session.getJson(fromKey)
           extracted <- traverseIL(args.iterator.map(_.trans))(extractor => extractor(sc, sessionValue))
-          newSession <- args.iterator.map(_.target).zip(extracted.iterator).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
+          newSession <- args.iterator.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }
     )

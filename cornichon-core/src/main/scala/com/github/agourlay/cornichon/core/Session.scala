@@ -10,8 +10,6 @@ import com.github.agourlay.cornichon.util.StringUtils
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import scala.collection.immutable.HashMap
 
-// TODO try replacing Vector by ArraySeq in Scala 2.13
-// https://www.scala-lang.org/api/2.13.0/scala/collection/immutable/ArraySeq.html
 case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   //Specialised Option version to avoid Either.left creation through Either.toOption

@@ -65,7 +65,7 @@ class HttpService(
       (url, jsonBody, params, headers) = tuple
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
       configuredRequest = configureRequest(resolvedRequest, config)
-      resp <- client.runRequest(configuredRequest, requestTimeout)(circeJsonEncoder, Json.showJson) // TODO remove implicits when removing Scala 2.12
+      resp <- client.runRequest(configuredRequest, requestTimeout)
       newSession <- EitherT.fromEither[IO](handleResponse(resp, configuredRequest.detailedDescription, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 

@@ -39,13 +39,6 @@ val compilerOptions_scala2 = Seq(
   "-Ywarn-unused:privates",            // Warn if a private member is unused.
   "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
 )
-val compilerOptions_lt_scala2_13 =
-   Seq(
-    "-Yno-adapted-args",
-    "-Ypartial-unification",
-    "-Xlint:by-name-right-associative",
-    "-Xfuture"
-   )
 val compilerOptions_gte_scala2_13 = Seq(
    "-Wnonunit-statement"                // Warn when non-unit statements are discarded.
  )
@@ -53,7 +46,7 @@ val compilerOptions_gte_scala2_13 = Seq(
 def compilerOptions(scalaVersion: String) =
   CrossVersion.partialVersion(scalaVersion) match {
       case Some((2, minor)) =>
-        compilerOptions_scala2 ++ (if (minor < 13) compilerOptions_lt_scala2_13 else compilerOptions_gte_scala2_13)
+        compilerOptions_scala2 ++ compilerOptions_gte_scala2_13
       case Some((3, _))  =>
         Seq()
     }
@@ -63,7 +56,7 @@ lazy val standardSettings = Seq(
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
   scalaVersion := "3.3.6",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.16", "2.12.20"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.16"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   Test / fork := true,
   scalacOptions ++= compilerOptions(scalaVersion.value),

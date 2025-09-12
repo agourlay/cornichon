@@ -100,7 +100,7 @@ class Http4sClient(
     if (moreParams.isEmpty)
       uri
     else {
-      val allParams = uri.query.pairs ++ moreParams.iterator.map { case (k, v) => (k, Some(v)) }
+      val allParams = uri.query.pairs.appendedAll(moreParams.iterator.map { case (k, v) => (k, Some(v)) })
       val newQuery = Query.fromVector(allParams)
       uri.copy(query = newQuery)
     }
