@@ -75,7 +75,7 @@ object PlaceholderResolver {
           val ph = placeholders(i)
           val resolvedValue = resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
           resolvedValue match {
-            case Right(resolved) => patterns += ((ph.fullKey, resolved))
+            case Right(resolved) => patterns.addOne(ph.fullKey -> resolved)
             case Left(err)       => return Left(err)
           }
           i += 1

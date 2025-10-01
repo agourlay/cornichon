@@ -15,7 +15,7 @@ class SuperMicroService {
   private val superheroesBySession = new TrieMap[String, Set[SuperHero]]
 
   private def addBinding[A](id: String, a: A, map: TrieMap[String, Set[A]]): Unit =
-    map.get(id).fold[Unit](map += ((id, Set(a)))) { set =>
+    map.get(id).fold[Unit](map += (id -> Set(a))) { set =>
       map.update(id, set + a)
     }
 
@@ -26,8 +26,8 @@ class SuperMicroService {
 
   def createSession(): String = {
     val newSessionId = Random.alphanumeric.take(8).mkString
-    publishersBySession += ((newSessionId, initialPublishers))
-    superheroesBySession += ((newSessionId, initialSuperheroes))
+    publishersBySession += (newSessionId -> initialPublishers)
+    superheroesBySession += (newSessionId -> initialSuperheroes)
     newSessionId
   }
 

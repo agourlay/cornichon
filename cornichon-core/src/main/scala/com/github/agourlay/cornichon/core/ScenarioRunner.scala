@@ -96,8 +96,8 @@ object ScenarioRunner {
         case Nil => IO.pure(rs -> rightDone)
         case step :: tail =>
           prepareAndRunStep(step, rs).flatMap {
-            case (newRs, Right(_))         => loop(tail, newRs)
-            case failed @ (newRs, Left(_)) => IO.pure(failed)
+            case (newRs, Right(_))     => loop(tail, newRs)
+            case failed @ (_, Left(_)) => IO.pure(failed)
           }
       }
     }
