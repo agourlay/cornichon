@@ -23,7 +23,7 @@ object HeadersSteps {
             case (name, value) =>
               sc.fillPlaceholders(value).map(v => (name, v))
           }
-          lowerCasedExpected = expectedWithResolvedPlaceholders.iterator.map { case (name, value) => name.toLowerCase -> value }.toList
+          lowerCasedExpected = expectedWithResolvedPlaceholders.map { case (name, value) => name.toLowerCase -> value }
         } yield CollectionsContainSameElements(lowerCasedExpected, lowerCasedActual)
       }
     )
