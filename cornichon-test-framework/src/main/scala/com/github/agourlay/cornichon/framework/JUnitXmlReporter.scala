@@ -8,12 +8,10 @@ import java.text.SimpleDateFormat
 import java.util.Properties
 import sbt.testing.{ Event, Status }
 
-import scala.annotation.nowarn
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 
 // Freely adapted from Scalatest's "org.scalatest.tools.JUnitXmlReporter"
-@nowarn("msg=unused value of type scala.xml.NodeBuffer")
 object JUnitXmlReporter {
 
   private lazy val propertiesXml = genPropertiesXml
