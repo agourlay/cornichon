@@ -7,6 +7,7 @@ import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
 import com.github.agourlay.cornichon.util.StringUtils
 
+import scala.collection.compat.immutable.ArraySeq
 import scala.collection.mutable.ListBuffer
 
 object PlaceholderResolver {
@@ -68,7 +69,8 @@ object PlaceholderResolver {
         Right(input)
       else {
         var i = 0
-        val patterns = Vector.newBuilder[(String, String)]
+        val patterns = ArraySeq.newBuilder[(String, String)]
+        patterns.sizeHint(len)
         while (i < len) {
           val ph = placeholders(i)
           val resolvedValue = resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)

@@ -16,7 +16,9 @@ import sangria.marshalling.MarshallingUtil._
 import sangria.parser.QueryParser
 import sangria.marshalling.queryAst._
 import sangria.marshalling.circe._
+
 import scala.annotation.switch
+import scala.collection.compat.immutable.ArraySeq
 import scala.collection.mutable.ListBuffer
 import scala.util.{ Failure, Success, Try }
 
@@ -73,7 +75,8 @@ trait CornichonJson {
   }
 
   private def parseDataTableRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
-    val cells = List.newBuilder[(String, Json)]
+    val cells = ArraySeq.newBuilder[(String, Json)]
+    cells.sizeHint(rawRow.length)
     rawRow.foreach {
       case (name, rawValue) =>
         parseString(rawValue) match {

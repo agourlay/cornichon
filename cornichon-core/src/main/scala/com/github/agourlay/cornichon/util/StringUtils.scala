@@ -62,8 +62,8 @@ object StringUtils {
    * - avoid multiple passes on the input string
    * - avoid creating intermediate strings
    */
-  def replacePatternsInOrder(inString: String, pattern_and_replacements: Vector[(String, String)]): String = {
-    val patternsLen = pattern_and_replacements.length
+  def replacePatternsInOrder(inString: String, patternsWithReplacement: IndexedSeq[(String, String)]): String = {
+    val patternsLen = patternsWithReplacement.length
     if (patternsLen == 0) return inString
     // assume a similar length for the output string
     val sb = new java.lang.StringBuilder(inString.length)
@@ -71,7 +71,7 @@ object StringUtils {
     var pos = 0
     var i = 0
     while (i < patternsLen) {
-      val next = pattern_and_replacements(i)
+      val next = patternsWithReplacement(i)
       val (pattern, newValue) = next
       val index = inString.indexOf(pattern, pos)
       if (index == -1) {
