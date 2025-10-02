@@ -1,4 +1,4 @@
-import scalariform.formatter.preferences._
+import scalariform.formatter.preferences.*
 import sbt.{Developer, file}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
@@ -173,7 +173,7 @@ lazy val testFramework =
     .in(file("./cornichon-test-framework"))
     .dependsOn(core)
     .configs(IntegrationTest)
-    .settings(Defaults.itSettings : _*)
+    .settings(Defaults.itSettings *)
     .settings(noCatsEffectTracing)
     .enablePlugins(SbtScalariform)
     .settings(commonSettings)
