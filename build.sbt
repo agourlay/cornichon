@@ -2,7 +2,7 @@ import scalariform.formatter.preferences._
 import sbt.{Developer, file}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
-//https://tpolecat.github.io/2017/04/25/scalac-flags.html
+// originally from https://tpolecat.github.io/2017/04/25/scalac-flags.html
 val compilerOptions_scala2 = Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
@@ -30,7 +30,7 @@ val compilerOptions_scala2 = Seq(
   "-Ywarn-dead-code",                  // Warn when dead code is identified.
   "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
   "-Ywarn-numeric-widen",              // Warn when numerics are widened.
-  "-Ywarn-unused",
+  "-Ywarn-unused",                     // Warn when things are unused.
   "-Ywarn-unused:implicits",           // Warn if an implicit parameter is unused.
   "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
   "-Ywarn-unused:locals",              // Warn if a local definition is unused.
@@ -38,17 +38,13 @@ val compilerOptions_scala2 = Seq(
   "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
   "-Ywarn-unused:privates",            // Warn if a private member is unused.
   "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
+  "-Wnonunit-statement"                // Warn when non-unit statements are discarded.
 )
-val compilerOptions_gte_scala2_13 = Seq(
-   "-Wnonunit-statement"                // Warn when non-unit statements are discarded.
- )
 
 def compilerOptions(scalaVersion: String) =
   CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, minor)) =>
-        compilerOptions_scala2 ++ compilerOptions_gte_scala2_13
-      case Some((3, _))  =>
-        Seq()
+      case Some((2, minor)) => compilerOptions_scala2
+      case _  => Seq.empty
     }
 
 lazy val standardSettings = Seq(
