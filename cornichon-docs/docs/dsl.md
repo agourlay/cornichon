@@ -408,10 +408,10 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-- execute a series of steps 'n' times by batch of `p` in parallel and wait 'maxTime' for completion.
+- execute a series of steps 'times' times by batch of `parallelism` in parallel and wait 'maxTime' for completion.
 
 ```scala
-RepeatConcurrently(times = 10, parallel = 3, maxTime = 10 seconds) {
+RepeatConcurrently(times = 10, parallelism = 3, maxTime = 10 seconds) {
 
   When I get("http://superhero.io/batman")
 
