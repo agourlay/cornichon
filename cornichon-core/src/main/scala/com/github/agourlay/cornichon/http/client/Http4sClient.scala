@@ -2,27 +2,29 @@ package com.github.agourlay.cornichon.http.client
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import javax.net.ssl.{ SSLContext, TrustManager, X509TrustManager }
+import javax.net.ssl.{SSLContext, TrustManager, X509TrustManager}
 import cats.Show
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.syntax.show._
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime
-import com.github.agourlay.cornichon.core.{ CornichonError, CornichonException, Done }
+import com.github.agourlay.cornichon.core.{CornichonError, CornichonException, Done}
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.HttpStreams.SSE
 import com.github.agourlay.cornichon.util.CirceUtil._
+import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 import fs2.io.net.tls.TLSContext
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.http4s._
 import org.http4s.ember.client.EmberClientBuilder
-import org.http4s.client.middleware.{ FollowRedirect, GZip }
+import org.http4s.client.middleware.{FollowRedirect, GZip}
 import org.typelevel.ci.CIString
+
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
@@ -45,6 +47,9 @@ class Http4sClient(
       ssl
     } else SSLContext.getDefault
   }
+
+  // Cache URIs because they are expensive to parse
+  private val uriCache: Cache[String, Either[CornichonError, Uri]] = Caffeine.newBuilder().maximumSize(1_000).build()
 
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.Inf
@@ -187,5 +192,5 @@ class Http4sClient(
       rightNil
 
   def parseUri(uri: String): Either[CornichonError, Uri] =
-    Uri.fromString(uri).leftMap(e => MalformedUriError(uri, e.message))
+    uriCache.get(uri, u => Uri.fromString(u).leftMap(e => MalformedUriError(u, e.message)))
 }
