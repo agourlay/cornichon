@@ -25,6 +25,7 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.client.middleware.{FollowRedirect, GZip}
 import org.typelevel.ci.CIString
 
+import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
@@ -98,8 +99,8 @@ class Http4sClient(
     }
   }
 
-  private def fromHttp4sHeaders(headers: Headers): Vector[(String, String)] =
-    headers.headers.iterator.map(h => (h.name.toString, h.value)).toVector
+  private def fromHttp4sHeaders(headers: Headers): ArraySeq[(String, String)] =
+    headers.headers.iterator.map(h => (h.name.toString, h.value)).to(ArraySeq)
 
   def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)

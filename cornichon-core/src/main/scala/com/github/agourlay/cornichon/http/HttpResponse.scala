@@ -1,3 +1,9 @@
 package com.github.agourlay.cornichon.http
 
-case class HttpResponse(status: Short, headers: Vector[(String, String)], body: String)
+import scala.collection.immutable.ArraySeq
+
+case class HttpResponse(
+    status: Short,
+    headers: ArraySeq[(String, String)],
+    body: String
+)

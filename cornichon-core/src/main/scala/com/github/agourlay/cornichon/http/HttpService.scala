@@ -15,6 +15,8 @@ import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
 import io.circe.{ Encoder, Json }
 import org.http4s.EntityEncoder
+
+import scala.collection.immutable.ArraySeq
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -163,10 +165,10 @@ object HttpService {
       case None    => rightNil
     }
 
-  def encodeSessionHeader(name: String, value: String) =
+  def encodeSessionHeader(name: String, value: String): String =
     name + headersKeyValueDelim + value
 
-  def encodeSessionHeaders(headers: Vector[(String, String)]): String = {
+  def encodeSessionHeaders(headers: ArraySeq[(String, String)]): String = {
     val len = headers.length
     val builder = new StringBuilder(len * 10)
     var i = 0

@@ -5,6 +5,8 @@ import com.github.agourlay.cornichon.core.{ Config, ScenarioContext, Session }
 import com.github.agourlay.cornichon.http.HttpMethods.GET
 import com.github.agourlay.cornichon.http.client.Http4sClient
 import munit.FunSuite
+
+import scala.collection.immutable.ArraySeq
 import scala.concurrent.duration._
 
 class HttpServiceSpec extends FunSuite {
@@ -15,7 +17,7 @@ class HttpServiceSpec extends FunSuite {
   private val httpService = new HttpService("http://base-url/", 10.seconds, client, new Config())
 
   test("fillInSessionWithResponse extracts content with NoOpExtraction") {
-    val resp = HttpResponse(200, Vector.empty, "hello world")
+    val resp = HttpResponse(200, ArraySeq.empty, "hello world")
     val filledSession = HttpService.fillInSessionWithResponse(resp, Session.newEmpty, NoOpExtraction, dummyRequest.detailedDescription)
     assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
     assert(filledSession.flatMap(_.get("last-response-body")) == Right("hello world"))
@@ -23,7 +25,7 @@ class HttpServiceSpec extends FunSuite {
   }
 
   test("fillInSessionWithResponse extracts content with RootResponseExtraction") {
-    val resp = HttpResponse(200, Vector.empty, "hello world")
+    val resp = HttpResponse(200, ArraySeq.empty, "hello world")
     val filledSession = HttpService.fillInSessionWithResponse(resp, Session.newEmpty, RootExtractor("copy-body"), dummyRequest.detailedDescription)
     assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
     assert(filledSession.flatMap(_.get("last-response-body")) == Right("hello world"))
@@ -31,7 +33,7 @@ class HttpServiceSpec extends FunSuite {
   }
 
   test("fillInSessionWithResponse extracts content with PathResponseExtraction") {
-    val resp = HttpResponse(200, Vector.empty, """{ "name" : "batman" }""")
+    val resp = HttpResponse(200, ArraySeq.empty, """{ "name" : "batman" }""")
     val filledSession = HttpService.fillInSessionWithResponse(resp, Session.newEmpty, PathExtractor("name", "part-of-body"), dummyRequest.detailedDescription)
     assert(filledSession.flatMap(_.get("last-response-status")) == Right("200"))
     assert(filledSession.flatMap(_.get("last-response-body")) == Right("""{ "name" : "batman" }"""))

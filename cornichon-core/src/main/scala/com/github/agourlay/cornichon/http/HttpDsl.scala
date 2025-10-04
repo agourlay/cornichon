@@ -27,6 +27,7 @@ import io.circe.{ Encoder, Json }
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+import scala.collection.immutable.ArraySeq
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
@@ -184,7 +185,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def WithHeaders(headers: (String, String)*): BodyElementCollector[Step, Seq[Step]] =
     BodyElementCollector[Step, Seq[Step]] { steps =>
       // the surrounding steps are hidden from the logs
-      val saveStep = save((withHeadersKey, encodeSessionHeaders(headers.toVector)), show = false)
+      val saveStep = save((withHeadersKey, encodeSessionHeaders(headers.to(ArraySeq))), show = false)
       val rollbackStep = rollback(withHeadersKey, show = false)
       saveStep +: steps :+ rollbackStep
     }
@@ -220,7 +221,7 @@ trait HttpDslOps {
             else if (keep.isEmpty)
               s.removeKey(withHeadersKey).asRight
             else
-              s.addValue(withHeadersKey, encodeSessionHeaders(keep.toVector))
+              s.addValue(withHeadersKey, encodeSessionHeaders(keep.to(ArraySeq)))
           }
       }
 }

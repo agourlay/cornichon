@@ -6,10 +6,12 @@ import com.github.agourlay.cornichon.http.steps.HeadersSteps.HeadersStepBuilder
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
+import scala.collection.immutable.ArraySeq
+
 class HeaderStepsSpec extends FunSuite with CommonTestSuite {
 
   private def addHeaderToSession(s: Session)(headers: (String, String)*) =
-    s.addValue(SessionKeys.lastResponseHeadersKey, encodeSessionHeaders(headers.toVector)).valueUnsafe
+    s.addValue(SessionKeys.lastResponseHeadersKey, encodeSessionHeaders(headers.to(ArraySeq))).valueUnsafe
 
   test("HeadersNameStepBuilder is present") {
     val session = addHeaderToSession(Session.newEmpty)("test-key" -> "test")
