@@ -125,7 +125,7 @@ class Http4sClient(
             .string
             .map { decodedBody =>
               HttpResponse(
-                status = http4sResp.status.code,
+                status = http4sResp.status.code.toShort,
                 headers = fromHttp4sHeaders(http4sResp.headers),
                 body = decodedBody
               ).asRight[CornichonError]
@@ -160,7 +160,7 @@ class Http4sClient(
             .toVector
             .map { events =>
               HttpResponse(
-                status = http4sResp.status.code,
+                status = http4sResp.status.code.toShort,
                 headers = fromHttp4sHeaders(http4sResp.headers),
                 body = Json.fromValues(events.map(_.asJson)).show
               ).asRight[CornichonError]

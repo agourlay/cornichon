@@ -1,3 +1,3 @@
 package com.github.agourlay.cornichon.http
 
-case class HttpResponse(status: Int, headers: Vector[(String, String)], body: String)
+case class HttpResponse(status: Short, headers: Vector[(String, String)], body: String)

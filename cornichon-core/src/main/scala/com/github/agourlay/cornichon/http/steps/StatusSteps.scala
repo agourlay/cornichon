@@ -17,28 +17,28 @@ object StatusSteps {
       5 -> "server error"
     )
 
-    def computeKind(status: Int): Int = status / 100
+    def computeKind(status: Short): Short = (status / 100).toShort
 
-    def kindDisplay(status: Int) = s"${status}xx"
+    def kindDisplay(status: Short) = s"${status}xx"
 
     def kindLabel(status: Int) = statusKind.getOrElse(status, "unknown")
   }
 
   case object StatusStepBuilder {
-    def is(expected: Int): AssertStep = AssertStep(
+    def is(expected: Short): AssertStep = AssertStep(
       title = s"status is '$expected'",
       action = sc => Assertion.either {
         sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
-          CustomMessageEqualityAssertion(expected, lastResponseStatus.toInt, () => statusError(expected, lastResponseStatus, sc.session))
+          CustomMessageEqualityAssertion(expected, lastResponseStatus.toShort, () => statusError(expected, lastResponseStatus, sc.session))
         }
       }
     )
 
-    private def isByKind(expectedKind: Int) = AssertStep(
+    private def isByKind(expectedKind: Short) = AssertStep(
       title = s"status is ${StatusKind.kindLabel(expectedKind)} '${StatusKind.kindDisplay(expectedKind)}'",
       action = sc => Assertion.either {
         sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
-          val actualKind = StatusKind.computeKind(lastResponseStatus.toInt)
+          val actualKind = StatusKind.computeKind(lastResponseStatus.toShort)
           CustomMessageEqualityAssertion(expectedKind, actualKind, () => statusKindError(expectedKind, lastResponseStatus, sc.session))
         }
       }
@@ -50,14 +50,14 @@ object StatusSteps {
     def isServerError: AssertStep = isByKind(5)
   }
 
-  private def statusError(expected: Int, actual: String, session: Session): String = {
+  private def statusError(expected: Short, actual: String, session: Session): String = {
     val responseBody = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe
     val requestDescription = session.get(lastResponseRequestKey).valueUnsafe
-    StatusNonExpected(expected, actual.toInt, headers, responseBody, requestDescription).baseErrorMessage
+    StatusNonExpected(expected, actual.toShort, headers, responseBody, requestDescription).baseErrorMessage
   }
 
-  private def statusKindError(expectedKind: Int, actualStatus: String, session: Session): String = {
+  private def statusKindError(expectedKind: Short, actualStatus: String, session: Session): String = {
     val expected = StatusKind.kindDisplay(expectedKind)
     val body = session.get(lastResponseBodyKey).valueUnsafe
     val headers = session.get(lastResponseHeadersKey).flatMap(HttpService.decodeSessionHeaders).valueUnsafe

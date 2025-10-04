@@ -57,7 +57,7 @@ class HttpService(
 
   private def runRequest[A: Show: Resolvable: Encoder](
     r: HttpRequest[A],
-    expectedStatus: Option[Int],
+    expectedStatus: Option[Short],
     extractor: ResponseExtractor,
     ignoreFromWithHeaders: HeaderSelection)(scenarioContext: ScenarioContext): EitherT[IO, CornichonError, Session] =
     for {
@@ -69,7 +69,7 @@ class HttpService(
       newSession <- EitherT.fromEither[IO](handleResponse(resp, configuredRequest.detailedDescription, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
 
-  private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Int], extractor: ResponseExtractor)(scenarioContext: ScenarioContext) =
+  private def runStreamRequest(r: HttpStreamedRequest, expectedStatus: Option[Short], extractor: ResponseExtractor)(scenarioContext: ScenarioContext) =
     for {
       tuple <- EitherT.fromEither[IO](resolveRequestParts[String](r.url, None, r.params, r.headers, SelectNone)(scenarioContext))
       (url, _, params, headers) = tuple
@@ -89,7 +89,7 @@ class HttpService(
   def requestEffectT[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
-    expectedStatus: Option[Int] = None,
+    expectedStatus: Option[Short] = None,
     ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext => EitherT[Future, CornichonError, Session] =
     sc => {
       val f = requestEffect(request, extractor, expectedStatus, ignoreFromWithHeaders)
@@ -99,31 +99,31 @@ class HttpService(
   def requestEffectIO[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
-    expectedStatus: Option[Int] = None,
+    expectedStatus: Option[Short] = None,
     ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext => IO[Either[CornichonError, Session]] =
     sc => runRequest(request, expectedStatus, extractor, ignoreFromWithHeaders)(sc).value
 
   def requestEffect[A: Show: Resolvable: Encoder](
     request: HttpRequest[A],
     extractor: ResponseExtractor = NoOpExtraction,
-    expectedStatus: Option[Int] = None,
+    expectedStatus: Option[Short] = None,
     ignoreFromWithHeaders: HeaderSelection = SelectNone): ScenarioContext => Future[Either[CornichonError, Session]] =
     sc => {
       val effect = requestEffectIO(request, extractor, expectedStatus, ignoreFromWithHeaders)
       effect(sc).unsafeToFuture()
     }
 
-  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Int] = None, extractor: ResponseExtractor = NoOpExtraction): ScenarioContext => Future[Either[CornichonError, Session]] =
+  def streamEffect(request: HttpStreamedRequest, expectedStatus: Option[Short] = None, extractor: ResponseExtractor = NoOpExtraction): ScenarioContext => Future[Either[CornichonError, Session]] =
     rs => runStreamRequest(request, expectedStatus, extractor)(rs).value.unsafeToFuture()
 
   def openSSE(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Short] = None) = {
     val req = HttpStreamedRequest(SSE, url, takeWithin, params, headers)
     streamEffect(req, expectedStatus, extractor)
   }
 
   def openWS(url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Int] = None) = {
+    extractor: ResponseExtractor = NoOpExtraction, expectedStatus: Option[Short] = None) = {
     val req = HttpStreamedRequest(WS, url, takeWithin, params, headers)
     streamEffect(req, expectedStatus, extractor)
   }
@@ -228,7 +228,7 @@ object HttpService {
     }
   }
 
-  private def handleResponse(resp: HttpResponse, requestDescription: String, expectedStatus: Option[Int], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
+  private def handleResponse(resp: HttpResponse, requestDescription: String, expectedStatus: Option[Short], extractor: ResponseExtractor)(session: Session): Either[CornichonError, Session] =
     expectedStatus match {
       case Some(expectedStatus) if resp.status != expectedStatus =>
         Left(StatusNonExpected(expectedStatus, resp.status, resp.headers, resp.body, requestDescription))
