@@ -21,7 +21,7 @@ object StatusSteps {
 
     def kindDisplay(status: Short) = s"${status}xx"
 
-    def kindLabel(status: Int) = statusKind.getOrElse(status, "unknown")
+    def kindLabel(status: Short) = statusKind.getOrElse(status, "unknown")
   }
 
   case object StatusStepBuilder {

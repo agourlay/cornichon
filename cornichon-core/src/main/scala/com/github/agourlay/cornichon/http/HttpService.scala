@@ -238,7 +238,7 @@ object HttpService {
     }
 
   // Avoid reallocating known strings
-  private def statusToString(status: Int): String =
+  private def statusToString(status: Short): String =
     status match {
       case 200   => "200"
       case 201   => "201"
@@ -248,6 +248,6 @@ object HttpService {
       case 500   => "500"
       case 502   => "502"
       case 503   => "503"
-      case other => Integer.toString(other)
+      case other => Integer.toString(other.toInt)
     }
 }
