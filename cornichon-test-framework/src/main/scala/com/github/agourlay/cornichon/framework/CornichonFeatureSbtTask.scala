@@ -1,6 +1,5 @@
 package com.github.agourlay.cornichon.framework
 
-import cats.effect.unsafe.implicits.global
 import com.github.agourlay.cornichon.framework.CornichonFeatureRunner._
 import sbt.testing._
 
@@ -15,8 +14,8 @@ class CornichonFeatureSbtTask(task: TaskDef, scenarioNameFilter: Set[String], ex
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
     val fqn = task.fullyQualifiedName()
     val featureInfo = FeatureInfo(fqn, Class.forName(fqn), task.fingerprint(), task.selectors().head)
-    val featureTask = loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilter).map(_ => ())
-    Await.result(featureTask.unsafeToFuture(), Duration.Inf)
+    val featureTask = loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilter)
+    val _ = Await.result(featureTask.unsafeToFuture()(cats.effect.unsafe.implicits.global), Duration.Inf)
     Array.empty
   }
 }
