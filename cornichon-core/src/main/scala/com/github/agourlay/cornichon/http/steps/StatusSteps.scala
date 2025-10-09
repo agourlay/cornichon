@@ -9,19 +9,19 @@ object StatusSteps {
 
   private case object StatusKind {
 
-    private val statusKind = Map(
-      1 -> "informational",
-      2 -> "success",
-      3 -> "redirection",
-      4 -> "client error",
-      5 -> "server error"
+    private val statusKind: Map[Short, String] = Map(
+      1.toShort -> "informational",
+      2.toShort -> "success",
+      3.toShort -> "redirection",
+      4.toShort -> "client error",
+      5.toShort -> "server error"
     )
 
     def computeKind(status: Short): Short = (status / 100).toShort
 
     def kindDisplay(status: Short) = s"${status}xx"
 
-    def kindLabel(status: Short) = statusKind.getOrElse(status, "unknown")
+    def kindLabel(status: Short): String = statusKind.getOrElse(status, "unknown")
   }
 
   case object StatusStepBuilder {
