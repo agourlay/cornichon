@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.json
 
-import cats.{ Order, Show }
+import cats.{ Eq, Order, Show }
 import cats.syntax.show._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Done, ScenarioContext, SessionKey }
@@ -27,7 +27,8 @@ object JsonSteps {
     def ignoring(ignoring: String*): JsonValuesStepBuilder = copy(ignoredKeys = ignoring.toList)
     def path(path: String): JsonValuesStepBuilder = copy(jsonPath = path)
 
-    private def areEqualsImpl(negate: Boolean) = {
+    private def areEqualsImpl(ignoreArrayOrdering: Boolean, negate: Boolean) = {
+      implicit val jsonDiff: Diff[Json] = Diff.jsonDiff(ignoreArrayOrdering)
       val prefix = if (jsonPath == JsonPath.root) s"JSON content" else s"JSON field '$jsonPath'"
       val titleBuilder = new StringBuilder()
       titleBuilder.append(prefix)
@@ -47,8 +48,8 @@ object JsonSteps {
       )
     }
 
-    def areEquals: AssertStep = areEqualsImpl(negate = false)
-    def areNotEquals: AssertStep = areEqualsImpl(negate = true)
+    def areEquals: AssertStep = areEqualsImpl(ignoreArrayOrdering = false, negate = false)
+    def areNotEquals: AssertStep = areEqualsImpl(ignoreArrayOrdering = false, negate = true)
 
     private def getParseFocusIgnore(k: String, context: ScenarioContext, ignoredPaths: Seq[JsonPath], jsonPath: JsonPath): Either[CornichonError, Json] =
       for {
@@ -62,7 +63,8 @@ object JsonSteps {
       private val prettySessionKeyTitle: Option[String] = None,
       private val jsonPath: String = JsonPath.root,
       private val ignoredKeys: List[String] = Nil,
-      private val whitelist: Boolean = false
+      private val whitelist: Boolean = false,
+      private val ignoreArrayOrdering: Boolean = false
   ) {
 
     private val target = prettySessionKeyTitle.getOrElse(s"session key '${sessionKey.name}'")
@@ -70,6 +72,8 @@ object JsonSteps {
     def path(path: String): JsonStepBuilder = copy(jsonPath = path)
 
     def ignoring(ignoring: String*): JsonStepBuilder = copy(ignoredKeys = ignoring.toList)
+
+    def ignoringArrayOrdering: JsonStepBuilder = copy(ignoreArrayOrdering = true)
 
     def whitelisting: JsonStepBuilder = copy(whitelist = true)
 
@@ -83,10 +87,12 @@ object JsonSteps {
         is(a)
     }
 
-    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected)
-    def isNot[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected, negate = true)
+    def is[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected, ignoreArrayOrdering)
+    def isNot[A: Show: Resolvable: Encoder](expected: A): AssertStep = isImpl(expected, ignoreArrayOrdering, negate = true)
 
-    private def isImpl[A: Show: Resolvable: Encoder](expected: A, negate: Boolean = false): AssertStep = {
+    private def isImpl[A: Show: Resolvable: Encoder](expected: A, ignoreArrayOrdering: Boolean, negate: Boolean = false): AssertStep = {
+      implicit val jsonDiff: Diff[Json] = Diff.jsonDiff(ignoreArrayOrdering)
+
       val expectedShow = expected.show
       val titleBuilder = new StringBuilder()
       titleBuilder.append(target)
@@ -104,7 +110,7 @@ object JsonSteps {
       def handleIgnoredFields(sc: ScenarioContext, expected: Json, actual: Json) =
         if (whitelist)
           // add missing fields in the expected result
-          whitelistingValue(expected, actual).map(expectedWhitelistedValue => (expectedWhitelistedValue, actual))
+          whitelistingValue(expected, actual, ignoreArrayOrdering).map(expectedWhitelistedValue => (expectedWhitelistedValue, actual))
         else if (ignoredKeys.nonEmpty)
           // remove ignore fields from the actual result
           traverse(ignoredKeys)(resolveAndParseJsonPath(_, sc))
@@ -112,6 +118,8 @@ object JsonSteps {
         else
           // nothing to prepare
           (expected, actual).asRight
+
+      implicit val eqJson: Eq[Json] = (x: Json, y: Json) => jsonDiff.diff(x, y).isEmpty
 
       AssertStep(
         title = jsonAssertionTitleBuilder(titleBuilder, ignoredKeys, whitelist),
@@ -231,6 +239,8 @@ object JsonSteps {
     }
 
     def isNull: AssertStep = {
+      implicit val jsonDiff: Diff[Json] = Diff.jsonDiff(false)
+
       val titleBuilder = new StringBuilder()
       titleBuilder.append(target)
       if (jsonPath != JsonPath.root) titleBuilder.append(s"'s field '$jsonPath'")
