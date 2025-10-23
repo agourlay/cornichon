@@ -210,7 +210,6 @@ trait CornichonJson {
           e match {
             case a @ Add(path, value) =>
               val aWithoutIndex = pathWithoutIndex(path)
-              println(aWithoutIndex)
               val removed = allDiffs.ops.exists {
                 case Remove(path, rValue) if pathWithoutIndex(path) == aWithoutIndex && rValue.exists(v => eqJson.eqv(v, value)) => true
                 case _ => false
