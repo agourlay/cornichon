@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ GenericEqualityAssertion, GreaterThanAssertion, LessThanAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{ Diff, GenericEqualityAssertion, GreaterThanAssertion, LessThanAssertion }
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import io.circe.Json
 import munit.FunSuite
@@ -393,7 +393,16 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     assert(res.isSuccess)
   }
 
+  test("JsonStepBuilder.is json ignoring array ordering") {
+    val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "value" : "1"}, {"value" : "2" }]""")
+    val step = jsonStepBuilder.ignoringArrayOrdering.is("""[{ "value" : "2"}, {"value" : "1" }]""")
+    val s = Scenario("scenario with JsonSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
+    assert(res.isSuccess)
+  }
+
   test("JsonStepBuilder.compareWithPreviousValue Json") {
+    implicit val jsonDiff: Diff[Json] = Diff.jsonDiff(ignoreArrayOrdering = false)
     val session = Session.newEmpty
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
@@ -404,6 +413,7 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
   }
 
   test("JsonStepBuilder.compareWithPreviousValue ignore field Json") {
+    implicit val jsonDiff: Diff[Json] = Diff.jsonDiff(ignoreArrayOrdering = false)
     val session = Session.newEmpty
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myOtherValue" }""")
       .addValuesUnsafe(testKey -> """{ "myKey" : "myValue", "myKeyOther" : "myNewValue" }""")

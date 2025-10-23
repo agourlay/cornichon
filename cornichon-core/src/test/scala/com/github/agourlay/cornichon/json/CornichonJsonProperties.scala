@@ -1,5 +1,6 @@
 package com.github.agourlay.cornichon.json
 
+import com.github.agourlay.cornichon.steps.regular.assertStep.Diff
 import io.circe.{ Json, JsonObject }
 import io.circe.testing.ArbitraryInstances
 import org.scalacheck.{ Gen, Properties, Test }
@@ -65,7 +66,7 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
 
   property("whitelisting on identical JSON has no effect") = {
     forAll { (json: Json) =>
-      whitelistingValue(json, json) == Right(json)
+      whitelistingValue(json, json, ignoreArrayOrdering = false) == Right(json)
     }
   }
 
@@ -74,8 +75,8 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
       val modifiedObj = jsonObj.add("extraKey", Json.fromString("extraValue"))
       val json = Json.fromJsonObject(jsonObj)
       val modifiedJson = Json.fromJsonObject(modifiedObj)
-      whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
-        whitelistingValue(modifiedJson, json) == Left(WhitelistingError(Seq("/extraKey"), json))
+      whitelistingValue(json, modifiedJson, ignoreArrayOrdering = false) == Right(modifiedJson) &&
+        whitelistingValue(modifiedJson, json, ignoreArrayOrdering = false) == Left(WhitelistingError(Seq("/extraKey"), json))
     }
   }
 
@@ -89,8 +90,8 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
         val json = Json.fromValues(jos.map(Json.fromJsonObject))
         val modifiedJson = Json.fromValues(modifiedList)
         val errors = modifiedList.iterator.zipWithIndex.map { case (_, i) => s"/$i/extraKey" }.toList
-        whitelistingValue(json, modifiedJson) == Right(modifiedJson) &&
-          whitelistingValue(modifiedJson, json) == Left(WhitelistingError(errors, json))
+        whitelistingValue(json, modifiedJson, ignoreArrayOrdering = false) == Right(modifiedJson) &&
+          whitelistingValue(modifiedJson, json, ignoreArrayOrdering = false) == Left(WhitelistingError(errors, json))
       }
     }
   }
@@ -104,8 +105,8 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
       if (jos.isEmpty)
         true
       else
-        whitelistingValue(json1, json2) == Left(WhitelistingError("/stitch1" :: Nil, json2)) &&
-          whitelistingValue(json2, json1) == Left(WhitelistingError("/stitch2" :: Nil, json1))
+        whitelistingValue(json1, json2, ignoreArrayOrdering = false) == Left(WhitelistingError("/stitch1" :: Nil, json2)) &&
+          whitelistingValue(json2, json1, ignoreArrayOrdering = false) == Left(WhitelistingError("/stitch2" :: Nil, json1))
     }
   }
 }
