@@ -194,6 +194,9 @@ trait CornichonJson {
 
   private def pathWithoutIndex(path: Pointer): Chain[Part] = {
     path.parts.map {
+      case Left("-") =>
+        // special case: in RFC 6902, the "-" character is used to index the end of the array
+        Right(0)
       case s @ Left(_) => s
       case Right(_)    => Right(0)
     }
