@@ -199,18 +199,59 @@ trait CornichonJson {
     }
   }
 
+  private def lastPath(path: Pointer): Option[String] =
+    path.parts.lastOption.flatMap {
+      case Left(p)  => Some(p)
+      case Right(p) => None
+    }
+
   def diffPatch(first: Json, second: Json, ignoreArrayOrdering: Boolean): JsonPatch[Json] = {
     val allDiffs = diff(first, second)
     if (!ignoreArrayOrdering) {
       allDiffs
     } else {
       val eqJson: Eq[Json] = implicitly
-      val newDiffs: List[Operation[Json]] = allDiffs.ops.foldLeft(List.empty[Operation[Json]]) {
+      val opsWithoutReplace = allDiffs.ops.flatMap {
+        case Replace(path, value, old) =>
+          lastPath(path) match {
+            case Some(p) =>
+              // transform:
+              // {
+              //    "op" : "replace",
+              //    "path" : "/3/value",
+              //    "value" : "state3",
+              //    "old" : "state"
+              //  }
+              // into
+              // {
+              //    "op" : "add",
+              //    "path" : "/3",
+              //    "value" : {
+              //      "value" : "state3"
+              //    }
+              //  }
+              // and
+              // {
+              //    "op" : "add",
+              //    "path" : "/3",
+              //    "value" : {
+              //      "value" : "state"
+              //    }
+              //  }
+              // so that those "add" and "remove" operations are comparable with others
+              val pathOfStrings = path.parts.dropRight(1).map(_.fold(identity, _.toString)).toList
+              val newPath = Pointer.apply(pathOfStrings: _*)
+              Remove(newPath, old.map(json => JsonObject((p, json)).toJson)) :: Add(newPath, JsonObject((p, value)).toJson) :: Nil
+            case None => Remove(path, old) :: Add(path, value) :: Nil
+          }
+        case other => other :: Nil
+      }
+      val newDiffs: List[Operation[Json]] = opsWithoutReplace.foldLeft(List.empty[Operation[Json]]) {
         case (acc, e) =>
           e match {
             case a @ Add(path, value) =>
               val aWithoutIndex = pathWithoutIndex(path)
-              val removed = allDiffs.ops.exists {
+              val removed = opsWithoutReplace.exists {
                 case Remove(path, rValue) if pathWithoutIndex(path) == aWithoutIndex && rValue.exists(v => eqJson.eqv(v, value)) => true
                 case _ => false
               }
@@ -221,7 +262,7 @@ trait CornichonJson {
                 case None => r :: acc
                 case Some(removedValue) =>
                   val rWithoutIndex = pathWithoutIndex(path)
-                  val added = allDiffs.ops.exists {
+                  val added = opsWithoutReplace.exists {
                     case Add(path, aValue) if pathWithoutIndex(path) == rWithoutIndex && eqJson.eqv(aValue, removedValue) => true
                     case _                                                                                                => false
                   }

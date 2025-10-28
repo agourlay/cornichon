@@ -26,7 +26,6 @@ object Diff {
       s"""|JSON patch between actual result and expected result is :
           |${diff.show}
       """.stripMargin.trim)
-
   }
 
   implicit val stringDiff: Diff[String] = new Diff[String] {

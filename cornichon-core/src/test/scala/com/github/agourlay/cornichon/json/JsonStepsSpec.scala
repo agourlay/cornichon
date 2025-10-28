@@ -394,8 +394,8 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
   }
 
   test("JsonStepBuilder.is json ignoring array ordering") {
-    val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{ "value" : "1"}, {"value" : "2" }]""")
-    val step = jsonStepBuilder.ignoringArrayOrdering.is("""[{ "value" : "2"}, {"value" : "1" }]""")
+    val session = Session.newEmpty.addValuesUnsafe(testKey -> """[{"value" : "state" }, {"value" : "state1" }, {"value" : "state2" }, {"value" : "state3" }, {"value" : "state4" }]""")
+    val step = jsonStepBuilder.ignoringArrayOrdering.is("""[{ "value" : "state1"}, {"value" : "state2" }, {"value" : "state" }, {"value" : "state4" }, {"value" : "state3" }]""")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
