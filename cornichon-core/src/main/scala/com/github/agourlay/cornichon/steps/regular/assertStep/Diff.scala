@@ -19,11 +19,14 @@ object Diff {
     jp.asJson.spaces2
   }
 
-  implicit val jsonDiff: Diff[Json] = (left: Json, right: Json) => Some(
-    s"""|JSON patch between actual result and expected result is :
-        |${diffPatch(left, right).show}
-      """.stripMargin.trim
-  )
+  implicit def jsonDiff(ignoreArrayOrdering: Boolean): Diff[Json] = (left: Json, right: Json) => {
+    val diff = diffPatch(left, right, ignoreArrayOrdering)
+    if (diff.ops.isEmpty) None
+    else Some(
+      s"""|JSON patch between actual result and expected result is :
+          |${diff.show}
+      """.stripMargin.trim)
+  }
 
   implicit val stringDiff: Diff[String] = new Diff[String] {
     override def diff(left: String, right: String): Option[String] = None

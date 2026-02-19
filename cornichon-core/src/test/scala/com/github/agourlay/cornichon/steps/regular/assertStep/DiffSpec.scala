@@ -91,7 +91,7 @@ class DiffSpec extends FunSuite {
   }
 
   test("JSON diff for JString is done via JsonPatch") {
-    val diff = jsonDiff.diff(Json.fromString("test"), Json.fromString("test1"))
+    val diff = jsonDiff(ignoreArrayOrdering = false).diff(Json.fromString("test"), Json.fromString("test1"))
     val expected =
       """|JSON patch between actual result and expected result is :
            |[
@@ -106,7 +106,9 @@ class DiffSpec extends FunSuite {
   }
 
   test("JSON diff for JObject is done via JsonPatch") {
-    val diff = jsonDiff.diff(Json.fromFields(("test" -> Json.fromString("value")) :: Nil), Json.fromFields(("test" -> Json.fromString("new value")) :: Nil))
+    val diff = jsonDiff(ignoreArrayOrdering = false).diff(
+      Json.fromFields(("test" -> Json.fromString("value")) :: Nil),
+      Json.fromFields(("test" -> Json.fromString("new value")) :: Nil))
     val expected =
       """|JSON patch between actual result and expected result is :
            |[
@@ -121,7 +123,9 @@ class DiffSpec extends FunSuite {
   }
 
   test("JSON diff for JArray is done via JsonPatch") {
-    val diff = jsonDiff.diff(Json.fromValues(Json.fromFields(("test" -> Json.fromString("value")) :: Nil) :: Nil), Json.fromValues(Json.fromFields(("test" -> Json.fromString("new value")) :: Nil) :: Nil))
+    val diff = jsonDiff(ignoreArrayOrdering = false).diff(
+      Json.fromValues(Json.fromFields(("test" -> Json.fromString("value")) :: Nil) :: Nil),
+      Json.fromValues(Json.fromFields(("test" -> Json.fromString("new value")) :: Nil) :: Nil))
     val expected =
       """|JSON patch between actual result and expected result is :
            |[
@@ -133,5 +137,12 @@ class DiffSpec extends FunSuite {
            |  }
            |]""".stripMargin
     assert(diff.contains(expected))
+  }
+
+  test("JSON diff for JArray can ignore ordering") {
+    val diff = jsonDiff(ignoreArrayOrdering = true).diff(
+      Json.fromValues(Json.obj("name" -> Json.fromString("value1")) :: Json.obj("name" -> Json.fromString("value2")) :: Nil),
+      Json.fromValues(Json.obj("name" -> Json.fromString("value2")) :: Json.obj("name" -> Json.fromString("value1")) :: Nil))
+    assert(diff.isEmpty)
   }
 }
