@@ -1,6 +1,7 @@
 package com.github.agourlay.cornichon.json
 
-import cats.Show
+import cats.{ Eq, Show }
+import cats.data.Chain
 import cats.syntax.show._
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{ CornichonError, Session }
@@ -10,6 +11,7 @@ import diffson.lcs._
 import diffson.circe._
 import diffson.jsonpatch._
 import diffson.jsonpatch.lcsdiff.remembering._
+import diffson.jsonpointer.{ Part, Pointer }
 import io.circe._
 import io.circe.syntax._
 import sangria.marshalling.MarshallingUtil._
@@ -190,8 +192,92 @@ trait CornichonJson {
 
   implicit private val lcs: Patience[Json] = new Patience[Json]
 
-  def diffPatch(first: Json, second: Json): JsonPatch[Json] =
-    diff(first, second)
+  private def pathWithoutIndex(path: Pointer): Chain[Part] = {
+    path.parts.map {
+      case Left("-") =>
+        // special case: in RFC 6902, the "-" character is used to index the end of the array
+        Right(0)
+      case s @ Left(_) => s
+      case Right(_)    => Right(0)
+    }
+  }
+
+  private def lastPath(path: Pointer): Option[String] =
+    path.parts.lastOption.flatMap {
+      case Left(p)  => Some(p)
+      case Right(p) => None
+    }
+
+  def diffPatch(first: Json, second: Json, ignoreArrayOrdering: Boolean): JsonPatch[Json] = {
+    val allDiffs = diff(first, second)
+    if (!ignoreArrayOrdering) {
+      allDiffs
+    } else {
+      val eqJson: Eq[Json] = implicitly
+      val opsWithoutReplace = allDiffs.ops.flatMap {
+        case Replace(path, value, old) =>
+          lastPath(path) match {
+            case Some(p) =>
+              // transform:
+              // {
+              //    "op" : "replace",
+              //    "path" : "/3/value",
+              //    "value" : "state3",
+              //    "old" : "state"
+              //  }
+              // into
+              // {
+              //    "op" : "add",
+              //    "path" : "/3",
+              //    "value" : {
+              //      "value" : "state3"
+              //    }
+              //  }
+              // and
+              // {
+              //    "op" : "add",
+              //    "path" : "/3",
+              //    "value" : {
+              //      "value" : "state"
+              //    }
+              //  }
+              // so that those "add" and "remove" operations are comparable with others
+              val pathOfStrings = path.parts.dropRight(1).map(_.fold(identity, _.toString)).toList
+              val newPath = Pointer.apply(pathOfStrings: _*)
+              Remove(newPath, old.map(json => JsonObject((p, json)).toJson)) :: Add(newPath, JsonObject((p, value)).toJson) :: Nil
+            case None => Remove(path, old) :: Add(path, value) :: Nil
+          }
+        case other => other :: Nil
+      }
+      val newDiffs: List[Operation[Json]] = opsWithoutReplace.foldLeft(List.empty[Operation[Json]]) {
+        case (acc, e) =>
+          e match {
+            case a @ Add(path, value) =>
+              val aWithoutIndex = pathWithoutIndex(path)
+              val removed = opsWithoutReplace.exists {
+                case Remove(path, rValue) if pathWithoutIndex(path) == aWithoutIndex && rValue.exists(v => eqJson.eqv(v, value)) => true
+                case _ => false
+              }
+              if (removed) acc else a :: acc
+
+            case r @ Remove(path, value) =>
+              value match {
+                case None => r :: acc
+                case Some(removedValue) =>
+                  val rWithoutIndex = pathWithoutIndex(path)
+                  val added = opsWithoutReplace.exists {
+                    case Add(path, aValue) if pathWithoutIndex(path) == rWithoutIndex && eqJson.eqv(aValue, removedValue) => true
+                    case _                                                                                                => false
+                  }
+                  if (added) acc else r :: acc
+              }
+
+            case other => other :: acc
+          }
+      }
+      JsonPatch(newDiffs)
+    }
+  }
 
   def decodeAs[A: Decoder](json: Json): Either[CornichonError, A] =
     json.as[A].leftMap(df => JsonDecodingFailure(json, df.message))
@@ -199,8 +285,8 @@ trait CornichonJson {
   // `first` must be a STRICT subset of `second` in terms of keys.
   // Returns `first` populated with the missing keys from `second` or an error.
   // The goal is to perform diffs without providing all the keys.
-  def whitelistingValue(first: Json, second: Json): Either[CornichonError, Json] = {
-    val diffOps = diffPatch(first, second).ops
+  def whitelistingValue(first: Json, second: Json, ignoreArrayOrdering: Boolean): Either[CornichonError, Json] = {
+    val diffOps = diffPatch(first, second, ignoreArrayOrdering).ops
     val forbiddenPatchOps = diffOps.collect { case r: Remove[Json] => r }
     if (forbiddenPatchOps.isEmpty) {
       val addOps = diffOps.collect { case r: Add[Json] => r }
