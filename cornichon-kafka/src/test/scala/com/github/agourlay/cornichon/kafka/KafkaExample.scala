@@ -1,4 +1,4 @@
-package com.github.agourlay.kafka.kafka
+package com.github.agourlay.cornichon.kafka
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.kafka.KafkaDsl

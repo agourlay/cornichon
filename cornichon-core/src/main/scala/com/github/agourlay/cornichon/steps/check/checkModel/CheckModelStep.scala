@@ -31,7 +31,7 @@ case class CheckModelStep[A, B, C, D, E, F](
           val failedState = runState.mergeNested(newState).recordLog(postRunLog)
           IO.pure((failedState, fs.asLeft))
         case (newState, Right(endOfRun)) =>
-          // success case we are mot propagating the Session so runs do not interfere with each-others
+          // success case we are not propagating the Session so runs do not interfere with each-others
           val nextRunState = runState.recordLogStack(newState.logStack).registerCleanupSteps(newState.cleanupSteps)
           val postRunLog = buildInfoRunLog(runNumber, endOfRun, runState.depth)
           repeatModelOnSuccess(checkEngine, runNumber + 1)(nextRunState.recordLog(postRunLog))

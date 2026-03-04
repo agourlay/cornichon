@@ -45,6 +45,6 @@ object AddValuesBench {
   private val oneEntry = tupleEntry :: Nil
   private val twoEntries = List.fill(2)(tupleEntry)
   private val fourEntries = List.fill(4)(tupleEntry)
-  private val eightEntries = List.fill(5)(tupleEntry)
+  private val eightEntries = List.fill(8)(tupleEntry)
 }
 
