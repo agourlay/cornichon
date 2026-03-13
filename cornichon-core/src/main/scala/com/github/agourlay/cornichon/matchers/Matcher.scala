@@ -44,10 +44,16 @@ object Matchers {
     predicate = _.isObject
   )
 
+  val anyNumber = Matcher(
+    key = "any-number",
+    description = "checks if the field is a number",
+    predicate = _.isNumber
+  )
+
   val anyInteger = Matcher(
     key = "any-integer",
     description = "checks if the field is an integer",
-    predicate = _.isNumber
+    predicate = _.asNumber.flatMap(_.toInt).isDefined
   )
 
   val anyPositiveInteger = Matcher(

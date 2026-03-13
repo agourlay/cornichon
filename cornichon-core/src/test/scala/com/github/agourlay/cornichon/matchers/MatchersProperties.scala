@@ -21,8 +21,24 @@ object MatchersProperties extends Properties("Matchers") with ArbitraryInstances
     randomOffset <- Arbitrary.arbLong.arbitrary
   } yield Instant.now().plusMillis(randomOffset)
 
+  property("any-number correct for any int") = forAll(Gen.size) { int =>
+    anyNumber.predicate(Json.fromInt(int))
+  }
+
+  property("any-number correct for any double") = forAll(Arbitrary.arbDouble.arbitrary) { double =>
+    anyNumber.predicate(Json.fromDoubleOrNull(double))
+  }
+
+  property("any-number incorrect for any alphanum string") = forAll(Gen.alphaNumStr) { alphanum =>
+    !anyNumber.predicate(Json.fromString(alphanum))
+  }
+
   property("any-integer correct for any int") = forAll(Gen.size) { int =>
     anyInteger.predicate(Json.fromInt(int))
+  }
+
+  property("any-integer incorrect for any double with fractional part") = forAll(Gen.choose(0.01, 1000.0)) { double =>
+    !anyInteger.predicate(Json.fromDoubleOrNull(double))
   }
 
   property("any-integer incorrect for any alphanum string") = forAll(Gen.alphaNumStr) { alphanum =>

@@ -34,6 +34,7 @@ Here are the available matchers:
 - `*any-string*` : checks if the field is a String
 - `*any-array*` : checks if the field is an Array
 - `*any-object*` : checks if the field is an Object
+- `*any-number*` : checks if the field is a number (integer or decimal)
 - `*any-integer*` : checks if the field is an Integer
 - `*any-positive-integer*` : checks if the field is a positive Integer
 - `*any-negative-integer*` : checks if the field is a negative Integer

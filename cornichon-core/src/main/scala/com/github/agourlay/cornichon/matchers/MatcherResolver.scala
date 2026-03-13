@@ -16,6 +16,7 @@ object MatcherResolver {
       anyString ::
       anyArray ::
       anyObject ::
+      anyNumber ::
       anyInteger ::
       anyPositiveInteger ::
       anyNegativeInteger ::
