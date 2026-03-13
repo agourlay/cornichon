@@ -97,9 +97,7 @@ object MatchersProperties extends Properties("Matchers") with ArbitraryInstances
     anyAlphaNum.predicate(Json.fromString(alphanum))
   }
 
-  property("any-alphanum-string incorrect for empty string") = {
-    !anyAlphaNum.predicate(Json.fromString(""))
-  }
+  property("any-alphanum-string incorrect for empty string") = !anyAlphaNum.predicate(Json.fromString(""))
 
   property("any-string correct for any asciiPrintableStr") = forAll(Gen.asciiPrintableStr) { asciiPrintableStr =>
     anyString.predicate(Json.fromString(asciiPrintableStr))
