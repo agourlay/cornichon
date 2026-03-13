@@ -34,5 +34,8 @@ jobs:
             ~/Library/Caches/Coursier/v1
           key: ${{ runner.os }}-sbt-cache-v2-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
+      - name: Check formatting
+        run: sbt scalafmtCheckAll
+
       - name: Build and Test
         run: sbt +test
