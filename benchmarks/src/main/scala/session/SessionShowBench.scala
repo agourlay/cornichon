@@ -9,13 +9,13 @@ import cats.syntax.show._
 @BenchmarkMode(Array(Mode.Throughput))
 @Warmup(iterations = 5)
 @Measurement(iterations = 10)
-@Fork(value = 1, jvmArgsAppend = Array(
-  "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=filename=./SessionShowBench-profiling-data.jfr,name=profile,settings=profile",
-  "-Xmx1G"))
+@Fork(
+  value = 1,
+  jvmArgsAppend = Array("-XX:+FlightRecorder", "-XX:StartFlightRecording=filename=./SessionShowBench-profiling-data.jfr,name=profile,settings=profile", "-Xmx1G")
+)
 class SessionShowBench {
 
-  //sbt:benchmarks> jmh:run .*SessionShow.* -prof gc -foe true -gc true -rf csv
+  // sbt:benchmarks> jmh:run .*SessionShow.* -prof gc -foe true -gc true -rf csv
 
   /*
   [info] Benchmark                                   Mode  Cnt         Score      Error   Units
@@ -32,16 +32,17 @@ class SessionShowBench {
     val pretty = session.show
     assert(pretty.nonEmpty)
   }
+
 }
 
 object SessionShowBench {
   private val size = 1000
+
   val session: Session = {
     val map = Map.newBuilder[String, Vector[String]]
-    for (i <- 0 until size) {
+    for (i <- 0 until size)
       map += s"key$i" -> Vector.fill(size)(s"value$i")
-    }
     Session(map.result())
   }
-}
 
+}

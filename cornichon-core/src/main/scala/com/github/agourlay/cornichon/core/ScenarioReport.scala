@@ -1,11 +1,11 @@
 package com.github.agourlay.cornichon.core
 
 import cats.data.Validated.Valid
-import cats.data.{ NonEmptyList, ValidatedNel }
+import cats.data.{NonEmptyList, ValidatedNel}
 import cats.kernel.Monoid
 import cats.effect.IO
 
-import scala.concurrent.duration.{ Duration, FiniteDuration }
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 sealed trait ScenarioReport {
   def isSuccess: Boolean
@@ -16,11 +16,13 @@ sealed trait ScenarioReport {
 }
 
 object ScenarioReport {
+
   def build(scenarioName: String, runState: RunState, result: ValidatedNel[FailedStep, Done], duration: FiniteDuration): ScenarioReport =
     result.fold(
       failedSteps => FailureScenarioReport(scenarioName, failedSteps, runState.session, runState.logStack, duration, runState.randomContext.initialSeed),
       _ => SuccessScenarioReport(scenarioName, runState.session, runState.logStack, duration, runState.randomContext.initialSeed)
     )
+
 }
 
 case class SuccessScenarioReport(scenarioName: String, session: Session, logStack: List[LogInstruction], duration: FiniteDuration, seed: Long) extends ScenarioReport {
@@ -43,7 +45,14 @@ case class PendingScenarioReport(scenarioName: String, session: Session) extends
   val duration = Duration.Zero
 }
 
-case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList[FailedStep], session: Session, logStack: List[LogInstruction], duration: FiniteDuration, seed: Long) extends ScenarioReport {
+case class FailureScenarioReport(
+  scenarioName: String,
+  failedSteps: NonEmptyList[FailedStep],
+  session: Session,
+  logStack: List[LogInstruction],
+  duration: FiniteDuration,
+  seed: Long
+) extends ScenarioReport {
   val isSuccess = false
 
   val msg =
@@ -58,17 +67,21 @@ case class FailureScenarioReport(scenarioName: String, failedSteps: NonEmptyList
 }
 
 sealed abstract class Done
+
 case object Done extends Done {
   val rightDone = Right(Done)
   val validDone = Valid(Done)
   val ioDone = IO.pure(Done)
+
   implicit val monoid: Monoid[Done] = new Monoid[Done] {
     def empty: Done = Done
     def combine(x: Done, y: Done): Done = x
   }
+
 }
 
 case class FailedStep(step: Step, errors: NonEmptyList[CornichonError]) {
+
   lazy val messageForFailedStep =
     s"""
        |at step:

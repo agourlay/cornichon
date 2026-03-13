@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.kafka
 
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.kafka.KafkaDsl
-import io.github.embeddedkafka.{ EmbeddedKafka, EmbeddedKafkaConfig }
+import io.github.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 
 class KafkaExample extends CornichonFeature with KafkaDsl {
 
@@ -34,12 +34,13 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 
       When I read_from_topic("cornichon", timeoutMs = 1000)
       Then assert kafka("cornichon").key_is("json")
-      Then assert kafka("cornichon").message_value.ignoring("coffee").is("""
+      Then assert kafka("cornichon").message_value
+        .ignoring("coffee")
+        .is("""
         {
           "cornichon": "green"
         }
-        """
-      )
+        """)
     }
   }
 

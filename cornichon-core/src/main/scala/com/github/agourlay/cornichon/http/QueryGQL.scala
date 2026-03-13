@@ -5,18 +5,19 @@ import cats.syntax.show._
 
 import com.github.agourlay.cornichon.json.CornichonJson.parseDslJsonUnsafe
 
-import io.circe.{ Encoder, Json }
+import io.circe.{Encoder, Json}
 
 import sangria.ast.Document
 import sangria.renderer.QueryRenderer
 
 case class QueryGQL(
-    url: String,
-    query: Document,
-    operationName: Option[String],
-    variables: Option[Map[String, Json]],
-    params: Seq[(String, String)],
-    headers: Seq[(String, String)]) {
+  url: String,
+  query: Document,
+  operationName: Option[String],
+  variables: Option[Map[String, Json]],
+  params: Seq[(String, String)],
+  headers: Seq[(String, String)]
+) {
 
   def withParams(params: (String, String)*): QueryGQL = copy(params = params)
   def addParams(params: (String, String)*): QueryGQL = copy(params = this.params ++ params)
@@ -56,15 +57,16 @@ trait VarValue {
 }
 
 object VarValue {
+
   implicit def fromEncoderShow[A: Encoder: Show](a: A): VarValue = new VarValue {
     type Value = A
     def value = a
     def encoder = Encoder[A]
     def show = Show[A]
   }
+
 }
 
 object QueryGQL {
   val emptyDocument = Document(Vector.empty)
 }
-

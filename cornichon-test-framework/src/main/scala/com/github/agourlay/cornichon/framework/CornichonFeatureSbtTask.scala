@@ -18,4 +18,5 @@ class CornichonFeatureSbtTask(task: TaskDef, scenarioNameFilter: Set[String], ex
     val _ = Await.result(featureTask.unsafeToFuture()(cats.effect.unsafe.implicits.global), Duration.Inf)
     Array.empty
   }
+
 }

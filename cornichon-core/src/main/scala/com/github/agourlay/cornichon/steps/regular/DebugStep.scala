@@ -22,4 +22,5 @@ case class DebugStep(title: String, message: ScenarioContext => Either[Cornichon
 
   override def logOnSuccess(result: String, runState: RunState, executionTime: Duration): LogInstruction =
     DebugLogInstruction(result, runState.depth)
+
 }

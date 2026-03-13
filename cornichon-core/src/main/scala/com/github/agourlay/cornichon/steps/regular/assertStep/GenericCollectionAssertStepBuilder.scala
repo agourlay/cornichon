@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
 import cats.Show
-import com.github.agourlay.cornichon.core.{ CornichonError, ScenarioContext }
+import com.github.agourlay.cornichon.core.{CornichonError, ScenarioContext}
 
 //experimental and unused ;)
 abstract class GenericCollectionAssertStepBuilder[A: Show] { outer =>
@@ -19,11 +19,12 @@ abstract class GenericCollectionAssertStepBuilder[A: Show] { outer =>
     val fullTitle = s"$baseTitle is not empty"
     AssertStep(
       title = fullTitle,
-      action = s => Assertion.either {
-        sessionExtractor(s).map { asserted =>
-          CollectionNotEmptyAssertion(asserted, baseTitle)
+      action = s =>
+        Assertion.either {
+          sessionExtractor(s).map { asserted =>
+            CollectionNotEmptyAssertion(asserted, baseTitle)
+          }
         }
-      }
     )
   }
 
@@ -31,13 +32,13 @@ abstract class GenericCollectionAssertStepBuilder[A: Show] { outer =>
     val fullTitle = s"$baseTitle is empty"
     AssertStep(
       title = fullTitle,
-      action = s => Assertion.either {
-        sessionExtractor(s).map { asserted =>
-          CollectionEmptyAssertion(asserted, baseTitle)
+      action = s =>
+        Assertion.either {
+          sessionExtractor(s).map { asserted =>
+            CollectionEmptyAssertion(asserted, baseTitle)
+          }
         }
-      }
     )
   }
 
 }
-

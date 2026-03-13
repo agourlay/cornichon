@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.core
 import java.util.concurrent.atomic.AtomicInteger
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -204,19 +204,23 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
     val fixedTestSeed = 12345L
     val fc = FeatureContext.empty.copy(withSeed = Some(fixedTestSeed))
 
-    val assertSeed = AssertStep("assert seed", sc => {
-      GenericEqualityAssertion(sc.randomContext.initialSeed, fixedTestSeed)
-    })
+    val assertSeed = AssertStep("assert seed", sc => GenericEqualityAssertion(sc.randomContext.initialSeed, fixedTestSeed))
 
-    val rdStep = EffectStep.fromSyncE("pick random int", sc => {
-      val rdInt = sc.randomContext.nextInt()
-      sc.session.addValue("random-int", rdInt.toString)
-    })
+    val rdStep = EffectStep.fromSyncE(
+      "pick random int",
+      sc => {
+        val rdInt = sc.randomContext.nextInt()
+        sc.session.addValue("random-int", rdInt.toString)
+      }
+    )
 
-    val rdAssert = AssertStep("assert rd", sc => {
-      val rdValue = sc.session.getUnsafe("random-int")
-      GenericEqualityAssertion(rdValue, "1553932502") // value generated with the fixedTestSeed
-    })
+    val rdAssert = AssertStep(
+      "assert rd",
+      sc => {
+        val rdValue = sc.session.getUnsafe("random-int")
+        GenericEqualityAssertion(rdValue, "1553932502") // value generated with the fixedTestSeed
+      }
+    )
 
     val steps = assertSeed :: rdStep :: rdAssert :: Nil
     val s = Scenario("deterministic test", steps)
@@ -272,4 +276,5 @@ class ScenarioRunnerSpec extends FunSuite with CommonTestSuite {
       }
     }
   }
+
 }

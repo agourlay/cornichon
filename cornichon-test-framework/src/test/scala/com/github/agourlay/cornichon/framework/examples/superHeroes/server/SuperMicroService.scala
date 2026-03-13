@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
-import cats.data.Validated.{ Invalid, Valid }
+import cats.data.Validated.{Invalid, Valid}
 
 import scala.collection.concurrent.TrieMap
 import scala.util.Random
@@ -26,13 +26,14 @@ class SuperMicroService {
 
   def createSession(): String = {
     val newSessionId = Random.alphanumeric.take(8).mkString
-    publishersBySession += (newSessionId -> initialPublishers)
+    publishersBySession += (newSessionId  -> initialPublishers)
     superheroesBySession += (newSessionId -> initialSuperheroes)
     newSessionId
   }
 
   def deleteSession(sessionId: String): Validated[ApiError, Done] =
-    publishersBySession.remove(sessionId)
+    publishersBySession
+      .remove(sessionId)
       .flatMap(_ => superheroesBySession.remove(sessionId))
       .map(_ => Done)
       .toValid(SessionNotFound(sessionId))
@@ -49,15 +50,15 @@ class SuperMicroService {
     }
 
   def superheroByName(sessionId: String, name: String, protectIdentity: Boolean = false): Validated[ApiError, SuperHero] = {
-    val sh = {
+    val sh =
       if (name == "random")
         randomSuperhero(sessionId).valid
       else
         superheroesBySessionV(sessionId).andThen { superHeroes =>
-          superHeroes.find(_.name == name)
+          superHeroes
+            .find(_.name == name)
             .toValid(SuperHeroNotFound(name))
         }
-    }
     if (protectIdentity)
       sh.map(c => c.copy(realName = "XXXXX"))
     else
@@ -120,4 +121,5 @@ class SuperMicroService {
     SuperHero("Spiderman", "Peter Parker", "New York", hasSuperpowers = true, initialPublishers.tail.head),
     SuperHero("IronMan", "Tony Stark", "New York", hasSuperpowers = false, initialPublishers.tail.head)
   )
+
 }

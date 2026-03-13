@@ -1,17 +1,17 @@
 package com.github.agourlay.cornichon.core
 
 import cats.syntax.monoid._
-import com.github.agourlay.cornichon.matchers.{ Matcher, MatcherResolver }
-import com.github.agourlay.cornichon.resolver.{ Mapper, PlaceholderResolver, Resolvable }
+import com.github.agourlay.cornichon.matchers.{Matcher, MatcherResolver}
+import com.github.agourlay.cornichon.resolver.{Mapper, PlaceholderResolver, Resolvable}
 
 case class RunState(
-    customExtractors: Map[String, Mapper],
-    allMatchers: Map[String, List[Matcher]],
-    randomContext: RandomContext,
-    session: Session,
-    logStack: List[LogInstruction], // reversed for fast appending
-    depth: Int,
-    cleanupSteps: List[Step]
+  customExtractors: Map[String, Mapper],
+  allMatchers: Map[String, List[Matcher]],
+  randomContext: RandomContext,
+  session: Session,
+  logStack: List[LogInstruction], // reversed for fast appending
+  depth: Int,
+  cleanupSteps: List[Step]
 ) { rs =>
   lazy val goDeeper: RunState = copy(depth = depth + 1)
   lazy val resetLogStack: RunState = copy(logStack = Nil)
@@ -38,6 +38,7 @@ case class RunState(
 
   // Helpers to propagate info from nested computation
   def mergeNested(r: RunState): RunState = mergeNested(r, r.logStack)
+
   def mergeNested(r: RunState, extraLogStack: List[LogInstruction]): RunState =
     copy(
       randomContext = r.randomContext, // nested randomContext is built on top of the initial one
@@ -69,18 +70,8 @@ case class RunState(
 }
 
 object RunState {
-  def fromFeatureContext(
-    featureContext: FeatureContext,
-    session: Session,
-    logStack: List[LogInstruction],
-    depth: Int,
-    cleanupSteps: List[Step]): RunState =
-    RunState(
-      featureContext.customExtractors,
-      featureContext.allMatchers,
-      RandomContext.fromOptSeed(featureContext.withSeed),
-      session,
-      logStack,
-      depth,
-      cleanupSteps)
+
+  def fromFeatureContext(featureContext: FeatureContext, session: Session, logStack: List[LogInstruction], depth: Int, cleanupSteps: List[Step]): RunState =
+    RunState(featureContext.customExtractors, featureContext.allMatchers, RandomContext.fromOptSeed(featureContext.withSeed), session, logStack, depth, cleanupSteps)
+
 }

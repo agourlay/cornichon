@@ -12,18 +12,18 @@ import com.github.agourlay.cornichon.http.steps.HeadersSteps._
 import com.github.agourlay.cornichon.http.HttpStreams._
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.json.{ JsonDsl, JsonPath }
+import com.github.agourlay.cornichon.json.{JsonDsl, JsonPath}
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.steps.regular.{ DebugStep, EffectStep }
-import com.github.agourlay.cornichon.steps.cats.{ EffectStep => CEffectStep }
+import com.github.agourlay.cornichon.steps.regular.{DebugStep, EffectStep}
+import com.github.agourlay.cornichon.steps.cats.{EffectStep => CEffectStep}
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
 import com.github.agourlay.cornichon.http.HttpService._
-import com.github.agourlay.cornichon.http.client.{ Http4sClient, HttpClient }
-import com.github.agourlay.cornichon.http.steps.{ HeadersSteps, StatusSteps }
+import com.github.agourlay.cornichon.http.client.{Http4sClient, HttpClient}
+import com.github.agourlay.cornichon.http.steps.{HeadersSteps, StatusSteps}
 import com.github.agourlay.cornichon.http.steps.StatusSteps._
 import com.github.agourlay.cornichon.util.StringUtils.printArrowPairs
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
-import io.circe.{ Encoder, Json }
+import io.circe.{Encoder, Json}
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -67,15 +67,14 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
       builder.append(" and with variables ")
       val len = variables.size
       var i = 0
-      variables.foreach {
-        case (name, value) =>
-          builder.append(name)
-          builder.append(" -> ")
-          builder.append(value.show)
-          if (i < len - 1) {
-            builder.append("\n")
-          }
-          i += 1
+      variables.foreach { case (name, value) =>
+        builder.append(name)
+        builder.append(" -> ")
+        builder.append(value.show)
+        if (i < len - 1) {
+          builder.append("\n")
+        }
+        i += 1
       }
     }
 
@@ -109,7 +108,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def headers: HeadersSteps.HeadersStepBuilder.type =
     HeadersStepBuilder
 
-  //FIXME the body is expected to always contains JSON currently (use body_raw of non JSON response)
+  // FIXME the body is expected to always contains JSON currently (use body_raw of non JSON response)
   private lazy val bodyJsonStepBuilder = JsonStepBuilder(HttpDsl.lastBodySessionKey, HttpDsl.bodySessionKeyTitle)
   def body: JsonStepBuilder = bodyJsonStepBuilder
 
@@ -119,32 +118,36 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
 
   def save_body(target: String): Step = HttpDsl.save_body(target)
 
-  /**
-   * Save part of the body into the session
-   * @param args variadic tuples with (jsonPath, targetSessionKey)
-   * @return a Step
-   */
+  /** Save part of the body into the session
+    * @param args
+    *   variadic tuples with (jsonPath, targetSessionKey)
+    * @return
+    *   a Step
+    */
   def save_body_path(args: (String, String)*): Step =
     save_many_from_session_json(lastResponseBodyKey) {
-      args.map {
-        case (path, target) =>
-          FromSessionSetter[Json](target, s"save path '$path' from body to key '$target'", (sc, jsonSessionValue) => {
+      args.map { case (path, target) =>
+        FromSessionSetter[Json](
+          target,
+          s"save path '$path' from body to key '$target'",
+          (sc, jsonSessionValue) =>
             for {
               resolvedPath <- sc.fillPlaceholders(path)
               jsonPath <- JsonPath.parse(resolvedPath)
               json <- jsonPath.runStrict(jsonSessionValue)
             } yield jsonStringValue(json)
-          })
+        )
       }
     }
 
   def save_header_value(args: (String, String)*): Step =
     save_many_from_session(lastResponseHeadersKey) {
-      args.map {
-        case (headerFieldName, target) =>
-          FromSessionSetter(target, s"save '$headerFieldName' header value to key '$target'", (_, s) => {
-            decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h => h._2).getOrElse(""))
-          })
+      args.map { case (headerFieldName, target) =>
+        FromSessionSetter(
+          target,
+          s"save '$headerFieldName' header value to key '$target'",
+          (_, s) => decodeSessionHeaders(s).map(_.find(_._1 == headerFieldName).map(h => h._2).getOrElse(""))
+        )
       }
     }
 
@@ -159,13 +162,11 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
           status <- s.get(lastResponseStatusKey)
           body <- s.get(lastResponseBodyKey)
           bodyParsed <- parse(body)
-        } yield {
-          s"""Show last response
+        } yield s"""Show last response
              |headers: ${printArrowPairs(decodedHeaders)}
              |status : $status
              |body   : ${bodyParsed.show}
          """.stripMargin
-        }
       }
     )
 
@@ -189,6 +190,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
       val rollbackStep = rollback(withHeadersKey, show = false)
       saveStep +: steps :+ rollbackStep
     }
+
 }
 
 // Utils not building Steps
@@ -196,7 +198,7 @@ trait HttpDslOps {
 
   def addToWithHeaders(name: String, value: String)(s: Session): Either[CornichonError, Session] = {
     val newWithHeadersValue = s.getOpt(withHeadersKey) match {
-      case None => encodeSessionHeader(name, value)
+      case None                       => encodeSessionHeader(name, value)
       case Some(currentHeadersString) =>
         // concat existing headers with new one
         val builder = new StringBuilder()
@@ -224,6 +226,7 @@ trait HttpDslOps {
               s.addValue(withHeadersKey, encodeSessionHeaders(keep.to(ArraySeq)))
           }
       }
+
 }
 
 object HttpDsl {
@@ -238,7 +241,8 @@ object HttpDsl {
         for {
           sessionValue <- session.getJson(fromKey)
           extracted <- traverseIL(args.iterator.map(_.trans))(extractor => extractor(sc, sessionValue))
-          newSession <- args.iterator.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
+          newSession <-
+            args.iterator.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }
     )
@@ -261,4 +265,5 @@ object HttpDsl {
     BaseFeature.addShutdownHook(() => c.shutdown().unsafeToFuture())
     c
   }
+
 }

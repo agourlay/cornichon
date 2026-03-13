@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -68,4 +68,5 @@ class RepeatWithStepSpec extends FunSuite with CommonTestSuite {
     assert(res.isSuccess)
     assert(uglyCounter == loop)
   }
+
 }

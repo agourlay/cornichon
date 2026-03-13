@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.framework
 
-import sbt.testing.{ Event, EventHandler }
+import sbt.testing.{Event, EventHandler}
 
 import scala.collection.concurrent.TrieMap
 

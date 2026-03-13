@@ -19,4 +19,5 @@ case class LogDurationStep(nested: List[Step], label: String) extends LogDecorat
     val titleLog = DebugLogInstruction(title, depth)
     DebugLogInstruction(s"Log duration block with label '$label' ended", depth, Some(executionTime)) +: resultLogStack :+ titleLog
   }
+
 }

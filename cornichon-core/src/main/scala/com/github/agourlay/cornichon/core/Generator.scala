@@ -6,6 +6,7 @@ trait Generator[A] {
 }
 
 trait NoValue
+
 case object NoValue extends NoValue {
   val seededNoValueGenerator: RandomContext => Generator[NoValue] = _ => NoValueGenerator
 }

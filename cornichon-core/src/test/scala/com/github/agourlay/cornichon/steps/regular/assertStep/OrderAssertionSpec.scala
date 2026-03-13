@@ -27,4 +27,5 @@ class OrderAssertionSpec extends FunSuite {
   test("BetweenAssertion invalid assertion") {
     assert(BetweenAssertion(4, 3, 2).validated.isInvalid)
   }
+
 }

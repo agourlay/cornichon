@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.framework.examples.propertyCheck.scalacheck
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.check.checkModel.{ Model, ModelRunner, Property1 }
-import com.github.agourlay.cornichon.core.{ Generator, NoOpStep, OptionalValueGenerator, RandomContext }
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.check.checkModel.{Model, ModelRunner, Property1}
+import com.github.agourlay.cornichon.core.{Generator, NoOpStep, OptionalValueGenerator, RandomContext}
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 
@@ -59,10 +59,9 @@ class ScalacheckIntegration extends CornichonFeature {
       entryPoint = entryPoint,
       transitions = Map(
         entryPoint -> ((100, flipCoin) :: Nil),
-        flipCoin -> ((100, flipCoin) :: Nil)
+        flipCoin   -> ((100, flipCoin) :: Nil)
       )
     )
   }
 
 }
-

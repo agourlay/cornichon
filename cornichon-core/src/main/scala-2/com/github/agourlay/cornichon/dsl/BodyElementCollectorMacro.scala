@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.dsl
 
 import scala.collection.mutable.ListBuffer
-import scala.reflect.macros.{ TypecheckException, blackbox }
+import scala.reflect.macros.{blackbox, TypecheckException}
 
 class BodyElementCollectorMacro(context: blackbox.Context) {
   val c: blackbox.Context = context
@@ -110,9 +110,14 @@ class BodyElementCollectorMacro(context: blackbox.Context) {
     else if (checked.tpe <:< elementType || checked.tpe <:< seq)
       Right(checked)
     else
-      try Right(c.typecheck(tree, pt = elementType)) catch {
-        case TypecheckException(_, msg) => Left(tree.pos ->
-          (s"Result of this expression can be either `$elementType` or `$seq`. " + msg))
+      try Right(c.typecheck(tree, pt = elementType))
+      catch {
+        case TypecheckException(_, msg) =>
+          Left(
+            tree.pos ->
+              (s"Result of this expression can be either `$elementType` or `$seq`. " + msg)
+          )
       }
   }
+
 }

@@ -4,11 +4,12 @@ import cats.syntax.either._
 import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.BaseFeature
-import sbt.testing.{ Event, EventHandler, Fingerprint, OptionalThrowable, Selector, Status, TestSelector }
+import sbt.testing.{Event, EventHandler, Fingerprint, OptionalThrowable, Selector, Status, TestSelector}
 
 import scala.concurrent.duration.Duration
 
 object CornichonFeatureRunner {
+
   def loadAndExecute(featureInfo: FeatureInfo, eventHandler: EventHandler, seed: Option[Long], scenarioNameFilter: Set[String]): IO[Boolean] = {
     val baseFeature = featureInfo.featureClass.getConstructor().newInstance().asInstanceOf[BaseFeature]
 
@@ -41,11 +42,13 @@ object CornichonFeatureRunner {
           case None =>
             val featureLog = SuccessLogInstruction(s"${feature.name}", 0, loadingDuration).colorized
             val featureRunner = FeatureRunner(feature, baseFeature, seed)
-            val run = featureRunner.runFeature(filterScenarios(scenarioNameFilter))(generateResultEvent(featureInfo, eventHandler))
+            val run = featureRunner
+              .runFeature(filterScenarios(scenarioNameFilter))(generateResultEvent(featureInfo, eventHandler))
               .map { results =>
                 results.foreach(printResultLogs(featureInfo.featureClass))
                 results.forall(_.isSuccess)
-              }.handleError { e =>
+              }
+              .handleError { e =>
                 val banner =
                   s"""
                      |exception thrown during Feature execution:
@@ -139,6 +142,7 @@ object CornichonFeatureRunner {
     val fingerprint = featureInfo.fingerprint
     val duration = 0L
   }
+
 }
 
 case class FeatureInfo(fullyQualifiedName: String, featureClass: Class[_], fingerprint: Fingerprint, selector: Selector)

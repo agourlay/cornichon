@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.{ Show, Order }
+import cats.{Order, Show}
 import cats.syntax.show._
 import cats.syntax.validated._
 

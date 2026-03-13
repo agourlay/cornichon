@@ -1,16 +1,16 @@
 package parsers
 
 import com.github.agourlay.cornichon.json.CornichonJson
-import org.openjdk.jmh.annotations.{ Benchmark, BenchmarkMode, Fork, Measurement, Mode, Scope, State, Warmup }
+import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Fork, Measurement, Mode, Scope, State, Warmup}
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @Warmup(iterations = 10)
 @Measurement(iterations = 10)
-@Fork(value = 1, jvmArgsAppend = Array(
-  "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=filename=./CornichonJsonBench-profiling-data.jfr,name=profile,settings=profile",
-  "-Xmx1G"))
+@Fork(
+  value = 1,
+  jvmArgsAppend = Array("-XX:+FlightRecorder", "-XX:StartFlightRecording=filename=./CornichonJsonBench-profiling-data.jfr,name=profile,settings=profile", "-Xmx1G")
+)
 class CornichonJsonBench {
 
   /*

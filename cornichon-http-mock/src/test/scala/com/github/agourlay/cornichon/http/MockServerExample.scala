@@ -7,7 +7,7 @@ class MockServerExample extends CornichonFeature with HttpMockDsl {
 
   override lazy val requestTimeout = 3.seconds
 
-  def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 8085)))_
+  def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 8085))) _
 
   def feature =
     Feature("Cornichon feature mock server examples") {
@@ -57,7 +57,43 @@ class MockServerExample extends CornichonFeature with HttpMockDsl {
           // HTTP Mock exposes what it received
           When I get("<awesome-server-url>/requests-received")
 
-          Then assert body.asArray.ignoringEach("headers").is(
+          Then assert body.asArray
+            .ignoringEach("headers")
+            .is(
+              """
+            [
+              {
+                "body" : {
+                  "name" : "Batman",
+                  "realName" : "Bruce Wayne",
+                  "hasSuperpowers" : false
+                },
+                "url" : "/heroes/batman",
+                "method" : "POST",
+                "parameters" : {}
+              },
+              {
+                "body" : {
+                  "name" : "Superman",
+                  "realName" : "Clark Kent",
+                  "hasSuperpowers" : true
+                },
+                "url" : "/heroes/superman",
+                "method" : "POST",
+                "parameters" : {}
+              }
+            ]
+          """
+            )
+
+        }
+
+        // Once HTTP Mock closed, the recorded requests are dumped in the session
+        And assert httpListen("awesome-server").received_calls(2)
+
+        And assert httpListen("awesome-server").received_requests.asArray
+          .ignoringEach("headers")
+          .is(
             """
             [
               {
@@ -84,49 +120,19 @@ class MockServerExample extends CornichonFeature with HttpMockDsl {
           """
           )
 
-        }
-
-        // Once HTTP Mock closed, the recorded requests are dumped in the session
-        And assert httpListen("awesome-server").received_calls(2)
-
-        And assert httpListen("awesome-server").received_requests.asArray.ignoringEach("headers").is(
-          """
-            [
-              {
-                "body" : {
-                  "name" : "Batman",
-                  "realName" : "Bruce Wayne",
-                  "hasSuperpowers" : false
-                },
-                "url" : "/heroes/batman",
-                "method" : "POST",
-                "parameters" : {}
-              },
-              {
-                "body" : {
-                  "name" : "Superman",
-                  "realName" : "Clark Kent",
-                  "hasSuperpowers" : true
-                },
-                "url" : "/heroes/superman",
-                "method" : "POST",
-                "parameters" : {}
-              }
-            ]
-          """
-        )
-
         And assert httpListen("awesome-server").received_requests.path("$[0].body.name").is("Batman")
 
-        And assert httpListen("awesome-server").received_requests.path("$[1].body").is(
-          """
+        And assert httpListen("awesome-server").received_requests
+          .path("$[1].body")
+          .is(
+            """
           {
             "name": "Superman",
             "realName": "Clark Kent",
             "hasSuperpowers": true
           }
           """
-        )
+          )
       }
 
       Scenario("reset registered requests") {

@@ -10,4 +10,5 @@ trait JsonDsl {
 
   def show_key_as_json(key: String, index: Option[Int] = None): Step =
     show_session(key, index, v => parseString(v).map(_.show))
+
 }

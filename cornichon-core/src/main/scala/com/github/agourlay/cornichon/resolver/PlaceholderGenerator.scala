@@ -15,7 +15,7 @@ object PlaceholderGenerator {
   val randomBoolean = PlaceholderGenerator("random-boolean", _.nextBoolean().toString)
   val scenarioUniqueNumber = PlaceholderGenerator("scenario-unique-number", _.uniqueLong().toString)
 
-  //Global
+  // Global
   val globalUniqueNumber = PlaceholderGenerator("global-unique-number", _ => PlaceholderResolver.globalNextLong().toString)
   val randomTimestamp = PlaceholderGenerator("random-timestamp", rc => (Math.abs(System.currentTimeMillis - rc.nextLong()) / 1000).toString)
   val currentTimestamp = PlaceholderGenerator("current-timestamp", _ => (System.currentTimeMillis / 1000).toString)

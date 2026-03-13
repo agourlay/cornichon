@@ -37,4 +37,5 @@ trait CommonTestSuite extends CommonTesting {
     val preparedCleanedLogs = cleanedLogs.mkString("\n")
     assertEquals(preparedCleanedLogs, expectedRenderedLogs)
   }
+
 }

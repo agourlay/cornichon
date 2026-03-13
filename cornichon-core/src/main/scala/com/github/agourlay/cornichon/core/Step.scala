@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.core
 
-import cats.data.{ NonEmptyList, StateT }
+import cats.data.{NonEmptyList, StateT}
 import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done._
-import com.github.agourlay.cornichon.steps.wrapped.{ AttachStep, FlatMapStep }
+import com.github.agourlay.cornichon.steps.wrapped.{AttachStep, FlatMapStep}
 
 import scala.concurrent.duration.Duration
 
@@ -24,7 +24,7 @@ object Step {
 object NoOpStep extends Step {
   val title: String = "noOp"
   def setTitle(newTitle: String): Step = this
-  val stateUpdate: StepState = StateT { runState => IO.pure(runState -> rightDone) }
+  val stateUpdate: StepState = StateT(runState => IO.pure(runState -> rightDone))
 }
 
 //Step that produces a Session
@@ -48,6 +48,7 @@ trait SessionValueStep extends Step {
         (logSessionState, rightDone)
     }
   }
+
 }
 
 //Step that produces a value to create a log
@@ -71,6 +72,7 @@ trait LogValueStep[A] extends Step {
         (logState, rightDone)
     }
   }
+
 }
 
 //Step that delegate the execution of nested steps and enable to decorate the nestedLogs

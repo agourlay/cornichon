@@ -5,7 +5,7 @@ import cats.data.EitherT
 import cats.syntax.either._
 import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done
-import com.github.agourlay.cornichon.http.{ HttpRequest, HttpResponse, HttpStreamedRequest }
+import com.github.agourlay.cornichon.http.{HttpRequest, HttpResponse, HttpStreamedRequest}
 import org.http4s.EntityEncoder
 
 import scala.collection.immutable.ArraySeq
@@ -24,4 +24,5 @@ class NoOpHttpClient extends HttpClient {
 
   def paramsFromUrl(url: String) =
     Right(Nil)
+
 }

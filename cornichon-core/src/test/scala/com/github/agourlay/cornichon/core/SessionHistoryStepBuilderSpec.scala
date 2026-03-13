@@ -52,4 +52,5 @@ class SessionHistoryStepBuilderSpec extends FunSuite with CommonTestSuite {
            |""".stripMargin
     }
   }
+
 }

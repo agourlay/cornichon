@@ -60,8 +60,9 @@ class MathScenario extends CornichonFeature with MathSteps {
           | 1 | -1 | 0  |
         """
       ) {
-          Then assert is_valid_sum
-        }
+        Then assert is_valid_sum
+      }
     }
   }
+
 }

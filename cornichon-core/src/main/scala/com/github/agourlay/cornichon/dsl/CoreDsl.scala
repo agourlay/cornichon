@@ -4,8 +4,8 @@ import cats.Show
 import cats.syntax.either._
 import cats.syntax.show._
 import cats.effect.IO
-import com.github.agourlay.cornichon.core.{ CornichonError, FeatureDef, Resource, ScenarioContext, Session, SessionKey, Step, Scenario => ScenarioDef }
-import com.github.agourlay.cornichon.dsl.SessionSteps.{ SessionHistoryStepBuilder, SessionStepBuilder, SessionValuesStepBuilder }
+import com.github.agourlay.cornichon.core.{CornichonError, FeatureDef, Resource, Scenario => ScenarioDef, ScenarioContext, Session, SessionKey, Step}
+import com.github.agourlay.cornichon.dsl.SessionSteps.{SessionHistoryStepBuilder, SessionStepBuilder, SessionValuesStepBuilder}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
 import com.github.agourlay.cornichon.steps.wrapped._
@@ -31,6 +31,7 @@ trait CoreDsl {
   private[dsl] case class ScenarioBuilder(name: String, ignored: Option[String] = None, focus: Boolean = false) {
     def ignoredBecause(reason: String): ScenarioBuilder = copy(ignored = Some(reason))
     def ignoredIfDefined(reason: Option[String]): ScenarioBuilder = copy(ignored = reason)
+
     /** Focus on this scenario ignoring all other scenarios withing a `Feature` */
     def focused: ScenarioBuilder = copy(focus = true)
     def pending: ScenarioDef = ScenarioDef(name, Nil, pending = true)
@@ -135,19 +136,19 @@ trait CoreDsl {
     effect = sc => IO.delay(sc.session).delayBy(duration)
   )
 
-  /**
-   * Save value into session
-   * @param input tuple (sessionKey, value)
-   * @param show whether to show this step in the debug output
-   * @return a Step
-   */
+  /** Save value into session
+    * @param input
+    *   tuple (sessionKey, value)
+    * @param show
+    *   whether to show this step in the debug output
+    * @return
+    *   a Step
+    */
   def save(input: (String, String), show: Boolean = true): Step = {
     val (key, value) = input
     EffectStep.fromSyncE(
       title = s"add value '$value' to session under key '$key'",
-      effect = sc => {
-        sc.fillPlaceholders(value).flatMap(sc.session.addValue(key, _))
-      },
+      effect = sc => sc.fillPlaceholders(value).flatMap(sc.session.addValue(key, _)),
       show = show
     )
   }
@@ -165,13 +166,12 @@ trait CoreDsl {
 
   def transform_session(key: String)(map: String => String): Step = EffectStep.fromSyncE(
     title = s"transform '$key' from session",
-    effect = sc => {
+    effect = sc =>
       for {
         v <- sc.session.get(key)
         tv <- Either.catchNonFatal(map(v)).leftMap(CornichonError.fromThrowable)
         ns <- sc.session.addValue(key, tv)
       } yield ns
-    }
   )
 
   def session_value(key: String): SessionStepBuilder =
@@ -186,19 +186,19 @@ trait CoreDsl {
   def show_session: Step =
     DebugStep("show session", sc => s"Session content is\n${sc.session.show}".asRight)
 
-  def show_session(
-    key: String,
-    index: Option[Int] = None,
-    transform: String => Either[CornichonError, String] = _.asRight): DebugStep =
-    DebugStep(s"show session value for key $key", sc =>
-      for {
-        v <- sc.session.get(key, index)
-        transformed <- transform(v)
-      } yield s"Session content for key '${SessionKey(key, index).show}' is\n$transformed"
+  def show_session(key: String, index: Option[Int] = None, transform: String => Either[CornichonError, String] = _.asRight): DebugStep =
+    DebugStep(
+      s"show session value for key $key",
+      sc =>
+        for {
+          v <- sc.session.get(key, index)
+          transformed <- transform(v)
+        } yield s"Session content for key '${SessionKey(key, index).show}' is\n$transformed"
     )
 
   def print_step(message: String): Step =
     DebugStep("print step", _.fillPlaceholders(message))
+
 }
 
 object CoreDsl {
@@ -213,13 +213,16 @@ object CoreDsl {
         for {
           sessionValue <- session.get(fromKey)
           extracted <- traverseIL(args.iterator.map(_.trans))(extractor => extractor(sc, sessionValue))
-          newSession <- args.iterator.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
+          newSession <-
+            args.iterator.map(_.target).zip(extracted).foldLeft(Either.right[CornichonError, Session](session))((s, tuple) => s.flatMap(_.addValue(tuple._1, tuple._2)))
         } yield newSession
       }
     )
+
 }
 
 case class ContainerType[+T, B[_]](element: T, tci: B[T @uncheckedVariance])
+
 object ContainerType {
   implicit def showConv[T](a: T)(implicit tc: Show[T]): ContainerType[T, Show] = ContainerType(a, tc)
   implicit def showIterConv[T](a: Iterable[T])(implicit tc: Show[T]): Iterable[ContainerType[T, Show]] = a.map(ContainerType(_, tc))

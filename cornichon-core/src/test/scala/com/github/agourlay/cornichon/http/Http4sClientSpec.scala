@@ -19,4 +19,5 @@ class Http4sClientSpec extends FunSuite {
     assert(finalUri.query.multiParams("p1") == "v1" :: "v1'" :: Nil)
     assert(finalUri.query.multiParams("p2") == "v2" :: Nil)
   }
+
 }

@@ -1,8 +1,8 @@
 package com.github.agourlay.cornichon.steps.regular
 
 import cats.effect.IO
-import com.github.agourlay.cornichon.core.{ CornichonError, Scenario, ScenarioRunner, Session }
-import com.github.agourlay.cornichon.steps.cats.{ EffectStep => CEffectStep }
+import com.github.agourlay.cornichon.core.{CornichonError, Scenario, ScenarioRunner, Session}
+import com.github.agourlay.cornichon.steps.cats.{EffectStep => CEffectStep}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -92,5 +92,5 @@ class EffectStepSpec extends FunSuite with CommonTestSuite {
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(!res.isSuccess)
   }
-}
 
+}

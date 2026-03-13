@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.resolver
 import java.util.concurrent.atomic.AtomicLong
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.json.{ CornichonJson, JsonPath }
+import com.github.agourlay.cornichon.json.{CornichonJson, JsonPath}
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
 import com.github.agourlay.cornichon.util.StringUtils
 
@@ -35,7 +35,9 @@ object PlaceholderResolver {
   def findPlaceholders(input: String): Either[CornichonError, Vector[Placeholder]] =
     PlaceholderParser.parse(input)
 
-  private def resolvePlaceholder(ph: Placeholder)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =
+  private def resolvePlaceholder(
+    ph: Placeholder
+  )(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean): Either[CornichonError, String] =
     placeholderGeneratorsByLabel.get(ph.key) match {
       case Some(pg) =>
         // in session mode we leave the generators untouched to avoid side effects
@@ -51,7 +53,9 @@ object PlaceholderResolver {
         }
     }
 
-  def fillPlaceholdersResolvable[A: Resolvable](resolvableInput: A)(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, A] = {
+  def fillPlaceholdersResolvable[A: Resolvable](
+    resolvableInput: A
+  )(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, A] = {
     val ri = Resolvable[A]
     val resolvableForm = ri.toResolvableForm(resolvableInput)
     fillPlaceholders(resolvableForm)(session, randomContext, customExtractors).map { resolved =>
@@ -62,7 +66,9 @@ object PlaceholderResolver {
     }
   }
 
-  def fillPlaceholders(input: String)(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean = false): Either[CornichonError, String] =
+  def fillPlaceholders(
+    input: String
+  )(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean = false): Either[CornichonError, String] =
     findPlaceholders(input).flatMap { placeholders =>
       val len = placeholders.length
       if (len == 0)
@@ -85,7 +91,9 @@ object PlaceholderResolver {
       }
     }
 
-  def fillPlaceholdersPairs(pairs: Seq[(String, String)])(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, List[(String, String)]] = {
+  def fillPlaceholdersPairs(
+    pairs: Seq[(String, String)]
+  )(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, List[(String, String)]] =
     if (pairs.isEmpty)
       rightNil
     else {
@@ -102,7 +110,6 @@ object PlaceholderResolver {
       }
       Right(acc.toList)
     }
-  }
 
   private def applyMapper(bindingKey: String, m: Mapper, ph: Placeholder)(session: Session, randomContext: RandomContext): Either[CornichonError, String] = m match {
     case SimpleMapper(gen) =>
@@ -112,22 +119,27 @@ object PlaceholderResolver {
     case RandomMapper(gen) =>
       Either.catchNonFatal(gen(randomContext)).leftMap(RandomMapperError(ph.fullKey, _))
     case HistoryMapper(key, transform) =>
-      session.getHistory(key)
-        .leftMap { (o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o) }
+      session
+        .getHistory(key)
+        .leftMap((o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o))
         .map(transform)
     case TextMapper(key, transform) =>
-      session.get(key, ph.index)
-        .leftMap { (o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o) }
+      session
+        .get(key, ph.index)
+        .leftMap((o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o))
         .map(transform)
     case JsonMapper(key, jsonPath, transform) =>
-      session.get(key, ph.index)
-        .leftMap { (o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o) }
+      session
+        .get(key, ph.index)
+        .leftMap((o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o))
         .flatMap { sessionValue =>
           // No placeholders in JsonMapper to avoid accidental infinite recursions.
-          JsonPath.runStrict(jsonPath, sessionValue)
+          JsonPath
+            .runStrict(jsonPath, sessionValue)
             .map(json => transform(CornichonJson.jsonStringValue(json)))
         }
   }
+
 }
 
 case class AmbiguousKeyDefinition(key: String) extends CornichonError {

@@ -23,4 +23,5 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
       (runState.withSession(completeSession).recordLogStack(logStack).registerCleanupSteps(runState.cleanupSteps), resourcedRes)
     }
   }
+
 }

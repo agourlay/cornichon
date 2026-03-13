@@ -28,6 +28,7 @@ trait Assertion { self =>
       else
         self.validated *> other.validated
   }
+
 }
 
 object Assertion {

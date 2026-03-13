@@ -1,4 +1,3 @@
-import scalariform.formatter.preferences.*
 import sbt.{Developer, file}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 
@@ -117,10 +116,8 @@ lazy val cornichon =
 lazy val core =
   project
     .in(file("./cornichon-core"))
-    .enablePlugins(SbtScalariform)
     .settings(commonSettings)
     .settings(publishingSettings)
-    .settings(formattingSettings)
     .settings(
       name := "cornichon-core",
       Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
@@ -159,9 +156,7 @@ lazy val scalatest =
   project
     .in(file("./cornichon-scalatest"))
     .dependsOn(core)
-    .enablePlugins(SbtScalariform)
     .settings(commonSettings)
-    .settings(formattingSettings)
     .settings(
       name := "cornichon-scalatest",
       libraryDependencies ++= Seq(
@@ -176,9 +171,7 @@ lazy val testFramework =
     .configs(IntegrationTest)
     .settings(Defaults.itSettings *)
     .settings(noCatsEffectTracing)
-    .enablePlugins(SbtScalariform)
     .settings(commonSettings)
-    .settings(formattingSettings)
     .settings(
       name := "cornichon-test-framework",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
@@ -200,9 +193,7 @@ lazy val kafka =
   project
     .in(file("./cornichon-kafka"))
     .dependsOn(core, testFramework % Test)
-    .enablePlugins(SbtScalariform)
     .settings(commonSettings)
-    .settings(formattingSettings)
     .settings(
       name := "cornichon-kafka",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
@@ -218,9 +209,7 @@ lazy val httpMock =
   project
     .in(file("./cornichon-http-mock"))
     .dependsOn(core, testFramework % Test)
-    .enablePlugins(SbtScalariform)
     .settings(commonSettings)
-    .settings(formattingSettings)
     .settings(
       name := "cornichon-http-mock",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
@@ -283,14 +272,6 @@ lazy val docSettings = Seq(
   makeSite / includeFilter := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )
 
-lazy val formattingSettings = Seq(
-  scalariformAutoformat := true,
-  scalariformPreferences := scalariformPreferences.value
-    .setPreference(AlignSingleLineCaseStatements, true)
-    .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
-    .setPreference(DoubleIndentConstructorArguments, true)
-    .setPreference(DanglingCloseParenthesis, Preserve)
-)
 
 lazy val library =
   new {

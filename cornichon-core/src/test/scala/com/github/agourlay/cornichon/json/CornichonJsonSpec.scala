@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.json
 
-import io.circe.{ Json, JsonObject }
+import io.circe.{Json, JsonObject}
 import com.github.agourlay.cornichon.json.JsonPath._
 import munit.FunSuite
 
@@ -26,10 +26,12 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
   }
 
   test("parseJson JSON Array string") {
-    val expected = Json.fromValues(Seq(
-      mapToJsonObject(Map("name" -> Json.fromString("cornichon"))),
-      mapToJsonObject(Map("name" -> Json.fromString("scala")))
-    ))
+    val expected = Json.fromValues(
+      Seq(
+        mapToJsonObject(Map("name" -> Json.fromString("cornichon"))),
+        mapToJsonObject(Map("name" -> Json.fromString("scala")))
+      )
+    )
 
     assert(parseDslJson("""[ {"name":"cornichon"}, {"name":"scala"} ]""") == Right(expected))
   }
@@ -67,30 +69,35 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
           """
     )
 
-    assert(parsed == Right(List(
-      """
+    assert(
+      parsed == Right(
+        List(
+          """
             {
               "2LettersName" : false
             }
           """,
-      """
+          """
             {
               "Age": 11,
               "Name": "Bob"
             }
-          """) map (refParser(_).asObject.get)))
+          """
+        ) map (refParser(_).asObject.get)
+      )
+    )
   }
 
   test("parseJson parse data table as a map of raw string values") {
-    assert(parseDataTableRaw(
-      """
+    assert(
+      parseDataTableRaw(
+        """
           | Name |   Age  | 2LettersName |
           |      |        |    false     |
           | Bob  |   11   |              |
           """
-    ) == Right(List(
-        List("2LettersName" -> "false"),
-        List("Name" -> "Bob", "Age" -> "11"))))
+      ) == Right(List(List("2LettersName" -> "false"), List("Name" -> "Bob", "Age" -> "11")))
+    )
   }
 
   test("isJsonString detects invalid empty string") {
@@ -222,7 +229,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
     assert(removeFieldsByPath(refParser(input), paths) == refParser(expected))
   }
 
-  //FIXME - done manually in BodyArrayAssertion for now
+  // FIXME - done manually in BodyArrayAssertion for now
   //    test("removeFieldsByPath removes field in each element of a root array") {
   //      val input =
   //        """
@@ -261,7 +268,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
   //      assert(removeFieldsByPath(refParser(input), paths) == Right(refParser(expected)))
   //    }
 
-  //FIXME - done manually in BodyArrayAssertion for now
+  // FIXME - done manually in BodyArrayAssertion for now
   //    test("removeFieldsByPath removes field in each element of a nested array") {
   //      val input =
   //        """
@@ -385,8 +392,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
 
   test("findAllContainingValue find root value") {
     val input = "target value"
-    assert(findAllPathWithValue(Set("target value"), parseDslJsonUnsafe(input)) == List(
-      ("target value", rootPath)))
+    assert(findAllPathWithValue(Set("target value"), parseDslJsonUnsafe(input)) == List(("target value", rootPath)))
   }
 
   test("findAllContainingValue not find root value") {
@@ -404,8 +410,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
           |}
           """.stripMargin
 
-    assert(findAllPathWithValue(Set("John"), parseDslJsonUnsafe(input)) == List(
-      ("John", parseUnsafe("$.Name"))))
+    assert(findAllPathWithValue(Set("John"), parseDslJsonUnsafe(input)) == List(("John", parseUnsafe("$.Name"))))
   }
 
   test("findAllContainingValue find all root keys") {
@@ -419,9 +424,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
         |}
           """.stripMargin
 
-    assert(findAllPathWithValue(Set("John"), parseDslJsonUnsafe(input)) == List(
-      ("John", parseUnsafe("$.Name")),
-      ("John", parseUnsafe("$.Nickname"))))
+    assert(findAllPathWithValue(Set("John"), parseDslJsonUnsafe(input)) == List(("John", parseUnsafe("$.Name")), ("John", parseUnsafe("$.Nickname"))))
   }
 
   test("findAllContainingValue find all root keys in apparition order and not input order") {
@@ -436,10 +439,13 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
         |}
           """.stripMargin
 
-    assert(findAllPathWithValue(Set("Oslo", "John"), parseDslJsonUnsafe(input)) == List(
-      ("John", parseUnsafe("$.Name")),
-      ("Oslo", parseUnsafe("$.City")),
-      ("John", parseUnsafe("$.Nickname"))))
+    assert(
+      findAllPathWithValue(Set("Oslo", "John"), parseDslJsonUnsafe(input)) == List(
+        ("John", parseUnsafe("$.Name")),
+        ("Oslo", parseUnsafe("$.City")),
+        ("John", parseUnsafe("$.Nickname"))
+      )
+    )
   }
 
   test("findAllContainingValue finds nested key") {
@@ -457,10 +463,13 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
           |}
           """.stripMargin
 
-    assert(findAllPathWithValue(Set("John", "Paul", "Pauli"), parseDslJsonUnsafe(input)) == List(
-      ("John", parseUnsafe("$.Name")),
-      ("Paul", parseUnsafe("$.Brother.Name")),
-      ("Pauli", parseUnsafe("$.Brother.Nickname"))))
+    assert(
+      findAllPathWithValue(Set("John", "Paul", "Pauli"), parseDslJsonUnsafe(input)) == List(
+        ("John", parseUnsafe("$.Name")),
+        ("Paul", parseUnsafe("$.Brother.Name")),
+        ("Pauli", parseUnsafe("$.Brother.Nickname"))
+      )
+    )
   }
 
   test("findAllContainingValue finds key in array") {
@@ -483,8 +492,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
           |}
           """.stripMargin
 
-    assert(findAllPathWithValue(Set("Bob"), parseDslJsonUnsafe(input)) == List(
-      ("Bob", parseUnsafe("$.Brothers[1].Name"))))
+    assert(findAllPathWithValue(Set("Bob"), parseDslJsonUnsafe(input)) == List(("Bob", parseUnsafe("$.Brothers[1].Name"))))
   }
 
   test("findAllContainingValue finds key in array of strings") {
@@ -498,7 +506,7 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
           |}
           """.stripMargin
 
-    assert(findAllPathWithValue(Set("Coding"), parseDslJsonUnsafe(input)) == List(
-      ("Coding", parseUnsafe("$.Hobbies[2]"))))
+    assert(findAllPathWithValue(Set("Coding"), parseDslJsonUnsafe(input)) == List(("Coding", parseUnsafe("$.Hobbies[2]"))))
   }
+
 }

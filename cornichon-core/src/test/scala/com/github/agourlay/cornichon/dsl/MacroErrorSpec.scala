@@ -164,7 +164,7 @@ class MacroErrorSpec extends FunSuite {
       val steps =
         Vector(
           NoOpStep,
-          print_step("Hello world!"),
+          print_step("Hello world!")
         )
 
       val feature =
@@ -187,4 +187,5 @@ class MacroErrorSpec extends FunSuite {
     assert(Foo.feature.scenarios.head.steps.map(_.title) == List("print step", "noOp", "print step", "print step", "print step"))
     assert(Foo.feature.scenarios(1).steps.map(_.title) == List("noOp", "print step"))
   }
+
 }

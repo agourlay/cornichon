@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.framework.examples.propertyCheck.pingPong
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.check.checkModel.{ Model, ModelRunner, Property2 }
-import com.github.agourlay.cornichon.core.{ NoOpStep, RandomContext, ValueGenerator }
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.check.checkModel.{Model, ModelRunner, Property2}
+import com.github.agourlay.cornichon.core.{NoOpStep, RandomContext, ValueGenerator}
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 
 class PingPongCheck extends CornichonFeature {
 
@@ -16,18 +16,14 @@ class PingPongCheck extends CornichonFeature {
     }
   }
 
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "an alphanumeric String",
-    gen = () => rc.alphanumeric(20))
+  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(name = "an alphanumeric String", gen = () => rc.alphanumeric(20))
 
   def assert_String_20(s: String) = AssertStep(
     title = s"String has length 20 '$s'",
     action = _ => GenericEqualityAssertion(20, s.length)
   )
 
-  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    gen = () => rc.nextInt(10000))
+  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(name = "integer", gen = () => rc.nextInt(10000))
 
   def assert_Integer_less_than_10000(i: Int) = AssertStep(
     title = s"Integer less than 10000 '$i'",
@@ -62,7 +58,7 @@ class PingPongCheck extends CornichonFeature {
       transitions = Map(
         entryPoint -> ((50, pingString) :: (50, pongInt) :: Nil),
         pingString -> ((90, pongInt) :: (10, exitPoint) :: Nil),
-        pongInt -> ((90, pingString) :: (10, exitPoint) :: Nil)
+        pongInt    -> ((90, pingString) :: (10, exitPoint) :: Nil)
       )
     )
   }

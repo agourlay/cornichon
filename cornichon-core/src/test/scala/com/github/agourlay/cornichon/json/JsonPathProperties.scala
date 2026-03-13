@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.json
 
-import io.circe.{ Json, JsonObject }
-import org.scalacheck.{ Properties, Test }
+import io.circe.{Json, JsonObject}
+import org.scalacheck.{Properties, Test}
 import org.scalacheck.Prop._
 import io.circe.testing.ArbitraryInstances
 
@@ -18,4 +18,5 @@ class JsonPathProperties extends Properties("JsonPath") with ArbitraryInstances 
       JsonPath(path).run(json).contains(targetValue)
     }
   }
+
 }

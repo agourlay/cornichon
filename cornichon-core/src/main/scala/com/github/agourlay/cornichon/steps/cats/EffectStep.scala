@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.cats
 
-import cats.data.{ EitherT, NonEmptyList }
+import cats.data.{EitherT, NonEmptyList}
 import cats.effect.IO
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.ScenarioRunner.{ errorsToFailureStep, successLog }
+import com.github.agourlay.cornichon.core.ScenarioRunner.{errorsToFailureStep, successLog}
 import com.github.agourlay.cornichon.core._
 
 import scala.concurrent.duration.Duration

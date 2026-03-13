@@ -111,26 +111,35 @@ class ScenarioResourceStepSpec extends FunSuite with CommonTestSuite {
 
   class QueueManager {
     private val state = new AtomicReference[List[Action]](Nil)
+
     def create(name: String): Unit = {
       state.getAndUpdate(CreateQueue(name) :: (_: List[Action]))
       ()
     }
+
     def delete(name: String): Unit = {
       state.getAndUpdate(DeleteQueue(name) :: (_: List[Action]))
       ()
     }
+
     def allActions: List[Action] = state.get().reverse
+
     def actionsFor(name: String): List[Action] = allActions.collect {
       case a @ CreateQueue(`name`) => a
       case a @ DeleteQueue(`name`) => a
     }
+
   }
+
   object QueueManager {
     sealed trait Action
     case class CreateQueue(name: String) extends Action
     case class DeleteQueue(name: String) extends Action
+
     implicit def fnToUnaryOp[A](f: A => A): UnaryOperator[A] = new UnaryOperator[A] {
       def apply(t: A): A = f(t)
     }
+
   }
+
 }

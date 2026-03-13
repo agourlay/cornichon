@@ -31,4 +31,5 @@ class HttpDslSpec extends FunSuite {
     assert(req.method.name == "GET")
     assert(req.url == "http://test.com")
   }
+
 }

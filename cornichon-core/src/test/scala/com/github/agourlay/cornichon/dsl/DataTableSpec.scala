@@ -22,8 +22,7 @@ class DataTableSpec extends FunSuite {
                       |  "John"  |
                   """
 
-    parseDataTable(input) == Right(
-      List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
+    parseDataTable(input) == Right(List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
   }
 
   test("parser processes a single line with 1 value") {
@@ -32,8 +31,7 @@ class DataTableSpec extends FunSuite {
                     |  "John"  |
                   """
 
-    parseDataTable(input) == Right(
-      List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
+    parseDataTable(input) == Right(List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
   }
 
   test("parser processes a single line with 2 values") {
@@ -43,10 +41,16 @@ class DataTableSpec extends FunSuite {
                   """
 
     parseDataTable(input) == Right(
-      List(Json.obj(
-        "Name" -> Json.fromString("John"),
-        "Age" -> Json.fromInt(50)
-      ).asObject.get))
+      List(
+        Json
+          .obj(
+            "Name" -> Json.fromString("John"),
+            "Age"  -> Json.fromInt(50)
+          )
+          .asObject
+          .get
+      )
+    )
   }
 
   test("parser processes string values and headers with unicode characters and escaping") {
@@ -57,10 +61,16 @@ class DataTableSpec extends FunSuite {
         """
 
     parseDataTable(input) == Right(
-      List(Json.obj(
-        "Name" -> Json.fromString("öÖß \u00DF \" test "),
-        "Größe \u00DF \" | test" -> Json.fromInt(50)
-      ).asObject.get))
+      List(
+        Json
+          .obj(
+            "Name"                   -> Json.fromString("öÖß \u00DF \" test "),
+            "Größe \u00DF \" | test" -> Json.fromInt(50)
+          )
+          .asObject
+          .get
+      )
+    )
   }
 
   test("parser processes multi-line string") {
@@ -72,14 +82,22 @@ class DataTableSpec extends FunSuite {
 
     parseDataTable(input) == Right(
       List(
-        Json.obj(
-          "Name" -> Json.fromString("John"),
-          "Age" -> Json.fromInt(50)
-        ).asObject.get,
-        Json.obj(
-          "Name" -> Json.fromString("Bob"),
-          "Age" -> Json.fromInt(11)
-        ).asObject.get))
+        Json
+          .obj(
+            "Name" -> Json.fromString("John"),
+            "Age"  -> Json.fromInt(50)
+          )
+          .asObject
+          .get,
+        Json
+          .obj(
+            "Name" -> Json.fromString("Bob"),
+            "Age"  -> Json.fromInt(11)
+          )
+          .asObject
+          .get
+      )
+    )
   }
 
   test("parser detects malformed tables") {
@@ -118,4 +136,5 @@ class DataTableSpec extends FunSuite {
     val objects = parseDataTable(input).map(l => l.map(Json.fromJsonObject)).map(Json.fromValues)
     assert(objects == Right(referenceParser(expected)))
   }
+
 }

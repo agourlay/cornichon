@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.dsl
 
 import com.github.agourlay.cornichon.core.CornichonError
 import org.parboiled2._
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 object DataTableParser {
   private val WhiteSpace = CharPredicate("\u0009\u0020")
@@ -24,26 +24,28 @@ object DataTableParser {
         Right(dt)
     }
   }
+
 }
 
 class DataTableParser(val input: ParserInput) extends Parser with StringHeaderParserSupport {
+
   protected def dataTableRule = rule {
     zeroOrMore(NL) ~ HeaderRule ~ NL ~ oneOrMore(RowRule).separatedBy(NL) ~ zeroOrMore(NL) ~ EOI ~> ((h, r) => DataTable(h, r.toVector))
   }
 
-  private def HeaderRule = rule { Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> (h => Headers(h.toVector)) }
+  private def HeaderRule = rule(Separator ~ oneOrMore(HeaderValue).separatedBy(Separator) ~ Separator ~> (h => Headers(h.toVector)))
 
-  private def RowRule = rule { Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> (r => Row(r.toVector)) }
+  private def RowRule = rule(Separator ~ oneOrMore(CellContent).separatedBy(Separator) ~ Separator ~> (r => Row(r.toVector)))
 
-  private def CellContent = rule { !NL ~ capture(zeroOrMore(ContentsChar)) }
+  private def CellContent = rule(!NL ~ capture(zeroOrMore(ContentsChar)))
 
-  private def ContentsChar = rule { !DataTableParser.Delimiters ~ ANY }
+  private def ContentsChar = rule(!DataTableParser.Delimiters ~ ANY)
 
-  private def NL = rule { Spaces ~ optional('\r') ~ '\n' ~ Spaces }
+  private def NL = rule(Spaces ~ optional('\r') ~ '\n' ~ Spaces)
 
-  private def Spaces = rule { quiet(zeroOrMore(DataTableParser.WhiteSpace)) }
+  private def Spaces = rule(quiet(zeroOrMore(DataTableParser.WhiteSpace)))
 
-  private def Separator = rule { Spaces ~ DataTableParser.DelimiterChar ~ Spaces }
+  private def Separator = rule(Spaces ~ DataTableParser.DelimiterChar ~ Spaces)
 
 }
 
@@ -61,9 +63,9 @@ trait StringHeaderParserSupport extends StringBuilding {
     atomic(clearSB() ~ Characters ~ push(sb.toString) ~> (_.stripTrailing()))
   }
 
-  private def Characters = rule { oneOrMore(NormalChar | '\\' ~ EscapedChar) }
+  private def Characters = rule(oneOrMore(NormalChar | '\\' ~ EscapedChar))
 
-  private def NormalChar = rule { !(DataTableParser.Delimiters | DataTableParser.Backslash) ~ ANY ~ appendSB() }
+  private def NormalChar = rule(!(DataTableParser.Delimiters | DataTableParser.Backslash) ~ ANY ~ appendSB())
 
   private def EscapedChar = rule {
     DataTableParser.Backslash ~ appendSB() |
@@ -76,7 +78,7 @@ trait StringHeaderParserSupport extends StringBuilding {
       Unicode ~> { code => sb.append(code.asInstanceOf[Char]); () }
   }
 
-  private def Unicode = rule { 'u' ~ capture(4 times CharPredicate.HexDigit) ~> (Integer.parseInt(_, 16)) }
+  private def Unicode = rule('u' ~ capture(4 times CharPredicate.HexDigit) ~> (Integer.parseInt(_, 16)))
 }
 
 case class DataTableError(error: Throwable, input: String) extends CornichonError {

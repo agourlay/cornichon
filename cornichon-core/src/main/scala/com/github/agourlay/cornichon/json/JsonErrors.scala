@@ -8,17 +8,21 @@ import io.circe.Json
 sealed trait JsonError extends CornichonError
 
 case class NotAnArrayError[A: Show](badPayload: A) extends JsonError {
+
   lazy val baseErrorMessage =
     s"""expected JSON Array but got
        |${badPayload.show}""".stripMargin
+
 }
 
 case class MalformedJsonError[A: Show](input: A, message: String) extends JsonError {
+
   lazy val baseErrorMessage =
     s"""malformed JSON error
        |$message
        |for input
        |${input.show}""".stripMargin
+
 }
 
 case class MalformedGraphQLJsonError[A](input: A, exception: Throwable) extends JsonError {
@@ -34,28 +38,36 @@ case class JsonPathError(input: String, error: Throwable) extends JsonError {
 }
 
 case class WhitelistingError(missingFields: Iterable[String], source: Json) extends JsonError {
+
   lazy val baseErrorMessage =
     s"""whitelisting error because the following field(s)
        |${missingFields.mkString("\n")}
        |can not be found in JSON object
        |${source.show}""".stripMargin
+
 }
 
 case class NotStringFieldError(input: Json, field: String) extends JsonError {
+
   lazy val baseErrorMessage =
     s"""field '$field' is not of type String in JSON
        |${input.show}""".stripMargin
+
 }
 
 case class PathSelectsNothing(path: String, input: Json) extends JsonError {
+
   lazy val baseErrorMessage =
     s"""JSON path '$path' is not defined in object
        |${input.show}""".stripMargin
+
 }
 
 case class JsonDecodingFailure(json: Json, actualType: String) extends JsonError {
+
   lazy val baseErrorMessage =
     s"""error while trying to decode JSON
        |${json.show}
        |into type '$actualType'""".stripMargin
+
 }

@@ -12,7 +12,7 @@ import scala.collection.immutable.HashMap
 
 case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
-  //Specialised Option version to avoid Either.left creation through Either.toOption
+  // Specialised Option version to avoid Either.left creation through Either.toOption
   def getOpt(key: String, stackingIndex: Option[Int] = None): Option[String] =
     content.get(key).flatMap { values =>
       val index = stackingIndex.getOrElse(values.size - 1)
@@ -53,12 +53,11 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       values.lift(index)
     }
 
-  def getMandatoryPrevious(key: String): Either[CornichonError, String] = {
+  def getMandatoryPrevious(key: String): Either[CornichonError, String] =
     getPrevious(key).flatMap {
       case None        => Left(KeyWithoutPreviousValue(key, this))
       case Some(value) => Right(value)
     }
-  }
 
   private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
     c1.get(key) match {
@@ -84,12 +83,11 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   def addValues(tuples: (String, String)*): Either[CornichonError, Session] = {
     var resultSession = this
-    for ((k, v) <- tuples) {
+    for ((k, v) <- tuples)
       resultSession.addValue(k, v) match {
         case e @ Left(_)       => return e
         case Right(newSession) => resultSession = newSession
       }
-    }
     Right(resultSession)
   }
 
@@ -156,6 +154,7 @@ object Session {
       builder.toString()
     }
   }
+
 }
 
 case class SessionKey(name: String, index: Option[Int] = None) {
@@ -163,14 +162,17 @@ case class SessionKey(name: String, index: Option[Int] = None) {
 }
 
 object SessionKey {
+
   implicit val showSessionKey: Show[SessionKey] = Show.show[SessionKey] { sk =>
     val key = sk.name
     val index = sk.index
     s"$key${index.map(i => s"[$i]").getOrElse("")}"
   }
+
 }
 
 case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError {
+
   private lazy val similarKeysMsg = {
     val similar = s.content.keysIterator.filter(StringUtils.levenshtein(_, key) == 1).toSeq.sorted
     if (similar.isEmpty)
@@ -178,6 +180,7 @@ case class KeyNotFoundInSession(key: String, s: Session) extends CornichonError 
     else
       s" maybe you meant ${similar.iterator.map(s => s"'$s'").mkString(" or ")}"
   }
+
   lazy val baseErrorMessage = s"key '$key' can not be found in session$similarKeysMsg\n${s.show}"
 }
 
@@ -190,8 +193,10 @@ case class IllegalKey(key: String) extends CornichonError {
 }
 
 case class IndexNotFoundForKey(key: String, index: Int, values: Vector[String]) extends CornichonError {
+
   lazy val baseErrorMessage = s"index '$index' not found for key '$key' with values \n" +
     values.iterator.zipWithIndex.map { case (v, i) => s"$i -> $v" }.mkString("\n")
+
 }
 
 case class KeyWithoutPreviousValue(key: String, s: Session) extends CornichonError {

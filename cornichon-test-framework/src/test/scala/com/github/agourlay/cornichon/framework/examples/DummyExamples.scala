@@ -17,6 +17,7 @@ class DummyExamples extends DummyFeatureToTestInheritance {
     Scenario("pending scenario").pending
 
   }
+
 }
 
 trait DummyFeatureToTestInheritance extends CornichonFeature {

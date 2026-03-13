@@ -4,7 +4,7 @@ import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.matchers.MatcherParser._
 import org.parboiled2._
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 class MatcherParser(val input: ParserInput) extends Parser {
 
@@ -18,7 +18,7 @@ class MatcherParser(val input: ParserInput) extends Parser {
 
   private def MatcherTXT = rule(capture(oneOrMore(allowedCharsInMatcher)))
 
-  private def Ignore = rule { zeroOrMore(!MatcherRule ~ ANY) }
+  private def Ignore = rule(zeroOrMore(!MatcherRule ~ ANY))
 }
 
 object MatcherParser {
@@ -41,6 +41,7 @@ object MatcherParser {
           Right(dt.toVector) // parser produces a vector under the hood
       }
     }
+
 }
 
 case class MatcherError(input: String, error: Throwable) extends CornichonError {

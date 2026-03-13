@@ -39,7 +39,7 @@ object MatcherResolver {
     }
 
   def findAllMatchers(allMatchers: Map[String, List[Matcher]])(input: String): Either[CornichonError, Vector[Matcher]] =
-    findMatcherKeys(input).flatMap { traverse(_)(resolveMatcherKeys(allMatchers)) }
+    findMatcherKeys(input).flatMap(traverse(_)(resolveMatcherKeys(allMatchers)))
 
   // Add quotes around known matchers
   def quoteMatchers(input: String, matchersToQuote: Vector[Matcher]): String = {
@@ -53,15 +53,15 @@ object MatcherResolver {
       (expected, actual, Nil)
     else {
       val matcherKeys = matchers.iterator.map(_.fullKey).toSet
-      val pathAssertions = CornichonJson.findAllPathWithValue(matcherKeys, expected)
-        .map {
-          case (matcherKey, jsonPath) =>
-            // find corresponding matcher for the tuple
-            val matcher = matchers.find(_.fullKey == matcherKey) match {
-              case Some(value) => value
-              case None        => throw new IllegalStateException(s"Matchers $matchers must contain an entry for $matcherKey")
-            }
-            MatcherAssertion(negate, matcher, actual, jsonPath)
+      val pathAssertions = CornichonJson
+        .findAllPathWithValue(matcherKeys, expected)
+        .map { case (matcherKey, jsonPath) =>
+          // find corresponding matcher for the tuple
+          val matcher = matchers.find(_.fullKey == matcherKey) match {
+            case Some(value) => value
+            case None        => throw new IllegalStateException(s"Matchers $matchers must contain an entry for $matcherKey")
+          }
+          MatcherAssertion(negate, matcher, actual, jsonPath)
         }
 
       val jsonPathToIgnore = pathAssertions.map(_.jsonPath)
@@ -69,6 +69,7 @@ object MatcherResolver {
       val newActual = CornichonJson.removeFieldsByPath(actual, jsonPathToIgnore)
       (newExpected, newActual, pathAssertions)
     }
+
 }
 
 case class MatcherUndefined(name: String) extends CornichonError {
@@ -76,6 +77,8 @@ case class MatcherUndefined(name: String) extends CornichonError {
 }
 
 case class DuplicateMatcherDefinition(name: String, descriptions: List[String]) extends CornichonError {
+
   lazy val baseErrorMessage = s"there are ${descriptions.size} matchers named '$name': " +
     s"${descriptions.iterator.map(d => s"'$d'").mkString(" and ")}"
+
 }

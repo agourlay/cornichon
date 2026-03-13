@@ -2,8 +2,8 @@ package com.github.agourlay.cornichon.http.server
 
 import cats.syntax.either._
 import cats.effect.IO
-import com.github.agourlay.cornichon.core.{ CornichonException, Done }
-import com.github.agourlay.cornichon.http.{ HttpMethod, HttpMethods, HttpRequest }
+import com.github.agourlay.cornichon.core.{CornichonException, Done}
+import com.github.agourlay.cornichon.http.{HttpMethod, HttpMethods, HttpRequest}
 import com.github.agourlay.cornichon.json.CornichonJson
 
 import io.circe.Json
@@ -21,11 +21,11 @@ class MockServerRequestHandler extends Http4sDsl[IO] {
   def fetchRecordedRequestsAsJson(): Vector[Json] = mockState.getReceivedRequest.map { req =>
     Json.fromFields(
       Seq(
-        "body" -> CornichonJson.parseDslJsonUnsafe(req.body.getOrElse("")),
-        "url" -> Json.fromString(req.url),
-        "method" -> Json.fromString(req.method.name),
+        "body"       -> CornichonJson.parseDslJsonUnsafe(req.body.getOrElse("")),
+        "url"        -> Json.fromString(req.url),
+        "method"     -> Json.fromString(req.method.name),
         "parameters" -> Json.fromFields(req.params.map { case (n, v) => (n, Json.fromString(v)) }),
-        "headers" -> Json.fromFields(req.headers.map { case (n, v) => (n, Json.fromString(v)) })
+        "headers"    -> Json.fromFields(req.headers.map { case (n, v) => (n, Json.fromString(v)) })
       )
     )
   }
@@ -97,10 +97,7 @@ class MockServerRequestHandler extends Http4sDsl[IO] {
   }
 
   private def saveRequest(rawReq: Request[IO]): IO[Boolean] =
-    rawReq
-      .bodyText
-      .compile
-      .string
+    rawReq.bodyText.compile.string
       .map { decodedBody =>
         val req = HttpRequest[String](
           method = httpMethodMapper(rawReq.method),
@@ -111,4 +108,5 @@ class MockServerRequestHandler extends Http4sDsl[IO] {
         )
         mockState.registerRequest(req)
       }
+
 }

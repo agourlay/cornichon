@@ -1,9 +1,9 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.concurrent.atomic.AtomicInteger
-import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, ScenarioTitleLogInstruction, Session, Step }
+import com.github.agourlay.cornichon.core.{Scenario, ScenarioRunner, ScenarioTitleLogInstruction, Session, Step}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -98,4 +98,5 @@ class FlatMapStepSpec extends FunSuite with CommonTestSuite {
     assert(res.isSuccess)
     assert(uglyCounter.get() == effectNumber + 2)
   }
+
 }

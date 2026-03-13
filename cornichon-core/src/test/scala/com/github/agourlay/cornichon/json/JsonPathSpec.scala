@@ -234,9 +234,16 @@ class JsonPathSpec extends FunSuite {
           |}
         """.stripMargin
 
-    assert(JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) == Right(Json.arr(
-      Json.fromString("Karate"), Json.fromString("Football"), Json.fromString("Diving"), Json.fromString("Reading")
-    )))
+    assert(
+      JsonPath.runStrict("Brothers[*].Hobbies[*].Name", input) == Right(
+        Json.arr(
+          Json.fromString("Karate"),
+          Json.fromString("Football"),
+          Json.fromString("Diving"),
+          Json.fromString("Reading")
+        )
+      )
+    )
   }
 
   test("select properly projected elements of a root Array") {
@@ -324,4 +331,5 @@ class JsonPathSpec extends FunSuite {
   test("have a pretty rendering via Show") {
     assert(JsonPath.parse("a.b[1].d.e[*]").map(_.show) == Right("a.b[1].d.e[*]"))
   }
+
 }

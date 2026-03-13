@@ -32,4 +32,5 @@ class UniqueNumberScenario extends CornichonFeature {
     }
 
   }
+
 }

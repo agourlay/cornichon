@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.http
 
 import cats.effect.unsafe.IORuntime
-import com.github.agourlay.cornichon.core.{ Config, ScenarioContext, Session }
+import com.github.agourlay.cornichon.core.{Config, ScenarioContext, Session}
 import com.github.agourlay.cornichon.http.HttpMethods.GET
 import com.github.agourlay.cornichon.http.client.Http4sClient
 import munit.FunSuite
@@ -46,7 +46,7 @@ class HttpServiceSpec extends FunSuite {
 
   test("handles URL query parameters") {
     httpService.resolveRequestParts[String]("a/b?p1=v1&p2=v2", None, Nil, Nil, SelectAll)(ScenarioContext.empty) match {
-      case Left(e) => assert(cond = false, e)
+      case Left(e)                                                                            => assert(cond = false, e)
       case Right((completeUrlResolvedNoParams, jsonBodyResolved, allParams, headersResolved)) =>
         assert(completeUrlResolvedNoParams == "http://base-url/a/b")
         assert(jsonBodyResolved.isEmpty)
@@ -57,7 +57,7 @@ class HttpServiceSpec extends FunSuite {
 
   test("handles URL query parameters with additional params") {
     httpService.resolveRequestParts[String]("a/b?p1=v1&p2=v2", None, Seq("p3" -> "v3", "p4" -> "v4"), Nil, SelectAll)(ScenarioContext.empty) match {
-      case Left(e) => assert(cond = false, e)
+      case Left(e)                                                                            => assert(cond = false, e)
       case Right((completeUrlResolvedNoParams, jsonBodyResolved, allParams, headersResolved)) =>
         assert(completeUrlResolvedNoParams == "http://base-url/a/b")
         assert(jsonBodyResolved.isEmpty)
@@ -65,4 +65,5 @@ class HttpServiceSpec extends FunSuite {
         assert(allParams.toSet == Set("p1" -> "v1", "p2" -> "v2", "p3" -> "v3", "p4" -> "v4"))
     }
   }
+
 }

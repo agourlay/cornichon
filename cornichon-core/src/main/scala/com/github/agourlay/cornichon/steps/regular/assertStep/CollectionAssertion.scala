@@ -35,6 +35,7 @@ case class CollectionSizeAssertionError[A: Show](collection: Iterable[A], size: 
 }
 
 case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) extends CollectionAssertion[A] {
+
   lazy val validated = {
     val deleted = right.diff(left)
     val added = left.diff(right)
@@ -43,19 +44,24 @@ case class CollectionsContainSameElements[A: Show](right: Seq[A], left: Seq[A]) 
     else
       CollectionsContainSameElementsAssertionError(added, deleted).invalidNel
   }
+
 }
 
 case class CollectionsContainSameElementsAssertionError[A: Show](added: Seq[A], deleted: Seq[A]) extends CornichonError {
+
   lazy val baseErrorMessage =
     s"""|Non ordered diff. between actual result and expected result is :
         |${if (added.isEmpty) "" else "added elements:\n" + added.iterator.map(_.show).mkString("\n")}
         |${if (deleted.isEmpty) "" else "deleted elements:\n" + deleted.iterator.map(_.show).mkString("\n")}
       """.stripMargin.trim
+
 }
 
 object CollectionAssertionInstances {
+
   // only used for error rendering
   implicit def showIterable[A: Show]: Show[Iterable[A]] = Show.show { fa =>
     fa.iterator.map(_.show).mkString("(", ", ", ")")
   }
+
 }

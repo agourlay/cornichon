@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.check
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.dsl.CheckDsl
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.steps.wrapped.AttachStep
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
@@ -51,10 +51,13 @@ class ForAllStepSpec extends FunSuite with CommonTestSuite with CheckDsl {
   test("always terminates - with maxNumberOfRuns") {
     val maxRun = 100
     var uglyCounter = 0
-    val incrementEffect: Step = EffectStep.fromSync("identity", sc => {
-      uglyCounter = uglyCounter + 1
-      sc.session
-    })
+    val incrementEffect: Step = EffectStep.fromSync(
+      "identity",
+      sc => {
+        uglyCounter = uglyCounter + 1
+        sc.session
+      }
+    )
 
     val forAllStep = for_all("fails", maxNumberOfRuns = maxRun, integerGen)(_ => incrementEffect)
     val s = Scenario("scenario with forAllStep", forAllStep :: Nil)
@@ -101,4 +104,5 @@ class ForAllStepSpec extends FunSuite with CommonTestSuite with CheckDsl {
         assert(cond = false, s"expected Scenario but got $res")
     }
   }
+
 }

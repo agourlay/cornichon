@@ -29,14 +29,11 @@ import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
-class Http4sClient(
-    addAcceptGzipByDefault: Boolean,
-    disableCertificateVerification: Boolean,
-    followRedirect: Boolean,
-    enableHttp2: Boolean)(implicit ioRuntime: IORuntime)
-  extends HttpClient {
+class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerification: Boolean, followRedirect: Boolean, enableHttp2: Boolean)(implicit ioRuntime: IORuntime)
+    extends HttpClient {
+
   // Disable JDK built-in checks
-  private val sslContext = {
+  private val sslContext =
     if (disableCertificateVerification) {
       val ssl = SSLContext.getInstance("SSL")
       val byPassTrustManagers = Array[TrustManager](new X509TrustManager() {
@@ -47,15 +44,16 @@ class Http4sClient(
       ssl.init(null, byPassTrustManagers, new SecureRandom)
       ssl
     } else SSLContext.getDefault
-  }
 
   // Cache URIs because they are expensive to parse
   private val uriCache: Cache[String, Either[CornichonError, Uri]] = Caffeine.newBuilder().maximumSize(1_000).build()
 
   // Timeouts are managed within the HttpService
   private val defaultHighTimeout = Duration.Inf
+
   private val (httpClient, safeShutdown) = {
-    var builder = EmberClientBuilder.default[IO]
+    var builder = EmberClientBuilder
+      .default[IO]
       .withTLSContext(TLSContext.Builder.forAsync[IO].fromSSLContext(sslContext))
       .withMaxTotal(300)
       .withIdleTimeInPool(2.minute)
@@ -65,15 +63,14 @@ class Http4sClient(
       builder = builder.withHttp2
     }
 
-    builder.build
-      .allocated
-      .map {
-        case (client, shutdown) =>
-          // add middlewares
-          val c1 = if (addAcceptGzipByDefault) GZip()(client) else client
-          val c2 = if (followRedirect) FollowRedirect(maxRedirects = 10)(client = c1) else c1
-          c2 -> shutdown
-      }.unsafeRunSync()
+    builder.build.allocated
+      .map { case (client, shutdown) =>
+        // add middlewares
+        val c1 = if (addAcceptGzipByDefault) GZip()(client) else client
+        val c2 = if (followRedirect) FollowRedirect(maxRedirects = 10)(client = c1) else c1
+        c2 -> shutdown
+      }
+      .unsafeRunSync()
   }
 
   private def toHttp4sMethod(method: HttpMethod): Method = method match {
@@ -87,17 +84,15 @@ class Http4sClient(
     case other   => throw CornichonException(s"unsupported HTTP method ${other.name}")
   }
 
-  private def toHttp4sHeaders(headers: Seq[(String, String)]): List[Header.Raw] = {
+  private def toHttp4sHeaders(headers: Seq[(String, String)]): List[Header.Raw] =
     if (headers.isEmpty)
       Nil
     else {
       val listBuffer = ListBuffer.empty[Header.Raw]
-      for ((n, v) <- headers) {
+      for ((n, v) <- headers)
         listBuffer += Header.Raw(CIString(n), v)
-      }
       listBuffer.toList
     }
-  }
 
   private def fromHttp4sHeaders(headers: Headers): ArraySeq[(String, String)] =
     headers.headers.iterator.map(h => (h.name.toString, h.value)).to(ArraySeq)
@@ -113,69 +108,67 @@ class Http4sClient(
 
   override def runRequest[A](cReq: HttpRequest[A], t: FiniteDuration)(implicit ee: EntityEncoder[IO, A], sh: Show[A]): EitherT[IO, CornichonError, HttpResponse] =
     parseUri(cReq.url) match {
-      case Left(e) => EitherT.left[HttpResponse](IO.pure(e))
-      case Right(uri) => EitherT {
-        val req = Request[IO](toHttp4sMethod(cReq.method))
-        val completeRequest = cReq.body.fold(req)(b => req.withEntity(b))
-          .putHeaders(toHttp4sHeaders(cReq.headers)) // `withEntity` adds `Content-Type` so we set the headers afterward to have the possibility to override it
-          .withUri(addQueryParams(uri, cReq.params))
-        val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
-          http4sResp
-            .bodyText
-            .compile
-            .string
-            .map { decodedBody =>
-              HttpResponse(
-                status = http4sResp.status.code.toShort,
-                headers = fromHttp4sHeaders(http4sResp.headers),
-                body = decodedBody
-              ).asRight[CornichonError]
-            }
+      case Left(e)    => EitherT.left[HttpResponse](IO.pure(e))
+      case Right(uri) =>
+        EitherT {
+          val req = Request[IO](toHttp4sMethod(cReq.method))
+          val completeRequest = cReq.body
+            .fold(req)(b => req.withEntity(b))
+            .putHeaders(toHttp4sHeaders(cReq.headers)) // `withEntity` adds `Content-Type` so we set the headers afterward to have the possibility to override it
+            .withUri(addQueryParams(uri, cReq.params))
+          val cornichonResponse = httpClient.run(completeRequest).use { http4sResp =>
+            http4sResp.bodyText.compile.string
+              .map { decodedBody =>
+                HttpResponse(
+                  status = http4sResp.status.code.toShort,
+                  headers = fromHttp4sHeaders(http4sResp.headers),
+                  body = decodedBody
+                ).asRight[CornichonError]
+              }
+          }
+
+          val timeout = IO.delay(TimeoutErrorAfter(cReq.detailedDescription, t).asLeft).delayBy(t)
+
+          IO.race(cornichonResponse, timeout)
+            .map(_.fold(identity, identity))
+            .handleError(t => RequestError(cReq.detailedDescription, t).asLeft)
         }
-
-        val timeout = IO.delay(TimeoutErrorAfter(cReq.detailedDescription, t).asLeft).delayBy(t)
-
-        IO.race(cornichonResponse, timeout)
-          .map(_.fold(identity, identity))
-          .handleError { t => RequestError(cReq.detailedDescription, t).asLeft }
-      }
     }
 
   private val sseHeader = "text" -> "event-stream"
 
-  private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[IO, CornichonError, HttpResponse] = {
+  private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[IO, CornichonError, HttpResponse] =
     parseUri(streamReq.url) match {
-      case Left(e) => EitherT.left[HttpResponse](IO.pure(e))
-      case Right(uri) => EitherT {
-        val req = Request[IO](org.http4s.Method.GET)
-          .withHeaders(Headers(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers)))
-          .withUri(addQueryParams(uri, streamReq.params))
+      case Left(e)    => EitherT.left[HttpResponse](IO.pure(e))
+      case Right(uri) =>
+        EitherT {
+          val req = Request[IO](org.http4s.Method.GET)
+            .withHeaders(Headers(toHttp4sHeaders(streamReq.addHeaders(sseHeader).headers)))
+            .withUri(addQueryParams(uri, streamReq.params))
 
-        val cornichonResponse = httpClient.run(req).use { http4sResp =>
-          http4sResp
-            .body
-            .through(ServerSentEvent.decoder)
-            .interruptAfter(streamReq.takeWithin)
-            .filter(_ != ServerSentEvent.empty) // filter out empty SSE
-            .compile
-            .toVector
-            .map { events =>
-              HttpResponse(
-                status = http4sResp.status.code.toShort,
-                headers = fromHttp4sHeaders(http4sResp.headers),
-                body = Json.fromValues(events.map(_.asJson)).show
-              ).asRight[CornichonError]
-            }
+          val cornichonResponse = httpClient.run(req).use { http4sResp =>
+            http4sResp.body
+              .through(ServerSentEvent.decoder)
+              .interruptAfter(streamReq.takeWithin)
+              .filter(_ != ServerSentEvent.empty) // filter out empty SSE
+              .compile
+              .toVector
+              .map { events =>
+                HttpResponse(
+                  status = http4sResp.status.code.toShort,
+                  headers = fromHttp4sHeaders(http4sResp.headers),
+                  body = Json.fromValues(events.map(_.asJson)).show
+                ).asRight[CornichonError]
+              }
+          }
+
+          val timeout = IO.delay(TimeoutErrorAfter(streamReq.detailedDescription, t).asLeft).delayBy(t)
+
+          IO.race(cornichonResponse, timeout)
+            .map(_.fold(identity, identity))
+            .handleError(t => RequestError(streamReq.detailedDescription, t).asLeft)
         }
-
-        val timeout = IO.delay(TimeoutErrorAfter(streamReq.detailedDescription, t).asLeft).delayBy(t)
-
-        IO.race(cornichonResponse, timeout)
-          .map(_.fold(identity, identity))
-          .handleError { t => RequestError(streamReq.detailedDescription, t).asLeft }
-      }
     }
-  }
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration): IO[Either[CornichonError, HttpResponse]] =
     req.stream match {
@@ -184,7 +177,7 @@ class Http4sClient(
     }
 
   def shutdown(): IO[Done] =
-    safeShutdown.map { _ => Done }
+    safeShutdown.map(_ => Done)
 
   def paramsFromUrl(url: String): Either[CornichonError, List[(String, String)]] =
     if (url.contains('?'))
@@ -194,4 +187,5 @@ class Http4sClient(
 
   def parseUri(uri: String): Either[CornichonError, Uri] =
     uriCache.get(uri, u => Uri.fromString(u).leftMap(e => MalformedUriError(u, e.message)))
+
 }

@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.resolver
 
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.{ RandomContext, Session }
+import com.github.agourlay.cornichon.core.{RandomContext, Session}
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver._
 import munit.FunSuite
 
@@ -33,7 +33,11 @@ class PlaceholderResolverSpec extends FunSuite {
     val extractor = JsonMapper("customer", "id")
     val extractors = Map("customer-id" -> extractor)
     val s = Session.newEmpty
-    assert(fillPlaceholders("<customer-id>")(s, rc, extractors).leftMap(_.renderedMessage) == Left("Error occurred while running Mapper attached to key 'customer-id'\ncaused by:\nkey 'customer' can not be found in session\nempty"))
+    assert(
+      fillPlaceholders("<customer-id>")(s, rc, extractors).leftMap(_.renderedMessage) == Left(
+        "Error occurred while running Mapper attached to key 'customer-id'\ncaused by:\nkey 'customer' can not be found in session\nempty"
+      )
+    )
   }
 
   test("fillPlaceholders use registered SimpleMapper") {
@@ -93,9 +97,8 @@ class PlaceholderResolverSpec extends FunSuite {
     val content = "<scenario-unique-number>"
     val rc = RandomContext.fromSeed(1L)
     val max = 100
-    for (i <- 1 until max) {
+    for (i <- 1 until max)
       assert(fillPlaceholders(content)(session, rc, noExtractor) == Right(i.toString))
-    }
     assert(rc.uniqueLong() == max)
     // a different RandomContext is not impacted
     assert(fillPlaceholders(content)(session, RandomContext.fromSeed(1L), noExtractor) == Right("1"))
@@ -107,10 +110,10 @@ class PlaceholderResolverSpec extends FunSuite {
     assert(fillPlaceholders(content)(session, RandomContext.fromSeed(1L), noExtractor) == Right("1"))
     val rc = RandomContext.fromSeed(1L)
     val max = 100
-    for (i <- 2 until max) {
+    for (i <- 2 until max)
       assert(fillPlaceholders(content)(session, rc, noExtractor) == Right(i.toString))
-    }
     // the RandomContext is not impacted
     assert(rc.uniqueLong() == 1L)
   }
+
 }

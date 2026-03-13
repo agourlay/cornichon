@@ -3,24 +3,19 @@ package com.github.agourlay.cornichon.testHelpers
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.DebugStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion}
 import org.scalacheck.Gen
 
 import scala.util.control.NoStackTrace
 
 trait CommonTesting extends IOSpec {
 
-  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    gen = () => rc.nextInt(10000))
+  def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(name = "integer", gen = () => rc.nextInt(10000))
 
-  def brokenIntGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
-    name = "integer",
-    gen = () => throw new RuntimeException(s"boom gen with initial seed ${rc.initialSeed}"))
+  def brokenIntGen(rc: RandomContext): ValueGenerator[Int] =
+    ValueGenerator(name = "integer", gen = () => throw new RuntimeException(s"boom gen with initial seed ${rc.initialSeed}"))
 
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "integer",
-    gen = () => rc.nextString(10))
+  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(name = "integer", gen = () => rc.nextString(10))
 
   def printScenarioLogs(sr: ScenarioReport): Unit =
     LogInstruction.printLogs(sr.logs)

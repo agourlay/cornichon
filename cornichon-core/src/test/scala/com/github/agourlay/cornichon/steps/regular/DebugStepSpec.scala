@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Scenario, ScenarioRunner, Session }
+import com.github.agourlay.cornichon.core.{CornichonError, Scenario, ScenarioRunner, Session}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -75,4 +75,5 @@ class DebugStepSpec extends FunSuite with CommonTestSuite {
         |      debugging with println""".stripMargin
     }
   }
+
 }

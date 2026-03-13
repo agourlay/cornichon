@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -27,7 +27,8 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
     val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
     var counter = 0
     val nested = AssertStep(
-      "impossible random value step", _ => {
+      "impossible random value step",
+      _ => {
         counter = counter + 1
         Assertion.failWith("nop!")
       }
@@ -43,7 +44,8 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
   test("replays eventually handle hanging wrapped steps") {
     val eventuallyConf = EventuallyConf(maxTime = 100.milliseconds, interval = 10.milliseconds)
     val nested = AssertStep(
-      "slow always true step", _ => {
+      "slow always true step",
+      _ => {
         Thread.sleep(1000)
         Assertion.alwaysValid
       }
@@ -78,13 +80,13 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
     val eventuallyConf = EventuallyConf(maxTime = 200.millis, interval = 10.milliseconds)
     var counter = 0
     val nested = AssertStep(
-      "Fails at first", _ => {
+      "Fails at first",
+      _ =>
         if (counter < 2) {
           counter += 1
           Assertion.failWith(s"Failing $counter")
         } else
           Assertion.alwaysValid
-      }
     ) :: Nil
     val eventuallyStep = EventuallyStep(nested, eventuallyConf)
     val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
@@ -107,13 +109,13 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
     val eventuallyConf = EventuallyConf(maxTime = 200.millis, interval = 10.milliseconds)
     var counter = 0
     val nested = AssertStep(
-      "Fail differently", _ => {
+      "Fail differently",
+      _ =>
         if (counter == 0 || counter == 1 || counter == 2) {
           counter += 1
           Assertion.failWith(s"Failing $counter")
         } else
           Assertion.failWith("Failing forever")
-      }
     ) :: Nil
     val eventuallyStep = EventuallyStep(nested, eventuallyConf)
     val s = Scenario("scenario with different failures", eventuallyStep :: Nil)
@@ -141,4 +143,5 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
         |         Failing forever""".stripMargin
     }
   }
+
 }

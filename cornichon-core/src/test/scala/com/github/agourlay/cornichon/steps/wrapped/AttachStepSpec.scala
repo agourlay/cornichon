@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.concurrent.atomic.AtomicInteger
-import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session, Step }
+import com.github.agourlay.cornichon.core.{Scenario, ScenarioRunner, Session, Step}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
@@ -89,4 +89,5 @@ class AttachStepSpec extends FunSuite with CommonTestSuite {
           |      valid""".stripMargin
     }
   }
+
 }

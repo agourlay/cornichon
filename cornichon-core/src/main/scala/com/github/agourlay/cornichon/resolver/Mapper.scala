@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.resolver
 
-import com.github.agourlay.cornichon.core.{ CornichonError, RandomContext, Session }
+import com.github.agourlay.cornichon.core.{CornichonError, RandomContext, Session}
 
 sealed trait Mapper
 

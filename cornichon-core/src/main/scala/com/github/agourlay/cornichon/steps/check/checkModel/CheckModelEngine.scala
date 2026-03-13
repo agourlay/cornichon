@@ -4,36 +4,37 @@ import cats.Parallel
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.syntax.either._
-import com.github.agourlay.cornichon.core.{ Generator, _ }
+import com.github.agourlay.cornichon.core.{Generator, _}
 
 class CheckModelEngine[A, B, C, D, E, F](
-    cs: CheckModelStep[A, B, C, D, E, F],
-    model: Model[A, B, C, D, E, F],
-    maxNumberOfTransitions: Int,
-    rc: RandomContext,
-    genA: Generator[A],
-    genB: Generator[B],
-    genC: Generator[C],
-    genD: Generator[D],
-    genE: Generator[E],
-    genF: Generator[F]) {
+  cs: CheckModelStep[A, B, C, D, E, F],
+  model: Model[A, B, C, D, E, F],
+  maxNumberOfTransitions: Int,
+  rc: RandomContext,
+  genA: Generator[A],
+  genB: Generator[B],
+  genC: Generator[C],
+  genD: Generator[D],
+  genE: Generator[E],
+  genF: Generator[F]
+) {
 
   // Assertions do not propagate their Session!
   private def checkStepConditions(runState: RunState)(assertion: Step): IO[Either[FailedStep, Done]] =
     assertion.stateUpdate.runA(runState)
 
   private def validTransitions(runState: RunState)(transitions: List[(Int, PropertyN[A, B, C, D, E, F])]): IO[List[(Int, PropertyN[A, B, C, D, E, F], Boolean)]] = {
-    val stepsConditionValidations = transitions.map {
-      case (weight, properties) =>
-        checkStepConditions(runState)(properties.preCondition)
-          .map(preConditionsRes => (weight, properties, preConditionsRes.isRight))
+    val stepsConditionValidations = transitions.map { case (weight, properties) =>
+      checkStepConditions(runState)(properties.preCondition)
+        .map(preConditionsRes => (weight, properties, preConditionsRes.isRight))
     }
-    Parallel.parSequence(stepsConditionValidations)
+    Parallel
+      .parSequence(stepsConditionValidations)
       .map(_.sortBy(_._1)) // We sort the result because `parSequence` is non-deterministic to not break the seed
   }
 
   def run(runState: RunState): IO[(RunState, FailedStep Either SuccessEndOfRun)] =
-    //check precondition for starting property
+    // check precondition for starting property
     checkStepConditions(runState)(model.entryPoint.preCondition).flatMap {
       case Right(_) =>
         // run first state
@@ -87,7 +88,7 @@ class CheckModelEngine[A, B, C, D, E, F](
     invariantStep.runStep(runState.recordLog(propertyNameLog))
   }
 
-  //https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability
+  // https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability
   private def pickTransitionAccordingToProbability[Z](rc: RandomContext, inputs: List[(Int, Z, Boolean)]): Z = {
     val weight = rc.nextInt(100)
     var cumulativeProbability: Int = 0

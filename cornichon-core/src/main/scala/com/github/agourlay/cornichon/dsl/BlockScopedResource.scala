@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.dsl
 
-import com.github.agourlay.cornichon.core.{ RunState, Session }
+import com.github.agourlay.cornichon.core.{RunState, Session}
 import cats.effect.IO
 
 trait BlockScopedResource {

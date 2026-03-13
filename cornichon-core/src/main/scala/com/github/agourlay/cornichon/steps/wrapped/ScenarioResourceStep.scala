@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
-import com.github.agourlay.cornichon.core.{ FailedStep, RunState, SimpleWrapperStep, Step }
+import com.github.agourlay.cornichon.core.{FailedStep, RunState, SimpleWrapperStep, Step}
 
 import scala.concurrent.duration.Duration
 
@@ -15,4 +15,5 @@ case class ScenarioResourceStep(title: String, acquire: Step, release: Step) ext
 
   def onNestedSuccess(resultRunState: RunState, runState: RunState, executionTime: Duration): RunState =
     runState.mergeNested(resultRunState).registerCleanupStep(AttachAsStep(s"$title - release step", _ => release :: Nil))
+
 }

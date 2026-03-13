@@ -20,6 +20,7 @@ trait ScenarioContext {
 
 object ScenarioContext {
   private val rightEmptyVec = Right(Vector.empty)
+
   val empty: ScenarioContext = new ScenarioContext {
     val randomContext: RandomContext = RandomContext.fromSeed(1L)
     val session: Session = Session.newEmpty
@@ -31,4 +32,5 @@ object ScenarioContext {
 
     def findAllMatchers(input: String): Either[CornichonError, Vector[Matcher]] = rightEmptyVec
   }
+
 }

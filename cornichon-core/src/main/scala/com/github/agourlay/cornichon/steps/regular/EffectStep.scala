@@ -1,13 +1,13 @@
 package com.github.agourlay.cornichon.steps.regular
 
-import cats.data.{ EitherT, NonEmptyList }
+import cats.data.{EitherT, NonEmptyList}
 import cats.syntax.either._
 import cats.effect.IO
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.core.ScenarioRunner._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 case class EffectStep(title: String, effect: ScenarioContext => Future[Either[CornichonError, Session]], show: Boolean = true) extends SessionValueStep {
 
@@ -21,6 +21,7 @@ case class EffectStep(title: String, effect: ScenarioContext => Future[Either[Co
 
   override def logOnSuccess(result: Session, runState: RunState, executionTime: Duration): LogInstruction =
     successLog(title, runState.depth, show, executionTime)
+
 }
 
 object EffectStep {
@@ -44,4 +45,5 @@ object EffectStep {
     val effectF: ScenarioContext => Future[Either[CornichonError, Session]] = s => effect(s).map(Right.apply)
     EffectStep(title, effectF, show)
   }
+
 }

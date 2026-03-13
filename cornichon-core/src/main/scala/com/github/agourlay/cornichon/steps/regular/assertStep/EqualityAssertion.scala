@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import cats.{ Eq, Show }
+import cats.{Eq, Show}
 import cats.syntax.show._
 import cats.syntax.validated._
 
@@ -24,6 +24,7 @@ abstract class EqualityAssertion[A: Eq] extends Assertion {
     else
       assertionError.invalidNel
   }
+
 }
 
 case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, negate: Boolean = false) extends EqualityAssertion[A] {
@@ -31,6 +32,7 @@ case class GenericEqualityAssertion[A: Show: Diff: Eq](expected: A, actual: A, n
 }
 
 case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, negate: Boolean) extends CornichonError {
+
   private lazy val baseMsg =
     s"""|expected result was${if (negate) " different than:" else ":"}
         |'${expected.show}'
@@ -44,6 +46,7 @@ case class GenericEqualityAssertionError[A: Show: Diff](expected: A, actual: A, 
         |$diffMsg
       """.stripMargin.trim
   }
+
 }
 
 case class CustomMessageEqualityAssertion[A: Eq](expected: A, actual: A, customMessage: () => String, negate: Boolean = false) extends EqualityAssertion[A] {

@@ -6,7 +6,7 @@ import com.github.agourlay.cornichon.resolver.Mapper
 
 import java.util.concurrent.ConcurrentLinkedDeque
 
-import pureconfig.error.{ ConvertFailure, KeyNotFound }
+import pureconfig.error.{ConvertFailure, KeyNotFound}
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
@@ -42,11 +42,12 @@ trait BaseFeature {
 
   def afterEachScenario(step: Step): Unit =
     step +=: afterEachScenario
+
 }
 
 // Protect and free resources
 object BaseFeature {
-  import pureconfig.error.{ ConfigReaderException, ConfigReaderFailures }
+  import pureconfig.error.{ConfigReaderException, ConfigReaderFailures}
 
   lazy val config: Config = Config.load("cornichon") match {
     case Right(v)                                                                          => v
@@ -64,13 +65,14 @@ object BaseFeature {
     @tailrec
     def clearHooks(previous: Future[Any] = Future.successful[Any](())): Future[Any] =
       Option(hooks.poll()) match {
-        case None => previous
+        case None    => previous
         case Some(f) =>
           clearHooks {
-            previous.flatMap { _ => f().recover { case _ => () } }
+            previous.flatMap(_ => f().recover { case _ => () })
           }
       }
 
     clearHooks().map(_ => ())
   }
+
 }

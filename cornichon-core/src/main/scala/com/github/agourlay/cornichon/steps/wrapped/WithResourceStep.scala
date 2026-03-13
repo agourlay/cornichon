@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import cats.data.StateT
 import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done.rightDone
-import com.github.agourlay.cornichon.core.{ FailureLogInstruction, Resource, ScenarioRunner, Step, StepState, SuccessLogInstruction, WrapperStep }
+import com.github.agourlay.cornichon.core.{FailureLogInstruction, Resource, ScenarioRunner, Step, StepState, SuccessLogInstruction, WrapperStep}
 
 // The `Resource` is created before `nested` and released after
 case class WithResourceStep(nested: List[Step], resource: Resource) extends WrapperStep {
@@ -36,7 +36,8 @@ case class WithResourceStep(nested: List[Step], resource: Resource) extends Wrap
                   (rightDone, SuccessLogInstruction("With resource block succeeded", initialDepth) +: innerLogs :+ successTitleLog(initialDepth))
               }
               // propagate potential cleanup steps
-              val mergedState = runState.recordLogStack(logs)
+              val mergedState = runState
+                .recordLogStack(logs)
                 .registerCleanupSteps(nestedState.cleanupSteps)
                 .registerCleanupSteps(acquireState.cleanupSteps)
                 .registerCleanupSteps(releaseState.cleanupSteps)
@@ -46,4 +47,5 @@ case class WithResourceStep(nested: List[Step], resource: Resource) extends Wrap
       }
     }
   }
+
 }

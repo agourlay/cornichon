@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import java.util.concurrent.atomic.AtomicInteger
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 

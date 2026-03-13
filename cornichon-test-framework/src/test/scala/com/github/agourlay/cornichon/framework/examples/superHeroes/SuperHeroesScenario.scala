@@ -42,18 +42,22 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        And assert body.ignoring("city", "publisher").is(
-          """
+        And assert body
+          .ignoring("city", "publisher")
+          .is(
+            """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
             "hasSuperpowers": false
           }
           """
-        )
+          )
 
-        And assert body.ignoring("publisher.name", "publisher.location").is(
-          """
+        And assert body
+          .ignoring("publisher.name", "publisher.location")
+          .is(
+            """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -64,7 +68,7 @@ class SuperHeroesScenario extends CornichonFeature {
             }
           }
           """
-        )
+          )
 
         // Compare only against provided keys
         And assert body.whitelisting.is(
@@ -91,38 +95,45 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.path("name").isNot("*any-integer*")
 
-        Then assert body.path("publisher").isNot(
-          """
+        Then assert body
+          .path("publisher")
+          .isNot(
+            """
           {
             "name":"Marvel",
             "foundationYear":*any-string*,
             "location":"Burbank, California"
           }
           """
-        )
+          )
 
         Then assert body.path("country").isAbsent
 
         Then assert body.path("hasSuperpowers").is(false)
 
-        Then assert body.path("publisher").is(
-          """
+        Then assert body
+          .path("publisher")
+          .is(
+            """
           {
             "name":"DC",
             "foundationYear":1934,
             "location":"Burbank, California"
           }
           """
-        )
+          )
 
-        Then assert body.path("publisher").ignoring("location").is(
-          """
+        Then assert body
+          .path("publisher")
+          .ignoring("location")
+          .is(
+            """
           {
             "name":"DC",
             "foundationYear":1934
           }
           """
-        )
+          )
 
         Then assert body.path("publisher.name").is("DC")
 
@@ -146,9 +157,11 @@ class SuperHeroesScenario extends CornichonFeature {
           """
         )
 
-        When I post("/superheroes").withParams(
-          "sessionId" -> "<session-id>"
-        ).withBody(gqljson"""
+        When I post("/superheroes")
+          .withParams(
+            "sessionId" -> "<session-id>"
+          )
+          .withBody(gqljson"""
           {
             name: "Scalaman"
             realName: "Oleg Ilyenko"
@@ -163,11 +176,12 @@ class SuperHeroesScenario extends CornichonFeature {
           """)
 
         Then assert status.is(401)
-        //The resource requires authentication, which was not supplied with the request
+        // The resource requires authentication, which was not supplied with the request
 
         // Try again with authentication
-        When I post("/superheroes").withBody(
-          """
+        When I post("/superheroes")
+          .withBody(
+            """
           {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
@@ -180,7 +194,8 @@ class SuperHeroesScenario extends CornichonFeature {
             }
           }
           """
-        ).withParams("sessionId" -> "<session-id>")
+          )
+          .withParams("sessionId" -> "<session-id>")
           .withHeaders(("Authorization", "Basic " + Base64.getEncoder.encodeToString("admin:cornichon".getBytes(StandardCharsets.UTF_8))))
 
         Then assert status.is(201)
@@ -189,22 +204,26 @@ class SuperHeroesScenario extends CornichonFeature {
 
         When I get("/superheroes/Scalaman").withParams("sessionId" -> "<session-id>")
 
-        Then assert body.ignoring("publisher", "hasSuperpowers", "city").is(
-          """
+        Then assert body
+          .ignoring("publisher", "hasSuperpowers", "city")
+          .is(
+            """
           {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko"
           }
           """
-        )
+          )
 
         // Params can also be passed in the URL
         When I get("/superheroes/Scalaman?sessionId=<session-id>").withParams(
           "protectIdentity" -> "true"
         )
 
-        Then assert body.ignoring("publisher").is(
-          """
+        Then assert body
+          .ignoring("publisher")
+          .is(
+            """
           {
             "name": "Scalaman",
             "realName": "XXXXX",
@@ -212,11 +231,13 @@ class SuperHeroesScenario extends CornichonFeature {
             "city": "Berlin"
           }
           """
-        )
+          )
 
         WithBasicAuth("admin", "cornichon") {
-          When I put("/superheroes").withParams("sessionId" -> "<session-id>").withBody(
-            """
+          When I put("/superheroes")
+            .withParams("sessionId" -> "<session-id>")
+            .withBody(
+              """
             {
               "name": "Scalaman",
               "realName": "Oleg Ilyenko",
@@ -229,15 +250,17 @@ class SuperHeroesScenario extends CornichonFeature {
               }
             }
             """
-          )
+            )
 
           Then assert body.path("city").is("Pankow")
         }
 
         Then assert status.is(200)
 
-        Then assert body.ignoring("publisher").is(
-          """
+        Then assert body
+          .ignoring("publisher")
+          .is(
+            """
           {
             "name": "Scalaman",
             "realName": "Oleg Ilyenko",
@@ -245,7 +268,7 @@ class SuperHeroesScenario extends CornichonFeature {
             "city": "Pankow"
           }
           """
-        )
+          )
 
         When I get("/superheroes/GreenLantern").withParams("sessionId" -> "<session-id>")
 
@@ -268,8 +291,10 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert body.asArray.isNotEmpty
 
-        Then assert body.asArray.ignoringEach("publisher").is(
-          """
+        Then assert body.asArray
+          .ignoringEach("publisher")
+          .is(
+            """
           [{
             "name": "Batman",
             "realName": "Bruce Wayne",
@@ -301,10 +326,12 @@ class SuperHeroesScenario extends CornichonFeature {
             "city": "New York"
           }]
           """
-        )
+          )
 
-        Then assert body.asArray.ignoringEach("publisher").is(
-          """
+        Then assert body.asArray
+          .ignoringEach("publisher")
+          .is(
+            """
           |      name      |    realName    |     city      |  hasSuperpowers |
           |    "Batman"    | "Bruce Wayne"  | "Gotham city" |      false      |
           |   "Superman"   | "Clark Kent"   | "Metropolis"  |      true       |
@@ -312,10 +339,12 @@ class SuperHeroesScenario extends CornichonFeature {
           |   "Spiderman"  | "Peter Parker" | "New York"    |      true       |
           |    "IronMan"   | "Tony Stark"   | "New York"    |      false      |
         """
-        )
+          )
 
-        Then assert body.asArray.ignoringEach("hasSuperpowers", "publisher").is(
-          """
+        Then assert body.asArray
+          .ignoringEach("hasSuperpowers", "publisher")
+          .is(
+            """
           [{
             "name": "Superman",
             "realName": "Clark Kent",
@@ -342,7 +371,7 @@ class SuperHeroesScenario extends CornichonFeature {
             "city": "Coast City"
           }]
           """
-        )
+          )
 
         Then assert body.asArray.hasSize(5)
 
@@ -350,8 +379,10 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then I save("5th-name" -> "IronMan")
 
-        And assert body.asArray.ignoringEach("city", "hasSuperpowers").contains(
-          """
+        And assert body.asArray
+          .ignoringEach("city", "hasSuperpowers")
+          .contains(
+            """
           {
             "name": "<5th-name>",
             "realName": "Tony Stark",
@@ -362,13 +393,16 @@ class SuperHeroesScenario extends CornichonFeature {
             }
           }
           """
-        )
+          )
 
-        And assert body.path("$[*].name").asArray.is(
-          """
+        And assert body
+          .path("$[*].name")
+          .asArray
+          .is(
+            """
             [ "Spiderman", "IronMan", "Superman", "GreenLantern", "Batman"]
           """
-        )
+          )
 
         When I delete("/superheroes/IronMan").withParams("sessionId" -> "<session-id>")
 
@@ -399,15 +433,17 @@ class SuperHeroesScenario extends CornichonFeature {
 
         When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
 
-        Then assert body.ignoring("hasSuperpowers", "publisher").is(
-          """
+        Then assert body
+          .ignoring("hasSuperpowers", "publisher")
+          .is(
+            """
           {
             "name": "Batman",
             "realName": "Bruce Wayne",
             "city": "Gotham city"
           }
           """
-        )
+          )
 
         // Set a key/value in the Scenario's session
         And I save("favorite-superhero" -> "Batman")
@@ -417,15 +453,17 @@ class SuperHeroesScenario extends CornichonFeature {
         // Retrieve dynamically from session with <key> for URL construction
         When I get("/superheroes/<favorite-superhero>").withParams("sessionId" -> "<session-id>")
 
-        Then assert body.ignoring("hasSuperpowers", "publisher").is(
-          """
+        Then assert body
+          .ignoring("hasSuperpowers", "publisher")
+          .is(
+            """
           {
             "name": "<favorite-superhero>",
             "realName": "Bruce Wayne",
             "city": "Gotham city"
           }
           """
-        )
+          )
 
         And assert session_value("batman-city").isAbsent
 
@@ -438,21 +476,23 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert session_value("batman-city").is("Gotham city")
 
-        Then assert body.ignoring("hasSuperpowers", "publisher").is(
-          """
+        Then assert body
+          .ignoring("hasSuperpowers", "publisher")
+          .is(
+            """
           {
             "name": "<favorite-superhero>",
             "realName": "Bruce Wayne",
             "city": "<batman-city>"
           }
           """
-        )
+          )
 
         // To make debugging easier, here are some debug steps printing into console
-        //And I show_session
-        //And I show_last_status
-        //And I show_last_body
-        //And I show_last_headers
+        // And I show_session
+        // And I show_last_status
+        // And I show_last_body
+        // And I show_last_headers
       }
 
       Scenario("demonstrate GraphQL support") {
@@ -470,25 +510,29 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert status.is(200)
 
-        Then assert body.path("data.superheroByName").is(
-          """
+        Then assert body
+          .path("data.superheroByName")
+          .is(
+            """
           {
             "name": "Batman",
             "city": "Gotham city"
           }
           """
-        )
+          )
 
         // Support for GraphQL JSON input for lightweight definition
         // Requires the import of com.github.agourlay.cornichon.json.CornichonJson._
-        Then assert body.path("data.superheroByName").is(
-          gqljson"""
+        Then assert body
+          .path("data.superheroByName")
+          .is(
+            gqljson"""
           {
             name : "Batman"
             city : "Gotham city"
           }
           """
-        )
+          )
 
         When I query_gql("/graphql").withVariables("sessionId" -> "<session-id>").withQuery {
           graphql"""
@@ -517,14 +561,16 @@ class SuperHeroesScenario extends CornichonFeature {
 
         Then assert status.is(200)
 
-        Then assert body.path("data.updateSuperhero").is(
-          """
+        Then assert body
+          .path("data.updateSuperhero")
+          .is(
+            """
           {
             "name": "Batman",
             "city": "Berlin"
           }
           """
-        )
+          )
       }
 
       Scenario("demonstrate wrapping DSL blocks") {
@@ -581,14 +627,14 @@ class SuperHeroesScenario extends CornichonFeature {
           Then assert body.path("name").matchesRegex(".*man".r)
 
           Then assert body.ignoring("hasSuperpowers", "publisher").is(
-            """
+              """
             {
               "name": "Batman",
               "realName": "Bruce Wayne",
               "city": "Gotham city"
             }
             """
-          )
+            )
         }
 
         // Nesting different kind of blocs
@@ -602,15 +648,17 @@ class SuperHeroesScenario extends CornichonFeature {
 
             When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
 
-            Then assert body.ignoring("hasSuperpowers", "publisher").is(
-              """
+            Then assert body
+              .ignoring("hasSuperpowers", "publisher")
+              .is(
+                """
               {
                 "name": "Batman",
                 "realName": "Bruce Wayne",
                 "city": "Gotham city"
               }
               """
-            )
+              )
           }
         }
 
@@ -639,15 +687,17 @@ class SuperHeroesScenario extends CornichonFeature {
 
           When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
 
-          Then assert body.ignoring("hasSuperpowers", "publisher").is(
-            """
+          Then assert body
+            .ignoring("hasSuperpowers", "publisher")
+            .is(
+              """
             {
               "name": "Batman",
               "realName": "Bruce Wayne",
               "city": "Gotham city"
             }
             """
-          )
+            )
         }
 
         // Assert that a series of Steps succeeds within a given duration
@@ -664,15 +714,17 @@ class SuperHeroesScenario extends CornichonFeature {
 
             When I get("/superheroes/random").withParams("sessionId" -> "<session-id>")
 
-            Then assert body.ignoring("hasSuperpowers", "publisher").is(
-              """
+            Then assert body
+              .ignoring("hasSuperpowers", "publisher")
+              .is(
+                """
               {
                 "name": "Batman",
                 "realName": "Bruce Wayne",
                 "city": "Gotham city"
               }
               """
-            )
+              )
           }
         }
       }
@@ -682,7 +734,7 @@ class SuperHeroesScenario extends CornichonFeature {
         // SSE streams are aggregated over a period of time into a JSON Array
         When I open_sse("/sseStream/superheroes", takeWithin = 1.seconds).withParams(
           "sessionId" -> "<session-id>",
-          "justName" -> "true"
+          "justName"  -> "true"
         )
 
         Then assert body.asArray.hasSize(5)
@@ -717,8 +769,10 @@ class SuperHeroesScenario extends CornichonFeature {
 
         And assert body.path("city").is("*any-string*")
 
-        And assert body.ignoring("city", "realName", "publisher.location").is(
-          """
+        And assert body
+          .ignoring("city", "realName", "publisher.location")
+          .is(
+            """
           {
             "name": "<favorite-superhero>",
             "hasSuperpowers": *any-boolean*,
@@ -728,7 +782,7 @@ class SuperHeroesScenario extends CornichonFeature {
             }
           }
           """
-        )
+          )
       }
 
       Scenario("demonstrate resource steps") {
@@ -765,8 +819,7 @@ class SuperHeroesScenario extends CornichonFeature {
   def superhero_resource(name: String) = Resource(
     title = s"superhero $name resource",
     acquire = post("/superheroes")
-      .withBody(
-        s"""
+      .withBody(s"""
         {
           "name": "$name",
           "realName": "unknown",
@@ -789,7 +842,7 @@ class SuperHeroesScenario extends CornichonFeature {
   // Base url used for all HTTP steps
   override lazy val baseUrl = s"http://localhost:$port"
 
-  //Travis CI struggles with default value `2.seconds`
+  // Travis CI struggles with default value `2.seconds`
   override lazy val requestTimeout = 5.second
 
   var server: HttpServer = _
@@ -828,4 +881,5 @@ class SuperHeroesScenario extends CornichonFeature {
   override def registerExtractors: Map[String, JsonMapper] = Map(
     "name" -> JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "name")
   )
+
 }

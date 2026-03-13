@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.json
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ GenericEqualityAssertion, GreaterThanAssertion, LessThanAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{GenericEqualityAssertion, GreaterThanAssertion, LessThanAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import io.circe.Json
 import munit.FunSuite
@@ -928,4 +928,5 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
            |""".stripMargin
     }
   }
+
 }

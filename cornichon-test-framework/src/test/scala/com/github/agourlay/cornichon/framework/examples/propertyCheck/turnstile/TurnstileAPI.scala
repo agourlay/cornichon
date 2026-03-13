@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.framework.examples.propertyCheck.turnstile
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import com.comcast.ip4s.{ Host, Port }
+import com.comcast.ip4s.{Host, Port}
 import com.github.agourlay.cornichon.framework.examples.HttpServer
 import org.http4s._
 import org.http4s.implicits._
@@ -40,9 +40,10 @@ class TurnstileAPI extends Http4sDsl[IO] {
 
   def start(httpPort: Int): Future[HttpServer] =
     Port.fromInt(httpPort) match {
-      case None => Future.failed(new IllegalArgumentException("Invalid port number"))
+      case None       => Future.failed(new IllegalArgumentException("Invalid port number"))
       case Some(port) =>
-        EmberServerBuilder.default[IO]
+        EmberServerBuilder
+          .default[IO]
           .withPort(port)
           .withHost(Host.fromString("localhost").get)
           .withShutdownTimeout(1.seconds)
@@ -54,4 +55,3 @@ class TurnstileAPI extends Http4sDsl[IO] {
     }
 
 }
-

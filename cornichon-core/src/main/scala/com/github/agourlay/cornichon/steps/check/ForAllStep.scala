@@ -3,9 +3,17 @@ package com.github.agourlay.cornichon.steps.check
 import cats.data.StateT
 import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done.rightDone
-import com.github.agourlay.cornichon.core.{ Generator, _ }
+import com.github.agourlay.cornichon.core.{Generator, _}
 
-case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int)(ga: RandomContext => Generator[A], gb: RandomContext => Generator[B], gc: RandomContext => Generator[C], gd: RandomContext => Generator[D], ge: RandomContext => Generator[E], gf: RandomContext => Generator[F])(f: A => B => C => D => E => F => Step) extends WrapperStep {
+case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: Int)(
+  ga: RandomContext => Generator[A],
+  gb: RandomContext => Generator[B],
+  gc: RandomContext => Generator[C],
+  gd: RandomContext => Generator[D],
+  ge: RandomContext => Generator[E],
+  gf: RandomContext => Generator[F]
+)(f: A => B => C => D => E => F => Step)
+    extends WrapperStep {
 
   val baseTitle = s"ForAll values of generators check '$description'"
   val title = s"$baseTitle with maxNumberOfRuns=$maxNumberOfRuns"
@@ -48,19 +56,18 @@ case class ForAllStep[A, B, C, D, E, F](description: String, maxNumberOfRuns: In
         }
       }
 
-    repeatEvaluationOnSuccess(1)(runState.nestedContext)
-      .timed
-      .map {
-        case (executionTime, (checkState, res)) =>
-          val depth = runState.depth
-          val exec = Some(executionTime)
-          val fullLogs = res match {
-            case Left(_) =>
-              FailureLogInstruction(s"$baseTitle block failed ", depth, exec) +: checkState.logStack :+ failedTitleLog(depth)
-            case _ =>
-              SuccessLogInstruction(s"$baseTitle block succeeded", depth, exec) +: checkState.logStack :+ successTitleLog(depth)
-          }
-          (runState.mergeNested(checkState, fullLogs), res)
+    repeatEvaluationOnSuccess(1)(runState.nestedContext).timed
+      .map { case (executionTime, (checkState, res)) =>
+        val depth = runState.depth
+        val exec = Some(executionTime)
+        val fullLogs = res match {
+          case Left(_) =>
+            FailureLogInstruction(s"$baseTitle block failed ", depth, exec) +: checkState.logStack :+ failedTitleLog(depth)
+          case _ =>
+            SuccessLogInstruction(s"$baseTitle block succeeded", depth, exec) +: checkState.logStack :+ successTitleLog(depth)
+        }
+        (runState.mergeNested(checkState, fullLogs), res)
       }
   }
+
 }

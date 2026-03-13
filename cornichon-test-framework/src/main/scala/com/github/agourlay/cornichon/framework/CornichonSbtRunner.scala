@@ -19,14 +19,15 @@ class CornichonSbtRunner(val args: Array[String], val remoteArgs: Array[String])
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     gotTasks.set(true)
     val (seeds, scenarioNameFilter) = args.toSet.partition(_.startsWith(seedArg))
-    val explicitSeed = try {
-      seeds.headOption.map(_.split(seedArg)(1).toLong) //YOLO
-    } catch {
-      case e if NonFatal(e) =>
-        println(s"Could not parse seed from args ${args.toList}")
-        println(CornichonError.genStacktrace(e))
-        None
-    }
+    val explicitSeed =
+      try
+        seeds.headOption.map(_.split(seedArg)(1).toLong) // YOLO
+      catch {
+        case e if NonFatal(e) =>
+          println(s"Could not parse seed from args ${args.toList}")
+          println(CornichonError.genStacktrace(e))
+          None
+      }
     taskDefs.map(new CornichonFeatureSbtTask(_, scenarioNameFilter, explicitSeed))
   }
 

@@ -97,4 +97,5 @@ object Matchers {
     description = "checks if the field is an ISO time (e.g. 'HH:mm:ss.SSS')",
     predicate = _.asString.exists(s => Try(DateTimeFormatter.ISO_TIME.parse(s)).isSuccess)
   )
+
 }

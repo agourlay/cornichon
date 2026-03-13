@@ -11,9 +11,9 @@ import org.scalatest.wordspec.AsyncWordSpecLike
 
 import java.util
 import java.util.concurrent.atomic.AtomicInteger
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with ParallelTestExecution {
   this: BaseFeature =>
@@ -32,7 +32,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
     if (executeScenariosInParallel) super.run(testName, args)
     else super.run(testName, args.copy(distributor = None))
 
-  Try { feature } match {
+  Try(feature) match {
     case Failure(e) =>
       "Cornichon" should {
         "load feature definition" in {
@@ -50,7 +50,7 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
       }
 
     case Success(feat) =>
-      s"${feat.name}${feat.ignored.fold("")(r => s" ignored because $r")}" should {
+      s"${feat.name}${feat.ignored.fold("")(r => s" ignored because $r")}" should
         feat.scenarios.foreach { s =>
           if (s.ignored.isDefined)
             s"${s.name}${s.ignored.fold("")(r => s" ($r)")}" ignore Future.successful(Succeeded)
@@ -61,27 +61,29 @@ trait ScalatestFeature extends AsyncWordSpecLike with BeforeAndAfterAll with Par
           else if (s.pending)
             s.name in pending
           else
-            s.name in {
+            s.name in
               // No explicit seed in `cornichon-scalatest`
-              cornichon.core.FeatureRunner(feature, this, explicitSeed = None).runScenario(s).map {
-                case s: SuccessScenarioReport =>
-                  if (s.shouldShowLogs) printLogs(s.logs)
-                  assert(true)
-                case f: FailureScenarioReport =>
-                  printLogs(f.logs)
-                  fail(
-                    s"""|${f.msg}
+              cornichon.core
+                .FeatureRunner(feature, this, explicitSeed = None)
+                .runScenario(s)
+                .map {
+                  case s: SuccessScenarioReport =>
+                    if (s.shouldShowLogs) printLogs(s.logs)
+                    assert(true)
+                  case f: FailureScenarioReport =>
+                    printLogs(f.logs)
+                    fail(
+                      s"""|${f.msg}
                         |${fansi.Color.Red("replay only this scenario with the command:").overlay(attrs = fansi.Underlined.On).render}
                         |${scalaTestReplayCmd(feat.name, s.name)}""".stripMargin
-                  )
-                case i: IgnoreScenarioReport =>
-                  throw new RuntimeException(s"Scalatest filters ignored scenario upstream, this should never happen\n$i")
-                case p: PendingScenarioReport =>
-                  throw new RuntimeException(s"Scalatest filters pending scenario upstream, this should never happen\n$p")
-              }.unsafeToFuture()(cats.effect.unsafe.implicits.global)
-            }
+                    )
+                  case i: IgnoreScenarioReport =>
+                    throw new RuntimeException(s"Scalatest filters ignored scenario upstream, this should never happen\n$i")
+                  case p: PendingScenarioReport =>
+                    throw new RuntimeException(s"Scalatest filters pending scenario upstream, this should never happen\n$p")
+                }
+                .unsafeToFuture()(cats.effect.unsafe.implicits.global)
         }
-      }
   }
 
   private def scalaTestReplayCmd(featureName: String, scenarioName: String) =
@@ -97,8 +99,9 @@ object ScalatestFeature {
   // Custom Reaper process for the time being as we want to clean up after all Feature
   // Will tear down stuff if no Feature registers during 10 secs
   private val timer = new util.Timer()
+
   private val timerTask = new util.TimerTask {
-    def run(): Unit = {
+    def run(): Unit =
       if (registeredUsage.get() == 0) {
         safePassInRow.incrementAndGet()
         if (safePassInRow.get() == 2) {
@@ -108,8 +111,8 @@ object ScalatestFeature {
         safePassInRow.decrementAndGet()
         ()
       }
-    }
   }
+
   timer.scheduleAtFixedRate(timerTask, 5.seconds.toMillis, 5.seconds.toMillis)
 
   private def reserveGlobalRuntime(): Unit = {
@@ -121,4 +124,5 @@ object ScalatestFeature {
     registeredUsage.decrementAndGet()
     ()
   }
+
 }

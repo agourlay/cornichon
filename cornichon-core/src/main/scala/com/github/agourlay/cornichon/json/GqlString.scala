@@ -19,4 +19,5 @@ object GqlString {
 
   implicit val gqlEncode: Encoder[GqlString] =
     Encoder.instance[GqlString](g => parseGraphQLJson(g.input).valueUnsafe)
+
 }

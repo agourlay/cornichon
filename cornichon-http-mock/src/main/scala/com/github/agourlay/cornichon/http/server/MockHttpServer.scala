@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.http.server
 
 import java.net.NetworkInterface
 import cats.effect.IO
-import com.comcast.ip4s.{ Host, Port }
+import com.comcast.ip4s.{Host, Port}
 import com.github.agourlay.cornichon.core.CornichonError
 import org.http4s.HttpRoutes
 import org.http4s.server.Router
@@ -13,12 +13,9 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.util.Random
 
-class MockHttpServer[A](
-    label: String,
-    interface: Option[String],
-    port: Option[Range],
-    mockService: HttpRoutes[IO],
-    maxPortBindingRetries: Int)(useFromAddress: String => IO[A]) {
+class MockHttpServer[A](label: String, interface: Option[String], port: Option[Range], mockService: HttpRoutes[IO], maxPortBindingRetries: Int)(
+  useFromAddress: String => IO[A]
+) {
 
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r => Random.shuffle(r.toList))
@@ -45,9 +42,10 @@ class MockHttpServer[A](
 
   private def startServer(port: Int): IO[A] =
     Port.fromInt(port) match {
-      case None => IO.raiseError(new IllegalArgumentException(s"Invalid port number $port"))
+      case None    => IO.raiseError(new IllegalArgumentException(s"Invalid port number $port"))
       case Some(p) =>
-        EmberServerBuilder.default[IO]
+        EmberServerBuilder
+          .default[IO]
           .withPort(p)
           .withHost(Host.fromString(selectedInterface).get) // fixme
           .withHttpApp(ResponseTiming(mockRouter))
@@ -63,6 +61,7 @@ class MockHttpServer[A](
       .find(_.isSiteLocalAddress)
       .map(_.getHostAddress)
       .getOrElse("localhost")
+
 }
 
 case object MockHttpServerError extends CornichonError {

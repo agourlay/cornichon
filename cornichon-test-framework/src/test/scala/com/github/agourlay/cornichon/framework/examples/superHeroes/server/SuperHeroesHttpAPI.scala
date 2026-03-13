@@ -1,17 +1,17 @@
 package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
-import cats.data.Validated.{ Invalid, Valid }
+import cats.data.Validated.{Invalid, Valid}
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.syntax.all._
-import com.comcast.ip4s.{ Host, Port }
+import com.comcast.ip4s.{Host, Port}
 import com.github.agourlay.cornichon.framework.examples.HttpServer
 import fs2.Stream
-import io.circe.{ Encoder, Json, JsonObject }
+import io.circe.{Encoder, Json, JsonObject}
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.http4s.server.{ AuthMiddleware, Router }
+import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.middleware.authentication.BasicAuth
 import org.http4s.server.middleware.authentication.BasicAuth.BasicAuthenticator
@@ -19,13 +19,13 @@ import org.http4s._
 import org.http4s.implicits._
 import org.http4s.circe._
 import org.http4s.dsl._
-import org.http4s.server.middleware.{ GZip, ResponseTiming }
+import org.http4s.server.middleware.{GZip, ResponseTiming}
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
-import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 class SuperHeroesHttpAPI extends Http4sDsl[IO] {
 
@@ -117,63 +117,63 @@ class SuperHeroesHttpAPI extends Http4sDsl[IO] {
     }
   }
 
-  private val gqlService = HttpRoutes.of[IO] {
-    case req @ POST -> Root =>
-      req.as[Json].flatMap { requestJson =>
+  private val gqlService = HttpRoutes.of[IO] { case req @ POST -> Root =>
+    req.as[Json].flatMap { requestJson =>
+      val obj = requestJson.asObject
+      val query = obj.flatMap(_("query")).flatMap(_.asString)
+      val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
+      val vars = obj.flatMap(_("variables")).getOrElse(Json.fromJsonObject(JsonObject.empty))
+      query.fold(BadRequest(Json.obj("error" -> Json.fromString("Query is required")))) { q =>
+        QueryParser.parse(q) match {
 
-        val obj = requestJson.asObject
-        val query = obj.flatMap(_("query")).flatMap(_.asString)
-        val operation = obj.flatMap(_("operationName")).flatMap(_.asString)
-        val vars = obj.flatMap(_("variables")).getOrElse(Json.fromJsonObject(JsonObject.empty))
-        query.fold(BadRequest(Json.obj("error" -> Json.fromString("Query is required")))) { q =>
-          QueryParser.parse(q) match {
+          // can't parse GraphQL query, return error
+          case Failure(error) =>
+            BadRequest(Json.obj("error" -> Json.fromString(error.getMessage)))
 
-            // can't parse GraphQL query, return error
-            case Failure(error) =>
-              BadRequest(Json.obj("error" -> Json.fromString(error.getMessage)))
+          // query parsed successfully, time to execute it!
+          case Success(queryAst) =>
+            val f: Future[Json] = Executor.execute(
+              schema = GraphQlSchema.SuperHeroesSchema,
+              queryAst = queryAst,
+              root = new GraphQLSuperMicroService(sm),
+              variables = vars,
+              operationName = operation
+            )
 
-            // query parsed successfully, time to execute it!
-            case Success(queryAst) =>
-              val f: Future[Json] = Executor.execute(
-                schema = GraphQlSchema.SuperHeroesSchema,
-                queryAst = queryAst,
-                root = new GraphQLSuperMicroService(sm),
-                variables = vars,
-                operationName = operation
-              )
-
-              IO.fromFuture(IO.delay(f))
-                .flatMap(a => Ok(a))
-                .handleErrorWith {
-                  case e: QueryAnalysisError => BadRequest(e.resolveError)
-                  case e: ErrorWithResolver  => InternalServerError(e.resolveError)
-                }
-          }
+            IO.fromFuture(IO.delay(f))
+              .flatMap(a => Ok(a))
+              .handleErrorWith {
+                case e: QueryAnalysisError => BadRequest(e.resolveError)
+                case e: ErrorWithResolver  => InternalServerError(e.resolveError)
+              }
         }
       }
+    }
   }
 
   private val sseSuperHeroesService = HttpRoutes.of[IO] {
     case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) :? JustNameQueryParamMatcher(justNameOpt) =>
       val superheroes = sm.allSuperheroes(sessionId)
-      val sse = if (justNameOpt.getOrElse(false))
-        superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = Some(sh.name)))
-      else
-        superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = Some(sh.asJson.noSpaces)))
+      val sse =
+        if (justNameOpt.getOrElse(false))
+          superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = Some(sh.name)))
+        else
+          superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = Some(sh.asJson.noSpaces)))
       Ok(Stream.iterable[IO, ServerSentEvent](sse))
   }
 
   private val routes = Router(
-    "/" -> (sessionService <+> publishersService <+> superHeroesService <+> securedSuperHeroesService),
+    "/"          -> (sessionService <+> publishersService <+> superHeroesService <+> securedSuperHeroesService),
     "/sseStream" -> sseSuperHeroesService,
-    "/graphql" -> gqlService
+    "/graphql"   -> gqlService
   )
 
   def start(httpPort: Int): Future[HttpServer] =
     Port.fromInt(httpPort) match {
-      case None => Future.failed(new IllegalArgumentException("Invalid port number"))
+      case None       => Future.failed(new IllegalArgumentException("Invalid port number"))
       case Some(port) =>
-        EmberServerBuilder.default[IO]
+        EmberServerBuilder
+          .default[IO]
           .withPort(port)
           .withHost(Host.fromString("localhost").get)
           .withHttpApp(ResponseTiming(GZip(routes.orNotFound)))
@@ -183,4 +183,5 @@ class SuperHeroesHttpAPI extends Http4sDsl[IO] {
           .map { case (_, stop) => new HttpServer(stop) }
           .unsafeToFuture()
     }
+
 }

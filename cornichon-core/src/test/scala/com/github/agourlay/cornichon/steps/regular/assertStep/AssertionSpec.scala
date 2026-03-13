@@ -48,4 +48,5 @@ class AssertionSpec extends FunSuite {
     val assertion = Assertion.any(List(Assertion.failWith("boom!"), Assertion.failWith("always fail!")))
     assert(!assertion.validated.isValid)
   }
+
 }

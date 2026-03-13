@@ -13,29 +13,32 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
   override val stateUpdate: StepState = StateT { runState =>
     val initialDepth = runState.depth
 
-    ScenarioRunner.runStepsShortCircuiting(nested, runState.nestedContext)
+    ScenarioRunner
+      .runStepsShortCircuiting(nested, runState.nestedContext)
       .timed
-      .map {
-        case (executionTime, (withinState, inputRes)) =>
-          val (logStack, res) = inputRes match {
-            case l @ Left(_) =>
-              // Failure of the nested steps have a higher priority
-              val fullLogs = withinState.logStack :+ failedTitleLog(initialDepth)
-              (fullLogs, l)
-            case Right(_) =>
-              if (executionTime.gt(maxDuration)) {
-                val wrappedLogStack = FailureLogInstruction("Within block did not complete in time", initialDepth, Some(executionTime)) +: withinState.logStack :+ successTitleLog(initialDepth)
-                // The nested steps were successful, but they did not finish in time, the last step is picked as failed step
-                val artificialFailedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
-                (wrappedLogStack, Left(artificialFailedStep))
-              } else {
-                val wrappedLogStack = SuccessLogInstruction("Within block succeeded", initialDepth, Some(executionTime)) +: withinState.logStack :+ successTitleLog(initialDepth)
-                (wrappedLogStack, rightDone)
-              }
-          }
-          (runState.mergeNested(withinState, logStack), res)
+      .map { case (executionTime, (withinState, inputRes)) =>
+        val (logStack, res) = inputRes match {
+          case l @ Left(_) =>
+            // Failure of the nested steps have a higher priority
+            val fullLogs = withinState.logStack :+ failedTitleLog(initialDepth)
+            (fullLogs, l)
+          case Right(_) =>
+            if (executionTime.gt(maxDuration)) {
+              val wrappedLogStack =
+                FailureLogInstruction("Within block did not complete in time", initialDepth, Some(executionTime)) +: withinState.logStack :+ successTitleLog(initialDepth)
+              // The nested steps were successful, but they did not finish in time, the last step is picked as failed step
+              val artificialFailedStep = FailedStep.fromSingle(nested.last, WithinBlockSucceedAfterMaxDuration(maxDuration, executionTime))
+              (wrappedLogStack, Left(artificialFailedStep))
+            } else {
+              val wrappedLogStack =
+                SuccessLogInstruction("Within block succeeded", initialDepth, Some(executionTime)) +: withinState.logStack :+ successTitleLog(initialDepth)
+              (wrappedLogStack, rightDone)
+            }
+        }
+        (runState.mergeNested(withinState, logStack), res)
       }
   }
+
 }
 
 case class WithinBlockSucceedAfterMaxDuration(maxDuration: Duration, executionTime: Duration) extends CornichonError {

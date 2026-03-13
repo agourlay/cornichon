@@ -9,6 +9,7 @@ sealed trait LogInstruction {
   def duration: Option[Duration]
   def colorized: String
   lazy val fullMargin: String = LogInstruction.physicalMargin * marginNb
+
   lazy val completeMessage: String = {
     // Inject human-readable duration at the end of the line
     def withMarginAndDuration(builder: StringBuilder, line: String): Unit = {
@@ -60,6 +61,7 @@ sealed trait LogInstruction {
     }
     builder.result()
   }
+
 }
 
 object LogInstruction {

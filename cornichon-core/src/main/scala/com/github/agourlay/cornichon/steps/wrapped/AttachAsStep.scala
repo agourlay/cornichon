@@ -14,4 +14,5 @@ case class AttachAsStep(title: String, nestedToRun: Session => List[Step]) exten
 
   override def logStackOnNestedSuccess(resultLogStack: List[LogInstruction], depth: Int, executionTime: Duration): List[LogInstruction] =
     SuccessLogInstruction(s"$title - Succeeded", depth, Some(executionTime)) +: resultLogStack :+ successTitleLog(depth)
+
 }

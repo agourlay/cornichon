@@ -2,11 +2,11 @@ package com.github.agourlay.cornichon.framework
 
 import cats.syntax.either._
 
-import java.io.{ File, PrintWriter }
-import java.net.{ InetAddress, UnknownHostException }
+import java.io.{File, PrintWriter}
+import java.net.{InetAddress, UnknownHostException}
 import java.text.SimpleDateFormat
 import java.util.Properties
-import sbt.testing.{ Event, Status }
+import sbt.testing.{Event, Status}
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
@@ -17,9 +17,9 @@ object JUnitXmlReporter {
   private lazy val propertiesXml = genPropertiesXml
 
   private lazy val hostname: String =
-    try {
+    try
       InetAddress.getLocalHost.getHostName
-    } catch {
+    catch {
       case _: UnknownHostException => "unknown hostname"
     }
 
@@ -31,9 +31,9 @@ object JUnitXmlReporter {
 
     <properties>
       {
-        for (name <- propertyNames(sysprops))
-          yield <property name={ name } value={ sysprops.getProperty(name) }/>
-      }
+      for (name <- propertyNames(sysprops))
+        yield <property name={name} value={sysprops.getProperty(name)}/>
+    }
     </properties>
   }
 
@@ -52,6 +52,7 @@ object JUnitXmlReporter {
   private case class TestSuite(name: String, timeStamp: Long, duration: FiniteDuration, events: List[Event]) {
     val errors: Int = events.count(_.status() == Status.Error)
     val failures: Int = events.count(_.status() == Status.Failure)
+
     val testCases: List[TestCase] = events.map { e =>
       val tc = TestCase(e.fullyQualifiedName(), e.duration())
       e.status() match {
@@ -62,9 +63,17 @@ object JUnitXmlReporter {
         case _               => tc
       }
     }
+
   }
 
-  private case class TestCase(name: String, duration: Long, pending: Boolean = false, canceled: Boolean = false, ignored: Boolean = false, failure: Option[Throwable] = None)
+  private case class TestCase(
+    name: String,
+    duration: Long,
+    pending: Boolean = false,
+    canceled: Boolean = false,
+    ignored: Boolean = false,
+    failure: Option[Throwable] = None
+  )
 
   def checkReportsFolder(reportsOutputDir: String): Unit = {
     val outputDir: File = new File(reportsOutputDir)
@@ -100,20 +109,17 @@ object JUnitXmlReporter {
     dateFmt.format(timeStamp) + "T" + timeFmt.format(timeStamp)
   }
 
-  private def getStackTrace(throwable: Throwable): String = {
+  private def getStackTrace(throwable: Throwable): String =
     "" + throwable +
-      Array.concat(throwable.getStackTrace).mkString(
-        "\n      at ",
-        "\n      at ", "\n") +
-        {
-          if (throwable.getCause != null) {
-            "      Cause: " +
-              getStackTrace(throwable.getCause)
-          } else ""
-        }
-  }
+      Array.concat(throwable.getStackTrace).mkString("\n      at ", "\n      at ", "\n") +
+      {
+        if (throwable.getCause != null) {
+          "      Cause: " +
+            getStackTrace(throwable.getCause)
+        } else ""
+      }
 
-  private def failureXml(failureOption: Option[Throwable]): xml.NodeSeq = {
+  private def failureXml(failureOption: Option[Throwable]): xml.NodeSeq =
     failureOption match {
       case None =>
         xml.NodeSeq.Empty
@@ -125,26 +131,27 @@ object JUnitXmlReporter {
           (throwableType, throwableText)
         }
 
-        <failure type={ throwableType }> { throwableText } </failure>
+        <failure type={throwableType}> {throwableText} </failure>
     }
-  }
 
   private def renderXML(testSuite: TestSuite): String = {
     val xmlVal =
-      <testsuite errors={ "" + testSuite.errors } failures={ "" + testSuite.failures } hostname={ "" + hostname } name={ "" + testSuite.name } tests={ "" + testSuite.testCases.size } duration={ "" + testSuite.duration } timestamp={ "" + formatTimeStamp(testSuite.timeStamp) }>
-        { propertiesXml }
+      <testsuite errors={"" + testSuite.errors} failures={"" + testSuite.failures} hostname={"" + hostname} name={"" + testSuite.name} tests={
+        "" + testSuite.testCases.size
+      } duration={"" + testSuite.duration} timestamp={"" + formatTimeStamp(testSuite.timeStamp)}>
+        {propertiesXml}
         {
-          for (testCase <- testSuite.testCases) yield {
-            <testcase name={ "" + testCase.name } duration={ "" + testCase.duration }>
+        for (testCase <- testSuite.testCases) yield {
+          <testcase name={"" + testCase.name} duration={"" + testCase.duration}>
               {
-                if (testCase.ignored || testCase.pending || testCase.canceled)
-                  <skipped/>
-                else
-                  failureXml(testCase.failure)
-              }
-            </testcase>
+            if (testCase.ignored || testCase.pending || testCase.canceled)
+              <skipped/>
+            else
+              failureXml(testCase.failure)
           }
+            </testcase>
         }
+      }
         <system-out><![CDATA[]]></system-out>
         <system-err><![CDATA[]]></system-err>
       </testsuite>
@@ -153,13 +160,11 @@ object JUnitXmlReporter {
 
     // scala xml strips out the <![CDATA[]]> elements, so restore them here
     val withCDATA =
-      prettified.replace(
-        "<system-out></system-out>",
-        "<system-out><![CDATA[]]></system-out>").
-        replace(
-          "<system-err></system-err>",
-          "<system-err><![CDATA[]]></system-err>")
+      prettified
+        .replace("<system-out></system-out>", "<system-out><![CDATA[]]></system-out>")
+        .replace("<system-err></system-err>", "<system-err><![CDATA[]]></system-err>")
 
     "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" + withCDATA
   }
+
 }

@@ -1,10 +1,10 @@
 package com.github.agourlay.cornichon.resolver
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Session }
+import com.github.agourlay.cornichon.core.{CornichonError, Session}
 import com.github.agourlay.cornichon.resolver.PlaceholderParser._
 import org.parboiled2._
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 class PlaceholderParser(val input: ParserInput) extends Parser {
 
@@ -18,11 +18,11 @@ class PlaceholderParser(val input: ParserInput) extends Parser {
 
   private def PlaceholderTXT = rule(capture(oneOrMore(allowedCharsInPlaceholdersPredicate)))
 
-  private def Ignore = rule { zeroOrMore(!PlaceholderRule ~ ANY) }
+  private def Ignore = rule(zeroOrMore(!PlaceholderRule ~ ANY))
 
-  private def Number = rule { capture(Digits) ~> (_.toInt) }
+  private def Number = rule(capture(Digits) ~> (_.toInt))
 
-  private def Digits = rule { oneOrMore(CharPredicate.Digit) }
+  private def Digits = rule(oneOrMore(CharPredicate.Digit))
 }
 
 object PlaceholderParser {
@@ -44,13 +44,16 @@ object PlaceholderParser {
           Right(dt.toVector) // parser produces a vector under the hood
       }
     }
+
 }
 
 case class Placeholder(key: String, index: Option[Int]) {
+
   val fullKey = index match {
     case Some(i) => s"<$key[$i]>"
     case None    => s"<$key>"
   }
+
 }
 
 case class PlaceholderError(input: String, error: Throwable) extends CornichonError {

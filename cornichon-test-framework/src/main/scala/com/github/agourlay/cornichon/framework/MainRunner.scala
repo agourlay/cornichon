@@ -22,8 +22,10 @@ object MainRunner {
 
   private val reportsOutputDirOpts = Opts.option[String]("reportsOutputDir", help = "Output directory for junit.xml files (default to current).").withDefault(".")
 
-  private val featureParallelismOpts = Opts.option[Int]("featureParallelism", help = "Number of feature running in parallel (default=1).")
-    .validate("must be positive")(_ > 0).withDefault(1)
+  private val featureParallelismOpts = Opts
+    .option[Int]("featureParallelism", help = "Number of feature running in parallel (default=1).")
+    .validate("must be positive")(_ > 0)
+    .withDefault(1)
 
   private val seedOpts = Opts.option[Long]("seed", help = "Seed to use for starting random processes.").orNone
 
@@ -44,23 +46,22 @@ object MainRunner {
       val classes = discoverFeatureClasses(packageToScan)
       println(s"Found ${classes.size} feature classes")
       val scenarioNameFilterSet = scenarioNameFilter.toSet
-      val f = Stream.iterable[IO, Class[_]](classes)
+      val f = Stream
+        .iterable[IO, Class[_]](classes)
         .mapAsyncUnordered(featureParallelism) { featureClass =>
           val startedAt = System.currentTimeMillis()
           val featureTypeName = featureClass.getTypeName
           val featureInfo = FeatureInfo(featureTypeName, featureClass, CornichonFingerprint, new TestSelector(featureTypeName))
           val eventHandler = new RecordEventHandler()
-          loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilterSet)
-            .timed
-            .map {
-              case (duration, res) =>
-                JUnitXmlReporter.writeJunitReport(reportsOutputDir, featureTypeName, duration, startedAt, eventHandler.recorded) match {
-                  case Left(e) =>
-                    println(s"ERROR: Could not generate JUnit xml report for $featureTypeName due to\n${CornichonError.genStacktrace(e)}")
-                  case Right(_) =>
-                    ()
-                }
-                res
+          loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilterSet).timed
+            .map { case (duration, res) =>
+              JUnitXmlReporter.writeJunitReport(reportsOutputDir, featureTypeName, duration, startedAt, eventHandler.recorded) match {
+                case Left(e) =>
+                  println(s"ERROR: Could not generate JUnit xml report for $featureTypeName due to\n${CornichonError.genStacktrace(e)}")
+                case Right(_) =>
+                  ()
+              }
+              res
             }
         }
         .compile
@@ -78,4 +79,5 @@ object MainRunner {
     val classes: util.List[PojoClass] = PojoClassFactory.enumerateClassesByExtendingType(packageToExplore, classOf[CornichonFeature], null)
     classes.iterator().asScala.collect { case pojo if pojo.isConcrete => pojo.getClazz }.toList
   }
+
 }

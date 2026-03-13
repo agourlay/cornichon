@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.framework.examples.propertyCheck.webShop
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import com.comcast.ip4s.{ Host, Port }
+import com.comcast.ip4s.{Host, Port}
 
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -24,9 +24,12 @@ import scala.concurrent.duration._
 class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[IO] {
 
   case class Product(id: UUID, name: String, description: String, price: BigInt)
+
   object Product {
+
     def fromDraft(id: UUID, d: ProductDraft) =
       Product(id, d.name, d.description, d.price)
+
   }
 
   private val productsDB = new TrieMap[UUID, Product]()
@@ -95,9 +98,9 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[IO] {
           pd <- req.as[ProductDraft]
           p = Product.fromDraft(pid, pd)
           _ <- IO.delay {
-            productsDB.remove(pid)
-            productsDB.put(pid, p)
-          }
+                 productsDB.remove(pid)
+                 productsDB.put(pid, p)
+               }
           resp <- Created(p.asJson)
         } yield {
           indexInSearchWithDelay(p).unsafeToFuture()
@@ -127,9 +130,10 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[IO] {
 
   def start(httpPort: Int): Future[HttpServer] =
     Port.fromInt(httpPort) match {
-      case None => Future.failed(new IllegalArgumentException("Invalid port number"))
+      case None       => Future.failed(new IllegalArgumentException("Invalid port number"))
       case Some(port) =>
-        EmberServerBuilder.default[IO]
+        EmberServerBuilder
+          .default[IO]
           .withPort(port)
           .withHost(Host.fromString("localhost").get)
           .withShutdownTimeout(1.seconds)
@@ -139,6 +143,7 @@ class WebShopAPI(maxSyncDelay: FiniteDuration) extends Http4sDsl[IO] {
           .map { case (_, stop) => new HttpServer(stop) }
           .unsafeToFuture()
     }
+
 }
 
 case class ProductDraft(name: String, description: String, price: BigInt)

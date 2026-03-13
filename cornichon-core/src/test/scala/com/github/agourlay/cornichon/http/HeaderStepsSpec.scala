@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.http
 
-import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
+import com.github.agourlay.cornichon.core.{Scenario, ScenarioRunner, Session}
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.http.steps.HeadersSteps.HeadersStepBuilder
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
@@ -94,4 +94,5 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     val res = awaitIO(ScenarioRunner.runScenario(session)(s))
     assert(res.isSuccess)
   }
+
 }

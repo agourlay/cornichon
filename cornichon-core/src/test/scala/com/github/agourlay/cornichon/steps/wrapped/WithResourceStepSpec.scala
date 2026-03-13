@@ -1,17 +1,15 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
-import com.github.agourlay.cornichon.core.{ Resource, Scenario, ScenarioRunner, Session }
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion }
+import com.github.agourlay.cornichon.core.{Resource, Scenario, ScenarioRunner, Session}
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion}
 import munit.FunSuite
 
 class WithResourceStepSpec extends FunSuite with CommonTestSuite {
 
   test("succeed if acquire + nested + release are valid") {
-    val resource = Resource(
-      "super neat resource",
-      acquire = AssertStep("Acquire step", _ => Assertion.alwaysValid),
-      release = AssertStep("Release step", _ => Assertion.alwaysValid))
+    val resource =
+      Resource("super neat resource", acquire = AssertStep("Acquire step", _ => Assertion.alwaysValid), release = AssertStep("Release step", _ => Assertion.alwaysValid))
 
     val nested = AssertStep("Nested step", _ => Assertion.alwaysValid) :: Nil
     val withResourceStep = WithResourceStep(nested, resource)
@@ -35,7 +33,8 @@ class WithResourceStepSpec extends FunSuite with CommonTestSuite {
     val resource = Resource(
       "super neat resource",
       acquire = AssertStep("Acquire step", _ => Assertion.failWith("Something went wrong")),
-      release = AssertStep("Release step", _ => Assertion.alwaysValid))
+      release = AssertStep("Release step", _ => Assertion.alwaysValid)
+    )
 
     val nested = AssertStep("Nested step", _ => Assertion.alwaysValid) :: Nil
     val withResourceStep = WithResourceStep(nested, resource)
@@ -67,10 +66,8 @@ class WithResourceStepSpec extends FunSuite with CommonTestSuite {
   }
 
   test("fails if nested fails") {
-    val resource = Resource(
-      "super neat resource",
-      acquire = AssertStep("Acquire step", _ => Assertion.alwaysValid),
-      release = AssertStep("Release step", _ => Assertion.alwaysValid))
+    val resource =
+      Resource("super neat resource", acquire = AssertStep("Acquire step", _ => Assertion.alwaysValid), release = AssertStep("Release step", _ => Assertion.alwaysValid))
 
     val nested = AssertStep("Nested step", _ => Assertion.failWith("Something went wrong")) :: Nil
     val withResourceStep = WithResourceStep(nested, resource)
@@ -107,7 +104,8 @@ class WithResourceStepSpec extends FunSuite with CommonTestSuite {
     val resource = Resource(
       "super neat resource",
       acquire = AssertStep("Acquire step", _ => Assertion.alwaysValid),
-      release = AssertStep("Release step", _ => Assertion.failWith("Something went wrong")))
+      release = AssertStep("Release step", _ => Assertion.failWith("Something went wrong"))
+    )
 
     val nested = AssertStep("Nested step", _ => Assertion.alwaysValid) :: Nil
     val withResourceStep = WithResourceStep(nested, resource)
@@ -139,4 +137,5 @@ class WithResourceStepSpec extends FunSuite with CommonTestSuite {
         |      With resource block failed due to release step""".stripMargin
     }
   }
+
 }

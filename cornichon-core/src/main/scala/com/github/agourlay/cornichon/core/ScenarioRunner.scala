@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.core
 
 import cats.Foldable
-import cats.data.{ NonEmptyList, StateT, ValidatedNel }
+import cats.data.{NonEmptyList, StateT, ValidatedNel}
 import cats.syntax.either._
 import cats.syntax.apply._
 import cats.data.NonEmptyList._
@@ -21,7 +21,7 @@ object ScenarioRunner {
   private val finallyLog = InfoLogInstruction("finally steps", initMargin + 1)
   private val cleanupLog = InfoLogInstruction("cleanup steps", initMargin + 1)
 
-  private val noOpStage: StateT[IO, RunState, FailedStep ValidatedNel Done] = StateT { s => IO.pure((s, validDone)) }
+  private val noOpStage: StateT[IO, RunState, FailedStep ValidatedNel Done] = StateT(s => IO.pure((s, validDone)))
 
   def successLog(title: String, depth: Int, show: Boolean, duration: Duration): LogInstruction =
     if (show)
@@ -63,9 +63,8 @@ object ScenarioRunner {
 
         val titleLog = ScenarioTitleLogInstruction(s"Scenario : ${scenario.name}", initMargin)
         val startingRunState = RunState.fromFeatureContext(context, session, titleLog :: Nil, initMargin + 1, Nil)
-        stages.run(startingRunState).timed.map {
-          case (executionTime, (lastState, aggregatedResult)) =>
-            ScenarioReport.build(scenario.name, lastState, aggregatedResult, executionTime)
+        stages.run(startingRunState).timed.map { case (executionTime, (lastState, aggregatedResult)) =>
+          ScenarioReport.build(scenario.name, lastState, aggregatedResult, executionTime)
         }
     }
 
@@ -73,8 +72,8 @@ object ScenarioRunner {
     if (steps.isEmpty)
       IO.pure((runState, validDone))
     else
-      runStepsShortCircuiting(steps, runState.recordLog(stageTitle)).map {
-        case (resultState, resultReport) => (resultState, resultReport.toValidatedNel)
+      runStepsShortCircuiting(steps, runState.recordLog(stageTitle)).map { case (resultState, resultReport) =>
+        (resultState, resultReport.toValidatedNel)
       }
   }
 
@@ -84,35 +83,38 @@ object ScenarioRunner {
     else {
       // Cleanup steps are consumed to avoid double run
       val cleanupState = runState.resetCleanupSteps.recordLog(cleanupLog)
-      runStepsWithoutShortCircuiting(runState.cleanupSteps, cleanupState).map {
-        case (resultState, resultReport) => (resultState, resultReport.toValidated)
+      runStepsWithoutShortCircuiting(runState.cleanupSteps, cleanupState).map { case (resultState, resultReport) =>
+        (resultState, resultReport.toValidated)
       }
     }
   }
 
   final def runStepsShortCircuiting(steps: List[Step], runState: RunState): StepResult = {
-    def loop(remaining: List[Step], rs: RunState): IO[(RunState, Either[FailedStep, Done])] = {
+    def loop(remaining: List[Step], rs: RunState): IO[(RunState, Either[FailedStep, Done])] =
       remaining match {
-        case Nil => IO.pure(rs -> rightDone)
+        case Nil          => IO.pure(rs -> rightDone)
         case step :: tail =>
           prepareAndRunStep(step, rs).flatMap {
             case (newRs, Right(_))     => loop(tail, newRs)
             case failed @ (_, Left(_)) => IO.pure(failed)
           }
       }
-    }
 
     loop(steps, runState)
   }
 
   private def runStepsWithoutShortCircuiting(steps: List[Step], runState: RunState): IO[(RunState, Either[NonEmptyList[FailedStep], Done])] = {
     val initAcc = IO.pure((runState, Done: Done).asRight[NonEmptyList[(RunState, FailedStep)]])
-    steps.foldLeft(initAcc) {
-      case (runStateF, currentStep) => runStateF.flatMap(prepareAndRunStepsAccumulatingErrors(currentStep))
-    }.map(_.fold(
-      { errors => (errors.head._1, Left(errors.map(_._2))) },
-      { case (r, _) => (r, rightDone) }
-    ))
+    steps
+      .foldLeft(initAcc) { case (runStateF, currentStep) =>
+        runStateF.flatMap(prepareAndRunStepsAccumulatingErrors(currentStep))
+      }
+      .map(
+        _.fold(
+          errors => (errors.head._1, Left(errors.map(_._2))),
+          { case (r, _) => (r, rightDone) }
+        )
+      )
   }
 
   private def prepareAndRunStepsAccumulatingErrors(currentStep: Step)(failureOrDoneWithRunState: Either[NonEmptyList[(RunState, FailedStep)], (RunState, Done)]) = {
@@ -131,19 +133,20 @@ object ScenarioRunner {
   private def prepareAndRunStep(step: Step, runState: RunState): IO[(RunState, FailedStep Either Done)] =
     // resolving only session placeholders as built-in generators have side effects
     runState.scenarioContext.fillSessionPlaceholders(step.title) match {
-      case Left(ce) => IO.pure(ScenarioRunner.handleErrors(step, runState, NonEmptyList.one(ce)))
+      case Left(ce)        => IO.pure(ScenarioRunner.handleErrors(step, runState, NonEmptyList.one(ce)))
       case Right(newTitle) =>
         // detect if title has changed and update it
         val ps = if (newTitle == step.title) step else step.setTitle(newTitle)
         runStepSafe(runState, ps)
     }
 
-  private def runStepSafe(runState: RunState, step: Step): IO[(RunState, FailedStep Either Done)] = {
+  private def runStepSafe(runState: RunState, step: Step): IO[(RunState, FailedStep Either Done)] =
     Either.catchNonFatal(step.runStep(runState)) match {
-      case Left(e) => IO.pure(handleThrowable(step, runState, e))
-      case Right(s) => s.handleError {
-        case t if NonFatal(t) => handleThrowable(step, runState, t)
-      }
+      case Left(e)  => IO.pure(handleThrowable(step, runState, e))
+      case Right(s) =>
+        s.handleError {
+          case t if NonFatal(t) => handleThrowable(step, runState, t)
+        }
     }
-  }
+
 }

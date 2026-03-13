@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.http.server
 
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.{ AtomicBoolean, AtomicLong, AtomicReference }
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 
 import com.github.agourlay.cornichon.http
 import scala.jdk.CollectionConverters._
@@ -45,4 +45,3 @@ class MockServerStateHolder {
   def getDelay: Long = delay.get
 
 }
-

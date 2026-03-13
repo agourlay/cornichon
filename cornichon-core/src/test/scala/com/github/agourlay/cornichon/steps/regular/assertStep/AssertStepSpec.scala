@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.steps.regular.assertStep
 
-import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session }
+import com.github.agourlay.cornichon.core.{Scenario, ScenarioRunner, Session}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -26,4 +26,5 @@ class AssertStepSpec extends FunSuite with CommonTestSuite {
     val r = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(r.isSuccess)
   }
+
 }

@@ -39,14 +39,14 @@ class MutableRandomContext(seed: Long, seededRandom: Random) extends RandomConte
 }
 
 object RandomContext {
+
   def fromOptSeed(withSeed: Option[Long]): RandomContext = {
     val initialSeed = withSeed.getOrElse(System.currentTimeMillis())
     fromSeed(initialSeed)
   }
 
-  def fromSeed(seed: Long): RandomContext = {
+  def fromSeed(seed: Long): RandomContext =
     new MutableRandomContext(seed, new Random(new java.util.Random(seed)))
-  }
 
   private val alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".getBytes
 
@@ -56,4 +56,5 @@ object RandomContext {
     for (i <- 0 until length) bytes(i) = alphanumeric(rand.nextInt(alphanumeric.length))
     new String(bytes, StandardCharsets.US_ASCII)
   }
+
 }

@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.http.steps
 
 import com.github.agourlay.cornichon.core.Session
 import com.github.agourlay.cornichon.http.HttpService.SessionKeys._
-import com.github.agourlay.cornichon.http.{ HttpService, StatusNonExpected }
+import com.github.agourlay.cornichon.http.{HttpService, StatusNonExpected}
 import com.github.agourlay.cornichon.steps.regular.assertStep._
 
 object StatusSteps {
@@ -21,26 +21,30 @@ object StatusSteps {
       case 5 => "server error"
       case _ => "unknown"
     }
+
   }
 
   case object StatusStepBuilder {
+
     def is(expected: Short): AssertStep = AssertStep(
       title = s"status is '$expected'",
-      action = sc => Assertion.either {
-        sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
-          CustomMessageEqualityAssertion(expected, lastResponseStatus.toShort, () => statusError(expected, lastResponseStatus, sc.session))
+      action = sc =>
+        Assertion.either {
+          sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
+            CustomMessageEqualityAssertion(expected, lastResponseStatus.toShort, () => statusError(expected, lastResponseStatus, sc.session))
+          }
         }
-      }
     )
 
     private def isByKind(expectedKind: Short) = AssertStep(
       title = s"status is ${StatusKind.kindLabel(expectedKind)} '${StatusKind.kindDisplay(expectedKind)}'",
-      action = sc => Assertion.either {
-        sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
-          val actualKind = StatusKind.computeKind(lastResponseStatus.toShort)
-          CustomMessageEqualityAssertion(expectedKind, actualKind, () => statusKindError(expectedKind, lastResponseStatus, sc.session))
+      action = sc =>
+        Assertion.either {
+          sc.session.get(lastResponseStatusKey).map { lastResponseStatus =>
+            val actualKind = StatusKind.computeKind(lastResponseStatus.toShort)
+            CustomMessageEqualityAssertion(expectedKind, actualKind, () => statusKindError(expectedKind, lastResponseStatus, sc.session))
+          }
         }
-      }
     )
 
     def isSuccess: AssertStep = isByKind(2)

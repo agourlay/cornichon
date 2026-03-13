@@ -1,9 +1,9 @@
 package scenario
 
 import cats.effect.unsafe.implicits.global
-import com.github.agourlay.cornichon.core.{ Scenario, ScenarioRunner, Session, Step }
+import com.github.agourlay.cornichon.core.{Scenario, ScenarioRunner, Session, Step}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
 import org.openjdk.jmh.annotations._
 import scenario.RunScenarioBench._
 import scala.concurrent.Await
@@ -13,13 +13,13 @@ import scala.concurrent.duration._
 @BenchmarkMode(Array(Mode.Throughput))
 @Warmup(iterations = 10)
 @Measurement(iterations = 10)
-@Fork(value = 1, jvmArgsAppend = Array(
-  "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=filename=./RunScenarioBench-profiling-data.jfr,name=profile,settings=profile",
-  "-Xmx1G"))
+@Fork(
+  value = 1,
+  jvmArgsAppend = Array("-XX:+FlightRecorder", "-XX:StartFlightRecording=filename=./RunScenarioBench-profiling-data.jfr,name=profile,settings=profile", "-Xmx1G")
+)
 class RunScenarioBench {
 
-  //sbt:benchmarks> jmh:run .*RunScenario.* -prof gc -foe true -gc true -rf csv
+  // sbt:benchmarks> jmh:run .*RunScenario.* -prof gc -foe true -gc true -rf csv
 
   @Param(Array("10", "100", "1000"))
   var stepsNumber: String = ""
@@ -29,13 +29,13 @@ class RunScenarioBench {
   [info] RunScenarioBench.lotsOfSteps             10  thrpt   10  11462.833 ± 49.874  ops/s
   [info] RunScenarioBench.lotsOfSteps            100  thrpt   10   1510.084 ±  7.378  ops/s
   [info] RunScenarioBench.lotsOfSteps           1000  thrpt   10    150.222 ±  2.845  ops/s
- */
+   */
 
   @Benchmark
   def lotsOfSteps() = {
     val steps = stepsNumber match {
-      case "10" => ten
-      case "100" => hundred
+      case "10"   => ten
+      case "100"  => hundred
       case "1000" => thousand
     }
     val scenario = Scenario("test scenario", steps)
@@ -43,19 +43,25 @@ class RunScenarioBench {
     val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
+
 }
 
 object RunScenarioBench {
   private val setupSession = EffectStep.fromSyncE("setup session", _.session.addValues("v1" -> "2", "v2" -> "1"))
+
   private val assertStep = AssertStep(
     "addition step",
-    sc => Assertion.either {
-      for {
-        two <- sc.session.get("v1")
-        one <- sc.session.get("v2")
-      } yield GenericEqualityAssertion(two.toInt + one.toInt, 3)
-    })
+    sc =>
+      Assertion.either {
+        for {
+          two <- sc.session.get("v1")
+          one <- sc.session.get("v2")
+        } yield GenericEqualityAssertion(two.toInt + one.toInt, 3)
+      }
+  )
+
   private val effectStep = EffectStep.fromSyncE("identity", _.session.addValue("v3", "3"))
+
   private def makeSteps(stepsNumber: Int): List[Step] = {
     val half = stepsNumber / 2
     val assertSteps = List.fill(half)(assertStep)

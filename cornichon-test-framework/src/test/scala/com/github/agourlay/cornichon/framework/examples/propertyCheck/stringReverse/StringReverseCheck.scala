@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples.propertyCheck.stringReverse
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.core.{ Generator, RandomContext, ValueGenerator }
+import com.github.agourlay.cornichon.core.{Generator, RandomContext, ValueGenerator}
 import com.github.agourlay.cornichon.framework.examples.HttpServer
 
 import scala.concurrent.Await
@@ -23,16 +23,14 @@ class StringReverseCheck extends CornichonFeature {
     }
   }
 
-  def stringGen(rc: RandomContext): Generator[String] = ValueGenerator(
-    name = "alphanumeric String (20)",
-    gen = () => rc.alphanumeric(20))
+  def stringGen(rc: RandomContext): Generator[String] = ValueGenerator(name = "alphanumeric String (20)", gen = () => rc.alphanumeric(20))
 
   lazy val port = 8080
 
   // Base url used for all HTTP steps
   override lazy val baseUrl = s"http://localhost:$port"
 
-  //Travis CI struggles with default value `2.seconds`
+  // Travis CI struggles with default value `2.seconds`
   override lazy val requestTimeout = 5.second
 
   var server: HttpServer = _
@@ -46,4 +44,5 @@ class StringReverseCheck extends CornichonFeature {
   afterFeature {
     Await.result(server.shutdown(), 5.second)
   }
+
 }

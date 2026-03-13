@@ -5,7 +5,7 @@ import cats.syntax.option._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseLO
-import io.circe.{ ACursor, Json }
+import io.circe.{ACursor, Json}
 import scala.collection.mutable.ListBuffer
 
 case class JsonPath(operations: Vector[JsonPathOperation]) extends AnyVal {
@@ -43,7 +43,7 @@ case class JsonPath(operations: Vector[JsonPathOperation]) extends AnyVal {
 
     def expandCursors(arrayFieldCursor: ACursor): List[ACursor] =
       arrayFieldCursor.values match {
-        case None => Nil
+        case None         => Nil
         case Some(values) =>
           // the projection is valid because there was an array
           projectionMode = true
@@ -103,14 +103,16 @@ object JsonPath {
   private val rightEmptyJsonPath = Right(rootPath)
 
   implicit val show: Show[JsonPath] = Show.show[JsonPath] { p =>
-    p.operations.iterator.map {
-      case RootSelection                     => root
-      case FieldSelection(field)             => field
-      case RootArrayElementSelection(index)  => s"$root[$index]"
-      case ArrayFieldSelection(field, index) => s"$field[$index]"
-      case RootArrayFieldProjection          => s"$root[*]"
-      case ArrayFieldProjection(field)       => s"$field[*]"
-    }.mkString(".")
+    p.operations.iterator
+      .map {
+        case RootSelection                     => root
+        case FieldSelection(field)             => field
+        case RootArrayElementSelection(index)  => s"$root[$index]"
+        case ArrayFieldSelection(field, index) => s"$field[$index]"
+        case RootArrayFieldProjection          => s"$root[*]"
+        case ArrayFieldProjection(field)       => s"$field[*]"
+      }
+      .mkString(".")
   }
 
   def parse(path: String): Either[CornichonError, JsonPath] =
@@ -137,6 +139,7 @@ object JsonPath {
       jsonPath <- JsonPath.parse(path)
       res <- jsonPath.runStrict(json)
     } yield res
+
 }
 
 sealed trait JsonPathOperation

@@ -16,19 +16,18 @@ object StringUtils {
   protected[cornichon] def printArrowPairsBuilder(params: Seq[(String, String)], builder: StringBuilder): Unit = {
     val len = params.length
     var i = 0
-    params.foreach {
-      case (name, value) =>
-        quoteInto(builder, name)
-        builder.append(arrow)
-        quoteInto(builder, value)
-        if (i < len - 1) {
-          builder.append(", ")
-        }
-        i += 1
+    params.foreach { case (name, value) =>
+      quoteInto(builder, name)
+      builder.append(arrow)
+      quoteInto(builder, value)
+      if (i < len - 1) {
+        builder.append(", ")
+      }
+      i += 1
     }
   }
 
-  //https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Scala
+  // https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Scala
   def levenshtein(str1: String, str2: String): Int = {
     def min(nums: Int*): Int = nums.min
 
@@ -53,15 +52,14 @@ object StringUtils {
     d(lenStr1)(lenStr2)
   }
 
-  /**
-   * Replace sequentially each pattern in the input string with the corresponding value.
-   *
-   * This method expects all patterns to be contained in the input string.
-   *
-   * The goals are:
-   * - avoid multiple passes on the input string
-   * - avoid creating intermediate strings
-   */
+  /** Replace sequentially each pattern in the input string with the corresponding value.
+    *
+    * This method expects all patterns to be contained in the input string.
+    *
+    * The goals are:
+    *   - avoid multiple passes on the input string
+    *   - avoid creating intermediate strings
+    */
   def replacePatternsInOrder(inString: String, patternsWithReplacement: IndexedSeq[(String, String)]): String = {
     val patternsLen = patternsWithReplacement.length
     if (patternsLen == 0) return inString

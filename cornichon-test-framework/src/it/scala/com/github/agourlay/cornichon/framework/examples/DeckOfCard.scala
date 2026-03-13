@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples
 
 import com.github.agourlay.cornichon.CornichonFeature
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, Assertion, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
 
 import scala.concurrent.duration._
 
@@ -21,15 +21,17 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
 
         Then assert status.is(200)
 
-        And assert body.ignoring("deck_id").is(
-          """
+        And assert body
+          .ignoring("deck_id")
+          .is(
+            """
           {
             "success": true,
             "shuffled": true,
             "remaining": 52
           }
           """
-        )
+          )
 
         And I save_body_path("deck_id" -> "deck-id")
 
@@ -52,15 +54,17 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
 
         Then assert status.is(200)
 
-        And assert body.ignoring("deck_id").is(
-          """
+        And assert body
+          .ignoring("deck_id")
+          .is(
+            """
           {
             "success": true,
             "shuffled": true,
             "remaining": 12
           }
           """
-        )
+          )
 
         And I save_body_path("deck_id" -> "deck-id")
 
@@ -91,8 +95,8 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
             | "ACE"  | "KING"  |   21  |
           """
         ) {
-            Then assert verify_hand_score
-          }
+          Then assert verify_hand_score
+        }
       }
 
       Scenario("draw simplified blackjack hand") {
@@ -101,15 +105,17 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
           "deck_count" -> "8"
         )
 
-        And assert body.ignoring("deck_id").is(
-          """
+        And assert body
+          .ignoring("deck_id")
+          .is(
+            """
           {
             "success": true,
             "shuffled": true,
             "remaining": 416
           }
           """
-        )
+          )
 
         And I save_body_path("deck_id" -> "deck-id")
 
@@ -130,6 +136,7 @@ class DeckOfCard extends CornichonFeature with DeckSteps {
         }
       }
     }
+
 }
 
 trait DeckSteps {
@@ -137,23 +144,25 @@ trait DeckSteps {
 
   def verify_hand_score = AssertStep(
     title = "value of 'c1' with 'c2' is 'score'",
-    action = sc => Assertion.either {
-      for {
-        score <- sc.session.get("score").map(_.toInt)
-        c1 <- sc.session.get("c1")
-        c2 <- sc.session.get("c2")
-      } yield GenericEqualityAssertion(score, scoreBlackjackHand(c1, c2))
-    }
+    action = sc =>
+      Assertion.either {
+        for {
+          score <- sc.session.get("score").map(_.toInt)
+          c1 <- sc.session.get("c1")
+          c2 <- sc.session.get("c2")
+        } yield GenericEqualityAssertion(score, scoreBlackjackHand(c1, c2))
+      }
   )
 
   def is_blackjack = AssertStep(
     title = "current hand is Blackjack!",
-    action = sc => Assertion.either {
-      for {
-        c1 <- sc.session.get("c1")
-        c2 <- sc.session.get("c2")
-      } yield GenericEqualityAssertion(21, scoreBlackjackHand(c1, c2))
-    }
+    action = sc =>
+      Assertion.either {
+        for {
+          c1 <- sc.session.get("c1")
+          c2 <- sc.session.get("c2")
+        } yield GenericEqualityAssertion(21, scoreBlackjackHand(c1, c2))
+      }
   )
 
   def scoreBlackjackHand(c1: String, c2: String): Int = scoreCards(c1) + scoreCards(c2)
@@ -175,4 +184,5 @@ trait DeckSteps {
     case "KING"  => 10
     case "ACE"   => 11
   }
+
 }

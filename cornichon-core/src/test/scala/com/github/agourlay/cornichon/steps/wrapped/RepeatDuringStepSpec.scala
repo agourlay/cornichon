@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.steps.regular.assertStep.{ AssertStep, GenericEqualityAssertion }
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
 
@@ -77,4 +77,5 @@ class RepeatDuringStepSpec extends FunSuite with CommonTestSuite {
     // empiric values for the upper bound here
     assert(executionTime.lt(150.millis))
   }
+
 }

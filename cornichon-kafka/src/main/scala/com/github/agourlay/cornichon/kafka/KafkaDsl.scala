@@ -3,17 +3,17 @@ package com.github.agourlay.cornichon.kafka
 import cats.syntax.either._
 import cats.effect.IO
 
-import com.github.agourlay.cornichon.core.{ CornichonError, Session, Step }
-import com.github.agourlay.cornichon.dsl.{ BaseFeature, CoreDsl }
+import com.github.agourlay.cornichon.core.{CornichonError, Session, Step}
+import com.github.agourlay.cornichon.dsl.{BaseFeature, CoreDsl}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 
 import org.apache.kafka.clients.producer._
-import org.apache.kafka.common.serialization.{ StringDeserializer, StringSerializer }
-import org.apache.kafka.clients.consumer.{ ConsumerConfig, ConsumerRecord, KafkaConsumer }
+import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, KafkaConsumer}
 
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.{Future, Promise}
 
 import java.time.Duration
 
@@ -38,41 +38,45 @@ trait KafkaDsl {
     effect = sc => {
       val pr = new ProducerRecord[String, String](topic, key, message)
       val cp = Promise[Unit]()
-      featureProducer.send(pr, new Callback {
-        def onCompletion(metadata: RecordMetadata, exception: Exception): Unit =
-          if (exception == null)
-            cp.success(())
-          else
-            cp.failure(exception)
-      })
+      featureProducer.send(
+        pr,
+        new Callback {
+          def onCompletion(metadata: RecordMetadata, exception: Exception): Unit =
+            if (exception == null)
+              cp.success(())
+            else
+              cp.failure(exception)
+        }
+      )
       IO.fromFuture(IO.delay(cp.future)).map(_ => sc.session)
     }
   )
 
   def read_from_topic(topic: String, atLeastAmount: Int = 1, timeoutMs: Int = 500): Step = EffectStep(
     title = s"reading the last $atLeastAmount messages from topic=$topic",
-    effect = sc => IO.delay {
-      featureConsumer.subscribe(Seq(topic).asJava)
-      val messages = ListBuffer.empty[ConsumerRecord[String, String]]
-      var nothingNewAnymore = false
-      val pollDuration = Duration.ofMillis(timeoutMs.toLong)
-      while (!nothingNewAnymore) {
-        val newMessages = featureConsumer.poll(pollDuration)
-        if (newMessages.isEmpty)
-          nothingNewAnymore = true
-        else
-          messages ++= newMessages.iterator().asScala.toList
-      }
-      featureConsumer.commitSync()
-      if (messages.size < atLeastAmount)
-        NotEnoughMessagesPolled(atLeastAmount, messages.toList).asLeft
-      else {
-        val newSession = messages.foldLeft(sc.session) { (session, value) =>
-          commonSessionExtraction(session, topic, value).valueUnsafe
+    effect = sc =>
+      IO.delay {
+        featureConsumer.subscribe(Seq(topic).asJava)
+        val messages = ListBuffer.empty[ConsumerRecord[String, String]]
+        var nothingNewAnymore = false
+        val pollDuration = Duration.ofMillis(timeoutMs.toLong)
+        while (!nothingNewAnymore) {
+          val newMessages = featureConsumer.poll(pollDuration)
+          if (newMessages.isEmpty)
+            nothingNewAnymore = true
+          else
+            messages ++= newMessages.iterator().asScala.toList
         }
-        newSession.asRight
+        featureConsumer.commitSync()
+        if (messages.size < atLeastAmount)
+          NotEnoughMessagesPolled(atLeastAmount, messages.toList).asLeft
+        else {
+          val newSession = messages.foldLeft(sc.session) { (session, value) =>
+            commonSessionExtraction(session, topic, value).valueUnsafe
+          }
+          newSession.asRight
+        }
       }
-    }
   )
 
   def kafka(topic: String): KafkaStepBuilder = KafkaStepBuilder(sessionKey = topic)
@@ -80,7 +84,7 @@ trait KafkaDsl {
   private def commonSessionExtraction(session: Session, topic: String, response: ConsumerRecord[String, String]) =
     session.addValues(
       s"$topic-topic" -> response.topic(),
-      s"$topic-key" -> response.key(),
+      s"$topic-key"   -> response.key(),
       s"$topic-value" -> response.value()
     )
 
@@ -88,8 +92,8 @@ trait KafkaDsl {
   private def producer(bootstrapServer: String, producerConfig: KafkaProducerConfig): KafkaProducer[String, String] = {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> bootstrapServer,
-      ProducerConfig.ACKS_CONFIG -> producerConfig.ack,
-      ProducerConfig.BATCH_SIZE_CONFIG -> producerConfig.batchSizeInBytes.toString
+      ProducerConfig.ACKS_CONFIG              -> producerConfig.ack,
+      ProducerConfig.BATCH_SIZE_CONFIG        -> producerConfig.batchSizeInBytes.toString
     )
 
     val p = new KafkaProducer[String, String](configMap.asJava, new StringSerializer, new StringSerializer)
@@ -100,18 +104,19 @@ trait KafkaDsl {
   // the consumer is stopped after all features
   private def consumer(bootstrapServer: String, consumerConfig: KafkaConsumerConfig): KafkaConsumer[String, String] = {
     val configMap = scala.collection.mutable.Map[String, AnyRef](
-      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> bootstrapServer,
-      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "false",
+      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG     -> bootstrapServer,
+      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG    -> "false",
       ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG -> consumerConfig.heartbeatIntervalMsConfig.toString,
-      ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> consumerConfig.sessionTimeoutMsConfig.toString,
-      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest",
-      ConsumerConfig.GROUP_ID_CONFIG -> consumerConfig.groupId
+      ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG    -> consumerConfig.sessionTimeoutMsConfig.toString,
+      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG     -> "earliest",
+      ConsumerConfig.GROUP_ID_CONFIG              -> consumerConfig.groupId
     )
 
     val c = new KafkaConsumer[String, String](configMap.asJava, new StringDeserializer, new StringDeserializer)
     BaseFeature.addShutdownHook(() => Future.successful(c.close()))
     c
   }
+
 }
 
 case class KafkaProducerConfig(ack: String = "all", batchSizeInBytes: Int = 1, retriesConfig: Option[Int] = None)

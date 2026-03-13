@@ -7,25 +7,30 @@ import munit.FunSuite
 class DiffSpec extends FunSuite {
 
   test("orderedCollectionDiff detect missing elements") {
-    assert(orderedCollectionDiff(Seq("a", "b"), Nil) ==
-      """|Ordered collection diff. between actual result and expected result is :
+    assert(
+      orderedCollectionDiff(Seq("a", "b"), Nil) ==
+        """|Ordered collection diff. between actual result and expected result is :
            |
            |deleted elements:
            |a
-           |b""".stripMargin)
+           |b""".stripMargin
+    )
   }
 
   test("orderedCollectionDiff detect added elements") {
-    assert(orderedCollectionDiff(Nil, Seq("a", "b")) ==
-      """|Ordered collection diff. between actual result and expected result is :
+    assert(
+      orderedCollectionDiff(Nil, Seq("a", "b")) ==
+        """|Ordered collection diff. between actual result and expected result is :
            |added elements:
            |a
-           |b""".stripMargin)
+           |b""".stripMargin
+    )
   }
 
   test("orderedCollectionDiff detect moved added elements") {
-    assert(orderedCollectionDiff(Seq("a", "b"), Seq("b", "a")) ==
-      """|Ordered collection diff. between actual result and expected result is :
+    assert(
+      orderedCollectionDiff(Seq("a", "b"), Seq("b", "a")) ==
+        """|Ordered collection diff. between actual result and expected result is :
            |
            |
            |moved elements:
@@ -37,8 +42,9 @@ class DiffSpec extends FunSuite {
   }
 
   test("orderedCollectionDiff detect mixed case") {
-    assert(orderedCollectionDiff(Seq("a", "b", "c", "e"), Seq("b", "a", "d", "f")) ==
-      """|Ordered collection diff. between actual result and expected result is :
+    assert(
+      orderedCollectionDiff(Seq("a", "b", "c", "e"), Seq("b", "a", "d", "f")) ==
+        """|Ordered collection diff. between actual result and expected result is :
            |added elements:
            |d
            |f
@@ -54,8 +60,9 @@ class DiffSpec extends FunSuite {
   }
 
   test("notOrderedCollectionDiff detect missing elements") {
-    assert(notOrderedCollectionDiff(Set("a", "b"), Set.empty) ==
-      """|Not ordered collection diff. between actual result and expected result is :
+    assert(
+      notOrderedCollectionDiff(Set("a", "b"), Set.empty) ==
+        """|Not ordered collection diff. between actual result and expected result is :
            |
            |deleted elements:
            |a
@@ -64,8 +71,9 @@ class DiffSpec extends FunSuite {
   }
 
   test("notOrderedCollectionDiff detect added elements") {
-    assert(notOrderedCollectionDiff(Set.empty, Set("a", "b")) ==
-      """|Not ordered collection diff. between actual result and expected result is :
+    assert(
+      notOrderedCollectionDiff(Set.empty, Set("a", "b")) ==
+        """|Not ordered collection diff. between actual result and expected result is :
            |added elements:
            |a
            |b""".stripMargin
@@ -73,14 +81,16 @@ class DiffSpec extends FunSuite {
   }
 
   test("notOrderedCollectionDiff not detect moved added elements") {
-    assert(notOrderedCollectionDiff(Set("a", "b"), Set("b", "a")) ==
-      "Not ordered collection diff. between actual result and expected result is :"
+    assert(
+      notOrderedCollectionDiff(Set("a", "b"), Set("b", "a")) ==
+        "Not ordered collection diff. between actual result and expected result is :"
     )
   }
 
   test("notOrderedCollectionDiff detect mixed case") {
-    assert(notOrderedCollectionDiff(Set("a", "b", "c", "e"), Set("b", "a", "d", "f")) ==
-      """|Not ordered collection diff. between actual result and expected result is :
+    assert(
+      notOrderedCollectionDiff(Set("a", "b", "c", "e"), Set("b", "a", "d", "f")) ==
+        """|Not ordered collection diff. between actual result and expected result is :
            |added elements:
            |d
            |f
@@ -121,7 +131,10 @@ class DiffSpec extends FunSuite {
   }
 
   test("JSON diff for JArray is done via JsonPatch") {
-    val diff = jsonDiff.diff(Json.fromValues(Json.fromFields(("test" -> Json.fromString("value")) :: Nil) :: Nil), Json.fromValues(Json.fromFields(("test" -> Json.fromString("new value")) :: Nil) :: Nil))
+    val diff = jsonDiff.diff(
+      Json.fromValues(Json.fromFields(("test" -> Json.fromString("value")) :: Nil) :: Nil),
+      Json.fromValues(Json.fromFields(("test" -> Json.fromString("new value")) :: Nil) :: Nil)
+    )
     val expected =
       """|JSON patch between actual result and expected result is :
            |[
@@ -134,4 +147,5 @@ class DiffSpec extends FunSuite {
            |]""".stripMargin
     assert(diff.contains(expected))
   }
+
 }

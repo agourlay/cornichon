@@ -1,30 +1,30 @@
 package com.github.agourlay.cornichon.core
 
-import java.io.{ PrintWriter, StringWriter }
+import java.io.{PrintWriter, StringWriter}
 
 import cats.data.EitherT
 import cats.syntax.either._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 
 trait CornichonError {
   def baseErrorMessage: String
   val causedBy: List[CornichonError] = Nil
 
-  lazy val renderedMessage: String = {
+  lazy val renderedMessage: String =
     if (causedBy.isEmpty)
       baseErrorMessage
     else
       s"""$baseErrorMessage
       |caused by:
       |${causedBy.iterator.map(c => c.renderedMessage).mkString("\nand\n")}""".stripMargin
-  }
 
   def toException: CornichonException = CornichonException(renderedMessage)
 }
 
 object CornichonError {
+
   def genStacktrace(exception: Throwable): String = {
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
@@ -45,6 +45,7 @@ object CornichonError {
     def valueUnsafe: A = e.fold(e => throw e.toException, identity)
     def futureEitherT(implicit ec: ExecutionContext): EitherT[Future, CornichonError, A] = EitherT.fromEither[Future](e)
   }
+
 }
 
 case class StepExecutionError(e: Throwable) extends CornichonError {

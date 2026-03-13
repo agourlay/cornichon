@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples.superHeroes.server
 
 import cats.data.Validated
-import cats.data.Validated.{ Invalid, Valid }
+import cats.data.Validated.{Invalid, Valid}
 import sangria.macros.derive._
 import sangria.schema.Schema
 import sangria.schema._
@@ -21,14 +21,16 @@ class GraphQLSuperMicroService(sm: SuperMicroService) {
 
   private def unpack[A](v: Validated[ApiError, A]): Option[A] =
     v match {
-      case Valid(p) => Some(p)
-      case Invalid(e) => e match {
-        case SessionNotFound(_)   => None
-        case PublisherNotFound(_) => None
-        case SuperHeroNotFound(_) => None
-        case _                    => throw new RuntimeException(e.msg)
-      }
+      case Valid(p)   => Some(p)
+      case Invalid(e) =>
+        e match {
+          case SessionNotFound(_)   => None
+          case PublisherNotFound(_) => None
+          case SuperHeroNotFound(_) => None
+          case _                    => throw new RuntimeException(e.msg)
+        }
     }
+
 }
 
 object GraphQlSchema {

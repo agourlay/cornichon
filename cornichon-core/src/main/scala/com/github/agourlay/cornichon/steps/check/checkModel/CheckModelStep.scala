@@ -1,7 +1,7 @@
 package com.github.agourlay.cornichon.steps.check.checkModel
 
 import cats.data.Validated.Invalid
-import cats.data.{ StateT, ValidatedNel }
+import cats.data.{StateT, ValidatedNel}
 import cats.syntax.option._
 import cats.syntax.either._
 import cats.syntax.validated._
@@ -10,10 +10,7 @@ import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done.rightDone
 import com.github.agourlay.cornichon.core._
 
-case class CheckModelStep[A, B, C, D, E, F](
-    maxNumberOfRuns: Int,
-    maxNumberOfTransitions: Int,
-    modelRunner: ModelRunner[A, B, C, D, E, F]) extends WrapperStep {
+case class CheckModelStep[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTransitions: Int, modelRunner: ModelRunner[A, B, C, D, E, F]) extends WrapperStep {
 
   private val model = modelRunner.model
 
@@ -49,21 +46,32 @@ case class CheckModelStep[A, B, C, D, E, F](
   }
 
   private def validateTransitions(transitions: Map[PropertyN[A, B, C, D, E, F], List[(Int, PropertyN[A, B, C, D, E, F])]]): ValidatedNel[CornichonError, Done] = {
-    val emptyTransitionForState: ValidatedNel[CornichonError, Done] = transitions.find(_._2.isEmpty)
-      .map(s => EmptyTransitionsDefinitionForProperty(s._1.description)).toInvalidNel(Done)
+    val emptyTransitionForState: ValidatedNel[CornichonError, Done] = transitions
+      .find(_._2.isEmpty)
+      .map(s => EmptyTransitionsDefinitionForProperty(s._1.description))
+      .toInvalidNel(Done)
 
-    val noTransitionsForStart: ValidatedNel[CornichonError, Done] = if (!transitions.contains(model.entryPoint))
-      NoTransitionsDefinitionForStartingProperty(model.entryPoint.description).invalidNel
-    else Done.validDone
+    val noTransitionsForStart: ValidatedNel[CornichonError, Done] =
+      if (!transitions.contains(model.entryPoint))
+        NoTransitionsDefinitionForStartingProperty(model.entryPoint.description).invalidNel
+      else Done.validDone
 
-    val duplicateEntries: ValidatedNel[CornichonError, Done] = transitions.find { e =>
-      val allProperties = e._2.map(_._2)
-      allProperties.distinct.size != allProperties.size
-    }.map(_._1.description).map(DuplicateTransitionsDefinitionForProperty.apply).toInvalidNel(Done)
+    val duplicateEntries: ValidatedNel[CornichonError, Done] = transitions
+      .find { e =>
+        val allProperties = e._2.map(_._2)
+        allProperties.distinct.size != allProperties.size
+      }
+      .map(_._1.description)
+      .map(DuplicateTransitionsDefinitionForProperty.apply)
+      .toInvalidNel(Done)
 
-    val sumOfWeightIsCorrect: ValidatedNel[CornichonError, Done] = transitions.find { e =>
-      e._2.map(_._1).sum != 100
-    }.map(_._1.description).map(IncorrectTransitionsWeightDefinitionForProperty.apply).toInvalidNel(Done)
+    val sumOfWeightIsCorrect: ValidatedNel[CornichonError, Done] = transitions
+      .find { e =>
+        e._2.map(_._1).sum != 100
+      }
+      .map(_._1.description)
+      .map(IncorrectTransitionsWeightDefinitionForProperty.apply)
+      .toInvalidNel(Done)
 
     emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> sumOfWeightIsCorrect
   }
@@ -85,21 +93,20 @@ case class CheckModelStep[A, B, C, D, E, F](
     }
 
   override val stateUpdate: StepState = StateT { runState =>
-    checkModel(runState)
-      .timed
-      .map {
-        case (executionTime, run) =>
-          val depth = runState.depth
-          val (checkState, res) = run
-          val fullLogs = res match {
-            case Left(_) =>
-              FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
-            case _ =>
-              SuccessLogInstruction(s"Check model block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
-          }
-          (runState.mergeNested(checkState, fullLogs), res)
+    checkModel(runState).timed
+      .map { case (executionTime, run) =>
+        val depth = runState.depth
+        val (checkState, res) = run
+        val fullLogs = res match {
+          case Left(_) =>
+            FailureLogInstruction(s"Check model block failed ", depth, Some(executionTime)) +: checkState.logStack :+ failedTitleLog(depth)
+          case _ =>
+            SuccessLogInstruction(s"Check model block succeeded", depth, Some(executionTime)) +: checkState.logStack :+ successTitleLog(depth)
+        }
+        (runState.mergeNested(checkState, fullLogs), res)
       }
   }
+
 }
 
 case class EmptyTransitionsDefinitionForProperty(description: String) extends CornichonError {
@@ -117,4 +124,3 @@ case class IncorrectTransitionsWeightDefinitionForProperty(description: String) 
 case class NoTransitionsDefinitionForStartingProperty(description: String) extends CornichonError {
   def baseErrorMessage: String = s"No outgoing transitions definition found for starting property '$description'"
 }
-

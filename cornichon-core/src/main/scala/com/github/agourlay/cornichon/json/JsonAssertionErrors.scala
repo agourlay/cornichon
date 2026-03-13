@@ -14,10 +14,9 @@ object JsonAssertionErrors {
        |$prettySource""".stripMargin
   }
 
-  def keyIsPresentError(keyName: String, source: Json): String = {
+  def keyIsPresentError(keyName: String, source: Json): String =
     s"""expected key '$keyName' to be absent but it was found with value:
         |${source.show}""".stripMargin
-  }
 
   def keyIsAbsentError(keyName: String, source: String): String = {
     val prettySource = parseDslJsonUnsafe(source).show
@@ -42,10 +41,9 @@ object JsonAssertionErrors {
     else base
   }
 
-  def jsonArrayNotEmptyError(context: String): String = {
+  def jsonArrayNotEmptyError(context: String): String =
     s"""expected JSON array to not be empty but it is not the case in the context of:
        |$context""".stripMargin
-  }
 
   def arrayContainsError(expected: Vector[Json], sourceArray: Vector[Json], contains: Boolean): String = {
     val prettyExpected = expected.iterator.map(_.show)
@@ -57,7 +55,10 @@ object JsonAssertionErrors {
   }
 
   case class MatchersNotSupportedInAsArray(matchers: Vector[Matcher]) extends CornichonError {
+
     lazy val baseErrorMessage: String = s"matchers are not supported in `asArray` assertion but ${matchers.iterator.map(_.fullKey).mkString(", ")} found" +
       s"\nhttps://github.com/agourlay/cornichon/issues/135"
+
   }
+
 }

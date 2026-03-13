@@ -2,7 +2,7 @@ package step
 
 import cats.effect.unsafe.implicits.global
 
-import com.github.agourlay.cornichon.core.{ ScenarioRunner, Scenario, Session, SessionKey }
+import com.github.agourlay.cornichon.core.{Scenario, ScenarioRunner, Session, SessionKey}
 import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 
 import org.openjdk.jmh.annotations._
@@ -15,13 +15,13 @@ import step.JsonStepBench._
 @BenchmarkMode(Array(Mode.Throughput))
 @Warmup(iterations = 10)
 @Measurement(iterations = 10)
-@Fork(value = 1, jvmArgsAppend = Array(
-  "-XX:+FlightRecorder",
-  "-XX:StartFlightRecording=filename=./JsonStepBench-profiling-data.jfr,name=profile,settings=profile",
-  "-Xmx1G"))
+@Fork(
+  value = 1,
+  jvmArgsAppend = Array("-XX:+FlightRecorder", "-XX:StartFlightRecording=filename=./JsonStepBench-profiling-data.jfr,name=profile,settings=profile", "-Xmx1G")
+)
 class JsonStepBench {
 
-  //sbt:benchmarks> jmh:run .*JsonStep.* -prof gc -foe true -gc true -rf csv
+  // sbt:benchmarks> jmh:run .*JsonStep.* -prof gc -foe true -gc true -rf csv
 
   /*
   [info] Benchmark                          Mode  Cnt      Score      Error  Units
@@ -31,7 +31,7 @@ class JsonStepBench {
   [info] JsonStepBench.jsonPathIs          thrpt   10  31617.127 ±  159.856  ops/s
   [info] JsonStepBench.jsonPlaceholdersIs  thrpt   10  17828.979 ±  564.443  ops/s
   [info] JsonStepBench.jsonWhitelistingIs  thrpt   10  23417.323 ±  104.329  ops/s
-  */
+   */
 
   @Benchmark
   def jsonIs() = {
@@ -45,15 +45,15 @@ class JsonStepBench {
   @Benchmark
   def jsonPlaceholdersIs() = {
     val s2 = session.addValuesUnsafe(
-      "name" -> "Batman",
-      "realName" -> "Bruce Wayne",
-      "city" -> "Gotham city",
-      "hasSuperpowers" -> "false",
-      "publisher-name" -> "DC",
+      "name"                      -> "Batman",
+      "realName"                  -> "Bruce Wayne",
+      "city"                      -> "Gotham city",
+      "hasSuperpowers"            -> "false",
+      "publisher-name"            -> "DC",
       "publisher-foundation-year" -> "1934",
-      "publisher-location" -> "Burbank, California")
-    val step = jsonStepBuilder.is(
-      """
+      "publisher-location"        -> "Burbank, California"
+    )
+    val step = jsonStepBuilder.is("""
       {
         "name": "<name>",
         "realName": "<realName>",
@@ -74,8 +74,7 @@ class JsonStepBench {
 
   @Benchmark
   def jsonMatchersIs() = {
-    val step = jsonStepBuilder.is(
-      """
+    val step = jsonStepBuilder.is("""
       {
         "name": *any-string*,
         "realName": *any-string*,
@@ -96,8 +95,9 @@ class JsonStepBench {
 
   @Benchmark
   def jsonIgnoreIs() = {
-    val step = jsonStepBuilder.ignoring("publisher", "hasSuperpowers", "realName").is(
-      """
+    val step = jsonStepBuilder
+      .ignoring("publisher", "hasSuperpowers", "realName")
+      .is("""
       {
         "name": "Batman",
         "city": "Gotham city"
@@ -126,6 +126,7 @@ class JsonStepBench {
     val res = Await.result(f.unsafeToFuture(), Duration.Inf)
     assert(res.isSuccess)
   }
+
 }
 
 object JsonStepBench {
@@ -146,4 +147,3 @@ object JsonStepBench {
     """
   val session = Session.newEmpty.addValuesUnsafe(testKey -> json)
 }
-

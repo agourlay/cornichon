@@ -3,8 +3,8 @@ package com.github.agourlay.cornichon.http.client
 import cats.Show
 import cats.data.EitherT
 import cats.effect.IO
-import com.github.agourlay.cornichon.core.{ CornichonError, Done }
-import com.github.agourlay.cornichon.http.{ HttpResponse, HttpRequest, HttpStreamedRequest }
+import com.github.agourlay.cornichon.core.{CornichonError, Done}
+import com.github.agourlay.cornichon.http.{HttpRequest, HttpResponse, HttpStreamedRequest}
 import org.http4s.EntityEncoder
 
 import scala.concurrent.duration.FiniteDuration

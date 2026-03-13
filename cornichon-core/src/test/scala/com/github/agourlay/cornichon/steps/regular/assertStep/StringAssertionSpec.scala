@@ -19,4 +19,5 @@ class StringAssertionSpec extends FunSuite {
   test("RegexAssertion invalid assertion") {
     assert(RegexAssertion("the text string sample 434", "[A-Z]+".r).validated.isInvalid)
   }
+
 }

@@ -15,15 +15,14 @@ trait Diff[A] {
 object Diff {
   def apply[A](implicit diff: Diff[A]): Diff[A] = diff
 
-  implicit val showJsonPatch: Show[JsonPatch[Json]] = (jp: JsonPatch[Json]) => {
-    jp.asJson.spaces2
-  }
+  implicit val showJsonPatch: Show[JsonPatch[Json]] = (jp: JsonPatch[Json]) => jp.asJson.spaces2
 
-  implicit val jsonDiff: Diff[Json] = (left: Json, right: Json) => Some(
-    s"""|JSON patch between actual result and expected result is :
+  implicit val jsonDiff: Diff[Json] = (left: Json, right: Json) =>
+    Some(
+      s"""|JSON patch between actual result and expected result is :
         |${diffPatch(left, right).show}
       """.stripMargin.trim
-  )
+    )
 
   implicit val stringDiff: Diff[String] = new Diff[String] {
     override def diff(left: String, right: String): Option[String] = None
@@ -87,9 +86,11 @@ private case class MovedElement[A](element: A, newIndex: Int, oldIndex: Int) {
 }
 
 private object MovedElement {
+
   implicit def showMoved[A: Show]: Show[MovedElement[A]] =
     Show.show { ma =>
       s"""from index ${ma.oldIndex} to index ${ma.newIndex}
          |${ma.element.show}"""
     }
+
 }
