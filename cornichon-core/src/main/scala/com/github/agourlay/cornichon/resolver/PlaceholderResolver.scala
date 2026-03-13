@@ -151,15 +151,15 @@ case class MapperKeyNotFoundInSession(key: String, underlyingError: CornichonErr
   override val causedBy = underlyingError :: Nil
 }
 
-case class RandomMapperError[A](key: String, e: Throwable) extends CornichonError {
+case class RandomMapperError(key: String, e: Throwable) extends CornichonError {
   lazy val baseErrorMessage = s"exception thrown in RandomMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
 }
 
-case class SimpleMapperError[A](key: String, e: Throwable) extends CornichonError {
+case class SimpleMapperError(key: String, e: Throwable) extends CornichonError {
   lazy val baseErrorMessage = s"exception thrown in SimpleMapper '$key' :\n'${CornichonError.genStacktrace(e)}'"
 }
 
-case class SessionMapperError[A](key: String, underlyingError: CornichonError) extends CornichonError {
-  lazy val baseErrorMessage = s"Error thrown in SessionMapper '$key')'"
+case class SessionMapperError(key: String, underlyingError: CornichonError) extends CornichonError {
+  lazy val baseErrorMessage = s"Error thrown in SessionMapper '$key'"
   override val causedBy = underlyingError :: Nil
 }
