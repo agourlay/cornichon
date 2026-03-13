@@ -54,7 +54,7 @@ object MatcherResolver {
     else {
       val matcherKeys = matchers.iterator.map(_.fullKey).toSet
       val pathAssertions = CornichonJson
-        .findAllPathWithValue(matcherKeys, expected)
+        .findAllPathWithStringValue(matcherKeys, expected)
         .map { case (matcherKey, jsonPath) =>
           // find corresponding matcher for the tuple
           val matcher = matchers.find(_.fullKey == matcherKey) match {

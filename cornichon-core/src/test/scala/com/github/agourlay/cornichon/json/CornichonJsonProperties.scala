@@ -51,7 +51,7 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
     val targetValue = Json.fromString("target value")
     forAll { (jos: List[JsonObject]) =>
       val json = jos.foldRight(targetValue) { case (next, acc) => Json.fromJsonObject(next.add("stitch", acc)) }
-      val (value, path) = findAllPathWithValue(Set("target value"), json).head
+      val (value, path) = findAllPathWithStringValue(Set("target value"), json).head
       value == "target value" && path.run(json).contains(targetValue)
     }
   }
