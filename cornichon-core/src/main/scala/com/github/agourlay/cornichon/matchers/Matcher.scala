@@ -83,7 +83,7 @@ object Matchers {
   val anyAlphaNum = Matcher(
     key = "any-alphanum-string",
     description = "checks if the field is an alpha-numeric string",
-    predicate = _.asString.exists(_.forall(_.isLetterOrDigit))
+    predicate = _.asString.exists(s => s.nonEmpty && s.forall(_.isLetterOrDigit))
   )
 
   val anyDate = Matcher(

@@ -93,6 +93,14 @@ object MatchersProperties extends Properties("Matchers") with ArbitraryInstances
     anyObject.predicate(Json.fromJsonObject(jsonObj))
   }
 
+  property("any-alphanum-string correct for any non-empty alphanumeric string") = forAll(Gen.alphaNumStr.filter(_.nonEmpty)) { alphanum =>
+    anyAlphaNum.predicate(Json.fromString(alphanum))
+  }
+
+  property("any-alphanum-string incorrect for empty string") = {
+    !anyAlphaNum.predicate(Json.fromString(""))
+  }
+
   property("any-string correct for any asciiPrintableStr") = forAll(Gen.asciiPrintableStr) { asciiPrintableStr =>
     anyString.predicate(Json.fromString(asciiPrintableStr))
   }
