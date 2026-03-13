@@ -216,12 +216,14 @@ object HttpService {
   private def configureRequest[A](req: HttpRequest[A], config: Config): HttpRequest[A] = {
     if (config.traceRequests)
       println(DebugLogInstruction(req.detailedDescription, 1).colorized)
-    if (config.warnOnDuplicateHeaders && req.headers.groupBy(_._1).exists(_._2.size > 1))
-      println(WarningLogInstruction(s"\n**Warning**\nduplicate headers detected in request:\n${req.detailedDescription}", 1).colorized)
-    if (config.failOnDuplicateHeaders && req.headers.groupBy(_._1).exists(_._2.size > 1))
-      throw BasicError(s"duplicate headers detected in request:\n${req.detailedDescription}").toException
-    else
-      req
+    if (config.warnOnDuplicateHeaders || config.failOnDuplicateHeaders) {
+      val hasDuplicates = req.headers.groupBy(_._1).exists(_._2.size > 1)
+      if (config.warnOnDuplicateHeaders && hasDuplicates)
+        println(WarningLogInstruction(s"\n**Warning**\nduplicate headers detected in request:\n${req.detailedDescription}", 1).colorized)
+      if (config.failOnDuplicateHeaders && hasDuplicates)
+        throw BasicError(s"duplicate headers detected in request:\n${req.detailedDescription}").toException
+    }
+    req
   }
 
   private def ignoreHeadersSelection(headers: Seq[(String, String)], ignore: HeaderSelection): Seq[(String, String)] =
