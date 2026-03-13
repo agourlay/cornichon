@@ -84,6 +84,17 @@ object SessionProperties extends Properties("Session") {
     error.renderedMessage == s"index '3' not found for key '$key' with values \n0 -> $firstValue\n1 -> $secondValue"
   }
 
+  property("get returns an error if the index equals the number of values") = forAll(keyGen, valueGen) { (key, value) =>
+    val s = Session.newEmpty.addValueUnsafe(key, value)
+    val error = IndexNotFoundForKey(key, 1, Vector(value))
+    s.get(key, Some(1)) == Left(error)
+  }
+
+  property("getOpt returns None if the index equals the number of values") = forAll(keyGen, valueGen) { (key, value) =>
+    val s = Session.newEmpty.addValueUnsafe(key, value)
+    s.getOpt(key, Some(1)).isEmpty
+  }
+
   property("get proposes similar keys in Session in case of a missing key") = forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) =>
     val similarKey = key + "1"
     val s = Session.newEmpty.addValuesUnsafe(key -> firstValue, similarKey -> secondValue)

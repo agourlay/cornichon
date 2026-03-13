@@ -16,7 +16,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   def getOpt(key: String, stackingIndex: Option[Int] = None): Option[String] =
     content.get(key).flatMap { values =>
       val index = stackingIndex.getOrElse(values.size - 1)
-      if (values.size < index)
+      if (values.size <= index)
         None
       else
         Some(values(index))
@@ -29,7 +29,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       case Some(values) =>
         val valueCount = values.length
         val index = stackingIndex.getOrElse(valueCount - 1)
-        if (valueCount < index)
+        if (valueCount <= index)
           Left(IndexNotFoundForKey(key, index, values))
         else
           Right(values(index))
