@@ -8,7 +8,7 @@ It is possible to configure various aspects of the runs via a `/src/test/resourc
 
 You will find below the available keys and their respective default values.
 
-```
+```hocon
 cornichon {
   // timeout for each request
   requestTimeout = 2000 millis
