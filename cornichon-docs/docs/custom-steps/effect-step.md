@@ -30,7 +30,7 @@ Let's try to save a value into the `Session`
 When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.add("result", piComputation()))
 ```
 
-The test engine is responsible for controlling the execution of the side effect function and to report any error.
+The test engine is responsible for controlling the execution of the side effect function and for reporting any error.
 
 If you prefer not using the `scala.concurrent.Future` as effect, it is possible to use the `Effect` type from `cats-effect`.
 

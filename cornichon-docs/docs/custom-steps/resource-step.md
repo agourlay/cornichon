@@ -36,5 +36,5 @@ def setup_some_fixture_data() = ScenarioResourceStep(
 
 we can be sure the `clean up data` step runs regardless of what happens after `insert data`.
 
-Multiple `SenarioResourceStep`s are allowed in a `Scenario`. In this case, the `release` `Step`
+Multiple `ScenarioResourceStep`s are allowed in a `Scenario`. In this case, the `release` `Step`
 of the last `ScenarioResourceStep` is run first, and we proceed up the `Scenario`.

@@ -23,7 +23,7 @@ The entry point for random model exploration is the following function in the DS
 Let's unpack this signature:
 
 - `maxNumberOfRuns` refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant
-- `maxNumberOfTransition` is useful when the `model` contains cycles in order to ensure termination
+- `maxNumberOfTransitions` is useful when the `model` contains cycles in order to ensure termination
 - `modelRunner` is the actual definition of the `model`
 - `A B C D E F` refers to the types of the `generators` used in `model` definition (maximum of 6 for the moment)
 
@@ -47,7 +47,7 @@ It is of course not required to call a generator when building a `Step`.
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
-A `run` terminates successfully if the max number of transition reached, this means we were not able to break any invariants.
+A `run` terminates successfully if the max number of transitions is reached, this means we were not able to break any invariants.
 
 A `run` fails if one of the following conditions is met:
 - an error is thrown from a `property`

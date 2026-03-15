@@ -8,7 +8,7 @@ At the center of property based testing lies the capacity to generate arbitrary 
 
 A `generator` is simply a function that accepts a `RandomContext` which is propagated throughout the execution, for instance below is an example generating Strings and Integers.
 
-There are tree concrete instances of `generators`:
+There are three concrete instances of `generators`:
 - `ValueGenerator`
 - `SessionValueGenerator` which provides additionally the `Session`
 - `OptionalValueGenerator` to fail in a controlled fashion

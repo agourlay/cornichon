@@ -8,7 +8,7 @@ An `AssertStep` can be understood as the following function `ScenarioContext => 
 
 The test engine is responsible to test the validity of the provided `Assertion` which can be one of the following:
 
-* Equality assertions : test the equality of two objects using the cats `Equals` typeclass.
+* Equality assertions : test the equality of two objects using the cats `Eq` typeclass.
   * GenericEqualityAssertion to leave all the details to Cornichon
 
     ```scala
@@ -59,4 +59,4 @@ This is rather low level therefore you should not write your steps like that dir
 
 Fortunately a bunch of built-in steps and primitive building blocks are already available for you.
 
-Note for advance users: it is also possible to write custom wrapper steps by implementing `WrapperStep`.
+Note for advanced users: it is also possible to write custom wrapper steps by implementing `WrapperStep`.

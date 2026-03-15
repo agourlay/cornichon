@@ -22,7 +22,7 @@ This structure was chosen to increase the freedom of customization while still b
 
 The usage pattern is often to first run a `step` with a side effect then assert an expected state in a second `step`.
 
-For example :
+For example:
 
 ```scala
 Given I step_definition
@@ -172,14 +172,14 @@ body.path("`message.en`").isPresent
 body.path("`message.fr`").isAbsent
 ```
 
-To address a root array use `$` followed by the index the access.
+To address a root array use `$` followed by the index to access.
 
 ```scala
 
 body.path("$[2].name")
 ```
 
-If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)
+If the endpoint returns a collection, assert response body has several options (ordered, ignoring and using data table)
 
 ```scala
 body.asArray.inOrder.ignoringEach("city", "hasSuperpowers", "publisher").is(
@@ -331,7 +331,7 @@ session_value("my-json-response").asJson.path("a.b.c").ignoring("d").is("...")
 ```scala
 session_value("favorite-superhero").isPresent
 session_value("favorite-superhero").isAbsent
-````
+```
 
 - transforming a value in `session`
 
@@ -406,7 +406,7 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-- execute a series of steps 'times' times by batch of `parallelism` in parallel and wait 'maxTime' for completion.
+- execute a series of steps 'times' times in batches of `parallelism` in parallel and wait 'maxTime' for completion.
 
 ```scala
 RepeatConcurrently(times = 10, parallelism = 3, maxTime = 10 seconds) {
@@ -478,11 +478,11 @@ WithBasicAuth("admin", "root"){
 
 - HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.
 
-This feature is defined the module `cornichon-http-mock` and requires to extend the trait `HttpMockDsl`.
+This feature is defined in the module `cornichon-http-mock` and requires to extend the trait `HttpMockDsl`.
 
 By default, this server responds with 201 to any POST request and 200 for all the rest.
 
-Additionally, it provides three administrations features:
+Additionally, it provides three administration features:
 - fetching recorded received requests
 - resetting recorded received requests
 - toggling on/off the error mode to return HTTP 500 to incoming requests
@@ -537,7 +537,7 @@ Those descriptions might be already outdated, in case of doubt always refer to t
 
 Series of steps defined with Cornichon's DSL can be reused within different `Scenarios`.
 
-Using the keyword `Attach` if the series starts with a `Step` and without if it starts with a wrapping bloc.
+Using the keyword `Attach` if the series starts with a `Step` and without if it starts with a wrapping block.
 
 ```scala mdoc:silent
 import com.github.agourlay.cornichon.CornichonFeature
@@ -572,4 +572,4 @@ class CompositionFeature extends CornichonFeature {
 }
 ```
 
-It is possible to give a title to an attached bloc using `AttachAs(title)`.
+It is possible to give a title to an attached block using `AttachAs(title)`.

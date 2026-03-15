@@ -62,5 +62,5 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 }
 ```
 
-Note that this dsl always return the latest `amount` of messages found on the topic.
+Note that this DSL always returns the latest `amount` of messages found on the topic.
 The consumer polls `timeoutMs` until it does not find any new messages anymore

@@ -48,7 +48,7 @@ The `steps` execution logs will only be shown if:
 
 # Running tests without a build tool
 
-When integrating cornichon features in a build pipeline, it can be interesting to package those features into a runnable forms to avoid the cost of recompilation.
+When integrating cornichon features in a build pipeline, it can be interesting to package those features into a runnable form to avoid the cost of recompilation.
 
 The library ships a main runner that can be used to run the tests without build tool.
 
@@ -67,7 +67,7 @@ Options and flags:
     --packageToScan <string>
         Package containing the feature files.
     --reportsOutputDir <string>
-       Output directory for junit.xml files (default to current).
+       Output directory for junit.xml files (defaults to current).
     --featureParallelism <integer>
         Number of feature running in parallel (default=1).
     --seed <integer>

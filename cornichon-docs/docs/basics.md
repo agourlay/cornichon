@@ -8,7 +8,7 @@ A Cornichon test is the definition of a so-called `feature`.
 
 Concretely it is a class extending `CornichonFeature` and implementing the required `feature` function.
 
-In the case of `SBT`, those classes live inside `src/test/scala` and can be run them using `sbt test`.
+In the case of `SBT`, those classes live inside `src/test/scala` and can be run using `sbt test`.
 
 A `feature` can have several `scenarios` which in turn can have several `steps`.
 
