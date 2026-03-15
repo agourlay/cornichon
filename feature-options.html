@@ -95,8 +95,10 @@
     <li class="level1 nav-leaf"><a href="#base-url">Base URL</a></li>
     <li class="level1 nav-leaf"><a href="#request-timeout">Request timeout</a></li>
     <li class="level1 nav-leaf"><a href="#seed">Seed</a></li>
-    <li class="level1 nav-leaf"><a href="#register-custom-extractors">Register custom extractors</a></li>
+    <li class="level1 nav-node"><a href="#register-custom-extractors">Register custom extractors</a></li>
+    <li class="level2 nav-leaf"><a href="#other-mapper-types">Other mapper types</a></li>
     <li class="level1 nav-leaf"><a href="#execution-model">Execution model</a></li>
+    <li class="level1 nav-leaf"><a href="#focusing-on-a-scenario">Focusing on a scenario</a></li>
     <li class="level1 nav-leaf"><a href="#ignoring-features-or-scenarios">Ignoring features or scenarios</a></li>
     <li class="level1 nav-leaf"><a href="#pending-scenario">Pending scenario</a></li>
   </ul>
@@ -180,6 +182,36 @@
      </span><span class="string-literal">&quot;product-first-rating&quot;</span><span> -&gt; </span><span class="type-name">JsonMapper</span><span>(</span><span class="string-literal">&quot;product&quot;</span><span>, </span><span class="string-literal">&quot;rating[0].score&quot;</span><span>)
    )</span></code></pre>
         
+        <h3 id="other-mapper-types" class="section"><a class="anchor-link left" href="#other-mapper-types"><i class="icofont-laika link">&#xef71;</i></a>Other mapper types</h3>
+        <p>In addition to <code>JsonMapper</code>, several other mapper types are available for custom extractors:</p>
+        <ul>
+          <li><code>SimpleMapper</code> generates a static value</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;build-number&quot;</span><span> -&gt; </span><span class="type-name">SimpleMapper</span><span>(() =&gt; </span><span class="type-name">BuildInfo</span><span>.</span><span class="identifier">version</span><span>)</span></code></pre>
+        <ul>
+          <li><code>TextMapper</code> extracts a session value with an optional transformation</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;uppercased-name&quot;</span><span> -&gt; </span><span class="type-name">TextMapper</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>, </span><span class="identifier">_</span><span>.</span><span class="identifier">toUpperCase</span><span>)</span></code></pre>
+        <ul>
+          <li><code>SessionMapper</code> extracts a value from session with error handling</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;full-name&quot;</span><span> -&gt; </span><span class="type-name">SessionMapper</span><span>(</span><span class="identifier">s</span><span> =&gt;
+  </span><span class="keyword">for</span><span> {
+    </span><span class="identifier">first</span><span> &lt;- </span><span class="identifier">s</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;first-name&quot;</span><span>)
+    </span><span class="identifier">last</span><span> &lt;- </span><span class="identifier">s</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;last-name&quot;</span><span>)
+  } </span><span class="keyword">yield</span><span> </span><span class="string-literal">s&quot;</span><span class="substitution">$first</span><span class="string-literal"> </span><span class="substitution">$last</span><span class="string-literal">&quot;</span><span>
+)</span></code></pre>
+        <ul>
+          <li><code>RandomMapper</code> generates a value using the <code>RandomContext</code> for reproducibility</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;random-city&quot;</span><span> -&gt; </span><span class="type-name">RandomMapper</span><span>(</span><span class="identifier">rc</span><span> =&gt;
+  </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Gotham&quot;</span><span>, </span><span class="string-literal">&quot;Metropolis&quot;</span><span>, </span><span class="string-literal">&quot;Star City&quot;</span><span>)(</span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">3</span><span>))
+)</span></code></pre>
+        <ul>
+          <li><code>HistoryMapper</code> extracts from the full history of values for a session key</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;visit-count&quot;</span><span> -&gt; </span><span class="type-name">HistoryMapper</span><span>(</span><span class="string-literal">&quot;visited-pages&quot;</span><span>, </span><span class="identifier">history</span><span> =&gt; </span><span class="identifier">history</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">toString</span><span>)</span></code></pre>
+        
         <h2 id="execution-model" class="section"><a class="anchor-link left" href="#execution-model"><i class="icofont-laika link">&#xef71;</i></a>Execution model</h2>
         <div class="callout info">
           <i class="icofont-laika info">&#xef4e;</i>
@@ -195,6 +227,19 @@
         <p>This means using more powerful machines will automatically trigger more scenarios.</p>
         <p>To run <code>features</code> in parallel it is necessary to manually set a flag in your SBT build file.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Test</span><span> / </span><span class="identifier">parallelExecution</span><span> := </span><span class="boolean-literal">true</span></code></pre>
+        
+        <h2 id="focusing-on-a-scenario" class="section"><a class="anchor-link left" href="#focusing-on-a-scenario"><i class="icofont-laika link">&#xef71;</i></a>Focusing on a scenario</h2>
+        <p>During development, you can focus on a single scenario within a feature. All other scenarios will be ignored.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;the one I&#39;m debugging&quot;</span><span>).</span><span class="identifier">focused</span><span> {
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>Do not commit focused scenarios to your main branch — they will silently skip all other scenarios in the feature.</p>
+        </div>
         
         <h2 id="ignoring-features-or-scenarios" class="section"><a class="anchor-link left" href="#ignoring-features-or-scenarios"><i class="icofont-laika link">&#xef71;</i></a>Ignoring features or scenarios</h2>
         <p><code>Feature</code> or individual <code>scenario</code> can also be marked to be ignored.</p>

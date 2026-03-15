@@ -97,6 +97,7 @@
     <li class="level2 nav-leaf"><a href="#http-streams">HTTP streams</a></li>
     <li class="level2 nav-leaf"><a href="#graphql-support">GraphQL support</a></li>
     <li class="level2 nav-leaf"><a href="#session-steps">Session steps</a></li>
+    <li class="level2 nav-leaf"><a href="#utility-steps">Utility steps</a></li>
     <li class="level2 nav-leaf"><a href="#debug-steps">Debug steps</a></li>
     <li class="level2 nav-leaf"><a href="#dsl-composition">DSL composition</a></li>
   </ul>
@@ -148,13 +149,23 @@
   </span><span class="string-literal">&quot;secondParam&quot;</span><span> -&gt; </span><span class="string-literal">&quot;value2&quot;</span><span>)
 
 </span><span class="identifier">patch</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;JSON description of Batman goes here&quot;</span><span>)</span></code></pre>
+        <p>Use <code>addParams</code> and <code>addHeaders</code> to append to existing parameters and headers instead of replacing them.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+  .</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span> -&gt; </span><span class="string-literal">&quot;1&quot;</span><span>)
+  .</span><span class="identifier">addParams</span><span>(</span><span class="string-literal">&quot;b&quot;</span><span> -&gt; </span><span class="string-literal">&quot;2&quot;</span><span>)
+  .</span><span class="identifier">addHeaders</span><span>((</span><span class="string-literal">&quot;X-Custom&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>))</span></code></pre>
         <p>There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section <a href="misc.html#custom-http-body-type">Custom HTTP body type</a>.</p>
         
         <h2 id="http-assertions" class="section"><a class="anchor-link left" href="#http-assertions"><i class="icofont-laika link">&#xef71;</i></a>HTTP assertions</h2>
         <ul>
           <li>assert response status</li>
         </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)</span></code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+
+</span><span class="identifier">status</span><span>.</span><span class="identifier">isSuccess</span><span>      </span><span class="comment">// 2xx
+</span><span class="identifier">status</span><span>.</span><span class="identifier">isRedirect</span><span>     </span><span class="comment">// 3xx
+</span><span class="identifier">status</span><span>.</span><span class="identifier">isClientError</span><span>  </span><span class="comment">// 4xx
+</span><span class="identifier">status</span><span>.</span><span class="identifier">isServerError</span><span>  </span><span class="comment">// 5xx</span></code></pre>
         <ul>
           <li>assert response headers</li>
         </ul>
@@ -163,6 +174,8 @@
 </span><span class="identifier">headers</span><span>.</span><span class="identifier">contain</span><span>(</span><span class="string-literal">&quot;cache-control&quot;</span><span> -&gt; </span><span class="string-literal">&quot;no-cache&quot;</span><span>)
 
 </span><span class="identifier">headers</span><span>.</span><span class="identifier">name</span><span>(</span><span class="string-literal">&quot;cache_control&quot;</span><span>).</span><span class="identifier">isAbsent</span><span>
+
+</span><span class="identifier">headers</span><span>.</span><span class="identifier">hasSize</span><span>(</span><span class="number-literal">3</span><span>)
 
 </span><span class="identifier">save_header_value</span><span>(</span><span class="string-literal">&quot;cache_control&quot;</span><span> -&gt; </span><span class="string-literal">&quot;my-cache-control-value&quot;</span><span>)</span></code></pre>
         <ul>
@@ -225,7 +238,15 @@
 
 </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">isPresent</span><span>
 
-</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationMonth&quot;</span><span>).</span><span class="identifier">isAbsent</span></code></pre>
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationMonth&quot;</span><span>).</span><span class="identifier">isAbsent</span><span>
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">matchesRegex</span><span>(</span><span class="string-literal">&quot;B.*n&quot;</span><span>.</span><span class="identifier">r</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">isLessThan</span><span>(</span><span class="number-literal">2000</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">isGreaterThan</span><span>(</span><span class="number-literal">1900</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">isBetween</span><span>(</span><span class="number-literal">1900</span><span>, </span><span class="number-literal">2000</span><span>)</span></code></pre>
         <p>It is possible to handle null values, given the following response body <code>{ “data” : null }</code></p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;data&quot;</span><span>).</span><span class="identifier">isAbsent</span><span>  </span><span class="comment">//incorrect
 </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;data&quot;</span><span>).</span><span class="identifier">isPresent</span><span> </span><span class="comment">//correct
@@ -264,6 +285,8 @@
 </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">isGreaterThan</span><span>(</span><span class="number-literal">1</span><span>)
 </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">isBetween</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">3</span><span>)
 
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isEmpty</span><span>
+
 </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
 
 </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">contains</span><span>(
@@ -278,6 +301,13 @@
       &quot;foundationYear&quot;:1934,
       &quot;location&quot;:&quot;Burbank, California&quot;
     }
+  }
+  &quot;&quot;&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">not_contains</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+  {
+    &quot;name&quot;: &quot;Joker&quot;
   }
   &quot;&quot;&quot;</span><span>)</span></code></pre>
         <div class="callout info">
@@ -345,7 +375,11 @@
         </ul>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span> -&gt; </span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
         <ul>
-          <li>saving value to <code>session</code></li>
+          <li>saving the entire response body to <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save_body</span><span>(</span><span class="string-literal">&quot;response-snapshot&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>saving a value extracted from the response body to <code>session</code></li>
         </ul>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span> -&gt; </span><span class="string-literal">&quot;batman-city&quot;</span><span>)</span></code></pre>
         <ul>
@@ -365,6 +399,40 @@
           <li>transforming a value in <code>session</code></li>
         </ul>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">transform_session</span><span>(</span><span class="string-literal">&quot;my-key&quot;</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toUpperCase</span><span>)</span></code></pre>
+        <ul>
+          <li>removing a key from <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">remove</span><span>(</span><span class="string-literal">&quot;temporary-key&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>rolling back a value in <code>session</code> to its previous value</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">rollback</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>comparing two session values</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_values</span><span>(</span><span class="string-literal">&quot;key1&quot;</span><span>, </span><span class="string-literal">&quot;key2&quot;</span><span>).</span><span class="identifier">areEquals</span><span>
+
+</span><span class="identifier">session_values</span><span>(</span><span class="string-literal">&quot;key1&quot;</span><span>, </span><span class="string-literal">&quot;key2&quot;</span><span>).</span><span class="identifier">areNotEquals</span><span>
+
+</span><span class="identifier">session_values</span><span>(</span><span class="string-literal">&quot;key1&quot;</span><span>, </span><span class="string-literal">&quot;key2&quot;</span><span>).</span><span class="identifier">asJson</span><span>.</span><span class="identifier">areEquals</span></code></pre>
+        <ul>
+          <li>comparing current value with previous value of the same key</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;counter&quot;</span><span>).</span><span class="identifier">hasEqualCurrentAndPreviousValues</span><span>
+
+</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;counter&quot;</span><span>).</span><span class="identifier">hasDifferentCurrentAndPreviousValues</span></code></pre>
+        <ul>
+          <li>asserting on the full history of values for a key</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_history</span><span>(</span><span class="string-literal">&quot;status&quot;</span><span>).</span><span class="identifier">containsExactly</span><span>(</span><span class="string-literal">&quot;pending&quot;</span><span>, </span><span class="string-literal">&quot;active&quot;</span><span>, </span><span class="string-literal">&quot;completed&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>additional assertions on session values</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">isNot</span><span>(</span><span class="string-literal">&quot;Joker&quot;</span><span>)
+
+</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">containsString</span><span>(</span><span class="string-literal">&quot;Bat&quot;</span><span>)
+
+</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">matchesRegex</span><span>(</span><span class="string-literal">&quot;B.*n&quot;</span><span>.</span><span class="identifier">r</span><span>)</span></code></pre>
         
         <h3 id="wrapper-steps" class="section"><a class="anchor-link left" href="#wrapper-steps"><i class="icofont-laika link">&#xef71;</i></a>Wrapper steps</h3>
         <p>Wrapper steps allow to control the execution of a series of steps to build more powerful tests.</p>
@@ -373,6 +441,14 @@
         </ul>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Repeat</span><span>(</span><span class="number-literal">3</span><span>) {
   </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>repeating a series of <code>steps</code> with access to the current iteration index</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Repeat</span><span>(</span><span class="number-literal">3</span><span>, </span><span class="string-literal">&quot;index&quot;</span><span>) {
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/heroes/&lt;index&gt;&quot;</span><span>)
 
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
 }</span></code></pre>
@@ -448,6 +524,17 @@
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
 }</span></code></pre>
         <ul>
+          <li>repeat a series of <code>steps</code> for each element in an <code>Iterable</code> (more flexible version of <code>RepeatWith</code>)</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">heroes</span><span> = </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Superman&quot;</span><span>, </span><span class="string-literal">&quot;GreenLantern&quot;</span><span>, </span><span class="string-literal">&quot;Spiderman&quot;</span><span>)
+
+</span><span class="type-name">RepeatFrom</span><span>(</span><span class="identifier">heroes</span><span>)(</span><span class="string-literal">&quot;superhero-name&quot;</span><span>) {
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/superheroes/&lt;superhero-name&gt;&quot;</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;sessionId&quot;</span><span> -&gt; </span><span class="string-literal">&quot;&lt;session-id&gt;&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
           <li>repeat a series of steps with different inputs specified via a data-table</li>
         </ul>
         <pre><code class="nohighlight"><span class="type-name">WithDataInputs</span><span>(
@@ -463,6 +550,20 @@
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">a_plus_b_equals_c</span><span> =
   </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;sum of &#39;a&#39; + &#39;b&#39; = &#39;c&#39;&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span>).</span><span class="identifier">toInt</span><span> + </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;b&quot;</span><span>).</span><span class="identifier">toInt</span><span>, </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;c&quot;</span><span>).</span><span class="identifier">toInt</span><span>))</span></code></pre>
+        <ul>
+          <li>repeat a series of steps with different inputs specified via JSON</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithJsonDataInputs</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+  [
+    { &quot;a&quot;: &quot;1&quot;, &quot;b&quot;: &quot;3&quot;, &quot;c&quot;: &quot;4&quot; },
+    { &quot;a&quot;: &quot;7&quot;, &quot;b&quot;: &quot;4&quot;, &quot;c&quot;: &quot;11&quot; },
+    { &quot;a&quot;: &quot;1&quot;, &quot;b&quot;: &quot;-1&quot;, &quot;c&quot;: &quot;0&quot; }
+  ]
+  &quot;&quot;&quot;</span><span>
+) {
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">a_plus_b_equals_c</span><span>
+}</span></code></pre>
         <ul>
           <li>WithHeaders automatically sets headers for several steps useful for an authenticated scenario.</li>
         </ul>
@@ -509,6 +610,12 @@
 
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
 }</span></code></pre>
+        
+        <h2 id="utility-steps" class="section"><a class="anchor-link left" href="#utility-steps"><i class="icofont-laika link">&#xef71;</i></a>Utility steps</h2>
+        <ul>
+          <li>pause execution for a given duration</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">wait</span><span>(</span><span class="number-literal">500</span><span>.</span><span class="identifier">millis</span><span>)</span></code></pre>
         
         <h2 id="debug-steps" class="section"><a class="anchor-link left" href="#debug-steps"><i class="icofont-laika link">&#xef71;</i></a>Debug steps</h2>
         <ul>
