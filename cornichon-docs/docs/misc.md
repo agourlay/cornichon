@@ -91,20 +91,18 @@ lazy val root = (project in file("."))
   .enablePlugins(JavaAppPackaging, DockerPlugin)
   .settings(
     testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
-    mainClass in Compile := Some("com.github.agourlay.cornichon.framework.MainRunner"),
+    Compile / mainClass := Some("com.github.agourlay.cornichon.framework.MainRunner"),
 
     scriptClasspath ++= {
-      fromClasspath((managedClasspath in Test).value, ".", _ => true).map(_._2) :+
-        (sbt.Keys.`package` in Test).value.getName
+      fromClasspath((Test / managedClasspath).value, ".", _ => true).map(_._2) :+
+        (Test / sbt.Keys.`package`).value.getName
     },
 
-    mappings in Universal ++= {
-      val testJar = (sbt.Keys.`package` in Test).value
-      fromClasspath((managedClasspath in Test).value, "lib", _ => true) :+
+    Universal / mappings ++= {
+      val testJar = (Test / sbt.Keys.`package`).value
+      fromClasspath((Test / managedClasspath).value, "lib", _ => true) :+
         (testJar -> s"lib/${testJar.getName}")
     },
-
-    noPackageDoc,
     dockerCmd := Seq(
       "--packageToScan=$your-root-package",
       "--reportsOutputDir=/target/test-reports"

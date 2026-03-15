@@ -10,16 +10,27 @@ You will find below the available keys and their respective default values.
 
 ```
 cornichon {
-  requestTimeout = 2000 millis                    // timeout for each request
-  globalBaseUrl = ""                              // base url for all requests
-  executeScenariosInParallel = true               // execute scenarios in parallel within a feature
-  scenarioExecutionParallelismFactor = 1          // number of concurrent scenarios = `scenarioExecutionParallelismFactor` * number of CPU + 1
-  traceRequests = false                           // log trace requests and responses
-  warnOnDuplicateHeaders = false                  // warn if a header is duplicated in a request
-  failOnDuplicateHeaders = false                  // fail if a header is duplicated in a request
-  addAcceptGzipByDefault = false                  // add Accept-Encoding: gzip, deflate by default
-  disableCertificateVerification = false          // disable certificate verification for https requests
-  followRedirect = false                         // follow Http redirects
-  enableHttp2 = false                             // enable Http2 for requests
+  // timeout for each request
+  requestTimeout = 2000 millis
+  // base url for all requests
+  globalBaseUrl = ""
+  // execute scenarios in parallel within a feature
+  executeScenariosInParallel = true
+  // number of concurrent scenarios = factor * number of CPU + 1
+  scenarioExecutionParallelismFactor = 1
+  // log trace requests and responses
+  traceRequests = false
+  // warn if a header is duplicated in a request
+  warnOnDuplicateHeaders = false
+  // fail if a header is duplicated in a request
+  failOnDuplicateHeaders = false
+  // add Accept-Encoding: gzip, deflate by default
+  addAcceptGzipByDefault = false
+  // disable certificate verification for https requests
+  disableCertificateVerification = false
+  // follow HTTP redirects
+  followRedirect = false
+  // enable HTTP/2 for requests
+  enableHttp2 = false
 }
 ``` 

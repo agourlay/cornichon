@@ -4,7 +4,7 @@ laika.title = Effect steps
 
 # EffectStep
 
-An `EffectStep` can be understood as the following function `ScenarioContext => Future[Either[CornichonError, Session]]`.
+An `EffectStep` can be understood as the following function `ScenarioContext => IO[Either[CornichonError, Session]]`.
 
 This means that an `EffectStep` runs a side effect and populates the `Session` with potential result values or returns an error.
 
@@ -13,7 +13,7 @@ A `Session` is a Map-like object used to propagate state throughout a `scenario`
 Here is the simplest `EffectStep` possible:
 
 ```scala
-When I EffectStep(title = "do nothing", action = scenarioContext => Future.successful(Right(scenarioContext.session)))
+When I EffectStep(title = "do nothing", action = scenarioContext => IO.pure(Right(scenarioContext.session)))
 ```
 
 or using a factory helper when dealing with computations that do not fit the `EffectStep` type.
@@ -21,24 +21,20 @@ or using a factory helper when dealing with computations that do not fit the `Ef
 ```scala
 When I EffectStep.fromSync(title = "do nothing", action = scenarioContext => scenarioContext.session)
 When I EffectStep.fromSyncE(title = "do nothing", action = scenarioContext => Right(scenarioContext.session))
-When I EffectStep.fromAsync(title = "do nothing", action = scenarioContext => Future(scenarioContext.session))
 ```
 
 Let's try to save a value into the `Session`
 
 ```scala
-When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.add("result", piComputation()))
+When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.addValueUnsafe("result", piComputation()))
 ```
 
 The test engine is responsible for controlling the execution of the side effect function and for reporting any error.
 
-If you prefer not using the `scala.concurrent.Future` as effect, it is possible to use the `Effect` type from `cats-effect`.
+The `EffectStep` uses `cats-effect` `IO` under the hood. It is also possible to import the cats `EffectStep` explicitly:
 
 ```scala
-
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-
-val myEffect = EffectStep("identity IO", scenarioContext => IO.pure(Right(scenarioContext.session)))
 ```
 
 
@@ -63,16 +59,16 @@ def feature = Feature("Customer endpoint") {
 
 Most of the time you will create your own trait containing your custom steps and declare a self-type on `CornichonFeature` to be able to access the `httpService`.
 
-It exposes a method `requestEffect` turning an `HttpRequest` into an asynchronous effect.
+It exposes a method `requestEffectIO` turning an `HttpRequest` into an asynchronous effect.
 
 ```scala
 trait MySteps {
-  this: CornichonFeature ⇒
+  this: CornichonFeature =>
 
   def create_customer = EffectStep(
     title = "create new customer",
-    effect = http.requestEffect(
-      request = HttpRequest.post("/customer").withPayload("someJson"),
+    effect = http.requestEffectIO(
+      request = HttpRequest.post("/customer").withBody("someJson"),
       expectedStatus = Some(201),
       extractor = RootExtractor("customer")
     )

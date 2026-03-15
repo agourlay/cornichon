@@ -18,7 +18,7 @@ The test engine is responsible to test the validity of the provided `Assertion` 
   * CustomMessageEqualityAssertion to provide a custom error message
 
     ```scala
-    CustomMessageAssertion[A](expected: A, result: A, customMessage: () ⇒ String)
+    CustomMessageEqualityAssertion[A](expected: A, actual: A, customMessage: () => String)
     ```
 
 * Ordering assertions : compare two objects using the cats ```Order``` typeclass.
@@ -42,7 +42,7 @@ Below is a longer example showing how to integrate an assertion into a scenario.
 ```scala
 When I EffectStep.fromSync(
   title = "estimate PI",
-  action = scenarioContext => scenarioContext.session.add("result", piComputation())
+  action = scenarioContext => scenarioContext.session.addValueUnsafe("result", piComputation())
 )
 
 Then assert AssertStep(

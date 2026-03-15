@@ -23,13 +23,14 @@ where
 ```scala
 def setup_some_fixture_data() = ScenarioResourceStep(
   title = "Set up fixture data",
-  acquire = EffectStep("insert data", { scenarioContext =>
+  acquire = EffectStep.fromSyncE("insert data", { scenarioContext =>
     val randomId = insertData()
     scenarioContext.session.addValue("id", randomId)
   }),
-  release = EffectStep("clean up data", { scenarioContext =>
-    val randomId = scenarioContext.session.get("id").getOrElse(throw new RuntimeException("id not found"))
+  release = EffectStep.fromSync("clean up data", { scenarioContext =>
+    val randomId = scenarioContext.session.getUnsafe("id")
     deleteData(randomId)
+    scenarioContext.session
   })
 )
 ```

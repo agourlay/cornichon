@@ -8,7 +8,7 @@ The first flavour follows the classical approach found in many testing libraries
 
 Here is the `API` available when using a single `generator`
 
-`def for_all[A](description: String, ga: RandomContext ⇒ Generator[A])(f: A ⇒ Step): Step`
+`def for_all[A](description: String, maxNumberOfRuns: Int, ga: RandomContext => Generator[A])(builder: A => Step): Step`
 
 Let's look at an example to see how to use it!
 

@@ -16,11 +16,11 @@ There are three concrete instances of `generators`:
 ```scala
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String (20)",
-  gen = () ⇒ rc.alphanumeric(20))
+  gen = () => rc.alphanumeric(20))
 
 def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   name = "integer",
-  gen = () ⇒ rc.nextInt(10000))
+  gen = () => rc.nextInt(10000))
 ```
 
 This approach also supports embedding `Scalacheck's Gen` into a `Generator` by propagating the initial seed.
@@ -35,7 +35,7 @@ case object Tail extends Coin
 
 def coinGen(rc: RandomContext): Generator[Coin] = OptionalValueGenerator(
   name = "a Coin",
-  gen = () ⇒ {
+  gen = () => {
     val nextSeed = rc.nextLong()
     val params = Gen.Parameters.default.withInitialSeed(nextSeed)
     val coin = Gen.oneOf[Coin](Head, Tail)

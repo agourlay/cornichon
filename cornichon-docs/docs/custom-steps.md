@@ -10,5 +10,5 @@ There are currently 4 kinds of custom steps available
 
 - `EffectStep`
 - `AssertStep`
-- `ResourceStep`
+- `ScenarioResourceStep`
 - `WrapperStep`

@@ -36,9 +36,9 @@ A `property` is composed of:
 
 The number of generators is defined in the `property` type:
 - `Property0` an action which accepts a function from `() => Step`
-- `Property1[A]` an action which accepts a function from `() ⇒ A => Step`
-- `Property2[A, B]` an action which accepts a function from `(() ⇒ A, () => B) => Step`
-- `Property3[A, B, C]` an action which accepts a function from `(() ⇒ A, () => B, () => C) => Step`
+- `Property1[A]` an action which accepts a function from `(() => A) => Step`
+- `Property2[A, B]` an action which accepts a function from `((() => A), (() => B)) => Step`
+- `Property3[A, B, C]` an action which accepts a function from `((() => A), (() => B), (() => C)) => Step`
 - up to `Property6[A, B, C, D, E, F]`
 
 It is of course not required to call a generator when building a `Step`.
@@ -80,32 +80,32 @@ The type inference is sometimes not properly detecting the action type, so it is
 
 def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
   name = "an alphanumeric String",
-  gen = () ⇒ rc.alphanumeric.take(20).mkString(""))
+  gen = () => rc.alphanumeric(20))
 
 def integerGen(rc: RandomContext): ValueGenerator[Int] = ValueGenerator(
   name = "integer",
-  gen = () ⇒ rc.nextInt(10000))
+  gen = () => rc.nextInt(10000))
 
 val myModelRunner = ModelRunner.make[String, Int](stringGen, integerGen) {
 
   val entryPoint = Property2[String, Int](
     description = "Entry point",
-    invariant = (_, _) ⇒ print_step("Start game")
+    invariant = (_, _) => print_step("Start game")
   )
 
   val pingString = Property2[String, Int](
     description = "Ping String",
-    invariant = (stringGen, _) ⇒ print_step(s"Ping ${stringGen()}")
+    invariant = (stringGen, _) => print_step(s"Ping ${stringGen()}")
   )
 
   val pongInt = Property2[String, Int](
     description = "Pong Int",
-    invariant = (_, intGen) ⇒ print_step(s"Pong ${intGen()}")
+    invariant = (_, intGen) => print_step(s"Pong ${intGen()}")
   )
 
   val exitPoint = Property2[String, Int](
     description = "Exit point",
-    invariant = (_, _) ⇒ print_step("End of game")
+    invariant = (_, _) => print_step("End of game")
   )
 
   Model(
@@ -478,7 +478,7 @@ class WebShopCheck extends CornichonFeature {
 
   def productDraftGen(rc: RandomContext): Generator[ProductDraft] = OptionalValueGenerator(
     name = "a product draft",
-    gen = () ⇒ {
+    gen = () => {
       val nextSeed = rc.nextLong()
       val params = Gen.Parameters.default.withInitialSeed(nextSeed)
       val gen =
@@ -493,7 +493,7 @@ class WebShopCheck extends CornichonFeature {
 
   private val noProductsInDb = Property1[ProductDraft](
     description = "no products in DB",
-    invariant = _ ⇒ Attach {
+    invariant = _ => Attach {
       Given I get("/products")
       Then assert status.is(200)
       Then assert body.asArray.isEmpty
@@ -502,7 +502,7 @@ class WebShopCheck extends CornichonFeature {
 
   private val createProduct = Property1[ProductDraft](
     description = "create a product",
-    invariant = pd ⇒ {
+    invariant = pd => {
       val productDraft = pd()
       val productDraftJson = productDraft.asJson
       Attach {
@@ -523,7 +523,7 @@ class WebShopCheck extends CornichonFeature {
       Given I get("/products")
       Then assert body.asArray.isNotEmpty
     },
-    invariant = _ ⇒ Attach {
+    invariant = _ => Attach {
       Given I get("/products")
       Then assert status.is(200)
       Then I save_body_path("$[0].id" -> "id-to-delete")
@@ -545,7 +545,7 @@ class WebShopCheck extends CornichonFeature {
       Given I get("/products")
       Then assert body.asArray.isNotEmpty
     },
-    invariant = pd ⇒ {
+    invariant = pd => {
       val productDraft = pd()
       val productDraftJson = productDraft.asJson
       Attach {

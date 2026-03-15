@@ -203,7 +203,7 @@ body.asArray.inOrder.ignoringEach("publisher").is(
 
 body.asArray.hasSize(2)
 body.asArray.size.is(2) //equivalent to above
-body.asArray.size.isLesserThan(3)
+body.asArray.size.isLessThan(3)
 body.asArray.size.isGreaterThan(1)
 body.asArray.size.isBetween(1, 3)
 
@@ -455,7 +455,7 @@ WithDataInputs(
 }
 
 def a_plus_b_equals_c =
-  AssertStep("sum of 'a' + 'b' = 'c'", s ⇒ GenericEqualityAssertion(s.getUnsafe("a").toInt + s.getUnsafe("b").toInt, s.getUnsafe("c").toInt))
+  AssertStep("sum of 'a' + 'b' = 'c'", sc => GenericEqualityAssertion(sc.session.getUnsafe("a").toInt + sc.session.getUnsafe("b").toInt, sc.session.getUnsafe("c").toInt))
 ```
 
 - WithHeaders automatically sets headers for several steps useful for an authenticated scenario.
