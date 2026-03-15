@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Assert steps</title>
+  
+  
+  <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="../img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="icon-link glyph-link" href="../"><i class="icofont-laika home" title="Home">&#xef47;</i></a>
+
+  <div class="row links">
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">Cornichon</a></li>
+    <li class="level1 nav-leaf"><a href="../overview.html">Overview</a></li>
+    <li class="level1 nav-leaf"><a href="../installation.html">Installation</a></li>
+    <li class="level1 nav-leaf"><a href="../basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="../dsl.html">DSL</a></li>
+    <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
+    <li class="level1 nav-header">custom-steps</li>
+    <li class="level2 nav-leaf"><a href="effect-step.html">Effect steps</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Assert steps</a></li>
+    <li class="level2 nav-leaf"><a href="resource-step.html">Resource steps</a></li>
+    <li class="level1 nav-leaf"><a href="../placeholders.html">Placeholders</a></li>
+    <li class="level1 nav-leaf"><a href="../json-matchers.html">JSON matchers</a></li>
+    <li class="level1 nav-leaf"><a href="../feature-options.html">Feature options</a></li>
+    <li class="level1 nav-leaf"><a href="../reference-configuration.html">Reference configuration</a></li>
+    <li class="level1 nav-leaf"><a href="../property-based-testing.html">PBT</a></li>
+    <li class="level1 nav-header">pbt</li>
+    <li class="level2 nav-leaf"><a href="../pbt/generators.html">Generators</a></li>
+    <li class="level2 nav-leaf"><a href="../pbt/for-all.html">ForAll</a></li>
+    <li class="level2 nav-leaf"><a href="../pbt/random-model-exploration.html">Random model exploration</a></li>
+    <li class="level1 nav-leaf"><a href="../misc.html">Misc.</a></li>
+    <li class="level1 nav-leaf"><a href="../modules.html">Modules</a></li>
+    <li class="level1 nav-header">modules</li>
+    <li class="level2 nav-leaf"><a href="../modules/module-mock.html">HTTP mock</a></li>
+    <li class="level2 nav-leaf"><a href="../modules/module-kafka.html">Kafka integration</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Assert steps</a></p>
+
+  <ul class="nav-list">
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="assertstep" class="title">AssertStep</h1>
+        <p>An <code>AssertStep</code> can be understood as the following function <code>ScenarioContext =&gt; Assertion</code>. Its goal is to describe an expectation.</p>
+        <p>The test engine is responsible to test the validity of the provided <code>Assertion</code> which can be one of the following:</p>
+        <ul>
+          <li>Equality assertions : test the equality of two objects using the cats <code>Equals</code> typeclass.</li>
+        </ul>
+        <ul>
+          <li>
+            <p>GenericEqualityAssertion to leave all the details to Cornichon</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;always true!&quot;</span><span>, </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="boolean-literal">true</span><span>, </span><span class="boolean-literal">true</span><span>))</span></code></pre>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <p>CustomMessageEqualityAssertion to provide a custom error message</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">CustomMessageAssertion</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">expected</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">result</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">customMessage</span><span>: () ⇒ </span><span class="type-name">String</span><span>)</span></code></pre>
+          </li>
+          <li>
+            <p>Ordering assertions : compare two objects using the cats <code>Order</code> typeclass.</p>
+          </li>
+        </ul>
+        <ul>
+          <li>GreaterThanAssertion</li>
+        </ul>
+        <ul>
+          <li>LessThanAssertion</li>
+        </ul>
+        <ul>
+          <li>
+            <p>BetweenAssertion</p>
+          </li>
+          <li>
+            <p>Collection assertions : test the state of a collection of elements</p>
+          </li>
+        </ul>
+        <ul>
+          <li>CollectionEmptyAssertion</li>
+        </ul>
+        <ul>
+          <li>CollectionNotEmptyAssertion</li>
+        </ul>
+        <ul>
+          <li>CollectionSizeAssertion</li>
+        </ul>
+        <ul>
+          <li>
+            <p>CollectionContainsAssertion</p>
+          </li>
+          <li>
+            <p>String assertion : assert the content of a given String value</p>
+          </li>
+        </ul>
+        <ul>
+          <li>StringContainsAssertion</li>
+        </ul>
+        <ul>
+          <li>RegexAssertion</li>
+        </ul>
+        <p>Below is a longer example showing how to integrate an assertion into a scenario.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="type-name">EffectStep</span><span>.</span><span class="identifier">fromSync</span><span>(
+  </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;estimate PI&quot;</span><span>,
+  </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">add</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>, </span><span class="identifier">piComputation</span><span>())
+)
+
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="type-name">AssertStep</span><span>(
+  </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;check estimate&quot;</span><span>,
+  </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="type-name">Assertion</span><span>.</span><span class="identifier">either</span><span>{
+    </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>).</span><span class="identifier">map</span><span>(</span><span class="identifier">r</span><span> =&gt; </span><span class="type-name">BetweenAssertion</span><span>(</span><span class="number-literal">3.1</span><span>, </span><span class="identifier">r</span><span>.</span><span class="identifier">toDouble</span><span>, </span><span class="number-literal">3.2</span><span>))
+  }
+)</span></code></pre>
+        <p><code>Assertions</code> can also be composed using <code>and</code> and <code>or</code>, for instance <code>BetweenAssertion</code> is the result of <code>LessThanAssertion</code> and <code>GreaterThanAssertion</code>.</p>
+        <p>This is rather low level therefore you should not write your steps like that directly inside the DSL but hide them behind functions with appropriate names.</p>
+        <p>Fortunately a bunch of built-in steps and primitive building blocks are already available for you.</p>
+        <p>Note for advance users: it is also possible to write custom wrapper steps by implementing <code>WrapperStep</code>.</p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  Site generated by <a href="https://typelevel.org/Laika/">Laika</a> with the Helium theme.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

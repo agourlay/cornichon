@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>DSL</title>
+  
+  
+  <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="helium/site/laika-helium.css" />
+  <script src="helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="icon-link glyph-link" href="index.html"><i class="icofont-laika home" title="Home">&#xef47;</i></a>
+
+  <div class="row links">
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="index.html">Cornichon</a></li>
+    <li class="level1 nav-leaf"><a href="overview.html">Overview</a></li>
+    <li class="level1 nav-leaf"><a href="installation.html">Installation</a></li>
+    <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
+    <li class="level1 active nav-leaf"><a href="#">DSL</a></li>
+    <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
+    <li class="level1 nav-header">custom-steps</li>
+    <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
+    <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
+    <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
+    <li class="level1 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
+    <li class="level1 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
+    <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
+    <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
+    <li class="level1 nav-leaf"><a href="property-based-testing.html">PBT</a></li>
+    <li class="level1 nav-header">pbt</li>
+    <li class="level2 nav-leaf"><a href="pbt/generators.html">Generators</a></li>
+    <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
+    <li class="level2 nav-leaf"><a href="pbt/random-model-exploration.html">Random model exploration</a></li>
+    <li class="level1 nav-leaf"><a href="misc.html">Misc.</a></li>
+    <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
+    <li class="level1 nav-header">modules</li>
+    <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
+    <li class="level2 nav-leaf"><a href="modules/module-kafka.html">Kafka integration</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">DSL</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-node"><a href="#built-in-steps">Built-in steps</a></li>
+    <li class="level2 nav-leaf"><a href="#http-effects">HTTP effects</a></li>
+    <li class="level2 nav-leaf"><a href="#http-assertions">HTTP assertions</a></li>
+    <li class="level2 nav-leaf"><a href="#http-streams">HTTP streams</a></li>
+    <li class="level2 nav-leaf"><a href="#graphql-support">GraphQL support</a></li>
+    <li class="level2 nav-leaf"><a href="#session-steps">Session steps</a></li>
+    <li class="level2 nav-leaf"><a href="#debug-steps">Debug steps</a></li>
+    <li class="level2 nav-leaf"><a href="#dsl-composition">DSL composition</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="dsl" class="title">DSL</h1>
+        <p>The content of a <code>feature</code> is described using a domain-specific language (DSL) providing a clear structure for statement definitions.</p>
+        <p>The structure of a step statement is the following:</p>
+        <p>1 - starts with either <code>Given</code> - <code>When</code> - <code>And</code> - <code>Then</code></p>
+        <p>The prefixes do not change the behavior of the steps but are present to improve the readability.</p>
+        <p>2 - followed by any single word (could be several words wrapped in back-ticks)</p>
+        <p>This structure was chosen to increase the freedom of customization while still benefiting from Scala&#39;s infix notation.</p>
+        <p>3 - ending with a <code>step</code> definition</p>
+        <p>The usage pattern is often to first run a <code>step</code> with a side effect then assert an expected state in a second <code>step</code>.</p>
+        <p>For example :</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">step_definition</span><span>
+
+</span><span class="type-name">When</span><span> </span><span class="identifier">a</span><span> </span><span class="identifier">step_definition</span><span>
+
+</span><span class="type-name">And</span><span> \</span><span class="identifier">`another really important\`</span><span> </span><span class="identifier">step_definition</span><span>
+
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">step_definition</span></code></pre>
+        <p><code>step_definition</code> stands here for any object of type <code>Step</code>, those can be manually defined or simply built-in in Cornichon.</p>
+        
+        <h1 id="built-in-steps" class="section"><a class="anchor-link left" href="#built-in-steps"><i class="icofont-laika link">&#xef71;</i></a>Built-in steps</h1>
+        <p>Cornichon has a set of built-in steps for various HTTP calls and assertions on the response.</p>
+        
+        <h2 id="http-effects" class="section"><a class="anchor-link left" href="#http-effects"><i class="icofont-laika link">&#xef71;</i></a>HTTP effects</h2>
+        <ul>
+          <li>GET, DELETE, HEAD, OPTIONS, POST, PUT and PATCH use the same request builder for request&#39;s body, URL parameters and headers.</li>
+        </ul>
+        <pre><code class="nohighlight"><span class="identifier">head</span><span>(</span><span class="string-literal">&quot;http://superhero.io/daredevil&quot;</span><span>)
+
+</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/daredevil&quot;</span><span>).</span><span class="identifier">withParams</span><span>(
+  </span><span class="string-literal">&quot;firstParam&quot;</span><span> -&gt; </span><span class="string-literal">&quot;value1&quot;</span><span>,
+  </span><span class="string-literal">&quot;secondParam&quot;</span><span> -&gt; </span><span class="string-literal">&quot;value2&quot;</span><span>)
+
+</span><span class="identifier">delete</span><span>(</span><span class="string-literal">&quot;http://superhero.io/daredevil&quot;</span><span>).</span><span class="identifier">withHeaders</span><span>((</span><span class="string-literal">&quot;Authorization&quot;</span><span>, </span><span class="string-literal">&quot;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&quot;</span><span>))
+
+</span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;JSON description of Batman goes here&quot;</span><span>)
+
+</span><span class="identifier">put</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;JSON description of Batman goes here&quot;</span><span>).</span><span class="identifier">withParams</span><span>(
+  </span><span class="string-literal">&quot;firstParam&quot;</span><span> -&gt; </span><span class="string-literal">&quot;value1&quot;</span><span>,
+  </span><span class="string-literal">&quot;secondParam&quot;</span><span> -&gt; </span><span class="string-literal">&quot;value2&quot;</span><span>)
+
+</span><span class="identifier">patch</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;JSON description of Batman goes here&quot;</span><span>)</span></code></pre>
+        <p>There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section <a href="misc.html#custom-http-body-type">Custom HTTP body type</a>.</p>
+        
+        <h2 id="http-assertions" class="section"><a class="anchor-link left" href="#http-assertions"><i class="icofont-laika link">&#xef71;</i></a>HTTP assertions</h2>
+        <ul>
+          <li>assert response status</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)</span></code></pre>
+        <ul>
+          <li>assert response headers</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">headers</span><span>.</span><span class="identifier">name</span><span>(</span><span class="string-literal">&quot;cache-control&quot;</span><span>).</span><span class="identifier">isPresent</span><span>
+
+</span><span class="identifier">headers</span><span>.</span><span class="identifier">contain</span><span>(</span><span class="string-literal">&quot;cache-control&quot;</span><span> -&gt; </span><span class="string-literal">&quot;no-cache&quot;</span><span>)
+
+</span><span class="identifier">headers</span><span>.</span><span class="identifier">name</span><span>(</span><span class="string-literal">&quot;cache_control&quot;</span><span>).</span><span class="identifier">isAbsent</span><span>
+
+</span><span class="identifier">save_header_value</span><span>(</span><span class="string-literal">&quot;cache_control&quot;</span><span> -&gt; </span><span class="string-literal">&quot;my-cache-control-value&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>assert response body comes with different flavors (ignoring, whitelisting)</li>
+        </ul>
+        <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+  {
+    &quot;name&quot;: &quot;Batman&quot;,
+    &quot;realName&quot;: &quot;Bruce Wayne&quot;,
+    &quot;city&quot;: &quot;Gotham city&quot;,
+    &quot;hasSuperpowers&quot;: false,
+    &quot;publisher&quot;:{
+      &quot;name&quot;:&quot;DC&quot;,
+      &quot;foundationYear&quot;:1934,
+      &quot;location&quot;:&quot;Burbank, California&quot;
+    }
+  }
+  &quot;&quot;&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;hasSuperpowers&quot;</span><span>, </span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>, </span><span class="string-literal">&quot;publisher.location&quot;</span><span>).</span><span class="identifier">is</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+  {
+    &quot;name&quot;: &quot;Batman&quot;,
+    &quot;realName&quot;: &quot;Bruce Wayne&quot;,
+    &quot;publisher&quot;:{
+      &quot;name&quot;:&quot;DC&quot;
+    }
+  }
+  &quot;&quot;&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">whitelisting</span><span>.</span><span class="identifier">is</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+  {
+    &quot;name&quot;: &quot;Batman&quot;,
+    &quot;realName&quot;: &quot;Bruce Wayne&quot;,
+    &quot;publisher&quot;:{
+      &quot;name&quot;:&quot;DC&quot;
+    }
+  }
+  &quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>Ignored keys and extractors are JsonPaths following the format <code>a.b.c[index].d</code>.</p>
+        <p>The <code>index</code> value is either:</p>
+        <ul>
+          <li>an Integer addressing the array position.</li>
+          <li>a <code>*</code> to target all values, the result will be an array of the projected values.</li>
+        </ul>
+        <p>JsonPath can also be used to only assert part of the response</p>
+        <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Gotham city&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;hasSuperpowers&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="boolean-literal">false</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;DC&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>).</span><span class="identifier">containsString</span><span>(</span><span class="string-literal">&quot;Gotham&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;superheroes[*].name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;[ &quot;Spiderman&quot;, &quot;IronMan&quot;, &quot;Superman&quot;, &quot;GreenLantern&quot;, &quot;Batman&quot; ]&quot;&quot;&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="number-literal">1934</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">isPresent</span><span>
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationMonth&quot;</span><span>).</span><span class="identifier">isAbsent</span></code></pre>
+        <p>It is possible to handle null values, given the following response body <code>{ “data” : null }</code></p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;data&quot;</span><span>).</span><span class="identifier">isAbsent</span><span>  </span><span class="comment">//incorrect
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;data&quot;</span><span>).</span><span class="identifier">isPresent</span><span> </span><span class="comment">//correct
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;data&quot;</span><span>).</span><span class="identifier">isNull</span><span>    </span><span class="comment">//correct
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;data&quot;</span><span>).</span><span class="identifier">isNotNull</span><span> </span><span class="comment">//incorrect</span></code></pre>
+        <p>If one key of the path contains a &quot;.&quot; it has to be wrapped with &quot;`&quot; to notify the parser.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;`message.en`&quot;</span><span>).</span><span class="identifier">isPresent</span><span>
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;`message.fr`&quot;</span><span>).</span><span class="identifier">isAbsent</span></code></pre>
+        <p>To address a root array use <code>$</code> followed by the index the access.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[2].name&quot;</span><span>)</span></code></pre>
+        <p>If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)</p>
+        <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;hasSuperpowers&quot;</span><span>, </span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+  [{
+    &quot;name&quot;: &quot;Batman&quot;,
+    &quot;realName&quot;: &quot;Bruce Wayne&quot;
+  },
+  {
+    &quot;name&quot;: &quot;Superman&quot;,
+    &quot;realName&quot;: &quot;Clark Kent&quot;
+  }]
+  &quot;&quot;&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(
+ </span><span class="string-literal">&quot;&quot;&quot;
+  |    name     |    realName    |     city      |  hasSuperpowers |
+  | &quot;Batman&quot;    | &quot;Bruce Wayne&quot;  | &quot;Gotham city&quot; |      false      |
+  | &quot;Superman&quot;  | &quot;Clark Kent&quot;   | &quot;Metropolis&quot;  |      true       |
+ &quot;&quot;&quot;</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">hasSize</span><span>(</span><span class="number-literal">2</span><span>)
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">2</span><span>) </span><span class="comment">//equivalent to above
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">isLesserThan</span><span>(</span><span class="number-literal">3</span><span>)
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">isGreaterThan</span><span>(</span><span class="number-literal">1</span><span>)
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">isBetween</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">3</span><span>)
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
+
+</span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">contains</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+  {
+    &quot;name&quot;: &quot;Batman&quot;,
+    &quot;realName&quot;: &quot;Bruce Wayne&quot;,
+    &quot;city&quot;: &quot;Gotham city&quot;,
+    &quot;hasSuperpowers&quot;: false,
+    &quot;publisher&quot;:{
+      &quot;name&quot;:&quot;DC&quot;,
+      &quot;foundationYear&quot;:1934,
+      &quot;location&quot;:&quot;Burbank, California&quot;
+    }
+  }
+  &quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>It is important to mention that <code>body</code> expects a JSON content!
+        When receiving non JSON payloads, use <code>body_raw</code> which offers <code>String</code> like assertions.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body_raw</span><span>.</span><span class="identifier">containsString</span><span>(</span><span class="string-literal">&quot;xml&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="http-streams" class="section"><a class="anchor-link left" href="#http-streams"><i class="icofont-laika link">&#xef71;</i></a>HTTP streams</h2>
+        <ul>
+          <li>Server-Sent-Event.</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">open_sse</span><span>(</span><span class="string-literal">s&quot;http://superhero.io/stream&quot;</span><span>, </span><span class="identifier">takeWithin</span><span> = </span><span class="number-literal">1</span><span>.</span><span class="identifier">seconds</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;justName&quot;</span><span> -&gt; </span><span class="string-literal">&quot;true&quot;</span><span>)
+
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">hasSize</span><span>(</span><span class="number-literal">2</span><span>)
+
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+  |   eventType      |    data     |  id  | retry | comment |
+  | &quot;superhero name&quot; |  &quot;Batman&quot;   | null | null  |   null  |
+  | &quot;superhero name&quot; | &quot;Superman&quot;  | null | null  |   null  |
+&quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.</p>
+        
+        <h2 id="graphql-support" class="section"><a class="anchor-link left" href="#graphql-support"><i class="icofont-laika link">&#xef71;</i></a>GraphQL support</h2>
+        <p>Cornichon offers an integration with the library <a href="https://github.com/sangria-graphql/sangria">Sangria</a> to propose convenient features to test GraphQL API.</p>
+        <ul>
+          <li>GraphQL query</li>
+        </ul>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">sangria</span><span>.</span><span class="identifier">macros</span><span>.</span><span class="identifier">_</span><span>
+
+ </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">query_gql</span><span>(</span><span class="string-literal">&quot;/&lt;project-key&gt;/graphql&quot;</span><span>).</span><span class="identifier">withQuery</span><span>(
+    </span><span class="string-literal">graphql&quot;&quot;&quot;
+      query MyQuery {
+        superheroes {
+          results {
+            name
+            realName
+            publisher {
+              name
+            }
+          }
+        }
+      }
+    &quot;&quot;&quot;</span><span>
+    )</span></code></pre>
+        <p><code>query_gql</code> can also be used for mutation query.</p>
+        <ul>
+          <li>GraphQL JSON</li>
+        </ul>
+        <p>all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the <code>gqljson</code> StringContext.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="identifier">json</span><span>.</span><span class="type-name">CornichonJson</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(
+  </span><span class="string-literal">gqljson&quot;&quot;&quot;
+  {
+    name: &quot;Batman&quot;,
+    realName: &quot;Bruce Wayne&quot;,
+    hasSuperpowers: false
+  }
+  &quot;&quot;&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="session-steps" class="section"><a class="anchor-link left" href="#session-steps"><i class="icofont-laika link">&#xef71;</i></a>Session steps</h2>
+        <ul>
+          <li>setting a value in <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span> -&gt; </span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>saving value to <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span> -&gt; </span><span class="string-literal">&quot;batman-city&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>asserting value in <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>asserting JSON value in <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;my-json-response&quot;</span><span>).</span><span class="identifier">asJson</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;a.b.c&quot;</span><span>).</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;d&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;...&quot;</span><span>)</span></code></pre>
+        <ul>
+          <li>asserting existence of value in <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>).</span><span class="identifier">isPresent</span><span>
+</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>).</span><span class="identifier">isAbsent</span></code></pre>
+        <ul>
+          <li>transforming a value in <code>session</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">transform_session</span><span>(</span><span class="string-literal">&quot;my-key&quot;</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toUpperCase</span><span>)</span></code></pre>
+        
+        <h3 id="wrapper-steps" class="section"><a class="anchor-link left" href="#wrapper-steps"><i class="icofont-laika link">&#xef71;</i></a>Wrapper steps</h3>
+        <p>Wrapper steps allow to control the execution of a series of steps to build more powerful tests.</p>
+        <ul>
+          <li>repeating a series of <code>steps</code></li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Repeat</span><span>(</span><span class="number-literal">3</span><span>) {
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>repeating a series of <code>steps</code> during a period of time</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatDuring</span><span>(</span><span class="number-literal">300</span><span>.</span><span class="identifier">millis</span><span>) {
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>repeat a series of <code>steps</code> for each input element</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatWith</span><span>(</span><span class="string-literal">&quot;Superman&quot;</span><span>, </span><span class="string-literal">&quot;GreenLantern&quot;</span><span>, </span><span class="string-literal">&quot;Spiderman&quot;</span><span>)(</span><span class="string-literal">&quot;superhero-name&quot;</span><span>) {
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/superheroes/&lt;superhero-name&gt;&quot;</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;sessionId&quot;</span><span> -&gt; </span><span class="string-literal">&quot;&lt;session-id&gt;&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;hasSuperpowers&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="boolean-literal">true</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>retry a series of <code>steps</code> until it succeeds or reaches the limit</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RetryMax</span><span>(</span><span class="number-literal">3</span><span>) {
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>repeating a series of <code>steps</code> until it succeeds over a period of time at a specified interval (handy for eventually consistent endpoints)</li>
+        </ul>
+        <pre><code class="nohighlight"><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">15</span><span>.</span><span class="identifier">seconds</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">200</span><span>.</span><span class="identifier">milliseconds</span><span>) {
+
+    </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/random&quot;</span><span>)
+
+    </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;hasSuperpowers&quot;</span><span>, </span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(
+      </span><span class="string-literal">&quot;&quot;&quot;
+      {
+        &quot;name&quot;: &quot;Batman&quot;,
+        &quot;realName&quot;: &quot;Bruce Wayne&quot;,
+        &quot;city&quot;: &quot;Gotham city&quot;
+      }
+      &quot;&quot;&quot;</span><span>
+    )
+  }</span></code></pre>
+        <ul>
+          <li>execute a series of steps &#39;times&#39; times by batch of <code>parallelism</code> in parallel and wait &#39;maxTime&#39; for completion.</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatConcurrently</span><span>(</span><span class="identifier">times</span><span> = </span><span class="number-literal">10</span><span>, </span><span class="identifier">parallelism</span><span> = </span><span class="number-literal">3</span><span>, </span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span> </span><span class="identifier">seconds</span><span>) {
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>execute each step in parallel and wait &#39;maxTime&#39; for completion.</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Concurrently</span><span>(</span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span> </span><span class="identifier">seconds</span><span>) {
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/superman&quot;</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>execute a series of steps and fails if the execution does not complete within &#39;maxDuration&#39;.</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Within</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">10</span><span> </span><span class="identifier">seconds</span><span>) {
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>repeat a series of steps with different inputs specified via a data-table</li>
+        </ul>
+        <pre><code class="nohighlight"><span class="type-name">WithDataInputs</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;
+    | a | b  | c  |
+    | 1 | 3  | 4  |
+    | 7 | 4  | 11 |
+    | 1 | -1 | 0  |
+  &quot;&quot;&quot;</span><span>
+) {
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">a_plus_b_equals_c</span><span>
+}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">a_plus_b_equals_c</span><span> =
+  </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;sum of &#39;a&#39; + &#39;b&#39; = &#39;c&#39;&quot;</span><span>, </span><span class="identifier">s</span><span> ⇒ </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="identifier">s</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span>).</span><span class="identifier">toInt</span><span> + </span><span class="identifier">s</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;b&quot;</span><span>).</span><span class="identifier">toInt</span><span>, </span><span class="identifier">s</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;c&quot;</span><span>).</span><span class="identifier">toInt</span><span>))</span></code></pre>
+        <ul>
+          <li>WithHeaders automatically sets headers for several steps useful for an authenticated scenario.</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithHeaders</span><span>((</span><span class="string-literal">&quot;Authorization&quot;</span><span>, </span><span class="string-literal">&quot;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&quot;</span><span>)){
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/secured&quot;</span><span>)
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>WithBasicAuth automatically sets basic auth headers for several steps.</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithBasicAuth</span><span>(</span><span class="string-literal">&quot;admin&quot;</span><span>, </span><span class="string-literal">&quot;root&quot;</span><span>){
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/secured&quot;</span><span>)
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        <ul>
+          <li>HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.</li>
+        </ul>
+        <p>This feature is defined the module <code>cornichon-http-mock</code> and requires to extend the trait <code>HttpMockDsl</code>.</p>
+        <p>By default, this server responds with 201 to any POST request and 200 for all the rest.</p>
+        <p>Additionally, it provides three administrations features:</p>
+        <ul>
+          <li>fetching recorded received requests</li>
+          <li>resetting recorded received requests</li>
+          <li>toggling on/off the error mode to return HTTP 500 to incoming requests</li>
+        </ul>
+        <p>The server records all requests received as a JSON array of HTTP request for later assertions.</p>
+        <p>There are two ways to perform assertions on the server statistics, either by querying the session at the end of the block or by contacting directly the server while it runs.</p>
+        <p>Refer to those <a href="https://github.com/agourlay/cornichon-http-mock/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/MockServerExample.scala">examples</a> for more information.</p>
+        <p>This feature is experimental and may change in the future.</p>
+        <ul>
+          <li>Log duration</li>
+        </ul>
+        <p>By default, all <code>Step</code> execution time can be found in the logs, but sometimes one needs to time a series of steps.</p>
+        <p>This is where <code>LogDuration</code> comes in handy, it requires a label that will be printed as well to identify results.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">LogDuration</span><span>(</span><span class="identifier">label</span><span> = </span><span class="string-literal">&quot;my experiment&quot;</span><span>) {
+
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
+
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+}</span></code></pre>
+        
+        <h2 id="debug-steps" class="section"><a class="anchor-link left" href="#debug-steps"><i class="icofont-laika link">&#xef71;</i></a>Debug steps</h2>
+        <ul>
+          <li>showing session content for debugging purpose</li>
+        </ul>
+        <pre><code class="nohighlight"><span> </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_session</span><span>
+
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_response</span><span>
+
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_response_json</span><span> (</span><span class="identifier">pretty</span><span> </span><span class="identifier">print</span><span> </span><span class="identifier">the</span><span> </span><span class="identifier">json</span><span> </span><span class="identifier">body</span><span>)
+
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_status</span><span>
+
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body</span><span>
+
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body_json</span><span> (</span><span class="identifier">pretty</span><span> </span><span class="identifier">print</span><span> </span><span class="identifier">the</span><span> </span><span class="identifier">json</span><span> </span><span class="identifier">body</span><span>)
+
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_headers</span></code></pre>
+        <p>Those descriptions might be already outdated, in case of doubt always refer to those <a href="https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala">examples</a> as they are executed as part of Cornichon&#39;s test suite.</p>
+        
+        <h2 id="dsl-composition" class="section"><a class="anchor-link left" href="#dsl-composition"><i class="icofont-laika link">&#xef71;</i></a>DSL composition</h2>
+        <p>Series of steps defined with Cornichon&#39;s DSL can be reused within different <code>Scenarios</code>.</p>
+        <p>Using the keyword <code>Attach</code> if the series starts with a <code>Step</code> and without if it starts with a wrapping bloc.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">CompositionFeature</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> =
+    </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Cornichon feature example&quot;</span><span>) {
+
+      </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;demonstrate DSL composition&quot;</span><span>) {
+
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">superhero_exists</span><span>(</span><span class="string-literal">&quot;batman&quot;</span><span>)
+
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">random_superheroes_until</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>)
+
+      }
+    }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">superhero_exists</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>) =
+    </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">s&quot;/superheroes/</span><span class="substitution">$name</span><span class="string-literal">&quot;</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;sessionId&quot;</span><span> -&gt; </span><span class="string-literal">&quot;&lt;session-id&gt;&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+    }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">random_superheroes_until</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>) =
+    </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">3</span><span>.</span><span class="identifier">seconds</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">milliseconds</span><span>) {
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/superheroes/random&quot;</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;sessionId&quot;</span><span> -&gt; </span><span class="string-literal">&quot;&lt;session-id&gt;&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="identifier">name</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">&quot;bingo!&quot;</span><span>)
+    }
+}</span></code></pre>
+        <p>It is possible to give a title to an attached bloc using <code>AttachAs(title)</code>.</p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  Site generated by <a href="https://typelevel.org/Laika/">Laika</a> with the Helium theme.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

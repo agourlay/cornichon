@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Resource steps</title>
+  
+  
+  <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="../img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="icon-link glyph-link" href="../"><i class="icofont-laika home" title="Home">&#xef47;</i></a>
+
+  <div class="row links">
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">Cornichon</a></li>
+    <li class="level1 nav-leaf"><a href="../overview.html">Overview</a></li>
+    <li class="level1 nav-leaf"><a href="../installation.html">Installation</a></li>
+    <li class="level1 nav-leaf"><a href="../basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="../dsl.html">DSL</a></li>
+    <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
+    <li class="level1 nav-header">custom-steps</li>
+    <li class="level2 nav-leaf"><a href="effect-step.html">Effect steps</a></li>
+    <li class="level2 nav-leaf"><a href="assert-step.html">Assert steps</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Resource steps</a></li>
+    <li class="level1 nav-leaf"><a href="../placeholders.html">Placeholders</a></li>
+    <li class="level1 nav-leaf"><a href="../json-matchers.html">JSON matchers</a></li>
+    <li class="level1 nav-leaf"><a href="../feature-options.html">Feature options</a></li>
+    <li class="level1 nav-leaf"><a href="../reference-configuration.html">Reference configuration</a></li>
+    <li class="level1 nav-leaf"><a href="../property-based-testing.html">PBT</a></li>
+    <li class="level1 nav-header">pbt</li>
+    <li class="level2 nav-leaf"><a href="../pbt/generators.html">Generators</a></li>
+    <li class="level2 nav-leaf"><a href="../pbt/for-all.html">ForAll</a></li>
+    <li class="level2 nav-leaf"><a href="../pbt/random-model-exploration.html">Random model exploration</a></li>
+    <li class="level1 nav-leaf"><a href="../misc.html">Misc.</a></li>
+    <li class="level1 nav-leaf"><a href="../modules.html">Modules</a></li>
+    <li class="level1 nav-header">modules</li>
+    <li class="level2 nav-leaf"><a href="../modules/module-mock.html">HTTP mock</a></li>
+    <li class="level2 nav-leaf"><a href="../modules/module-kafka.html">Kafka integration</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Resource steps</a></p>
+
+  <ul class="nav-list">
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="scenarioresourcestep" class="title">ScenarioResourceStep</h1>
+        <p>A <code>ScenarioResourceStep</code> is a way to acquire a resource / create some state and make sure it gets
+        released / cleaned up at the end of the <code>Scenario</code> even if normal control flow is interrupted
+        (by an error or a failed assertion for example).</p>
+        <p>It can be implemented by a pair of <code>Step</code>s. One to acquire the resource and another to release it.
+        Information can be communicated between the two steps the same way we would with any other <code>Step</code>,
+        through the <code>Session</code>.</p>
+        <p>So, for example, in a scenario containing:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">setup_some_fixture_data</span><span>()</span></code></pre>
+        <p>where</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">setup_some_fixture_data</span><span>() = </span><span class="type-name">ScenarioResourceStep</span><span>(
+  </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;Set up fixture data&quot;</span><span>
+  </span><span class="identifier">acquire</span><span> = </span><span class="type-name">EffectStep</span><span>(</span><span class="string-literal">&quot;insert data&quot;</span><span>, { </span><span class="identifier">scenarioContext</span><span> =&gt;
+    </span><span class="keyword">val</span><span> </span><span class="identifier">randomId</span><span> = </span><span class="identifier">insertData</span><span>()
+    </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">addValue</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="identifier">randomId</span><span>)
+  }),
+  </span><span class="identifier">release</span><span> = </span><span class="type-name">EffectStep</span><span>(</span><span class="string-literal">&quot;clean up data&quot;</span><span>, { </span><span class="identifier">scenarioContext</span><span> =&gt;
+    </span><span class="keyword">val</span><span> </span><span class="identifier">randomId</span><span> = </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">right</span><span>.</span><span class="identifier">get</span><span>
+    </span><span class="identifier">deleteData</span><span>(</span><span class="identifier">randomId</span><span>)
+  })
+)</span></code></pre>
+        <p>we can be sure the <code>clean up data</code> step runs regardless of what happens after <code>insert data</code>.</p>
+        <p>Multiple <code>SenarioResourceStep</code>s are allowed in a <code>Scenario</code>. In this case, the <code>release</code> <code>Step</code>
+        of the last <code>ScenarioResourceStep</code> is run first, and we proceed up the <code>Scenario</code>.</p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  Site generated by <a href="https://typelevel.org/Laika/">Laika</a> with the Helium theme.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>
