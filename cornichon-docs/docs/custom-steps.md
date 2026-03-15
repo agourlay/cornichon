@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "Custom steps"
-position: 4
----
+{%
+laika.title = Custom steps
+%}
 
 # Custom steps
 

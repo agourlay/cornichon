@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "Basics"
-position: 2
----
+{%
+laika.title = Basics
+%}
 
 # Basics
 

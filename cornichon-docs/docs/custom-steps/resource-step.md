@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "Resource steps"
----
+{%
+laika.title = Resource steps
+%}
 
 # ScenarioResourceStep
 

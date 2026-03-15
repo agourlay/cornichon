@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "Placeholders"
-position: 5
----
+{%
+laika.title = Placeholders
+%}
 
 # Placeholders
 

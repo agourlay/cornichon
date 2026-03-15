@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "Kafka integration"
----
+{%
+laika.title = Kafka integration
+%}
 
 # Kafka integration
 

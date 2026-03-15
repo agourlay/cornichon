@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "JSON matchers"
-position: 6
----
+{%
+laika.title = JSON matchers
+%}
 
 # JSON matchers
 

@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "Random model exploration"
----
+{%
+laika.title = Random model exploration
+%}
 
 # Random model exploration
 

@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "Reference configuration"
-position: 8
----
+{%
+laika.title = Reference configuration
+%}
 
 # Reference configuration
 

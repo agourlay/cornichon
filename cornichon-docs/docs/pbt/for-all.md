@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "ForAll"
----
+{%
+laika.title = ForAll
+%}
 
 # ForAll
 

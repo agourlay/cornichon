@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "Effect steps"
----
+{%
+laika.title = Effect steps
+%}
 
 # EffectStep
 

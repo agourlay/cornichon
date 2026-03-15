@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "PBT"
-position: 9
----
+{%
+laika.title = PBT
+%}
 
 # Property based testing support
 

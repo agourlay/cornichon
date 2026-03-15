@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "Feature options"
-position: 7
----
+{%
+laika.title = Feature options
+%}
 
 # Feature options
 

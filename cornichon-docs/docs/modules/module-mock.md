@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "HTTP mock"
----
+{%
+laika.title = HTTP mock
+%}
 
 # HTTP Mock
 

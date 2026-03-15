@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "Assert steps"
----
+{%
+laika.title = Assert steps
+%}
 
 # AssertStep
 

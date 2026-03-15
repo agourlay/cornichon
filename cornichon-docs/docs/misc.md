@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "Misc."
-position: 10
----
+{%
+laika.title = "Misc."
+%}
 
 # Custom HTTP body type
 

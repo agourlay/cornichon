@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "DSL"
-position: 3
----
+{%
+laika.title = DSL
+%}
 
 # DSL
 
@@ -130,7 +128,7 @@ body.whitelisting.is(
   """)
 ```
 
-Ignored keys and extractors are JsonPaths following the format "a.b.c[index].d".
+Ignored keys and extractors are JsonPaths following the format `a.b.c[index].d`.
 
 The `index` value is either:
 

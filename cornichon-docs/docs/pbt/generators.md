@@ -1,7 +1,6 @@
----
-layout: docs
-title:  "Generators"
----
+{%
+laika.title = Generators
+%}
 
 # Generators
 

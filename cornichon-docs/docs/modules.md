@@ -1,8 +1,6 @@
----
-layout: docs
-title:  "Modules"
-position: 11
----
+{%
+laika.title = Modules
+%}
 
 # Modules
 

@@ -1,5 +1,9 @@
 import sbt.{file, Developer}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
+import laika.helium.Helium
+import laika.helium.config.{IconLink, HeliumIcon, TextLink, Teaser, ButtonLink}
+import laika.ast.Path.Root
+import laika.theme.config.Color
 
 // originally from https://tpolecat.github.io/2017/04/25/scalac-flags.html
 val compilerOptions_scala2 = Seq(
@@ -236,46 +240,61 @@ lazy val benchmarks =
 lazy val docs =
   project
     .in(file("./cornichon-docs"))
-    .settings(
-      name := "cornichon-docs",
-      ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(benchmarks, scalatest),
-      micrositeDocumentationLabelDescription := "Scaladoc"
-    )
     .dependsOn(core, testFramework, kafka, httpMock)
-    .enablePlugins(MicrositesPlugin)
-    .enablePlugins(ScalaUnidocPlugin)
-    .enablePlugins(GhpagesPlugin)
+    .enablePlugins(LaikaPlugin, MdocPlugin, GhpagesPlugin)
     .settings(commonSettings)
-    .settings(docSettings)
     .settings(noPublishSettings)
-
-lazy val docSettings = Seq(
-  micrositeName := "Cornichon",
-  micrositeDescription := "An extensible Scala DSL for testing JSON HTTP APIs.",
-  micrositeAuthor := "Arnaud Gourlay",
-  micrositeHighlightTheme := "atom-one-light",
-  micrositeHomepage := "http://agourlay.github.io/cornichon/",
-  micrositeBaseUrl := "/cornichon",
-  micrositeGithubOwner := "agourlay",
-  micrositeGithubRepo := "cornichon",
-  micrositeTheme := "pattern",
-  micrositePalette := Map(
-    "brand-primary"   -> "#5B5988",
-    "brand-secondary" -> "#292E53",
-    "brand-tertiary"  -> "#222749",
-    "gray-dark"       -> "#49494B",
-    "gray"            -> "#7B7B7E",
-    "gray-light"      -> "#E5E5E6",
-    "gray-lighter"    -> "#F4F3F4",
-    "white-color"     -> "#FFFFFF"
-  ),
-  autoAPIMappings := true,
-  micrositeDocumentationUrl := "api",
-  addMappingsToSiteDir(ScalaUnidoc / packageDoc / mappings, micrositeDocumentationUrl),
-  ghpagesNoJekyll := false,
-  git.remoteRepo := "git@github.com:agourlay/cornichon.git",
-  makeSite / includeFilter := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
-)
+    .settings(
+      mdocIn := baseDirectory.value / "docs",
+      Laika / sourceDirectories := Seq(mdocOut.value),
+      laikaTheme := Helium.defaults
+        .all.metadata(
+          title = Some("Cornichon"),
+          description = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
+          language = Some("en")
+        )
+        .all.themeColors(
+          primary = Color.hex("3A7D5C"),
+          secondary = Color.hex("1E3A2F"),
+          primaryMedium = Color.hex("2A5740"),
+          primaryLight = Color.hex("E0EDE6"),
+          text = Color.hex("333842"),
+          background = Color.hex("FAFBFC"),
+          bgGradient = (Color.hex("3A7D5C"), Color.hex("1E3A2F"))
+        )
+        .site.landingPage(
+          title = Some("Cornichon"),
+          subtitle = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
+          latestReleases = Nil,
+          license = Some("Apache-2.0"),
+          titleLinks = Seq(
+            ButtonLink.internal(Root / "installation.md", "Get Started"),
+            IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
+          ),
+          projectLinks = Seq(
+            TextLink.internal(Root / "basics.md", "Basics"),
+            TextLink.internal(Root / "dsl.md", "DSL"),
+            TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
+            TextLink.internal(Root / "modules.md", "Modules")
+          ),
+          teasers = Seq(
+            Teaser("Expressive DSL", "Write readable integration tests using a Scala DSL inspired by Gherkin."),
+            Teaser("JSON First", "Powerful JSON assertions with path expressions, matchers, and ignoring keys."),
+            Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support.")
+          )
+        )
+        .site.mainNavigation(depth = 3)
+        .site.topNavigationBar(
+          homeLink = IconLink.internal(Root / "index.md", HeliumIcon.home)
+        )
+        .build,
+      laikaExtensions := Seq(
+        laika.format.Markdown.GitHubFlavor,
+        laika.config.SyntaxHighlighting
+      ),
+      git.remoteRepo := "git@github.com:agourlay/cornichon.git",
+      siteSourceDirectory := target.value / "docs" / "site"
+    )
 
 lazy val library =
   new {
