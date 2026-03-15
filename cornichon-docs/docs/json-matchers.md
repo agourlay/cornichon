@@ -6,7 +6,7 @@ laika.title = JSON matchers
 
 If the exact value of a field is unknown, you can use JSON matchers to make sure it has a certain property or shape.
 
-JSON matchers work more or less like placeholders in practice.
+JSON matchers work more or less like [placeholders](placeholders.md) in practice.
 
 ```scala
 And assert body.ignoring("city", "realName", "publisher.location").is(

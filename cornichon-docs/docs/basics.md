@@ -41,3 +41,4 @@ The failure modes are the following:
 
 - A `scenario` will stop at the first failed step encountered and ignore the remaining `steps`.
 
+For a complete reference of available steps, see the [DSL](dsl.md) page. To configure test execution, see [Feature Options](feature-options.md).

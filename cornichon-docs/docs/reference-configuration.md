@@ -6,6 +6,8 @@ laika.title = Reference configuration
 
 It is possible to configure various aspects of the runs via a `/src/test/resources/application.conf` file.
 
+Some of these options can also be overridden programmatically per feature — see [Feature Options](feature-options.md).
+
 You will find below the available keys and their respective default values.
 
 ```hocon

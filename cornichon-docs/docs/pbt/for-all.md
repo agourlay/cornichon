@@ -92,4 +92,6 @@ The logs show that:
 
 The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/stringReverse).
 
-More often than not, using `forAll` is enough to cover the most common use cases. But sometimes we not only want to have random values generated but also random interactions with the system under tests.
+More often than not, using `forAll` is enough to cover the most common use cases. But sometimes we not only want to have random values generated but also random interactions with the system under test. This is where [Random Model Exploration](random-model-exploration.md) comes in.
+
+For details on creating generators, see [Generators](generators.md). To control test reproducibility via seed, see [Feature Options](../feature-options.md#seed).

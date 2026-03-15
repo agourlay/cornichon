@@ -21,3 +21,5 @@ object test extends Tests {
   def testFrameworks = Seq("com.github.agourlay.cornichon.framework.CornichonFramework")
 }
 ```
+
+Next, head over to [Basics](basics.md) to write your first test.

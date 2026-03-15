@@ -85,7 +85,7 @@ override lazy val seed: Option[Long] = Some(1L)
 
 ## Register custom extractors
 
-In some cases it makes sense to declare `extractors` to avoid code duplication when dealing with `session` values.
+In some cases it makes sense to declare `extractors` to avoid code duplication when dealing with [session](dsl.md#session-steps) values. Extractors work together with [placeholders](placeholders.md) — once registered, they can be used as `<extractor-name>` in any step.
 
 An extractor is responsible to describe using a JsonPath how to build a value from an existing value in `session`.
 
