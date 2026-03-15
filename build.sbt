@@ -298,6 +298,13 @@ lazy val docs =
         laika.format.Markdown.GitHubFlavor,
         laika.config.SyntaxHighlighting
       ),
+      laikaSite := {
+        val result = laikaSite.value
+        // GitHub Pages uses Jekyll by default which ignores some files/dirs.
+        // .nojekyll tells GitHub Pages to serve all files as-is.
+        IO.touch(target.value / "docs" / "site" / ".nojekyll")
+        result
+      },
       git.remoteRepo := "git@github.com:agourlay/cornichon.git",
       siteSourceDirectory := target.value / "docs" / "site"
     )
