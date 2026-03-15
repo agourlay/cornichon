@@ -102,30 +102,30 @@
         <h1 id="reference-configuration" class="title">Reference configuration</h1>
         <p>It is possible to configure various aspects of the runs via a <code>/src/test/resources/application.conf</code> file.</p>
         <p>You will find below the available keys and their respective default values.</p>
-        <pre><code>cornichon {
-  // timeout for each request
-  requestTimeout = 2000 millis
-  // base url for all requests
-  globalBaseUrl = &quot;&quot;
-  // execute scenarios in parallel within a feature
-  executeScenariosInParallel = true
-  // number of concurrent scenarios = factor * number of CPU + 1
-  scenarioExecutionParallelismFactor = 1
-  // log trace requests and responses
-  traceRequests = false
-  // warn if a header is duplicated in a request
-  warnOnDuplicateHeaders = false
-  // fail if a header is duplicated in a request
-  failOnDuplicateHeaders = false
-  // add Accept-Encoding: gzip, deflate by default
-  addAcceptGzipByDefault = false
-  // disable certificate verification for https requests
-  disableCertificateVerification = false
-  // follow HTTP redirects
-  followRedirect = false
-  // enable HTTP/2 for requests
-  enableHttp2 = false
-}</code></pre>
+        <pre><code class="nohighlight"><span class="attribute-name">cornichon</span><span> {
+  </span><span class="comment">// timeout for each request
+</span><span>  </span><span class="attribute-name">requestTimeout</span><span> = </span><span class="number-literal">2000</span><span> </span><span class="string-literal">millis</span><span>
+  </span><span class="comment">// base url for all requests
+</span><span>  </span><span class="attribute-name">globalBaseUrl</span><span> = </span><span class="string-literal">&quot;&quot;</span><span>
+  </span><span class="comment">// execute scenarios in parallel within a feature
+</span><span>  </span><span class="attribute-name">executeScenariosInParallel</span><span> = </span><span class="boolean-literal">true</span><span>
+  </span><span class="comment">// number of concurrent scenarios = factor * number of CPU + 1
+</span><span>  </span><span class="attribute-name">scenarioExecutionParallelismFactor</span><span> = </span><span class="number-literal">1</span><span>
+  </span><span class="comment">// log trace requests and responses
+</span><span>  </span><span class="attribute-name">traceRequests</span><span> = </span><span class="boolean-literal">false</span><span>
+  </span><span class="comment">// warn if a header is duplicated in a request
+</span><span>  </span><span class="attribute-name">warnOnDuplicateHeaders</span><span> = </span><span class="boolean-literal">false</span><span>
+  </span><span class="comment">// fail if a header is duplicated in a request
+</span><span>  </span><span class="attribute-name">failOnDuplicateHeaders</span><span> = </span><span class="boolean-literal">false</span><span>
+  </span><span class="comment">// add Accept-Encoding: gzip, deflate by default
+</span><span>  </span><span class="attribute-name">addAcceptGzipByDefault</span><span> = </span><span class="boolean-literal">false</span><span>
+  </span><span class="comment">// disable certificate verification for https requests
+</span><span>  </span><span class="attribute-name">disableCertificateVerification</span><span> = </span><span class="boolean-literal">false</span><span>
+  </span><span class="comment">// follow HTTP redirects
+</span><span>  </span><span class="attribute-name">followRedirect</span><span> = </span><span class="boolean-literal">false</span><span>
+  </span><span class="comment">// enable HTTP/2 for requests
+</span><span>  </span><span class="attribute-name">enableHttp2</span><span> = </span><span class="boolean-literal">false</span><span>
+}</span></code></pre>
 
         
 <hr class="footer-rule"/>
