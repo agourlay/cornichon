@@ -2,7 +2,7 @@ import sbt.{file, Developer}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 import laika.helium.Helium
 import laika.helium.config.{IconLink, HeliumIcon, TextLink, Teaser, ButtonLink, Favicon}
-import laika.ast.{Image, Path, InternalTarget}
+import laika.ast.{Image, Path, InternalTarget, LengthUnit}
 import laika.ast.Path.Root
 import laika.theme.config.Color
 
@@ -264,6 +264,7 @@ lazy val docs =
           bgGradient = (Color.hex("3A7D5C"), Color.hex("1E3A2F"))
         )
         .site.landingPage(
+          logo = Some(Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(150)), height = Some(LengthUnit.px(150)))),
           title = Some("Cornichon"),
           subtitle = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
           latestReleases = Nil,
@@ -284,6 +285,7 @@ lazy val docs =
             Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support.")
           )
         )
+        .site.internalCSS(Root / "css" / "landing.css")
         .site.favIcons(
           Favicon.internal(Root / "img" / "favicon.png", "32x32")
         )
