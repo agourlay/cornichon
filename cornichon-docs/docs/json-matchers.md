@@ -43,6 +43,9 @@ Here are the available matchers:
 - `*any-date-time*` : checks if the field is a 'yyyy-MM-dd'T'HH:mm:ss.SSS'Z'' datetime
 - `*any-time*` : checks if the field is a 'HH:mm:ss.SSS' time
 
-This feature is still fresh and under experimentation therefore it comes with a couple of limitations:
+@:callout(warning)
+This feature is still under experimentation and comes with a couple of limitations:
+
 - it is not yet possible to register custom JSON matchers
 - matchers are not supported for JSON arrays assertions via `asArray`
+@:@

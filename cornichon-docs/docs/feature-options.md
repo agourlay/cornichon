@@ -113,7 +113,9 @@ It works for all keys in `Session`, let's say we also have objects registered un
 
 ## Execution model
 
-By default, the `features` are executed sequentially and the `scenarios` within are executed in parallel.
+@:callout(info)
+By default, `features` are executed sequentially and `scenarios` within are executed in parallel.
+@:@
 
 This execution is configurable if you have specific constraints.
 

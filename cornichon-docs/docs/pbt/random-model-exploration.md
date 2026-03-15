@@ -43,7 +43,9 @@ The number of generators is defined in the `property` type:
 
 It is of course not required to call a generator when building a `Step`.
 
-*However, it is required to have the same `Property` type for all properties within a `model` definition.*
+@:callout(warning)
+It is required to have the same `Property` type for all properties within a `model` definition.
+@:@
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
@@ -74,7 +76,9 @@ We will define the transitions such that:
 
 Also, the DSL is asking for a `modelRunner` which is a little helper connecting a `model` to its `generators`.
 
+@:callout(info)
 The type inference is sometimes not properly detecting the action type, so it is recommended to define the `modelRunner` and the `model` as a single expression to help the typechecker.
+@:@
 
 ```scala
 
@@ -811,6 +815,8 @@ The source for the test and the server are available [here](https://github.com/a
 
 ## Caveats
 
-- all `properties` must have the same types within a `model` definition
-- the API has a few rough edges, especially regarding type inference for the `modelRunner` definition
-- the max number of `generators` is hard-coded to 6
+@:callout(warning)
+- All `properties` must have the same types within a `model` definition.
+- The API has a few rough edges, especially regarding type inference for the `modelRunner` definition.
+- The max number of `generators` is hard-coded to 6.
+@:@

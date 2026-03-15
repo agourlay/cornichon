@@ -225,8 +225,9 @@ body.asArray.contains(
   """)
 ```
 
-It is important to mention that `body` expects a JSON content!
-When receiving non JSON payloads, use `body_raw` which offers `String` like assertions.
+@:callout(info)
+`body` expects JSON content. When receiving non-JSON payloads, use `body_raw` which offers `String` like assertions.
+@:@
 
 ```scala
 body_raw.containsString("xml")
@@ -480,7 +481,9 @@ WithBasicAuth("admin", "root"){
 
 This feature is defined in the module `cornichon-http-mock` and requires to extend the trait `HttpMockDsl`.
 
+@:callout(info)
 By default, this server responds with 201 to any POST request and 200 for all the rest.
+@:@
 
 Additionally, it provides three administration features:
 - fetching recorded received requests
@@ -493,11 +496,13 @@ There are two ways to perform assertions on the server statistics, either by que
 
 Refer to those [examples](https://github.com/agourlay/cornichon/blob/master/cornichon-http-mock/src/test/scala/com/github/agourlay/cornichon/http/MockServerExample.scala) for more information.
 
+@:callout(warning)
 This feature is experimental and may change in the future.
+@:@
 
 - Log duration
 
-By default, all `Step` execution time can be found in the logs, but sometimes one needs to time a series of steps.
+By default, all `Step` execution times can be found in the logs, but sometimes one needs to time a series of steps.
 
 This is where `LogDuration` comes in handy, it requires a label that will be printed as well to identify results.
 

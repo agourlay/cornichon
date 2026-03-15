@@ -8,7 +8,9 @@ laika.title = Kafka integration
 
 The kafka client is shared at the feature level by all the scenarios and is configured with a fixed group-id to 'cornichon-groupId' and is set with offset-reset to 'earliest'.
 
-Due to the architecture of kafka and the handling of consumers offsets, **the default execution of scenarios is sequential**.
+@:callout(warning)
+Due to the architecture of Kafka and the handling of consumer offsets, the default execution of scenarios is sequential.
+@:@
 
 - Comprehensive example
 
@@ -62,5 +64,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
 }
 ```
 
-Note that this DSL always returns the latest `amount` of messages found on the topic.
-The consumer polls `timeoutMs` until it does not find any new messages anymore
+@:callout(info)
+This DSL always returns the latest `amount` of messages found on the topic.
+The consumer polls `timeoutMs` until it does not find any new messages anymore.
+@:@

@@ -59,4 +59,6 @@ This is rather low level therefore you should not write your steps like that dir
 
 Fortunately a bunch of built-in steps and primitive building blocks are already available for you.
 
-Note for advanced users: it is also possible to write custom wrapper steps by implementing `WrapperStep`.
+@:callout(info)
+For advanced users: it is also possible to write custom wrapper steps by implementing `WrapperStep`.
+@:@
