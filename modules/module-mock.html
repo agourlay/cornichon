@@ -22,6 +22,7 @@
   
   <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
     <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+    <link rel="stylesheet" type="text/css" href="../css/landing.css" />
   <script src="../helium/site/laika-helium.js"></script>
   
   
@@ -100,35 +101,35 @@
 
         <h1 id="http-mock" class="title">HTTP Mock</h1>
         <p><code>cornichon-http-mock</code> contains the <code>ListenTo</code> DSL and infrastructure to build tests relying on mocked endpoints.</p>
-        <pre><code> Scenario(&quot;reply to POST request with 201 and assert on received bodies&quot;) {
-    HttpMock(&quot;awesome-server&quot;) {
-      When I post(&quot;&lt;awesome-server-url&gt;/heroes/batman&quot;).withBody(
-        &quot;&quot;&quot;
+        <pre><code class="nohighlight"><span> </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;reply to POST request with 201 and assert on received bodies&quot;</span><span>) {
+    </span><span class="type-name">HttpMock</span><span>(</span><span class="string-literal">&quot;awesome-server&quot;</span><span>) {
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;awesome-server-url&gt;/heroes/batman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(
+        </span><span class="string-literal">&quot;&quot;&quot;
         {
           &quot;name&quot;: &quot;Batman&quot;,
           &quot;realName&quot;: &quot;Bruce Wayne&quot;,
           &quot;hasSuperpowers&quot;: false
         }
-        &quot;&quot;&quot;
+        &quot;&quot;&quot;</span><span>
       )
 
-      When I post(&quot;&lt;awesome-server-url&gt;/heroes/superman&quot;).withBody(
-        &quot;&quot;&quot;
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;awesome-server-url&gt;/heroes/superman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(
+        </span><span class="string-literal">&quot;&quot;&quot;
         {
           &quot;name&quot;: &quot;Superman&quot;,
           &quot;realName&quot;: &quot;Clark Kent&quot;,
           &quot;hasSuperpowers&quot;: true
         }
-        &quot;&quot;&quot;
+        &quot;&quot;&quot;</span><span>
       )
 
-      Then assert status.is(201)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
 
-      // HTTP Mock exposes what it received
-      When I get(&quot;&lt;awesome-server-url&gt;/requests-received&quot;)
+      </span><span class="comment">// HTTP Mock exposes what it received
+</span><span>      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;awesome-server-url&gt;/requests-received&quot;</span><span>)
 
-      Then assert body.asArray.ignoringEach(&quot;headers&quot;).is(
-        &quot;&quot;&quot;
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;headers&quot;</span><span>).</span><span class="identifier">is</span><span>(
+        </span><span class="string-literal">&quot;&quot;&quot;
         [
           {
             &quot;body&quot; : {
@@ -151,16 +152,16 @@
             &quot;parameters&quot; : {}
           }
         ]
-      &quot;&quot;&quot;
+      &quot;&quot;&quot;</span><span>
       )
 
     }
 
-    // Once HTTP Mock closed, the recorded requests are dumped in the session
-    And assert httpListen(&quot;awesome-server&quot;).received_calls(2)
+    </span><span class="comment">// Once HTTP Mock closed, the recorded requests are dumped in the session
+</span><span>    </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">httpListen</span><span>(</span><span class="string-literal">&quot;awesome-server&quot;</span><span>).</span><span class="identifier">received_calls</span><span>(</span><span class="number-literal">2</span><span>)
 
-    And assert httpListen(&quot;awesome-server&quot;).received_requests.asArray.ignoringEach(&quot;headers&quot;).is(
-      &quot;&quot;&quot;
+    </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">httpListen</span><span>(</span><span class="string-literal">&quot;awesome-server&quot;</span><span>).</span><span class="identifier">received_requests</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;headers&quot;</span><span>).</span><span class="identifier">is</span><span>(
+      </span><span class="string-literal">&quot;&quot;&quot;
         [
           {
             &quot;body&quot; : {
@@ -183,21 +184,21 @@
             &quot;parameters&quot; : {}
           }
         ]
-      &quot;&quot;&quot;
+      &quot;&quot;&quot;</span><span>
     )
 
-    And assert httpListen(&quot;awesome-server&quot;).received_requests.path(&quot;$[0].body.name&quot;).is(&quot;Batman&quot;)
+    </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">httpListen</span><span>(</span><span class="string-literal">&quot;awesome-server&quot;</span><span>).</span><span class="identifier">received_requests</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[0].body.name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>)
 
-    And assert httpListen(&quot;awesome-server&quot;).received_requests.path(&quot;$[1].body&quot;).is(
-      &quot;&quot;&quot;
+    </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">httpListen</span><span>(</span><span class="string-literal">&quot;awesome-server&quot;</span><span>).</span><span class="identifier">received_requests</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[1].body&quot;</span><span>).</span><span class="identifier">is</span><span>(
+      </span><span class="string-literal">&quot;&quot;&quot;
       {
         &quot;name&quot;: &quot;Superman&quot;,
         &quot;realName&quot;: &quot;Clark Kent&quot;,
         &quot;hasSuperpowers&quot;: true
       }
-      &quot;&quot;&quot;
+      &quot;&quot;&quot;</span><span>
     )
- }</code></pre>
+ }</span></code></pre>
 
         
 <hr class="footer-rule"/>

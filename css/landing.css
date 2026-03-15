@@ -1,0 +1,13 @@
+#header-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#header-left img {
+  margin-right: 1rem;
+}
+
+#header-left .row.links {
+  width: 100%;
+}
