@@ -131,9 +131,9 @@
         <p>The number of generators is defined in the <code>property</code> type:</p>
         <ul>
           <li><code>Property0</code> an action which accepts a function from <code>() =&gt; Step</code></li>
-          <li><code>Property1[A]</code> an action which accepts a function from <code>() ⇒ A =&gt; Step</code></li>
-          <li><code>Property2[A, B]</code> an action which accepts a function from <code>(() ⇒ A, () =&gt; B) =&gt; Step</code></li>
-          <li><code>Property3[A, B, C]</code> an action which accepts a function from <code>(() ⇒ A, () =&gt; B, () =&gt; C) =&gt; Step</code></li>
+          <li><code>Property1[A]</code> an action which accepts a function from <code>(() =&gt; A) =&gt; Step</code></li>
+          <li><code>Property2[A, B]</code> an action which accepts a function from <code>((() =&gt; A), (() =&gt; B)) =&gt; Step</code></li>
+          <li><code>Property3[A, B, C]</code> an action which accepts a function from <code>((() =&gt; A), (() =&gt; B), (() =&gt; C)) =&gt; Step</code></li>
           <li>up to <code>Property6[A, B, C, D, E, F]</code></li>
         </ul>
         <p>It is of course not required to call a generator when building a <code>Step</code>.</p>
@@ -167,32 +167,32 @@
         <pre><code class="nohighlight"><span>
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">stringGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;an alphanumeric String&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () ⇒ </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>.</span><span class="identifier">take</span><span>(</span><span class="number-literal">20</span><span>).</span><span class="identifier">mkString</span><span>(</span><span class="string-literal">&quot;&quot;</span><span>))
+  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>(</span><span class="number-literal">20</span><span>))
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">integerGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">Int</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;integer&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () ⇒ </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">10000</span><span>))
+  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">10000</span><span>))
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">myModelRunner</span><span> = </span><span class="type-name">ModelRunner</span><span>.</span><span class="identifier">make</span><span>[</span><span class="type-name">String</span><span>, </span><span class="type-name">Int</span><span>](</span><span class="identifier">stringGen</span><span>, </span><span class="identifier">integerGen</span><span>) {
 
   </span><span class="keyword">val</span><span> </span><span class="identifier">entryPoint</span><span> = </span><span class="type-name">Property2</span><span>[</span><span class="type-name">String</span><span>, </span><span class="type-name">Int</span><span>](
     </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;Entry point&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">_</span><span>, </span><span class="identifier">_</span><span>) ⇒ </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">&quot;Start game&quot;</span><span>)
+    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">_</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">&quot;Start game&quot;</span><span>)
   )
 
   </span><span class="keyword">val</span><span> </span><span class="identifier">pingString</span><span> = </span><span class="type-name">Property2</span><span>[</span><span class="type-name">String</span><span>, </span><span class="type-name">Int</span><span>](
     </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;Ping String&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">stringGen</span><span>, </span><span class="identifier">_</span><span>) ⇒ </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">s&quot;Ping </span><span class="substitution">${stringGen()}</span><span class="string-literal">&quot;</span><span>)
+    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">stringGen</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">s&quot;Ping </span><span class="substitution">${stringGen()}</span><span class="string-literal">&quot;</span><span>)
   )
 
   </span><span class="keyword">val</span><span> </span><span class="identifier">pongInt</span><span> = </span><span class="type-name">Property2</span><span>[</span><span class="type-name">String</span><span>, </span><span class="type-name">Int</span><span>](
     </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;Pong Int&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">_</span><span>, </span><span class="identifier">intGen</span><span>) ⇒ </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">s&quot;Pong </span><span class="substitution">${intGen()}</span><span class="string-literal">&quot;</span><span>)
+    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">_</span><span>, </span><span class="identifier">intGen</span><span>) =&gt; </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">s&quot;Pong </span><span class="substitution">${intGen()}</span><span class="string-literal">&quot;</span><span>)
   )
 
   </span><span class="keyword">val</span><span> </span><span class="identifier">exitPoint</span><span> = </span><span class="type-name">Property2</span><span>[</span><span class="type-name">String</span><span>, </span><span class="type-name">Int</span><span>](
     </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;Exit point&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">_</span><span>, </span><span class="identifier">_</span><span>) ⇒ </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">&quot;End of game&quot;</span><span>)
+    </span><span class="identifier">invariant</span><span> = (</span><span class="identifier">_</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">&quot;End of game&quot;</span><span>)
   )
 
   </span><span class="type-name">Model</span><span>(
@@ -523,7 +523,7 @@
 
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">productDraftGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">Generator</span><span>[</span><span class="type-name">ProductDraft</span><span>] = </span><span class="type-name">OptionalValueGenerator</span><span>(
     </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;a product draft&quot;</span><span>,
-    </span><span class="identifier">gen</span><span> = () ⇒ {
+    </span><span class="identifier">gen</span><span> = () =&gt; {
       </span><span class="keyword">val</span><span> </span><span class="identifier">nextSeed</span><span> = </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextLong</span><span>()
       </span><span class="keyword">val</span><span> </span><span class="identifier">params</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="type-name">Parameters</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withInitialSeed</span><span>(</span><span class="identifier">nextSeed</span><span>)
       </span><span class="keyword">val</span><span> </span><span class="identifier">gen</span><span> =
@@ -538,7 +538,7 @@
 
   </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">noProductsInDb</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
     </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;no products in DB&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> ⇒ </span><span class="type-name">Attach</span><span> {
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Attach</span><span> {
       </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isEmpty</span><span>
@@ -547,7 +547,7 @@
 
   </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">createProduct</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
     </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;create a product&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> ⇒ {
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> =&gt; {
       </span><span class="keyword">val</span><span> </span><span class="identifier">productDraft</span><span> = </span><span class="identifier">pd</span><span>()
       </span><span class="keyword">val</span><span> </span><span class="identifier">productDraftJson</span><span> = </span><span class="identifier">productDraft</span><span>.</span><span class="identifier">asJson</span><span>
       </span><span class="type-name">Attach</span><span> {
@@ -568,7 +568,7 @@
       </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
     },
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> ⇒ </span><span class="type-name">Attach</span><span> {
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Attach</span><span> {
       </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;$[0].id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;id-to-delete&quot;</span><span>)
@@ -590,7 +590,7 @@
       </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
     },
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> ⇒ {
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> =&gt; {
       </span><span class="keyword">val</span><span> </span><span class="identifier">productDraft</span><span> = </span><span class="identifier">pd</span><span>()
       </span><span class="keyword">val</span><span> </span><span class="identifier">productDraftJson</span><span> = </span><span class="identifier">productDraft</span><span>.</span><span class="identifier">asJson</span><span>
       </span><span class="type-name">Attach</span><span> {

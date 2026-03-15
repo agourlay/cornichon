@@ -110,11 +110,11 @@
         </ul>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">stringGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;an alphanumeric String (20)&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () ⇒ </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>(</span><span class="number-literal">20</span><span>))
+  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>(</span><span class="number-literal">20</span><span>))
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">integerGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">Int</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;integer&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () ⇒ </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">10000</span><span>))</span></code></pre>
+  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">10000</span><span>))</span></code></pre>
         <p>This approach also supports embedding <code>Scalacheck&#39;s Gen</code> into a <code>Generator</code> by propagating the initial seed.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">scalacheck</span><span>.</span><span class="type-name">Gen</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">scalacheck</span><span>.</span><span class="identifier">rng</span><span>.</span><span class="type-name">Seed</span><span>
@@ -125,7 +125,7 @@
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">coinGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">Generator</span><span>[</span><span class="type-name">Coin</span><span>] = </span><span class="type-name">OptionalValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;a Coin&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () ⇒ {
+  </span><span class="identifier">gen</span><span> = () =&gt; {
     </span><span class="keyword">val</span><span> </span><span class="identifier">nextSeed</span><span> = </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextLong</span><span>()
     </span><span class="keyword">val</span><span> </span><span class="identifier">params</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="type-name">Parameters</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withInitialSeed</span><span>(</span><span class="identifier">nextSeed</span><span>)
     </span><span class="keyword">val</span><span> </span><span class="identifier">coin</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="identifier">oneOf</span><span>[</span><span class="type-name">Coin</span><span>](</span><span class="type-name">Head</span><span>, </span><span class="type-name">Tail</span><span>)

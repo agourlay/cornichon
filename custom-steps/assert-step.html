@@ -114,7 +114,7 @@
         <ul>
           <li>
             <p>CustomMessageEqualityAssertion to provide a custom error message</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">CustomMessageAssertion</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">expected</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">result</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">customMessage</span><span>: () ⇒ </span><span class="type-name">String</span><span>)</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">CustomMessageEqualityAssertion</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">expected</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">actual</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">customMessage</span><span>: () =&gt; </span><span class="type-name">String</span><span>)</span></code></pre>
           </li>
           <li>
             <p>Ordering assertions : compare two objects using the cats <code>Order</code> typeclass.</p>
@@ -160,7 +160,7 @@
         <p>Below is a longer example showing how to integrate an assertion into a scenario.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="type-name">EffectStep</span><span>.</span><span class="identifier">fromSync</span><span>(
   </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;estimate PI&quot;</span><span>,
-  </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">add</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>, </span><span class="identifier">piComputation</span><span>())
+  </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">addValueUnsafe</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>, </span><span class="identifier">piComputation</span><span>())
 )
 
 </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="type-name">AssertStep</span><span>(

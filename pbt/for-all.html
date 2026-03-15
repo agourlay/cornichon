@@ -102,7 +102,7 @@
         <h1 id="forall" class="title">ForAll</h1>
         <p>The first flavour follows the classical approach found in many testing libraries. That is, for any values from a set of generators, we will validate that a given invariant holds.</p>
         <p>Here is the <code>API</code> available when using a single <code>generator</code></p>
-        <p><code>def for_all[A](description: String, ga: RandomContext ⇒ Generator[A])(f: A ⇒ Step): Step</code></p>
+        <p><code>def for_all[A](description: String, maxNumberOfRuns: Int, ga: RandomContext =&gt; Generator[A])(builder: A =&gt; Step): Step</code></p>
         <p>Let&#39;s look at an example to see how to use it!</p>
         <p>We want to enforce the following invariant <code>for any string, if we reverse it twice, it should yield the same value</code>.</p>
         <p>The implementation under test is a server accepting <code>POST</code> requests to <code>/double-reverse</code> with a query param named <code>word</code> will return the given <code>word</code> reversed twice.</p>

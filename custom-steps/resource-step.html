@@ -111,13 +111,14 @@
         <p>where</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">setup_some_fixture_data</span><span>() = </span><span class="type-name">ScenarioResourceStep</span><span>(
   </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;Set up fixture data&quot;</span><span>,
-  </span><span class="identifier">acquire</span><span> = </span><span class="type-name">EffectStep</span><span>(</span><span class="string-literal">&quot;insert data&quot;</span><span>, { </span><span class="identifier">scenarioContext</span><span> =&gt;
+  </span><span class="identifier">acquire</span><span> = </span><span class="type-name">EffectStep</span><span>.</span><span class="identifier">fromSyncE</span><span>(</span><span class="string-literal">&quot;insert data&quot;</span><span>, { </span><span class="identifier">scenarioContext</span><span> =&gt;
     </span><span class="keyword">val</span><span> </span><span class="identifier">randomId</span><span> = </span><span class="identifier">insertData</span><span>()
     </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">addValue</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="identifier">randomId</span><span>)
   }),
-  </span><span class="identifier">release</span><span> = </span><span class="type-name">EffectStep</span><span>(</span><span class="string-literal">&quot;clean up data&quot;</span><span>, { </span><span class="identifier">scenarioContext</span><span> =&gt;
-    </span><span class="keyword">val</span><span> </span><span class="identifier">randomId</span><span> = </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">getOrElse</span><span>(</span><span class="keyword">throw</span><span> </span><span class="keyword">new</span><span> </span><span class="type-name">RuntimeException</span><span>(</span><span class="string-literal">&quot;id not found&quot;</span><span>))
+  </span><span class="identifier">release</span><span> = </span><span class="type-name">EffectStep</span><span>.</span><span class="identifier">fromSync</span><span>(</span><span class="string-literal">&quot;clean up data&quot;</span><span>, { </span><span class="identifier">scenarioContext</span><span> =&gt;
+    </span><span class="keyword">val</span><span> </span><span class="identifier">randomId</span><span> = </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>)
     </span><span class="identifier">deleteData</span><span>(</span><span class="identifier">randomId</span><span>)
+    </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>
   })
 )</span></code></pre>
         <p>we can be sure the <code>clean up data</code> step runs regardless of what happens after <code>insert data</code>.</p>
