@@ -1,6 +1,15 @@
 {%
-laika.title = "Misc."
+laika.title = Advanced topics
 %}
+
+# Advanced topics
+
+This page covers advanced usage patterns that go beyond the core [DSL](dsl.md):
+
+- [Custom HTTP body type](#custom-http-body-type) — use typed objects instead of Strings as request bodies
+- [SBT integration](#sbt-integration) — CLI tips for running and filtering tests
+- [Running tests without a build tool](#running-tests-without-a-build-tool) — package tests as a standalone jar
+- [Packaging features in a Docker container](#packaging-features-in-a-docker-container) — run tests in CI/CD pipelines
 
 # Custom HTTP body type
 

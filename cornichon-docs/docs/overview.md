@@ -6,6 +6,14 @@ laika.title = Overview
 [![Join the chat at https://gitter.im/agourlay/cornichon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
+## How it works
+
+Cornichon tests are built around three core concepts: **steps**, **session**, and **placeholders**.
+
+Steps are the building blocks of a scenario — each step either performs a side effect (like an HTTP request) or asserts an expected state. When a step produces a result, it is stored in the **session**, a key-value store that lives for the duration of a scenario. Values from the session can then be injected into later steps using **placeholders** like `<my-key>`, which are automatically resolved at runtime.
+
+This simple model makes it natural to chain steps together: make a request, save part of the response, and use it in the next request — all without writing boilerplate code.
+
 ## Quick example
 
 Find below an example of testing the Open Movie Database API.
@@ -100,3 +108,5 @@ For more examples see the following files which are part of the test pipeline:
 - [Math Operations](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/math/MathScenario.scala).
 
 And if you enjoy slides, you might like [this presentation](https://speakerdeck.com/agourlay/cornichon-a-scala-dsl-for-testing-http-json-api) given at the [Berlin Scala User Group](https://www.meetup.com/Scala-Berlin-Brandenburg/events/235779912/) which gives more context regarding the creation and usage of this library.
+
+Ready to get started? Head over to [Installation](installation.md) and then [Basics](basics.md).
