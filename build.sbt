@@ -291,7 +291,7 @@ lazy val docs =
         )
         .site.mainNavigation(depth = 3)
         .site.topNavigationBar(
-          homeLink = ImageLink.internal(Root / "index.md", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50))))
+          homeLink = ImageLink.external("index.html", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50))))
         )
         .build,
       laikaExtensions := Seq(

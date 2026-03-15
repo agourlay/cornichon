@@ -1,3 +1,0 @@
-{%
-laika.title = Cornichon
-%}
