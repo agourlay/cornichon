@@ -40,7 +40,7 @@ It is recommended to use the nice CLI from SBT to trigger tests:
 
 The full name of a scenario is `feature-name should scenario-name`.
 
-See [SBT doc](http://www.scala-sbt.org/0.13/docs/Testing.html) for more information.
+See [SBT doc](https://www.scala-sbt.org/1.x/docs/Testing.html) for more information.
 
 The `steps` execution logs will only be shown if:
 - the scenario fails

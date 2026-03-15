@@ -4,7 +4,7 @@ laika.title = Reference configuration
 
 # Reference configuration
 
-It is possible to configure various aspects of the runs via a `/src/test/resources/reference.conf` file.
+It is possible to configure various aspects of the runs via a `/src/test/resources/application.conf` file.
 
 You will find below the available keys and their respective default values.
 
@@ -19,7 +19,7 @@ cornichon {
   failOnDuplicateHeaders = false                  // fail if a header is duplicated in a request
   addAcceptGzipByDefault = false                  // add Accept-Encoding: gzip, deflate by default
   disableCertificateVerification = false          // disable certificate verification for https requests
-  followRedirect = false,                         // follow Http redirects
+  followRedirect = false                         // follow Http redirects
   enableHttp2 = false                             // enable Http2 for requests
 }
 ``` 

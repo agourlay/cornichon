@@ -136,10 +136,8 @@ This means using more powerful machines will automatically trigger more scenario
 To run `features` in parallel it is necessary to manually set a flag in your SBT build file.
 
 ```scala
-parallelExecution in Test := true
+Test / parallelExecution := true
 ```
-
-or through the command line `sbt test parallelExecution in Test := true`
 
 ## Ignoring features or scenarios
 

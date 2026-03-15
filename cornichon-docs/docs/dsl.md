@@ -491,7 +491,7 @@ The server records all requests received as a JSON array of HTTP request for lat
 
 There are two ways to perform assertions on the server statistics, either by querying the session at the end of the block or by contacting directly the server while it runs.
 
-Refer to those [examples](https://github.com/agourlay/cornichon-http-mock/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/MockServerExample.scala) for more information.
+Refer to those [examples](https://github.com/agourlay/cornichon/blob/master/cornichon-http-mock/src/test/scala/com/github/agourlay/cornichon/http/MockServerExample.scala) for more information.
 
 This feature is experimental and may change in the future.
 
@@ -531,7 +531,7 @@ LogDuration(label = "my experiment") {
 ```
 
 
-Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala) as they are executed as part of Cornichon's test suite.
+Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/superHeroes/SuperHeroesScenario.scala) as they are executed as part of Cornichon's test suite.
 
 ## DSL composition
 

@@ -22,13 +22,13 @@ Given I setup_some_fixture_data()
 where
 ```scala
 def setup_some_fixture_data() = ScenarioResourceStep(
-  title = "Set up fixture data"
+  title = "Set up fixture data",
   acquire = EffectStep("insert data", { scenarioContext =>
     val randomId = insertData()
     scenarioContext.session.addValue("id", randomId)
   }),
   release = EffectStep("clean up data", { scenarioContext =>
-    val randomId = scenarioContext.session.get("id").right.get
+    val randomId = scenarioContext.session.get("id").getOrElse(throw new RuntimeException("id not found"))
     deleteData(randomId)
   })
 )

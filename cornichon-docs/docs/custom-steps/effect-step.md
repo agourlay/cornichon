@@ -38,7 +38,7 @@ If you prefer not using the `scala.concurrent.Future` as effect, it is possible 
 
 import com.github.agourlay.cornichon.steps.cats.EffectStep
 
-val myTaskEffect = EffectStep("identity task", scenarioContext => Task.now(Right(scenarioContext.session)))
+val myEffect = EffectStep("identity IO", scenarioContext => IO.pure(Right(scenarioContext.session)))
 ```
 
 
@@ -73,7 +73,7 @@ trait MySteps {
     title = "create new customer",
     effect = http.requestEffect(
       request = HttpRequest.post("/customer").withPayload("someJson"),
-      expectedStatus = Some(201)
+      expectedStatus = Some(201),
       extractor = RootExtractor("customer")
     )
   )

@@ -4,7 +4,7 @@ laika.title = Kafka integration
 
 # Kafka integration
 
-`cornichon-kafka` offers a support for [Kafka](https://kafka.apache.org) v2.0.0
+`cornichon-kafka` offers support for [Kafka](https://kafka.apache.org) v4.x
 
 The kafka client is shared at the feature level by all the scenarios and is configured with a fixed group-id to 'cornichon-groupId' and is set with offset-reset to 'earliest'.
 
@@ -49,7 +49,7 @@ class KafkaExample extends CornichonFeature with KafkaDsl {
       )
 
       When I read_from_topic("cornichon")
-      Then assert kafka("cornichon").topic_is("json")
+      Then assert kafka("cornichon").key_is("json")
       Then assert kafka("cornichon").message_value.ignoring("coffee").is("""
         {
           "cornichon": "green"
