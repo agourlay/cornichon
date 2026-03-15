@@ -1,7 +1,7 @@
 import sbt.{file, Developer}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 import laika.helium.Helium
-import laika.helium.config.{IconLink, HeliumIcon, TextLink, Teaser, ButtonLink, Favicon}
+import laika.helium.config.{IconLink, ImageLink, HeliumIcon, TextLink, Teaser, ButtonLink, Favicon}
 import laika.ast.{Image, Path, InternalTarget, LengthUnit}
 import laika.ast.Path.Root
 import laika.theme.config.Color
@@ -291,7 +291,7 @@ lazy val docs =
         )
         .site.mainNavigation(depth = 3)
         .site.topNavigationBar(
-          homeLink = IconLink.internal(Root / "index.md", HeliumIcon.home)
+          homeLink = ImageLink.internal(Root / "index.md", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50))))
         )
         .build,
       laikaExtensions := Seq(
