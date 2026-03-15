@@ -1,7 +1,8 @@
 import sbt.{file, Developer}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 import laika.helium.Helium
-import laika.helium.config.{IconLink, HeliumIcon, TextLink, Teaser, ButtonLink}
+import laika.helium.config.{IconLink, HeliumIcon, TextLink, Teaser, ButtonLink, Favicon}
+import laika.ast.{Image, Path, InternalTarget}
 import laika.ast.Path.Root
 import laika.theme.config.Color
 
@@ -282,6 +283,9 @@ lazy val docs =
             Teaser("JSON First", "Powerful JSON assertions with path expressions, matchers, and ignoring keys."),
             Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support.")
           )
+        )
+        .site.favIcons(
+          Favicon.internal(Root / "img" / "favicon.png", "32x32")
         )
         .site.mainNavigation(depth = 3)
         .site.topNavigationBar(
