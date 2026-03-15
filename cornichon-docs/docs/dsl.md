@@ -64,6 +64,14 @@ put("http://superhero.io/batman").withBody("JSON description of Batman goes here
 patch("http://superhero.io/batman").withBody("JSON description of Batman goes here")
 ```
 
+Use `addParams` and `addHeaders` to append to existing parameters and headers instead of replacing them.
+
+```scala
+get("http://superhero.io/batman")
+  .withParams("a" -> "1")
+  .addParams("b" -> "2")
+  .addHeaders(("X-Custom", "value"))
+```
 
 There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section [Custom HTTP body type](misc.md#custom-http-body-type).
 
@@ -73,6 +81,11 @@ There is a built-in support for HTTP body defined as String, if you wish to use 
 
 ```scala
 status.is(200)
+
+status.isSuccess      // 2xx
+status.isRedirect     // 3xx
+status.isClientError  // 4xx
+status.isServerError  // 5xx
 ```
 
 - assert response headers
@@ -83,6 +96,8 @@ headers.name("cache-control").isPresent
 headers.contain("cache-control" -> "no-cache")
 
 headers.name("cache_control").isAbsent
+
+headers.hasSize(3)
 
 save_header_value("cache_control" -> "my-cache-control-value")
 ```
@@ -153,6 +168,14 @@ body.path("publisher.foundationYear").is(1934)
 body.path("publisher.foundationYear").isPresent
 
 body.path("publisher.foundationMonth").isAbsent
+
+body.path("name").matchesRegex("B.*n".r)
+
+body.path("publisher.foundationYear").isLessThan(2000)
+
+body.path("publisher.foundationYear").isGreaterThan(1900)
+
+body.path("publisher.foundationYear").isBetween(1900, 2000)
 ```
 
 It is possible to handle null values, given the following response body `{ “data” : null }`
@@ -207,6 +230,8 @@ body.asArray.size.isLessThan(3)
 body.asArray.size.isGreaterThan(1)
 body.asArray.size.isBetween(1, 3)
 
+body.asArray.isEmpty
+
 body.asArray.isNotEmpty
 
 body.asArray.contains(
@@ -221,6 +246,13 @@ body.asArray.contains(
       "foundationYear":1934,
       "location":"Burbank, California"
     }
+  }
+  """)
+
+body.asArray.not_contains(
+  """
+  {
+    "name": "Joker"
   }
   """)
 ```
@@ -308,7 +340,13 @@ And assert body.ignoring("city", "publisher").is(
 save("favorite-superhero" -> "Batman")
 ```
 
-- saving value to `session`
+- saving the entire response body to `session`
+
+```scala
+save_body("response-snapshot")
+```
+
+- saving a value extracted from the response body to `session`
 
 ```scala
 save_body_path("city" -> "batman-city")
@@ -340,6 +378,52 @@ session_value("favorite-superhero").isAbsent
 transform_session("my-key")(_.toUpperCase)
 ```
 
+- removing a key from `session`
+
+```scala
+remove("temporary-key")
+```
+
+- rolling back a value in `session` to its previous value
+
+```scala
+rollback("favorite-superhero")
+```
+
+- comparing two session values
+
+```scala
+session_values("key1", "key2").areEquals
+
+session_values("key1", "key2").areNotEquals
+
+session_values("key1", "key2").asJson.areEquals
+```
+
+- comparing current value with previous value of the same key
+
+```scala
+session_value("counter").hasEqualCurrentAndPreviousValues
+
+session_value("counter").hasDifferentCurrentAndPreviousValues
+```
+
+- asserting on the full history of values for a key
+
+```scala
+session_history("status").containsExactly("pending", "active", "completed")
+```
+
+- additional assertions on session values
+
+```scala
+session_value("name").isNot("Joker")
+
+session_value("name").containsString("Bat")
+
+session_value("name").matchesRegex("B.*n".r)
+```
+
 ### Wrapper steps
 
 Wrapper steps allow to control the execution of a series of steps to build more powerful tests.
@@ -349,6 +433,16 @@ Wrapper steps allow to control the execution of a series of steps to build more 
 ```scala
 Repeat(3) {
   When I get("http://superhero.io/batman")
+
+  Then assert status.is(200)
+}
+```
+
+- repeating a series of `steps` with access to the current iteration index
+
+```scala
+Repeat(3, "index") {
+  When I get("http://superhero.io/heroes/<index>")
 
   Then assert status.is(200)
 }
@@ -441,6 +535,19 @@ Within(maxDuration = 10 seconds) {
 }
 ```
 
+- repeat a series of `steps` for each element in an `Iterable` (more flexible version of `RepeatWith`)
+
+```scala
+val heroes = List("Superman", "GreenLantern", "Spiderman")
+
+RepeatFrom(heroes)("superhero-name") {
+
+  When I get("/superheroes/<superhero-name>").withParams("sessionId" -> "<session-id>")
+
+  Then assert status.is(200)
+}
+```
+
 - repeat a series of steps with different inputs specified via a data-table
 
 ```scala
@@ -457,6 +564,22 @@ WithDataInputs(
 
 def a_plus_b_equals_c =
   AssertStep("sum of 'a' + 'b' = 'c'", sc => GenericEqualityAssertion(sc.session.getUnsafe("a").toInt + sc.session.getUnsafe("b").toInt, sc.session.getUnsafe("c").toInt))
+```
+
+- repeat a series of steps with different inputs specified via JSON
+
+```scala
+WithJsonDataInputs(
+  """
+  [
+    { "a": "1", "b": "3", "c": "4" },
+    { "a": "7", "b": "4", "c": "11" },
+    { "a": "1", "b": "-1", "c": "0" }
+  ]
+  """
+) {
+  Then assert a_plus_b_equals_c
+}
 ```
 
 - WithHeaders automatically sets headers for several steps useful for an authenticated scenario.
@@ -513,6 +636,14 @@ LogDuration(label = "my experiment") {
 
   Then assert status.is(200)
 }
+```
+
+## Utility steps
+
+- pause execution for a given duration
+
+```scala
+wait(500.millis)
 ```
 
 ## Debug steps

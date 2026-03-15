@@ -110,6 +110,46 @@ It works for all keys in `Session`, let's say we also have objects registered un
    )
 ```
 
+### Other mapper types
+
+In addition to `JsonMapper`, several other mapper types are available for custom extractors:
+
+- `SimpleMapper` generates a static value
+
+```scala
+"build-number" -> SimpleMapper(() => BuildInfo.version)
+```
+
+- `TextMapper` extracts a session value with an optional transformation
+
+```scala
+"uppercased-name" -> TextMapper("name", _.toUpperCase)
+```
+
+- `SessionMapper` extracts a value from session with error handling
+
+```scala
+"full-name" -> SessionMapper(s =>
+  for {
+    first <- s.get("first-name")
+    last <- s.get("last-name")
+  } yield s"$first $last"
+)
+```
+
+- `RandomMapper` generates a value using the `RandomContext` for reproducibility
+
+```scala
+"random-city" -> RandomMapper(rc =>
+  List("Gotham", "Metropolis", "Star City")(rc.nextInt(3))
+)
+```
+
+- `HistoryMapper` extracts from the full history of values for a session key
+
+```scala
+"visit-count" -> HistoryMapper("visited-pages", history => history.size.toString)
+```
 
 ## Execution model
 
@@ -140,6 +180,23 @@ To run `features` in parallel it is necessary to manually set a flag in your SBT
 ```scala
 Test / parallelExecution := true
 ```
+
+## Focusing on a scenario
+
+During development, you can focus on a single scenario within a feature. All other scenarios will be ignored.
+
+```scala
+Scenario("the one I'm debugging").focused {
+
+  When I get("http://superhero.io/batman")
+
+  Then assert status.is(200)
+}
+```
+
+@:callout(warning)
+Do not commit focused scenarios to your main branch — they will silently skip all other scenarios in the feature.
+@:@
 
 ## Ignoring features or scenarios
 

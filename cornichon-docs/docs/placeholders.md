@@ -60,13 +60,13 @@ class PlaceholderFeature extends CornichonFeature {
 
 It is also possible to inject random values inside placeholders using:
 
-- `<random-uuid>` for a random UUID
-- `<random-positive-integer>` for a random Integer between 0-10000
-- `<random-string>` for a random String of length 5
-- `<random-alphanum-string>` for a random alphanumeric String of length 5
-- `<random-boolean>` for a random Boolean string
-- `<random-timestamp>` for a random timestamp
-- `<current-timestamp>` for the current timestamp
+- `<random-uuid>` for a random UUID (e.g. `f47ac10b-58cc-4372-a567-0e02b2c3d479`)
+- `<random-positive-integer>` for a random Integer between 0 and 9999
+- `<random-string>` for a random String of 5 characters
+- `<random-alphanum-string>` for a random alphanumeric String of 5 characters
+- `<random-boolean>` for a random Boolean string (`true` or `false`)
+- `<random-timestamp>` for a random timestamp in seconds (Unix epoch)
+- `<current-timestamp>` for the current timestamp in seconds (Unix epoch)
 - `<scenario-unique-number>` for a unique number scoped per scenario
 - `<global-unique-number>` for a globally unique number across all features
 
