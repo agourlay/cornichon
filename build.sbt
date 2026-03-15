@@ -306,7 +306,12 @@ lazy val docs =
         result
       },
       git.remoteRepo := "git@github.com:agourlay/cornichon.git",
-      siteSourceDirectory := target.value / "docs" / "site"
+      // Override makeSite mappings to include all Laika output (fonts, CSS, etc.)
+      makeSite / mappings := {
+        val siteDir = target.value / "docs" / "site"
+        val files = (siteDir ** AllPassFilter).get.filterNot(_.isDirectory)
+        files.map(f => (f, siteDir.toPath.relativize(f.toPath).toString))
+      }
     )
 
 lazy val library =
