@@ -133,11 +133,14 @@
           <li><code>*any-date-time*</code> : checks if the field is a &#39;yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSS&#39;Z&#39;&#39; datetime</li>
           <li><code>*any-time*</code> : checks if the field is a &#39;HH:mm:ss.SSS&#39; time</li>
         </ul>
-        <p>This feature is still fresh and under experimentation therefore it comes with a couple of limitations:</p>
-        <ul>
-          <li>it is not yet possible to register custom JSON matchers</li>
-          <li>matchers are not supported for JSON arrays assertions via <code>asArray</code></li>
-        </ul>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>This feature is still under experimentation and comes with a couple of limitations:</p>
+          <ul>
+            <li>it is not yet possible to register custom JSON matchers</li>
+            <li>matchers are not supported for JSON arrays assertions via <code>asArray</code></li>
+          </ul>
+        </div>
 
         
 <hr class="footer-rule"/>

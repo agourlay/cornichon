@@ -181,7 +181,10 @@
    )</span></code></pre>
         
         <h2 id="execution-model" class="section"><a class="anchor-link left" href="#execution-model"><i class="icofont-laika link">&#xef71;</i></a>Execution model</h2>
-        <p>By default, the <code>features</code> are executed sequentially and the <code>scenarios</code> within are executed in parallel.</p>
+        <div class="callout info">
+          <i class="icofont-laika info">&#xef4e;</i>
+          <p>By default, <code>features</code> are executed sequentially and <code>scenarios</code> within are executed in parallel.</p>
+        </div>
         <p>This execution is configurable if you have specific constraints.</p>
         <p>To run <code>scenarios</code> sequentially it is necessary to declare in your application.conf file</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">cornichon</span><span> {

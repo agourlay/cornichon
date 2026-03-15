@@ -102,7 +102,10 @@
         <h1 id="kafka-integration" class="title">Kafka integration</h1>
         <p><code>cornichon-kafka</code> offers support for <a href="https://kafka.apache.org">Kafka</a> v4.x</p>
         <p>The kafka client is shared at the feature level by all the scenarios and is configured with a fixed group-id to &#39;cornichon-groupId&#39; and is set with offset-reset to &#39;earliest&#39;.</p>
-        <p>Due to the architecture of kafka and the handling of consumers offsets, <strong>the default execution of scenarios is sequential</strong>.</p>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>Due to the architecture of Kafka and the handling of consumer offsets, the default execution of scenarios is sequential.</p>
+        </div>
         <ul>
           <li>Comprehensive example</li>
         </ul>
@@ -153,8 +156,11 @@
 
   }
 }</span></code></pre>
-        <p>Note that this DSL always returns the latest <code>amount</code> of messages found on the topic.
-        The consumer polls <code>timeoutMs</code> until it does not find any new messages anymore</p>
+        <div class="callout info">
+          <i class="icofont-laika info">&#xef4e;</i>
+          <p>This DSL always returns the latest <code>amount</code> of messages found on the topic.
+          The consumer polls <code>timeoutMs</code> until it does not find any new messages anymore.</p>
+        </div>
 
         
 <hr class="footer-rule"/>

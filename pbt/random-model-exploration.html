@@ -137,7 +137,10 @@
           <li>up to <code>Property6[A, B, C, D, E, F]</code></li>
         </ul>
         <p>It is of course not required to call a generator when building a <code>Step</code>.</p>
-        <p><em>However, it is required to have the same <code>Property</code> type for all properties within a <code>model</code> definition.</em></p>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <p>It is required to have the same <code>Property</code> type for all properties within a <code>model</code> definition.</p>
+        </div>
         <p>Having <code>generators</code> as input enables the <code>action</code> to introduce some randomness in its effect.</p>
         <p>A <code>run</code> terminates successfully if the max number of transitions is reached, this means we were not able to break any invariants.</p>
         <p>A <code>run</code> fails if one of the following conditions is met:</p>
@@ -163,7 +166,10 @@
           <li>there is a 10% chance to exit the game after a ping or a pong</li>
         </ul>
         <p>Also, the DSL is asking for a <code>modelRunner</code> which is a little helper connecting a <code>model</code> to its <code>generators</code>.</p>
-        <p>The type inference is sometimes not properly detecting the action type, so it is recommended to define the <code>modelRunner</code> and the <code>model</code> as a single expression to help the typechecker.</p>
+        <div class="callout info">
+          <i class="icofont-laika info">&#xef4e;</i>
+          <p>The type inference is sometimes not properly detecting the action type, so it is recommended to define the <code>modelRunner</code> and the <code>model</code> as a single expression to help the typechecker.</p>
+        </div>
         <pre><code class="nohighlight"><span>
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">stringGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;an alphanumeric String&quot;</span><span>,
@@ -848,11 +854,14 @@ Starting scenario &#39;WebShop acts according to model&#39;
         <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/webShop">here</a>.</p>
         
         <h2 id="caveats" class="section"><a class="anchor-link left" href="#caveats"><i class="icofont-laika link">&#xef71;</i></a>Caveats</h2>
-        <ul>
-          <li>all <code>properties</code> must have the same types within a <code>model</code> definition</li>
-          <li>the API has a few rough edges, especially regarding type inference for the <code>modelRunner</code> definition</li>
-          <li>the max number of <code>generators</code> is hard-coded to 6</li>
-        </ul>
+        <div class="callout warning">
+          <i class="icofont-laika warning">&#xf026;</i>
+          <ul>
+            <li>All <code>properties</code> must have the same types within a <code>model</code> definition.</li>
+            <li>The API has a few rough edges, especially regarding type inference for the <code>modelRunner</code> definition.</li>
+            <li>The max number of <code>generators</code> is hard-coded to 6.</li>
+          </ul>
+        </div>
 
         
 <hr class="footer-rule"/>
