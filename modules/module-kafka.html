@@ -100,7 +100,7 @@
       <main class="content">
 
         <h1 id="kafka-integration" class="title">Kafka integration</h1>
-        <p><code>cornichon-kafka</code> offers a support for <a href="https://kafka.apache.org">Kafka</a> v2.0.0</p>
+        <p><code>cornichon-kafka</code> offers support for <a href="https://kafka.apache.org">Kafka</a> v4.x</p>
         <p>The kafka client is shared at the feature level by all the scenarios and is configured with a fixed group-id to &#39;cornichon-groupId&#39; and is set with offset-reset to &#39;earliest&#39;.</p>
         <p>Due to the architecture of kafka and the handling of consumers offsets, <strong>the default execution of scenarios is sequential</strong>.</p>
         <ul>
@@ -142,7 +142,7 @@
       )
 
       </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">read_from_topic</span><span>(</span><span class="string-literal">&quot;cornichon&quot;</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">kafka</span><span>(</span><span class="string-literal">&quot;cornichon&quot;</span><span>).</span><span class="identifier">topic_is</span><span>(</span><span class="string-literal">&quot;json&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">kafka</span><span>(</span><span class="string-literal">&quot;cornichon&quot;</span><span>).</span><span class="identifier">key_is</span><span>(</span><span class="string-literal">&quot;json&quot;</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">kafka</span><span>(</span><span class="string-literal">&quot;cornichon&quot;</span><span>).</span><span class="identifier">message_value</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;coffee&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
         {
           &quot;cornichon&quot;: &quot;green&quot;
@@ -153,7 +153,7 @@
 
   }
 }</span></code></pre>
-        <p>Note that this dsl always return the latest <code>amount</code> of messages found on the topic.
+        <p>Note that this DSL always returns the latest <code>amount</code> of messages found on the topic.
         The consumer polls <code>timeoutMs</code> until it does not find any new messages anymore</p>
 
         

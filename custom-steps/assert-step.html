@@ -103,7 +103,7 @@
         <p>An <code>AssertStep</code> can be understood as the following function <code>ScenarioContext =&gt; Assertion</code>. Its goal is to describe an expectation.</p>
         <p>The test engine is responsible to test the validity of the provided <code>Assertion</code> which can be one of the following:</p>
         <ul>
-          <li>Equality assertions : test the equality of two objects using the cats <code>Equals</code> typeclass.</li>
+          <li>Equality assertions : test the equality of two objects using the cats <code>Eq</code> typeclass.</li>
         </ul>
         <ul>
           <li>
@@ -172,7 +172,7 @@
         <p><code>Assertions</code> can also be composed using <code>and</code> and <code>or</code>, for instance <code>BetweenAssertion</code> is the result of <code>LessThanAssertion</code> and <code>GreaterThanAssertion</code>.</p>
         <p>This is rather low level therefore you should not write your steps like that directly inside the DSL but hide them behind functions with appropriate names.</p>
         <p>Fortunately a bunch of built-in steps and primitive building blocks are already available for you.</p>
-        <p>Note for advance users: it is also possible to write custom wrapper steps by implementing <code>WrapperStep</code>.</p>
+        <p>Note for advanced users: it is also possible to write custom wrapper steps by implementing <code>WrapperStep</code>.</p>
 
         
 <hr class="footer-rule"/>

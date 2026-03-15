@@ -132,7 +132,7 @@
           <li><code>testOnly *CornichonExamplesSpec -- &quot;Cornichon feature example should CRUD Feature demo&quot;</code> to run only the scenario <code>CRUD Feature demo</code> from the feature <code>Cornichon feature example</code>.</li>
         </ul>
         <p>The full name of a scenario is <code>feature-name should scenario-name</code>.</p>
-        <p>See <a href="http://www.scala-sbt.org/0.13/docs/Testing.html">SBT doc</a> for more information.</p>
+        <p>See <a href="https://www.scala-sbt.org/1.x/docs/Testing.html">SBT doc</a> for more information.</p>
         <p>The <code>steps</code> execution logs will only be shown if:</p>
         <ul>
           <li>the scenario fails</li>
@@ -140,7 +140,7 @@
         </ul>
         
         <h1 id="running-tests-without-a-build-tool" class="section"><a class="anchor-link left" href="#running-tests-without-a-build-tool"><i class="icofont-laika link">&#xef71;</i></a>Running tests without a build tool</h1>
-        <p>When integrating cornichon features in a build pipeline, it can be interesting to package those features into a runnable forms to avoid the cost of recompilation.</p>
+        <p>When integrating cornichon features in a build pipeline, it can be interesting to package those features into a runnable form to avoid the cost of recompilation.</p>
         <p>The library ships a main runner that can be used to run the tests without build tool.</p>
         <p>It can be found as <code>com.github.agourlay.cornichon.framework.MainRunner</code>.</p>
         <p>Once your project is packaged as a jar file, calling the main runner with <code>--help</code> shows the following info:</p>
@@ -154,7 +154,7 @@ Options and flags:
     --packageToScan &lt;string&gt;
         Package containing the feature files.
     --reportsOutputDir &lt;string&gt;
-       Output directory for junit.xml files (default to current).
+       Output directory for junit.xml files (defaults to current).
     --featureParallelism &lt;integer&gt;
         Number of feature running in parallel (default=1).
     --seed &lt;integer&gt;

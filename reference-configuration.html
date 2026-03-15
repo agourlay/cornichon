@@ -100,7 +100,7 @@
       <main class="content">
 
         <h1 id="reference-configuration" class="title">Reference configuration</h1>
-        <p>It is possible to configure various aspects of the runs via a <code>/src/test/resources/reference.conf</code> file.</p>
+        <p>It is possible to configure various aspects of the runs via a <code>/src/test/resources/application.conf</code> file.</p>
         <p>You will find below the available keys and their respective default values.</p>
         <pre><code>cornichon {
   requestTimeout = 2000 millis                    // timeout for each request
@@ -112,7 +112,7 @@
   failOnDuplicateHeaders = false                  // fail if a header is duplicated in a request
   addAcceptGzipByDefault = false                  // add Accept-Encoding: gzip, deflate by default
   disableCertificateVerification = false          // disable certificate verification for https requests
-  followRedirect = false,                         // follow Http redirects
+  followRedirect = false                         // follow Http redirects
   enableHttp2 = false                             // enable Http2 for requests
 }</code></pre>
 

@@ -117,7 +117,7 @@
         <p>Let&#39;s unpack this signature:</p>
         <ul>
           <li><code>maxNumberOfRuns</code> refers to maximum number of attempt to traverse the Markov chain and find a case that breaks an invariant</li>
-          <li><code>maxNumberOfTransition</code> is useful when the <code>model</code> contains cycles in order to ensure termination</li>
+          <li><code>maxNumberOfTransitions</code> is useful when the <code>model</code> contains cycles in order to ensure termination</li>
           <li><code>modelRunner</code> is the actual definition of the <code>model</code></li>
           <li><code>A B C D E F</code> refers to the types of the <code>generators</code> used in <code>model</code> definition (maximum of 6 for the moment)</li>
         </ul>
@@ -139,7 +139,7 @@
         <p>It is of course not required to call a generator when building a <code>Step</code>.</p>
         <p><em>However, it is required to have the same <code>Property</code> type for all properties within a <code>model</code> definition.</em></p>
         <p>Having <code>generators</code> as input enables the <code>action</code> to introduce some randomness in its effect.</p>
-        <p>A <code>run</code> terminates successfully if the max number of transition reached, this means we were not able to break any invariants.</p>
+        <p>A <code>run</code> terminates successfully if the max number of transitions is reached, this means we were not able to break any invariants.</p>
         <p>A <code>run</code> fails if one of the following conditions is met:</p>
         <ul>
           <li>an error is thrown from a <code>property</code></li>

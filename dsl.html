@@ -116,7 +116,7 @@
         <p>This structure was chosen to increase the freedom of customization while still benefiting from Scala&#39;s infix notation.</p>
         <p>3 - ending with a <code>step</code> definition</p>
         <p>The usage pattern is often to first run a <code>step</code> with a side effect then assert an expected state in a second <code>step</code>.</p>
-        <p>For example :</p>
+        <p>For example:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">step_definition</span><span>
 
 </span><span class="type-name">When</span><span> </span><span class="identifier">a</span><span> </span><span class="identifier">step_definition</span><span>
@@ -235,10 +235,10 @@
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;`message.en`&quot;</span><span>).</span><span class="identifier">isPresent</span><span>
 
 </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;`message.fr`&quot;</span><span>).</span><span class="identifier">isAbsent</span></code></pre>
-        <p>To address a root array use <code>$</code> followed by the index the access.</p>
+        <p>To address a root array use <code>$</code> followed by the index to access.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span>
 </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[2].name&quot;</span><span>)</span></code></pre>
-        <p>If the endpoint returns a collection assert response body has several options (ordered, ignoring and using data table)</p>
+        <p>If the endpoint returns a collection, assert response body has several options (ordered, ignoring and using data table)</p>
         <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;hasSuperpowers&quot;</span><span>, </span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(
   </span><span class="string-literal">&quot;&quot;&quot;
   [{
@@ -419,7 +419,7 @@
     )
   }</span></code></pre>
         <ul>
-          <li>execute a series of steps &#39;times&#39; times by batch of <code>parallelism</code> in parallel and wait &#39;maxTime&#39; for completion.</li>
+          <li>execute a series of steps &#39;times&#39; times in batches of <code>parallelism</code> in parallel and wait &#39;maxTime&#39; for completion.</li>
         </ul>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatConcurrently</span><span>(</span><span class="identifier">times</span><span> = </span><span class="number-literal">10</span><span>, </span><span class="identifier">parallelism</span><span> = </span><span class="number-literal">3</span><span>, </span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span> </span><span class="identifier">seconds</span><span>) {
 
@@ -478,9 +478,9 @@
         <ul>
           <li>HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.</li>
         </ul>
-        <p>This feature is defined the module <code>cornichon-http-mock</code> and requires to extend the trait <code>HttpMockDsl</code>.</p>
+        <p>This feature is defined in the module <code>cornichon-http-mock</code> and requires to extend the trait <code>HttpMockDsl</code>.</p>
         <p>By default, this server responds with 201 to any POST request and 200 for all the rest.</p>
-        <p>Additionally, it provides three administrations features:</p>
+        <p>Additionally, it provides three administration features:</p>
         <ul>
           <li>fetching recorded received requests</li>
           <li>resetting recorded received requests</li>
@@ -488,7 +488,7 @@
         </ul>
         <p>The server records all requests received as a JSON array of HTTP request for later assertions.</p>
         <p>There are two ways to perform assertions on the server statistics, either by querying the session at the end of the block or by contacting directly the server while it runs.</p>
-        <p>Refer to those <a href="https://github.com/agourlay/cornichon-http-mock/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/MockServerExample.scala">examples</a> for more information.</p>
+        <p>Refer to those <a href="https://github.com/agourlay/cornichon/blob/master/cornichon-http-mock/src/test/scala/com/github/agourlay/cornichon/http/MockServerExample.scala">examples</a> for more information.</p>
         <p>This feature is experimental and may change in the future.</p>
         <ul>
           <li>Log duration</li>
@@ -519,11 +519,11 @@
  </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body_json</span><span> (</span><span class="identifier">pretty</span><span> </span><span class="identifier">print</span><span> </span><span class="identifier">the</span><span> </span><span class="identifier">json</span><span> </span><span class="identifier">body</span><span>)
 
  </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_headers</span></code></pre>
-        <p>Those descriptions might be already outdated, in case of doubt always refer to those <a href="https://github.com/agourlay/cornichon/blob/master/src/test/scala/com/github/agourlay/cornichon/examples/superHeroes/SuperHeroesScenario.scala">examples</a> as they are executed as part of Cornichon&#39;s test suite.</p>
+        <p>Those descriptions might be already outdated, in case of doubt always refer to those <a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/superHeroes/SuperHeroesScenario.scala">examples</a> as they are executed as part of Cornichon&#39;s test suite.</p>
         
         <h2 id="dsl-composition" class="section"><a class="anchor-link left" href="#dsl-composition"><i class="icofont-laika link">&#xef71;</i></a>DSL composition</h2>
         <p>Series of steps defined with Cornichon&#39;s DSL can be reused within different <code>Scenarios</code>.</p>
-        <p>Using the keyword <code>Attach</code> if the series starts with a <code>Step</code> and without if it starts with a wrapping bloc.</p>
+        <p>Using the keyword <code>Attach</code> if the series starts with a <code>Step</code> and without if it starts with a wrapping block.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
 
@@ -554,7 +554,7 @@
       </span><span class="type-name">Then</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">print_step</span><span>(</span><span class="string-literal">&quot;bingo!&quot;</span><span>)
     }
 }</span></code></pre>
-        <p>It is possible to give a title to an attached bloc using <code>AttachAs(title)</code>.</p>
+        <p>It is possible to give a title to an attached block using <code>AttachAs(title)</code>.</p>
 
         
 <hr class="footer-rule"/>

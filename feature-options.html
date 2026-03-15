@@ -122,7 +122,7 @@
   </span><span class="comment">// do side effect here
 </span><span>}</span></code></pre>
         <p>Taking a <code>Step</code> expression similar to the main DSL. You can either pass a single regular <code>Step</code> or a <code>WrapperStep</code> like <code>Attach</code>.</p>
-        <p>Here is an examples with fictitious steps.</p>
+        <p>Here is an example with fictitious steps.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">beforeEachScenario</span><span> {
   </span><span class="type-name">Attach</span><span> {
     </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">setup_server</span><span>
@@ -191,8 +191,7 @@
         <pre><code>number of concurrent scenarios = `scenarioExecutionParallelismFactor` * number of CPU + 1</code></pre>
         <p>This means using more powerful machines will automatically trigger more scenarios.</p>
         <p>To run <code>features</code> in parallel it is necessary to manually set a flag in your SBT build file.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">parallelExecution</span><span> </span><span class="identifier">in</span><span> </span><span class="type-name">Test</span><span> := </span><span class="boolean-literal">true</span></code></pre>
-        <p>or through the command line <code>sbt test parallelExecution in Test := true</code></p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Test</span><span> / </span><span class="identifier">parallelExecution</span><span> := </span><span class="boolean-literal">true</span></code></pre>
         
         <h2 id="ignoring-features-or-scenarios" class="section"><a class="anchor-link left" href="#ignoring-features-or-scenarios"><i class="icofont-laika link">&#xef71;</i></a>Ignoring features or scenarios</h2>
         <p><code>Feature</code> or individual <code>scenario</code> can also be marked to be ignored.</p>
