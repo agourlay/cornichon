@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Troubleshooting</title>
+  
+  
+  <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="helium/site/laika-helium.css" />
+    <link rel="stylesheet" type="text/css" href="css/landing.css" />
+  <script src="helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="index.html"><img src="img/cornichon-logo.png" width="50" height="50"></a>
+
+  <div class="row links">
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="index.html">Cornichon</a></li>
+    <li class="level1 nav-leaf"><a href="overview.html">Overview</a></li>
+    <li class="level1 nav-leaf"><a href="installation.html">Installation</a></li>
+    <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
+    <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
+    <li class="level1 nav-leaf"><a href="common-patterns.html">Common patterns</a></li>
+    <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
+    <li class="level1 nav-header">custom-steps</li>
+    <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
+    <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
+    <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
+    <li class="level1 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
+    <li class="level1 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
+    <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
+    <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
+    <li class="level1 nav-leaf"><a href="property-based-testing.html">PBT</a></li>
+    <li class="level1 nav-header">pbt</li>
+    <li class="level2 nav-leaf"><a href="pbt/generators.html">Generators</a></li>
+    <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
+    <li class="level2 nav-leaf"><a href="pbt/random-model-exploration.html">Random model exploration</a></li>
+    <li class="level1 active nav-leaf"><a href="#">Troubleshooting</a></li>
+    <li class="level1 nav-leaf"><a href="misc.html">Advanced topics</a></li>
+    <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
+    <li class="level1 nav-header">modules</li>
+    <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
+    <li class="level2 nav-leaf"><a href="modules/module-kafka.html">Kafka integration</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Troubleshooting</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#placeholder-not-resolved">Placeholder not resolved</a></li>
+    <li class="level1 nav-leaf"><a href="#using-body-on-a-non-json-response">Using <code>body</code> on a non-JSON response</a></li>
+    <li class="level1 nav-leaf"><a href="#eventually-block-times-out"><code>Eventually</code> block times out</a></li>
+    <li class="level1 nav-leaf"><a href="#scenarios-interfere-when-run-in-parallel">Scenarios interfere when run in parallel</a></li>
+    <li class="level1 nav-leaf"><a href="#session-key-overwritten-unexpectedly">Session key overwritten unexpectedly</a></li>
+    <li class="level1 nav-leaf"><a href="#repeat-index-starts-at-0"><code>Repeat</code> index starts at 0</a></li>
+    <li class="level1 nav-leaf"><a href="#json-path-returns-unexpected-value">JSON path returns unexpected value</a></li>
+    <li class="level1 nav-leaf"><a href="#status-code-assertion-fails-with-response-details">Status code assertion fails with response details</a></li>
+    <li class="level1 nav-leaf"><a href="#feature-not-discovered-by-test-framework">Feature not discovered by test framework</a></li>
+    <li class="level1 nav-leaf"><a href="#debugging-tips">Debugging tips</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="troubleshooting" class="title">Troubleshooting</h1>
+        <p>Common issues encountered when writing Cornichon tests and how to fix them.</p>
+        
+        <h2 id="placeholder-not-resolved" class="section"><a class="anchor-link left" href="#placeholder-not-resolved"><i class="icofont-laika link">&#xef71;</i></a>Placeholder not resolved</h2>
+        <p><strong>Symptom:</strong> A step receives a literal <code>&lt;my-key&gt;</code> string instead of the expected value.</p>
+        <p><strong>Cause:</strong> The key does not exist in the <a href="dsl.html#session-steps">session</a> at the time the placeholder is resolved.</p>
+        <p><strong>Fix:</strong> Make sure a previous step saves a value under that key. Common sources:</p>
+        <ul>
+          <li>A <code>save_body_path</code> step is missing or uses a different key name</li>
+          <li>The placeholder is used before the step that populates it</li>
+          <li>A typo in the key name — placeholders are case-sensitive</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Wrong: key was never saved
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/users/&lt;user-id&gt;&quot;</span><span>)
+
+</span><span class="comment">// Right: save the key first
+</span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;user-id&quot;</span><span>)
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/users/&lt;user-id&gt;&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="using-body-on-a-non-json-response" class="section"><a class="anchor-link left" href="#using-body-on-a-non-json-response"><i class="icofont-laika link">&#xef71;</i></a>Using <code>body</code> on a non-JSON response</h2>
+        <p><strong>Symptom:</strong> An error like <code>expected JSON but got ...</code> or a parsing failure.</p>
+        <p><strong>Cause:</strong> The <code>body</code> assertion expects JSON content. If the endpoint returns plain text, XML, or HTML, parsing fails.</p>
+        <p><strong>Fix:</strong> Use <code>body_raw</code> for non-JSON responses:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Wrong: endpoint returns plain text
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;OK&quot;</span><span>)
+
+</span><span class="comment">// Right
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body_raw</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;OK&quot;</span><span>)
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body_raw</span><span>.</span><span class="identifier">containsString</span><span>(</span><span class="string-literal">&quot;success&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="eventually-block-times-out" class="section"><a class="anchor-link left" href="#eventually-block-times-out"><i class="icofont-laika link">&#xef71;</i></a><code>Eventually</code> block times out</h2>
+        <p><strong>Symptom:</strong> <code>Eventually block did not complete in time after having being tried &#39;N&#39; times</code></p>
+        <p><strong>Causes and fixes:</strong></p>
+        <ul>
+          <li><strong>Timeout too short:</strong> Increase <code>maxDuration</code>. Eventually-consistent systems can have variable delays.</li>
+          <li><strong>Interval too long:</strong> Reduce <code>interval</code> to check more frequently.</li>
+          <li><strong>Assertion never holds:</strong> The system under test may not reach the expected state. Check application logs.</li>
+          <li><strong>Wrong assertion:</strong> Verify your assertion would pass if run manually after the system settles.</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Too aggressive — might miss the window
+</span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">1</span><span>.</span><span class="identifier">second</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">500</span><span>.</span><span class="identifier">millis</span><span>) { ... }
+
+</span><span class="comment">// More realistic
+</span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">15</span><span>.</span><span class="identifier">seconds</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">200</span><span>.</span><span class="identifier">millis</span><span>) { ... }</span></code></pre>
+        
+        <h2 id="scenarios-interfere-when-run-in-parallel" class="section"><a class="anchor-link left" href="#scenarios-interfere-when-run-in-parallel"><i class="icofont-laika link">&#xef71;</i></a>Scenarios interfere when run in parallel</h2>
+        <p><strong>Symptom:</strong> Tests pass individually but fail when run together. Flaky failures related to shared data.</p>
+        <p><strong>Cause:</strong> By default, scenarios within a feature <a href="feature-options.html#execution-model">run in parallel</a>. If scenarios share mutable state (database records, server state), they can interfere.</p>
+        <p><strong>Fixes:</strong></p>
+        <ol class="arabic">
+          <li><strong>Make scenarios independent:</strong> Use unique identifiers (e.g., <code>&lt;random-uuid&gt;</code>) for test data.</li>
+          <li><strong>Run sequentially:</strong> Set <code>executeScenariosInParallel = false</code> in <code>application.conf</code> — see <a href="reference-configuration.html">Reference Configuration</a>.</li>
+          <li><strong>Use setup/teardown:</strong> Clean up shared state in <code>beforeEachScenario</code> / <code>afterEachScenario</code>.</li>
+        </ol>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Use random data to avoid collisions
+</span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(
+  </span><span class="string-literal">&quot;&quot;&quot;{ &quot;name&quot;: &quot;test-&lt;random-uuid&gt;&quot;, &quot;price&quot;: 42 }&quot;&quot;&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="session-key-overwritten-unexpectedly" class="section"><a class="anchor-link left" href="#session-key-overwritten-unexpectedly"><i class="icofont-laika link">&#xef71;</i></a>Session key overwritten unexpectedly</h2>
+        <p><strong>Symptom:</strong> A <a href="placeholders.html">placeholder</a> resolves to a different value than expected.</p>
+        <p><strong>Cause:</strong> The session behaves like a multimap — saving the same key multiple times appends values, and <code>&lt;key&gt;</code> always returns the latest. Inside loops (<code>Repeat</code>, <code>RepeatWith</code>), each iteration may overwrite the key.</p>
+        <p><strong>Fixes:</strong></p>
+        <ul>
+          <li>Use <code>&lt;key[0]&gt;</code>, <code>&lt;key[1]&gt;</code> etc. to access earlier values by index</li>
+          <li>Use <code>session_history(&quot;key&quot;).containsExactly(...)</code> to verify the full history</li>
+          <li>Use distinct key names when saving multiple values</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Inside a Repeat, each iteration overwrites &quot;response-status&quot;
+</span><span class="type-name">Repeat</span><span>(</span><span class="number-literal">3</span><span>) {
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/endpoint&quot;</span><span>)
+  </span><span class="comment">// &quot;last-status&quot; will always be the latest value
+</span><span>}
+
+</span><span class="comment">// Use indexed access for earlier values
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;response-status&quot;</span><span>).</span><span class="identifier">atIndex</span><span>(</span><span class="number-literal">0</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;200&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="repeat-index-starts-at-0" class="section"><a class="anchor-link left" href="#repeat-index-starts-at-0"><i class="icofont-laika link">&#xef71;</i></a><code>Repeat</code> index starts at 0</h2>
+        <p><strong>Symptom:</strong> Off-by-one errors when using <code>Repeat</code> with an index.</p>
+        <p><strong>Cause:</strong> The iteration index is zero-based.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Repeat</span><span>(</span><span class="number-literal">3</span><span>, </span><span class="string-literal">&quot;i&quot;</span><span>) {
+  </span><span class="comment">// i takes values: &quot;0&quot;, &quot;1&quot;, &quot;2&quot;
+</span><span>  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/items/&lt;i&gt;&quot;</span><span>)
+}</span></code></pre>
+        
+        <h2 id="json-path-returns-unexpected-value" class="section"><a class="anchor-link left" href="#json-path-returns-unexpected-value"><i class="icofont-laika link">&#xef71;</i></a>JSON path returns unexpected value</h2>
+        <p><strong>Symptom:</strong> A <code>body.path(...)</code> assertion fails even though the response looks correct.</p>
+        <p><strong>Common causes:</strong></p>
+        <ul>
+          <li><strong>Array vs object:</strong> <code>body.path(&quot;items&quot;)</code> returns the raw JSON array. Use <code>body.path(&quot;items&quot;).asArray</code> for array-specific assertions.</li>
+          <li><strong>Nested path with dots in keys:</strong> If a key contains a <code>.</code>, wrap it with backticks: <code>body.path(&quot;`field.name`&quot;)</code></li>
+          <li><strong>Root array access:</strong> For a response that is a JSON array, use <code>$</code> as the root: <code>body.path(&quot;$[0].name&quot;)</code></li>
+          <li><strong>Wildcard projection:</strong> <code>body.path(&quot;items[*].name&quot;)</code> returns an array of all <code>name</code> values.</li>
+        </ul>
+        
+        <h2 id="status-code-assertion-fails-with-response-details" class="section"><a class="anchor-link left" href="#status-code-assertion-fails-with-response-details"><i class="icofont-laika link">&#xef71;</i></a>Status code assertion fails with response details</h2>
+        <p><strong>Symptom:</strong></p>
+        <pre><code>expected status code &#39;200&#39; but &#39;401&#39; was received with body:
+&quot;Unauthorized&quot;</code></pre>
+        <p><strong>Fix:</strong> Cornichon includes the response body and headers in status failures. Read them carefully — they often explain why the server rejected the request (expired token, missing header, wrong content type, etc.).</p>
+        
+        <h2 id="feature-not-discovered-by-test-framework" class="section"><a class="anchor-link left" href="#feature-not-discovered-by-test-framework"><i class="icofont-laika link">&#xef71;</i></a>Feature not discovered by test framework</h2>
+        <p><strong>Symptom:</strong> SBT runs but reports 0 tests.</p>
+        <p><strong>Cause:</strong> The test framework is not registered, or the feature class is not in <code>src/test/scala</code>.</p>
+        <p><strong>Fix:</strong> Verify your <code>build.sbt</code> includes:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">testFrameworks</span><span> += </span><span class="keyword">new</span><span> </span><span class="type-name">TestFramework</span><span>(</span><span class="string-literal">&quot;com.github.agourlay.cornichon.framework.CornichonFramework&quot;</span><span>)</span></code></pre>
+        <p>And that your feature class extends <code>CornichonFeature</code> and is in the <code>src/test/scala</code> directory.</p>
+        
+        <h2 id="debugging-tips" class="section"><a class="anchor-link left" href="#debugging-tips"><i class="icofont-laika link">&#xef71;</i></a>Debugging tips</h2>
+        <p>When a test fails and the cause isn&#39;t obvious:</p>
+        <ol class="arabic">
+          <li>
+            <p><strong>Enable request tracing</strong> in <code>application.conf</code> to see full HTTP request/response details:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="attribute-name">cornichon</span><span> {
+  </span><span class="attribute-name">traceRequests</span><span> = </span><span class="boolean-literal">true</span><span>
+}</span></code></pre>
+          </li>
+          <li>
+            <p><strong>Use debug steps</strong> to inspect state mid-scenario:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_session</span><span>
+</span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_status</span><span>
+</span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body_json</span><span>
+</span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_headers</span></code></pre>
+          </li>
+          <li>
+            <p><strong>Replay with a fixed seed</strong> using the command from the failure output to reproduce the exact same execution — see <a href="test-output.html#reproducing-failures">Understanding Test Output</a>.</p>
+          </li>
+          <li>
+            <p><strong>Focus on one scenario</strong> during debugging to isolate the issue:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;the failing one&quot;</span><span>).</span><span class="identifier">focused</span><span> {
+  ...
+}</span></code></pre>
+            <p>See <a href="feature-options.html#focusing-on-a-scenario">Feature Options</a> for details.</p>
+          </li>
+        </ol>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  Site generated by <a href="https://typelevel.org/Laika/">Laika</a> with the Helium theme.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

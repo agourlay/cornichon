@@ -62,6 +62,7 @@
     <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
     <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
+    <li class="level1 nav-leaf"><a href="common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
     <li class="level1 nav-header">custom-steps</li>
     <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
@@ -76,7 +77,8 @@
     <li class="level2 nav-leaf"><a href="pbt/generators.html">Generators</a></li>
     <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
     <li class="level2 nav-leaf"><a href="pbt/random-model-exploration.html">Random model exploration</a></li>
-    <li class="level1 nav-leaf"><a href="misc.html">Misc.</a></li>
+    <li class="level1 nav-leaf"><a href="troubleshooting.html">Troubleshooting</a></li>
+    <li class="level1 nav-leaf"><a href="misc.html">Advanced topics</a></li>
     <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
     <li class="level1 nav-header">modules</li>
     <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
@@ -92,6 +94,7 @@
   <p class="header"><a href="#">Overview</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#quick-example">Quick example</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -103,7 +106,12 @@
         <p><a href="https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon-core_2.13"><img src="https://maven-badges.herokuapp.com/maven-central/com.github.agourlay/cornichon-core_2.13/badge.svg" alt="Maven Central"></a>
         <a href="https://gitter.im/agourlay/cornichon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/agourlay/cornichon"></a>
         <a href="http://www.apache.org/licenses/LICENSE-2.0.txt"><img src="http://img.shields.io/:license-Apache%202-brightgreen.svg" alt="License"></a></p>
-        <h1 id="quick-example" class="title">Quick example</h1>
+        <h1 id="how-it-works" class="title">How it works</h1>
+        <p>Cornichon tests are built around three core concepts: <strong>steps</strong>, <strong>session</strong>, and <strong>placeholders</strong>.</p>
+        <p>Steps are the building blocks of a scenario — each step either performs a side effect (like an HTTP request) or asserts an expected state. When a step produces a result, it is stored in the <strong>session</strong>, a key-value store that lives for the duration of a scenario. Values from the session can then be injected into later steps using <strong>placeholders</strong> like <code>&lt;my-key&gt;</code>, which are automatically resolved at runtime.</p>
+        <p>This simple model makes it natural to chain steps together: make a request, save part of the response, and use it in the next request — all without writing boilerplate code.</p>
+        
+        <h2 id="quick-example" class="section"><a class="anchor-link left" href="#quick-example"><i class="icofont-laika link">&#xef71;</i></a>Quick example</h2>
         <p>Find below an example of testing the Open Movie Database API.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
 
@@ -198,6 +206,7 @@
           </li>
         </ul>
         <p>And if you enjoy slides, you might like <a href="https://speakerdeck.com/agourlay/cornichon-a-scala-dsl-for-testing-http-json-api">this presentation</a> given at the <a href="https://www.meetup.com/Scala-Berlin-Brandenburg/events/235779912/">Berlin Scala User Group</a> which gives more context regarding the creation and usage of this library.</p>
+        <p>Ready to get started? Head over to <a href="installation.html">Installation</a> and then <a href="basics.html">Basics</a>.</p>
 
         
 <hr class="footer-rule"/>

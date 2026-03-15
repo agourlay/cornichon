@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Misc.</title>
+  <title>Advanced topics</title>
   
   
   <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
@@ -62,6 +62,7 @@
     <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
     <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
+    <li class="level1 nav-leaf"><a href="common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
     <li class="level1 nav-header">custom-steps</li>
     <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
@@ -76,7 +77,8 @@
     <li class="level2 nav-leaf"><a href="pbt/generators.html">Generators</a></li>
     <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
     <li class="level2 nav-leaf"><a href="pbt/random-model-exploration.html">Random model exploration</a></li>
-    <li class="level1 active nav-leaf"><a href="#">Misc.</a></li>
+    <li class="level1 nav-leaf"><a href="troubleshooting.html">Troubleshooting</a></li>
+    <li class="level1 active nav-leaf"><a href="#">Advanced topics</a></li>
     <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
     <li class="level1 nav-header">modules</li>
     <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
@@ -89,9 +91,10 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Misc.</a></p>
+  <p class="header"><a href="#">Advanced topics</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#custom-http-body-type">Custom HTTP body type</a></li>
     <li class="level1 nav-leaf"><a href="#sbt-integration">SBT integration</a></li>
     <li class="level1 nav-leaf"><a href="#running-tests-without-a-build-tool">Running tests without a build tool</a></li>
     <li class="level1 nav-leaf"><a href="#packaging-features-in-a-docker-container">Packaging features in a Docker container</a></li>
@@ -103,7 +106,16 @@
 
       <main class="content">
 
-        <h1 id="custom-http-body-type" class="title">Custom HTTP body type</h1>
+        <h1 id="advanced-topics" class="title">Advanced topics</h1>
+        <p>This page covers advanced usage patterns that go beyond the core <a href="dsl.html">DSL</a>:</p>
+        <ul>
+          <li><a href="#custom-http-body-type">Custom HTTP body type</a> — use typed objects instead of Strings as request bodies</li>
+          <li><a href="#sbt-integration">SBT integration</a> — CLI tips for running and filtering tests</li>
+          <li><a href="#running-tests-without-a-build-tool">Running tests without a build tool</a> — package tests as a standalone jar</li>
+          <li><a href="#packaging-features-in-a-docker-container">Packaging features in a Docker container</a> — run tests in CI/CD pipelines</li>
+        </ul>
+        
+        <h1 id="custom-http-body-type" class="section"><a class="anchor-link left" href="#custom-http-body-type"><i class="icofont-laika link">&#xef71;</i></a>Custom HTTP body type</h1>
         <p>By default, the HTTP DSL expects a String body but in some cases you might want to work at a higher level of abstraction.</p>
         <p>In order to use a custom type as body, it is necessary to provide 3 typeclass instances:</p>
         <ul>
