@@ -73,6 +73,11 @@
     <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
     <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
+    <li class="level1 nav-header">dsl</li>
+    <li class="level2 nav-leaf"><a href="dsl/http-steps.html">HTTP steps</a></li>
+    <li class="level2 nav-leaf"><a href="dsl/session-steps.html">Session steps</a></li>
+    <li class="level2 nav-leaf"><a href="dsl/wrapper-steps.html">Wrapper steps</a></li>
+    <li class="level2 nav-leaf"><a href="dsl/utility-steps.html">Utility steps</a></li>
     <li class="level1 active nav-leaf"><a href="#">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
     <li class="level1 nav-header">custom-steps</li>
@@ -283,7 +288,7 @@
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">verify_superhero</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>)
 }</span></code></pre>
         <p>Use <code>AttachAs(&quot;title&quot;)</code> to give the block a descriptive name that shows up in the test output.</p>
-        <p>See <a href="dsl.html#dsl-composition">DSL Composition</a> for more on reusing steps.</p>
+        <p>See <a href="dsl/utility-steps.html#dsl-composition">DSL Composition</a> for more on reusing steps.</p>
         
         <h2 id="iterating-over-a-collection" class="section"><a class="anchor-link left" href="#iterating-over-a-collection"><i class="icofont-laika link">&#xef71;</i></a>Iterating over a collection</h2>
         <p>Use <code>RepeatWith</code> or <code>RepeatFrom</code> to run steps for each element in a collection, with the current element available as a <a href="placeholders.html">placeholder</a>.</p>

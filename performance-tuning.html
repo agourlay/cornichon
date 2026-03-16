@@ -73,6 +73,11 @@
     <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
     <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
+    <li class="level1 nav-header">dsl</li>
+    <li class="level2 nav-leaf"><a href="dsl/http-steps.html">HTTP steps</a></li>
+    <li class="level2 nav-leaf"><a href="dsl/session-steps.html">Session steps</a></li>
+    <li class="level2 nav-leaf"><a href="dsl/wrapper-steps.html">Wrapper steps</a></li>
+    <li class="level2 nav-leaf"><a href="dsl/utility-steps.html">Utility steps</a></li>
     <li class="level1 nav-leaf"><a href="common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
     <li class="level1 nav-header">custom-steps</li>
@@ -149,7 +154,7 @@
   </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/api/health&quot;</span><span>)
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
 }</span></code></pre>
-        <p>Both are documented in the <a href="dsl.html#wrapper-steps">DSL wrapper steps</a>.</p>
+        <p>Both are documented in the <a href="dsl/wrapper-steps.html">DSL wrapper steps</a>.</p>
         
         <h2 id="request-timeout" class="section"><a class="anchor-link left" href="#request-timeout"><i class="icofont-laika link">&#xef71;</i></a>Request timeout</h2>
         <p>The default HTTP request timeout is <code>2 seconds</code>. If your test target is slow, individual requests may time out and trigger retries or failures. Adjust it per feature:</p>
