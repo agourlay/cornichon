@@ -21,7 +21,7 @@ The test engine is responsible to test the validity of the provided `Assertion` 
     CustomMessageEqualityAssertion[A](expected: A, actual: A, customMessage: () => String)
     ```
 
-* Ordering assertions : compare two objects using the cats ```Order``` typeclass.
+* Ordering assertions : compare two objects using the cats `Order` typeclass.
   * GreaterThanAssertion
   * LessThanAssertion
   * BetweenAssertion

@@ -43,7 +43,7 @@ afterEachScenario{
 
 ## Base URL
 
-Instead of repeating at each HTTP statement the full URL, it is possible to set a common URL for the entire ```feature``` by overriding:
+Instead of repeating at each HTTP statement the full URL, it is possible to set a common URL for the entire `feature` by overriding:
 
 ```scala
 override lazy val baseUrl = s"http://localhost:8080"
@@ -89,7 +89,7 @@ In some cases it makes sense to declare `extractors` to avoid code duplication w
 
 An extractor is responsible to describe using a JsonPath how to build a value from an existing value in `session`.
 
-For instance if most of your JSON responses contain a field `id` and you want to use it as a placeholder without always having to manually extract and save the value into the ```session``` you can write :
+For instance if most of your JSON responses contain a field `id` and you want to use it as a placeholder without always having to manually extract and save the value into the `session` you can write :
 
 ```scala
    override def registerExtractors = Map(
