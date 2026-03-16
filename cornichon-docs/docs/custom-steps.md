@@ -11,4 +11,4 @@ There are currently 4 kinds of custom steps available
 - [EffectStep](custom-steps/effect-step.md)
 - [AssertStep](custom-steps/assert-step.md)
 - [ScenarioResourceStep](custom-steps/resource-step.md)
-- `WrapperStep` — see the [Wrapper Steps](dsl.md#wrapper-steps) section in the DSL reference
+- `WrapperStep` — see the [Wrapper Steps](dsl/wrapper-steps.md) section in the DSL reference

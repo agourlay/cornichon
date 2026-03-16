@@ -10,7 +10,7 @@ Common issues encountered when writing Cornichon tests and how to fix them.
 
 **Symptom:** A step receives a literal `<my-key>` string instead of the expected value.
 
-**Cause:** The key does not exist in the [session](dsl.md#session-steps) at the time the placeholder is resolved.
+**Cause:** The key does not exist in the [session](dsl/session-steps.md) at the time the placeholder is resolved.
 
 **Fix:** Make sure a previous step saves a value under that key. Common sources:
 

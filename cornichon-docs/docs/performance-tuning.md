@@ -59,7 +59,7 @@ RepeatConcurrently(times = 50, parallelism = 10, maxTime = 30.seconds) {
 }
 ```
 
-Both are documented in the [DSL wrapper steps](dsl.md#wrapper-steps).
+Both are documented in the [DSL wrapper steps](dsl/wrapper-steps.md).
 
 ## Request timeout
 

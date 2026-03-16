@@ -199,7 +199,7 @@ Scenario("create and verify") {
 
 Use `AttachAs("title")` to give the block a descriptive name that shows up in the test output.
 
-See [DSL Composition](dsl.md#dsl-composition) for more on reusing steps.
+See [DSL Composition](dsl/utility-steps.md#dsl-composition) for more on reusing steps.
 
 ## Iterating over a collection
 

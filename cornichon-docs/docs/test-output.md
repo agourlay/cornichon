@@ -96,7 +96,7 @@ but it is not the case with array:
 
 ## Nested step failures
 
-[Wrapper steps](dsl.md#wrapper-steps) like `Eventually`, `Repeat`, and `RetryMax` show their nested execution tree.
+[Wrapper steps](dsl/wrapper-steps.md) like `Eventually`, `Repeat`, and `RetryMax` show their nested execution tree.
 
 ### Eventually block
 

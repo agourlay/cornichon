@@ -60,5 +60,5 @@ This is rather low level therefore you should not write your steps like that dir
 Fortunately a bunch of built-in steps and primitive building blocks are already available for you.
 
 @:callout(info)
-For advanced users: it is also possible to write custom wrapper steps by implementing `WrapperStep`. See the [Wrapper Steps](../dsl.md#wrapper-steps) section in the DSL reference.
+For advanced users: it is also possible to write custom wrapper steps by implementing `WrapperStep`. See the [Wrapper Steps](../dsl/wrapper-steps.md) section in the DSL reference.
 @:@

@@ -4,7 +4,7 @@ laika.title = Placeholders
 
 # Placeholders
 
-Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the [session](dsl.md#session-steps):
+Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the [session](dsl/session-steps.md):
 
 - URL
 - Expected body
