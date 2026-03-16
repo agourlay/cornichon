@@ -6,7 +6,10 @@ Please see [https://agourlay.github.io/cornichon/](https://agourlay.github.io/co
 
 ## Status
 
-Project in maintenance mode, only bug fixes and dependency updates done actively.
+Project in maintenance mode.
+
+Bug fixes, dependency updates, performance improvements, and
+documentation enhancements are done actively.
 
 New features from external contributors are accepted.
 
