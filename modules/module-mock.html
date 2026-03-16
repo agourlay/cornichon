@@ -120,7 +120,7 @@
       <main class="content">
 
         <h1 id="http-mock" class="title">HTTP Mock</h1>
-        <p><code>cornichon-http-mock</code> contains the <code>ListenTo</code> DSL and infrastructure to build tests relying on mocked endpoints. See also the <a href="../dsl/wrapper-steps.html">HttpListenTo</a> section in the DSL reference for a quick overview.</p>
+        <p><code>cornichon-http-mock</code> provides the <code>HttpMock</code> block for spinning up a temporary HTTP server during a scenario. See also the <a href="../dsl/wrapper-steps.html">HttpListenTo</a> wrapper step in the DSL reference.</p>
         <pre><code class="nohighlight"><span> </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;reply to POST request with 201 and assert on received bodies&quot;</span><span>) {
     </span><span class="type-name">HttpMock</span><span>(</span><span class="string-literal">&quot;awesome-server&quot;</span><span>) {
       </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;awesome-server-url&gt;/heroes/batman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(

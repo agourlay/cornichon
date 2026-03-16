@@ -129,22 +129,21 @@
         
         <h2 id="debug-steps" class="section"><a class="anchor-link left" href="#debug-steps"><i class="icofont-laika link">&#xef71;</i></a>Debug steps</h2>
         <ul>
-          <li>showing session content for debugging purpose</li>
+          <li>showing session and response state for debugging purpose</li>
         </ul>
-        <pre><code class="nohighlight"><span> </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_session</span><span>
-
- </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_response</span><span>
-
- </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_response_json</span><span> (</span><span class="identifier">pretty</span><span> </span><span class="identifier">print</span><span> </span><span class="identifier">the</span><span> </span><span class="identifier">json</span><span> </span><span class="identifier">body</span><span>)
-
- </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_status</span><span>
-
- </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body</span><span>
-
- </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body_json</span><span> (</span><span class="identifier">pretty</span><span> </span><span class="identifier">print</span><span> </span><span class="identifier">the</span><span> </span><span class="identifier">json</span><span> </span><span class="identifier">body</span><span>)
-
- </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_headers</span></code></pre>
-        <p>Those descriptions might be already outdated, in case of doubt always refer to those <a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/superHeroes/SuperHeroesScenario.scala">examples</a> as they are executed as part of Cornichon&#39;s test suite.</p>
+        <pre><code class="nohighlight"><span> </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_session</span><span>                </span><span class="comment">// print all session key-value pairs
+</span><span>
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_response</span><span>          </span><span class="comment">// print status, headers, and body of the last response
+</span><span>
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_response_json</span><span>     </span><span class="comment">// same as above with pretty-printed JSON body
+</span><span>
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_status</span><span>            </span><span class="comment">// print the last response status code
+</span><span>
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body</span><span>              </span><span class="comment">// print the last response body as-is
+</span><span>
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_body_json</span><span>         </span><span class="comment">// print the last response body as pretty-printed JSON
+</span><span>
+ </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">show_last_headers</span><span>           </span><span class="comment">// print the last response headers</span></code></pre>
         
         <h2 id="dsl-composition" class="section"><a class="anchor-link left" href="#dsl-composition"><i class="icofont-laika link">&#xef71;</i></a>DSL composition</h2>
         <p>Series of steps defined with Cornichon&#39;s DSL can be reused within different <code>Scenarios</code>.</p>
