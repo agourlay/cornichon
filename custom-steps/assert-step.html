@@ -111,6 +111,12 @@
   <p class="header"><a href="#">Assert steps</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#equality-assertions">Equality assertions</a></li>
+    <li class="level1 nav-leaf"><a href="#ordering-assertions">Ordering assertions</a></li>
+    <li class="level1 nav-leaf"><a href="#collection-assertions">Collection assertions</a></li>
+    <li class="level1 nav-leaf"><a href="#string-assertions">String assertions</a></li>
+    <li class="level1 nav-leaf"><a href="#composing-assertions">Composing assertions</a></li>
+    <li class="level1 nav-leaf"><a href="#full-example">Full example</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -121,63 +127,76 @@
 
         <h1 id="assertstep" class="title">AssertStep</h1>
         <p>An <code>AssertStep</code> can be understood as the following function <code>ScenarioContext =&gt; Assertion</code>. Its goal is to describe an expectation.</p>
-        <p>The test engine is responsible to test the validity of the provided <code>Assertion</code> which can be one of the following:</p>
-        <ul>
-          <li>Equality assertions : test the equality of two objects using the cats <code>Eq</code> typeclass.</li>
-        </ul>
-        <ul>
-          <li>
-            <p>GenericEqualityAssertion to leave all the details to Cornichon</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;always true!&quot;</span><span>, </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="boolean-literal">true</span><span>, </span><span class="boolean-literal">true</span><span>))</span></code></pre>
-          </li>
-        </ul>
-        <ul>
-          <li>
-            <p>CustomMessageEqualityAssertion to provide a custom error message</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">CustomMessageEqualityAssertion</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">expected</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">actual</span><span>: </span><span class="type-name">A</span><span>, </span><span class="identifier">customMessage</span><span>: () =&gt; </span><span class="type-name">String</span><span>)</span></code></pre>
-          </li>
-          <li>
-            <p>Ordering assertions : compare two objects using the cats <code>Order</code> typeclass.</p>
-          </li>
-        </ul>
-        <ul>
-          <li>GreaterThanAssertion</li>
-        </ul>
-        <ul>
-          <li>LessThanAssertion</li>
-        </ul>
-        <ul>
-          <li>
-            <p>BetweenAssertion</p>
-          </li>
-          <li>
-            <p>Collection assertions : test the state of a collection of elements</p>
-          </li>
-        </ul>
-        <ul>
-          <li>CollectionEmptyAssertion</li>
-        </ul>
-        <ul>
-          <li>CollectionNotEmptyAssertion</li>
-        </ul>
-        <ul>
-          <li>CollectionSizeAssertion</li>
-        </ul>
-        <ul>
-          <li>
-            <p>CollectionContainsAssertion</p>
-          </li>
-          <li>
-            <p>String assertion : assert the content of a given String value</p>
-          </li>
-        </ul>
-        <ul>
-          <li>StringContainsAssertion</li>
-        </ul>
-        <ul>
-          <li>RegexAssertion</li>
-        </ul>
-        <p>Below is a longer example showing how to integrate an assertion into a scenario.</p>
+        <p>The test engine is responsible to test the validity of the provided <code>Assertion</code>.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;always true!&quot;</span><span>, </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="boolean-literal">true</span><span>, </span><span class="boolean-literal">true</span><span>))</span></code></pre>
+        
+        <h2 id="equality-assertions" class="section"><a class="anchor-link left" href="#equality-assertions"><i class="icofont-laika link">&#xef71;</i></a>Equality assertions</h2>
+        <p>Test the equality of two objects using the cats <code>Eq</code> typeclass.</p>
+        <p><strong>GenericEqualityAssertion</strong> compares two values and reports a detailed diff on failure:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;names match&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">name</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;hero-name&quot;</span><span>)
+  </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="identifier">name</span><span>, </span><span class="string-literal">&quot;Batman&quot;</span><span>)
+})</span></code></pre>
+        <p><strong>CustomMessageEqualityAssertion</strong> lets you provide a custom error message when the default diff is not helpful:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;DB row exists&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">count</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;row-count&quot;</span><span>).</span><span class="identifier">toInt</span><span>
+  </span><span class="type-name">CustomMessageEqualityAssertion</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="identifier">count</span><span>, () =&gt; </span><span class="string-literal">s&quot;Expected exactly 1 row but found </span><span class="substitution">$count</span><span class="string-literal">&quot;</span><span>)
+})</span></code></pre>
+        
+        <h2 id="ordering-assertions" class="section"><a class="anchor-link left" href="#ordering-assertions"><i class="icofont-laika link">&#xef71;</i></a>Ordering assertions</h2>
+        <p>Compare two values using the cats <code>Order</code> typeclass.</p>
+        <p><strong>GreaterThanAssertion</strong> checks that the actual value is strictly greater:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;response time acceptable&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">elapsed</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;elapsed-ms&quot;</span><span>).</span><span class="identifier">toDouble</span><span>
+  </span><span class="type-name">GreaterThanAssertion</span><span>(</span><span class="identifier">elapsed</span><span>, </span><span class="number-literal">0.0</span><span>)
+})</span></code></pre>
+        <p><strong>LessThanAssertion</strong> checks that the actual value is strictly less:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;not too slow&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">elapsed</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;elapsed-ms&quot;</span><span>).</span><span class="identifier">toDouble</span><span>
+  </span><span class="type-name">LessThanAssertion</span><span>(</span><span class="identifier">elapsed</span><span>, </span><span class="number-literal">5000.0</span><span>)
+})</span></code></pre>
+        <p><strong>BetweenAssertion</strong> checks that the actual value falls within a range (exclusive bounds):</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;estimate PI&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">pi</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>).</span><span class="identifier">toDouble</span><span>
+  </span><span class="type-name">BetweenAssertion</span><span>(</span><span class="number-literal">3.1</span><span>, </span><span class="identifier">pi</span><span>, </span><span class="number-literal">3.2</span><span>)
+})</span></code></pre>
+        
+        <h2 id="collection-assertions" class="section"><a class="anchor-link left" href="#collection-assertions"><i class="icofont-laika link">&#xef71;</i></a>Collection assertions</h2>
+        <p>Test the state of a collection of elements.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Check a collection is empty
+</span><span class="type-name">CollectionEmptyAssertion</span><span>(</span><span class="type-name">List</span><span>.</span><span class="identifier">empty</span><span>[</span><span class="type-name">String</span><span>])
+
+</span><span class="comment">// Check a collection is not empty
+</span><span class="type-name">CollectionNotEmptyAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>, </span><span class="string-literal">&quot;Superman&quot;</span><span>))
+
+</span><span class="comment">// Check exact size
+</span><span class="type-name">CollectionSizeAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span>, </span><span class="string-literal">&quot;b&quot;</span><span>, </span><span class="string-literal">&quot;c&quot;</span><span>), </span><span class="number-literal">3</span><span>)
+
+</span><span class="comment">// Check that a collection contains a specific element
+</span><span class="type-name">CollectionContainsAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>, </span><span class="string-literal">&quot;Superman&quot;</span><span>), </span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="string-assertions" class="section"><a class="anchor-link left" href="#string-assertions"><i class="icofont-laika link">&#xef71;</i></a>String assertions</h2>
+        <p>Assert the content of a String value.</p>
+        <p><strong>StringContainsAssertion</strong> checks that a string contains a given substring:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;city name contains &#39;Gotham&#39;&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">city</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>)
+  </span><span class="type-name">StringContainsAssertion</span><span>(</span><span class="identifier">city</span><span>, </span><span class="string-literal">&quot;Gotham&quot;</span><span>)
+})</span></code></pre>
+        <p><strong>RegexAssertion</strong> checks that a string matches a regular expression:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;looks like a UUID&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">id</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>)
+  </span><span class="type-name">RegexAssertion</span><span>(</span><span class="identifier">id</span><span>, </span><span class="string-literal">&quot;&quot;&quot;[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}&quot;&quot;&quot;</span><span>.</span><span class="identifier">r</span><span>)
+})</span></code></pre>
+        
+        <h2 id="composing-assertions" class="section"><a class="anchor-link left" href="#composing-assertions"><i class="icofont-laika link">&#xef71;</i></a>Composing assertions</h2>
+        <p><code>Assertions</code> can be composed using <code>and</code> and <code>or</code>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;value in range&quot;</span><span>, </span><span class="identifier">sc</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">v</span><span> = </span><span class="identifier">sc</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;value&quot;</span><span>).</span><span class="identifier">toDouble</span><span>
+  </span><span class="type-name">GreaterThanAssertion</span><span>(</span><span class="identifier">v</span><span>, </span><span class="number-literal">0.0</span><span>) </span><span class="identifier">and</span><span> </span><span class="type-name">LessThanAssertion</span><span>(</span><span class="identifier">v</span><span>, </span><span class="number-literal">100.0</span><span>)
+})</span></code></pre>
+        
+        <h2 id="full-example" class="section"><a class="anchor-link left" href="#full-example"><i class="icofont-laika link">&#xef71;</i></a>Full example</h2>
+        <p>Below is a complete example showing how to integrate an assertion into a scenario.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="type-name">EffectStep</span><span>.</span><span class="identifier">fromSync</span><span>(
   </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;estimate PI&quot;</span><span>,
   </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">addValueUnsafe</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>, </span><span class="identifier">piComputation</span><span>())
@@ -189,7 +208,6 @@
     </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>).</span><span class="identifier">map</span><span>(</span><span class="identifier">r</span><span> =&gt; </span><span class="type-name">BetweenAssertion</span><span>(</span><span class="number-literal">3.1</span><span>, </span><span class="identifier">r</span><span>.</span><span class="identifier">toDouble</span><span>, </span><span class="number-literal">3.2</span><span>))
   }
 )</span></code></pre>
-        <p><code>Assertions</code> can also be composed using <code>and</code> and <code>or</code>, for instance <code>BetweenAssertion</code> is the result of <code>LessThanAssertion</code> and <code>GreaterThanAssertion</code>.</p>
         <p>This is rather low level therefore you should not write your steps like that directly inside the DSL but hide them behind functions with appropriate names.</p>
         <p>Fortunately a bunch of built-in steps and primitive building blocks are already available for you.</p>
         <div class="callout info">
