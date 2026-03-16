@@ -12,26 +12,23 @@ wait(500.millis)
 
 ## Debug steps
 
-- showing session content for debugging purpose
+- showing session and response state for debugging purpose
 
 ```scala
- And I show_session
+ And I show_session                // print all session key-value pairs
 
- And I show_last_response
+ And I show_last_response          // print status, headers, and body of the last response
 
- And I show_last_response_json (pretty print the json body)
+ And I show_last_response_json     // same as above with pretty-printed JSON body
 
- And I show_last_status
+ And I show_last_status            // print the last response status code
 
- And I show_last_body
+ And I show_last_body              // print the last response body as-is
 
- And I show_last_body_json (pretty print the json body)
+ And I show_last_body_json         // print the last response body as pretty-printed JSON
 
- And I show_last_headers
+ And I show_last_headers           // print the last response headers
 ```
-
-
-Those descriptions might be already outdated, in case of doubt always refer to those [examples](https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/superHeroes/SuperHeroesScenario.scala) as they are executed as part of Cornichon's test suite.
 
 ## DSL composition
 

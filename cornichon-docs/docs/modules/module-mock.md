@@ -4,7 +4,7 @@ laika.title = HTTP mock
 
 # HTTP Mock
 
-`cornichon-http-mock` contains the `ListenTo` DSL and infrastructure to build tests relying on mocked endpoints. See also the [HttpListenTo](../dsl/wrapper-steps.md) section in the DSL reference for a quick overview.
+`cornichon-http-mock` provides the `HttpMock` block for spinning up a temporary HTTP server during a scenario. See also the [HttpListenTo](../dsl/wrapper-steps.md) wrapper step in the DSL reference.
 
 ```scala
  Scenario("reply to POST request with 201 and assert on received bodies") {
