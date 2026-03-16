@@ -1,8 +1,8 @@
 import sbt.{file, Developer}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 import laika.helium.Helium
-import laika.helium.config.{IconLink, ImageLink, HeliumIcon, TextLink, Teaser, ButtonLink, Favicon}
-import laika.ast.{Image, Path, InternalTarget, LengthUnit}
+import laika.helium.config.{ButtonLink, Favicon, HeliumIcon, IconLink, ImageLink, Teaser, TextLink}
+import laika.ast.{Image, InternalTarget, LengthUnit, Path}
 import laika.ast.Path.Root
 import laika.theme.config.Color
 
@@ -248,13 +248,14 @@ lazy val docs =
     .settings(
       mdocIn := baseDirectory.value / "docs",
       Laika / sourceDirectories := Seq(mdocOut.value),
-      laikaTheme := Helium.defaults
-        .all.metadata(
+      laikaTheme := Helium.defaults.all
+        .metadata(
           title = Some("Cornichon"),
           description = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
           language = Some("en")
         )
-        .all.themeColors(
+        .all
+        .themeColors(
           primary = Color.hex("3A7D5C"),
           secondary = Color.hex("1E3A2F"),
           primaryMedium = Color.hex("2A5740"),
@@ -263,7 +264,8 @@ lazy val docs =
           background = Color.hex("FAFBFC"),
           bgGradient = (Color.hex("3A7D5C"), Color.hex("1E3A2F"))
         )
-        .site.landingPage(
+        .site
+        .landingPage(
           logo = Some(Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(150)), height = Some(LengthUnit.px(150)))),
           title = Some("Cornichon"),
           subtitle = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
@@ -285,13 +287,18 @@ lazy val docs =
             Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support.")
           )
         )
-        .site.internalCSS(Root / "css" / "landing.css")
-        .site.favIcons(
+        .site
+        .internalCSS(Root / "css" / "landing.css")
+        .site
+        .favIcons(
           Favicon.internal(Root / "img" / "favicon.png", "32x32")
         )
-        .site.mainNavigation(depth = 3)
-        .site.topNavigationBar(
-          homeLink = ImageLink.external("index.html", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50))))
+        .site
+        .mainNavigation(depth = 3)
+        .site
+        .topNavigationBar(
+          homeLink = ImageLink
+            .external("index.html", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50))))
         )
         .build,
       laikaExtensions := Seq(
@@ -326,7 +333,7 @@ lazy val library =
       val sangriaCirce = "1.3.2"
       val circe = "0.14.15"
       val diffson = "4.6.1"
-      val sangria = "4.2.16"
+      val sangria = "4.2.17"
       val fansi = "0.5.1"
       val pureConfig = "0.17.10"
       val sbtTest = "1.0"
