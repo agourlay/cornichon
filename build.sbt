@@ -298,7 +298,10 @@ lazy val docs =
         .site
         .topNavigationBar(
           homeLink = ImageLink
-            .external("index.html", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50))))
+            .external("index.html", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50)))),
+          navLinks = Seq(
+            IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
+          )
         )
         .build,
       laikaExtensions := Seq(
