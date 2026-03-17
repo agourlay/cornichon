@@ -88,20 +88,25 @@ class CheckModelEngine[A, B, C, D, E, F](
     invariantStep.runStep(runState.recordLog(propertyNameLog))
   }
 
+  private def pickTransitionAccordingToProbability[Z](rc: RandomContext, inputs: List[(Int, Z, Boolean)]): Z =
+    CheckModelEngine.pickTransitionAccordingToProbability(rc, inputs)
+
+}
+
+object CheckModelEngine {
   // https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability
-  private def pickTransitionAccordingToProbability[Z](rc: RandomContext, inputs: List[(Int, Z, Boolean)]): Z = {
+  private[checkModel] def pickTransitionAccordingToProbability[Z](rc: RandomContext, inputs: List[(Int, Z, Boolean)]): Z = {
     val weight = rc.nextInt(100)
     var cumulativeProbability: Int = 0
     var selected: Option[Z] = None
 
     for (item <- inputs) {
       cumulativeProbability += item._1
-      if (weight <= cumulativeProbability && selected.isEmpty) selected = Some(item._2)
+      if (weight < cumulativeProbability && selected.isEmpty) selected = Some(item._2)
     }
 
     selected.getOrElse(rc.shuffle(inputs).head._2)
   }
-
 }
 
 case class NoValidTransitionAvailableForState(description: String) extends CornichonError {
