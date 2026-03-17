@@ -48,8 +48,9 @@ class MockServerRequestHandler extends Http4sDsl[IO] {
 
     case r @ POST -> Root / "delayInMs" =>
       r.bodyText.compile.string.flatMap { body =>
-        // Dropping extra quotes
-        Either.catchNonFatal(body.substring(1, body.length - 1).toLong) match {
+        // Strip surrounding quotes if present (e.g. "500" -> 500)
+        val stripped = if (body.startsWith("\"") && body.endsWith("\"")) body.substring(1, body.length - 1) else body
+        Either.catchNonFatal(stripped.trim.toLong) match {
           case Right(delay) =>
             mockState.setDelay(delay)
             Ok()

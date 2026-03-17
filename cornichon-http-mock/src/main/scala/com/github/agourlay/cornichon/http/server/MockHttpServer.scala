@@ -47,7 +47,7 @@ class MockHttpServer[A](label: String, interface: Option[String], port: Option[R
         EmberServerBuilder
           .default[IO]
           .withPort(p)
-          .withHost(Host.fromString(selectedInterface).get) // fixme
+          .withHost(Host.fromString(selectedInterface).getOrElse(throw InvalidMockServerInterface(selectedInterface).toException))
           .withHttpApp(ResponseTiming(mockRouter))
           .withShutdownTimeout(0.seconds) // disable graceful shutdown
           .build
@@ -66,6 +66,10 @@ class MockHttpServer[A](label: String, interface: Option[String], port: Option[R
 
 case object MockHttpServerError extends CornichonError {
   val baseErrorMessage = "the range of ports provided for the HTTP mock is invalid"
+}
+
+case class InvalidMockServerInterface(interface: String) extends CornichonError {
+  val baseErrorMessage = s"'$interface' is not a valid network interface for the HTTP mock server"
 }
 
 case class MockHttpServerStartError(e: Exception, label: String, maxPortBindingRetries: Int, interface: String) extends CornichonError {

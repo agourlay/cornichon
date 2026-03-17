@@ -20,27 +20,27 @@ class MockServerStateHolder {
 
   def clearRegisteredRequest() = receivedRequests.clear()
 
-  def toggleErrorMode() = synchronized {
-    errorMode.set(!errorMode.get())
+  @scala.annotation.tailrec
+  final def toggleErrorMode(): Unit = {
+    val current = errorMode.get()
+    if (!errorMode.compareAndSet(current, !current)) toggleErrorMode()
   }
 
   def getErrorMode = errorMode.get
 
-  def toggleBadRequestMode() = synchronized {
-    badRequestMode.set(!badRequestMode.get())
+  @scala.annotation.tailrec
+  final def toggleBadRequestMode(): Unit = {
+    val current = badRequestMode.get()
+    if (!badRequestMode.compareAndSet(current, !current)) toggleBadRequestMode()
   }
 
   def getBadRequestMode = badRequestMode.get
 
-  def setResponse(newResponse: String) = synchronized {
-    response.set(newResponse)
-  }
+  def setResponse(newResponse: String) = response.set(newResponse)
 
   def getResponse: String = response.get
 
-  def setDelay(newDelay: Long) = synchronized {
-    delay.set(newDelay)
-  }
+  def setDelay(newDelay: Long) = delay.set(newDelay)
 
   def getDelay: Long = delay.get
 
