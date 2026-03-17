@@ -94,6 +94,7 @@ class CheckModelEngine[A, B, C, D, E, F](
 }
 
 object CheckModelEngine {
+
   // https://stackoverflow.com/questions/9330394/how-to-pick-an-item-by-its-probability
   private[checkModel] def pickTransitionAccordingToProbability[Z](rc: RandomContext, inputs: List[(Int, Z, Boolean)]): Z = {
     val weight = rc.nextInt(100)
@@ -107,6 +108,7 @@ object CheckModelEngine {
 
     selected.getOrElse(rc.shuffle(inputs).head._2)
   }
+
 }
 
 case class NoValidTransitionAvailableForState(description: String) extends CornichonError {
