@@ -21,7 +21,7 @@ case class TimeoutErrorAfter(request: String, after: FiniteDuration) extends Htt
 case class RequestError(request: String, e: Throwable) extends HttpError {
 
   lazy val baseErrorMessage =
-    s"""|request
+    s"""|$request
         |encountered the following error:
         |${CornichonError.genStacktrace(e)}""".trim.stripMargin
 
