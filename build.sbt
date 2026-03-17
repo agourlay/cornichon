@@ -113,7 +113,7 @@ lazy val noCatsEffectTracing = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, scalatest, docs, benchmarks, testFramework, httpMock, kafka)
+    .aggregate(core, docs, benchmarks, testFramework, httpMock, kafka)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -159,18 +159,6 @@ lazy val core =
           case _ => Seq.empty
         }
       }
-    )
-
-lazy val scalatest =
-  project
-    .in(file("./cornichon-scalatest"))
-    .dependsOn(core)
-    .settings(commonSettings)
-    .settings(
-      name := "cornichon-scalatest",
-      libraryDependencies ++= Seq(
-        library.scalatest
-      )
     )
 
 lazy val testFramework =
@@ -327,7 +315,6 @@ lazy val docs =
 lazy val library =
   new {
     object Version {
-      val scalaTest = "3.2.19"
       val munit = "1.2.4"
       val cats = "2.13.0"
       val catsEffect = "3.7.0"
@@ -351,7 +338,6 @@ lazy val library =
     }
     val catsCore = "org.typelevel" %% "cats-core" % Version.cats
     val catsEffect = "org.typelevel" %% "cats-effect" % Version.catsEffect
-    val scalatest = "org.scalatest" %% "scalatest-wordspec" % Version.scalaTest
     val munit = "org.scalameta" %% "munit" % Version.munit
     val pureConfig = "com.github.pureconfig" %% "pureconfig" % Version.pureConfig // scala 2
     val pureConfigCore = "com.github.pureconfig" %% "pureconfig-core" % Version.pureConfig // scala 3
