@@ -73,16 +73,6 @@ lazy val standardSettings = Seq(
       connection = "scm:git:git@github.com:agourlay/cornichon.git"
     )
   ),
-  libraryDependencies ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, _)) =>
-        Seq(
-          compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
-        )
-      case _ =>
-        Seq.empty
-    }
-  }
 )
 
 lazy val publishingSettings = Seq(
