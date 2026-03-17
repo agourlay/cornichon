@@ -13,10 +13,11 @@ case class AssertStep(title: String, action: ScenarioContext => Assertion, show:
 
   def setTitle(newTitle: String): Step = copy(title = newTitle)
 
+  // AssertStep actions MUST be non-blocking (pure computations, value comparisons, etc.).
+  // IO.delay runs on the compute pool without thread interruption support.
+  // For blocking operations (network calls, Thread.sleep, etc.) use EffectStep instead.
   override def runLogValueStep(runState: RunState): IO[Either[NonEmptyList[CornichonError], Done]] =
-    // IO.interruptible is slower than IO.delay but is needed to support
-    // cancellation of assertions that block (e.g. Thread.sleep inside RepeatConcurrently timeouts)
-    IO.interruptible {
+    IO.delay {
       val assertion = action(runState.scenarioContext)
       assertion.validated match {
         case Invalid(e) => e.asLeft
