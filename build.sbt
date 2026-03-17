@@ -113,7 +113,7 @@ lazy val noCatsEffectTracing = Seq(
 lazy val cornichon =
   project
     .in(file("."))
-    .aggregate(core, docs, benchmarks, testFramework, httpMock, kafka)
+    .aggregate(core, docs, benchmarks, testFramework, httpMock)
     .settings(commonSettings)
     .settings(noPublishSettings)
     .settings(
@@ -186,22 +186,6 @@ lazy val testFramework =
       )
     )
 
-lazy val kafka =
-  project
-    .in(file("./cornichon-kafka"))
-    .dependsOn(core, testFramework % Test)
-    .settings(commonSettings)
-    .settings(
-      name := "cornichon-kafka",
-      testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
-      libraryDependencies ++= Seq(
-        library.kafka,
-        library.kafkaClient,
-        library.kafkaBroker % Test,
-        library.collectionCompat % Test // embedded-kafka depends on scala-collection-compat but uses kafka in scala 2.13
-      )
-    )
-
 lazy val httpMock =
   project
     .in(file("./cornichon-http-mock"))
@@ -229,7 +213,7 @@ lazy val benchmarks =
 lazy val docs =
   project
     .in(file("./cornichon-docs"))
-    .dependsOn(core, testFramework, kafka, httpMock)
+    .dependsOn(core, testFramework, httpMock)
     .enablePlugins(LaikaPlugin, MdocPlugin, GhpagesPlugin)
     .settings(commonSettings)
     .settings(noPublishSettings)
@@ -329,11 +313,9 @@ lazy val library =
       val sbtTest = "1.0"
       val http4s = "0.23.33"
       val fs2 = "3.13.0"
-      val kafka = "4.2.0"
       val openPojo = "0.9.1"
       val decline = "2.6.1"
       val scalaXml = "2.4.0"
-      val collectionCompat = "2.14.0"
       val caffeine = "3.2.3"
     }
     val catsCore = "org.typelevel" %% "cats-core" % Version.cats
@@ -359,10 +341,6 @@ lazy val library =
     val http4sDsl = "org.http4s" %% "http4s-dsl" % Version.http4s
     val fs2Io = "co.fs2" %% "fs2-io" % Version.fs2
     val fs2Core = "co.fs2" %% "fs2-core" % Version.fs2
-    val kafkaClient = "org.apache.kafka" % "kafka-clients" % Version.kafka
-    val kafka = ("org.apache.kafka" %% "kafka" % Version.kafka cross CrossVersion.for3Use2_13).exclude("org.scala-lang.modules", "scala-collection-compat_2.13")
-    val kafkaBroker = ("io.github.embeddedkafka" %% "embedded-kafka" % Version.kafka).exclude("org.scala-lang.modules", "scala-collection-compat_2.13")
-    val collectionCompat = "org.scala-lang.modules" %% "scala-collection-compat" % Version.collectionCompat
     val openPojo = "com.openpojo" % "openpojo" % Version.openPojo
     val decline = "com.monovore" %% "decline" % Version.decline
     val scalaXml = "org.scala-lang.modules" %% "scala-xml" % Version.scalaXml
