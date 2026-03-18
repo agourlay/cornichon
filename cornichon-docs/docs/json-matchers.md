@@ -44,8 +44,46 @@ Here are the available matchers:
 - `*any-time*` : checks if the field is a 'HH:mm:ss.SSS' time
 
 @:callout(warning)
-This feature is still under experimentation and comes with a couple of limitations:
-
-- it is not yet possible to register custom JSON matchers
-- matchers are not supported for JSON arrays assertions via `asArray`
+Matchers are not supported for JSON array assertions via `asArray`.
 @:@
+
+## Custom matchers
+
+You can register your own matchers by overriding `registerMatchers` in your feature class. A `Matcher` takes a key (used as `*key*` in assertions), a description, and a predicate on `io.circe.Json`:
+
+```scala
+import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.matchers.Matcher
+import io.circe.Json
+
+class MyFeature extends CornichonFeature {
+
+  override def registerMatchers: List[Matcher] = List(
+    Matcher(
+      key = "any-email",
+      description = "checks if the field is a valid email address",
+      predicate = _.asString.exists(s => s.contains("@") && s.contains("."))
+    ),
+    Matcher(
+      key = "any-positive-number",
+      description = "checks if the field is a positive number",
+      predicate = _.asNumber.exists(n => n.toDouble > 0)
+    )
+  )
+
+  def feature = Feature("My API") {
+    Scenario("check user response") {
+      When I get("/users/1")
+      Then assert body.is("""
+      {
+        "name": *any-string*,
+        "email": *any-email*,
+        "score": *any-positive-number*
+      }
+      """)
+    }
+  }
+}
+```
+
+Custom matchers follow the same `*key*` syntax as built-in matchers and can be mixed freely with them.
