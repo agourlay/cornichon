@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Advanced topics</title>
+  <title>Running tests</title>
   
   
   <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
@@ -45,6 +45,12 @@
 
   <div class="row links">
     
+    <a class="icon-link svg-link" href="https://javadoc.io/doc/com.github.agourlay/cornichon-core_3/latest/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
     <a class="icon-link svg-link" href="https://github.com/agourlay/cornichon"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
   <g class="svg-shape">
     <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
@@ -58,6 +64,12 @@
     <nav id="sidebar">
 
   <div class="row">
+    
+    <a class="icon-link svg-link" href="https://javadoc.io/doc/com.github.agourlay/cornichon-core_3/latest/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
     
     <a class="icon-link svg-link" href="https://github.com/agourlay/cornichon"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
   <g class="svg-shape">
@@ -95,7 +107,7 @@
     <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
     <li class="level2 nav-leaf"><a href="pbt/random-model-exploration.html">Random model exploration</a></li>
     <li class="level1 nav-leaf"><a href="troubleshooting.html">Troubleshooting</a></li>
-    <li class="level1 active nav-leaf"><a href="#">Advanced topics</a></li>
+    <li class="level1 active nav-leaf"><a href="#">Running tests</a></li>
     <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
     <li class="level1 nav-header">modules</li>
     <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
@@ -107,13 +119,13 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Advanced topics</a></p>
+  <p class="header"><a href="#">Running tests</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#custom-http-body-type">Custom HTTP body type</a></li>
     <li class="level1 nav-leaf"><a href="#sbt-integration">SBT integration</a></li>
     <li class="level1 nav-leaf"><a href="#running-tests-without-a-build-tool">Running tests without a build tool</a></li>
-    <li class="level1 nav-leaf"><a href="#packaging-features-in-a-docker-container">Packaging features in a Docker container</a></li>
+    <li class="level1 nav-leaf"><a href="#packaging-tests-in-a-docker-container">Packaging tests in a Docker container</a></li>
+    <li class="level1 nav-leaf"><a href="#custom-http-body-type">Custom HTTP body type</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -122,39 +134,10 @@
 
       <main class="content">
 
-        <h1 id="advanced-topics" class="title">Advanced topics</h1>
-        <p>This page covers advanced usage patterns that go beyond the core <a href="dsl.html">DSL</a>:</p>
-        <ul>
-          <li><a href="#custom-http-body-type">Custom HTTP body type</a> — use typed objects instead of Strings as request bodies</li>
-          <li><a href="#sbt-integration">SBT integration</a> — CLI tips for running and filtering tests</li>
-          <li><a href="#running-tests-without-a-build-tool">Running tests without a build tool</a> — package tests as a standalone jar</li>
-          <li><a href="#packaging-features-in-a-docker-container">Packaging features in a Docker container</a> — run tests in CI/CD pipelines</li>
-        </ul>
+        <h1 id="running-tests" class="title">Running tests</h1>
         
-        <h1 id="custom-http-body-type" class="section"><a class="anchor-link left" href="#custom-http-body-type"><i class="icofont-laika link">&#xef71;</i></a>Custom HTTP body type</h1>
-        <p>By default, the HTTP DSL expects a String body but in some cases you might want to work at a higher level of abstraction.</p>
-        <p>In order to use a custom type as body, it is necessary to provide 3 typeclass instances:</p>
-        <ul>
-          <li><code>cats.Show</code> used to print the values</li>
-          <li><code>io.circe.Encoder</code> used to convert the values to JSON</li>
-          <li><code>com.github.agourlay.cornichon.resolver.Resolvable</code> used to provide a custom String representation in which placeholders can be resolved</li>
-        </ul>
-        <p>For instance if you wish to use the <code>JsObject</code> from <code>play-json</code> as HTTP request&#39;s body you can define the following instances in your code:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">jsonResolvableForm</span><span>: </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] {
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">toResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">JsObject</span><span>) = </span><span class="identifier">s</span><span>.</span><span class="identifier">toString</span><span>()
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">fromResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) = </span><span class="type-name">Json</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="identifier">s</span><span>).</span><span class="identifier">as</span><span>[</span><span class="type-name">JsObject</span><span>]
-  }
-
-  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">showJson</span><span>: </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] {
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">show</span><span>(</span><span class="identifier">f</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">String</span><span> = </span><span class="identifier">f</span><span>.</span><span class="identifier">toString</span><span>()
-  }
-
-  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">JsonEncoder</span><span>: </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] {
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>(</span><span class="identifier">a</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">Json</span><span> = </span><span class="identifier">parse</span><span>(</span><span class="identifier">a</span><span>.</span><span class="identifier">toString</span><span>()).</span><span class="identifier">getOrElse</span><span>(</span><span class="identifier">cJson</span><span>.</span><span class="type-name">Null</span><span>)
-  }</span></code></pre>
-        
-        <h1 id="sbt-integration" class="section"><a class="anchor-link left" href="#sbt-integration"><i class="icofont-laika link">&#xef71;</i></a>SBT integration</h1>
-        <p>It is recommended to use the nice CLI from SBT to trigger tests:</p>
+        <h2 id="sbt-integration" class="section"><a class="anchor-link left" href="#sbt-integration"><i class="icofont-laika link">&#xef71;</i></a>SBT integration</h2>
+        <p>It is recommended to use the CLI from SBT to trigger tests:</p>
         <ul>
           <li><code>~test</code> tilde to re-run a command on change.</li>
           <li><code>testOnly *CornichonExamplesSpec</code> to run only the feature CornichonExamplesSpec.</li>
@@ -168,11 +151,10 @@
           <li>the scenario succeeded and contains at least one <code>DebugStep</code> such as <code>And I show_last_status</code></li>
         </ul>
         
-        <h1 id="running-tests-without-a-build-tool" class="section"><a class="anchor-link left" href="#running-tests-without-a-build-tool"><i class="icofont-laika link">&#xef71;</i></a>Running tests without a build tool</h1>
-        <p>When integrating cornichon features in a build pipeline, it can be interesting to package those features into a runnable form to avoid the cost of recompilation.</p>
-        <p>The library ships a main runner that can be used to run the tests without build tool.</p>
-        <p>It can be found as <code>com.github.agourlay.cornichon.framework.MainRunner</code>.</p>
-        <p>Once your project is packaged as a jar file, calling the main runner with <code>--help</code> shows the following info:</p>
+        <h2 id="running-tests-without-a-build-tool" class="section"><a class="anchor-link left" href="#running-tests-without-a-build-tool"><i class="icofont-laika link">&#xef71;</i></a>Running tests without a build tool</h2>
+        <p>When integrating cornichon features in a build pipeline, it can be useful to package those features into a runnable form to avoid the cost of recompilation.</p>
+        <p>The library ships a main runner at <code>com.github.agourlay.cornichon.framework.MainRunner</code>.</p>
+        <p>Once your project is packaged as a jar file, calling the main runner with <code>--help</code> shows:</p>
         <pre><code>Usage: cornichon-test-framework --packageToScan &lt;string&gt; [--featureParallelism &lt;integer&gt;] [--seed &lt;integer&gt;] [--scenarioNameFilter &lt;string&gt;]
 
 Run your cornichon features without SBT.
@@ -191,10 +173,8 @@ Options and flags:
     --scenarioNameFilter &lt;string&gt;
         Filter scenario to run by name.</code></pre>
         
-        <h1 id="packaging-features-in-a-docker-container" class="section"><a class="anchor-link left" href="#packaging-features-in-a-docker-container"><i class="icofont-laika link">&#xef71;</i></a>Packaging features in a Docker container</h1>
-        <p>You can find below an example of Docker packaging done using <code>sbt-native-packager</code>.</p>
-        <p>You can place these settings in a <code>docker.sbt</code> in the root of your project.</p>
-        <p>This should hopefully inspire you to set up your own solution or contribute to improve this one.</p>
+        <h2 id="packaging-tests-in-a-docker-container" class="section"><a class="anchor-link left" href="#packaging-tests-in-a-docker-container"><i class="icofont-laika link">&#xef71;</i></a>Packaging tests in a Docker container</h2>
+        <p>You can package your test suite as a Docker image using <code>sbt-native-packager</code>. Place these settings in a <code>docker.sbt</code> in the root of your project.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="type-name">NativePackagerHelper</span><span>.</span><span class="identifier">_</span><span>
 
 </span><span class="keyword">lazy</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">root</span><span> = (</span><span class="identifier">project</span><span> </span><span class="identifier">in</span><span> </span><span class="identifier">file</span><span>(</span><span class="string-literal">&quot;.&quot;</span><span>))
@@ -218,7 +198,28 @@ Options and flags:
       </span><span class="string-literal">&quot;--reportsOutputDir=/target/test-reports&quot;</span><span>
     )
   )</span></code></pre>
-        <p>After you created the <code>docker.sbt</code>, just run <code>sbt docker:publishLocal</code> in order to create a docker image locally.</p>
+        <p>After creating <code>docker.sbt</code>, run <code>sbt docker:publishLocal</code> to build the Docker image locally.</p>
+        
+        <h2 id="custom-http-body-type" class="section"><a class="anchor-link left" href="#custom-http-body-type"><i class="icofont-laika link">&#xef71;</i></a>Custom HTTP body type</h2>
+        <p>By default, the HTTP DSL expects a <code>String</code> body. To use a custom type, provide three typeclass instances:</p>
+        <ul>
+          <li><code>cats.Show</code> — used to print the values</li>
+          <li><code>io.circe.Encoder</code> — used to convert the values to JSON</li>
+          <li><code>com.github.agourlay.cornichon.resolver.Resolvable</code> — used to provide a String form in which <a href="placeholders.html">placeholders</a> can be resolved</li>
+        </ul>
+        <p>For instance, to use <code>JsObject</code> from <code>play-json</code> as an HTTP request body:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">jsonResolvableForm</span><span>: </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] {
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">toResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">JsObject</span><span>) = </span><span class="identifier">s</span><span>.</span><span class="identifier">toString</span><span>()
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">fromResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) = </span><span class="type-name">Json</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="identifier">s</span><span>).</span><span class="identifier">as</span><span>[</span><span class="type-name">JsObject</span><span>]
+  }
+
+  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">showJson</span><span>: </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] {
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">show</span><span>(</span><span class="identifier">f</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">String</span><span> = </span><span class="identifier">f</span><span>.</span><span class="identifier">toString</span><span>()
+  }
+
+  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">JsonEncoder</span><span>: </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] {
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>(</span><span class="identifier">a</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">Json</span><span> = </span><span class="identifier">parse</span><span>(</span><span class="identifier">a</span><span>.</span><span class="identifier">toString</span><span>()).</span><span class="identifier">getOrElse</span><span>(</span><span class="identifier">cJson</span><span>.</span><span class="type-name">Null</span><span>)
+  }</span></code></pre>
 
         
 <hr class="footer-rule"/>
