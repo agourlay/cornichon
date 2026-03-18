@@ -58,4 +58,4 @@ For more examples see:
 
 - [Common Patterns](common-patterns.md) — recipes for authentication, polling, data-driven tests, and a full worked example.
 
-Ready to get started? Head over to [Installation](installation.md) and then [Basics](basics.md).
+Ready to get started? Head over to the [Quick Start](quick-start.md) guide.

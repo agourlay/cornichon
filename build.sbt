@@ -223,14 +223,14 @@ lazy val docs =
           latestReleases = Seq(ReleaseInfo("Latest Release", "0.23.0")),
           license = Some("Apache-2.0"),
           titleLinks = Seq(
-            ButtonLink.internal(Root / "installation.md", "Get Started"),
+            ButtonLink.internal(Root / "quick-start.md", "Get Started"),
             IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
           ),
           linkPanel = Some(
             LinkPanel(
               title = "Documentation",
               links = Seq(
-                TextLink.internal(Root / "basics.md", "Basics"),
+                TextLink.internal(Root / "quick-start.md", "Quick Start"),
                 TextLink.internal(Root / "dsl.md", "DSL"),
                 TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
                 TextLink.internal(Root / "modules.md", "Modules")
