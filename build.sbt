@@ -256,6 +256,7 @@ lazy val docs =
           homeLink = ImageLink
             .external("index.html", Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(50)), height = Some(LengthUnit.px(50)))),
           navLinks = Seq(
+            IconLink.external("https://javadoc.io/doc/com.github.agourlay/cornichon-core_3/latest/index.html", HeliumIcon.api),
             IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
           )
         )
