@@ -79,28 +79,3 @@ lazy val root = (project in file("."))
 ```
 
 After creating `docker.sbt`, run `sbt docker:publishLocal` to build the Docker image locally.
-
-## Custom HTTP body type
-
-By default, the HTTP DSL expects a `String` body. To use a custom type, provide three typeclass instances:
-
-- `cats.Show` — used to print the values
-- `io.circe.Encoder` — used to convert the values to JSON
-- `com.github.agourlay.cornichon.resolver.Resolvable` — used to provide a String form in which [placeholders](placeholders.md) can be resolved
-
-For instance, to use `JsObject` from `play-json` as an HTTP request body:
-
-```scala
-  lazy implicit val jsonResolvableForm: Resolvable[JsObject] = new Resolvable[JsObject] {
-    override def toResolvableForm(s: JsObject) = s.toString()
-    override def fromResolvableForm(s: String) = Json.parse(s).as[JsObject]
-  }
-
-  lazy implicit val showJson: Show[JsObject] = new Show[JsObject] {
-    override def show(f: JsObject): String = f.toString()
-  }
-
-  lazy implicit val JsonEncoder: Encoder[JsObject] = new Encoder[JsObject] {
-    override def apply(a: JsObject): Json = parse(a.toString()).getOrElse(cJson.Null)
-  }
-```

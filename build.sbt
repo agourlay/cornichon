@@ -239,8 +239,8 @@ lazy val docs =
           teasers = Seq(
             Teaser("Expressive DSL", "Write readable integration tests using a Scala DSL inspired by Gherkin."),
             Teaser("JSON First", "Powerful JSON assertions with path expressions, matchers, and ignoring keys."),
-            Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support."),
-            Teaser("Reproducible Tests", "Every failure reports a seed to replay the exact same scenario execution.")
+            Teaser("Detailed Error Reports", "Failures show JSON diffs, step execution traces, and replay commands."),
+            Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support.")
           )
         )
         .site

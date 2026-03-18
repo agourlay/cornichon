@@ -85,71 +85,7 @@ override lazy val seed: Option[Long] = Some(1L)
 
 ## Register custom extractors
 
-In some cases it makes sense to declare `extractors` to avoid code duplication when dealing with [session](dsl/session-steps.md) values. Extractors work together with [placeholders](placeholders.md) — once registered, they can be used as `<extractor-name>` in any step.
-
-An extractor is responsible to describe using a JsonPath how to build a value from an existing value in `session`.
-
-For instance if most of your JSON responses contain a field `id` and you want to use it as a placeholder without always having to manually extract and save the value into the `session` you can write :
-
-```scala
-   override def registerExtractors = Map(
-     "response-id" -> JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "id")
-   )
-```
-
-It is now possible to use `<response-id>` or `<response-id[integer]>` in the steps definitions.
-
-It works for all keys in `Session`, let's say we also have objects registered under keys `customer` & `product`:
-
-
-```scala
-   override def registerExtractors = Map(
-     "response-version" -> JsonMapper(HttpService.SessionKeys.lastResponseBodyKey, "version"),
-     "customer-street" -> JsonMapper("customer", "address.street"),
-     "product-first-rating" -> JsonMapper("product", "rating[0].score")
-   )
-```
-
-### Other mapper types
-
-In addition to `JsonMapper`, several other mapper types are available for custom extractors:
-
-- `SimpleMapper` generates a static value
-
-```scala
-"build-number" -> SimpleMapper(() => BuildInfo.version)
-```
-
-- `TextMapper` extracts a session value with an optional transformation
-
-```scala
-"uppercased-name" -> TextMapper("name", _.toUpperCase)
-```
-
-- `SessionMapper` extracts a value from session with error handling
-
-```scala
-"full-name" -> SessionMapper(s =>
-  for {
-    first <- s.get("first-name")
-    last <- s.get("last-name")
-  } yield s"$first $last"
-)
-```
-
-- `RandomMapper` generates a value using the `RandomContext` for reproducibility
-
-```scala
-"random-city" -> RandomMapper(rc =>
-  List("Gotham", "Metropolis", "Star City")(rc.nextInt(3))
-)
-```
-
-- `HistoryMapper` extracts from the full history of values for a session key
-
-```scala
-"visit-count" -> HistoryMapper("visited-pages", history => history.size.toString)
-```
+Custom extractors let you define reusable placeholder mappings that automatically extract values from the session. See [Custom extractors](placeholders.md#custom-extractors) in the Placeholders page.
 
 ## Execution model
 
