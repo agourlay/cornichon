@@ -10,7 +10,7 @@ val compilerOptions_scala3 = Seq(
   "-deprecation",
   "-unchecked",
   "-feature",
-  "-language:implicitConversions",
+  "-language:implicitConversions"
 )
 
 val compilerOptions_scala2 = Seq(
@@ -73,7 +73,7 @@ lazy val standardSettings = Seq(
       browseUrl = url("https://github.com/agourlay/cornichon.git"),
       connection = "scm:git:git@github.com:agourlay/cornichon.git"
     )
-  ),
+  )
 )
 
 lazy val publishingSettings = Seq(
@@ -226,15 +226,17 @@ lazy val docs =
             ButtonLink.internal(Root / "installation.md", "Get Started"),
             IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
           ),
-          linkPanel = Some(LinkPanel(
-            title = "Documentation",
-            links = Seq(
-              TextLink.internal(Root / "basics.md", "Basics"),
-              TextLink.internal(Root / "dsl.md", "DSL"),
-              TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
-              TextLink.internal(Root / "modules.md", "Modules")
+          linkPanel = Some(
+            LinkPanel(
+              title = "Documentation",
+              links = Seq(
+                TextLink.internal(Root / "basics.md", "Basics"),
+                TextLink.internal(Root / "dsl.md", "DSL"),
+                TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
+                TextLink.internal(Root / "modules.md", "Modules")
+              )
             )
-          )),
+          ),
           projectLinks = Nil,
           teasers = Seq(
             Teaser("Expressive DSL", "Write readable integration tests using a Scala DSL inspired by Gherkin."),
@@ -300,7 +302,7 @@ lazy val library =
       val openPojo = "0.9.1"
       val decline = "2.6.1"
       val scalaXml = "2.4.0"
-      val typesafeConfig = "1.4.3"
+      val typesafeConfig = "1.4.6"
       val caffeine = "3.2.3"
     }
     val catsCore = "org.typelevel" %% "cats-core" % Version.cats
