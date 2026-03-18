@@ -241,3 +241,91 @@ Concurrently(maxTime = 10.seconds) {
   When I get("/api/orders")
 }
 ```
+
+## Full worked example
+
+This example tests a Deck of Cards API, combining several cornichon features: JSON assertions with `ignoring`, `save_body_path` for state extraction, `Eventually` for retrying until a condition is met, `Repeat` for looping, `WithDataInputs` for table-driven tests, and custom assertion steps.
+
+```scala
+import com.github.agourlay.cornichon.CornichonFeature
+import com.github.agourlay.cornichon.steps.regular.assertStep._
+import scala.concurrent.duration._
+
+class DeckOfCard extends CornichonFeature {
+
+  override lazy val baseUrl = "https://deckofcardsapi.com/api"
+
+  def feature =
+    Feature("Deck of Card API") {
+
+      Scenario("draw any king") {
+
+        Given I get("/deck/new/shuffle/").withParams("deck_count" -> "1")
+
+        Then assert status.is(200)
+
+        And assert body.ignoring("deck_id").is("""
+        {
+          "success": true,
+          "shuffled": true,
+          "remaining": 52
+        }
+        """)
+
+        And I save_body_path("deck_id" -> "deck-id")
+
+        Eventually(maxDuration = 10.seconds, interval = 10.millis) {
+          When I get("/deck/<deck-id>/draw/")
+          And assert status.is(200)
+          Then assert body.path("cards[0].value").is("KING")
+        }
+      }
+
+      Scenario("partial deck") {
+
+        Given I get("/deck/new/shuffle/").withParams(
+          "cards" -> "AS,2S,KS,AD,2D,KD,AC,2C,KC,AH,2H,KH"
+        )
+
+        Then assert status.is(200)
+
+        And I save_body_path("deck_id" -> "deck-id")
+
+        Repeat(6) {
+          When I get("/deck/<deck-id>/draw/").withParams("count" -> "2")
+          And assert status.is(200)
+          Then assert body.path("cards").asArray.not_contains("QH")
+        }
+      }
+
+      Scenario("test simplified blackjack scoring") {
+
+        WithDataInputs("""
+          | c1     | c2      | score |
+          | "1"    | "3"     |   4   |
+          | "1"    | "KING"  |   11  |
+          | "JACK" | "QUEEN" |   20  |
+          | "ACE"  | "KING"  |   21  |
+        """) {
+          Then assert AssertStep(
+            title = "value of 'c1' with 'c2' is 'score'",
+            action = sc =>
+              Assertion.either {
+                for {
+                  score <- sc.session.get("score").map(_.toInt)
+                  c1 <- sc.session.get("c1")
+                  c2 <- sc.session.get("c2")
+                } yield GenericEqualityAssertion(score, scoreCards(c1) + scoreCards(c2))
+              }
+          )
+        }
+      }
+    }
+
+  def scoreCards(c: String): Int = c match {
+    case "ACE"                          => 11
+    case "JACK" | "QUEEN" | "KING"      => 10
+    case n                              => n.toInt
+  }
+}
+```

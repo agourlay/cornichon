@@ -144,8 +144,6 @@ lazy val testFramework =
   project
     .in(file("./cornichon-test-framework"))
     .dependsOn(core)
-    .configs(IntegrationTest)
-    .settings(Defaults.itSettings *)
     .settings(noCatsEffectTracing)
     .settings(standardSettings)
     .settings(publishingSettings)
