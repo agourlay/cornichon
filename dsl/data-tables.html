@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Generators</title>
+  <title>Data tables</title>
   
   
   <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
@@ -86,11 +86,11 @@
     <li class="level1 nav-leaf"><a href="../test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="../dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
-    <li class="level2 nav-leaf"><a href="../dsl/http-steps.html">HTTP steps</a></li>
-    <li class="level2 nav-leaf"><a href="../dsl/session-steps.html">Session steps</a></li>
-    <li class="level2 nav-leaf"><a href="../dsl/wrapper-steps.html">Wrapper steps</a></li>
-    <li class="level2 nav-leaf"><a href="../dsl/data-tables.html">Data tables</a></li>
-    <li class="level2 nav-leaf"><a href="../dsl/utility-steps.html">Utility steps</a></li>
+    <li class="level2 nav-leaf"><a href="http-steps.html">HTTP steps</a></li>
+    <li class="level2 nav-leaf"><a href="session-steps.html">Session steps</a></li>
+    <li class="level2 nav-leaf"><a href="wrapper-steps.html">Wrapper steps</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Data tables</a></li>
+    <li class="level2 nav-leaf"><a href="utility-steps.html">Utility steps</a></li>
     <li class="level1 nav-leaf"><a href="../common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
     <li class="level1 nav-header">custom-steps</li>
@@ -104,9 +104,9 @@
     <li class="level1 nav-leaf"><a href="../performance-tuning.html">Performance tuning</a></li>
     <li class="level1 nav-leaf"><a href="../property-based-testing.html">PBT</a></li>
     <li class="level1 nav-header">pbt</li>
-    <li class="level2 active nav-leaf"><a href="#">Generators</a></li>
-    <li class="level2 nav-leaf"><a href="for-all.html">ForAll</a></li>
-    <li class="level2 nav-leaf"><a href="random-model-exploration.html">Random model exploration</a></li>
+    <li class="level2 nav-leaf"><a href="../pbt/generators.html">Generators</a></li>
+    <li class="level2 nav-leaf"><a href="../pbt/for-all.html">ForAll</a></li>
+    <li class="level2 nav-leaf"><a href="../pbt/random-model-exploration.html">Random model exploration</a></li>
     <li class="level1 nav-leaf"><a href="../troubleshooting.html">Troubleshooting</a></li>
     <li class="level1 nav-leaf"><a href="../misc.html">Running tests</a></li>
     <li class="level1 nav-leaf"><a href="../modules.html">Modules</a></li>
@@ -120,9 +120,12 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Generators</a></p>
+  <p class="header"><a href="#">Data tables</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#syntax">Syntax</a></li>
+    <li class="level1 nav-leaf"><a href="#body-assertions">Body assertions</a></li>
+    <li class="level1 nav-leaf"><a href="#data-driven-tests">Data-driven tests</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -131,39 +134,108 @@
 
       <main class="content">
 
-        <h1 id="generators" class="title">Generators</h1>
-        <p>At the center of property based testing lies the capacity to generate arbitrary values that will be used to verify if a given invariant holds.</p>
-        <p>A <code>generator</code> is simply a function that accepts a <code>RandomContext</code> which is propagated throughout the execution, for instance below is an example generating Strings and Integers.</p>
-        <p>There are three concrete instances of <code>generators</code>:</p>
+        <h1 id="data-tables" class="title">Data tables</h1>
+        <p>Data tables provide a compact, readable way to express tabular data inline. They can be used in two contexts: as an alternative to JSON arrays in body assertions, and as inputs for data-driven test scenarios.</p>
+        
+        <h2 id="syntax" class="section"><a class="anchor-link left" href="#syntax"><i class="icofont-laika link">&#xef71;</i></a>Syntax</h2>
+        <p>A data table is a pipe-delimited string. The first row defines the column headers, and subsequent rows define the data:</p>
+        <pre><code>| name       | city         | score |
+| &quot;Batman&quot;   | &quot;Gotham&quot;     | 42    |
+| &quot;Superman&quot; | &quot;Metropolis&quot; | 99    |</code></pre>
+        <p><strong>Parsing rules:</strong></p>
         <ul>
-          <li><code>ValueGenerator</code></li>
-          <li><code>SessionValueGenerator</code> which provides additionally the <code>Session</code></li>
-          <li><code>OptionalValueGenerator</code> to fail in a controlled fashion</li>
+          <li>Columns are separated by <code>|</code></li>
+          <li>Leading and trailing whitespace in cells is stripped</li>
+          <li>Empty cells are ignored</li>
+          <li>String values must be quoted with <code>&quot;</code></li>
+          <li>Numbers and booleans are unquoted</li>
+          <li>All rows must have the same number of columns as the header</li>
         </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">stringGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
-  </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;an alphanumeric String (20)&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>(</span><span class="number-literal">20</span><span>))
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">integerGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">Int</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
-  </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;integer&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">10000</span><span>))</span></code></pre>
-        <p>This approach also supports embedding <code>Scalacheck&#39;s Gen</code> into a <code>Generator</code> by propagating the initial seed.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">scalacheck</span><span>.</span><span class="type-name">Gen</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">scalacheck</span><span>.</span><span class="identifier">rng</span><span>.</span><span class="type-name">Seed</span><span>
-
-</span><span class="keyword">sealed</span><span> </span><span class="keyword">trait</span><span> </span><span class="type-name">Coin</span><span>
-</span><span class="keyword">case</span><span> </span><span class="keyword">object</span><span> </span><span class="type-name">Head</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">Coin</span><span>
-</span><span class="keyword">case</span><span> </span><span class="keyword">object</span><span> </span><span class="type-name">Tail</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">Coin</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">coinGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">Generator</span><span>[</span><span class="type-name">Coin</span><span>] = </span><span class="type-name">OptionalValueGenerator</span><span>(
-  </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;a Coin&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () =&gt; {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">nextSeed</span><span> = </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextLong</span><span>()
-    </span><span class="keyword">val</span><span> </span><span class="identifier">params</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="type-name">Parameters</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withInitialSeed</span><span>(</span><span class="identifier">nextSeed</span><span>)
-    </span><span class="keyword">val</span><span> </span><span class="identifier">coin</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="identifier">oneOf</span><span>[</span><span class="type-name">Coin</span><span>](</span><span class="type-name">Head</span><span>, </span><span class="type-name">Tail</span><span>)
-    </span><span class="identifier">coin</span><span>(</span><span class="identifier">params</span><span>, </span><span class="type-name">Seed</span><span>(</span><span class="identifier">nextSeed</span><span>))
-  }
-)</span></code></pre>
+        <p><strong>Escape sequences</strong> are supported in header values using backslash:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Escape</th>
+              <th>Character</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>\</code></td>
+              <td>backslash</td>
+            </tr>
+            <tr>
+              <td><code>|</code></td>
+              <td>pipe</td>
+            </tr>
+            <tr>
+              <td><code>\n</code></td>
+              <td>newline</td>
+            </tr>
+            <tr>
+              <td><code>\r</code></td>
+              <td>carriage return</td>
+            </tr>
+            <tr>
+              <td><code>\t</code></td>
+              <td>tab</td>
+            </tr>
+            <tr>
+              <td><code>\b</code></td>
+              <td>backspace</td>
+            </tr>
+            <tr>
+              <td><code>\f</code></td>
+              <td>form feed</td>
+            </tr>
+            <tr>
+              <td><code>\uXXXX</code></td>
+              <td>unicode character</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="body-assertions" class="section"><a class="anchor-link left" href="#body-assertions"><i class="icofont-laika link">&#xef71;</i></a>Body assertions</h2>
+        <p>Data tables can be used as an alternative to JSON arrays when asserting on collection responses. The table is automatically converted to a JSON array of objects:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+  | name       | realName       | city         |
+  | &quot;Batman&quot;   | &quot;Bruce Wayne&quot;  | &quot;Gotham&quot;     |
+  | &quot;Superman&quot; | &quot;Clark Kent&quot;   | &quot;Metropolis&quot; |
+&quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>This is equivalent to:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+[
+  { &quot;name&quot;: &quot;Batman&quot;,   &quot;realName&quot;: &quot;Bruce Wayne&quot;, &quot;city&quot;: &quot;Gotham&quot; },
+  { &quot;name&quot;: &quot;Superman&quot;, &quot;realName&quot;: &quot;Clark Kent&quot;,  &quot;city&quot;: &quot;Metropolis&quot; }
+]
+&quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>The table format is often more readable when comparing many objects with the same structure. It works with all array assertions including <code>ignoringEach</code>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+  | name       | realName       | city         | hasSuperpowers |
+  | &quot;Batman&quot;   | &quot;Bruce Wayne&quot;  | &quot;Gotham&quot;     | false          |
+  | &quot;Superman&quot; | &quot;Clark Kent&quot;   | &quot;Metropolis&quot; | true           |
+&quot;&quot;&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="data-driven-tests" class="section"><a class="anchor-link left" href="#data-driven-tests"><i class="icofont-laika link">&#xef71;</i></a>Data-driven tests</h2>
+        <p>Use <a href="wrapper-steps.html"><code>WithDataInputs</code></a> to run the same steps for each row of a data table. The column headers become session keys available as <a href="../placeholders.html">placeholders</a>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithDataInputs</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+  | endpoint          | expected_status |
+  | &quot;/health&quot;         | &quot;200&quot;           |
+  | &quot;/api/version&quot;    | &quot;200&quot;           |
+  | &quot;/does-not-exist&quot; | &quot;404&quot;           |
+&quot;&quot;&quot;</span><span>) {
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;endpoint&gt;&quot;</span><span>)
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&lt;expected_status&gt;&quot;</span><span>)
+}</span></code></pre>
+        <p>For more complex inputs, <a href="wrapper-steps.html"><code>WithJsonDataInputs</code></a> accepts a JSON array instead of a table:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithJsonDataInputs</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+[
+  { &quot;a&quot;: &quot;1&quot;, &quot;b&quot;: &quot;3&quot;, &quot;c&quot;: &quot;4&quot; },
+  { &quot;a&quot;: &quot;7&quot;, &quot;b&quot;: &quot;4&quot;, &quot;c&quot;: &quot;11&quot; }
+]
+&quot;&quot;&quot;</span><span>) {
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">a_plus_b_equals_c</span><span>
+}</span></code></pre>
 
         
 <hr class="footer-rule"/>
