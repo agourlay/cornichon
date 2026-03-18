@@ -125,6 +125,16 @@
   <p class="header"><a href="#">HTTP mock</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#default-behavior">Default behavior</a></li>
+    <li class="level1 nav-leaf"><a href="#example">Example</a></li>
+    <li class="level1 nav-node"><a href="#admin-endpoints">Admin endpoints</a></li>
+    <li class="level2 nav-leaf"><a href="#get-requests-received">GET /requests-received</a></li>
+    <li class="level2 nav-leaf"><a href="#get-reset">GET /reset</a></li>
+    <li class="level2 nav-leaf"><a href="#post-response">POST /response</a></li>
+    <li class="level2 nav-leaf"><a href="#post-delayinms">POST /delayInMs</a></li>
+    <li class="level2 nav-leaf"><a href="#post-toggle-error-mode">POST /toggle-error-mode</a></li>
+    <li class="level2 nav-leaf"><a href="#post-toggle-bad-request-mode">POST /toggle-bad-request-mode</a></li>
+    <li class="level1 nav-leaf"><a href="#assertions-after-the-block">Assertions after the block</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -135,6 +145,17 @@
 
         <h1 id="http-mock" class="title">HTTP Mock</h1>
         <p><code>cornichon-http-mock</code> provides the <code>HttpMock</code> block for spinning up a temporary HTTP server during a scenario. See also the <a href="../dsl/wrapper-steps.html">HttpListenTo</a> wrapper step in the DSL reference.</p>
+        
+        <h2 id="default-behavior" class="section"><a class="anchor-link left" href="#default-behavior"><i class="icofont-laika link">&#xef71;</i></a>Default behavior</h2>
+        <p>By default, the mock server:</p>
+        <ul>
+          <li>responds with <strong>201</strong> to any POST request</li>
+          <li>responds with <strong>200</strong> to all other requests (GET, PUT, DELETE, etc.)</li>
+          <li>records all incoming requests for later assertions</li>
+          <li>the server URL is available as the placeholder <code>&lt;label-url&gt;</code> (e.g. <code>&lt;awesome-server-url&gt;</code>)</li>
+        </ul>
+        
+        <h2 id="example" class="section"><a class="anchor-link left" href="#example"><i class="icofont-laika link">&#xef71;</i></a>Example</h2>
         <pre><code class="nohighlight"><span> </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;reply to POST request with 201 and assert on received bodies&quot;</span><span>) {
     </span><span class="type-name">HttpMock</span><span>(</span><span class="string-literal">&quot;awesome-server&quot;</span><span>) {
       </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;awesome-server-url&gt;/heroes/batman&quot;</span><span>).</span><span class="identifier">withBody</span><span>(
@@ -233,6 +254,58 @@
       &quot;&quot;&quot;</span><span>
     )
  }</span></code></pre>
+        
+        <h2 id="admin-endpoints" class="section"><a class="anchor-link left" href="#admin-endpoints"><i class="icofont-laika link">&#xef71;</i></a>Admin endpoints</h2>
+        <p>While the mock server is running, you can control its behavior by sending requests to these admin endpoints:</p>
+        
+        <h3 id="get-requests-received" class="section"><a class="anchor-link left" href="#get-requests-received"><i class="icofont-laika link">&#xef71;</i></a>GET /requests-received</h3>
+        <p>Returns a JSON array of all recorded requests. Each entry contains <code>body</code>, <code>url</code>, <code>method</code>, <code>parameters</code>, and <code>headers</code>.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/requests-received&quot;</span><span>)
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">hasSize</span><span>(</span><span class="number-literal">3</span><span>)</span></code></pre>
+        
+        <h3 id="get-reset" class="section"><a class="anchor-link left" href="#get-reset"><i class="icofont-laika link">&#xef71;</i></a>GET /reset</h3>
+        <p>Clears all recorded requests. Useful when a scenario makes setup requests that you don&#39;t want to assert on.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Setup phase
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/setup-data&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;...&quot;</span><span>)
+</span><span class="comment">// Clear so we only assert on the real test requests
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/reset&quot;</span><span>)
+</span><span class="comment">// Actual test
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/api/action&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;...&quot;</span><span>)
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/requests-received&quot;</span><span>)
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">hasSize</span><span>(</span><span class="number-literal">1</span><span>)</span></code></pre>
+        
+        <h3 id="post-response" class="section"><a class="anchor-link left" href="#post-response"><i class="icofont-laika link">&#xef71;</i></a>POST /response</h3>
+        <p>Sets a custom response body that the mock server will return for all subsequent non-admin requests.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/response&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{&quot;status&quot;: &quot;ok&quot;}&quot;&quot;&quot;</span><span>)
+</span><span class="comment">// Now all requests to the mock return {&quot;status&quot;: &quot;ok&quot;}
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/anything&quot;</span><span>)
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{&quot;status&quot;: &quot;ok&quot;}&quot;&quot;&quot;</span><span>)</span></code></pre>
+        
+        <h3 id="post-delayinms" class="section"><a class="anchor-link left" href="#post-delayinms"><i class="icofont-laika link">&#xef71;</i></a>POST /delayInMs</h3>
+        <p>Adds a delay (in milliseconds) before the mock server responds. Useful for testing timeout handling.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/delayInMs&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;500&quot;</span><span>)
+</span><span class="comment">// Subsequent requests will take at least 500ms</span></code></pre>
+        
+        <h3 id="post-toggle-error-mode" class="section"><a class="anchor-link left" href="#post-toggle-error-mode"><i class="icofont-laika link">&#xef71;</i></a>POST /toggle-error-mode</h3>
+        <p>Toggles error mode on/off. When enabled, the mock server responds with <strong>500 Internal Server Error</strong> to all non-admin requests.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/toggle-error-mode&quot;</span><span>)
+</span><span class="comment">// Now all requests return 500
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/anything&quot;</span><span>)
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">500</span><span>)
+</span><span class="comment">// Toggle back to normal
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/toggle-error-mode&quot;</span><span>)</span></code></pre>
+        
+        <h3 id="post-toggle-bad-request-mode" class="section"><a class="anchor-link left" href="#post-toggle-bad-request-mode"><i class="icofont-laika link">&#xef71;</i></a>POST /toggle-bad-request-mode</h3>
+        <p>Toggles bad request mode on/off. When enabled, the mock server responds with <strong>400 Bad Request</strong> to all non-admin requests.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/toggle-bad-request-mode&quot;</span><span>)
+</span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;my-server-url&gt;/anything&quot;</span><span>)
+</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">400</span><span>)</span></code></pre>
+        
+        <h2 id="assertions-after-the-block" class="section"><a class="anchor-link left" href="#assertions-after-the-block"><i class="icofont-laika link">&#xef71;</i></a>Assertions after the block</h2>
+        <p>Once the <code>HttpMock</code> block ends, the server shuts down and its recorded requests are saved into the session. You can assert on them using <code>httpListen</code>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">httpListen</span><span>(</span><span class="string-literal">&quot;my-server&quot;</span><span>).</span><span class="identifier">received_calls</span><span>(</span><span class="number-literal">2</span><span>)
+</span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">httpListen</span><span>(</span><span class="string-literal">&quot;my-server&quot;</span><span>).</span><span class="identifier">received_requests</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">hasSize</span><span>(</span><span class="number-literal">2</span><span>)
+</span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">httpListen</span><span>(</span><span class="string-literal">&quot;my-server&quot;</span><span>).</span><span class="identifier">received_requests</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[0].method&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;POST&quot;</span><span>)</span></code></pre>
 
         
 <hr class="footer-rule"/>

@@ -125,6 +125,7 @@
   <p class="header"><a href="#">JSON matchers</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#custom-matchers">Custom matchers</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -169,12 +170,44 @@
         </ul>
         <div class="callout warning">
           <i class="icofont-laika warning">&#xf026;</i>
-          <p>This feature is still under experimentation and comes with a couple of limitations:</p>
-          <ul>
-            <li>it is not yet possible to register custom JSON matchers</li>
-            <li>matchers are not supported for JSON arrays assertions via <code>asArray</code></li>
-          </ul>
+          <p>Matchers are not supported for JSON array assertions via <code>asArray</code>.</p>
         </div>
+        
+        <h2 id="custom-matchers" class="section"><a class="anchor-link left" href="#custom-matchers"><i class="icofont-laika link">&#xef71;</i></a>Custom matchers</h2>
+        <p>You can register your own matchers by overriding <code>registerMatchers</code> in your feature class. A <code>Matcher</code> takes a key (used as <code>*key*</code> in assertions), a description, and a predicate on <code>io.circe.Json</code>:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="identifier">matchers</span><span>.</span><span class="type-name">Matcher</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">circe</span><span>.</span><span class="type-name">Json</span><span>
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">MyFeature</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+
+  </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerMatchers</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">Matcher</span><span>] = </span><span class="type-name">List</span><span>(
+    </span><span class="type-name">Matcher</span><span>(
+      </span><span class="identifier">key</span><span> = </span><span class="string-literal">&quot;any-email&quot;</span><span>,
+      </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;checks if the field is a valid email address&quot;</span><span>,
+      </span><span class="identifier">predicate</span><span> = </span><span class="identifier">_</span><span>.</span><span class="identifier">asString</span><span>.</span><span class="identifier">exists</span><span>(</span><span class="identifier">s</span><span> =&gt; </span><span class="identifier">s</span><span>.</span><span class="identifier">contains</span><span>(</span><span class="string-literal">&quot;@&quot;</span><span>) &amp;&amp; </span><span class="identifier">s</span><span>.</span><span class="identifier">contains</span><span>(</span><span class="string-literal">&quot;.&quot;</span><span>))
+    ),
+    </span><span class="type-name">Matcher</span><span>(
+      </span><span class="identifier">key</span><span> = </span><span class="string-literal">&quot;any-positive-number&quot;</span><span>,
+      </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;checks if the field is a positive number&quot;</span><span>,
+      </span><span class="identifier">predicate</span><span> = </span><span class="identifier">_</span><span>.</span><span class="identifier">asNumber</span><span>.</span><span class="identifier">exists</span><span>(</span><span class="identifier">n</span><span> =&gt; </span><span class="identifier">n</span><span>.</span><span class="identifier">toDouble</span><span> &gt; </span><span class="number-literal">0</span><span>)
+    )
+  )
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;My API&quot;</span><span>) {
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;check user response&quot;</span><span>) {
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/users/1&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+      {
+        &quot;name&quot;: *any-string*,
+        &quot;email&quot;: *any-email*,
+        &quot;score&quot;: *any-positive-number*
+      }
+      &quot;&quot;&quot;</span><span>)
+    }
+  }
+}</span></code></pre>
+        <p>Custom matchers follow the same <code>*key*</code> syntax as built-in matchers and can be mixed freely with them.</p>
 
         
 <hr class="footer-rule"/>
