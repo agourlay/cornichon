@@ -1,7 +1,7 @@
 import sbt.{file, Developer}
 import sbt.Keys.{developers, organizationHomepage, publishMavenStyle, scmInfo, startYear}
 import laika.helium.Helium
-import laika.helium.config.{ButtonLink, Favicon, HeliumIcon, IconLink, ImageLink, Teaser, TextLink}
+import laika.helium.config.{ButtonLink, Favicon, HeliumIcon, IconLink, ImageLink, LinkPanel, ReleaseInfo, Teaser, TextLink}
 import laika.ast.{Image, InternalTarget, LengthUnit, Path}
 import laika.ast.Path.Root
 import laika.theme.config.Color
@@ -232,22 +232,29 @@ lazy val docs =
           logo = Some(Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(150)), height = Some(LengthUnit.px(150)))),
           title = Some("Cornichon"),
           subtitle = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
-          latestReleases = Nil,
+          latestReleases = Seq(ReleaseInfo("Latest Release", version.value)),
           license = Some("Apache-2.0"),
           titleLinks = Seq(
             ButtonLink.internal(Root / "installation.md", "Get Started"),
             IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
           ),
+          linkPanel = Some(LinkPanel(
+            title = "Documentation",
+            links = Seq(
+              TextLink.internal(Root / "basics.md", "Basics"),
+              TextLink.internal(Root / "dsl.md", "DSL"),
+              TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
+              TextLink.internal(Root / "modules.md", "Modules")
+            )
+          )),
           projectLinks = Seq(
-            TextLink.internal(Root / "basics.md", "Basics"),
-            TextLink.internal(Root / "dsl.md", "DSL"),
-            TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
-            TextLink.internal(Root / "modules.md", "Modules")
+            IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
           ),
           teasers = Seq(
             Teaser("Expressive DSL", "Write readable integration tests using a Scala DSL inspired by Gherkin."),
             Teaser("JSON First", "Powerful JSON assertions with path expressions, matchers, and ignoring keys."),
-            Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support.")
+            Teaser("Property Based Testing", "Generate and explore random test scenarios with built-in PBT support."),
+            Teaser("Reproducible Tests", "Every failure reports a seed to replay the exact same scenario execution.")
           )
         )
         .site
