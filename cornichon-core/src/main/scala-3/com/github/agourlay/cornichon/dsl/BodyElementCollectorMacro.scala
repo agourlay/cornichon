@@ -82,8 +82,6 @@ object BodyElementCollectorMacro {
   }
 
   def mergeAllBodies[Body: Type](extracted: List[ExtractedBodies[Body]])(using Quotes): Expr[List[Body]] = {
-    import quotes.reflect.*
-
     // the final expression we will return
     var finalExpr: Expr[List[Body]] = '{ List.empty[Body] }
     // compile time accumulation (not an expression)

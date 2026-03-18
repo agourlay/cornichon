@@ -6,7 +6,13 @@ import laika.ast.{Image, InternalTarget, LengthUnit, Path}
 import laika.ast.Path.Root
 import laika.theme.config.Color
 
-// originally from https://tpolecat.github.io/2017/04/25/scalac-flags.html
+val compilerOptions_scala3 = Seq(
+  "-deprecation",
+  "-unchecked",
+  "-feature",
+  "-language:implicitConversions",
+)
+
 val compilerOptions_scala2 = Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "-encoding",
@@ -48,8 +54,9 @@ val compilerOptions_scala2 = Seq(
 
 def compilerOptions(scalaVersion: String) =
   CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, minor)) => compilerOptions_scala2
-    case _                => Seq.empty
+    case Some((2, _)) => compilerOptions_scala2
+    case Some((3, _)) => compilerOptions_scala3
+    case _            => Seq.empty
   }
 
 lazy val standardSettings = Seq(
