@@ -81,8 +81,7 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="overview.html">Overview</a></li>
-    <li class="level1 nav-leaf"><a href="installation.html">Installation</a></li>
-    <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="quick-start.html">Quick start</a></li>
     <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
@@ -98,6 +97,7 @@
     <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
     <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
+    <li class="level1 nav-leaf"><a href="json-path.html">JSON path</a></li>
     <li class="level1 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
     <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
@@ -112,6 +112,8 @@
     <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
     <li class="level1 nav-header">modules</li>
     <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
+    <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="installation.html">Installation</a></li>
   </ul>
 
 </nav>
@@ -221,6 +223,7 @@
           <li><strong>Root array access:</strong> For a response that is a JSON array, use <code>$</code> as the root: <code>body.path(&quot;$[0].name&quot;)</code></li>
           <li><strong>Wildcard projection:</strong> <code>body.path(&quot;items[*].name&quot;)</code> returns an array of all <code>name</code> values.</li>
         </ul>
+        <p>See <a href="json-path.html">JSON path</a> for the complete syntax reference.</p>
         
         <h2 id="status-code-assertion-fails-with-response-details" class="section"><a class="anchor-link left" href="#status-code-assertion-fails-with-response-details"><i class="icofont-laika link">&#xef71;</i></a>Status code assertion fails with response details</h2>
         <p><strong>Symptom:</strong></p>

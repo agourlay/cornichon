@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>PBT</title>
+  <title>JSON path</title>
   
   
   <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
@@ -97,12 +97,12 @@
     <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
     <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
-    <li class="level1 nav-leaf"><a href="json-path.html">JSON path</a></li>
+    <li class="level1 active nav-leaf"><a href="#">JSON path</a></li>
     <li class="level1 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
     <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
     <li class="level1 nav-leaf"><a href="performance-tuning.html">Performance tuning</a></li>
-    <li class="level1 active nav-leaf"><a href="#">PBT</a></li>
+    <li class="level1 nav-leaf"><a href="property-based-testing.html">PBT</a></li>
     <li class="level1 nav-header">pbt</li>
     <li class="level2 nav-leaf"><a href="pbt/generators.html">Generators</a></li>
     <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
@@ -122,9 +122,17 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">PBT</a></p>
+  <p class="header"><a href="#">JSON path</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-node"><a href="#syntax">Syntax</a></li>
+    <li class="level2 nav-leaf"><a href="#field-access">Field access</a></li>
+    <li class="level2 nav-leaf"><a href="#array-element-access">Array element access</a></li>
+    <li class="level2 nav-leaf"><a href="#root-array-access">Root array access</a></li>
+    <li class="level2 nav-leaf"><a href="#wildcard-projection">Wildcard projection</a></li>
+    <li class="level2 nav-leaf"><a href="#keys-containing-dots">Keys containing dots</a></li>
+    <li class="level1 nav-leaf"><a href="#where-json-paths-are-used">Where JSON paths are used</a></li>
+    <li class="level1 nav-leaf"><a href="#characters-not-allowed-in-field-names">Characters not allowed in field names</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -133,13 +141,85 @@
 
       <main class="content">
 
-        <h1 id="property-based-testing-support" class="title">Property based testing support</h1>
-        <p>Cornichon offers support for Property based testing via two different flavours of testing:</p>
-        <ul>
-          <li><a href="pbt/for-all.html">ForAll</a> — validate that an invariant holds for any generated values</li>
-          <li><a href="pbt/random-model-exploration.html">Random Model Exploration</a> — explore state machines defined as Markov chains</li>
-        </ul>
-        <p>Both approaches rely on <a href="pbt/generators.html">Generators</a> to produce random inputs.</p>
+        <h1 id="json-path" class="title">JSON path</h1>
+        <p>JSON paths are used throughout cornichon to navigate into JSON structures. They appear in body assertions (<code>body.path(...)</code>), save steps (<code>save_body_path</code>), <a href="placeholders.html#custom-extractors">custom extractors</a>, and <a href="dsl/http-steps.html#http-assertions">ignoring keys</a>.</p>
+        
+        <h2 id="syntax" class="section"><a class="anchor-link left" href="#syntax"><i class="icofont-laika link">&#xef71;</i></a>Syntax</h2>
+        <p>A JSON path is a dot-separated sequence of segments. Each segment selects a field, an array element, or projects over an array.</p>
+        
+        <h3 id="field-access" class="section"><a class="anchor-link left" href="#field-access"><i class="icofont-laika link">&#xef71;</i></a>Field access</h3>
+        <p>Select a field by name:</p>
+        <pre><code>name                → selects the &quot;name&quot; field
+publisher.name      → selects &quot;name&quot; inside &quot;publisher&quot;</code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;DC&quot;</span><span>)</span></code></pre>
+        
+        <h3 id="array-element-access" class="section"><a class="anchor-link left" href="#array-element-access"><i class="icofont-laika link">&#xef71;</i></a>Array element access</h3>
+        <p>Select an array element by index (zero-based):</p>
+        <pre><code>items[0]            → first element of &quot;items&quot; array
+items[2].name       → &quot;name&quot; field of the third element</code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;episodes[0].title&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Winter Is Coming&quot;</span><span>)</span></code></pre>
+        
+        <h3 id="root-array-access" class="section"><a class="anchor-link left" href="#root-array-access"><i class="icofont-laika link">&#xef71;</i></a>Root array access</h3>
+        <p>When the response itself is a JSON array (not an object), use <code>$</code> to refer to the root:</p>
+        <pre><code>$[0]                → first element of the root array
+$[0].name           → &quot;name&quot; field of the first element</code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[0].name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
+        
+        <h3 id="wildcard-projection" class="section"><a class="anchor-link left" href="#wildcard-projection"><i class="icofont-laika link">&#xef71;</i></a>Wildcard projection</h3>
+        <p>Use <code>[*]</code> to project over all elements of an array. The result is a JSON array containing the selected values from each element:</p>
+        <pre><code>items[*].name       → array of all &quot;name&quot; values from &quot;items&quot;
+$[*].id             → array of all &quot;id&quot; values from a root array</code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Given response: [{&quot;name&quot;: &quot;Batman&quot;}, {&quot;name&quot;: &quot;Superman&quot;}]
+</span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[*].name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;[&quot;Batman&quot;, &quot;Superman&quot;]&quot;&quot;&quot;</span><span>)</span></code></pre>
+        
+        <h3 id="keys-containing-dots" class="section"><a class="anchor-link left" href="#keys-containing-dots"><i class="icofont-laika link">&#xef71;</i></a>Keys containing dots</h3>
+        <p>If a field name contains a dot, wrap it in backticks to prevent it from being interpreted as a path separator:</p>
+        <pre><code>`field.name`        → selects the field literally named &quot;field.name&quot;
+`my.key`.nested     → &quot;nested&quot; inside the field &quot;my.key&quot;</code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;`message.en`&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Hello&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="where-json-paths-are-used" class="section"><a class="anchor-link left" href="#where-json-paths-are-used"><i class="icofont-laika link">&#xef71;</i></a>Where JSON paths are used</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Context</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Body assertions</td>
+              <td><code>body.path(&quot;publisher.name&quot;).is(&quot;DC&quot;)</code></td>
+            </tr>
+            <tr>
+              <td>Save from body</td>
+              <td><code>save_body_path(&quot;id&quot; -&gt; &quot;product-id&quot;)</code></td>
+            </tr>
+            <tr>
+              <td>Save nested value</td>
+              <td><code>save_body_path(&quot;data.items[0].id&quot; -&gt; &quot;first-id&quot;)</code></td>
+            </tr>
+            <tr>
+              <td>Ignoring keys</td>
+              <td><code>body.ignoring(&quot;publisher.location&quot;).is(...)</code></td>
+            </tr>
+            <tr>
+              <td>Array ignoring</td>
+              <td><code>body.asArray.ignoringEach(&quot;metadata.internal&quot;).is(...)</code></td>
+            </tr>
+            <tr>
+              <td>Custom extractors</td>
+              <td><code>JsonMapper(&quot;response&quot;, &quot;data.results[0].id&quot;)</code></td>
+            </tr>
+            <tr>
+              <td>Session JSON access</td>
+              <td><code>session_value(&quot;response&quot;).asJson.path(&quot;a.b&quot;).is(...)</code></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="characters-not-allowed-in-field-names" class="section"><a class="anchor-link left" href="#characters-not-allowed-in-field-names"><i class="icofont-laika link">&#xef71;</i></a>Characters not allowed in field names</h2>
+        <p>Field names cannot contain: <code>\r</code>, <code>\n</code>, <code>[</code>, <code>]</code>, <code>`</code>, or spaces. Use backtick quoting for fields containing dots.</p>
 
         
 <hr class="footer-rule"/>

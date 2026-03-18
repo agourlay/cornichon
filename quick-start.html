@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>PBT</title>
+  <title>Quick start</title>
   
   
   <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
@@ -81,7 +81,7 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="overview.html">Overview</a></li>
-    <li class="level1 nav-leaf"><a href="quick-start.html">Quick start</a></li>
+    <li class="level1 active nav-leaf"><a href="#">Quick start</a></li>
     <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
@@ -102,7 +102,7 @@
     <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
     <li class="level1 nav-leaf"><a href="performance-tuning.html">Performance tuning</a></li>
-    <li class="level1 active nav-leaf"><a href="#">PBT</a></li>
+    <li class="level1 nav-leaf"><a href="property-based-testing.html">PBT</a></li>
     <li class="level1 nav-header">pbt</li>
     <li class="level2 nav-leaf"><a href="pbt/generators.html">Generators</a></li>
     <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
@@ -122,9 +122,13 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">PBT</a></p>
+  <p class="header"><a href="#">Quick start</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#installation">Installation</a></li>
+    <li class="level1 nav-leaf"><a href="#your-first-test">Your first test</a></li>
+    <li class="level1 nav-leaf"><a href="#failure-modes">Failure modes</a></li>
+    <li class="level1 nav-leaf"><a href="#next-steps">Next steps</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -133,13 +137,52 @@
 
       <main class="content">
 
-        <h1 id="property-based-testing-support" class="title">Property based testing support</h1>
-        <p>Cornichon offers support for Property based testing via two different flavours of testing:</p>
+        <h1 id="quick-start" class="title">Quick start</h1>
+        
+        <h2 id="installation" class="section"><a class="anchor-link left" href="#installation"><i class="icofont-laika link">&#xef71;</i></a>Installation</h2>
+        <p>Cornichon is available for Scala 2.13 &amp; Scala 3.</p>
+        <p>The library is compatible with <a href="https://www.scala-sbt.org/">SBT</a> and <a href="http://www.lihaoyi.com/mill/">Mill</a>.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// SBT
+</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;com.github.agourlay&quot;</span><span> %% </span><span class="string-literal">&quot;cornichon-test-framework&quot;</span><span> % </span><span class="string-literal">&quot;0.23.0&quot;</span><span> % </span><span class="type-name">Test</span><span>
+</span><span class="identifier">testFrameworks</span><span> += </span><span class="keyword">new</span><span> </span><span class="type-name">TestFramework</span><span>(</span><span class="string-literal">&quot;com.github.agourlay.cornichon.framework.CornichonFramework&quot;</span><span>)</span></code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Mill
+</span><span class="keyword">object</span><span> </span><span class="identifier">test</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">Tests</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(</span><span class="string-literal">ivy&quot;com.github.agourlay::cornichon-test-framework:0.23.0&quot;</span><span>)
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">testFrameworks</span><span> = </span><span class="type-name">Seq</span><span>(</span><span class="string-literal">&quot;com.github.agourlay.cornichon.framework.CornichonFramework&quot;</span><span>)
+}</span></code></pre>
+        
+        <h2 id="your-first-test" class="section"><a class="anchor-link left" href="#your-first-test"><i class="icofont-laika link">&#xef71;</i></a>Your first test</h2>
+        <p>A Cornichon test is a class extending <code>CornichonFeature</code> and implementing the required <code>feature</code> function. In SBT, these classes live inside <code>src/test/scala</code> and can be run using <code>sbt test</code>.</p>
+        <p>A <code>feature</code> can have several <code>scenarios</code> which in turn can have several <code>steps</code>.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">CornichonExamplesSpec</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Checking google&quot;</span><span>){
+
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;Google is up and running&quot;</span><span>){
+
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://google.com&quot;</span><span>)
+
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">302</span><span>)
+    }
+  }
+}</span></code></pre>
+        
+        <h2 id="failure-modes" class="section"><a class="anchor-link left" href="#failure-modes"><i class="icofont-laika link">&#xef71;</i></a>Failure modes</h2>
         <ul>
-          <li><a href="pbt/for-all.html">ForAll</a> — validate that an invariant holds for any generated values</li>
-          <li><a href="pbt/random-model-exploration.html">Random Model Exploration</a> — explore state machines defined as Markov chains</li>
+          <li>A <code>feature</code> fails if one or more <code>scenarios</code> fail.</li>
+          <li>A <code>scenario</code> fails if at least one <code>step</code> fails.</li>
+          <li>A <code>scenario</code> will stop at the first failed step encountered and ignore the remaining <code>steps</code>.</li>
         </ul>
-        <p>Both approaches rely on <a href="pbt/generators.html">Generators</a> to produce random inputs.</p>
+        
+        <h2 id="next-steps" class="section"><a class="anchor-link left" href="#next-steps"><i class="icofont-laika link">&#xef71;</i></a>Next steps</h2>
+        <ul>
+          <li><a href="dsl.html">DSL</a> — full reference of available steps</li>
+          <li><a href="test-output.html">Understanding Test Output</a> — how to read failure messages</li>
+          <li><a href="feature-options.html">Feature Options</a> — configure test execution</li>
+          <li><a href="common-patterns.html">Common Patterns</a> — recipes for real-world testing scenarios</li>
+        </ul>
 
         
 <hr class="footer-rule"/>

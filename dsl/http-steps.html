@@ -81,8 +81,7 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="../overview.html">Overview</a></li>
-    <li class="level1 nav-leaf"><a href="../installation.html">Installation</a></li>
-    <li class="level1 nav-leaf"><a href="../basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="../quick-start.html">Quick start</a></li>
     <li class="level1 nav-leaf"><a href="../test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="../dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
@@ -98,6 +97,7 @@
     <li class="level2 nav-leaf"><a href="../custom-steps/assert-step.html">Assert steps</a></li>
     <li class="level2 nav-leaf"><a href="../custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="../placeholders.html">Placeholders</a></li>
+    <li class="level1 nav-leaf"><a href="../json-path.html">JSON path</a></li>
     <li class="level1 nav-leaf"><a href="../json-matchers.html">JSON matchers</a></li>
     <li class="level1 nav-leaf"><a href="../feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="../reference-configuration.html">Reference configuration</a></li>
@@ -112,6 +112,8 @@
     <li class="level1 nav-leaf"><a href="../modules.html">Modules</a></li>
     <li class="level1 nav-header">modules</li>
     <li class="level2 nav-leaf"><a href="../modules/module-mock.html">HTTP mock</a></li>
+    <li class="level1 nav-leaf"><a href="../basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="../installation.html">Installation</a></li>
   </ul>
 
 </nav>
@@ -124,6 +126,8 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#http-effects">HTTP effects</a></li>
+    <li class="level1 nav-node"><a href="#session-keys-from-http-responses">Session keys from HTTP responses</a></li>
+    <li class="level2 nav-leaf"><a href="#saving-values-from-the-response">Saving values from the response</a></li>
     <li class="level1 nav-leaf"><a href="#http-assertions">HTTP assertions</a></li>
     <li class="level1 nav-leaf"><a href="#http-streams">HTTP streams</a></li>
     <li class="level1 nav-leaf"><a href="#graphql-support">GraphQL support</a></li>
@@ -164,6 +168,53 @@
   .</span><span class="identifier">addParams</span><span>(</span><span class="string-literal">&quot;b&quot;</span><span> -&gt; </span><span class="string-literal">&quot;2&quot;</span><span>)
   .</span><span class="identifier">addHeaders</span><span>((</span><span class="string-literal">&quot;X-Custom&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>))</span></code></pre>
         <p>There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section <a href="#custom-http-body-type">Custom HTTP body type</a>.</p>
+        
+        <h2 id="session-keys-from-http-responses" class="section"><a class="anchor-link left" href="#session-keys-from-http-responses"><i class="icofont-laika link">&#xef71;</i></a>Session keys from HTTP responses</h2>
+        <p>After every HTTP request, cornichon automatically saves the response into the <a href="session-steps.html">session</a> under these keys:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Session key</th>
+              <th>Content</th>
+              <th>Accessed via</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>last-response-status</code></td>
+              <td>HTTP status code (e.g. <code>200</code>)</td>
+              <td><code>status.is(200)</code></td>
+            </tr>
+            <tr>
+              <td><code>last-response-body</code></td>
+              <td>Response body as a string</td>
+              <td><code>body.is(...)</code>, <code>body.path(...)</code></td>
+            </tr>
+            <tr>
+              <td><code>last-response-headers</code></td>
+              <td>Response headers (encoded)</td>
+              <td><code>headers.name(...)</code>, <code>headers.contain(...)</code></td>
+            </tr>
+            <tr>
+              <td><code>last-response-request</code></td>
+              <td>Description of the request that produced this response</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>These keys are overwritten on each HTTP request, so the <code>status</code>, <code>body</code>, and <code>headers</code> assertions always refer to the most recent response.</p>
+        
+        <h3 id="saving-values-from-the-response" class="section"><a class="anchor-link left" href="#saving-values-from-the-response"><i class="icofont-laika link">&#xef71;</i></a>Saving values from the response</h3>
+        <p>Use <code>save_body_path</code> to extract a value from the response body using a JSON path and store it in the session under a custom key:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;product-id&quot;</span><span>)
+</span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;address.city&quot;</span><span> -&gt; </span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;address.zip&quot;</span><span> -&gt; </span><span class="string-literal">&quot;zip&quot;</span><span>)</span></code></pre>
+        <p>The saved values are then available as <a href="../placeholders.html">placeholders</a>: <code>&lt;product-id&gt;</code>, <code>&lt;city&gt;</code>, etc.</p>
+        <p>Other save steps:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Save the entire response body under a custom key
+</span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body</span><span>(</span><span class="string-literal">&quot;full-response&quot;</span><span>)
+
+</span><span class="comment">// Save a response header value
+</span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_header_value</span><span>(</span><span class="string-literal">&quot;Content-Type&quot;</span><span> -&gt; </span><span class="string-literal">&quot;response-content-type&quot;</span><span>)</span></code></pre>
         
         <h2 id="http-assertions" class="section"><a class="anchor-link left" href="#http-assertions"><i class="icofont-laika link">&#xef71;</i></a>HTTP assertions</h2>
         <ul>
@@ -226,12 +277,7 @@
     }
   }
   &quot;&quot;&quot;</span><span>)</span></code></pre>
-        <p>Ignored keys and extractors are JsonPaths following the format <code>a.b.c[index].d</code>.</p>
-        <p>The <code>index</code> value is either:</p>
-        <ul>
-          <li>an Integer addressing the array position.</li>
-          <li>a <code>*</code> to target all values, the result will be an array of the projected values.</li>
-        </ul>
+        <p>Ignored keys and extractors use <a href="../json-path.html">JSON path</a> expressions (e.g. <code>a.b.c[0].d</code>, <code>items[*].name</code>).</p>
         <p>JsonPath can also be used to only assert part of the response</p>
         <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Gotham city&quot;</span><span>)
 
@@ -366,7 +412,7 @@
         <ul>
           <li>GraphQL JSON</li>
         </ul>
-        <p>all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the <code>gqljson</code> StringContext.</p>
+        <p>The <code>gqljson</code> string interpolator lets you write JSON without quoting keys — using GraphQL&#39;s input syntax. This can make assertions more readable when dealing with large JSON objects.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="identifier">json</span><span>.</span><span class="type-name">CornichonJson</span><span>.</span><span class="identifier">_</span><span>
 
 </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(
@@ -377,6 +423,15 @@
     hasSuperpowers: false
   }
   &quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>The <code>gqljson</code> format supports:</p>
+        <ul>
+          <li>Unquoted keys: <code>name</code> instead of <code>&quot;name&quot;</code></li>
+          <li>String values still use quotes: <code>&quot;Batman&quot;</code></li>
+          <li>Numbers, booleans, and null are unquoted: <code>42</code>, <code>true</code>, <code>null</code></li>
+          <li>Nested objects and arrays: <code>{ publisher: { name: &quot;DC&quot; } }</code></li>
+          <li><a href="../placeholders.html">Placeholders</a> work inside <code>gqljson</code> strings: <code>name: &quot;&lt;hero-name&gt;&quot;</code></li>
+        </ul>
+        <p>It can be used anywhere a regular JSON string is accepted — body assertions, <code>is</code>, <code>contains</code>, etc. It is powered by the <a href="https://github.com/sangria-graphql/sangria">Sangria</a> GraphQL parser.</p>
         
         <h2 id="custom-http-body-type" class="section"><a class="anchor-link left" href="#custom-http-body-type"><i class="icofont-laika link">&#xef71;</i></a>Custom HTTP body type</h2>
         <p>By default, the HTTP DSL expects a <code>String</code> body. To use a custom type, provide three typeclass instances:</p>

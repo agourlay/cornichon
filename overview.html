@@ -81,8 +81,7 @@
 
   <ul class="nav-list">
     <li class="level1 active nav-leaf"><a href="#">Overview</a></li>
-    <li class="level1 nav-leaf"><a href="installation.html">Installation</a></li>
-    <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="quick-start.html">Quick start</a></li>
     <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
@@ -98,6 +97,7 @@
     <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
     <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
+    <li class="level1 nav-leaf"><a href="json-path.html">JSON path</a></li>
     <li class="level1 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
     <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
@@ -112,6 +112,8 @@
     <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
     <li class="level1 nav-header">modules</li>
     <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
+    <li class="level1 nav-leaf"><a href="basics.html">Basics</a></li>
+    <li class="level1 nav-leaf"><a href="installation.html">Installation</a></li>
   </ul>
 
 </nav>
@@ -132,8 +134,6 @@
 
       <main class="content">
 
-        <p><a href="https://central.sonatype.com/artifact/com.github.agourlay/cornichon-core_3"><img src="https://img.shields.io/maven-central/v/com.github.agourlay/cornichon-core_3" alt="Maven Central"></a>
-        <a href="http://www.apache.org/licenses/LICENSE-2.0.txt"><img src="http://img.shields.io/:license-Apache%202-brightgreen.svg" alt="License"></a></p>
         <h1 id="how-it-works" class="title">How it works</h1>
         <p>Cornichon tests are built around three core concepts: <strong>steps</strong>, <strong>session</strong>, and <strong>placeholders</strong>.</p>
         <p>Steps are the building blocks of a scenario — each step either performs a side effect (like an HTTP request) or asserts an expected state. When a step produces a result, it is stored in the <strong>session</strong>, a key-value store that lives for the duration of a scenario. Values from the session can then be injected into later steps using <strong>placeholders</strong> like <code>&lt;my-key&gt;</code>, which are automatically resolved at runtime.</p>
@@ -186,7 +186,7 @@
             <p><a href="common-patterns.html">Common Patterns</a> — recipes for authentication, polling, data-driven tests, and a full worked example.</p>
           </li>
         </ul>
-        <p>Ready to get started? Head over to <a href="installation.html">Installation</a> and then <a href="basics.html">Basics</a>.</p>
+        <p>Ready to get started? Head over to the <a href="quick-start.html">Quick Start</a> guide.</p>
 
         
 <hr class="footer-rule"/>
