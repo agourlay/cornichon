@@ -364,7 +364,7 @@ object JsonSteps {
           for {
             sessionValue <- sc.session.get(sessionKey)
             elements <- applyPathAndFindArray(jsonPath)(sc, sessionValue)
-          } yield CustomMessageEqualityAssertion(true, elements.nonEmpty, () => jsonArrayNotEmptyError(parseDslJsonUnsafe(sessionValue).show))
+          } yield CustomMessageEqualityAssertion(true, elements.nonEmpty, () => jsonArrayNotEmptyError(prettyPrintJson(sessionValue)))
         }
     )
 

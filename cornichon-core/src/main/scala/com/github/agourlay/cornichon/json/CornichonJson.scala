@@ -54,6 +54,10 @@ trait CornichonJson {
   def parseDslJsonUnsafe[A: Encoder: Show](input: A): Json =
     parseDslJson(input).valueUnsafe
 
+  // Pretty-print as JSON if possible, otherwise return the raw string
+  def prettyPrintJson(source: String): String =
+    parseDslJson(source).fold(_ => source, _.spaces2)
+
   def parseString(s: String): Either[MalformedJsonError[String], Json] =
     io.circe.parser.parse(s).leftMap(f => MalformedJsonError(s, f.message))
 
