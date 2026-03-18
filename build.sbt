@@ -133,21 +133,11 @@ lazy val core =
         library.circeParser,
         library.diffsonCirce,
         library.caffeine,
+        library.typesafeConfig,
         library.munit % Test,
         library.scalacheck % Test,
         library.circeTesting % Test
-      ),
-      libraryDependencies ++= {
-        CrossVersion.partialVersion(scalaVersion.value) match {
-          case Some((3, _)) => Seq(library.pureConfigCore, library.pureConfigGenS3)
-          case Some((2, _)) =>
-            Seq(
-              library.pureConfig,
-              "org.scala-lang" % "scala-reflect" % scalaVersion.value // macro
-            )
-          case _ => Seq.empty
-        }
-      }
+      )
     )
 
 lazy val testFramework =
@@ -307,21 +297,18 @@ lazy val library =
       val diffson = "4.6.1"
       val sangria = "4.2.17"
       val fansi = "0.5.1"
-      val pureConfig = "0.17.10"
       val sbtTest = "1.0"
       val http4s = "0.23.33"
       val fs2 = "3.13.0"
       val openPojo = "0.9.1"
       val decline = "2.6.1"
       val scalaXml = "2.4.0"
+      val typesafeConfig = "1.4.3"
       val caffeine = "3.2.3"
     }
     val catsCore = "org.typelevel" %% "cats-core" % Version.cats
     val catsEffect = "org.typelevel" %% "cats-effect" % Version.catsEffect
     val munit = "org.scalameta" %% "munit" % Version.munit
-    val pureConfig = "com.github.pureconfig" %% "pureconfig" % Version.pureConfig // scala 2
-    val pureConfigCore = "com.github.pureconfig" %% "pureconfig-core" % Version.pureConfig // scala 3
-    val pureConfigGenS3 = "com.github.pureconfig" %% "pureconfig-generic-scala3" % Version.pureConfig // scala 3
     val parboiled = "org.parboiled" %% "parboiled" % Version.parboiled
     val fansi = "com.lihaoyi" %% "fansi" % Version.fansi
     val sangria = "org.sangria-graphql" %% "sangria" % Version.sangria
@@ -342,5 +329,6 @@ lazy val library =
     val openPojo = "com.openpojo" % "openpojo" % Version.openPojo
     val decline = "com.monovore" %% "decline" % Version.decline
     val scalaXml = "org.scala-lang.modules" %% "scala-xml" % Version.scalaXml
+    val typesafeConfig = "com.typesafe" % "config" % Version.typesafeConfig
     val caffeine = "com.github.ben-manes.caffeine" % "caffeine" % Version.caffeine
   }

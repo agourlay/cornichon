@@ -6,8 +6,6 @@ import com.github.agourlay.cornichon.resolver.Mapper
 
 import java.util.concurrent.ConcurrentLinkedDeque
 
-import pureconfig.error.{ConvertFailure, KeyNotFound}
-
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
@@ -47,12 +45,10 @@ trait BaseFeature {
 
 // Protect and free resources
 object BaseFeature {
-  import pureconfig.error.{ConfigReaderException, ConfigReaderFailures}
 
   lazy val config: Config = Config.load("cornichon") match {
-    case Right(v)                                                                          => v
-    case Left(ConfigReaderFailures(ConvertFailure(KeyNotFound("cornichon", _), _, _), _*)) => Config()
-    case Left(failures)                                                                    => throw new ConfigReaderException[Config](failures)
+    case Right(v) => v
+    case Left(e)  => throw e
   }
 
   private val hooks = new ConcurrentLinkedDeque[() => Future[_]]()
