@@ -127,100 +127,48 @@
         <p>This simple model makes it natural to chain steps together: make a request, save part of the response, and use it in the next request — all without writing boilerplate code.</p>
         
         <h2 id="quick-example" class="section"><a class="anchor-link left" href="#quick-example"><i class="icofont-laika link">&#xef71;</i></a>Quick example</h2>
-        <p>Find below an example of testing the Open Movie Database API.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
 
-</span><span class="keyword">class</span><span> </span><span class="type-name">ReadmeExample</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+</span><span class="keyword">class</span><span> </span><span class="type-name">SuperHeroesFeature</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;OpenMovieDatabase API&quot;</span><span>){
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Superheroes API&quot;</span><span>) {
 
-    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;list GOT season 1 episodes&quot;</span><span>){
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;retrieve a superhero&quot;</span><span>) {
 
-      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://www.omdbapi.com&quot;</span><span>).</span><span class="identifier">withParams</span><span>(
-        </span><span class="string-literal">&quot;t&quot;</span><span> -&gt; </span><span class="string-literal">&quot;Game of Thrones&quot;</span><span>,
-        </span><span class="string-literal">&quot;Season&quot;</span><span> -&gt; </span><span class="string-literal">&quot;1&quot;</span><span>
-      )
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/superheroes/Batman&quot;</span><span>)
 
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
 
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;Episodes&quot;</span><span>, </span><span class="string-literal">&quot;Response&quot;</span><span>).</span><span class="identifier">is</span><span>(
-        </span><span class="string-literal">&quot;&quot;&quot;
-        {
-          &quot;Title&quot;: &quot;Game of Thrones&quot;,
-          &quot;Season&quot;: &quot;1&quot;
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+      {
+        &quot;name&quot;: &quot;Batman&quot;,
+        &quot;realName&quot;: &quot;Bruce Wayne&quot;,
+        &quot;city&quot;: &quot;Gotham city&quot;,
+        &quot;publisher&quot;: {
+          &quot;name&quot;: &quot;DC&quot;,
+          &quot;foundationYear&quot;: 1934
         }
-        &quot;&quot;&quot;</span><span>)
+      }
+      &quot;&quot;&quot;</span><span>)
 
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;Episodes&quot;</span><span>).</span><span class="identifier">is</span><span>(
-        </span><span class="string-literal">&quot;&quot;&quot;
-        |                Title                    |   Released   | Episode | imdbRating |   imdbID    |
-        | &quot;Winter Is Coming&quot;                      | &quot;2011-04-17&quot; |   &quot;1&quot;   |    &quot;8.1&quot;   | &quot;tt1480055&quot; |
-        | &quot;The Kingsroad&quot;                         | &quot;2011-04-24&quot; |   &quot;2&quot;   |    &quot;7.8&quot;   | &quot;tt1668746&quot; |
-        | &quot;Lord Snow&quot;                             | &quot;2011-05-01&quot; |   &quot;3&quot;   |    &quot;7.6&quot;   | &quot;tt1829962&quot; |
-        | &quot;Cripples, Bastards, and Broken Things&quot; | &quot;2011-05-08&quot; |   &quot;4&quot;   |    &quot;7.7&quot;   | &quot;tt1829963&quot; |
-        | &quot;The Wolf and the Lion&quot;                 | &quot;2011-05-15&quot; |   &quot;5&quot;   |    &quot;8.0&quot;   | &quot;tt1829964&quot; |
-        | &quot;A Golden Crown&quot;                        | &quot;2011-05-22&quot; |   &quot;6&quot;   |    &quot;8.1&quot;   | &quot;tt1837862&quot; |
-        | &quot;You Win or You Die&quot;                    | &quot;2011-05-29&quot; |   &quot;7&quot;   |    &quot;8.1&quot;   | &quot;tt1837863&quot; |
-        | &quot;The Pointy End&quot;                        | &quot;2011-06-05&quot; |   &quot;8&quot;   |    &quot;7.9&quot;   | &quot;tt1837864&quot; |
-        | &quot;Baelor&quot;                                | &quot;2011-06-12&quot; |   &quot;9&quot;   |    &quot;8.6&quot;   | &quot;tt1851398&quot; |
-        | &quot;Fire and Blood&quot;                        | &quot;2011-06-19&quot; |  &quot;10&quot;   |    &quot;8.4&quot;   | &quot;tt1851397&quot; |
-        &quot;&quot;&quot;</span><span>)
+      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;DC&quot;</span><span>)
 
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;Episodes&quot;</span><span>).</span><span class="identifier">asArray</span><span>.</span><span class="identifier">hasSize</span><span>(</span><span class="number-literal">10</span><span>)
-
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;Episodes[0]&quot;</span><span>).</span><span class="identifier">is</span><span>(
-        </span><span class="string-literal">&quot;&quot;&quot;
-        {
-          &quot;Title&quot;: &quot;Winter Is Coming&quot;,
-          &quot;Released&quot;: &quot;2011-04-17&quot;,
-          &quot;Episode&quot;: &quot;1&quot;,
-          &quot;imdbRating&quot;: &quot;8.1&quot;,
-          &quot;imdbID&quot;: &quot;tt1480055&quot;
-        }
-        &quot;&quot;&quot;</span><span>)
-
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;Episodes[0].Released&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;2011-04-17&quot;</span><span>)
-
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;Episodes[*].Released&quot;</span><span>).</span><span class="identifier">is</span><span>(
-        </span><span class="string-literal">&quot;&quot;&quot;
-        [
-          &quot;2011-04-17&quot;, &quot;2011-04-24&quot;, &quot;2011-05-01&quot;, &quot;2011-05-08&quot;, &quot;2011-05-15&quot;,
-          &quot;2011-05-22&quot;, &quot;2011-05-29&quot;, &quot;2011-06-05&quot;, &quot;2011-06-12&quot;, &quot;2011-06-19&quot;
-        ]
-        &quot;&quot;&quot;</span><span>)
-
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;Episodes&quot;</span><span>).</span><span class="identifier">asArray</span><span>.</span><span class="identifier">contains</span><span>(
-        </span><span class="string-literal">&quot;&quot;&quot;
-        {
-          &quot;Title&quot;: &quot;Winter Is Coming&quot;,
-          &quot;Released&quot;: &quot;2011-04-17&quot;,
-          &quot;Episode&quot;: &quot;1&quot;,
-          &quot;imdbRating&quot;: &quot;8.1&quot;,
-          &quot;imdbID&quot;: &quot;tt1480055&quot;
-        }
-        &quot;&quot;&quot;</span><span>)
+      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">isGreaterThan</span><span>(</span><span class="number-literal">1900</span><span>)
     }
   }
 }</span></code></pre>
-        <p>For more examples see the following files which are part of the test pipeline:</p>
+        <p>For more examples see:</p>
         <ul>
           <li>
-            <p><a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/superHeroes/SuperHeroesScenario.scala">Embedded Superheroes API</a>.</p>
+            <p><a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/superHeroes/SuperHeroesScenario.scala">Embedded Superheroes API</a> — full feature with HTTP CRUD operations, JSON assertions, and matchers.</p>
           </li>
           <li>
-            <p><a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/it/scala/com/github/agourlay/cornichon/framework/examples/OpenMovieDatabase.scala">OpenMovieDatabase API</a>.</p>
+            <p><a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/math/MathScenario.scala">Math Operations</a> — custom steps with data tables and property-based testing.</p>
           </li>
           <li>
-            <p><a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/it/scala/com/github/agourlay/cornichon/framework/examples/DeckOfCard.scala">DeckOfCard API</a>.</p>
-          </li>
-          <li>
-            <p><a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/it/scala/com/github/agourlay/cornichon/framework/examples/StarWars.scala">Star Wars API</a>.</p>
-          </li>
-          <li>
-            <p><a href="https://github.com/agourlay/cornichon/blob/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/math/MathScenario.scala">Math Operations</a>.</p>
+            <p><a href="common-patterns.html">Common Patterns</a> — recipes for authentication, polling, data-driven tests, and a full worked example.</p>
           </li>
         </ul>
-        <p>And if you enjoy slides, you might like <a href="https://speakerdeck.com/agourlay/cornichon-a-scala-dsl-for-testing-http-json-api">this presentation</a> given at the <a href="https://www.meetup.com/Scala-Berlin-Brandenburg/events/235779912/">Berlin Scala User Group</a> which gives more context regarding the creation and usage of this library.</p>
         <p>Ready to get started? Head over to <a href="installation.html">Installation</a> and then <a href="basics.html">Basics</a>.</p>
 
         
