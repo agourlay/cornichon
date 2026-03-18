@@ -128,7 +128,6 @@ case class HttpStream(name: String) extends AnyVal
 
 object HttpStreams {
   val SSE = HttpStream("Server-Sent-Event")
-  val WS = HttpStream("WebSocket")
 }
 
 case class HttpStreamedRequest(stream: HttpStream, url: String, takeWithin: FiniteDuration, params: Seq[(String, String)], headers: Seq[(String, String)])

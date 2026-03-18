@@ -9,7 +9,7 @@ import cats.syntax.either._
 import cats.syntax.show._
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime
-import com.github.agourlay.cornichon.core.{CornichonError, CornichonException, Done}
+import com.github.agourlay.cornichon.core.{BasicError, CornichonError, CornichonException, Done}
 import com.github.agourlay.cornichon.http.HttpMethods._
 import com.github.agourlay.cornichon.http._
 import com.github.agourlay.cornichon.http.HttpService._
@@ -172,8 +172,8 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
 
   def openStream(req: HttpStreamedRequest, t: FiniteDuration): IO[Either[CornichonError, HttpResponse]] =
     req.stream match {
-      case SSE => runSSE(req, t).value
-      case _   => ??? // TODO implement WS support
+      case SSE   => runSSE(req, t).value
+      case other => IO.pure(Left(BasicError(s"unsupported HTTP stream type '${other.name}'")))
     }
 
   def shutdown(): IO[Done] =

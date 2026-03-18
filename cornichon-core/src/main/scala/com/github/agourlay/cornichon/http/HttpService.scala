@@ -9,7 +9,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.http.client.HttpClient
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson._
-import com.github.agourlay.cornichon.http.HttpStreams._
+import com.github.agourlay.cornichon.http.HttpStreams.SSE
 import com.github.agourlay.cornichon.resolver.Resolvable
 import com.github.agourlay.cornichon.http.HttpService._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseIL
@@ -132,18 +132,6 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
     expectedStatus: Option[Short] = None
   ) = {
     val req = HttpStreamedRequest(SSE, url, takeWithin, params, headers)
-    streamEffect(req, expectedStatus, extractor)
-  }
-
-  def openWS(
-    url: String,
-    takeWithin: FiniteDuration,
-    params: Seq[(String, String)],
-    headers: Seq[(String, String)],
-    extractor: ResponseExtractor = NoOpExtraction,
-    expectedStatus: Option[Short] = None
-  ) = {
-    val req = HttpStreamedRequest(WS, url, takeWithin, params, headers)
     streamEffect(req, expectedStatus, extractor)
   }
 

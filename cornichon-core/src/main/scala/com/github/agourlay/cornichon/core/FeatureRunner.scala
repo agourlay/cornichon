@@ -4,7 +4,6 @@ import com.github.agourlay.cornichon.dsl.BaseFeature
 import com.github.agourlay.cornichon.matchers.MatcherResolver
 import cats.effect.IO
 import fs2.Stream
-import com.github.agourlay.cornichon.util.TraverseUtils.traverse
 
 case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, explicitSeed: Option[Long]) {
 
@@ -79,11 +78,17 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
     }
   }
 
-  private def runAfterFeature(): Either[CornichonError, Done] =
-    traverse(baseFeature.afterFeature.toList)(f => CornichonError.catchThrowable(f())) match {
-      case Left(e)  => Left(AfterFeatureError(e))
-      case Right(_) => Done.rightDone
+  // Run all afterFeature hooks even if some fail, to ensure cleanup is thorough.
+  // Reports the first error encountered, if any.
+  private def runAfterFeature(): Either[CornichonError, Done] = {
+    val errors = baseFeature.afterFeature.toList.flatMap { f =>
+      CornichonError.catchThrowable(f()).left.toOption
     }
+    errors.headOption match {
+      case Some(e) => Left(AfterFeatureError(e))
+      case None    => Done.rightDone
+    }
+  }
 
 }
 
