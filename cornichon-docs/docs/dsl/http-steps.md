@@ -40,6 +40,40 @@ get("http://superhero.io/batman")
 
 There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section [Custom HTTP body type](#custom-http-body-type).
 
+## Session keys from HTTP responses
+
+After every HTTP request, cornichon automatically saves the response into the [session](../dsl/session-steps.md) under these keys:
+
+| Session key | Content | Accessed via |
+|---|---|---|
+| `last-response-status` | HTTP status code (e.g. `200`) | `status.is(200)` |
+| `last-response-body` | Response body as a string | `body.is(...)`, `body.path(...)` |
+| `last-response-headers` | Response headers (encoded) | `headers.name(...)`, `headers.contain(...)` |
+| `last-response-request` | Description of the request that produced this response | — |
+
+These keys are overwritten on each HTTP request, so the `status`, `body`, and `headers` assertions always refer to the most recent response.
+
+### Saving values from the response
+
+Use `save_body_path` to extract a value from the response body using a JSON path and store it in the session under a custom key:
+
+```scala
+And I save_body_path("id" -> "product-id")
+And I save_body_path("address.city" -> "city", "address.zip" -> "zip")
+```
+
+The saved values are then available as [placeholders](../placeholders.md): `<product-id>`, `<city>`, etc.
+
+Other save steps:
+
+```scala
+// Save the entire response body under a custom key
+And I save_body("full-response")
+
+// Save a response header value
+And I save_header_value("Content-Type" -> "response-content-type")
+```
+
 ## HTTP assertions
 
 - assert response status
