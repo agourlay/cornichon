@@ -281,7 +281,7 @@ import sangria.macros._
 
 - GraphQL JSON
 
-all built-in steps accepting String input/output can also accept an alternative lightweight JSON format using the `gqljson` StringContext.
+The `gqljson` string interpolator lets you write JSON without quoting keys — using GraphQL's input syntax. This can make assertions more readable when dealing with large JSON objects.
 
 ```scala
 import com.github.agourlay.cornichon.json.CornichonJson._
@@ -295,6 +295,16 @@ And assert body.ignoring("city", "publisher").is(
   }
   """)
 ```
+
+The `gqljson` format supports:
+
+- Unquoted keys: `name` instead of `"name"`
+- String values still use quotes: `"Batman"`
+- Numbers, booleans, and null are unquoted: `42`, `true`, `null`
+- Nested objects and arrays: `{ publisher: { name: "DC" } }`
+- [Placeholders](../placeholders.md) work inside `gqljson` strings: `name: "<hero-name>"`
+
+It can be used anywhere a regular JSON string is accepted — body assertions, `is`, `contains`, etc. It is powered by the [Sangria](https://github.com/sangria-graphql/sangria) GraphQL parser.
 
 ## Custom HTTP body type
 
