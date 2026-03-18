@@ -4,23 +4,17 @@ laika.title = Common patterns
 
 # Common patterns
 
-This page collects recipes for frequently encountered testing scenarios. Each pattern is self-contained and ready to adapt to your own tests.
+This page collects recipes for frequently encountered testing scenarios. For the full reference of individual steps, see the [DSL](dsl.md) pages.
 
 ## Authenticated workflows
 
-Use `WithBasicAuth` or `WithHeaders` to set authentication headers across a block of steps. The headers are automatically cleaned up after the block.
+Use [`WithBasicAuth` or `WithHeaders`](dsl/wrapper-steps.md) to set authentication headers across a block of steps.
 
 ```scala
 WithBasicAuth("admin", "secret") {
   When I get("/admin/users")
   Then assert status.is(200)
   Then assert body.asArray.isNotEmpty
-}
-
-// Or with a bearer token
-WithHeaders(("Authorization", "Bearer <auth-token>")) {
-  When I get("/api/protected-resource")
-  Then assert status.is(200)
 }
 ```
 
@@ -46,7 +40,7 @@ WithHeaders(("Authorization", "Bearer <auth-token>")) {
 
 ## Polling eventually-consistent endpoints
 
-Use `Eventually` to retry assertions until they succeed or a timeout is reached. This is ideal for testing systems where changes propagate asynchronously.
+Use [`Eventually`](dsl/wrapper-steps.md) to retry assertions until they succeed or a timeout is reached. This is ideal for testing systems where changes propagate asynchronously.
 
 ```scala
 // Create a resource
@@ -66,44 +60,42 @@ Eventually(maxDuration = 10.seconds, interval = 200.millis) {
 Choose `interval` carefully — too short floods the server, too long wastes time. 100-500ms is usually a good range.
 @:@
 
-## Data-driven tests
+## CRUD workflow
 
-Use `WithDataInputs` to run the same assertions across multiple input sets without duplicating steps.
-
-```scala
-WithDataInputs(
-  """
-    | endpoint             | expected_status |
-    | "/health"            | "200"           |
-    | "/api/version"       | "200"           |
-    | "/does-not-exist"    | "404"           |
-  """
-) {
-  When I get("<endpoint>")
-  Then assert status.is("<expected_status>")
-}
-```
-
-For JSON-formatted inputs, use `WithJsonDataInputs`:
+A typical create-read-update-delete flow saving IDs between steps using [placeholders](placeholders.md):
 
 ```scala
-WithJsonDataInputs(
-  """
-  [
-    { "name": "Batman",   "city": "Gotham" },
-    { "name": "Superman", "city": "Metropolis" }
-  ]
-  """
-) {
-  When I get("/superheroes/<name>")
-  Then assert status.is(200)
-  Then assert body.path("city").is("<city>")
-}
+// Create
+Given I post("/products").withBody("""{ "name": "Widget", "price": 42 }""")
+Then assert status.is(201)
+And I save_body_path("id" -> "product-id")
+
+// Read
+When I get("/products/<product-id>")
+Then assert status.is(200)
+Then assert body.path("name").is("Widget")
+
+// Update
+Given I put("/products/<product-id>").withBody("""{ "name": "Widget Pro", "price": 99 }""")
+Then assert status.is(200)
+
+// Verify update
+When I get("/products/<product-id>")
+Then assert body.path("name").is("Widget Pro")
+Then assert body.path("price").is(99)
+
+// Delete
+Given I delete("/products/<product-id>")
+Then assert status.is(200)
+
+// Verify deletion
+When I get("/products/<product-id>")
+Then assert status.is(404)
 ```
 
 ## Shared setup and teardown
 
-Use `beforeEachScenario` and `afterEachScenario` to share common setup across all scenarios in a feature.
+Use `beforeEachScenario` and `afterEachScenario` to share common setup across all scenarios in a feature. See [Feature Options](feature-options.md#before-and-after-hooks) for details.
 
 ```scala
 class ApiFeature extends CornichonFeature {
@@ -135,44 +127,9 @@ class ApiFeature extends CornichonFeature {
 }
 ```
 
-See [Feature Options](feature-options.md#before-and-after-hooks) for more details on hooks.
-
-## CRUD workflow
-
-A typical create-read-update-delete flow saving IDs between steps:
-
-```scala
-// Create
-Given I post("/products").withBody("""{ "name": "Widget", "price": 42 }""")
-Then assert status.is(201)
-And I save_body_path("id" -> "product-id")
-
-// Read
-When I get("/products/<product-id>")
-Then assert status.is(200)
-Then assert body.path("name").is("Widget")
-
-// Update
-Given I put("/products/<product-id>").withBody("""{ "name": "Widget Pro", "price": 99 }""")
-Then assert status.is(200)
-
-// Verify update
-When I get("/products/<product-id>")
-Then assert body.path("name").is("Widget Pro")
-Then assert body.path("price").is(99)
-
-// Delete
-Given I delete("/products/<product-id>")
-Then assert status.is(200)
-
-// Verify deletion
-When I get("/products/<product-id>")
-Then assert status.is(404)
-```
-
 ## Reusable step blocks
 
-Extract common step sequences into functions using `Attach` for reuse across scenarios.
+Extract common step sequences into functions using `Attach` for reuse across scenarios. See [DSL Composition](dsl/utility-steps.md#dsl-composition) for more details.
 
 ```scala
 def create_superhero(name: String, city: String) =
@@ -199,52 +156,9 @@ Scenario("create and verify") {
 
 Use `AttachAs("title")` to give the block a descriptive name that shows up in the test output.
 
-See [DSL Composition](dsl/utility-steps.md#dsl-composition) for more on reusing steps.
-
-## Iterating over a collection
-
-Use `RepeatWith` or `RepeatFrom` to run steps for each element in a collection, with the current element available as a [placeholder](placeholders.md).
-
-```scala
-RepeatWith("Batman", "Superman", "Spiderman")("hero") {
-  When I get("/superheroes/<hero>")
-  Then assert status.is(200)
-}
-```
-
-To track the iteration index:
-
-```scala
-Repeat(5, "i") {
-  When I get("/items/<i>")
-  Then assert status.is(200)
-}
-```
-
-## Concurrent requests
-
-Use `RepeatConcurrently` to load-test an endpoint or verify thread safety:
-
-```scala
-RepeatConcurrently(times = 50, parallelism = 10, maxTime = 30.seconds) {
-  When I get("/api/health")
-  Then assert status.is(200)
-}
-```
-
-Use `Concurrently` when each step is different:
-
-```scala
-Concurrently(maxTime = 10.seconds) {
-  When I get("/api/users")
-  When I get("/api/products")
-  When I get("/api/orders")
-}
-```
-
 ## Full worked example
 
-This example tests a Deck of Cards API, combining several cornichon features: JSON assertions with `ignoring`, `save_body_path` for state extraction, `Eventually` for retrying until a condition is met, `Repeat` for looping, `WithDataInputs` for table-driven tests, and custom assertion steps.
+This example tests a Deck of Cards API, combining several cornichon features: JSON assertions with `ignoring`, `save_body_path` for state extraction, [`Eventually`](dsl/wrapper-steps.md) for retrying until a condition is met, [`Repeat`](dsl/wrapper-steps.md) for looping, [`WithDataInputs`](dsl/wrapper-steps.md) for table-driven tests, and [custom assertion steps](custom-steps/assert-step.md).
 
 ```scala
 import com.github.agourlay.cornichon.CornichonFeature

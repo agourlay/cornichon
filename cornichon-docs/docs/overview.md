@@ -17,36 +17,41 @@ This simple model makes it natural to chain steps together: make a request, save
 
 ```scala
 import com.github.agourlay.cornichon.CornichonFeature
+import scala.concurrent.duration._
 
-class SuperHeroesFeature extends CornichonFeature {
+class ProductsFeature extends CornichonFeature {
 
-  def feature = Feature("Superheroes API") {
+  def feature = Feature("Products API") {
 
-    Scenario("retrieve a superhero") {
+    Scenario("create and retrieve a product") {
 
-      When I get("/superheroes/Batman")
+      // Create
+      Given I post("/products").withBody("""{ "name": "Widget", "price": 42 }""")
+      Then assert status.is(201)
+      And I save_body_path("id" -> "product-id")
 
+      // Retrieve using the saved ID
+      When I get("/products/<product-id>")
       Then assert status.is(200)
+      Then assert body.path("name").is("Widget")
+      Then assert body.path("price").is(42)
+    }
 
-      Then assert body.is("""
-      {
-        "name": "Batman",
-        "realName": "Bruce Wayne",
-        "city": "Gotham city",
-        "publisher": {
-          "name": "DC",
-          "foundationYear": 1934
-        }
+    Scenario("search is eventually consistent") {
+
+      Given I post("/products").withBody("""{ "name": "Gadget" }""")
+      Then assert status.is(201)
+
+      Eventually(maxDuration = 5.seconds, interval = 200.millis) {
+        When I get("/products/search").withParams("q" -> "Gadget")
+        Then assert body.asArray.isNotEmpty
       }
-      """)
-
-      And assert body.path("publisher.name").is("DC")
-
-      And assert body.path("publisher.foundationYear").isGreaterThan(1900)
     }
   }
 }
 ```
+
+This example shows the key concepts: HTTP requests, JSON body assertions, saving values with `save_body_path`, reusing them via `<product-id>` placeholders, and polling with `Eventually`.
 
 For more examples see:
 

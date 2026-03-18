@@ -87,22 +87,7 @@ Given I post("/products").withBody(
 
 **Cause:** The session behaves like a multimap — saving the same key multiple times appends values, and `<key>` always returns the latest. Inside loops (`Repeat`, `RepeatWith`), each iteration may overwrite the key.
 
-**Fixes:**
-
-- Use `<key[0]>`, `<key[1]>` etc. to access earlier values by index
-- Use `session_history("key").containsExactly(...)` to verify the full history
-- Use distinct key names when saving multiple values
-
-```scala
-// Inside a Repeat, each iteration overwrites "response-status"
-Repeat(3) {
-  When I get("/endpoint")
-  // "last-status" will always be the latest value
-}
-
-// Use indexed access for earlier values
-Then assert session_value("response-status").atIndex(0).is("200")
-```
+**Fix:** Use indexed access like `<key[0]>` to retrieve earlier values, or use distinct key names. See [Placeholders](placeholders.md) for the full explanation of session multimap behavior.
 
 ## `Repeat` index starts at 0
 

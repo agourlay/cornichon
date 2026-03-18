@@ -235,9 +235,7 @@ lazy val docs =
               TextLink.internal(Root / "modules.md", "Modules")
             )
           )),
-          projectLinks = Seq(
-            IconLink.external("https://github.com/agourlay/cornichon", HeliumIcon.github)
-          ),
+          projectLinks = Nil,
           teasers = Seq(
             Teaser("Expressive DSL", "Write readable integration tests using a Scala DSL inspired by Gherkin."),
             Teaser("JSON First", "Powerful JSON assertions with path expressions, matchers, and ignoring keys."),
