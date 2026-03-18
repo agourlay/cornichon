@@ -112,12 +112,9 @@
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#authenticated-workflows">Authenticated workflows</a></li>
     <li class="level1 nav-leaf"><a href="#polling-eventually-consistent-endpoints">Polling eventually-consistent endpoints</a></li>
-    <li class="level1 nav-leaf"><a href="#data-driven-tests">Data-driven tests</a></li>
-    <li class="level1 nav-leaf"><a href="#shared-setup-and-teardown">Shared setup and teardown</a></li>
     <li class="level1 nav-leaf"><a href="#crud-workflow">CRUD workflow</a></li>
+    <li class="level1 nav-leaf"><a href="#shared-setup-and-teardown">Shared setup and teardown</a></li>
     <li class="level1 nav-leaf"><a href="#reusable-step-blocks">Reusable step blocks</a></li>
-    <li class="level1 nav-leaf"><a href="#iterating-over-a-collection">Iterating over a collection</a></li>
-    <li class="level1 nav-leaf"><a href="#concurrent-requests">Concurrent requests</a></li>
     <li class="level1 nav-leaf"><a href="#full-worked-example">Full worked example</a></li>
   </ul>
 
@@ -128,20 +125,14 @@
       <main class="content">
 
         <h1 id="common-patterns" class="title">Common patterns</h1>
-        <p>This page collects recipes for frequently encountered testing scenarios. Each pattern is self-contained and ready to adapt to your own tests.</p>
+        <p>This page collects recipes for frequently encountered testing scenarios. For the full reference of individual steps, see the <a href="dsl.html">DSL</a> pages.</p>
         
         <h2 id="authenticated-workflows" class="section"><a class="anchor-link left" href="#authenticated-workflows"><i class="icofont-laika link">&#xef71;</i></a>Authenticated workflows</h2>
-        <p>Use <code>WithBasicAuth</code> or <code>WithHeaders</code> to set authentication headers across a block of steps. The headers are automatically cleaned up after the block.</p>
+        <p>Use <a href="dsl/wrapper-steps.html"><code>WithBasicAuth</code> or <code>WithHeaders</code></a> to set authentication headers across a block of steps.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithBasicAuth</span><span>(</span><span class="string-literal">&quot;admin&quot;</span><span>, </span><span class="string-literal">&quot;secret&quot;</span><span>) {
   </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/admin/users&quot;</span><span>)
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
-}
-
-</span><span class="comment">// Or with a bearer token
-</span><span class="type-name">WithHeaders</span><span>((</span><span class="string-literal">&quot;Authorization&quot;</span><span>, </span><span class="string-literal">&quot;Bearer &lt;auth-token&gt;&quot;</span><span>)) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/api/protected-resource&quot;</span><span>)
-  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
 }</span></code></pre>
         <p>For a login flow that saves a token for later use:</p>
         <pre><code class="nohighlight"><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/auth/login&quot;</span><span>).</span><span class="identifier">withBody</span><span>(
@@ -161,7 +152,7 @@
 }</span></code></pre>
         
         <h2 id="polling-eventually-consistent-endpoints" class="section"><a class="anchor-link left" href="#polling-eventually-consistent-endpoints"><i class="icofont-laika link">&#xef71;</i></a>Polling eventually-consistent endpoints</h2>
-        <p>Use <code>Eventually</code> to retry assertions until they succeed or a timeout is reached. This is ideal for testing systems where changes propagate asynchronously.</p>
+        <p>Use <a href="dsl/wrapper-steps.html"><code>Eventually</code></a> to retry assertions until they succeed or a timeout is reached. This is ideal for testing systems where changes propagate asynchronously.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Create a resource
 </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{ &quot;name&quot;: &quot;Widget&quot; }&quot;&quot;&quot;</span><span>)
 </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
@@ -178,66 +169,8 @@
           <p>Choose <code>interval</code> carefully — too short floods the server, too long wastes time. 100-500ms is usually a good range.</p>
         </div>
         
-        <h2 id="data-driven-tests" class="section"><a class="anchor-link left" href="#data-driven-tests"><i class="icofont-laika link">&#xef71;</i></a>Data-driven tests</h2>
-        <p>Use <code>WithDataInputs</code> to run the same assertions across multiple input sets without duplicating steps.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithDataInputs</span><span>(
-  </span><span class="string-literal">&quot;&quot;&quot;
-    | endpoint             | expected_status |
-    | &quot;/health&quot;            | &quot;200&quot;           |
-    | &quot;/api/version&quot;       | &quot;200&quot;           |
-    | &quot;/does-not-exist&quot;    | &quot;404&quot;           |
-  &quot;&quot;&quot;</span><span>
-) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;endpoint&gt;&quot;</span><span>)
-  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&lt;expected_status&gt;&quot;</span><span>)
-}</span></code></pre>
-        <p>For JSON-formatted inputs, use <code>WithJsonDataInputs</code>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithJsonDataInputs</span><span>(
-  </span><span class="string-literal">&quot;&quot;&quot;
-  [
-    { &quot;name&quot;: &quot;Batman&quot;,   &quot;city&quot;: &quot;Gotham&quot; },
-    { &quot;name&quot;: &quot;Superman&quot;, &quot;city&quot;: &quot;Metropolis&quot; }
-  ]
-  &quot;&quot;&quot;</span><span>
-) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/superheroes/&lt;name&gt;&quot;</span><span>)
-  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&lt;city&gt;&quot;</span><span>)
-}</span></code></pre>
-        
-        <h2 id="shared-setup-and-teardown" class="section"><a class="anchor-link left" href="#shared-setup-and-teardown"><i class="icofont-laika link">&#xef71;</i></a>Shared setup and teardown</h2>
-        <p>Use <code>beforeEachScenario</code> and <code>afterEachScenario</code> to share common setup across all scenarios in a feature.</p>
-        <pre><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">ApiFeature</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
-
-  </span><span class="keyword">override</span><span> </span><span class="keyword">lazy</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">baseUrl</span><span> = </span><span class="string-literal">&quot;http://localhost:8080&quot;</span><span>
-
-  </span><span class="identifier">beforeEachScenario</span><span> {
-    </span><span class="type-name">Attach</span><span> {
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/auth/login&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{ &quot;user&quot;: &quot;test&quot;, &quot;pass&quot;: &quot;test&quot; }&quot;&quot;&quot;</span><span>)
-      </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;token&quot;</span><span> -&gt; </span><span class="string-literal">&quot;auth-token&quot;</span><span>)
-    }
-  }
-
-  </span><span class="identifier">afterEachScenario</span><span> {
-    </span><span class="type-name">Attach</span><span> {
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/auth/logout&quot;</span><span>)
-    }
-  }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;API tests&quot;</span><span>) {
-    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;list users&quot;</span><span>) {
-      </span><span class="comment">// auth-token is already in session
-</span><span>      </span><span class="type-name">WithHeaders</span><span>((</span><span class="string-literal">&quot;Authorization&quot;</span><span>, </span><span class="string-literal">&quot;Bearer &lt;auth-token&gt;&quot;</span><span>)) {
-        </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/users&quot;</span><span>)
-        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-      }
-    }
-  }
-}</span></code></pre>
-        <p>See <a href="feature-options.html#before-and-after-hooks">Feature Options</a> for more details on hooks.</p>
-        
         <h2 id="crud-workflow" class="section"><a class="anchor-link left" href="#crud-workflow"><i class="icofont-laika link">&#xef71;</i></a>CRUD workflow</h2>
-        <p>A typical create-read-update-delete flow saving IDs between steps:</p>
+        <p>A typical create-read-update-delete flow saving IDs between steps using <a href="placeholders.html">placeholders</a>:</p>
         <pre><code class="nohighlight"><span class="comment">// Create
 </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{ &quot;name&quot;: &quot;Widget&quot;, &quot;price&quot;: 42 }&quot;&quot;&quot;</span><span>)
 </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
@@ -265,8 +198,38 @@
 </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products/&lt;product-id&gt;&quot;</span><span>)
 </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">404</span><span>)</span></code></pre>
         
+        <h2 id="shared-setup-and-teardown" class="section"><a class="anchor-link left" href="#shared-setup-and-teardown"><i class="icofont-laika link">&#xef71;</i></a>Shared setup and teardown</h2>
+        <p>Use <code>beforeEachScenario</code> and <code>afterEachScenario</code> to share common setup across all scenarios in a feature. See <a href="feature-options.html#before-and-after-hooks">Feature Options</a> for details.</p>
+        <pre><code class="nohighlight"><span class="keyword">class</span><span> </span><span class="type-name">ApiFeature</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+
+  </span><span class="keyword">override</span><span> </span><span class="keyword">lazy</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">baseUrl</span><span> = </span><span class="string-literal">&quot;http://localhost:8080&quot;</span><span>
+
+  </span><span class="identifier">beforeEachScenario</span><span> {
+    </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/auth/login&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{ &quot;user&quot;: &quot;test&quot;, &quot;pass&quot;: &quot;test&quot; }&quot;&quot;&quot;</span><span>)
+      </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;token&quot;</span><span> -&gt; </span><span class="string-literal">&quot;auth-token&quot;</span><span>)
+    }
+  }
+
+  </span><span class="identifier">afterEachScenario</span><span> {
+    </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/auth/logout&quot;</span><span>)
+    }
+  }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;API tests&quot;</span><span>) {
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;list users&quot;</span><span>) {
+      </span><span class="comment">// auth-token is already in session
+</span><span>      </span><span class="type-name">WithHeaders</span><span>((</span><span class="string-literal">&quot;Authorization&quot;</span><span>, </span><span class="string-literal">&quot;Bearer &lt;auth-token&gt;&quot;</span><span>)) {
+        </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/users&quot;</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+      }
+    }
+  }
+}</span></code></pre>
+        
         <h2 id="reusable-step-blocks" class="section"><a class="anchor-link left" href="#reusable-step-blocks"><i class="icofont-laika link">&#xef71;</i></a>Reusable step blocks</h2>
-        <p>Extract common step sequences into functions using <code>Attach</code> for reuse across scenarios.</p>
+        <p>Extract common step sequences into functions using <code>Attach</code> for reuse across scenarios. See <a href="dsl/utility-steps.html#dsl-composition">DSL Composition</a> for more details.</p>
         <pre><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">create_superhero</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">city</span><span>: </span><span class="type-name">String</span><span>) =
   </span><span class="type-name">Attach</span><span> {
     </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/superheroes&quot;</span><span>).</span><span class="identifier">withBody</span><span>(
@@ -288,35 +251,9 @@
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">verify_superhero</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>)
 }</span></code></pre>
         <p>Use <code>AttachAs(&quot;title&quot;)</code> to give the block a descriptive name that shows up in the test output.</p>
-        <p>See <a href="dsl/utility-steps.html#dsl-composition">DSL Composition</a> for more on reusing steps.</p>
-        
-        <h2 id="iterating-over-a-collection" class="section"><a class="anchor-link left" href="#iterating-over-a-collection"><i class="icofont-laika link">&#xef71;</i></a>Iterating over a collection</h2>
-        <p>Use <code>RepeatWith</code> or <code>RepeatFrom</code> to run steps for each element in a collection, with the current element available as a <a href="placeholders.html">placeholder</a>.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatWith</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>, </span><span class="string-literal">&quot;Superman&quot;</span><span>, </span><span class="string-literal">&quot;Spiderman&quot;</span><span>)(</span><span class="string-literal">&quot;hero&quot;</span><span>) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/superheroes/&lt;hero&gt;&quot;</span><span>)
-  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-}</span></code></pre>
-        <p>To track the iteration index:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Repeat</span><span>(</span><span class="number-literal">5</span><span>, </span><span class="string-literal">&quot;i&quot;</span><span>) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/items/&lt;i&gt;&quot;</span><span>)
-  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-}</span></code></pre>
-        
-        <h2 id="concurrent-requests" class="section"><a class="anchor-link left" href="#concurrent-requests"><i class="icofont-laika link">&#xef71;</i></a>Concurrent requests</h2>
-        <p>Use <code>RepeatConcurrently</code> to load-test an endpoint or verify thread safety:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatConcurrently</span><span>(</span><span class="identifier">times</span><span> = </span><span class="number-literal">50</span><span>, </span><span class="identifier">parallelism</span><span> = </span><span class="number-literal">10</span><span>, </span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">30</span><span>.</span><span class="identifier">seconds</span><span>) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/api/health&quot;</span><span>)
-  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-}</span></code></pre>
-        <p>Use <code>Concurrently</code> when each step is different:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Concurrently</span><span>(</span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">seconds</span><span>) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/api/users&quot;</span><span>)
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/api/products&quot;</span><span>)
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/api/orders&quot;</span><span>)
-}</span></code></pre>
         
         <h2 id="full-worked-example" class="section"><a class="anchor-link left" href="#full-worked-example"><i class="icofont-laika link">&#xef71;</i></a>Full worked example</h2>
-        <p>This example tests a Deck of Cards API, combining several cornichon features: JSON assertions with <code>ignoring</code>, <code>save_body_path</code> for state extraction, <code>Eventually</code> for retrying until a condition is met, <code>Repeat</code> for looping, <code>WithDataInputs</code> for table-driven tests, and custom assertion steps.</p>
+        <p>This example tests a Deck of Cards API, combining several cornichon features: JSON assertions with <code>ignoring</code>, <code>save_body_path</code> for state extraction, <a href="dsl/wrapper-steps.html"><code>Eventually</code></a> for retrying until a condition is met, <a href="dsl/wrapper-steps.html"><code>Repeat</code></a> for looping, <a href="dsl/wrapper-steps.html"><code>WithDataInputs</code></a> for table-driven tests, and <a href="custom-steps/assert-step.html">custom assertion steps</a>.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="identifier">steps</span><span>.</span><span class="identifier">regular</span><span>.</span><span class="identifier">assertStep</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>

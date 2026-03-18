@@ -189,20 +189,7 @@
         <h2 id="session-key-overwritten-unexpectedly" class="section"><a class="anchor-link left" href="#session-key-overwritten-unexpectedly"><i class="icofont-laika link">&#xef71;</i></a>Session key overwritten unexpectedly</h2>
         <p><strong>Symptom:</strong> A <a href="placeholders.html">placeholder</a> resolves to a different value than expected.</p>
         <p><strong>Cause:</strong> The session behaves like a multimap — saving the same key multiple times appends values, and <code>&lt;key&gt;</code> always returns the latest. Inside loops (<code>Repeat</code>, <code>RepeatWith</code>), each iteration may overwrite the key.</p>
-        <p><strong>Fixes:</strong></p>
-        <ul>
-          <li>Use <code>&lt;key[0]&gt;</code>, <code>&lt;key[1]&gt;</code> etc. to access earlier values by index</li>
-          <li>Use <code>session_history(&quot;key&quot;).containsExactly(...)</code> to verify the full history</li>
-          <li>Use distinct key names when saving multiple values</li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Inside a Repeat, each iteration overwrites &quot;response-status&quot;
-</span><span class="type-name">Repeat</span><span>(</span><span class="number-literal">3</span><span>) {
-  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/endpoint&quot;</span><span>)
-  </span><span class="comment">// &quot;last-status&quot; will always be the latest value
-</span><span>}
-
-</span><span class="comment">// Use indexed access for earlier values
-</span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;response-status&quot;</span><span>).</span><span class="identifier">atIndex</span><span>(</span><span class="number-literal">0</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;200&quot;</span><span>)</span></code></pre>
+        <p><strong>Fix:</strong> Use indexed access like <code>&lt;key[0]&gt;</code> to retrieve earlier values, or use distinct key names. See <a href="placeholders.html">Placeholders</a> for the full explanation of session multimap behavior.</p>
         
         <h2 id="repeat-index-starts-at-0" class="section"><a class="anchor-link left" href="#repeat-index-starts-at-0"><i class="icofont-laika link">&#xef71;</i></a><code>Repeat</code> index starts at 0</h2>
         <p><strong>Symptom:</strong> Off-by-one errors when using <code>Repeat</code> with an index.</p>

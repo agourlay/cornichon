@@ -128,35 +128,39 @@
         
         <h2 id="quick-example" class="section"><a class="anchor-link left" href="#quick-example"><i class="icofont-laika link">&#xef71;</i></a>Quick example</h2>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
 
-</span><span class="keyword">class</span><span> </span><span class="type-name">SuperHeroesFeature</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+</span><span class="keyword">class</span><span> </span><span class="type-name">ProductsFeature</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Superheroes API&quot;</span><span>) {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Products API&quot;</span><span>) {
 
-    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;retrieve a superhero&quot;</span><span>) {
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;create and retrieve a product&quot;</span><span>) {
 
-      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/superheroes/Batman&quot;</span><span>)
+      </span><span class="comment">// Create
+</span><span>      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{ &quot;name&quot;: &quot;Widget&quot;, &quot;price&quot;: 42 }&quot;&quot;&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
+      </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;product-id&quot;</span><span>)
 
+      </span><span class="comment">// Retrieve using the saved ID
+</span><span>      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products/&lt;product-id&gt;&quot;</span><span>)
       </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Widget&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;price&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="number-literal">42</span><span>)
+    }
 
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
-      {
-        &quot;name&quot;: &quot;Batman&quot;,
-        &quot;realName&quot;: &quot;Bruce Wayne&quot;,
-        &quot;city&quot;: &quot;Gotham city&quot;,
-        &quot;publisher&quot;: {
-          &quot;name&quot;: &quot;DC&quot;,
-          &quot;foundationYear&quot;: 1934
-        }
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;search is eventually consistent&quot;</span><span>) {
+
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{ &quot;name&quot;: &quot;Gadget&quot; }&quot;&quot;&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
+
+      </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">5</span><span>.</span><span class="identifier">seconds</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">200</span><span>.</span><span class="identifier">millis</span><span>) {
+        </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products/search&quot;</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;q&quot;</span><span> -&gt; </span><span class="string-literal">&quot;Gadget&quot;</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
       }
-      &quot;&quot;&quot;</span><span>)
-
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.name&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;DC&quot;</span><span>)
-
-      </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;publisher.foundationYear&quot;</span><span>).</span><span class="identifier">isGreaterThan</span><span>(</span><span class="number-literal">1900</span><span>)
     }
   }
 }</span></code></pre>
+        <p>This example shows the key concepts: HTTP requests, JSON body assertions, saving values with <code>save_body_path</code>, reusing them via <code>&lt;product-id&gt;</code> placeholders, and polling with <code>Eventually</code>.</p>
         <p>For more examples see:</p>
         <ul>
           <li>
