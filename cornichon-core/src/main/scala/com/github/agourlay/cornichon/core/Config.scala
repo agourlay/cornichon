@@ -1,6 +1,6 @@
 package com.github.agourlay.cornichon.core
 
-import com.typesafe.config.{ConfigFactory, ConfigException}
+import com.typesafe.config.{ConfigException, ConfigFactory}
 
 import scala.concurrent.duration._
 import scala.util.Try
@@ -54,16 +54,19 @@ object Config {
       val defaults = Config()
       Config(
         executeScenariosInParallel = if (c.hasPath("executeScenariosInParallel")) c.getBoolean("executeScenariosInParallel") else defaults.executeScenariosInParallel,
-        scenarioExecutionParallelismFactor = if (c.hasPath("scenarioExecutionParallelismFactor")) c.getInt("scenarioExecutionParallelismFactor") else defaults.scenarioExecutionParallelismFactor,
+        scenarioExecutionParallelismFactor =
+          if (c.hasPath("scenarioExecutionParallelismFactor")) c.getInt("scenarioExecutionParallelismFactor") else defaults.scenarioExecutionParallelismFactor,
         requestTimeout = if (c.hasPath("requestTimeout")) c.getDuration("requestTimeout").toMillis.millis else defaults.requestTimeout,
         globalBaseUrl = if (c.hasPath("globalBaseUrl")) c.getString("globalBaseUrl") else defaults.globalBaseUrl,
         traceRequests = if (c.hasPath("traceRequests")) c.getBoolean("traceRequests") else defaults.traceRequests,
         warnOnDuplicateHeaders = if (c.hasPath("warnOnDuplicateHeaders")) c.getBoolean("warnOnDuplicateHeaders") else defaults.warnOnDuplicateHeaders,
         failOnDuplicateHeaders = if (c.hasPath("failOnDuplicateHeaders")) c.getBoolean("failOnDuplicateHeaders") else defaults.failOnDuplicateHeaders,
         addAcceptGzipByDefault = if (c.hasPath("addAcceptGzipByDefault")) c.getBoolean("addAcceptGzipByDefault") else defaults.addAcceptGzipByDefault,
-        disableCertificateVerification = if (c.hasPath("disableCertificateVerification")) c.getBoolean("disableCertificateVerification") else defaults.disableCertificateVerification,
+        disableCertificateVerification =
+          if (c.hasPath("disableCertificateVerification")) c.getBoolean("disableCertificateVerification") else defaults.disableCertificateVerification,
         followRedirect = if (c.hasPath("followRedirect")) c.getBoolean("followRedirect") else defaults.followRedirect,
         enableHttp2 = if (c.hasPath("enableHttp2")) c.getBoolean("enableHttp2") else defaults.enableHttp2
       )
     }.toEither
+
 }
