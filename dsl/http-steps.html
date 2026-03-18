@@ -126,6 +126,7 @@
     <li class="level1 nav-leaf"><a href="#http-assertions">HTTP assertions</a></li>
     <li class="level1 nav-leaf"><a href="#http-streams">HTTP streams</a></li>
     <li class="level1 nav-leaf"><a href="#graphql-support">GraphQL support</a></li>
+    <li class="level1 nav-leaf"><a href="#custom-http-body-type">Custom HTTP body type</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -161,7 +162,7 @@
   .</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span> -&gt; </span><span class="string-literal">&quot;1&quot;</span><span>)
   .</span><span class="identifier">addParams</span><span>(</span><span class="string-literal">&quot;b&quot;</span><span> -&gt; </span><span class="string-literal">&quot;2&quot;</span><span>)
   .</span><span class="identifier">addHeaders</span><span>((</span><span class="string-literal">&quot;X-Custom&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>))</span></code></pre>
-        <p>There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section <a href="../misc.html#custom-http-body-type">Custom HTTP body type</a>.</p>
+        <p>There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section <a href="#custom-http-body-type">Custom HTTP body type</a>.</p>
         
         <h2 id="http-assertions" class="section"><a class="anchor-link left" href="#http-assertions"><i class="icofont-laika link">&#xef71;</i></a>HTTP assertions</h2>
         <ul>
@@ -375,6 +376,27 @@
     hasSuperpowers: false
   }
   &quot;&quot;&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="custom-http-body-type" class="section"><a class="anchor-link left" href="#custom-http-body-type"><i class="icofont-laika link">&#xef71;</i></a>Custom HTTP body type</h2>
+        <p>By default, the HTTP DSL expects a <code>String</code> body. To use a custom type, provide three typeclass instances:</p>
+        <ul>
+          <li><code>cats.Show</code> — used to print the values</li>
+          <li><code>io.circe.Encoder</code> — used to convert the values to JSON</li>
+          <li><code>com.github.agourlay.cornichon.resolver.Resolvable</code> — used to provide a String form in which <a href="../placeholders.html">placeholders</a> can be resolved</li>
+        </ul>
+        <p>For instance, to use <code>JsObject</code> from <code>play-json</code> as an HTTP request body:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">jsonResolvableForm</span><span>: </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] {
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">toResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">JsObject</span><span>) = </span><span class="identifier">s</span><span>.</span><span class="identifier">toString</span><span>()
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">fromResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) = </span><span class="type-name">Json</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="identifier">s</span><span>).</span><span class="identifier">as</span><span>[</span><span class="type-name">JsObject</span><span>]
+  }
+
+  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">showJson</span><span>: </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] {
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">show</span><span>(</span><span class="identifier">f</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">String</span><span> = </span><span class="identifier">f</span><span>.</span><span class="identifier">toString</span><span>()
+  }
+
+  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">JsonEncoder</span><span>: </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] {
+    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>(</span><span class="identifier">a</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">Json</span><span> = </span><span class="identifier">parse</span><span>(</span><span class="identifier">a</span><span>.</span><span class="identifier">toString</span><span>()).</span><span class="identifier">getOrElse</span><span>(</span><span class="identifier">cJson</span><span>.</span><span class="type-name">Null</span><span>)
+  }</span></code></pre>
 
         
 <hr class="footer-rule"/>

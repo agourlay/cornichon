@@ -125,7 +125,6 @@
     <li class="level1 nav-leaf"><a href="#sbt-integration">SBT integration</a></li>
     <li class="level1 nav-leaf"><a href="#running-tests-without-a-build-tool">Running tests without a build tool</a></li>
     <li class="level1 nav-leaf"><a href="#packaging-tests-in-a-docker-container">Packaging tests in a Docker container</a></li>
-    <li class="level1 nav-leaf"><a href="#custom-http-body-type">Custom HTTP body type</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -199,27 +198,6 @@ Options and flags:
     )
   )</span></code></pre>
         <p>After creating <code>docker.sbt</code>, run <code>sbt docker:publishLocal</code> to build the Docker image locally.</p>
-        
-        <h2 id="custom-http-body-type" class="section"><a class="anchor-link left" href="#custom-http-body-type"><i class="icofont-laika link">&#xef71;</i></a>Custom HTTP body type</h2>
-        <p>By default, the HTTP DSL expects a <code>String</code> body. To use a custom type, provide three typeclass instances:</p>
-        <ul>
-          <li><code>cats.Show</code> — used to print the values</li>
-          <li><code>io.circe.Encoder</code> — used to convert the values to JSON</li>
-          <li><code>com.github.agourlay.cornichon.resolver.Resolvable</code> — used to provide a String form in which <a href="placeholders.html">placeholders</a> can be resolved</li>
-        </ul>
-        <p>For instance, to use <code>JsObject</code> from <code>play-json</code> as an HTTP request body:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">jsonResolvableForm</span><span>: </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] {
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">toResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">JsObject</span><span>) = </span><span class="identifier">s</span><span>.</span><span class="identifier">toString</span><span>()
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">fromResolvableForm</span><span>(</span><span class="identifier">s</span><span>: </span><span class="type-name">String</span><span>) = </span><span class="type-name">Json</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="identifier">s</span><span>).</span><span class="identifier">as</span><span>[</span><span class="type-name">JsObject</span><span>]
-  }
-
-  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">showJson</span><span>: </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Show</span><span>[</span><span class="type-name">JsObject</span><span>] {
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">show</span><span>(</span><span class="identifier">f</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">String</span><span> = </span><span class="identifier">f</span><span>.</span><span class="identifier">toString</span><span>()
-  }
-
-  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="type-name">JsonEncoder</span><span>: </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Encoder</span><span>[</span><span class="type-name">JsObject</span><span>] {
-    </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">apply</span><span>(</span><span class="identifier">a</span><span>: </span><span class="type-name">JsObject</span><span>): </span><span class="type-name">Json</span><span> = </span><span class="identifier">parse</span><span>(</span><span class="identifier">a</span><span>.</span><span class="identifier">toString</span><span>()).</span><span class="identifier">getOrElse</span><span>(</span><span class="identifier">cJson</span><span>.</span><span class="type-name">Null</span><span>)
-  }</span></code></pre>
 
         
 <hr class="footer-rule"/>

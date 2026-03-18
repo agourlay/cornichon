@@ -122,6 +122,8 @@
   <p class="header"><a href="#">Placeholders</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-node"><a href="#custom-extractors">Custom extractors</a></li>
+    <li class="level2 nav-leaf"><a href="#other-mapper-types">Other mapper types</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -207,6 +209,51 @@
           <li><code>&lt;name[0]&gt;</code> uses the first value taken by the key</li>
           <li><code>&lt;name[1]&gt;</code> uses the second element taken by the key</li>
         </ul>
+        
+        <h2 id="custom-extractors" class="section"><a class="anchor-link left" href="#custom-extractors"><i class="icofont-laika link">&#xef71;</i></a>Custom extractors</h2>
+        <p>In some cases it makes sense to declare <code>extractors</code> to avoid code duplication when dealing with <a href="dsl/session-steps.html">session</a> values. Once registered, they can be used as <code>&lt;extractor-name&gt;</code> in any step.</p>
+        <p>An extractor describes using a JsonPath how to build a value from an existing value in the session.</p>
+        <p>For instance if most of your JSON responses contain a field <code>id</code> and you want to use it as a placeholder without always having to manually extract and save the value:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>   </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerExtractors</span><span> = </span><span class="type-name">Map</span><span>(
+     </span><span class="string-literal">&quot;response-id&quot;</span><span> -&gt; </span><span class="type-name">JsonMapper</span><span>(</span><span class="type-name">HttpService</span><span>.</span><span class="type-name">SessionKeys</span><span>.</span><span class="identifier">lastResponseBodyKey</span><span>, </span><span class="string-literal">&quot;id&quot;</span><span>)
+   )</span></code></pre>
+        <p>It is now possible to use <code>&lt;response-id&gt;</code> or <code>&lt;response-id[integer]&gt;</code> in the steps definitions.</p>
+        <p>It works for all keys in <code>Session</code>, let&#39;s say we also have objects registered under keys <code>customer</code> &amp; <code>product</code>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span>   </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">registerExtractors</span><span> = </span><span class="type-name">Map</span><span>(
+     </span><span class="string-literal">&quot;response-version&quot;</span><span> -&gt; </span><span class="type-name">JsonMapper</span><span>(</span><span class="type-name">HttpService</span><span>.</span><span class="type-name">SessionKeys</span><span>.</span><span class="identifier">lastResponseBodyKey</span><span>, </span><span class="string-literal">&quot;version&quot;</span><span>),
+     </span><span class="string-literal">&quot;customer-street&quot;</span><span> -&gt; </span><span class="type-name">JsonMapper</span><span>(</span><span class="string-literal">&quot;customer&quot;</span><span>, </span><span class="string-literal">&quot;address.street&quot;</span><span>),
+     </span><span class="string-literal">&quot;product-first-rating&quot;</span><span> -&gt; </span><span class="type-name">JsonMapper</span><span>(</span><span class="string-literal">&quot;product&quot;</span><span>, </span><span class="string-literal">&quot;rating[0].score&quot;</span><span>)
+   )</span></code></pre>
+        
+        <h3 id="other-mapper-types" class="section"><a class="anchor-link left" href="#other-mapper-types"><i class="icofont-laika link">&#xef71;</i></a>Other mapper types</h3>
+        <p>In addition to <code>JsonMapper</code>, several other mapper types are available for custom extractors:</p>
+        <ul>
+          <li><code>SimpleMapper</code> generates a static value</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;build-number&quot;</span><span> -&gt; </span><span class="type-name">SimpleMapper</span><span>(() =&gt; </span><span class="type-name">BuildInfo</span><span>.</span><span class="identifier">version</span><span>)</span></code></pre>
+        <ul>
+          <li><code>TextMapper</code> extracts a session value with an optional transformation</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;uppercased-name&quot;</span><span> -&gt; </span><span class="type-name">TextMapper</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>, </span><span class="identifier">_</span><span>.</span><span class="identifier">toUpperCase</span><span>)</span></code></pre>
+        <ul>
+          <li><code>SessionMapper</code> extracts a value from session with error handling</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;full-name&quot;</span><span> -&gt; </span><span class="type-name">SessionMapper</span><span>(</span><span class="identifier">s</span><span> =&gt;
+  </span><span class="keyword">for</span><span> {
+    </span><span class="identifier">first</span><span> &lt;- </span><span class="identifier">s</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;first-name&quot;</span><span>)
+    </span><span class="identifier">last</span><span> &lt;- </span><span class="identifier">s</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;last-name&quot;</span><span>)
+  } </span><span class="keyword">yield</span><span> </span><span class="string-literal">s&quot;</span><span class="substitution">$first</span><span class="string-literal"> </span><span class="substitution">$last</span><span class="string-literal">&quot;</span><span>
+)</span></code></pre>
+        <ul>
+          <li><code>RandomMapper</code> generates a value using the <code>RandomContext</code> for reproducibility</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;random-city&quot;</span><span> -&gt; </span><span class="type-name">RandomMapper</span><span>(</span><span class="identifier">rc</span><span> =&gt;
+  </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Gotham&quot;</span><span>, </span><span class="string-literal">&quot;Metropolis&quot;</span><span>, </span><span class="string-literal">&quot;Star City&quot;</span><span>)(</span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">3</span><span>))
+)</span></code></pre>
+        <ul>
+          <li><code>HistoryMapper</code> extracts from the full history of values for a session key</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="string-literal">&quot;visit-count&quot;</span><span> -&gt; </span><span class="type-name">HistoryMapper</span><span>(</span><span class="string-literal">&quot;visited-pages&quot;</span><span>, </span><span class="identifier">history</span><span> =&gt; </span><span class="identifier">history</span><span>.</span><span class="identifier">size</span><span>.</span><span class="identifier">toString</span><span>)</span></code></pre>
 
         
 <hr class="footer-rule"/>
