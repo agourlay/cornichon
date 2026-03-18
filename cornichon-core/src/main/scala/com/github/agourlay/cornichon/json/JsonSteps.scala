@@ -283,7 +283,7 @@ object JsonSteps {
             for {
               sessionValue <- sc.session.get(sessionKey)
               subJson <- resolveRunJsonPath(jsonPath, sessionValue, sc)
-            } yield CustomMessageEqualityAssertion(true, subJson.isEmpty, () => keyIsPresentError(jsonPath, subJson.get)) // YOLO
+            } yield CustomMessageEqualityAssertion(true, subJson.isEmpty, () => keyIsPresentError(jsonPath, subJson.get)) // safe: error message only evaluated when subJson.isDefined
           }
       )
     }

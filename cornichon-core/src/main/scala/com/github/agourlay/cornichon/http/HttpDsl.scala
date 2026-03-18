@@ -108,7 +108,7 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   def headers: HeadersSteps.HeadersStepBuilder.type =
     HeadersStepBuilder
 
-  // FIXME the body is expected to always contains JSON currently (use body_raw of non JSON response)
+  // `body` expects JSON content — use `body_raw` for non-JSON responses
   private lazy val bodyJsonStepBuilder = JsonStepBuilder(HttpDsl.lastBodySessionKey, HttpDsl.bodySessionKeyTitle)
   def body: JsonStepBuilder = bodyJsonStepBuilder
 

@@ -126,7 +126,6 @@ object Session {
       "empty"
     else {
       // custom unrolled nested mkString for performance
-      val keyCount = s.content.size
       val averageLen = s.content.valuesIterator.map(_.size).sum / keyCount
       // best effort sizing
       val builder = new StringBuilder(keyCount * averageLen * 32)

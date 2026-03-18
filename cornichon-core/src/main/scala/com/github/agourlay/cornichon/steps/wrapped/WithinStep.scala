@@ -42,5 +42,5 @@ case class WithinStep(nested: List[Step], maxDuration: Duration) extends Wrapper
 }
 
 case class WithinBlockSucceedAfterMaxDuration(maxDuration: Duration, executionTime: Duration) extends CornichonError {
-  val baseErrorMessage = s"Within block succeeded after specified max duration $maxDuration in ${executionTime.toUnit(maxDuration.unit)} ${maxDuration.unit}"
+  lazy val baseErrorMessage = s"Within block succeeded after specified max duration $maxDuration in ${executionTime.toUnit(maxDuration.unit)} ${maxDuration.unit}"
 }
