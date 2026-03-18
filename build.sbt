@@ -94,7 +94,6 @@ lazy val publishingSettings = Seq(
   }
 )
 
-lazy val commonSettings = standardSettings ++ publishingSettings
 
 lazy val noPublishSettings = Seq(
   publish := {},
@@ -111,7 +110,7 @@ lazy val cornichon =
   project
     .in(file("."))
     .aggregate(core, docs, benchmarks, testFramework, httpMock)
-    .settings(commonSettings)
+    .settings(standardSettings)
     .settings(noPublishSettings)
     .settings(
       Compile / unmanagedSourceDirectories := Nil,
@@ -121,7 +120,7 @@ lazy val cornichon =
 lazy val core =
   project
     .in(file("./cornichon-core"))
-    .settings(commonSettings)
+    .settings(standardSettings)
     .settings(publishingSettings)
     .settings(
       name := "cornichon-core",
@@ -165,7 +164,8 @@ lazy val testFramework =
     .configs(IntegrationTest)
     .settings(Defaults.itSettings *)
     .settings(noCatsEffectTracing)
-    .settings(commonSettings)
+    .settings(standardSettings)
+    .settings(publishingSettings)
     .settings(
       name := "cornichon-test-framework",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
@@ -187,7 +187,8 @@ lazy val httpMock =
   project
     .in(file("./cornichon-http-mock"))
     .dependsOn(core, testFramework % Test)
-    .settings(commonSettings)
+    .settings(standardSettings)
+    .settings(publishingSettings)
     .settings(
       name := "cornichon-http-mock",
       testFrameworks += new TestFramework("com.github.agourlay.cornichon.framework.CornichonFramework"),
@@ -201,7 +202,7 @@ lazy val httpMock =
 lazy val benchmarks =
   project
     .in(file("./benchmarks"))
-    .settings(commonSettings)
+    .settings(standardSettings)
     .settings(noCatsEffectTracing)
     .dependsOn(core)
     .settings(noPublishSettings)
@@ -212,7 +213,7 @@ lazy val docs =
     .in(file("./cornichon-docs"))
     .dependsOn(core, testFramework, httpMock)
     .enablePlugins(LaikaPlugin, MdocPlugin, GhpagesPlugin)
-    .settings(commonSettings)
+    .settings(standardSettings)
     .settings(noPublishSettings)
     .settings(
       mdocIn := baseDirectory.value / "docs",
