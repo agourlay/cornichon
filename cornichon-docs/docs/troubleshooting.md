@@ -113,6 +113,8 @@ Repeat(3, "i") {
 - **Root array access:** For a response that is a JSON array, use `$` as the root: `body.path("$[0].name")`
 - **Wildcard projection:** `body.path("items[*].name")` returns an array of all `name` values.
 
+See [JSON path](json-path.md) for the complete syntax reference.
+
 ## Status code assertion fails with response details
 
 **Symptom:**

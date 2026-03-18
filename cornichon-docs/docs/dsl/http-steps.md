@@ -142,12 +142,7 @@ body.whitelisting.is(
   """)
 ```
 
-Ignored keys and extractors are JsonPaths following the format `a.b.c[index].d`.
-
-The `index` value is either:
-
-- an Integer addressing the array position.
-- a `*` to target all values, the result will be an array of the projected values.
+Ignored keys and extractors use [JSON path](../json-path.md) expressions (e.g. `a.b.c[0].d`, `items[*].name`).
 
 JsonPath can also be used to only assert part of the response
 

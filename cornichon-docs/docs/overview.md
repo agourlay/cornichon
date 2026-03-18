@@ -2,9 +2,6 @@
 laika.title = Overview
 %}
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.agourlay/cornichon-core_3)](https://central.sonatype.com/artifact/com.github.agourlay/cornichon-core_3)
-[![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
-
 ## How it works
 
 Cornichon tests are built around three core concepts: **steps**, **session**, and **placeholders**.
