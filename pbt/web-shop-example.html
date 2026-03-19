@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Web shop example</title>
+  
+  
+  <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="../img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+    <link rel="stylesheet" type="text/css" href="../css/landing.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="index.html"><img src="../img/cornichon-logo.png" width="50" height="50"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://javadoc.io/doc/com.github.agourlay/cornichon-core_3/latest/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/agourlay/cornichon"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://javadoc.io/doc/com.github.agourlay/cornichon-core_3/latest/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/agourlay/cornichon"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../overview.html">Overview</a></li>
+    <li class="level1 nav-leaf"><a href="../quick-start.html">Quick start</a></li>
+    <li class="level1 nav-leaf"><a href="../dsl.html">DSL</a></li>
+    <li class="level1 nav-header">dsl</li>
+    <li class="level2 nav-leaf"><a href="../dsl/http-steps.html">HTTP steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/session-steps.html">Session steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/wrapper-steps.html">Wrapper steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/http-mock.html">HTTP mock</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/utility-steps.html">Utility steps</a></li>
+    <li class="level1 nav-leaf"><a href="../syntax.html">Syntax reference</a></li>
+    <li class="level1 nav-header">syntax</li>
+    <li class="level2 nav-leaf"><a href="../syntax/placeholders.html">Placeholders</a></li>
+    <li class="level2 nav-leaf"><a href="../syntax/json-path.html">JSON path</a></li>
+    <li class="level2 nav-leaf"><a href="../syntax/json-matchers.html">JSON matchers</a></li>
+    <li class="level2 nav-leaf"><a href="../syntax/data-tables.html">Data tables</a></li>
+    <li class="level1 nav-leaf"><a href="../common-patterns.html">Common patterns</a></li>
+    <li class="level1 nav-leaf"><a href="../feature-options.html">Feature options</a></li>
+    <li class="level1 nav-leaf"><a href="../test-output.html">Test output</a></li>
+    <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
+    <li class="level1 nav-header">custom-steps</li>
+    <li class="level2 nav-leaf"><a href="../custom-steps/effect-step.html">Effect steps</a></li>
+    <li class="level2 nav-leaf"><a href="../custom-steps/assert-step.html">Assert steps</a></li>
+    <li class="level2 nav-leaf"><a href="../custom-steps/resource-step.html">Resource steps</a></li>
+    <li class="level1 nav-leaf"><a href="../reference-configuration.html">Reference configuration</a></li>
+    <li class="level1 nav-leaf"><a href="../property-based-testing.html">PBT</a></li>
+    <li class="level1 nav-header">pbt</li>
+    <li class="level2 nav-leaf"><a href="generators.html">Generators</a></li>
+    <li class="level2 nav-leaf"><a href="for-all.html">ForAll</a></li>
+    <li class="level2 nav-leaf"><a href="random-model-exploration.html">Random model exploration</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Web shop example</a></li>
+    <li class="level1 nav-leaf"><a href="../performance-tuning.html">Performance tuning</a></li>
+    <li class="level1 nav-leaf"><a href="../troubleshooting.html">Troubleshooting</a></li>
+    <li class="level1 nav-leaf"><a href="../misc.html">CI &amp; Deployment</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Web shop example</a></p>
+
+  <ul class="nav-list">
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="web-shop-example-advanced" class="title">Web shop example (advanced)</h1>
+        <p>This is an advanced example of <a href="random-model-exploration.html">random model exploration</a>. Make sure you&#39;re familiar with the concepts and the <a href="random-model-exploration.html#turnstile">Turnstile example</a> before reading this.</p>
+        <p>In this example we are going to test an HTTP API implementing a basic web shop.</p>
+        <p>This web shop offers the possibility to <code>CRUD</code> products and to search them via an index that is eventually consistent.</p>
+        <p>A product is defined by the following case class.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Product</span><span>(</span><span class="identifier">id</span><span>: </span><span class="type-name">UUID</span><span>, </span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">description</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">price</span><span>: </span><span class="type-name">BigInt</span><span>)
+
+</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ProductDraft</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">description</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">price</span><span>: </span><span class="type-name">BigInt</span><span>)</span></code></pre>
+        <p>The server exposes the following endpoint:</p>
+        <ul>
+          <li>a <code>POST</code> request on <code>/products</code> to create a product via productDraft</li>
+          <li>a <code>POST</code> request on <code>/products/&lt;id&gt;</code> to update a product</li>
+          <li>a <code>DELETE</code> request on <code>/products/&lt;id&gt;</code> to delete a product</li>
+          <li>a <code>GET</code> request on <code>/products</code> to get all products</li>
+          <li>a <code>GET</code> request on <code>/products/&lt;id&gt;</code> to get a single product</li>
+          <li>a <code>GET</code> request on <code>products-search</code> to get all the products in the search index</li>
+        </ul>
+        <p>The contract is that the consistency delay should always be under 10 seconds for all operations being mirrored in the search index.</p>
+        <p>Let&#39;s see if we can test it!</p>
+        <pre><code class="nohighlight"><span class="keyword">package</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="identifier">check</span><span>.</span><span class="identifier">examples</span><span>.</span><span class="identifier">webShop</span><span>
+
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">WebShopCheck</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Advanced example of model checks&quot;</span><span>) {
+
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;WebShop acts according to model&quot;</span><span>) {
+
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">check_model</span><span>(</span><span class="identifier">maxNumberOfRuns</span><span> = </span><span class="number-literal">1</span><span>, </span><span class="identifier">maxNumberOfTransitions</span><span> = </span><span class="number-literal">5</span><span>)(</span><span class="identifier">webShopModel</span><span>)
+
+    }
+  }
+
+  </span><span class="keyword">val</span><span> </span><span class="identifier">maxIndexSyncTimeout</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">seconds</span><span>
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">productDraftGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">Generator</span><span>[</span><span class="type-name">ProductDraft</span><span>] = </span><span class="type-name">OptionalValueGenerator</span><span>(
+    </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;a product draft&quot;</span><span>,
+    </span><span class="identifier">gen</span><span> = () =&gt; {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">nextSeed</span><span> = </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextLong</span><span>()
+      </span><span class="keyword">val</span><span> </span><span class="identifier">params</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="type-name">Parameters</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withInitialSeed</span><span>(</span><span class="identifier">nextSeed</span><span>)
+      </span><span class="keyword">val</span><span> </span><span class="identifier">gen</span><span> =
+        </span><span class="keyword">for</span><span> {
+          </span><span class="identifier">name</span><span> ← </span><span class="type-name">Gen</span><span>.</span><span class="identifier">alphaStr</span><span>
+          </span><span class="identifier">description</span><span> ← </span><span class="type-name">Gen</span><span>.</span><span class="identifier">alphaStr</span><span>
+          </span><span class="identifier">price</span><span> ← </span><span class="type-name">Gen</span><span>.</span><span class="identifier">choose</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="type-name">Int</span><span>.</span><span class="type-name">MaxValue</span><span>)
+        } </span><span class="keyword">yield</span><span> </span><span class="type-name">ProductDraft</span><span>(</span><span class="identifier">name</span><span>, </span><span class="identifier">description</span><span>, </span><span class="identifier">price</span><span>)
+      </span><span class="identifier">gen</span><span>(</span><span class="identifier">params</span><span>, </span><span class="type-name">Seed</span><span>(</span><span class="identifier">nextSeed</span><span>))
+    }
+  )
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">noProductsInDb</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
+    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;no products in DB&quot;</span><span>,
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isEmpty</span><span>
+    }
+  )
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">createProduct</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
+    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;create a product&quot;</span><span>,
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> =&gt; {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraft</span><span> = </span><span class="identifier">pd</span><span>()
+      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraftJson</span><span> = </span><span class="identifier">productDraft</span><span>.</span><span class="identifier">asJson</span><span>
+      </span><span class="type-name">Attach</span><span> {
+        </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="identifier">productDraftJson</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
+        </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="identifier">productDraftJson</span><span>)
+        </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="identifier">maxIndexSyncTimeout</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">millis</span><span>) {
+          </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products-search&quot;</span><span>)
+          </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+          </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">contains</span><span>(</span><span class="identifier">productDraftJson</span><span>)
+        }
+      }
+    })
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">deleteProduct</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
+    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;delete a product&quot;</span><span>,
+    </span><span class="identifier">preCondition</span><span> = </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
+    },
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;$[0].id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;id-to-delete&quot;</span><span>)
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">delete</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-delete&gt;&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+      </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-delete&gt;&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">404</span><span>)
+      </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="identifier">maxIndexSyncTimeout</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">millis</span><span>) {
+        </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products-search&quot;</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+        </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[*].id&quot;</span><span>).</span><span class="identifier">asArray</span><span>.</span><span class="identifier">not_contains</span><span>(</span><span class="string-literal">&quot;&lt;id-to-delete&gt;&quot;</span><span>)
+      }
+    }
+  )
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">updateProduct</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
+    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;update a product&quot;</span><span>,
+    </span><span class="identifier">preCondition</span><span> = </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
+    },
+    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> =&gt; {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraft</span><span> = </span><span class="identifier">pd</span><span>()
+      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraftJson</span><span> = </span><span class="identifier">productDraft</span><span>.</span><span class="identifier">asJson</span><span>
+      </span><span class="type-name">Attach</span><span> {
+        </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;$[0].id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;id-to-update&quot;</span><span>)
+        </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-update&gt;&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="identifier">productDraftJson</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
+        </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-update&gt;&quot;</span><span>)
+        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+        </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="identifier">productDraftJson</span><span>)
+        </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="identifier">maxIndexSyncTimeout</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">millis</span><span>) {
+          </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products-search&quot;</span><span>)
+          </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+          </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">contains</span><span>(</span><span class="identifier">productDraftJson</span><span>)
+        }
+      }
+    }
+  )
+
+  </span><span class="keyword">val</span><span> </span><span class="identifier">webShopModel</span><span> = </span><span class="type-name">ModelRunner</span><span>.</span><span class="identifier">make</span><span>[</span><span class="type-name">ProductDraft</span><span>](</span><span class="identifier">productDraftGen</span><span>)(
+    </span><span class="type-name">Model</span><span>(
+      </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;WebShop acts according to specification&quot;</span><span>,
+      </span><span class="identifier">entryPoint</span><span> = </span><span class="identifier">noProductsInDb</span><span>,
+      </span><span class="identifier">transitions</span><span> = </span><span class="type-name">Map</span><span>(
+        </span><span class="identifier">noProductsInDb</span><span> -&gt; ((</span><span class="number-literal">100</span><span>, </span><span class="identifier">createProduct</span><span>) :: </span><span class="type-name">Nil</span><span>),
+        </span><span class="identifier">createProduct</span><span> -&gt; ((</span><span class="number-literal">60</span><span>, </span><span class="identifier">createProduct</span><span>) :: (</span><span class="number-literal">30</span><span>, </span><span class="identifier">updateProduct</span><span>) :: (</span><span class="number-literal">10</span><span>, </span><span class="identifier">deleteProduct</span><span>) :: </span><span class="type-name">Nil</span><span>),
+        </span><span class="identifier">deleteProduct</span><span> -&gt; ((</span><span class="number-literal">60</span><span>, </span><span class="identifier">createProduct</span><span>) :: (</span><span class="number-literal">30</span><span>, </span><span class="identifier">updateProduct</span><span>) :: (</span><span class="number-literal">10</span><span>, </span><span class="identifier">deleteProduct</span><span>) :: </span><span class="type-name">Nil</span><span>),
+        </span><span class="identifier">updateProduct</span><span> -&gt; ((</span><span class="number-literal">60</span><span>, </span><span class="identifier">createProduct</span><span>) :: (</span><span class="number-literal">30</span><span>, </span><span class="identifier">updateProduct</span><span>) :: (</span><span class="number-literal">10</span><span>, </span><span class="identifier">deleteProduct</span><span>) :: </span><span class="type-name">Nil</span><span>)
+      )
+    )
+  )
+}</span></code></pre>
+        <p>We can see that we have been interacting with the <code>CRUD</code> API using randomly generated <code>ProductDraft</code> and that the eventually consistent contracts seem to hold.</p>
+        <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/webShop">here</a>.</p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  Site generated by <a href="https://typelevel.org/Laika/">Laika</a> with the Helium theme.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

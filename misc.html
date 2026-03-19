@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Running tests</title>
+  <title>CI & Deployment</title>
   
   
   <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
@@ -82,38 +82,37 @@
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="overview.html">Overview</a></li>
     <li class="level1 nav-leaf"><a href="quick-start.html">Quick start</a></li>
-    <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
     <li class="level2 nav-leaf"><a href="dsl/http-steps.html">HTTP steps</a></li>
     <li class="level2 nav-leaf"><a href="dsl/session-steps.html">Session steps</a></li>
     <li class="level2 nav-leaf"><a href="dsl/wrapper-steps.html">Wrapper steps</a></li>
+    <li class="level2 nav-leaf"><a href="dsl/http-mock.html">HTTP mock</a></li>
     <li class="level2 nav-leaf"><a href="dsl/utility-steps.html">Utility steps</a></li>
-    <li class="level1 nav-leaf"><a href="common-patterns.html">Common patterns</a></li>
-    <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
-    <li class="level1 nav-header">custom-steps</li>
-    <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
-    <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
-    <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="syntax.html">Syntax reference</a></li>
     <li class="level1 nav-header">syntax</li>
     <li class="level2 nav-leaf"><a href="syntax/placeholders.html">Placeholders</a></li>
     <li class="level2 nav-leaf"><a href="syntax/json-path.html">JSON path</a></li>
     <li class="level2 nav-leaf"><a href="syntax/json-matchers.html">JSON matchers</a></li>
     <li class="level2 nav-leaf"><a href="syntax/data-tables.html">Data tables</a></li>
+    <li class="level1 nav-leaf"><a href="common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
+    <li class="level1 nav-leaf"><a href="test-output.html">Test output</a></li>
+    <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
+    <li class="level1 nav-header">custom-steps</li>
+    <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
+    <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
+    <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
-    <li class="level1 nav-leaf"><a href="performance-tuning.html">Performance tuning</a></li>
     <li class="level1 nav-leaf"><a href="property-based-testing.html">PBT</a></li>
     <li class="level1 nav-header">pbt</li>
     <li class="level2 nav-leaf"><a href="pbt/generators.html">Generators</a></li>
     <li class="level2 nav-leaf"><a href="pbt/for-all.html">ForAll</a></li>
     <li class="level2 nav-leaf"><a href="pbt/random-model-exploration.html">Random model exploration</a></li>
+    <li class="level2 nav-leaf"><a href="pbt/web-shop-example.html">Web shop example</a></li>
+    <li class="level1 nav-leaf"><a href="performance-tuning.html">Performance tuning</a></li>
     <li class="level1 nav-leaf"><a href="troubleshooting.html">Troubleshooting</a></li>
-    <li class="level1 active nav-leaf"><a href="#">Running tests</a></li>
-    <li class="level1 nav-leaf"><a href="modules.html">Modules</a></li>
-    <li class="level1 nav-header">modules</li>
-    <li class="level2 nav-leaf"><a href="modules/module-mock.html">HTTP mock</a></li>
+    <li class="level1 active nav-leaf"><a href="#">CI &amp; Deployment</a></li>
   </ul>
 
 </nav>
@@ -122,7 +121,7 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Running tests</a></p>
+  <p class="header"><a href="#">CI &amp; Deployment</a></p>
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#sbt-integration">SBT integration</a></li>
@@ -136,7 +135,7 @@
 
       <main class="content">
 
-        <h1 id="running-tests" class="title">Running tests</h1>
+        <h1 id="ci-deployment" class="title">CI &amp; Deployment</h1>
         
         <h2 id="sbt-integration" class="section"><a class="anchor-link left" href="#sbt-integration"><i class="icofont-laika link">&#xef71;</i></a>SBT integration</h2>
         <p>It is recommended to use the CLI from SBT to trigger tests:</p>

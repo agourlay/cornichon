@@ -82,38 +82,37 @@
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="../overview.html">Overview</a></li>
     <li class="level1 nav-leaf"><a href="../quick-start.html">Quick start</a></li>
-    <li class="level1 nav-leaf"><a href="../test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="../dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
     <li class="level2 nav-leaf"><a href="../dsl/http-steps.html">HTTP steps</a></li>
     <li class="level2 nav-leaf"><a href="../dsl/session-steps.html">Session steps</a></li>
     <li class="level2 nav-leaf"><a href="../dsl/wrapper-steps.html">Wrapper steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/http-mock.html">HTTP mock</a></li>
     <li class="level2 nav-leaf"><a href="../dsl/utility-steps.html">Utility steps</a></li>
-    <li class="level1 nav-leaf"><a href="../common-patterns.html">Common patterns</a></li>
-    <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
-    <li class="level1 nav-header">custom-steps</li>
-    <li class="level2 nav-leaf"><a href="../custom-steps/effect-step.html">Effect steps</a></li>
-    <li class="level2 nav-leaf"><a href="../custom-steps/assert-step.html">Assert steps</a></li>
-    <li class="level2 nav-leaf"><a href="../custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="../syntax.html">Syntax reference</a></li>
     <li class="level1 nav-header">syntax</li>
     <li class="level2 nav-leaf"><a href="../syntax/placeholders.html">Placeholders</a></li>
     <li class="level2 nav-leaf"><a href="../syntax/json-path.html">JSON path</a></li>
     <li class="level2 nav-leaf"><a href="../syntax/json-matchers.html">JSON matchers</a></li>
     <li class="level2 nav-leaf"><a href="../syntax/data-tables.html">Data tables</a></li>
+    <li class="level1 nav-leaf"><a href="../common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="../feature-options.html">Feature options</a></li>
+    <li class="level1 nav-leaf"><a href="../test-output.html">Test output</a></li>
+    <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
+    <li class="level1 nav-header">custom-steps</li>
+    <li class="level2 nav-leaf"><a href="../custom-steps/effect-step.html">Effect steps</a></li>
+    <li class="level2 nav-leaf"><a href="../custom-steps/assert-step.html">Assert steps</a></li>
+    <li class="level2 nav-leaf"><a href="../custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="../reference-configuration.html">Reference configuration</a></li>
-    <li class="level1 nav-leaf"><a href="../performance-tuning.html">Performance tuning</a></li>
     <li class="level1 nav-leaf"><a href="../property-based-testing.html">PBT</a></li>
     <li class="level1 nav-header">pbt</li>
     <li class="level2 nav-leaf"><a href="generators.html">Generators</a></li>
     <li class="level2 nav-leaf"><a href="for-all.html">ForAll</a></li>
     <li class="level2 active nav-leaf"><a href="#">Random model exploration</a></li>
+    <li class="level2 nav-leaf"><a href="web-shop-example.html">Web shop example</a></li>
+    <li class="level1 nav-leaf"><a href="../performance-tuning.html">Performance tuning</a></li>
     <li class="level1 nav-leaf"><a href="../troubleshooting.html">Troubleshooting</a></li>
-    <li class="level1 nav-leaf"><a href="../misc.html">Running tests</a></li>
-    <li class="level1 nav-leaf"><a href="../modules.html">Modules</a></li>
-    <li class="level1 nav-header">modules</li>
-    <li class="level2 nav-leaf"><a href="../modules/module-mock.html">HTTP mock</a></li>
+    <li class="level1 nav-leaf"><a href="../misc.html">CI &amp; Deployment</a></li>
   </ul>
 
 </nav>
@@ -529,364 +528,7 @@
         <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/turnstile">here</a>.</p>
         
         <h3 id="web-shop-admin-advanced-example" class="section"><a class="anchor-link left" href="#web-shop-admin-advanced-example"><i class="icofont-laika link">&#xef71;</i></a>Web shop Admin (advanced example)</h3>
-        <p>In this example we are going to test an HTTP API implementing a basic web shop.</p>
-        <p>This web shop offers the possibility to <code>CRUD</code> products and to search them via an index that is eventually consistent.</p>
-        <p>A product is defined by the following case class.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Product</span><span>(</span><span class="identifier">id</span><span>: </span><span class="type-name">UUID</span><span>, </span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">description</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">price</span><span>: </span><span class="type-name">BigInt</span><span>)
-
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ProductDraft</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">description</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">price</span><span>: </span><span class="type-name">BigInt</span><span>)</span></code></pre>
-        <p>The server exposes the following endpoint:</p>
-        <ul>
-          <li>a <code>POST</code> request on <code>/products</code> to create a product via productDraft</li>
-          <li>a <code>POST</code> request on <code>/products/&lt;id&gt;</code> to update a product</li>
-          <li>a <code>DELETE</code> request on <code>/products/&lt;id&gt;</code> to delete a product</li>
-          <li>a <code>GET</code> request on <code>/products</code> to get all products</li>
-          <li>a <code>GET</code> request on <code>/products/&lt;id&gt;</code> to get a single product</li>
-          <li>a <code>GET</code> request on <code>products-search</code> to get all the products in the search index</li>
-        </ul>
-        <p>The contract is that the consistency delay should always be under 10 seconds for all operations being mirrored in the search index.</p>
-        <p>Let&#39;s see if we can test it!</p>
-        <pre><code class="nohighlight"><span class="keyword">package</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="identifier">check</span><span>.</span><span class="identifier">examples</span><span>.</span><span class="identifier">webShop</span><span>
-
-
-</span><span class="keyword">class</span><span> </span><span class="type-name">WebShopCheck</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Advanced example of model checks&quot;</span><span>) {
-
-    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;WebShop acts according to model&quot;</span><span>) {
-
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">check_model</span><span>(</span><span class="identifier">maxNumberOfRuns</span><span> = </span><span class="number-literal">1</span><span>, </span><span class="identifier">maxNumberOfTransitions</span><span> = </span><span class="number-literal">5</span><span>)(</span><span class="identifier">webShopModel</span><span>)
-
-    }
-  }
-
-  </span><span class="keyword">val</span><span> </span><span class="identifier">maxIndexSyncTimeout</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">seconds</span><span>
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">productDraftGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">Generator</span><span>[</span><span class="type-name">ProductDraft</span><span>] = </span><span class="type-name">OptionalValueGenerator</span><span>(
-    </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;a product draft&quot;</span><span>,
-    </span><span class="identifier">gen</span><span> = () =&gt; {
-      </span><span class="keyword">val</span><span> </span><span class="identifier">nextSeed</span><span> = </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextLong</span><span>()
-      </span><span class="keyword">val</span><span> </span><span class="identifier">params</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="type-name">Parameters</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withInitialSeed</span><span>(</span><span class="identifier">nextSeed</span><span>)
-      </span><span class="keyword">val</span><span> </span><span class="identifier">gen</span><span> =
-        </span><span class="keyword">for</span><span> {
-          </span><span class="identifier">name</span><span> ← </span><span class="type-name">Gen</span><span>.</span><span class="identifier">alphaStr</span><span>
-          </span><span class="identifier">description</span><span> ← </span><span class="type-name">Gen</span><span>.</span><span class="identifier">alphaStr</span><span>
-          </span><span class="identifier">price</span><span> ← </span><span class="type-name">Gen</span><span>.</span><span class="identifier">choose</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="type-name">Int</span><span>.</span><span class="type-name">MaxValue</span><span>)
-        } </span><span class="keyword">yield</span><span> </span><span class="type-name">ProductDraft</span><span>(</span><span class="identifier">name</span><span>, </span><span class="identifier">description</span><span>, </span><span class="identifier">price</span><span>)
-      </span><span class="identifier">gen</span><span>(</span><span class="identifier">params</span><span>, </span><span class="type-name">Seed</span><span>(</span><span class="identifier">nextSeed</span><span>))
-    }
-  )
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">noProductsInDb</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
-    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;no products in DB&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Attach</span><span> {
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isEmpty</span><span>
-    }
-  )
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">createProduct</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
-    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;create a product&quot;</span><span>,
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> =&gt; {
-      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraft</span><span> = </span><span class="identifier">pd</span><span>()
-      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraftJson</span><span> = </span><span class="identifier">productDraft</span><span>.</span><span class="identifier">asJson</span><span>
-      </span><span class="type-name">Attach</span><span> {
-        </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="identifier">productDraftJson</span><span>)
-        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
-        </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="identifier">productDraftJson</span><span>)
-        </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="identifier">maxIndexSyncTimeout</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">millis</span><span>) {
-          </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products-search&quot;</span><span>)
-          </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-          </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">contains</span><span>(</span><span class="identifier">productDraftJson</span><span>)
-        }
-      }
-    })
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">deleteProduct</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
-    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;delete a product&quot;</span><span>,
-    </span><span class="identifier">preCondition</span><span> = </span><span class="type-name">Attach</span><span> {
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
-    },
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">Attach</span><span> {
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;$[0].id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;id-to-delete&quot;</span><span>)
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">delete</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-delete&gt;&quot;</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-      </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-delete&gt;&quot;</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">404</span><span>)
-      </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="identifier">maxIndexSyncTimeout</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">millis</span><span>) {
-        </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products-search&quot;</span><span>)
-        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-        </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[*].id&quot;</span><span>).</span><span class="identifier">asArray</span><span>.</span><span class="identifier">not_contains</span><span>(</span><span class="string-literal">&quot;&lt;id-to-delete&gt;&quot;</span><span>)
-      }
-    }
-  )
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">updateProduct</span><span> = </span><span class="type-name">Property1</span><span>[</span><span class="type-name">ProductDraft</span><span>](
-    </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;update a product&quot;</span><span>,
-    </span><span class="identifier">preCondition</span><span> = </span><span class="type-name">Attach</span><span> {
-      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
-      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">isNotEmpty</span><span>
-    },
-    </span><span class="identifier">invariant</span><span> = </span><span class="identifier">pd</span><span> =&gt; {
-      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraft</span><span> = </span><span class="identifier">pd</span><span>()
-      </span><span class="keyword">val</span><span> </span><span class="identifier">productDraftJson</span><span> = </span><span class="identifier">productDraft</span><span>.</span><span class="identifier">asJson</span><span>
-      </span><span class="type-name">Attach</span><span> {
-        </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>)
-        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-        </span><span class="type-name">Then</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;$[0].id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;id-to-update&quot;</span><span>)
-        </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-update&gt;&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="identifier">productDraftJson</span><span>)
-        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)
-        </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products/&lt;id-to-update&gt;&quot;</span><span>)
-        </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-        </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="identifier">productDraftJson</span><span>)
-        </span><span class="type-name">Eventually</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="identifier">maxIndexSyncTimeout</span><span>, </span><span class="identifier">interval</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">millis</span><span>) {
-          </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/products-search&quot;</span><span>)
-          </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-          </span><span class="type-name">And</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>).</span><span class="identifier">contains</span><span>(</span><span class="identifier">productDraftJson</span><span>)
-        }
-      }
-    }
-  )
-
-  </span><span class="keyword">val</span><span> </span><span class="identifier">webShopModel</span><span> = </span><span class="type-name">ModelRunner</span><span>.</span><span class="identifier">make</span><span>[</span><span class="type-name">ProductDraft</span><span>](</span><span class="identifier">productDraftGen</span><span>)(
-    </span><span class="type-name">Model</span><span>(
-      </span><span class="identifier">description</span><span> = </span><span class="string-literal">&quot;WebShop acts according to specification&quot;</span><span>,
-      </span><span class="identifier">entryPoint</span><span> = </span><span class="identifier">noProductsInDb</span><span>,
-      </span><span class="identifier">transitions</span><span> = </span><span class="type-name">Map</span><span>(
-        </span><span class="identifier">noProductsInDb</span><span> -&gt; ((</span><span class="number-literal">100</span><span>, </span><span class="identifier">createProduct</span><span>) :: </span><span class="type-name">Nil</span><span>),
-        </span><span class="identifier">createProduct</span><span> -&gt; ((</span><span class="number-literal">60</span><span>, </span><span class="identifier">createProduct</span><span>) :: (</span><span class="number-literal">30</span><span>, </span><span class="identifier">updateProduct</span><span>) :: (</span><span class="number-literal">10</span><span>, </span><span class="identifier">deleteProduct</span><span>) :: </span><span class="type-name">Nil</span><span>),
-        </span><span class="identifier">deleteProduct</span><span> -&gt; ((</span><span class="number-literal">60</span><span>, </span><span class="identifier">createProduct</span><span>) :: (</span><span class="number-literal">30</span><span>, </span><span class="identifier">updateProduct</span><span>) :: (</span><span class="number-literal">10</span><span>, </span><span class="identifier">deleteProduct</span><span>) :: </span><span class="type-name">Nil</span><span>),
-        </span><span class="identifier">updateProduct</span><span> -&gt; ((</span><span class="number-literal">60</span><span>, </span><span class="identifier">createProduct</span><span>) :: (</span><span class="number-literal">30</span><span>, </span><span class="identifier">updateProduct</span><span>) :: (</span><span class="number-literal">10</span><span>, </span><span class="identifier">deleteProduct</span><span>) :: </span><span class="type-name">Nil</span><span>)
-      )
-    )
-  )
-}</span></code></pre>
-        <p>Again, let&#39;s have a look at the logs to see how things go.</p>
-        <pre><code>Advanced example of model checks:
-Starting scenario &#39;WebShop acts according to model&#39;
-- WebShop acts according to model (42747 millis)
-
-   Scenario : WebShop acts according to model
-      main steps
-      Checking model &#39;WebShop acts according to specification&#39; with maxNumberOfRuns=1 and maxNumberOfTransitions=5 and seed=1544540492543
-         Run #1
-            no products in DB
-            Given I GET /products (1328 millis)
-            Then assert status is &#39;200&#39; (10 millis)
-            Then assert response body array size is &#39;0&#39; (15 millis)
-            create a product
-            Given I POST /products with body (59 millis)
-            {
-              &quot;name&quot; : &quot;rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz&quot;,
-              &quot;description&quot; : &quot;flaukuIykZksgwsxznkayAiiojwgndtiffT&quot;,
-              &quot;price&quot; : 32
-            }
-            Then assert status is &#39;201&#39; (0 millis)
-            And assert response body is (41 millis)
-            {
-              &quot;name&quot; : &quot;rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz&quot;,
-              &quot;description&quot; : &quot;flaukuIykZksgwsxznkayAiiojwgndtiffT&quot;,
-              &quot;price&quot; : 32
-            } ignoring keys id
-            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
-               When I GET /products-search (9 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains
-               {
-                 &quot;name&quot; : &quot;rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz&quot;,
-                 &quot;description&quot; : &quot;flaukuIykZksgwsxznkayAiiojwgndtiffT&quot;,
-                 &quot;price&quot; : 32
-               } *** FAILED ***
-               expected array to contain
-               &#39;{
-                 &quot;name&quot; : &quot;rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz&quot;,
-                 &quot;description&quot; : &quot;flaukuIykZksgwsxznkayAiiojwgndtiffT&quot;,
-                 &quot;price&quot; : 32
-               }&#39;
-               but it is not the case with array:
-               [
-               ]
-               When I GET /products-search (5 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains (0 millis)
-               {
-                 &quot;name&quot; : &quot;rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz&quot;,
-                 &quot;description&quot; : &quot;flaukuIykZksgwsxznkayAiiojwgndtiffT&quot;,
-                 &quot;price&quot; : 32
-               }
-            Eventually block succeeded after &#39;552&#39; retries with &#39;1&#39; distinct errors (8972 millis)
-            update a product
-            Given I GET /products (2 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            Then I save path &#39;$[0].id&#39; from body to key &#39;id-to-update&#39; (8 millis)
-            Given I POST /products/ee668765-b274-462d-ace8-73e2464286ca with body (11 millis)
-            {
-              &quot;name&quot; : &quot;usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn&quot;,
-              &quot;description&quot; : &quot;wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva&quot;,
-              &quot;price&quot; : 46
-            }
-            Then assert status is &#39;201&#39; (0 millis)
-            And I GET /products/ee668765-b274-462d-ace8-73e2464286ca (6 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            And assert response body is (0 millis)
-            {
-              &quot;name&quot; : &quot;usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn&quot;,
-              &quot;description&quot; : &quot;wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva&quot;,
-              &quot;price&quot; : 46
-            } ignoring keys id
-            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
-               When I GET /products-search (2 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains
-               {
-                 &quot;name&quot; : &quot;usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn&quot;,
-                 &quot;description&quot; : &quot;wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva&quot;,
-                 &quot;price&quot; : 46
-               } *** FAILED ***
-               expected array to contain
-               &#39;{
-                 &quot;name&quot; : &quot;usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn&quot;,
-                 &quot;description&quot; : &quot;wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva&quot;,
-                 &quot;price&quot; : 46
-               }&#39;
-               but it is not the case with array:
-               [
-                 {
-                   &quot;id&quot; : &quot;ee668765-b274-462d-ace8-73e2464286ca&quot;,
-                   &quot;name&quot; : &quot;rzdikphaxkjroaoYguPblwnwxdnnnrokkjhscTfmwfanhrsXsamphz&quot;,
-                   &quot;description&quot; : &quot;flaukuIykZksgwsxznkayAiiojwgndtiffT&quot;,
-                   &quot;price&quot; : 32
-                 }
-               ]
-               When I GET /products-search (2 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains (0 millis)
-               {
-                 &quot;name&quot; : &quot;usogcaoeNkEgmaqybjpoisbtizlFkNyyrvvgCtbwoxdzxijwwdugmJZeksdBFbvcXn&quot;,
-                 &quot;description&quot; : &quot;wflinKgfiguhNjkhwepgsdUmylbrXsjvhEnUccHzqglrpaiksaEtlbgmhfocAWjvieTwva&quot;,
-                 &quot;price&quot; : 46
-               }
-            Eventually block succeeded after &#39;616&#39; retries with &#39;1&#39; distinct errors (8996 millis)
-            delete a product
-            Given I GET /products (1 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            Then I save path &#39;$[0].id&#39; from body to key &#39;id-to-delete&#39; (0 millis)
-            Given I DELETE /products/ee668765-b274-462d-ace8-73e2464286ca (2 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            And I GET /products/ee668765-b274-462d-ace8-73e2464286ca (1 millis)
-            Then assert status is &#39;404&#39; (0 millis)
-            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
-               When I GET /products-search (1 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body&#39;s array &#39;$[*].id&#39; does not contain
-               ee668765-b274-462d-ace8-73e2464286ca *** FAILED ***
-               expected array to not contain
-               &#39;&quot;ee668765-b274-462d-ace8-73e2464286ca&quot;&#39;
-               but it is not the case with array:
-               [
-                 &quot;ee668765-b274-462d-ace8-73e2464286ca&quot;
-               ]
-               When I GET /products-search (2 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body&#39;s array &#39;$[*].id&#39; does not contain (0 millis)
-               ee668765-b274-462d-ace8-73e2464286ca
-            Eventually block succeeded after &#39;571&#39; retries with &#39;1&#39; distinct errors (8001 millis)
-            create a product
-            Given I POST /products with body (2 millis)
-            {
-              &quot;name&quot; : &quot;kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj&quot;,
-              &quot;description&quot; : &quot;krrzzpmbwLyxsfiwxhdlnoycnfk&quot;,
-              &quot;price&quot; : 77
-            }
-            Then assert status is &#39;201&#39; (0 millis)
-            And assert response body is (0 millis)
-            {
-              &quot;name&quot; : &quot;kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj&quot;,
-              &quot;description&quot; : &quot;krrzzpmbwLyxsfiwxhdlnoycnfk&quot;,
-              &quot;price&quot; : 77
-            } ignoring keys id
-            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
-               When I GET /products-search (1 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains
-               {
-                 &quot;name&quot; : &quot;kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj&quot;,
-                 &quot;description&quot; : &quot;krrzzpmbwLyxsfiwxhdlnoycnfk&quot;,
-                 &quot;price&quot; : 77
-               } *** FAILED ***
-               expected array to contain
-               &#39;{
-                 &quot;name&quot; : &quot;kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj&quot;,
-                 &quot;description&quot; : &quot;krrzzpmbwLyxsfiwxhdlnoycnfk&quot;,
-                 &quot;price&quot; : 77
-               }&#39;
-               but it is not the case with array:
-               [
-               ]
-               When I GET /products-search (1 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains (0 millis)
-               {
-                 &quot;name&quot; : &quot;kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj&quot;,
-                 &quot;description&quot; : &quot;krrzzpmbwLyxsfiwxhdlnoycnfk&quot;,
-                 &quot;price&quot; : 77
-               }
-            Eventually block succeeded after &#39;671&#39; retries with &#39;1&#39; distinct errors (9003 millis)
-            create a product
-            Given I POST /products with body (2 millis)
-            {
-              &quot;name&quot; : &quot;mrhwfmp&quot;,
-              &quot;description&quot; : &quot;hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc&quot;,
-              &quot;price&quot; : 18
-            }
-            Then assert status is &#39;201&#39; (0 millis)
-            And assert response body is (0 millis)
-            {
-              &quot;name&quot; : &quot;mrhwfmp&quot;,
-              &quot;description&quot; : &quot;hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc&quot;,
-              &quot;price&quot; : 18
-            } ignoring keys id
-            Eventually block with maxDuration = 10 seconds and interval = 10 milliseconds
-               When I GET /products-search (0 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains
-               {
-                 &quot;name&quot; : &quot;mrhwfmp&quot;,
-                 &quot;description&quot; : &quot;hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc&quot;,
-                 &quot;price&quot; : 18
-               } *** FAILED ***
-               expected array to contain
-               &#39;{
-                 &quot;name&quot; : &quot;mrhwfmp&quot;,
-                 &quot;description&quot; : &quot;hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc&quot;,
-                 &quot;price&quot; : 18
-               }&#39;
-               but it is not the case with array:
-               [
-                 {
-                   &quot;id&quot; : &quot;acd3425c-08cb-4cb0-be11-1d3e4611c1fa&quot;,
-                   &quot;name&quot; : &quot;kskqbczgcepmzvoybdKmpniflncdWqbqejtLcj&quot;,
-                   &quot;description&quot; : &quot;krrzzpmbwLyxsfiwxhdlnoycnfk&quot;,
-                   &quot;price&quot; : 77
-                 }
-               ]
-               When I GET /products-search (1 millis)
-               Then assert status is &#39;200&#39; (0 millis)
-               And assert response body array contains (0 millis)
-               {
-                 &quot;name&quot; : &quot;mrhwfmp&quot;,
-                 &quot;description&quot; : &quot;hBvcqpyatdyjccokfvXtbppejlSfnuGgmahAclfjCqmzCmdqydNsiYlICpZnwgqxzVkzrqnoyucZtbgoguc&quot;,
-                 &quot;price&quot; : 18
-               }
-            Eventually block succeeded after &#39;463&#39; retries with &#39;1&#39; distinct errors (6001 millis)
-         Run #1 - Max transitions number per run reached
-      Check block succeeded (42662 millis)</code></pre>
-        <p>We can see that we have been interacting with the <code>CRUD</code> API using randomly generated <code>ProductDraft</code> and that the eventually consistent contracts seem to hold.</p>
-        <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/webShop">here</a>.</p>
+        <p>For a more realistic example testing a CRUD API with eventually consistent search, see the <a href="web-shop-example.html">Web shop example</a>.</p>
         
         <h2 id="caveats" class="section"><a class="anchor-link left" href="#caveats"><i class="icofont-laika link">&#xef71;</i></a>Caveats</h2>
         <div class="callout warning">
