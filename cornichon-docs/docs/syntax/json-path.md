@@ -4,7 +4,7 @@ laika.title = JSON path
 
 # JSON path
 
-JSON paths are used throughout cornichon to navigate into JSON structures. They appear in body assertions (`body.path(...)`), save steps (`save_body_path`), [custom extractors](placeholders.md#custom-extractors), and [ignoring keys](dsl/http-steps.md#http-assertions).
+JSON paths are used throughout cornichon to navigate into JSON structures. They appear in body assertions (`body.path(...)`), save steps (`save_body_path`), [custom extractors](placeholders.md#custom-extractors), and [ignoring keys](../dsl/http-steps.md#http-assertions).
 
 ## Syntax
 

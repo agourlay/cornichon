@@ -165,7 +165,7 @@ This ensures cleanup failures are not silently swallowed.
 
 ## Reproducing failures
 
-Every failure includes a **seed** that controls all sources of randomness ([placeholders](placeholders.md), [generators](pbt/generators.md), transitions). To replay the exact same execution:
+Every failure includes a **seed** that controls all sources of randomness ([placeholders](syntax/placeholders.md), [generators](pbt/generators.md), transitions). To replay the exact same execution:
 
 1. Copy the replay command from the failure output
 2. Run it in SBT: `testOnly *MyFeature -- "scenario name" "--seed=123456"`

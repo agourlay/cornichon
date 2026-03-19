@@ -8,7 +8,7 @@ An `EffectStep` can be understood as the following function `ScenarioContext => 
 
 This means that an `EffectStep` runs a side effect and populates the `Session` with potential result values or returns an error.
 
-A `Session` is a Map-like object used to propagate state throughout a `scenario`. It is used to resolve [placeholders](../placeholders.md) and save the result computations for later assertions.
+A `Session` is a Map-like object used to propagate state throughout a `scenario`. It is used to resolve [placeholders](../syntax/placeholders.md) and save the result computations for later assertions.
 
 Here is the simplest `EffectStep` possible:
 

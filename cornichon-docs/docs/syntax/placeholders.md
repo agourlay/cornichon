@@ -4,7 +4,7 @@ laika.title = Placeholders
 
 # Placeholders
 
-Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the [session](dsl/session-steps.md):
+Most built-in steps can use placeholders in their arguments, those will be automatically resolved from the [session](../dsl/session-steps.md):
 
 - URL
 - Expected body
@@ -89,7 +89,7 @@ It becomes then possible to retrieve past values:
 
 ## Custom extractors
 
-In some cases it makes sense to declare `extractors` to avoid code duplication when dealing with [session](dsl/session-steps.md) values. Once registered, they can be used as `<extractor-name>` in any step.
+In some cases it makes sense to declare `extractors` to avoid code duplication when dealing with [session](../dsl/session-steps.md) values. Once registered, they can be used as `<extractor-name>` in any step.
 
 An extractor describes using a JsonPath how to build a value from an existing value in the session.
 

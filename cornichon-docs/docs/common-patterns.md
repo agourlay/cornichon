@@ -62,7 +62,7 @@ Choose `interval` carefully — too short floods the server, too long wastes tim
 
 ## CRUD workflow
 
-A typical create-read-update-delete flow saving IDs between steps using [placeholders](placeholders.md):
+A typical create-read-update-delete flow saving IDs between steps using [placeholders](syntax/placeholders.md):
 
 ```scala
 // Create

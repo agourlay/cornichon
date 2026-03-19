@@ -62,7 +62,7 @@ And I save_body_path("id" -> "product-id")
 And I save_body_path("address.city" -> "city", "address.zip" -> "zip")
 ```
 
-The saved values are then available as [placeholders](../placeholders.md): `<product-id>`, `<city>`, etc.
+The saved values are then available as [placeholders](../syntax/placeholders.md): `<product-id>`, `<city>`, etc.
 
 Other save steps:
 
@@ -142,7 +142,7 @@ body.whitelisting.is(
   """)
 ```
 
-Ignored keys and extractors use [JSON path](../json-path.md) expressions (e.g. `a.b.c[0].d`, `items[*].name`).
+Ignored keys and extractors use [JSON path](../syntax/json-path.md) expressions (e.g. `a.b.c[0].d`, `items[*].name`).
 
 JsonPath can also be used to only assert part of the response
 
@@ -331,7 +331,7 @@ The `gqljson` format supports:
 - String values still use quotes: `"Batman"`
 - Numbers, booleans, and null are unquoted: `42`, `true`, `null`
 - Nested objects and arrays: `{ publisher: { name: "DC" } }`
-- [Placeholders](../placeholders.md) work inside `gqljson` strings: `name: "<hero-name>"`
+- [Placeholders](../syntax/placeholders.md) work inside `gqljson` strings: `name: "<hero-name>"`
 
 It can be used anywhere a regular JSON string is accepted — body assertions, `is`, `contains`, etc. It is powered by the [Sangria](https://github.com/sangria-graphql/sangria) GraphQL parser.
 
@@ -341,7 +341,7 @@ By default, the HTTP DSL expects a `String` body. To use a custom type, provide 
 
 - `cats.Show` — used to print the values
 - `io.circe.Encoder` — used to convert the values to JSON
-- `com.github.agourlay.cornichon.resolver.Resolvable` — used to provide a String form in which [placeholders](../placeholders.md) can be resolved
+- `com.github.agourlay.cornichon.resolver.Resolvable` — used to provide a String form in which [placeholders](../syntax/placeholders.md) can be resolved
 
 For instance, to use `JsObject` from `play-json` as an HTTP request body:
 

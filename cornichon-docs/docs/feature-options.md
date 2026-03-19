@@ -85,7 +85,7 @@ override lazy val seed: Option[Long] = Some(1L)
 
 ## Register custom extractors
 
-Custom extractors let you define reusable placeholder mappings that automatically extract values from the session. See [Custom extractors](placeholders.md#custom-extractors) in the Placeholders page.
+Custom extractors let you define reusable placeholder mappings that automatically extract values from the session. See [Custom extractors](syntax/placeholders.md#custom-extractors) in the Placeholders page.
 
 ## Execution model
 

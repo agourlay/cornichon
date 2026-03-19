@@ -83,11 +83,11 @@ Given I post("/products").withBody(
 
 ## Session key overwritten unexpectedly
 
-**Symptom:** A [placeholder](placeholders.md) resolves to a different value than expected.
+**Symptom:** A [placeholder](syntax/placeholders.md) resolves to a different value than expected.
 
 **Cause:** The session behaves like a multimap — saving the same key multiple times appends values, and `<key>` always returns the latest. Inside loops (`Repeat`, `RepeatWith`), each iteration may overwrite the key.
 
-**Fix:** Use indexed access like `<key[0]>` to retrieve earlier values, or use distinct key names. See [Placeholders](placeholders.md) for the full explanation of session multimap behavior.
+**Fix:** Use indexed access like `<key[0]>` to retrieve earlier values, or use distinct key names. See [Placeholders](syntax/placeholders.md) for the full explanation of session multimap behavior.
 
 ## `Repeat` index starts at 0
 
@@ -113,7 +113,7 @@ Repeat(3, "i") {
 - **Root array access:** For a response that is a JSON array, use `$` as the root: `body.path("$[0].name")`
 - **Wildcard projection:** `body.path("items[*].name")` returns an array of all `name` values.
 
-See [JSON path](json-path.md) for the complete syntax reference.
+See [JSON path](syntax/json-path.md) for the complete syntax reference.
 
 ## Status code assertion fails with response details
 

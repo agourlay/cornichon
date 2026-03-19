@@ -73,7 +73,7 @@ body.asArray.inOrder.ignoringEach("publisher").is("""
 
 ## Data-driven tests
 
-Use [`WithDataInputs`](wrapper-steps.md) to run the same steps for each row of a data table. The column headers become session keys available as [placeholders](../placeholders.md):
+Use [`WithDataInputs`](../dsl/wrapper-steps.md) to run the same steps for each row of a data table. The column headers become session keys available as [placeholders](placeholders.md):
 
 ```scala
 WithDataInputs("""
@@ -87,7 +87,7 @@ WithDataInputs("""
 }
 ```
 
-For more complex inputs, [`WithJsonDataInputs`](wrapper-steps.md) accepts a JSON array instead of a table:
+For more complex inputs, [`WithJsonDataInputs`](../dsl/wrapper-steps.md) accepts a JSON array instead of a table:
 
 ```scala
 WithJsonDataInputs("""
