@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Session steps</title>
+  <title>Data tables</title>
   
   
   <meta name="description" content="An extensible Scala DSL for testing JSON HTTP APIs."/>
@@ -85,10 +85,10 @@
     <li class="level1 nav-leaf"><a href="../test-output.html">Test output</a></li>
     <li class="level1 nav-leaf"><a href="../dsl.html">DSL</a></li>
     <li class="level1 nav-header">dsl</li>
-    <li class="level2 nav-leaf"><a href="http-steps.html">HTTP steps</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Session steps</a></li>
-    <li class="level2 nav-leaf"><a href="wrapper-steps.html">Wrapper steps</a></li>
-    <li class="level2 nav-leaf"><a href="utility-steps.html">Utility steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/http-steps.html">HTTP steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/session-steps.html">Session steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/wrapper-steps.html">Wrapper steps</a></li>
+    <li class="level2 nav-leaf"><a href="../dsl/utility-steps.html">Utility steps</a></li>
     <li class="level1 nav-leaf"><a href="../common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
     <li class="level1 nav-header">custom-steps</li>
@@ -97,10 +97,10 @@
     <li class="level2 nav-leaf"><a href="../custom-steps/resource-step.html">Resource steps</a></li>
     <li class="level1 nav-leaf"><a href="../syntax.html">Syntax reference</a></li>
     <li class="level1 nav-header">syntax</li>
-    <li class="level2 nav-leaf"><a href="../syntax/placeholders.html">Placeholders</a></li>
-    <li class="level2 nav-leaf"><a href="../syntax/json-path.html">JSON path</a></li>
-    <li class="level2 nav-leaf"><a href="../syntax/json-matchers.html">JSON matchers</a></li>
-    <li class="level2 nav-leaf"><a href="../syntax/data-tables.html">Data tables</a></li>
+    <li class="level2 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
+    <li class="level2 nav-leaf"><a href="json-path.html">JSON path</a></li>
+    <li class="level2 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Data tables</a></li>
     <li class="level1 nav-leaf"><a href="../feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="../reference-configuration.html">Reference configuration</a></li>
     <li class="level1 nav-leaf"><a href="../performance-tuning.html">Performance tuning</a></li>
@@ -122,9 +122,12 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Session steps</a></p>
+  <p class="header"><a href="#">Data tables</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#syntax">Syntax</a></li>
+    <li class="level1 nav-leaf"><a href="#body-assertions">Body assertions</a></li>
+    <li class="level1 nav-leaf"><a href="#data-driven-tests">Data-driven tests</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -133,70 +136,108 @@
 
       <main class="content">
 
-        <h1 id="session-steps" class="title">Session steps</h1>
+        <h1 id="data-tables" class="title">Data tables</h1>
+        <p>Data tables provide a compact, readable way to express tabular data inline. They can be used in two contexts: as an alternative to JSON arrays in body assertions, and as inputs for data-driven test scenarios.</p>
+        
+        <h2 id="syntax" class="section"><a class="anchor-link left" href="#syntax"><i class="icofont-laika link">&#xef71;</i></a>Syntax</h2>
+        <p>A data table is a pipe-delimited string. The first row defines the column headers, and subsequent rows define the data:</p>
+        <pre><code>| name       | city         | score |
+| &quot;Batman&quot;   | &quot;Gotham&quot;     | 42    |
+| &quot;Superman&quot; | &quot;Metropolis&quot; | 99    |</code></pre>
+        <p><strong>Parsing rules:</strong></p>
         <ul>
-          <li>setting a value in <code>session</code></li>
+          <li>Columns are separated by <code>|</code></li>
+          <li>Leading and trailing whitespace in cells is stripped</li>
+          <li>Empty cells are ignored</li>
+          <li>String values must be quoted with <code>&quot;</code></li>
+          <li>Numbers and booleans are unquoted</li>
+          <li>All rows must have the same number of columns as the header</li>
         </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span> -&gt; </span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>saving the entire response body to <code>session</code></li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save_body</span><span>(</span><span class="string-literal">&quot;response-snapshot&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>saving a value extracted from the response body to <code>session</code></li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span> -&gt; </span><span class="string-literal">&quot;batman-city&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>asserting value in <code>session</code></li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>asserting JSON value in <code>session</code></li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;my-json-response&quot;</span><span>).</span><span class="identifier">asJson</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;a.b.c&quot;</span><span>).</span><span class="identifier">ignoring</span><span>(</span><span class="string-literal">&quot;d&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;...&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>asserting existence of value in <code>session</code></li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>).</span><span class="identifier">isPresent</span><span>
-</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>).</span><span class="identifier">isAbsent</span></code></pre>
-        <ul>
-          <li>transforming a value in <code>session</code></li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">transform_session</span><span>(</span><span class="string-literal">&quot;my-key&quot;</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toUpperCase</span><span>)</span></code></pre>
-        <ul>
-          <li>removing a key from <code>session</code></li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">remove</span><span>(</span><span class="string-literal">&quot;temporary-key&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>rolling back a value in <code>session</code> to its previous value</li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">rollback</span><span>(</span><span class="string-literal">&quot;favorite-superhero&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>comparing two session values</li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_values</span><span>(</span><span class="string-literal">&quot;key1&quot;</span><span>, </span><span class="string-literal">&quot;key2&quot;</span><span>).</span><span class="identifier">areEquals</span><span>
-
-</span><span class="identifier">session_values</span><span>(</span><span class="string-literal">&quot;key1&quot;</span><span>, </span><span class="string-literal">&quot;key2&quot;</span><span>).</span><span class="identifier">areNotEquals</span><span>
-
-</span><span class="identifier">session_values</span><span>(</span><span class="string-literal">&quot;key1&quot;</span><span>, </span><span class="string-literal">&quot;key2&quot;</span><span>).</span><span class="identifier">asJson</span><span>.</span><span class="identifier">areEquals</span></code></pre>
-        <ul>
-          <li>comparing current value with previous value of the same key</li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;counter&quot;</span><span>).</span><span class="identifier">hasEqualCurrentAndPreviousValues</span><span>
-
-</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;counter&quot;</span><span>).</span><span class="identifier">hasDifferentCurrentAndPreviousValues</span></code></pre>
-        <ul>
-          <li>asserting on the full history of values for a key</li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_history</span><span>(</span><span class="string-literal">&quot;status&quot;</span><span>).</span><span class="identifier">containsExactly</span><span>(</span><span class="string-literal">&quot;pending&quot;</span><span>, </span><span class="string-literal">&quot;active&quot;</span><span>, </span><span class="string-literal">&quot;completed&quot;</span><span>)</span></code></pre>
-        <ul>
-          <li>additional assertions on session values</li>
-        </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">isNot</span><span>(</span><span class="string-literal">&quot;Joker&quot;</span><span>)
-
-</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">containsString</span><span>(</span><span class="string-literal">&quot;Bat&quot;</span><span>)
-
-</span><span class="identifier">session_value</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>).</span><span class="identifier">matchesRegex</span><span>(</span><span class="string-literal">&quot;B.*n&quot;</span><span>.</span><span class="identifier">r</span><span>)</span></code></pre>
+        <p><strong>Escape sequences</strong> are supported in header values using backslash:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Escape</th>
+              <th>Character</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>\</code></td>
+              <td>backslash</td>
+            </tr>
+            <tr>
+              <td><code>|</code></td>
+              <td>pipe</td>
+            </tr>
+            <tr>
+              <td><code>\n</code></td>
+              <td>newline</td>
+            </tr>
+            <tr>
+              <td><code>\r</code></td>
+              <td>carriage return</td>
+            </tr>
+            <tr>
+              <td><code>\t</code></td>
+              <td>tab</td>
+            </tr>
+            <tr>
+              <td><code>\b</code></td>
+              <td>backspace</td>
+            </tr>
+            <tr>
+              <td><code>\f</code></td>
+              <td>form feed</td>
+            </tr>
+            <tr>
+              <td><code>\uXXXX</code></td>
+              <td>unicode character</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="body-assertions" class="section"><a class="anchor-link left" href="#body-assertions"><i class="icofont-laika link">&#xef71;</i></a>Body assertions</h2>
+        <p>Data tables can be used as an alternative to JSON arrays when asserting on collection responses. The table is automatically converted to a JSON array of objects:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+  | name       | realName       | city         |
+  | &quot;Batman&quot;   | &quot;Bruce Wayne&quot;  | &quot;Gotham&quot;     |
+  | &quot;Superman&quot; | &quot;Clark Kent&quot;   | &quot;Metropolis&quot; |
+&quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>This is equivalent to:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+[
+  { &quot;name&quot;: &quot;Batman&quot;,   &quot;realName&quot;: &quot;Bruce Wayne&quot;, &quot;city&quot;: &quot;Gotham&quot; },
+  { &quot;name&quot;: &quot;Superman&quot;, &quot;realName&quot;: &quot;Clark Kent&quot;,  &quot;city&quot;: &quot;Metropolis&quot; }
+]
+&quot;&quot;&quot;</span><span>)</span></code></pre>
+        <p>The table format is often more readable when comparing many objects with the same structure. It works with all array assertions including <code>ignoringEach</code>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+  | name       | realName       | city         | hasSuperpowers |
+  | &quot;Batman&quot;   | &quot;Bruce Wayne&quot;  | &quot;Gotham&quot;     | false          |
+  | &quot;Superman&quot; | &quot;Clark Kent&quot;   | &quot;Metropolis&quot; | true           |
+&quot;&quot;&quot;</span><span>)</span></code></pre>
+        
+        <h2 id="data-driven-tests" class="section"><a class="anchor-link left" href="#data-driven-tests"><i class="icofont-laika link">&#xef71;</i></a>Data-driven tests</h2>
+        <p>Use <a href="../dsl/wrapper-steps.html"><code>WithDataInputs</code></a> to run the same steps for each row of a data table. The column headers become session keys available as <a href="placeholders.html">placeholders</a>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithDataInputs</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+  | endpoint          | expected_status |
+  | &quot;/health&quot;         | &quot;200&quot;           |
+  | &quot;/api/version&quot;    | &quot;200&quot;           |
+  | &quot;/does-not-exist&quot; | &quot;404&quot;           |
+&quot;&quot;&quot;</span><span>) {
+  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;&lt;endpoint&gt;&quot;</span><span>)
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;&lt;expected_status&gt;&quot;</span><span>)
+}</span></code></pre>
+        <p>For more complex inputs, <a href="../dsl/wrapper-steps.html"><code>WithJsonDataInputs</code></a> accepts a JSON array instead of a table:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">WithJsonDataInputs</span><span>(</span><span class="string-literal">&quot;&quot;&quot;
+[
+  { &quot;a&quot;: &quot;1&quot;, &quot;b&quot;: &quot;3&quot;, &quot;c&quot;: &quot;4&quot; },
+  { &quot;a&quot;: &quot;7&quot;, &quot;b&quot;: &quot;4&quot;, &quot;c&quot;: &quot;11&quot; }
+]
+&quot;&quot;&quot;</span><span>) {
+  </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">a_plus_b_equals_c</span><span>
+}</span></code></pre>
 
         
 <hr class="footer-rule"/>

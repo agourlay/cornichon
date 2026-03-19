@@ -88,7 +88,6 @@
     <li class="level2 nav-leaf"><a href="dsl/http-steps.html">HTTP steps</a></li>
     <li class="level2 nav-leaf"><a href="dsl/session-steps.html">Session steps</a></li>
     <li class="level2 nav-leaf"><a href="dsl/wrapper-steps.html">Wrapper steps</a></li>
-    <li class="level2 nav-leaf"><a href="dsl/data-tables.html">Data tables</a></li>
     <li class="level2 nav-leaf"><a href="dsl/utility-steps.html">Utility steps</a></li>
     <li class="level1 active nav-leaf"><a href="#">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
@@ -96,9 +95,12 @@
     <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
     <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
     <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
-    <li class="level1 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
-    <li class="level1 nav-leaf"><a href="json-path.html">JSON path</a></li>
-    <li class="level1 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
+    <li class="level1 nav-leaf"><a href="syntax.html">Syntax reference</a></li>
+    <li class="level1 nav-header">syntax</li>
+    <li class="level2 nav-leaf"><a href="syntax/placeholders.html">Placeholders</a></li>
+    <li class="level2 nav-leaf"><a href="syntax/json-path.html">JSON path</a></li>
+    <li class="level2 nav-leaf"><a href="syntax/json-matchers.html">JSON matchers</a></li>
+    <li class="level2 nav-leaf"><a href="syntax/data-tables.html">Data tables</a></li>
     <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
     <li class="level1 nav-leaf"><a href="performance-tuning.html">Performance tuning</a></li>
@@ -183,7 +185,7 @@
         </div>
         
         <h2 id="crud-workflow" class="section"><a class="anchor-link left" href="#crud-workflow"><i class="icofont-laika link">&#xef71;</i></a>CRUD workflow</h2>
-        <p>A typical create-read-update-delete flow saving IDs between steps using <a href="placeholders.html">placeholders</a>:</p>
+        <p>A typical create-read-update-delete flow saving IDs between steps using <a href="syntax/placeholders.html">placeholders</a>:</p>
         <pre><code class="nohighlight"><span class="comment">// Create
 </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/products&quot;</span><span>).</span><span class="identifier">withBody</span><span>(</span><span class="string-literal">&quot;&quot;&quot;{ &quot;name&quot;: &quot;Widget&quot;, &quot;price&quot;: 42 }&quot;&quot;&quot;</span><span>)
 </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">201</span><span>)

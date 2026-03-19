@@ -88,7 +88,6 @@
     <li class="level2 active nav-leaf"><a href="#">HTTP steps</a></li>
     <li class="level2 nav-leaf"><a href="session-steps.html">Session steps</a></li>
     <li class="level2 nav-leaf"><a href="wrapper-steps.html">Wrapper steps</a></li>
-    <li class="level2 nav-leaf"><a href="data-tables.html">Data tables</a></li>
     <li class="level2 nav-leaf"><a href="utility-steps.html">Utility steps</a></li>
     <li class="level1 nav-leaf"><a href="../common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="../custom-steps.html">Custom steps</a></li>
@@ -96,9 +95,12 @@
     <li class="level2 nav-leaf"><a href="../custom-steps/effect-step.html">Effect steps</a></li>
     <li class="level2 nav-leaf"><a href="../custom-steps/assert-step.html">Assert steps</a></li>
     <li class="level2 nav-leaf"><a href="../custom-steps/resource-step.html">Resource steps</a></li>
-    <li class="level1 nav-leaf"><a href="../placeholders.html">Placeholders</a></li>
-    <li class="level1 nav-leaf"><a href="../json-path.html">JSON path</a></li>
-    <li class="level1 nav-leaf"><a href="../json-matchers.html">JSON matchers</a></li>
+    <li class="level1 nav-leaf"><a href="../syntax.html">Syntax reference</a></li>
+    <li class="level1 nav-header">syntax</li>
+    <li class="level2 nav-leaf"><a href="../syntax/placeholders.html">Placeholders</a></li>
+    <li class="level2 nav-leaf"><a href="../syntax/json-path.html">JSON path</a></li>
+    <li class="level2 nav-leaf"><a href="../syntax/json-matchers.html">JSON matchers</a></li>
+    <li class="level2 nav-leaf"><a href="../syntax/data-tables.html">Data tables</a></li>
     <li class="level1 nav-leaf"><a href="../feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="../reference-configuration.html">Reference configuration</a></li>
     <li class="level1 nav-leaf"><a href="../performance-tuning.html">Performance tuning</a></li>
@@ -206,7 +208,7 @@
         <p>Use <code>save_body_path</code> to extract a value from the response body using a JSON path and store it in the session under a custom key:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="string-literal">&quot;product-id&quot;</span><span>)
 </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body_path</span><span>(</span><span class="string-literal">&quot;address.city&quot;</span><span> -&gt; </span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;address.zip&quot;</span><span> -&gt; </span><span class="string-literal">&quot;zip&quot;</span><span>)</span></code></pre>
-        <p>The saved values are then available as <a href="../placeholders.html">placeholders</a>: <code>&lt;product-id&gt;</code>, <code>&lt;city&gt;</code>, etc.</p>
+        <p>The saved values are then available as <a href="../syntax/placeholders.html">placeholders</a>: <code>&lt;product-id&gt;</code>, <code>&lt;city&gt;</code>, etc.</p>
         <p>Other save steps:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Save the entire response body under a custom key
 </span><span class="type-name">And</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">save_body</span><span>(</span><span class="string-literal">&quot;full-response&quot;</span><span>)
@@ -275,7 +277,7 @@
     }
   }
   &quot;&quot;&quot;</span><span>)</span></code></pre>
-        <p>Ignored keys and extractors use <a href="../json-path.html">JSON path</a> expressions (e.g. <code>a.b.c[0].d</code>, <code>items[*].name</code>).</p>
+        <p>Ignored keys and extractors use <a href="../syntax/json-path.html">JSON path</a> expressions (e.g. <code>a.b.c[0].d</code>, <code>items[*].name</code>).</p>
         <p>JsonPath can also be used to only assert part of the response</p>
         <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>).</span><span class="identifier">is</span><span>(</span><span class="string-literal">&quot;Gotham city&quot;</span><span>)
 
@@ -427,7 +429,7 @@
           <li>String values still use quotes: <code>&quot;Batman&quot;</code></li>
           <li>Numbers, booleans, and null are unquoted: <code>42</code>, <code>true</code>, <code>null</code></li>
           <li>Nested objects and arrays: <code>{ publisher: { name: &quot;DC&quot; } }</code></li>
-          <li><a href="../placeholders.html">Placeholders</a> work inside <code>gqljson</code> strings: <code>name: &quot;&lt;hero-name&gt;&quot;</code></li>
+          <li><a href="../syntax/placeholders.html">Placeholders</a> work inside <code>gqljson</code> strings: <code>name: &quot;&lt;hero-name&gt;&quot;</code></li>
         </ul>
         <p>It can be used anywhere a regular JSON string is accepted — body assertions, <code>is</code>, <code>contains</code>, etc. It is powered by the <a href="https://github.com/sangria-graphql/sangria">Sangria</a> GraphQL parser.</p>
         
@@ -436,7 +438,7 @@
         <ul>
           <li><code>cats.Show</code> — used to print the values</li>
           <li><code>io.circe.Encoder</code> — used to convert the values to JSON</li>
-          <li><code>com.github.agourlay.cornichon.resolver.Resolvable</code> — used to provide a String form in which <a href="../placeholders.html">placeholders</a> can be resolved</li>
+          <li><code>com.github.agourlay.cornichon.resolver.Resolvable</code> — used to provide a String form in which <a href="../syntax/placeholders.html">placeholders</a> can be resolved</li>
         </ul>
         <p>For instance, to use <code>JsObject</code> from <code>play-json</code> as an HTTP request body:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">lazy</span><span> </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">jsonResolvableForm</span><span>: </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] = </span><span class="keyword">new</span><span> </span><span class="type-name">Resolvable</span><span>[</span><span class="type-name">JsObject</span><span>] {

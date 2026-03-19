@@ -88,7 +88,6 @@
     <li class="level2 nav-leaf"><a href="dsl/http-steps.html">HTTP steps</a></li>
     <li class="level2 nav-leaf"><a href="dsl/session-steps.html">Session steps</a></li>
     <li class="level2 nav-leaf"><a href="dsl/wrapper-steps.html">Wrapper steps</a></li>
-    <li class="level2 nav-leaf"><a href="dsl/data-tables.html">Data tables</a></li>
     <li class="level2 nav-leaf"><a href="dsl/utility-steps.html">Utility steps</a></li>
     <li class="level1 nav-leaf"><a href="common-patterns.html">Common patterns</a></li>
     <li class="level1 nav-leaf"><a href="custom-steps.html">Custom steps</a></li>
@@ -96,9 +95,12 @@
     <li class="level2 nav-leaf"><a href="custom-steps/effect-step.html">Effect steps</a></li>
     <li class="level2 nav-leaf"><a href="custom-steps/assert-step.html">Assert steps</a></li>
     <li class="level2 nav-leaf"><a href="custom-steps/resource-step.html">Resource steps</a></li>
-    <li class="level1 nav-leaf"><a href="placeholders.html">Placeholders</a></li>
-    <li class="level1 nav-leaf"><a href="json-path.html">JSON path</a></li>
-    <li class="level1 nav-leaf"><a href="json-matchers.html">JSON matchers</a></li>
+    <li class="level1 nav-leaf"><a href="syntax.html">Syntax reference</a></li>
+    <li class="level1 nav-header">syntax</li>
+    <li class="level2 nav-leaf"><a href="syntax/placeholders.html">Placeholders</a></li>
+    <li class="level2 nav-leaf"><a href="syntax/json-path.html">JSON path</a></li>
+    <li class="level2 nav-leaf"><a href="syntax/json-matchers.html">JSON matchers</a></li>
+    <li class="level2 nav-leaf"><a href="syntax/data-tables.html">Data tables</a></li>
     <li class="level1 nav-leaf"><a href="feature-options.html">Feature options</a></li>
     <li class="level1 nav-leaf"><a href="reference-configuration.html">Reference configuration</a></li>
     <li class="level1 nav-leaf"><a href="performance-tuning.html">Performance tuning</a></li>
@@ -200,9 +202,9 @@
   </span><span class="string-literal">&quot;&quot;&quot;{ &quot;name&quot;: &quot;test-&lt;random-uuid&gt;&quot;, &quot;price&quot;: 42 }&quot;&quot;&quot;</span><span>)</span></code></pre>
         
         <h2 id="session-key-overwritten-unexpectedly" class="section"><a class="anchor-link left" href="#session-key-overwritten-unexpectedly"><i class="icofont-laika link">&#xef71;</i></a>Session key overwritten unexpectedly</h2>
-        <p><strong>Symptom:</strong> A <a href="placeholders.html">placeholder</a> resolves to a different value than expected.</p>
+        <p><strong>Symptom:</strong> A <a href="syntax/placeholders.html">placeholder</a> resolves to a different value than expected.</p>
         <p><strong>Cause:</strong> The session behaves like a multimap — saving the same key multiple times appends values, and <code>&lt;key&gt;</code> always returns the latest. Inside loops (<code>Repeat</code>, <code>RepeatWith</code>), each iteration may overwrite the key.</p>
-        <p><strong>Fix:</strong> Use indexed access like <code>&lt;key[0]&gt;</code> to retrieve earlier values, or use distinct key names. See <a href="placeholders.html">Placeholders</a> for the full explanation of session multimap behavior.</p>
+        <p><strong>Fix:</strong> Use indexed access like <code>&lt;key[0]&gt;</code> to retrieve earlier values, or use distinct key names. See <a href="syntax/placeholders.html">Placeholders</a> for the full explanation of session multimap behavior.</p>
         
         <h2 id="repeat-index-starts-at-0" class="section"><a class="anchor-link left" href="#repeat-index-starts-at-0"><i class="icofont-laika link">&#xef71;</i></a><code>Repeat</code> index starts at 0</h2>
         <p><strong>Symptom:</strong> Off-by-one errors when using <code>Repeat</code> with an index.</p>
@@ -221,7 +223,7 @@
           <li><strong>Root array access:</strong> For a response that is a JSON array, use <code>$</code> as the root: <code>body.path(&quot;$[0].name&quot;)</code></li>
           <li><strong>Wildcard projection:</strong> <code>body.path(&quot;items[*].name&quot;)</code> returns an array of all <code>name</code> values.</li>
         </ul>
-        <p>See <a href="json-path.html">JSON path</a> for the complete syntax reference.</p>
+        <p>See <a href="syntax/json-path.html">JSON path</a> for the complete syntax reference.</p>
         
         <h2 id="status-code-assertion-fails-with-response-details" class="section"><a class="anchor-link left" href="#status-code-assertion-fails-with-response-details"><i class="icofont-laika link">&#xef71;</i></a>Status code assertion fails with response details</h2>
         <p><strong>Symptom:</strong></p>
