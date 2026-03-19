@@ -1,5 +1,5 @@
 {%
-laika.title = CI & Deployment
+laika.title = "CI & Deployment"
 %}
 
 # CI & Deployment
