@@ -178,28 +178,7 @@ WithBasicAuth("admin", "root"){
 }
 ```
 
-- HttpListenTo creates an HTTP server that will be running during the length of the enclosed steps.
-
-This feature is defined in the module `cornichon-http-mock` and requires to extend the trait `HttpMockDsl`.
-
-@:callout(info)
-By default, this server responds with 201 to any POST request and 200 for all the rest.
-@:@
-
-Additionally, it provides three administration features:
-- fetching recorded received requests
-- resetting recorded received requests
-- toggling on/off the error mode to return HTTP 500 to incoming requests
-
-The server records all requests received as a JSON array of HTTP request for later assertions.
-
-There are two ways to perform assertions on the server statistics, either by querying the session at the end of the block or by contacting directly the server while it runs.
-
-Refer to those [examples](https://github.com/agourlay/cornichon/blob/master/cornichon-http-mock/src/test/scala/com/github/agourlay/cornichon/http/MockServerExample.scala) for more information.
-
-@:callout(warning)
-This feature is experimental and may change in the future.
-@:@
+- HttpMock creates a temporary HTTP server for testing. See [HTTP Mock](http-mock.md) for full documentation.
 
 - Log duration
 

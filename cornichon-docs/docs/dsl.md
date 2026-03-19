@@ -41,4 +41,5 @@ Then assert step_definition
 - [HTTP Steps](dsl/http-steps.md) — HTTP effects, assertions, streams, and GraphQL support
 - [Session Steps](dsl/session-steps.md) — saving, reading, and asserting session values
 - [Wrapper Steps](dsl/wrapper-steps.md) — repeat, retry, eventually, concurrently, and more
+- [HTTP Mock](dsl/http-mock.md) — spin up a temporary mock server (requires `cornichon-http-mock` module)
 - [Utility Steps](dsl/utility-steps.md) — debug helpers and DSL composition

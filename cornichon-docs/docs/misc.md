@@ -1,8 +1,8 @@
 {%
-laika.title = Running tests
+laika.title = CI & Deployment
 %}
 
-# Running tests
+# CI & Deployment
 
 ## SBT integration
 

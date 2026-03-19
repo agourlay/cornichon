@@ -233,7 +233,7 @@ lazy val docs =
                 TextLink.internal(Root / "quick-start.md", "Quick Start"),
                 TextLink.internal(Root / "dsl.md", "DSL"),
                 TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
-                TextLink.internal(Root / "modules.md", "Modules")
+                TextLink.internal(Root / "syntax.md", "Syntax Reference")
               )
             )
           ),
