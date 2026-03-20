@@ -29,9 +29,9 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
     else {
       // Run 'before feature' hooks
       runBeforeFeature() match {
-        // There was an error after a successful run, try running `afterFeature` hook to possibly clean things up
+        // Partial success: some hooks ran before the error, so run afterFeature to clean up
         case Left((beforeFeatureError, successRun)) if successRun >= 1 =>
-          println("`beforeFeature` failed partially, let's try to run `afterFeature` to possibly clean things up")
+          println("`beforeFeature` failed partially, running `afterFeature` for cleanup")
           runAfterFeature() match {
             case Left(afterFeatureError) => IO.raiseError(HooksFeatureError(beforeFeatureError, afterFeatureError).toException)
             case Right(_)                => IO.raiseError(beforeFeatureError.toException)

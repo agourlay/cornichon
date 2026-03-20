@@ -13,7 +13,7 @@ final case class Config(
   traceRequests: Boolean = false,
   warnOnDuplicateHeaders: Boolean = false,
   failOnDuplicateHeaders: Boolean = false,
-  addAcceptGzipByDefault: Boolean = false, // kinda slow
+  addAcceptGzipByDefault: Boolean = false, // disabled by default due to decompression overhead
   disableCertificateVerification: Boolean = false,
   followRedirect: Boolean = false,
   enableHttp2: Boolean = false

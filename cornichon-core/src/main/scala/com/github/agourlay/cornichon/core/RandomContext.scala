@@ -50,7 +50,7 @@ object RandomContext {
 
   private val alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".getBytes
 
-  // Faster than Randon.alphanumeric
+  // Faster than Random.alphanumeric
   protected[cornichon] def mkAlphaNumStr(rand: Random, length: Int): String = {
     val bytes = new Array[Byte](length)
     for (i <- 0 until length) bytes(i) = alphanumeric(rand.nextInt(alphanumeric.length))

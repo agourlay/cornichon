@@ -22,11 +22,11 @@ case class SuperHeroNotFound(id: String) extends ApiError {
 }
 
 case class PublisherAlreadyExists(id: String) extends ApiError {
-  val msg = s"Publisher $id already exist"
+  val msg = s"Publisher $id already exists"
 }
 
 case class SuperHeroAlreadyExists(id: String) extends ApiError {
-  val msg = s"Publisher $id already exist"
+  val msg = s"Superhero $id already exists"
 }
 
 case class HttpError(error: String) extends AnyVal
