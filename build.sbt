@@ -10,7 +10,8 @@ val compilerOptions_scala3 = Seq(
   "-deprecation",
   "-unchecked",
   "-feature",
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-Wconf:msg=Non local returns:s" // used intentionally in hot paths for early exit; will migrate to boundary/break when dropping 2.13
 )
 
 val compilerOptions_scala2 = Seq(
