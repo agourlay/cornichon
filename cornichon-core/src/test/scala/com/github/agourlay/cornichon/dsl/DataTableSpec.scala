@@ -56,16 +56,16 @@ class DataTableSpec extends FunSuite {
   test("parser processes string values and headers with unicode characters and escaping") {
     val input =
       """
-          | Name                  |   Größe \u00DF " \| test |
-          | "öÖß \u00DF \" test " |   50                     |
+          | Name                |   Größe ß " \| test |
+          | "öÖß ß \" test "   |   50                 |
         """
 
     parseDataTable(input) == Right(
       List(
         Json
           .obj(
-            "Name"                   -> Json.fromString("öÖß \u00DF \" test "),
-            "Größe \u00DF \" | test" -> Json.fromInt(50)
+            "Name"              -> Json.fromString("öÖß ß \" test "),
+            "Größe ß \" | test" -> Json.fromInt(50)
           )
           .asObject
           .get
