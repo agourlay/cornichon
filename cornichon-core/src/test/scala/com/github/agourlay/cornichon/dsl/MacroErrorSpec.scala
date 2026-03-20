@@ -171,7 +171,7 @@ class MacroErrorSpec extends FunSuite {
         Feature("foo") {
           Scenario("aaa") {
             print_step("Hello world!")
-            steps
+            steps: @annotation.nowarn("msg=pure expression does nothing")
             Seq(
               print_step("Hello world!"),
               print_step("Hello world!")
