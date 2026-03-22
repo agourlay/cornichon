@@ -51,6 +51,28 @@ It is required to have the same `Property` type for all properties within a `mod
 
 Having `generators` as input enables the `action` to introduce some randomness in its effect.
 
+## Transition helpers
+
+Transitions are defined as `Map[Property, List[(Int, Property)]]` where the `Int` is the weight (must sum to 100). Helper methods in `Model` make this more readable:
+
+```scala
+import Model._
+
+transitions = Map(
+  entryPoint -> always(createProduct),                                         // 100% to one target
+  createProduct -> weighted(60 -> createProduct, 30 -> updateProduct, 10 -> deleteProduct),  // explicit weights
+  idle -> equallyDistributed(createProduct, updateProduct, deleteProduct)       // equal split (34/33/33)
+)
+```
+
+- **`always(property)`** — single transition with 100% weight
+- **`weighted(60 -> a, 30 -> b, 10 -> c)`** — explicit weights, must sum to 100
+- **`equallyDistributed(a, b, c)`** — splits 100% evenly across properties
+
+The original `List[(Int, Property)]` syntax still works.
+
+## Run semantics
+
 A `run` terminates successfully if the max number of transitions is reached, this means we were not able to break any invariants.
 
 A `run` fails if one of the following conditions is met:

@@ -19,6 +19,29 @@ case class Model[A, B, C, D, E, F](
   transitions: Map[PropertyN[A, B, C, D, E, F], List[(Int, PropertyN[A, B, C, D, E, F])]]
 )
 
+object Model {
+
+  /** Transition to a single property with 100% probability */
+  def always[A, B, C, D, E, F](property: PropertyN[A, B, C, D, E, F]): List[(Int, PropertyN[A, B, C, D, E, F])] =
+    (100, property) :: Nil
+
+  /** Weighted transitions — weights must sum to 100 */
+  def weighted[A, B, C, D, E, F](transitions: (Int, PropertyN[A, B, C, D, E, F])*): List[(Int, PropertyN[A, B, C, D, E, F])] =
+    transitions.toList
+
+  /** Equal-weight transitions between all given properties */
+  def equallyDistributed[A, B, C, D, E, F](properties: PropertyN[A, B, C, D, E, F]*): List[(Int, PropertyN[A, B, C, D, E, F])] = {
+    val weight = 100 / properties.size
+    val remainder = 100 - (weight * properties.size)
+    properties.toList.zipWithIndex.map { case (p, i) =>
+      // Give the remainder to the first property so weights sum to exactly 100
+      val w = if (i == 0) weight + remainder else weight
+      (w, p)
+    }
+  }
+
+}
+
 object ModelRunner {
 
   def makeNoGen(model: Model[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue]): ModelRunner[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue] =
