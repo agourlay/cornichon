@@ -125,6 +125,8 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#concepts">Concepts</a></li>
+    <li class="level1 nav-leaf"><a href="#transition-helpers">Transition helpers</a></li>
+    <li class="level1 nav-leaf"><a href="#run-semantics">Run semantics</a></li>
     <li class="level1 nav-node"><a href="#examples">Examples</a></li>
     <li class="level2 nav-leaf"><a href="#turnstile">Turnstile</a></li>
     <li class="level2 nav-leaf"><a href="#web-shop-admin-advanced-example">Web shop Admin (advanced example)</a></li>
@@ -176,6 +178,24 @@
           <p>It is required to have the same <code>Property</code> type for all properties within a <code>model</code> definition.</p>
         </div>
         <p>Having <code>generators</code> as input enables the <code>action</code> to introduce some randomness in its effect.</p>
+        
+        <h2 id="transition-helpers" class="section"><a class="anchor-link left" href="#transition-helpers"><i class="icofont-laika link">&#xef71;</i></a>Transition helpers</h2>
+        <p>Transitions are defined as <code>Map[Property, List[(Int, Property)]]</code> where the <code>Int</code> is the weight (must sum to 100). Helper methods in <code>Model</code> make this more readable:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="type-name">Model</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="identifier">transitions</span><span> = </span><span class="type-name">Map</span><span>(
+  </span><span class="identifier">entryPoint</span><span> -&gt; </span><span class="identifier">always</span><span>(</span><span class="identifier">createProduct</span><span>),                                         </span><span class="comment">// 100% to one target
+</span><span>  </span><span class="identifier">createProduct</span><span> -&gt; </span><span class="identifier">weighted</span><span>(</span><span class="number-literal">60</span><span> -&gt; </span><span class="identifier">createProduct</span><span>, </span><span class="number-literal">30</span><span> -&gt; </span><span class="identifier">updateProduct</span><span>, </span><span class="number-literal">10</span><span> -&gt; </span><span class="identifier">deleteProduct</span><span>),  </span><span class="comment">// explicit weights
+</span><span>  </span><span class="identifier">idle</span><span> -&gt; </span><span class="identifier">equallyDistributed</span><span>(</span><span class="identifier">createProduct</span><span>, </span><span class="identifier">updateProduct</span><span>, </span><span class="identifier">deleteProduct</span><span>)       </span><span class="comment">// equal split (34/33/33)
+</span><span>)</span></code></pre>
+        <ul>
+          <li><strong><code>always(property)</code></strong> — single transition with 100% weight</li>
+          <li><strong><code>weighted(60 -&gt; a, 30 -&gt; b, 10 -&gt; c)</code></strong> — explicit weights, must sum to 100</li>
+          <li><strong><code>equallyDistributed(a, b, c)</code></strong> — splits 100% evenly across properties</li>
+        </ul>
+        <p>The original <code>List[(Int, Property)]</code> syntax still works.</p>
+        
+        <h2 id="run-semantics" class="section"><a class="anchor-link left" href="#run-semantics"><i class="icofont-laika link">&#xef71;</i></a>Run semantics</h2>
         <p>A <code>run</code> terminates successfully if the max number of transitions is reached, this means we were not able to break any invariants.</p>
         <p>A <code>run</code> fails if one of the following conditions is met:</p>
         <ul>
