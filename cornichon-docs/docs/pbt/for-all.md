@@ -55,7 +55,7 @@ Use additional generator arguments for multi-value properties. Each value is pas
 def intGen(rc: RandomContext) = ValueGenerator("int", () => rc.nextInt(100))
 
 Scenario("addition is commutative") {
-  Given check for_all("a + b == b + a", maxNumberOfRuns = 10, intGen, intGen) { a => b =>
+  Given check for_all("a + b == b + a", maxNumberOfRuns = 10, intGen, intGen) { (a, b) =>
     AssertStep("commutative", _ => GenericEqualityAssertion(a + b, b + a))
   }
 }
@@ -72,7 +72,7 @@ def for_all[A](description: String, maxNumberOfRuns: Int, ga: RandomContext => G
 def for_all[A, B](description: String, maxNumberOfRuns: Int,
                    ga: RandomContext => Generator[A],
                    gb: RandomContext => Generator[B])
-                  (builder: A => B => Step): Step
+                  (builder: (A, B) => Step): Step
 
 // ... up to 6 type parameters
 ```
