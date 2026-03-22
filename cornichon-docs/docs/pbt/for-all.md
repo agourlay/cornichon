@@ -4,94 +4,97 @@ laika.title = ForAll
 
 # ForAll
 
-The first flavour follows the classical approach found in many testing libraries. That is, for any values from a set of generators, we will validate that a given invariant holds.
+`for_all` verifies that an invariant holds for any generated values. It's the simplest form of property based testing in cornichon.
 
-Here is the `API` available when using a single `generator`
+## Minimal example
 
-`def for_all[A](description: String, maxNumberOfRuns: Int, ga: RandomContext => Generator[A])(builder: A => Step): Step`
+```scala
+def intGen(rc: RandomContext) = ValueGenerator(
+  name = "integer",
+  gen = () => rc.nextInt(100))
 
-Let's look at an example to see how to use it!
+Scenario("positive integers are positive") {
+  Given check for_all("positive check", maxNumberOfRuns = 10, intGen) { n =>
+    AssertStep("n >= 0", _ => GenericEqualityAssertion(true, n >= 0))
+  }
+}
+```
 
-We want to enforce the following invariant `for any string, if we reverse it twice, it should yield the same value`.
+That's it — define a generator, pass it to `for_all`, and write your assertion using the generated value.
 
-The implementation under test is a server accepting `POST` requests to `/double-reverse` with a query param named `word` will return the given `word` reversed twice.
+## With HTTP steps
 
-```scala mdoc:silent
-import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.CornichonFeature
+When your invariant involves multiple steps (HTTP calls + assertions), wrap them in `Attach` to combine them into a single step:
 
-class StringReverseCheck extends CornichonFeature {
+```scala
+Scenario("reverse a string twice yields the same result") {
 
-  def feature = Feature("Basic examples of checks") {
-
-    Scenario("reverse a string twice yields the same results") {
-
-      Given check for_all("reversing twice a string yields the same result", maxNumberOfRuns = 5, stringGen) { randomString =>
-        Attach {
-          Given I post("/double-reverse").withParams("word" -> randomString)
-          Then assert status.is(200)
-          Then assert body.is(randomString)
-        }
-      }
+  Given check for_all("double reverse", maxNumberOfRuns = 5, stringGen) { randomString =>
+    Attach {
+      Given I post("/double-reverse").withParams("word" -> randomString)
+      Then assert status.is(200)
+      Then assert body.is(randomString)
     }
   }
+}
 
-  def stringGen(rc: RandomContext): ValueGenerator[String] = ValueGenerator(
-    name = "alphanumeric String (20)",
-    gen = () => rc.alphanumeric(20))
+def stringGen(rc: RandomContext) = ValueGenerator(
+  name = "alphanumeric String (20)",
+  gen = () => rc.alphanumeric(20))
+```
+
+@:callout(info)
+`Attach` is needed because `for_all`'s builder function must return a single `Step`. When you have multiple steps (request + assertions), `Attach` groups them into one.
+@:@
+
+## Multiple generators
+
+Use additional generator arguments for multi-value properties. Each value is passed as a separate parameter:
+
+```scala
+def intGen(rc: RandomContext) = ValueGenerator("int", () => rc.nextInt(100))
+
+Scenario("addition is commutative") {
+  Given check for_all("a + b == b + a", maxNumberOfRuns = 10, intGen, intGen) { a => b =>
+    AssertStep("commutative", _ => GenericEqualityAssertion(a + b, b + a))
   }
-
+}
 ```
 
-To understand what is going on, we can have a look at the logs produced by this scenario.
+Up to 6 generators are supported.
 
-```
-Starting scenario 'reverse a string twice yields the same results'
-- reverse a string twice yields the same results (1848 millis)
+## API
 
-   Scenario : reverse a string twice yields the same results
-      main steps
-      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' with maxNumberOfRuns=5 and seed=1542985803071
-         Run #0
-            Given I POST /double-reverse with query parameters 'word' -> 'vtKxhkCJaVlAOzhdSCwD' (1257 millis)
-            Then assert status is '200' (7 millis)
-            Then assert response body is vtKxhkCJaVlAOzhdSCwD (32 millis)
-         Run #0
-         Run #1
-            Given I POST /double-reverse with query parameters 'word' -> '1bmmb2urTfJy59J2gGtI' (5 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is 1bmmb2urTfJy59J2gGtI (0 millis)
-         Run #1
-         Run #2
-            Given I POST /double-reverse with query parameters 'word' -> 'Fg3Dzp61as7Pkvvj49ub' (5 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is Fg3Dzp61as7Pkvvj49ub (0 millis)
-         Run #2
-         Run #3
-            Given I POST /double-reverse with query parameters 'word' -> 'bDLbxzMjMgVUP1iRLu4c' (5 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is bDLbxzMjMgVUP1iRLu4c (0 millis)
-         Run #3
-         Run #4
-            Given I POST /double-reverse with query parameters 'word' -> 'byV6Azexsl1AcdatquSJ' (5 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is byV6Azexsl1AcdatquSJ (0 millis)
-         Run #4
-         Run #5
-            Given I POST /double-reverse with query parameters 'word' -> 'pKGqRrbjUV7oMaPJzTJS' (4 millis)
-            Then assert status is '200' (0 millis)
-            Then assert response body is pKGqRrbjUV7oMaPJzTJS (0 millis)
-         Run #5
-      ForAll 'alphanumeric String (20)' check 'reversing twice a string yields the same result' block succeeded (1846 millis)
+```scala
+def for_all[A](description: String, maxNumberOfRuns: Int, ga: RandomContext => Generator[A])
+              (builder: A => Step): Step
+
+def for_all[A, B](description: String, maxNumberOfRuns: Int,
+                   ga: RandomContext => Generator[A],
+                   gb: RandomContext => Generator[B])
+                  (builder: A => B => Step): Step
+
+// ... up to 6 type parameters
 ```
 
-The logs show that:
+## Log output
 
-- the string generator has been called for each run
-- no invariants have been broken
+Each run shows the generated values and step results:
 
-The source for the test and the server are available [here](https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/stringReverse).
+```
+ForAll 'alphanumeric String (20)' check 'double reverse' with maxNumberOfRuns=5 and seed=1542985803071
+   Run #0
+      Given I POST /double-reverse with query parameters 'word' -> 'vtKxhkCJaVlAOzhdSCwD' (1257 millis)
+      Then assert status is '200' (7 millis)
+      Then assert response body is vtKxhkCJaVlAOzhdSCwD (32 millis)
+   Run #1
+      Given I POST /double-reverse with query parameters 'word' -> '1bmmb2urTfJy59J2gGtI' (5 millis)
+      ...
+```
 
-More often than not, using `forAll` is enough to cover the most common use cases. But sometimes we not only want to have random values generated but also random interactions with the system under test. This is where [Random Model Exploration](random-model-exploration.md) comes in.
+The seed is printed so you can [reproduce failures](../feature-options.md#seed).
 
-For details on creating generators, see [Generators](generators.md). To control test reproducibility via seed, see [Feature Options](../feature-options.md#seed).
+## Next steps
+
+- [Generators](generators.md) — built-in generators and ScalaCheck integration
+- [Random Model Exploration](random-model-exploration.md) — for testing stateful API workflows with Markov chains

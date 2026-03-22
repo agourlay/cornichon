@@ -2,11 +2,13 @@
 laika.title = PBT
 %}
 
-# Property based testing support
+# Property based testing
 
-Cornichon offers support for Property based testing via two different flavours of testing:
+Instead of testing specific inputs, property based testing generates random inputs and verifies that invariants hold. This catches edge cases that hand-written tests miss.
 
-- [ForAll](pbt/for-all.md) — validate that an invariant holds for any generated values
-- [Random Model Exploration](pbt/random-model-exploration.md) — explore state machines defined as Markov chains
+Cornichon supports two approaches:
 
-Both approaches rely on [Generators](pbt/generators.md) to produce random inputs.
+- [ForAll](pbt/for-all.md) — verify that an invariant holds for any generated values. Use this for stateless properties like "reversing a string twice yields the original".
+- [Random Model Exploration](pbt/random-model-exploration.md) — explore stateful API workflows by defining them as Markov chains. Use this for testing CRUD APIs, state machines, or eventually-consistent systems.
+
+Both approaches rely on [Generators](pbt/generators.md) to produce random inputs. All runs are seeded for reproducibility — a failing test always prints the seed needed to replay the exact same execution.
