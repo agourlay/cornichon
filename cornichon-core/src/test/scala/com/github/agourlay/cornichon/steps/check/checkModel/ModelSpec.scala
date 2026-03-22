@@ -7,8 +7,10 @@ class ModelSpec extends FunSuite {
 
   private val propA: PropertyN[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property0(description = "A", invariant = () => NoOpStep)
+
   private val propB: PropertyN[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property0(description = "B", invariant = () => NoOpStep)
+
   private val propC: PropertyN[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue] =
     Property0(description = "C", invariant = () => NoOpStep)
 
