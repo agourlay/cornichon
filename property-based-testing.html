@@ -132,13 +132,14 @@
 
       <main class="content">
 
-        <h1 id="property-based-testing-support" class="title">Property based testing support</h1>
-        <p>Cornichon offers support for Property based testing via two different flavours of testing:</p>
+        <h1 id="property-based-testing" class="title">Property based testing</h1>
+        <p>Instead of testing specific inputs, property based testing generates random inputs and verifies that invariants hold. This catches edge cases that hand-written tests miss.</p>
+        <p>Cornichon supports two approaches:</p>
         <ul>
-          <li><a href="pbt/for-all.html">ForAll</a> — validate that an invariant holds for any generated values</li>
-          <li><a href="pbt/random-model-exploration.html">Random Model Exploration</a> — explore state machines defined as Markov chains</li>
+          <li><a href="pbt/for-all.html">ForAll</a> — verify that an invariant holds for any generated values. Use this for stateless properties like &quot;reversing a string twice yields the original&quot;.</li>
+          <li><a href="pbt/random-model-exploration.html">Random Model Exploration</a> — explore stateful API workflows by defining them as Markov chains. Use this for testing CRUD APIs, state machines, or eventually-consistent systems.</li>
         </ul>
-        <p>Both approaches rely on <a href="pbt/generators.html">Generators</a> to produce random inputs.</p>
+        <p>Both approaches rely on <a href="pbt/generators.html">Generators</a> to produce random inputs. All runs are seeded for reproducibility — a failing test always prints the seed needed to replay the exact same execution.</p>
 
         
 <hr class="footer-rule"/>

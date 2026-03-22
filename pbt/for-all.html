@@ -124,6 +124,12 @@
   <p class="header"><a href="#">ForAll</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#minimal-example">Minimal example</a></li>
+    <li class="level1 nav-leaf"><a href="#with-http-steps">With HTTP steps</a></li>
+    <li class="level1 nav-leaf"><a href="#multiple-generators">Multiple generators</a></li>
+    <li class="level1 nav-leaf"><a href="#api">API</a></li>
+    <li class="level1 nav-leaf"><a href="#log-output">Log output</a></li>
+    <li class="level1 nav-leaf"><a href="#next-steps">Next steps</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -133,81 +139,80 @@
       <main class="content">
 
         <h1 id="forall" class="title">ForAll</h1>
-        <p>The first flavour follows the classical approach found in many testing libraries. That is, for any values from a set of generators, we will validate that a given invariant holds.</p>
-        <p>Here is the <code>API</code> available when using a single <code>generator</code></p>
-        <p><code>def for_all[A](description: String, maxNumberOfRuns: Int, ga: RandomContext =&gt; Generator[A])(builder: A =&gt; Step): Step</code></p>
-        <p>Let&#39;s look at an example to see how to use it!</p>
-        <p>We want to enforce the following invariant <code>for any string, if we reverse it twice, it should yield the same value</code>.</p>
-        <p>The implementation under test is a server accepting <code>POST</code> requests to <code>/double-reverse</code> with a query param named <code>word</code> will return the given <code>word</code> reversed twice.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="identifier">core</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
+        <p><code>for_all</code> verifies that an invariant holds for any generated values. It&#39;s the simplest form of property based testing in cornichon.</p>
+        
+        <h2 id="minimal-example" class="section"><a class="anchor-link left" href="#minimal-example"><i class="icofont-laika link">&#xef71;</i></a>Minimal example</h2>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">intGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>) = </span><span class="type-name">ValueGenerator</span><span>(
+  </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;integer&quot;</span><span>,
+  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">100</span><span>))
 
-</span><span class="keyword">class</span><span> </span><span class="type-name">StringReverseCheck</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span> {
+</span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;positive integers are positive&quot;</span><span>) {
+  </span><span class="type-name">Given</span><span> </span><span class="identifier">check</span><span> </span><span class="keyword">for</span><span>_</span><span class="identifier">all</span><span>(</span><span class="string-literal">&quot;positive check&quot;</span><span>, </span><span class="identifier">maxNumberOfRuns</span><span> = </span><span class="number-literal">10</span><span>, </span><span class="identifier">intGen</span><span>) { </span><span class="identifier">n</span><span> =&gt;
+    </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;n &gt;= 0&quot;</span><span>, </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="boolean-literal">true</span><span>, </span><span class="identifier">n</span><span> &gt;= </span><span class="number-literal">0</span><span>))
+  }
+}</span></code></pre>
+        <p>That&#39;s it — define a generator, pass it to <code>for_all</code>, and write your assertion using the generated value.</p>
+        
+        <h2 id="with-http-steps" class="section"><a class="anchor-link left" href="#with-http-steps"><i class="icofont-laika link">&#xef71;</i></a>With HTTP steps</h2>
+        <p>When your invariant involves multiple steps (HTTP calls + assertions), wrap them in <code>Attach</code> to combine them into a single step:</p>
+        <pre><code class="nohighlight"><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;reverse a string twice yields the same result&quot;</span><span>) {
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Basic examples of checks&quot;</span><span>) {
-
-    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;reverse a string twice yields the same results&quot;</span><span>) {
-
-      </span><span class="type-name">Given</span><span> </span><span class="identifier">check</span><span> </span><span class="keyword">for</span><span>_</span><span class="identifier">all</span><span>(</span><span class="string-literal">&quot;reversing twice a string yields the same result&quot;</span><span>, </span><span class="identifier">maxNumberOfRuns</span><span> = </span><span class="number-literal">5</span><span>, </span><span class="identifier">stringGen</span><span>) { </span><span class="identifier">randomString</span><span> =&gt;
-        </span><span class="type-name">Attach</span><span> {
-          </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/double-reverse&quot;</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;word&quot;</span><span> -&gt; </span><span class="identifier">randomString</span><span>)
-          </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
-          </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="identifier">randomString</span><span>)
-        }
-      }
+  </span><span class="type-name">Given</span><span> </span><span class="identifier">check</span><span> </span><span class="keyword">for</span><span>_</span><span class="identifier">all</span><span>(</span><span class="string-literal">&quot;double reverse&quot;</span><span>, </span><span class="identifier">maxNumberOfRuns</span><span> = </span><span class="number-literal">5</span><span>, </span><span class="identifier">stringGen</span><span>) { </span><span class="identifier">randomString</span><span> =&gt;
+    </span><span class="type-name">Attach</span><span> {
+      </span><span class="type-name">Given</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">post</span><span>(</span><span class="string-literal">&quot;/double-reverse&quot;</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;word&quot;</span><span> -&gt; </span><span class="identifier">randomString</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(</span><span class="identifier">randomString</span><span>)
     }
   }
+}
 
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">stringGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
-    </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;alphanumeric String (20)&quot;</span><span>,
-    </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>(</span><span class="number-literal">20</span><span>))
-  }</span></code></pre>
-        <p>To understand what is going on, we can have a look at the logs produced by this scenario.</p>
-        <pre><code>Starting scenario &#39;reverse a string twice yields the same results&#39;
-- reverse a string twice yields the same results (1848 millis)
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">stringGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>) = </span><span class="type-name">ValueGenerator</span><span>(
+  </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;alphanumeric String (20)&quot;</span><span>,
+  </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>(</span><span class="number-literal">20</span><span>))</span></code></pre>
+        <div class="callout info">
+          <i class="icofont-laika info">&#xef4e;</i>
+          <p><code>Attach</code> is needed because <code>for_all</code>&#39;s builder function must return a single <code>Step</code>. When you have multiple steps (request + assertions), <code>Attach</code> groups them into one.</p>
+        </div>
+        
+        <h2 id="multiple-generators" class="section"><a class="anchor-link left" href="#multiple-generators"><i class="icofont-laika link">&#xef71;</i></a>Multiple generators</h2>
+        <p>Use additional generator arguments for multi-value properties. Each value is passed as a separate parameter:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">intGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>) = </span><span class="type-name">ValueGenerator</span><span>(</span><span class="string-literal">&quot;int&quot;</span><span>, () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">100</span><span>))
 
-   Scenario : reverse a string twice yields the same results
-      main steps
-      ForAll &#39;alphanumeric String (20)&#39; check &#39;reversing twice a string yields the same result&#39; with maxNumberOfRuns=5 and seed=1542985803071
-         Run #0
-            Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;vtKxhkCJaVlAOzhdSCwD&#39; (1257 millis)
-            Then assert status is &#39;200&#39; (7 millis)
-            Then assert response body is vtKxhkCJaVlAOzhdSCwD (32 millis)
-         Run #0
-         Run #1
-            Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;1bmmb2urTfJy59J2gGtI&#39; (5 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            Then assert response body is 1bmmb2urTfJy59J2gGtI (0 millis)
-         Run #1
-         Run #2
-            Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;Fg3Dzp61as7Pkvvj49ub&#39; (5 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            Then assert response body is Fg3Dzp61as7Pkvvj49ub (0 millis)
-         Run #2
-         Run #3
-            Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;bDLbxzMjMgVUP1iRLu4c&#39; (5 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            Then assert response body is bDLbxzMjMgVUP1iRLu4c (0 millis)
-         Run #3
-         Run #4
-            Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;byV6Azexsl1AcdatquSJ&#39; (5 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            Then assert response body is byV6Azexsl1AcdatquSJ (0 millis)
-         Run #4
-         Run #5
-            Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;pKGqRrbjUV7oMaPJzTJS&#39; (4 millis)
-            Then assert status is &#39;200&#39; (0 millis)
-            Then assert response body is pKGqRrbjUV7oMaPJzTJS (0 millis)
-         Run #5
-      ForAll &#39;alphanumeric String (20)&#39; check &#39;reversing twice a string yields the same result&#39; block succeeded (1846 millis)</code></pre>
-        <p>The logs show that:</p>
+</span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;addition is commutative&quot;</span><span>) {
+  </span><span class="type-name">Given</span><span> </span><span class="identifier">check</span><span> </span><span class="keyword">for</span><span>_</span><span class="identifier">all</span><span>(</span><span class="string-literal">&quot;a + b == b + a&quot;</span><span>, </span><span class="identifier">maxNumberOfRuns</span><span> = </span><span class="number-literal">10</span><span>, </span><span class="identifier">intGen</span><span>, </span><span class="identifier">intGen</span><span>) { (</span><span class="identifier">a</span><span>, </span><span class="identifier">b</span><span>) =&gt;
+    </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;commutative&quot;</span><span>, </span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">GenericEqualityAssertion</span><span>(</span><span class="identifier">a</span><span> + </span><span class="identifier">b</span><span>, </span><span class="identifier">b</span><span> + </span><span class="identifier">a</span><span>))
+  }
+}</span></code></pre>
+        <p>Up to 6 generators are supported.</p>
+        
+        <h2 id="api" class="section"><a class="anchor-link left" href="#api"><i class="icofont-laika link">&#xef71;</i></a>API</h2>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">for_all</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">description</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">maxNumberOfRuns</span><span>: </span><span class="type-name">Int</span><span>, </span><span class="identifier">ga</span><span>: </span><span class="type-name">RandomContext</span><span> =&gt; </span><span class="type-name">Generator</span><span>[</span><span class="type-name">A</span><span>])
+              (</span><span class="identifier">builder</span><span>: </span><span class="type-name">A</span><span> =&gt; </span><span class="type-name">Step</span><span>): </span><span class="type-name">Step</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">for_all</span><span>[</span><span class="type-name">A</span><span>, </span><span class="type-name">B</span><span>](</span><span class="identifier">description</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">maxNumberOfRuns</span><span>: </span><span class="type-name">Int</span><span>,
+                   </span><span class="identifier">ga</span><span>: </span><span class="type-name">RandomContext</span><span> =&gt; </span><span class="type-name">Generator</span><span>[</span><span class="type-name">A</span><span>],
+                   </span><span class="identifier">gb</span><span>: </span><span class="type-name">RandomContext</span><span> =&gt; </span><span class="type-name">Generator</span><span>[</span><span class="type-name">B</span><span>])
+                  (</span><span class="identifier">builder</span><span>: (</span><span class="type-name">A</span><span>, </span><span class="type-name">B</span><span>) =&gt; </span><span class="type-name">Step</span><span>): </span><span class="type-name">Step</span><span>
+
+</span><span class="comment">// ... up to 6 type parameters</span></code></pre>
+        
+        <h2 id="log-output" class="section"><a class="anchor-link left" href="#log-output"><i class="icofont-laika link">&#xef71;</i></a>Log output</h2>
+        <p>Each run shows the generated values and step results:</p>
+        <pre><code>ForAll &#39;alphanumeric String (20)&#39; check &#39;double reverse&#39; with maxNumberOfRuns=5 and seed=1542985803071
+   Run #0
+      Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;vtKxhkCJaVlAOzhdSCwD&#39; (1257 millis)
+      Then assert status is &#39;200&#39; (7 millis)
+      Then assert response body is vtKxhkCJaVlAOzhdSCwD (32 millis)
+   Run #1
+      Given I POST /double-reverse with query parameters &#39;word&#39; -&gt; &#39;1bmmb2urTfJy59J2gGtI&#39; (5 millis)
+      ...</code></pre>
+        <p>The seed is printed so you can <a href="../feature-options.html#seed">reproduce failures</a>.</p>
+        
+        <h2 id="next-steps" class="section"><a class="anchor-link left" href="#next-steps"><i class="icofont-laika link">&#xef71;</i></a>Next steps</h2>
         <ul>
-          <li>the string generator has been called for each run</li>
-          <li>no invariants have been broken</li>
+          <li><a href="generators.html">Generators</a> — built-in generators and ScalaCheck integration</li>
+          <li><a href="random-model-exploration.html">Random Model Exploration</a> — for testing stateful API workflows with Markov chains</li>
         </ul>
-        <p>The source for the test and the server are available <a href="https://github.com/agourlay/cornichon/tree/master/cornichon-test-framework/src/test/scala/com/github/agourlay/cornichon/framework/examples/propertyCheck/stringReverse">here</a>.</p>
-        <p>More often than not, using <code>forAll</code> is enough to cover the most common use cases. But sometimes we not only want to have random values generated but also random interactions with the system under test. This is where <a href="random-model-exploration.html">Random Model Exploration</a> comes in.</p>
-        <p>For details on creating generators, see <a href="generators.html">Generators</a>. To control test reproducibility via seed, see <a href="../feature-options.html#seed">Feature Options</a>.</p>
 
         
 <hr class="footer-rule"/>

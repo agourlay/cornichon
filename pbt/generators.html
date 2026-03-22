@@ -124,6 +124,9 @@
   <p class="header"><a href="#">Generators</a></p>
 
   <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#built-in-generators">Built-in generators</a></li>
+    <li class="level1 nav-leaf"><a href="#generator-types">Generator types</a></li>
+    <li class="level1 nav-leaf"><a href="#using-scalacheck-generators">Using ScalaCheck generators</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -134,13 +137,10 @@
 
         <h1 id="generators" class="title">Generators</h1>
         <p>At the center of property based testing lies the capacity to generate arbitrary values that will be used to verify if a given invariant holds.</p>
-        <p>A <code>generator</code> is simply a function that accepts a <code>RandomContext</code> which is propagated throughout the execution, for instance below is an example generating Strings and Integers.</p>
-        <p>There are three concrete instances of <code>generators</code>:</p>
-        <ul>
-          <li><code>ValueGenerator</code></li>
-          <li><code>SessionValueGenerator</code> which provides additionally the <code>Session</code></li>
-          <li><code>OptionalValueGenerator</code> to fail in a controlled fashion</li>
-        </ul>
+        <p>A <code>generator</code> is a function from <code>RandomContext</code> to <code>Generator[A]</code>. The <code>RandomContext</code> provides a seeded random number generator for reproducible test runs.</p>
+        
+        <h2 id="built-in-generators" class="section"><a class="anchor-link left" href="#built-in-generators"><i class="icofont-laika link">&#xef71;</i></a>Built-in generators</h2>
+        <p>The simplest generators use <code>ValueGenerator</code> which wraps a <code>() =&gt; A</code> thunk:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">stringGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;an alphanumeric String (20)&quot;</span><span>,
   </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">alphanumeric</span><span>(</span><span class="number-literal">20</span><span>))
@@ -148,23 +148,43 @@
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">integerGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">ValueGenerator</span><span>[</span><span class="type-name">Int</span><span>] = </span><span class="type-name">ValueGenerator</span><span>(
   </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;integer&quot;</span><span>,
   </span><span class="identifier">gen</span><span> = () =&gt; </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextInt</span><span>(</span><span class="number-literal">10000</span><span>))</span></code></pre>
-        <p>This approach also supports embedding <code>Scalacheck&#39;s Gen</code> into a <code>Generator</code> by propagating the initial seed.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">scalacheck</span><span>.</span><span class="type-name">Gen</span><span>
+        
+        <h2 id="generator-types" class="section"><a class="anchor-link left" href="#generator-types"><i class="icofont-laika link">&#xef71;</i></a>Generator types</h2>
+        <p>There are three concrete generator types:</p>
+        <ul>
+          <li><strong><code>ValueGenerator[A]</code></strong> — wraps a <code>() =&gt; A</code> thunk. The most common choice.</li>
+          <li><strong><code>OptionalValueGenerator[A]</code></strong> — wraps a <code>() =&gt; Option[A]</code>. The test fails with a clear error when <code>None</code> is generated. Use this when your generator might not produce a value (e.g. ScalaCheck&#39;s <code>Gen</code> can return <code>None</code>).</li>
+          <li><strong><code>SessionValueGenerator[A]</code></strong> — wraps a <code>Session =&gt; A</code>. Use this when the generated value depends on the current test state (e.g. picking an ID that was saved by a previous step).</li>
+        </ul>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Generate a value that depends on session state
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">idGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">SessionValueGenerator</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">SessionValueGenerator</span><span>(
+  </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;an existing product ID&quot;</span><span>,
+  </span><span class="identifier">gen</span><span> = </span><span class="identifier">session</span><span> =&gt; </span><span class="identifier">session</span><span>.</span><span class="identifier">getUnsafe</span><span>(</span><span class="string-literal">&quot;product-id&quot;</span><span>))</span></code></pre>
+        
+        <h2 id="using-scalacheck-generators" class="section"><a class="anchor-link left" href="#using-scalacheck-generators"><i class="icofont-laika link">&#xef71;</i></a>Using ScalaCheck generators</h2>
+        <p>ScalaCheck&#39;s <code>Gen[A]</code> can be wrapped into a cornichon <code>Generator[A]</code>. The key is to propagate the seed from <code>RandomContext</code> into ScalaCheck&#39;s <code>Gen.Parameters</code> so that test runs are reproducible:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">scalacheck</span><span>.</span><span class="type-name">Gen</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">scalacheck</span><span>.</span><span class="identifier">rng</span><span>.</span><span class="type-name">Seed</span><span>
 
-</span><span class="keyword">sealed</span><span> </span><span class="keyword">trait</span><span> </span><span class="type-name">Coin</span><span>
-</span><span class="keyword">case</span><span> </span><span class="keyword">object</span><span> </span><span class="type-name">Head</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">Coin</span><span>
-</span><span class="keyword">case</span><span> </span><span class="keyword">object</span><span> </span><span class="type-name">Tail</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">Coin</span><span>
+</span><span class="comment">// Helper to convert any ScalaCheck Gen into a cornichon Generator
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">fromScalacheck</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">gen</span><span>: </span><span class="type-name">Gen</span><span>[</span><span class="type-name">A</span><span>])(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">Generator</span><span>[</span><span class="type-name">A</span><span>] =
+  </span><span class="type-name">OptionalValueGenerator</span><span>(
+    </span><span class="identifier">name</span><span> = </span><span class="identifier">name</span><span>,
+    </span><span class="identifier">gen</span><span> = () =&gt; {
+      </span><span class="keyword">val</span><span> </span><span class="identifier">nextSeed</span><span> = </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextLong</span><span>()
+      </span><span class="identifier">gen</span><span>(</span><span class="type-name">Gen</span><span>.</span><span class="type-name">Parameters</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withInitialSeed</span><span>(</span><span class="identifier">nextSeed</span><span>), </span><span class="type-name">Seed</span><span>(</span><span class="identifier">nextSeed</span><span>))
+    }
+  )</span></code></pre>
+        <p>Usage:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Define once
+</span><span class="keyword">val</span><span> </span><span class="identifier">coinGen</span><span> = </span><span class="identifier">fromScalacheck</span><span>(</span><span class="string-literal">&quot;a Coin&quot;</span><span>, </span><span class="type-name">Gen</span><span>.</span><span class="identifier">oneOf</span><span>(</span><span class="type-name">Head</span><span>, </span><span class="type-name">Tail</span><span>)) </span><span class="identifier">_</span><span>
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">coinGen</span><span>(</span><span class="identifier">rc</span><span>: </span><span class="type-name">RandomContext</span><span>): </span><span class="type-name">Generator</span><span>[</span><span class="type-name">Coin</span><span>] = </span><span class="type-name">OptionalValueGenerator</span><span>(
-  </span><span class="identifier">name</span><span> = </span><span class="string-literal">&quot;a Coin&quot;</span><span>,
-  </span><span class="identifier">gen</span><span> = () =&gt; {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">nextSeed</span><span> = </span><span class="identifier">rc</span><span>.</span><span class="identifier">nextLong</span><span>()
-    </span><span class="keyword">val</span><span> </span><span class="identifier">params</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="type-name">Parameters</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withInitialSeed</span><span>(</span><span class="identifier">nextSeed</span><span>)
-    </span><span class="keyword">val</span><span> </span><span class="identifier">coin</span><span> = </span><span class="type-name">Gen</span><span>.</span><span class="identifier">oneOf</span><span>[</span><span class="type-name">Coin</span><span>](</span><span class="type-name">Head</span><span>, </span><span class="type-name">Tail</span><span>)
-    </span><span class="identifier">coin</span><span>(</span><span class="identifier">params</span><span>, </span><span class="type-name">Seed</span><span>(</span><span class="identifier">nextSeed</span><span>))
-  }
-)</span></code></pre>
+</span><span class="comment">// Use in for_all or check_model
+</span><span class="identifier">check</span><span> </span><span class="keyword">for</span><span>_</span><span class="identifier">all</span><span>(</span><span class="string-literal">&quot;flip coins&quot;</span><span>, </span><span class="number-literal">100</span><span>, </span><span class="identifier">coinGen</span><span>) { </span><span class="identifier">coin</span><span> =&gt;
+  </span><span class="comment">// coin is Head or Tail
+</span><span>  </span><span class="type-name">AssertStep</span><span>(</span><span class="string-literal">&quot;valid coin&quot;</span><span>, </span><span class="identifier">_</span><span> =&gt; ...)
+}</span></code></pre>
+        <p>The helper uses <code>OptionalValueGenerator</code> because <code>Gen.apply</code> returns <code>Option[A]</code> — it can return <code>None</code> if the generator&#39;s filter conditions aren&#39;t met.</p>
 
         
 <hr class="footer-rule"/>
