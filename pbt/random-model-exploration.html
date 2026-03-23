@@ -463,7 +463,7 @@
          Run #1 - Max transitions number per run reached
       Check block succeeded (54 millis)</code></pre>
         <p>It is interesting to note that we are executing a single run on purpose, as the server is stateful, any subsequent runs would share the global state of the turnstile.</p>
-        <p>This is an issue because we are starting our model with <code>pushCoinAction</code> which is always expected to succeed.</p>
+        <p>This is an issue because we are starting our model with <code>pushCoin</code> which is always expected to succeed.</p>
         <p>Let&#39;s try to test the same model with more runs to see if it breaks!</p>
         <pre><code>Starting scenario &#39;Turnstile acts according to model&#39;
 - **failed** Turnstile acts according to model (74 millis)

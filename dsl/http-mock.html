@@ -149,7 +149,10 @@
           <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;com.github.agourlay&quot;</span><span> %% </span><span class="string-literal">&quot;cornichon-http-mock&quot;</span><span> % </span><span class="string-literal">&quot;0.23.0&quot;</span><span> % </span><span class="type-name">Test</span></code></pre>
           <p>Your feature class must also extend the <code>HttpMockDsl</code> trait.</p>
         </div>
-        <p><code>HttpMock</code> spins up a temporary HTTP server for the duration of a block, letting you test how your code interacts with external services.</p>
+        <p><code>HttpListenTo</code> spins up a temporary HTTP server for the duration of a block, letting you test how your code interacts with external services.</p>
+        <p>The API is <code>HttpListenTo(interface, portRange)(label)</code>. It is common to define a convenience alias:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">HttpMock</span><span> = </span><span class="type-name">HttpListenTo</span><span>(</span><span class="identifier">interface</span><span> = </span><span class="type-name">None</span><span>, </span><span class="identifier">portRange</span><span> = </span><span class="type-name">Some</span><span>(</span><span class="type-name">Range</span><span>(</span><span class="number-literal">8080</span><span>, </span><span class="number-literal">8085</span><span>))) </span><span class="identifier">_</span></code></pre>
+        <p>The examples below assume this alias is defined.</p>
         
         <h2 id="default-behavior" class="section"><a class="anchor-link left" href="#default-behavior"><i class="icofont-laika link">&#xef71;</i></a>Default behavior</h2>
         <p>By default, the mock server:</p>

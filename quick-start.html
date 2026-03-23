@@ -125,7 +125,8 @@
 
   <ul class="nav-list">
     <li class="level1 nav-leaf"><a href="#installation">Installation</a></li>
-    <li class="level1 nav-leaf"><a href="#your-first-test">Your first test</a></li>
+    <li class="level1 nav-node"><a href="#your-first-test">Your first test</a></li>
+    <li class="level2 nav-leaf"><a href="#scala-3-braceless-syntax">Scala 3 braceless syntax</a></li>
     <li class="level1 nav-leaf"><a href="#failure-modes">Failure modes</a></li>
     <li class="level1 nav-leaf"><a href="#next-steps">Next steps</a></li>
   </ul>
@@ -167,6 +168,21 @@
     }
   }
 }</span></code></pre>
+        
+        <h3 id="scala-3-braceless-syntax" class="section"><a class="anchor-link left" href="#scala-3-braceless-syntax"><i class="icofont-laika link">&#xef71;</i></a>Scala 3 braceless syntax</h3>
+        <p>When using Scala 3, you can take advantage of significant indentation to drop the curly braces, resulting in a style closer to Cucumber/Gherkin:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">com</span><span>.</span><span class="identifier">github</span><span>.</span><span class="identifier">agourlay</span><span>.</span><span class="identifier">cornichon</span><span>.</span><span class="type-name">CornichonFeature</span><span>
+
+</span><span class="keyword">class</span><span> </span><span class="type-name">CornichonExamplesSpec</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">CornichonFeature</span><span>:
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">feature</span><span> = </span><span class="type-name">Feature</span><span>(</span><span class="string-literal">&quot;Checking google&quot;</span><span>):
+
+    </span><span class="type-name">Scenario</span><span>(</span><span class="string-literal">&quot;Google is up and running&quot;</span><span>):
+
+      </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://google.com&quot;</span><span>)
+
+      </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">302</span><span>)</span></code></pre>
+        <p>Both styles are equivalent; choose whichever your team prefers.</p>
         
         <h2 id="failure-modes" class="section"><a class="anchor-link left" href="#failure-modes"><i class="icofont-laika link">&#xef71;</i></a>Failure modes</h2>
         <ul>

@@ -129,7 +129,7 @@
     <li class="level1 nav-leaf"><a href="#eventually-block-times-out"><code>Eventually</code> block times out</a></li>
     <li class="level1 nav-leaf"><a href="#scenarios-interfere-when-run-in-parallel">Scenarios interfere when run in parallel</a></li>
     <li class="level1 nav-leaf"><a href="#session-key-overwritten-unexpectedly">Session key overwritten unexpectedly</a></li>
-    <li class="level1 nav-leaf"><a href="#repeat-index-starts-at-0"><code>Repeat</code> index starts at 0</a></li>
+    <li class="level1 nav-leaf"><a href="#repeat-index-starts-at-1"><code>Repeat</code> index starts at 1</a></li>
     <li class="level1 nav-leaf"><a href="#json-path-returns-unexpected-value">JSON path returns unexpected value</a></li>
     <li class="level1 nav-leaf"><a href="#status-code-assertion-fails-with-response-details">Status code assertion fails with response details</a></li>
     <li class="level1 nav-leaf"><a href="#feature-not-discovered-by-test-framework">Feature not discovered by test framework</a></li>
@@ -205,11 +205,11 @@
         <p><strong>Cause:</strong> The session behaves like a multimap — saving the same key multiple times appends values, and <code>&lt;key&gt;</code> always returns the latest. Inside loops (<code>Repeat</code>, <code>RepeatWith</code>), each iteration may overwrite the key.</p>
         <p><strong>Fix:</strong> Use indexed access like <code>&lt;key[0]&gt;</code> to retrieve earlier values, or use distinct key names. See <a href="syntax/placeholders.html">Placeholders</a> for the full explanation of session multimap behavior.</p>
         
-        <h2 id="repeat-index-starts-at-0" class="section"><a class="anchor-link left" href="#repeat-index-starts-at-0"><i class="icofont-laika link">&#xef71;</i></a><code>Repeat</code> index starts at 0</h2>
+        <h2 id="repeat-index-starts-at-1" class="section"><a class="anchor-link left" href="#repeat-index-starts-at-1"><i class="icofont-laika link">&#xef71;</i></a><code>Repeat</code> index starts at 1</h2>
         <p><strong>Symptom:</strong> Off-by-one errors when using <code>Repeat</code> with an index.</p>
-        <p><strong>Cause:</strong> The iteration index is zero-based.</p>
+        <p><strong>Cause:</strong> The iteration index is one-based.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Repeat</span><span>(</span><span class="number-literal">3</span><span>, </span><span class="string-literal">&quot;i&quot;</span><span>) {
-  </span><span class="comment">// i takes values: &quot;0&quot;, &quot;1&quot;, &quot;2&quot;
+  </span><span class="comment">// i takes values: &quot;1&quot;, &quot;2&quot;, &quot;3&quot;
 </span><span>  </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;/items/&lt;i&gt;&quot;</span><span>)
 }</span></code></pre>
         
