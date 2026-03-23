@@ -509,4 +509,57 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
     assert(findAllPathWithStringValue(Set("Coding"), parseDslJsonUnsafe(input)) == List(("Coding", parseUnsafe("$.Hobbies[2]"))))
   }
 
+  // parseDslJson edge cases
+
+  test("parseDslJson single pipe character is treated as a string") {
+    assert(parseDslJson("|") == Right(Json.fromString("|")))
+  }
+
+  test("parseDslJson empty string is treated as a string") {
+    assert(parseDslJson("") == Right(Json.fromString("")))
+  }
+
+  test("parseDslJson whitespace-only string is treated as a string") {
+    assert(parseDslJson("   ") == Right(Json.fromString("   ")))
+  }
+
+  test("parseDslJson invalid JSON starting with { returns error") {
+    assert(parseDslJson("{not json").isLeft)
+  }
+
+  test("parseDslJson JSON with unicode values") {
+    val result = parseDslJson("""{"name": "Ünïcödé", "emoji": "🦇"}""")
+    assert(result.isRight)
+  }
+
+  // findAllPathWithStringValue edge cases
+
+  test("findAllPathWithStringValue returns empty for non-matching values") {
+    val json = parseDslJsonUnsafe("""{"a": "hello"}""")
+    assert(findAllPathWithStringValue(Set("not_here"), json).isEmpty)
+  }
+
+  test("findAllPathWithStringValue same value at multiple paths") {
+    val json = Json.obj("a" -> Json.fromString("target"), "b" -> Json.obj("c" -> Json.fromString("target")))
+    val results = findAllPathWithStringValue(Set("target"), json)
+    assert(results.size == 2)
+    results.foreach { case (_, path) => assert(path.run(json).contains(Json.fromString("target"))) }
+  }
+
+  // removeFieldsByPath edge cases
+
+  test("removeFieldsByPath remove multiple fields") {
+    val json = Json.obj("a" -> Json.fromInt(1), "b" -> Json.fromInt(2), "c" -> Json.fromInt(3))
+    val pathA = parseUnsafe("$.a")
+    val pathC = parseUnsafe("$.c")
+    assert(removeFieldsByPath(json, Seq(pathA, pathC)) == Json.obj("b" -> Json.fromInt(2)))
+  }
+
+  // diffPatch edge cases
+
+  test("diffPatch identical objects produce empty patch") {
+    val json = Json.obj("a" -> Json.fromInt(1))
+    assert(diffPatch(json, json).ops.isEmpty)
+  }
+
 }

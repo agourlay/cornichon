@@ -332,4 +332,30 @@ class JsonPathSpec extends FunSuite {
     assert(JsonPath.parse("a.b[1].d.e[*]").map(_.show) == Right("a.b[1].d.e[*]"))
   }
 
+  test("root path on null") {
+    assert(JsonPath.rootPath.run(Json.Null).contains(Json.Null))
+  }
+
+  test("field selection on non-object returns None") {
+    val path = JsonPath.parse("$.name").toOption.get
+    assert(path.run(Json.fromString("not an object")).isEmpty)
+  }
+
+  test("deeply nested path") {
+    val json = Json.obj("a" -> Json.obj("b" -> Json.obj("c" -> Json.obj("d" -> Json.fromInt(42)))))
+    assert(JsonPath.runStrict("$.a.b.c.d", json) == Right(Json.fromInt(42)))
+  }
+
+  test("removeFromJson on non-existent field is no-op") {
+    val json = Json.obj("a" -> Json.fromInt(1))
+    val path = JsonPath.parse("$.b").toOption.get
+    assert(path.removeFromJson(json) == json)
+  }
+
+  test("removeFromJson on nested field") {
+    val json = Json.obj("a" -> Json.obj("b" -> Json.fromInt(1), "c" -> Json.fromInt(2)))
+    val path = JsonPath.parse("$.a.b").toOption.get
+    assert(path.removeFromJson(json) == Json.obj("a" -> Json.obj("c" -> Json.fromInt(2))))
+  }
+
 }
