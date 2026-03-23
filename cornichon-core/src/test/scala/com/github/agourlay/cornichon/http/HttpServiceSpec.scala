@@ -66,4 +66,26 @@ class HttpServiceSpec extends FunSuite {
     }
   }
 
+  test("encode and decode headers roundtrip") {
+    val headers = ArraySeq("Content-Type" -> "application/json", "Authorization" -> "Bearer token123")
+    val encoded = HttpService.encodeSessionHeaders(headers)
+    val decoded = HttpService.decodeSessionHeaders(encoded)
+    assert(decoded == Right(headers.toList))
+  }
+
+  test("header value containing the key-value delimiter roundtrips correctly") {
+    val headers = ArraySeq("X-Custom" -> "value→with→arrows")
+    val encoded = HttpService.encodeSessionHeaders(headers)
+    val decoded = HttpService.decodeSessionHeaders(encoded)
+    assert(decoded == Right(headers.toList))
+  }
+
+  // Known bug: inter-header delimiter '¦' in values breaks decoding
+  test("header value containing the inter-header delimiter".ignore) {
+    val headers = ArraySeq("X-Custom" -> "value¦with¦pipes")
+    val encoded = HttpService.encodeSessionHeaders(headers)
+    val decoded = HttpService.decodeSessionHeaders(encoded)
+    assert(decoded == Right(headers.toList))
+  }
+
 }
