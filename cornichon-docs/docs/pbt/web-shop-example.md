@@ -24,7 +24,7 @@ The server exposes the following endpoint:
 - a `DELETE` request on `/products/<id>` to delete a product
 - a `GET` request on `/products` to get all products
 - a `GET` request on `/products/<id>` to get a single product
-- a `GET` request on `products-search` to get all the products in the search index
+- a `GET` request on `/products-search` to get all the products in the search index
 
 The contract is that the consistency delay should always be under 10 seconds for all operations being mirrored in the search index.
 

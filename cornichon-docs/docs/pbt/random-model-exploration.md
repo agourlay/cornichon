@@ -368,7 +368,7 @@ Starting scenario 'Turnstile acts according to model'
 
 It is interesting to note that we are executing a single run on purpose, as the server is stateful, any subsequent runs would share the global state of the turnstile.
 
-This is an issue because we are starting our model with `pushCoinAction` which is always expected to succeed.
+This is an issue because we are starting our model with `pushCoin` which is always expected to succeed.
 
 Let's try to test the same model with more runs to see if it breaks!
 

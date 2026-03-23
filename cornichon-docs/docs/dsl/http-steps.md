@@ -94,11 +94,11 @@ headers.name("cache-control").isPresent
 
 headers.contain("cache-control" -> "no-cache")
 
-headers.name("cache_control").isAbsent
+headers.name("cache-control").isAbsent
 
 headers.hasSize(3)
 
-save_header_value("cache_control" -> "my-cache-control-value")
+save_header_value("cache-control" -> "my-cache-control-value")
 ```
 
 - assert response body comes with different flavors (ignoring, whitelisting)

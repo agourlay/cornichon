@@ -89,7 +89,7 @@ Given I post("/products").withBody(
 
 **Fix:** Use indexed access like `<key[0]>` to retrieve earlier values, or use distinct key names. See [Placeholders](syntax/placeholders.md) for the full explanation of session multimap behavior.
 
-## `Repeat` index starts at 0
+## `Repeat` index starts at 1
 
 **Symptom:** Off-by-one errors when using `Repeat` with an index.
 

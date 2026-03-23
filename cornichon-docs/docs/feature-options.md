@@ -36,7 +36,7 @@ beforeEachScenario {
   }
 }
 
-afterEachScenario{
+afterEachScenario {
   Then I cleanup_resources
 }
 ```
