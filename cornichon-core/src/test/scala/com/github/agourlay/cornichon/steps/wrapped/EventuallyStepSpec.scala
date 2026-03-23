@@ -154,10 +154,13 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
   test("succeeds on first try even with very short maxTime".ignore) {
     var counter = 0
     val conf = EventuallyConf(maxTime = 10.millis, interval = 5.seconds)
-    val nested = AssertStep("count and succeed", _ => {
-      counter += 1
-      GenericEqualityAssertion(true, true)
-    }) :: Nil
+    val nested = AssertStep(
+      "count and succeed",
+      _ => {
+        counter += 1
+        GenericEqualityAssertion(true, true)
+      }
+    ) :: Nil
     val step = EventuallyStep(nested, conf)
     val s = Scenario("eventually big interval", step :: Nil)
     val r = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))

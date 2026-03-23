@@ -105,11 +105,13 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
   private val sessionWriteStep = EffectStep.fromSyncE("write to session", _.session.addValue("propagated-key", "propagated-value"))
 
   private def checkSessionStep(key: String, expectedValue: String) =
-    EffectStep.fromSyncE("check session", sc =>
-      sc.session.get(key).flatMap { v =>
-        if (v == expectedValue) Right(sc.session)
-        else Left(CornichonError.fromString(s"expected '$expectedValue' but got '$v'"))
-      }
+    EffectStep.fromSyncE(
+      "check session",
+      sc =>
+        sc.session.get(key).flatMap { v =>
+          if (v == expectedValue) Right(sc.session)
+          else Left(CornichonError.fromString(s"expected '$expectedValue' but got '$v'"))
+        }
     )
 
   private val wrapperGen: Gen[List[Step] => Step] = Gen.oneOf(
@@ -158,10 +160,13 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
   property("session from main steps is available in finally steps") = forAll(validStepsGen) { validSteps =>
     val signal = new AtomicBoolean(false)
     val mainStep = EffectStep.fromSyncE("main setup", _.session.addValue("from-main", "yes"))
-    val finallyStep = EffectStep.fromSync("finally check", sc => {
-      if (sc.session.getOpt("from-main").contains("yes")) signal.set(true)
-      sc.session
-    })
+    val finallyStep = EffectStep.fromSync(
+      "finally check",
+      sc => {
+        if (sc.session.getOpt("from-main").contains("yes")) signal.set(true)
+        sc.session
+      }
+    )
     val context = FeatureContext.empty.copy(finallySteps = finallyStep :: Nil)
     val s = Scenario("finally session", validSteps :+ mainStep)
     val r = awaitIO(ScenarioRunner.runScenario(Session.newEmpty, context)(s))

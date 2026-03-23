@@ -151,9 +151,7 @@ class WithResourceStepSpec extends FunSuite with CommonTestSuite {
     )
     val nested = EffectStep.fromSyncE("add key", _.session.addValue("inside-key", "inside-value")) :: Nil
     val withResource = WithResourceStep(nested, resource)
-    val check = AssertStep("check inside-key is absent", sc =>
-      Assertion.either(Right(GenericEqualityAssertion(true, sc.session.getOpt("inside-key").isEmpty)))
-    )
+    val check = AssertStep("check inside-key is absent", sc => Assertion.either(Right(GenericEqualityAssertion(true, sc.session.getOpt("inside-key").isEmpty))))
     val s = Scenario("resource session scoping", withResource :: check :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
@@ -167,9 +165,7 @@ class WithResourceStepSpec extends FunSuite with CommonTestSuite {
     )
     val nested = AssertStep("noop", _ => Assertion.alwaysValid) :: Nil
     val withResource = WithResourceStep(nested, resource)
-    val check = AssertStep("check from-acquire is absent", sc =>
-      Assertion.either(Right(GenericEqualityAssertion(true, sc.session.getOpt("from-acquire").isEmpty)))
-    )
+    val check = AssertStep("check from-acquire is absent", sc => Assertion.either(Right(GenericEqualityAssertion(true, sc.session.getOpt("from-acquire").isEmpty))))
     val s = Scenario("acquire session scoping", withResource :: check :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
