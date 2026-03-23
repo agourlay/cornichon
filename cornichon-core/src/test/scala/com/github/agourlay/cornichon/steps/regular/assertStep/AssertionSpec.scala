@@ -49,4 +49,42 @@ class AssertionSpec extends FunSuite {
     assert(!assertion.validated.isValid)
   }
 
+  test("Assertion.and both valid") {
+    val a = GenericEqualityAssertion(1, 1)
+    val b = GenericEqualityAssertion(2, 2)
+    assert((a and b).validated.isValid)
+  }
+
+  test("Assertion.and first invalid") {
+    val a = GenericEqualityAssertion(1, 2)
+    val b = GenericEqualityAssertion(2, 2)
+    assert((a and b).validated.isInvalid)
+  }
+
+  test("Assertion.or one valid") {
+    val a = GenericEqualityAssertion(1, 2)
+    val b = GenericEqualityAssertion(2, 2)
+    assert((a or b).validated.isValid)
+  }
+
+  test("Assertion.or both invalid") {
+    val a = GenericEqualityAssertion(1, 2)
+    val b = GenericEqualityAssertion(3, 4)
+    assert((a or b).validated.isInvalid)
+  }
+
+  test("CollectionsContainSameElements with different order") {
+    import io.circe.Json
+    val a = Vector(Json.fromInt(1), Json.fromInt(2), Json.fromInt(3))
+    val b = Vector(Json.fromInt(3), Json.fromInt(1), Json.fromInt(2))
+    assert(CollectionsContainSameElements(a, b).validated.isValid)
+  }
+
+  test("CollectionsContainSameElements with different duplicates fails") {
+    import io.circe.Json
+    val a = Vector(Json.fromInt(1), Json.fromInt(1), Json.fromInt(2))
+    val b = Vector(Json.fromInt(1), Json.fromInt(2), Json.fromInt(2))
+    assert(CollectionsContainSameElements(a, b).validated.isInvalid)
+  }
+
 }
