@@ -22,10 +22,13 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[Str
             // In case of failure only the logs of the last run are shown to avoid giant traces.
             IO.pure((retriesNumber, onceMoreRunState, Left(failed))),
           _ => {
-            val successState = runState.withSession(onceMoreRunState.session).recordLogStack(onceMoreRunState.logStack)
+            val successState = runState
+              .withSession(onceMoreRunState.session)
+              .recordLogStack(onceMoreRunState.logStack)
+              .registerCleanupSteps(onceMoreRunState.cleanupSteps)
             // only show last successful run to avoid giant traces.
             if (retriesNumber == occurrence - 1) IO.pure((retriesNumber, successState, rightDone))
-            else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session))
+            else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session).registerCleanupSteps(onceMoreRunState.cleanupSteps))
           }
         )
       }

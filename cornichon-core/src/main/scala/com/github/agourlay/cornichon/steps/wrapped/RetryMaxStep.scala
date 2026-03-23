@@ -15,15 +15,18 @@ case class RetryMaxStep(nested: List[Step], limit: Int) extends WrapperStep {
     def retryMaxSteps(runState: RunState, limit: Int, retriesNumber: Long): IO[(Long, RunState, Either[FailedStep, Done])] =
       ScenarioRunner.runStepsShortCircuiting(nested, runState.resetLogStack).flatMap {
         case (retriedState, Left(_)) if limit > 0 =>
-          // In case of success all logs are returned, but they are not printed by default.
-          retryMaxSteps(runState.recordLogStack(retriedState.logStack), limit - 1, retriesNumber + 1)
+          // In case of failure, propagate logs and cleanup steps before retrying.
+          retryMaxSteps(runState.recordLogStack(retriedState.logStack).registerCleanupSteps(retriedState.cleanupSteps), limit - 1, retriesNumber + 1)
 
         case (retriedState, l @ Left(_)) =>
           // In case of failure only the logs of the last run are shown to avoid giant traces.
           IO.pure((retriesNumber, retriedState, l))
 
         case (retriedState, _) =>
-          val successState = runState.withSession(retriedState.session).recordLogStack(retriedState.logStack)
+          val successState = runState
+            .withSession(retriedState.session)
+            .recordLogStack(retriedState.logStack)
+            .registerCleanupSteps(retriedState.cleanupSteps)
           IO.pure((retriesNumber, successState, rightDone))
 
       }

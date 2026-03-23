@@ -2,8 +2,10 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
+import java.util.concurrent.atomic.AtomicBoolean
 
 class RepeatStepSpec extends FunSuite with CommonTestSuite {
 
@@ -67,6 +69,20 @@ class RepeatStepSpec extends FunSuite with CommonTestSuite {
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(uglyCounter == loop)
+  }
+
+  test("propagates cleanup steps registered inside the repeat block") {
+    val cleanupRan = new AtomicBoolean(false)
+    val resourceStep = ScenarioResourceStep(
+      title = "test resource",
+      acquire = EffectStep.fromSyncE("acquire", _.session.addValue("resource", "acquired")),
+      release = EffectStep.fromSync("release", sc => { cleanupRan.set(true); sc.session })
+    )
+    val repeatStep = RepeatStep(resourceStep :: Nil, 1, None)
+    val s = Scenario("repeat with cleanup", repeatStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+    assert(cleanupRan.get(), "Cleanup step from inside Repeat was not executed")
   }
 
 }

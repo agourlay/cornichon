@@ -25,8 +25,8 @@ case class WithDataInputStep(nested: List[Step], where: String, rawJson: Boolean
               // Prepend previous logs
               IO.pure((runState.mergeNested(filledState), Left((currentInputs, failedStep)))),
             _ =>
-              // Logs are propagated but not the session
-              runInputs(inputs.tail, runState.recordLogStack(filledState.logStack))
+              // Logs and cleanup steps are propagated but not the session
+              runInputs(inputs.tail, runState.recordLogStack(filledState.logStack).registerCleanupSteps(filledState.cleanupSteps))
           )
         }
       }

@@ -2,9 +2,11 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import io.circe.parser
 import munit.FunSuite
+import java.util.concurrent.atomic.AtomicBoolean
 
 class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
 
@@ -177,6 +179,27 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
     val s = Scenario("scenario with WithDataInput", withDataInputStep :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
+  }
+
+  test("propagates cleanup steps registered inside the data input block") {
+    val cleanupRan = new AtomicBoolean(false)
+    val resourceStep = ScenarioResourceStep(
+      title = "test resource",
+      acquire = EffectStep.fromSyncE("acquire", _.session.addValue("resource", "acquired")),
+      release = EffectStep.fromSync("release", sc => { cleanupRan.set(true); sc.session })
+    )
+    val dataInputStep = WithDataInputStep(
+      resourceStep :: Nil,
+      """
+        | a   |
+        | "1" |
+        | "2" |
+      """
+    )
+    val s = Scenario("dataInput with cleanup", dataInputStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+    assert(cleanupRan.get(), "Cleanup step from inside WithDataInput was not executed")
   }
 
 }
