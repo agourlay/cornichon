@@ -116,4 +116,16 @@ class PlaceholderResolverSpec extends FunSuite {
     assert(rc.uniqueLong() == 1L)
   }
 
+  test("resolved value containing placeholder syntax is NOT re-resolved") {
+    val session = Session.newEmpty.addValueUnsafe("outer", "<inner>").addValueUnsafe("inner", "deep")
+    val result = fillPlaceholders("<outer>")(session, rc, Map.empty)
+    assertEquals(result, Right("<inner>"))
+  }
+
+  test("placeholder inside JSON structure") {
+    val session = Session.newEmpty.addValueUnsafe("hero", "Batman")
+    val result = fillPlaceholders("""{"name": "<hero>"}""")(session, rc, Map.empty)
+    assertEquals(result, Right("""{"name": "Batman"}"""))
+  }
+
 }
