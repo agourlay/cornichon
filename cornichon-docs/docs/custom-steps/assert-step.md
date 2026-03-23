@@ -71,16 +71,13 @@ Test the state of a collection of elements.
 
 ```scala
 // Check a collection is empty
-CollectionEmptyAssertion(List.empty[String])
+CollectionEmptyAssertion(List.empty[String], "heroes")
 
 // Check a collection is not empty
-CollectionNotEmptyAssertion(List("Batman", "Superman"))
+CollectionNotEmptyAssertion(List("Batman", "Superman"), "heroes")
 
 // Check exact size
-CollectionSizeAssertion(List("a", "b", "c"), 3)
-
-// Check that a collection contains a specific element
-CollectionContainsAssertion(List("Batman", "Superman"), "Batman")
+CollectionSizeAssertion(List("a", "b", "c"), 3, "letters")
 ```
 
 ## String assertions
@@ -123,12 +120,12 @@ Below is a complete example showing how to integrate an assertion into a scenari
 ```scala
 When I EffectStep.fromSync(
   title = "estimate PI",
-  action = scenarioContext => scenarioContext.session.addValueUnsafe("result", piComputation())
+  effect = scenarioContext => scenarioContext.session.addValueUnsafe("result", piComputation())
 )
 
 Then assert AssertStep(
   title = "check estimate",
-  action = scenarioContext => Assertion.either{
+  action = scenarioContext => Assertion.either {
     scenarioContext.session.get("result").map(r => BetweenAssertion(3.1, r.toDouble, 3.2))
   }
 )
