@@ -82,6 +82,39 @@ class CornichonJsonProperties extends Properties("CornichonJson") with Cornichon
     }
   }
 
+  property("parseJson valid JSON object string") = {
+    val input = """{"name":"Batman","age":42}"""
+    val result = parseDslJson(input)
+    result.isRight && result.toOption.get.isObject
+  }
+
+  property("parseJson valid JSON array string") = {
+    val input = """[1, 2, 3]"""
+    val result = parseDslJson(input)
+    result.isRight && result.toOption.get.isArray
+  }
+
+  property("parseDslJson empty object") = parseDslJson("{}") == Right(Json.fromJsonObject(JsonObject.empty))
+
+  property("parseDslJson empty array") = parseDslJson("[]") == Right(Json.fromValues(Nil))
+
+  property("prettyPrintJson roundtrip for valid JSON") = forAll { (jo: JsonObject) =>
+    val json = Json.fromJsonObject(jo)
+    val pretty = prettyPrintJson(json.spaces2)
+    // prettyPrintJson parses then re-renders, so it should equal spaces2
+    pretty == json.spaces2
+  }
+
+  property("findAllPathWithStringValue returns empty for non-matching values") = forAll { (jo: JsonObject) =>
+    val json = Json.fromJsonObject(jo)
+    findAllPathWithStringValue(Set("this_value_does_not_exist_anywhere_12345"), json).isEmpty
+  }
+
+  property("findAllPathWithStringValue returns empty for empty search set") = forAll { (jo: JsonObject) =>
+    val json = Json.fromJsonObject(jo)
+    findAllPathWithStringValue(Set.empty, json).isEmpty
+  }
+
   property("whitelisting on JSON Object with improper nested path") = {
     val targetValue = Json.fromString("target value")
     forAll { (jos: List[JsonObject]) =>

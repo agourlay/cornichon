@@ -24,6 +24,22 @@ class WithinStepSpec extends FunSuite with CommonTestSuite {
     assert(res.isSuccess)
   }
 
+  test("succeeds with instant step and generous duration") {
+    val nested = AssertStep("instant step", _ => GenericEqualityAssertion(true, true)) :: Nil
+    val withinStep = WithinStep(nested, 5.seconds)
+    val s = Scenario("scenario with Within", withinStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+  }
+
+  test("fails if nested step itself fails, regardless of duration") {
+    val nested = AssertStep("failing step", _ => GenericEqualityAssertion(true, false)) :: Nil
+    val withinStep = WithinStep(nested, 5.seconds)
+    val s = Scenario("scenario with Within", withinStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(!res.isSuccess)
+  }
+
   test("fails if duration of 'within' is exceeded") {
     val d = 10.millis
     val nested = AssertStep(

@@ -118,7 +118,7 @@ lazy val core =
     .settings(publishingSettings)
     .settings(
       name := "cornichon-core",
-      Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1"),
+      Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1", "-minSuccessfulTests", "500"),
       libraryDependencies ++= Seq(
         library.http4sClient,
         library.http4sCirce,

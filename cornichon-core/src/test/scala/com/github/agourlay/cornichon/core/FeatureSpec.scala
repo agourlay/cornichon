@@ -11,4 +11,20 @@ class FeatureSpec extends FunSuite {
     }
   }
 
+  test("a Feature can be created with unique scenario names") {
+    val f = FeatureDef("valid feature", Scenario("first", Nil) :: Scenario("second", Nil) :: Nil)
+    assertEquals(f.name, "valid feature")
+    assertEquals(f.scenarios.size, 2)
+  }
+
+  test("a Feature can have zero scenarios") {
+    val f = FeatureDef("empty feature", Nil)
+    assertEquals(f.scenarios, Nil)
+  }
+
+  test("a Feature tracks focused scenarios") {
+    val f = FeatureDef("feature", Scenario("normal", Nil) :: Scenario("focused", Nil, focused = true) :: Nil)
+    assertEquals(f.focusedScenarios, Set("focused"))
+  }
+
 }

@@ -41,6 +41,31 @@ class RetryMaxStepSpec extends FunSuite with CommonTestSuite {
     assert(uglyCounter == loop + 1)
   }
 
+  test("succeeds immediately if step passes on first try") {
+    val nested = AssertStep("always succeeds", _ => GenericEqualityAssertion(true, true)) :: Nil
+    val retryMaxStep = RetryMaxStep(nested, 5)
+    val s = Scenario("with RetryMax", retryMaxStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+  }
+
+  test("fails with retryMax = 1 if step always fails") {
+    var uglyCounter = 0
+    val nested = AssertStep(
+      "always fails",
+      _ => {
+        uglyCounter += 1
+        GenericEqualityAssertion(true, false)
+      }
+    ) :: Nil
+    val retryMaxStep = RetryMaxStep(nested, 1)
+    val s = Scenario("with RetryMax", retryMaxStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(!res.isSuccess)
+    // Initial run + 1 retry
+    assert(uglyCounter == 2)
+  }
+
   test("repeats 'retryMax' and might succeed later") {
     var uglyCounter = 0
     val max = 10

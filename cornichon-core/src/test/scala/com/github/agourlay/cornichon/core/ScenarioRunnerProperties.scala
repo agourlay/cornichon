@@ -62,6 +62,27 @@ class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonT
     !r.isSuccess
   }
 
+  property("a scenario with no steps succeeds") = {
+    val s = Scenario("empty scenario", Nil)
+    val r = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    r.isSuccess
+  }
+
+  property("runScenario does not run `main steps` if `beforeSteps` fail") = forAll(invalidStepGen) { invalidStep =>
+    val signal = new AtomicBoolean(false)
+    val signalingEffect = EffectStep.fromSync(
+      "effect toggle signal",
+      sc => {
+        signal.set(true)
+        sc.session
+      }
+    )
+    val context = FeatureContext.empty.copy(beforeSteps = invalidStep :: Nil)
+    val s = Scenario("scenario with failing before", signalingEffect :: Nil)
+    val r = awaitIO(ScenarioRunner.runScenario(Session.newEmpty, context)(s))
+    !r.isSuccess && !signal.get()
+  }
+
   property("runScenario runs `main steps` if there is no failure in `beforeSteps`") = forAll(validStepsGen) { validSteps =>
     val signal = new AtomicBoolean(false)
     val signalingEffect = EffectStep.fromSync(

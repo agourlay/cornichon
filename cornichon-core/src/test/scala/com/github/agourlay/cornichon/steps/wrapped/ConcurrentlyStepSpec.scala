@@ -64,6 +64,14 @@ class ConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     }
   }
 
+  test("succeeds with a single passing step") {
+    val nested = AssertStep("always succeeds", _ => GenericEqualityAssertion(true, true)) :: Nil
+    val steps = ConcurrentlyStep(nested, 200.millis) :: Nil
+    val s = Scenario("with Concurrently", steps)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+  }
+
   test("runs nested block 'n' times") {
     val uglyCounter = new AtomicInteger(0)
     val loop = 5

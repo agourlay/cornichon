@@ -495,6 +495,68 @@ class SuperHeroesScenario extends CornichonFeature {
         // And I show_last_headers
       }
 
+      Scenario("demonstrate header and advanced session features") {
+
+        When I get("/superheroes/Batman").withParams("sessionId" -> "<session-id>")
+
+        Then assert status.is(200)
+
+        // Header assertions
+        Then assert headers.name("X-Response-Time").isPresent
+
+        Then assert headers.name("Content-Type").isPresent
+
+        // Header key-value assertion
+        Then assert headers.contain("Content-Type" -> "application/json")
+
+        // Save header value into session
+        And I save_header_value("Content-Type" -> "saved-content-type")
+
+        Then assert session_value("saved-content-type").containsString("application/json")
+
+        // WithHeaders propagates headers to all enclosed steps
+        WithHeaders(("X-Custom-Header", "test-value")) {
+          When I get("/superheroes/Superman").withParams("sessionId" -> "<session-id>")
+          Then assert status.is(200)
+        }
+
+        // RepeatWith iterates over values
+        RepeatWith("Batman", "Superman")("hero-name") {
+          When I get("/superheroes/<hero-name>").withParams("sessionId" -> "<session-id>")
+          Then assert status.is(200)
+          Then assert body.path("name").is("<hero-name>")
+        }
+
+        // Session values comparison
+        And I save("key1" -> "same-value")
+        And I save("key2" -> "same-value")
+        Then assert session_values("key1", "key2").areEquals
+
+        // Transform session value
+        And I save("to-transform" -> "hello")
+        And I transform_session("to-transform")(_.toUpperCase)
+        Then assert session_value("to-transform").is("HELLO")
+
+        // Rollback session value
+        And I save("versioned" -> "v1")
+        And I save("versioned" -> "v2")
+        Then assert session_value("versioned").is("v2")
+        And I rollback("versioned")
+        Then assert session_value("versioned").is("v1")
+
+        // Session history
+        And I save("tracked" -> "first")
+        And I save("tracked" -> "second")
+        And I save("tracked" -> "third")
+        Then assert session_history("tracked").containsExactly("first", "second", "third")
+
+        // Remove key
+        And I save("temporary" -> "will be removed")
+        Then assert session_value("temporary").isPresent
+        And I remove("temporary")
+        Then assert session_value("temporary").isAbsent
+      }
+
       Scenario("demonstrate GraphQL support") {
 
         When I query_gql("/graphql").withVariables("sessionId" -> "<session-id>").withQuery {

@@ -74,6 +74,28 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
     t.isSuccess
   }
 
+  property("JsonValuesStepBuild comparing value with itself always succeeds") = forAll { (jsonOb: JsonObject) =>
+    val json = Json.fromJsonObject(jsonOb)
+    val session = Session.newEmpty
+      .addValuesUnsafe(testKey -> json.spaces2)
+      .addValuesUnsafe(otherTestKey -> json.spaces2)
+    val step = jsonValuesStepBuilder.areEquals
+    val s = Scenario("scenario with self-comparison", step :: Nil)
+    val t = awaitIO(ScenarioRunner.runScenario(session)(s))
+    t.isSuccess
+  }
+
+  property("JsonValuesStepBuild are equals with JSON arrays") = {
+    val array = """[1, 2, 3]"""
+    val session = Session.newEmpty
+      .addValuesUnsafe(testKey -> array)
+      .addValuesUnsafe(otherTestKey -> array)
+    val step = jsonValuesStepBuilder.areEquals
+    val s = Scenario("scenario with array comparison", step :: Nil)
+    val t = awaitIO(ScenarioRunner.runScenario(session)(s))
+    t.isSuccess
+  }
+
   property("JsonValuesStepBuild are equals with focus on path - failure") = forAll { (jsonOb: JsonObject) =>
     val json = Json.fromJsonObject(jsonOb.add("important", Json.fromString("important thing")))
     val jsonBonus = Json.fromJsonObject(

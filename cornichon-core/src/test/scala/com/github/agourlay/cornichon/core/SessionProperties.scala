@@ -160,4 +160,56 @@ object SessionProperties extends Properties("Session") {
     s.removeKey(key).getOpt(key).isEmpty
   }
 
+  // Session combining/merging
+
+  property("combine two sessions merges their keys") = forAll(keyGen, valueGen, keyGen, valueGen) { (k1, v1, k2, v2) =>
+    import cats.syntax.monoid._
+    val s1 = Session.newEmpty.addValueUnsafe(k1, v1)
+    val s2 = Session.newEmpty.addValueUnsafe(k2, v2)
+    val merged = s1.combine(s2)
+    merged.get(k1).isRight && merged.get(k2).isRight
+  }
+
+  property("combine with empty session is identity") = forAll(keyGen, valueGen) { (key, value) =>
+    import cats.syntax.monoid._
+    val s = Session.newEmpty.addValueUnsafe(key, value)
+    s.combine(Session.newEmpty).get(key) == Right(value)
+  }
+
+  // Empty string values
+
+  property("addValue accepts empty string as value") = forAll(keyGen) { key =>
+    val s = Session.newEmpty.addValueUnsafe(key, "")
+    s.get(key) == Right("")
+  }
+
+  property("getOpt returns empty string, not None, for empty value") = forAll(keyGen) { key =>
+    val s = Session.newEmpty.addValueUnsafe(key, "")
+    s.getOpt(key).contains("")
+  }
+
+  // Index boundary behavior
+
+  property("get with index equal to size returns error") = forAll(keyGen, valueGen) { (key, value) =>
+    val s = Session.newEmpty.addValueUnsafe(key, value)
+    s.get(key, Some(1)).isLeft
+  }
+
+  property("getOpt with index equal to size returns None") = forAll(keyGen, valueGen) { (key, value) =>
+    val s = Session.newEmpty.addValueUnsafe(key, value)
+    s.getOpt(key, Some(1)).isEmpty
+  }
+
+  // Stacking behavior
+
+  property("stacking values preserves all entries in order") = forAll(keyGen, Gen.nonEmptyListOf(valueGen)) { (key, values) =>
+    val s = values.foldLeft(Session.newEmpty)((sess, v) => sess.addValueUnsafe(key, v))
+    values.zipWithIndex.forall { case (v, i) => s.get(key, Some(i)) == Right(v) }
+  }
+
+  property("get without index returns the last stacked value") = forAll(keyGen, valueGen, valueGen) { (key, v1, v2) =>
+    val s = Session.newEmpty.addValueUnsafe(key, v1).addValueUnsafe(key, v2)
+    s.get(key) == Right(v2)
+  }
+
 }

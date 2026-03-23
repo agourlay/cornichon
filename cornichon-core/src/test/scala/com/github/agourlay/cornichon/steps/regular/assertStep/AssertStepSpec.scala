@@ -20,6 +20,20 @@ class AssertStepSpec extends FunSuite with CommonTestSuite {
     assert(!r.isSuccess)
   }
 
+  test("success if assertion is valid") {
+    val step = AssertStep("valid step", _ => GenericEqualityAssertion(42, 42))
+    val s = Scenario("scenario with valid assertion", step :: Nil)
+    val r = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(r.isSuccess)
+  }
+
+  test("success with alwaysValid assertion") {
+    val step = AssertStep("always valid", _ => Assertion.alwaysValid)
+    val s = Scenario("scenario with alwaysValid", step :: Nil)
+    val r = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(r.isSuccess)
+  }
+
   test("success if non equality was expected") {
     val step = AssertStep("non equals step", _ => GenericEqualityAssertion(1, 2, negate = true))
     val s = Scenario("scenario with unresolved", step :: Nil)
