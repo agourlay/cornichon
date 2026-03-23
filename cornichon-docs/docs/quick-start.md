@@ -47,6 +47,26 @@ class CornichonExamplesSpec extends CornichonFeature {
 }
 ```
 
+### Scala 3 braceless syntax
+
+When using Scala 3, you can take advantage of significant indentation to drop the curly braces, resulting in a style closer to Cucumber/Gherkin:
+
+```scala
+import com.github.agourlay.cornichon.CornichonFeature
+
+class CornichonExamplesSpec extends CornichonFeature:
+
+  def feature = Feature("Checking google"):
+
+    Scenario("Google is up and running"):
+
+      When I get("http://google.com")
+
+      Then assert status.is(302)
+```
+
+Both styles are equivalent; choose whichever your team prefers.
+
 ## Failure modes
 
 - A `feature` fails if one or more `scenarios` fail.
