@@ -37,8 +37,8 @@ trait CornichonJson {
           // parse object or array
           case '{' | '[' =>
             parseString(s)
-          // table is turned into a JArray
-          case '|' =>
+          // table is turned into a JArray (requires at least two pipes for a valid header row)
+          case '|' if s.indexOf('|', s.indexOf('|') + 1) >= 0 =>
             parseDataTableJson(s)
           // treated as a JString
           case _ =>
