@@ -22,7 +22,7 @@ class DataTableSpec extends FunSuite {
                       |  "John"  |
                   """
 
-    parseDataTable(input) == Right(List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
+    assert(parseDataTable(input) == Right(List(Json.obj("Name" -> Json.fromString("John")).asObject.get)))
   }
 
   test("parser processes a single line with 1 value") {
@@ -31,7 +31,7 @@ class DataTableSpec extends FunSuite {
                     |  "John"  |
                   """
 
-    parseDataTable(input) == Right(List(Json.obj("Name" -> Json.fromString("John")).asObject.get))
+    assert(parseDataTable(input) == Right(List(Json.obj("Name" -> Json.fromString("John")).asObject.get)))
   }
 
   test("parser processes a single line with 2 values") {
@@ -40,15 +40,17 @@ class DataTableSpec extends FunSuite {
                     |  "John" |   50    |
                   """
 
-    parseDataTable(input) == Right(
-      List(
-        Json
-          .obj(
-            "Name" -> Json.fromString("John"),
-            "Age"  -> Json.fromInt(50)
-          )
-          .asObject
-          .get
+    assert(
+      parseDataTable(input) == Right(
+        List(
+          Json
+            .obj(
+              "Name" -> Json.fromString("John"),
+              "Age"  -> Json.fromInt(50)
+            )
+            .asObject
+            .get
+        )
       )
     )
   }
@@ -60,15 +62,17 @@ class DataTableSpec extends FunSuite {
           | "öÖß ß \" test "   |   50                 |
         """
 
-    parseDataTable(input) == Right(
-      List(
-        Json
-          .obj(
-            "Name"              -> Json.fromString("öÖß ß \" test "),
-            "Größe ß \" | test" -> Json.fromInt(50)
-          )
-          .asObject
-          .get
+    assert(
+      parseDataTable(input) == Right(
+        List(
+          Json
+            .obj(
+              "Name"              -> Json.fromString("öÖß ß \" test "),
+              "Größe ß \" | test" -> Json.fromInt(50)
+            )
+            .asObject
+            .get
+        )
       )
     )
   }
@@ -80,22 +84,24 @@ class DataTableSpec extends FunSuite {
                     | "Bob"  |   11   |
       """
 
-    parseDataTable(input) == Right(
-      List(
-        Json
-          .obj(
-            "Name" -> Json.fromString("John"),
-            "Age"  -> Json.fromInt(50)
-          )
-          .asObject
-          .get,
-        Json
-          .obj(
-            "Name" -> Json.fromString("Bob"),
-            "Age"  -> Json.fromInt(11)
-          )
-          .asObject
-          .get
+    assert(
+      parseDataTable(input) == Right(
+        List(
+          Json
+            .obj(
+              "Name" -> Json.fromString("John"),
+              "Age"  -> Json.fromInt(50)
+            )
+            .asObject
+            .get,
+          Json
+            .obj(
+              "Name" -> Json.fromString("Bob"),
+              "Age"  -> Json.fromInt(11)
+            )
+            .asObject
+            .get
+        )
       )
     )
   }

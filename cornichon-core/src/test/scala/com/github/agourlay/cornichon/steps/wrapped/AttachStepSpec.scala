@@ -77,7 +77,7 @@ class AttachStepSpec extends FunSuite with CommonTestSuite {
     }
   }
 
-  test("available bia Step.eval") {
+  test("available via Step.eval") {
     val steps = Step.eval(alwaysValidAssertStep) :: Nil
     val s = Scenario("scenario with Attach", steps)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))

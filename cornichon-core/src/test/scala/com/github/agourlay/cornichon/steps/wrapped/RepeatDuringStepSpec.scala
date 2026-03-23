@@ -47,11 +47,8 @@ class RepeatDuringStepSpec extends FunSuite with CommonTestSuite {
     val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
     val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
     val (executionTime, res) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
-    def clue() = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
-    if (!res.isSuccess) {
-      clue()
-    }
-    assert(res.isSuccess)
+    val clue = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
+    assert(res.isSuccess, clue)
     assert(executionTime.gt(50.millis))
     // empiric values for the upper bound here
     assert(executionTime.lteq(65.millis))
@@ -68,10 +65,8 @@ class RepeatDuringStepSpec extends FunSuite with CommonTestSuite {
     val repeatDuringStep = RepeatDuringStep(nested, 50.millis)
     val s = Scenario("scenario with RepeatDuring", repeatDuringStep :: Nil)
     val (executionTime, res) = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s).timed)
-    def clue() = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
-    if (!res.isSuccess) {
-      clue()
-    }
+    val clue = s"${executionTime.toMillis} \n ${LogInstruction.renderLogs(res.logs)}"
+    assert(res.isSuccess, clue)
     assert(res.isSuccess)
     assert(executionTime.gt(50.millis))
     // empiric values for the upper bound here

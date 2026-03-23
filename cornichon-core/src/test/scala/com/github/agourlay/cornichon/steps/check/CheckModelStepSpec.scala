@@ -225,7 +225,7 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
       case f: FailureScenarioReport =>
         assert(!f.isSuccess)
       case _ =>
-        assert(cond = false, s"expected SuccessScenarioReport but got $res")
+        assert(cond = false, s"expected FailureScenarioReport but got $res")
     }
   }
 

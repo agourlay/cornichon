@@ -20,7 +20,7 @@ class AssertionSpec extends FunSuite {
   }
 
   test("compose with Or invalid if all invalid") {
-    val assertion = Assertion.failWith("always fail!") and Assertion.failWith("boom!")
+    val assertion = Assertion.failWith("always fail!") or Assertion.failWith("boom!")
     assert(!assertion.validated.isValid)
   }
 

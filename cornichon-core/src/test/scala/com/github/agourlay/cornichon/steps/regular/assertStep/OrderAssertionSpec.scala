@@ -4,19 +4,19 @@ import munit.FunSuite
 
 class OrderAssertionSpec extends FunSuite {
 
-  test("LessThenAssertion valid assertion") {
+  test("LessThanAssertion valid assertion") {
     assert(LessThanAssertion(2, 3).validated.isValid)
   }
 
-  test("LessThenAssertion invalid assertion") {
+  test("LessThanAssertion invalid assertion") {
     assert(LessThanAssertion(3, 2).validated.isInvalid)
   }
 
-  test("GreaterThenAssertion valid assertion") {
+  test("GreaterThanAssertion valid assertion") {
     assert(GreaterThanAssertion(3, 2).validated.isValid)
   }
 
-  test("GreaterThenAssertion invalid assertion") {
+  test("GreaterThanAssertion invalid assertion") {
     assert(GreaterThanAssertion(2, 3).validated.isInvalid)
   }
 

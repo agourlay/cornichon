@@ -4,7 +4,6 @@ import com.github.agourlay.cornichon.core.{Scenario, ScenarioRunner, Session, Se
 import com.github.agourlay.cornichon.dsl.SessionSteps.SessionStepBuilder
 import com.github.agourlay.cornichon.json.JsonPath
 import com.github.agourlay.cornichon.json.CornichonJson.jsonStringValue
-import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.testHelpers.IOSpec
 import org.scalacheck.{Gen, Properties}
 import org.scalacheck.Prop._

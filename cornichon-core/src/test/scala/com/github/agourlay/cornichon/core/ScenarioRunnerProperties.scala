@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.testHelpers.CommonTesting
 import org.scalacheck.{Gen, Properties, Test}
 import org.scalacheck.Prop.forAll
 
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.duration._
 
 class ScenarioRunnerProperties extends Properties("ScenarioRunner") with CommonTesting {
