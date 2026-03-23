@@ -177,16 +177,13 @@
         <h2 id="collection-assertions" class="section"><a class="anchor-link left" href="#collection-assertions"><i class="icofont-laika link">&#xef71;</i></a>Collection assertions</h2>
         <p>Test the state of a collection of elements.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Check a collection is empty
-</span><span class="type-name">CollectionEmptyAssertion</span><span>(</span><span class="type-name">List</span><span>.</span><span class="identifier">empty</span><span>[</span><span class="type-name">String</span><span>])
+</span><span class="type-name">CollectionEmptyAssertion</span><span>(</span><span class="type-name">List</span><span>.</span><span class="identifier">empty</span><span>[</span><span class="type-name">String</span><span>], </span><span class="string-literal">&quot;heroes&quot;</span><span>)
 
 </span><span class="comment">// Check a collection is not empty
-</span><span class="type-name">CollectionNotEmptyAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>, </span><span class="string-literal">&quot;Superman&quot;</span><span>))
+</span><span class="type-name">CollectionNotEmptyAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>, </span><span class="string-literal">&quot;Superman&quot;</span><span>), </span><span class="string-literal">&quot;heroes&quot;</span><span>)
 
 </span><span class="comment">// Check exact size
-</span><span class="type-name">CollectionSizeAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span>, </span><span class="string-literal">&quot;b&quot;</span><span>, </span><span class="string-literal">&quot;c&quot;</span><span>), </span><span class="number-literal">3</span><span>)
-
-</span><span class="comment">// Check that a collection contains a specific element
-</span><span class="type-name">CollectionContainsAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;Batman&quot;</span><span>, </span><span class="string-literal">&quot;Superman&quot;</span><span>), </span><span class="string-literal">&quot;Batman&quot;</span><span>)</span></code></pre>
+</span><span class="type-name">CollectionSizeAssertion</span><span>(</span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span>, </span><span class="string-literal">&quot;b&quot;</span><span>, </span><span class="string-literal">&quot;c&quot;</span><span>), </span><span class="number-literal">3</span><span>, </span><span class="string-literal">&quot;letters&quot;</span><span>)</span></code></pre>
         
         <h2 id="string-assertions" class="section"><a class="anchor-link left" href="#string-assertions"><i class="icofont-laika link">&#xef71;</i></a>String assertions</h2>
         <p>Assert the content of a String value.</p>
@@ -212,12 +209,12 @@
         <p>Below is a complete example showing how to integrate an assertion into a scenario.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="type-name">EffectStep</span><span>.</span><span class="identifier">fromSync</span><span>(
   </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;estimate PI&quot;</span><span>,
-  </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">addValueUnsafe</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>, </span><span class="identifier">piComputation</span><span>())
+  </span><span class="identifier">effect</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">addValueUnsafe</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>, </span><span class="identifier">piComputation</span><span>())
 )
 
 </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="type-name">AssertStep</span><span>(
   </span><span class="identifier">title</span><span> = </span><span class="string-literal">&quot;check estimate&quot;</span><span>,
-  </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="type-name">Assertion</span><span>.</span><span class="identifier">either</span><span>{
+  </span><span class="identifier">action</span><span> = </span><span class="identifier">scenarioContext</span><span> =&gt; </span><span class="type-name">Assertion</span><span>.</span><span class="identifier">either</span><span> {
     </span><span class="identifier">scenarioContext</span><span>.</span><span class="identifier">session</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;result&quot;</span><span>).</span><span class="identifier">map</span><span>(</span><span class="identifier">r</span><span> =&gt; </span><span class="type-name">BetweenAssertion</span><span>(</span><span class="number-literal">3.1</span><span>, </span><span class="identifier">r</span><span>.</span><span class="identifier">toDouble</span><span>, </span><span class="number-literal">3.2</span><span>))
   }
 )</span></code></pre>
