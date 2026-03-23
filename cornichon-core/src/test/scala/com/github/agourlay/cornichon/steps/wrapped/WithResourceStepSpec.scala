@@ -2,7 +2,8 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import com.github.agourlay.cornichon.core.{Resource, Scenario, ScenarioRunner, Session}
-import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion}
+import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import munit.FunSuite
 
 class WithResourceStepSpec extends FunSuite with CommonTestSuite {
@@ -136,6 +137,42 @@ class WithResourceStepSpec extends FunSuite with CommonTestSuite {
         |         Something went wrong
         |      With resource block failed due to release step""".stripMargin
     }
+  }
+
+  // Resource blocks are scoped — session changes from inside do NOT leak out.
+  // This is intentional: the release step (e.g. DELETE) would overwrite last-response-*
+  // keys, which the caller doesn't expect.
+
+  test("session changes from nested steps are NOT visible after resource block") {
+    val resource = Resource(
+      "test resource",
+      acquire = EffectStep.fromSyncE("acquire", _.session.addValue("acquired", "yes")),
+      release = EffectStep.fromSync("release", sc => sc.session)
+    )
+    val nested = EffectStep.fromSyncE("add key", _.session.addValue("inside-key", "inside-value")) :: Nil
+    val withResource = WithResourceStep(nested, resource)
+    val check = AssertStep("check inside-key is absent", sc =>
+      Assertion.either(Right(GenericEqualityAssertion(true, sc.session.getOpt("inside-key").isEmpty)))
+    )
+    val s = Scenario("resource session scoping", withResource :: check :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+  }
+
+  test("session changes from acquire step are NOT visible after resource block") {
+    val resource = Resource(
+      "test resource",
+      acquire = EffectStep.fromSyncE("acquire", _.session.addValue("from-acquire", "yes")),
+      release = EffectStep.fromSync("release", sc => sc.session)
+    )
+    val nested = AssertStep("noop", _ => Assertion.alwaysValid) :: Nil
+    val withResource = WithResourceStep(nested, resource)
+    val check = AssertStep("check from-acquire is absent", sc =>
+      Assertion.either(Right(GenericEqualityAssertion(true, sc.session.getOpt("from-acquire").isEmpty)))
+    )
+    val s = Scenario("acquire session scoping", withResource :: check :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
   }
 
 }

@@ -35,7 +35,8 @@ case class WithResourceStep(nested: List[Step], resource: Resource) extends Wrap
                 case _ =>
                   (rightDone, SuccessLogInstruction("With resource block succeeded", initialDepth) +: innerLogs :+ successTitleLog(initialDepth))
               }
-              // propagate potential cleanup steps
+              // Session is intentionally NOT propagated — the resource block is scoped.
+              // Session changes from acquire/nested/release are local to the block.
               val mergedState = runState
                 .recordLogStack(logs)
                 .registerCleanupSteps(nestedState.cleanupSteps)
