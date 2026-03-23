@@ -178,7 +178,7 @@ WithBasicAuth("admin", "root"){
 }
 ```
 
-- HttpMock creates a temporary HTTP server for testing. See [HTTP Mock](http-mock.md) for full documentation.
+- `HttpListenTo` creates a temporary HTTP server for testing. See [HTTP Mock](http-mock.md) for full documentation.
 
 - Log duration
 

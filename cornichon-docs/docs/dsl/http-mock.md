@@ -12,7 +12,15 @@ libraryDependencies += "com.github.agourlay" %% "cornichon-http-mock" % "0.23.0"
 Your feature class must also extend the `HttpMockDsl` trait.
 @:@
 
-`HttpMock` spins up a temporary HTTP server for the duration of a block, letting you test how your code interacts with external services.
+`HttpListenTo` spins up a temporary HTTP server for the duration of a block, letting you test how your code interacts with external services.
+
+The API is `HttpListenTo(interface, portRange)(label)`. It is common to define a convenience alias:
+
+```scala
+def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 8085))) _
+```
+
+The examples below assume this alias is defined.
 
 ## Default behavior
 

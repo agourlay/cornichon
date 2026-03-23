@@ -13,20 +13,20 @@ A `Session` is a Map-like object used to propagate state throughout a `scenario`
 Here is the simplest `EffectStep` possible:
 
 ```scala
-When I EffectStep(title = "do nothing", action = scenarioContext => IO.pure(Right(scenarioContext.session)))
+When I EffectStep(title = "do nothing", effect = scenarioContext => IO.pure(Right(scenarioContext.session)))
 ```
 
 or using a factory helper when dealing with computations that do not fit the `EffectStep` type.
 
 ```scala
-When I EffectStep.fromSync(title = "do nothing", action = scenarioContext => scenarioContext.session)
-When I EffectStep.fromSyncE(title = "do nothing", action = scenarioContext => Right(scenarioContext.session))
+When I EffectStep.fromSync(title = "do nothing", effect = scenarioContext => scenarioContext.session)
+When I EffectStep.fromSyncE(title = "do nothing", effect = scenarioContext => Right(scenarioContext.session))
 ```
 
 Let's try to save a value into the `Session`
 
 ```scala
-When I EffectStep.fromSync(title = "estimate PI", action = scenarioContext => scenarioContext.session.addValueUnsafe("result", piComputation()))
+When I EffectStep.fromSync(title = "estimate PI", effect = scenarioContext => scenarioContext.session.addValueUnsafe("result", piComputation()))
 ```
 
 The test engine is responsible for controlling the execution of the side effect function and for reporting any error.
@@ -40,7 +40,7 @@ import com.github.agourlay.cornichon.steps.cats.EffectStep
 
 # EffectStep using the HTTP service
 
-Sometimes you want to perform HTTP calls inside an `EffectStep`, this is where the `httpService` comes in handy.
+Sometimes you want to perform HTTP calls inside an `EffectStep`, this is where the `http` service comes in handy.
 
 In order to illustrate its usage let's take the following example, you would like to write a custom step like:
 
@@ -57,7 +57,7 @@ def feature = Feature("Customer endpoint") {
 }
 ```
 
-Most of the time you will create your own trait containing your custom steps and declare a self-type on `CornichonFeature` to be able to access the `httpService`.
+Most of the time you will create your own trait containing your custom steps and declare a self-type on `CornichonFeature` to be able to access the `http` service.
 
 It exposes a method `requestEffectIO` turning an `HttpRequest` into an asynchronous effect.
 
@@ -76,7 +76,7 @@ trait MySteps {
 }
 ```
 
-The built-in HTTP steps available on the DSL are actually built on top of the `httpService` which means that you benefit from all the existing infrastructure to:
+The built-in HTTP steps available on the DSL are actually built on top of the `http` service which means that you benefit from all the existing infrastructure to:
 
 - resolve placeholders in URL, query params, body and headers.
 - automatically populate the session with the results of the call such as response body, status and headers (it is also possible to pass a custom extractor).
