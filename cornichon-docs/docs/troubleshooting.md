@@ -93,11 +93,11 @@ Given I post("/products").withBody(
 
 **Symptom:** Off-by-one errors when using `Repeat` with an index.
 
-**Cause:** The iteration index is zero-based.
+**Cause:** The iteration index is one-based.
 
 ```scala
 Repeat(3, "i") {
-  // i takes values: "0", "1", "2"
+  // i takes values: "1", "2", "3"
   When I get("/items/<i>")
 }
 ```

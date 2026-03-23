@@ -159,7 +159,10 @@ object HttpService {
     val lastResponseHeadersKey = "last-response-headers"
     val lastResponseRequestKey = "last-response-request"
     val withHeadersKey = "with-headers"
-    // Using non-ASCII chars to assure that those won't be present inside the headers.
+    // Using non-ASCII chars as delimiters to reduce collision with header values.
+    // The key-value delimiter '→' is safe (indexOf finds only the first occurrence).
+    // Known limitation: the inter-header delimiter '¦' uses split() which breaks
+    // if a header value contains '¦'. This is unlikely in practice but not impossible.
     val headersKeyValueDelim = '→'
     val interHeadersValueDelim = '¦'
   }

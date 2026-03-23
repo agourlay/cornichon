@@ -29,6 +29,14 @@ trait CornichonJson {
   // - an array
   // - a string
   // - a data table
+  //
+  // Dispatch is based on the first non-whitespace character:
+  // - '{' or '[' → JSON parsing (invalid JSON is an error, not a string fallback)
+  // - '|' → data table parsing (requires at least two pipes)
+  // - anything else → plain string
+  //
+  // Known limitation: string values starting with '{', '[', or '|' cannot be
+  // represented through this DSL — they will be interpreted as JSON or data tables.
   private def parseDslStringJson(s: String): Either[CornichonError, Json] =
     firstNonEmptyChar(s) match {
       case None            => Right(Json.fromString(s))
