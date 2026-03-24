@@ -14,20 +14,23 @@ class JsonValuesStepProperties extends Properties("JsonValuesSteps") with Arbitr
   private val otherTestKey = "other-test-key"
   private val jsonValuesStepBuilder = JsonValuesStepBuilder(testKey, otherTestKey)
 
-  property("JsonValuesStepBuild are equals") = forAll { (input: String) =>
+  property("JsonValuesStepBuild are equals") = forAll { (jsonOb: JsonObject) =>
+    val json = Json.fromJsonObject(jsonOb).spaces2
     val session = Session.newEmpty
-      .addValuesUnsafe(testKey -> input)
-      .addValuesUnsafe(otherTestKey -> input)
+      .addValuesUnsafe(testKey -> json)
+      .addValuesUnsafe(otherTestKey -> json)
     val step = jsonValuesStepBuilder.areEquals
     val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
     val t = awaitIO(ScenarioRunner.runScenario(session)(s))
     t.isSuccess
   }
 
-  property("JsonValuesStepBuild are not equals") = forAll { (input: String) =>
+  property("JsonValuesStepBuild are not equals") = forAll { (jsonOb: JsonObject) =>
+    val json = Json.fromJsonObject(jsonOb).spaces2
+    val jsonDifferent = Json.fromJsonObject(jsonOb.add("__extra__", Json.fromString("something"))).spaces2
     val session = Session.newEmpty
-      .addValuesUnsafe(testKey -> input)
-      .addValuesUnsafe(otherTestKey -> (input + "something"))
+      .addValuesUnsafe(testKey -> json)
+      .addValuesUnsafe(otherTestKey -> jsonDifferent)
     val step = jsonValuesStepBuilder.areNotEquals
     val s = Scenario("scenario with JsonValuesSteps", step :: Nil)
     val t = awaitIO(ScenarioRunner.runScenario(session)(s))
