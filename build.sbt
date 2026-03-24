@@ -208,12 +208,12 @@ lazy val docs =
         )
         .all
         .themeColors(
-          primary = Color.hex("3A7D5C"),
-          secondary = Color.hex("1E3A2F"),
-          primaryMedium = Color.hex("2A5740"),
-          primaryLight = Color.hex("E0EDE6"),
-          text = Color.hex("333842"),
-          background = Color.hex("FAFBFC"),
+          primary = Color.hex("4A8C6E"),
+          secondary = Color.hex("2D6B4F"),
+          primaryMedium = Color.hex("93C5AA"),
+          primaryLight = Color.hex("F2F6F4"),
+          text = Color.hex("3D4450"),
+          background = Color.hex("E4E6E7"),
           bgGradient = (Color.hex("3A7D5C"), Color.hex("1E3A2F"))
         )
         .site
