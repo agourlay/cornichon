@@ -206,6 +206,9 @@ lazy val docs =
           description = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
           language = Some("en")
         )
+        // Light mode colors only — dark mode uses Helium defaults.
+        // .all.themeColors sets light mode for all formats (HTML, PDF, EPUB).
+        // Dark mode is configured separately via .all.darkMode.themeColors.
         .all
         .themeColors(
           primary = Color.hex("4A8C6E"),
@@ -232,9 +235,9 @@ lazy val docs =
               title = "Documentation",
               links = Seq(
                 TextLink.internal(Root / "quick-start.md", "Quick Start"),
-                TextLink.internal(Root / "dsl.md", "DSL"),
-                TextLink.internal(Root / "custom-steps.md", "Custom Steps"),
-                TextLink.internal(Root / "syntax.md", "Syntax Reference")
+                TextLink.internal(Root / "dsl" / "README.md", "DSL"),
+                TextLink.internal(Root / "custom-steps" / "README.md", "Custom Steps"),
+                TextLink.internal(Root / "syntax" / "README.md", "Syntax Reference")
               )
             )
           ),

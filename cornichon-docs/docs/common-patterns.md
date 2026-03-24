@@ -4,7 +4,7 @@ laika.title = Common patterns
 
 # Common patterns
 
-This page collects recipes for frequently encountered testing scenarios. For the full reference of individual steps, see the [DSL](dsl.md) pages.
+This page collects recipes for frequently encountered testing scenarios. For the full reference of individual steps, see the [DSL](dsl/README.md) pages.
 
 ## Authenticated workflows
 

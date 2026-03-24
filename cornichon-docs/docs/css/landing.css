@@ -11,3 +11,23 @@
 #header-left .row.links {
   width: 100%;
 }
+
+header .image-link {
+  flex-direction: row;
+  align-items: center;
+  order: -1;
+}
+
+header .image-link::after {
+  content: "Cornichon";
+  margin-left: 0.5rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+
+#sidebar .nav-list li.level1.nav-node > a {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+}

@@ -75,7 +75,7 @@ Both styles are equivalent; choose whichever your team prefers.
 
 ## Next steps
 
-- [DSL](dsl.md) — full reference of available steps
+- [DSL](dsl/README.md) — full reference of available steps
 - [Understanding Test Output](test-output.md) — how to read failure messages
 - [Feature Options](feature-options.md) — configure test execution
 - [Common Patterns](common-patterns.md) — recipes for real-world testing scenarios
