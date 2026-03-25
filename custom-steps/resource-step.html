@@ -129,8 +129,8 @@
       <main class="content">
 
         <h1 id="scenarioresourcestep" class="title">ScenarioResourceStep</h1>
-        <p>A <code>ScenarioResourceStep</code> is a way to acquire a resource / create some state and make sure it gets
-        released / cleaned up at the end of the <code>Scenario</code> even if normal control flow is interrupted
+        <p>A <code>ScenarioResourceStep</code> is a way to acquire a resource (or create some state) and ensure it gets
+        released (or cleaned up) at the end of the <code>Scenario</code> even if normal control flow is interrupted
         (by an error or a failed assertion for example).</p>
         <p>It can be implemented by a pair of <code>Step</code>s. One to acquire the resource and another to release it.
         Information can be communicated between the two steps the same way we would with any other <code>Step</code>,

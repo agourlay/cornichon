@@ -140,7 +140,7 @@
         
         <h2 id="http-effects" class="section"><a class="anchor-link left" href="#http-effects"><i class="icofont-laika link">&#xef71;</i></a>HTTP effects</h2>
         <ul>
-          <li>GET, DELETE, HEAD, OPTIONS, POST, PUT and PATCH use the same request builder for request&#39;s body, URL parameters and headers.</li>
+          <li>GET, DELETE, HEAD, OPTIONS, POST, PUT, and PATCH use the same request builder for the request body, URL parameters, and headers.</li>
         </ul>
         <pre><code class="nohighlight"><span class="identifier">head</span><span>(</span><span class="string-literal">&quot;http://superhero.io/daredevil&quot;</span><span>)
 
@@ -162,7 +162,7 @@
   .</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;a&quot;</span><span> -&gt; </span><span class="string-literal">&quot;1&quot;</span><span>)
   .</span><span class="identifier">addParams</span><span>(</span><span class="string-literal">&quot;b&quot;</span><span> -&gt; </span><span class="string-literal">&quot;2&quot;</span><span>)
   .</span><span class="identifier">addHeaders</span><span>((</span><span class="string-literal">&quot;X-Custom&quot;</span><span>, </span><span class="string-literal">&quot;value&quot;</span><span>))</span></code></pre>
-        <p>There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section <a href="#custom-http-body-type">Custom HTTP body type</a>.</p>
+        <p>There is built-in support for HTTP bodies defined as <code>String</code>. If you wish to use other types, see <a href="#custom-http-body-type">Custom HTTP body type</a>.</p>
         
         <h2 id="session-keys-from-http-responses" class="section"><a class="anchor-link left" href="#session-keys-from-http-responses"><i class="icofont-laika link">&#xef71;</i></a>Session keys from HTTP responses</h2>
         <p>After every HTTP request, cornichon automatically saves the response into the <a href="session-steps.html">session</a> under these keys:</p>
@@ -234,7 +234,7 @@
 
 </span><span class="identifier">save_header_value</span><span>(</span><span class="string-literal">&quot;cache-control&quot;</span><span> -&gt; </span><span class="string-literal">&quot;my-cache-control-value&quot;</span><span>)</span></code></pre>
         <ul>
-          <li>assert response body comes with different flavors (ignoring, whitelisting)</li>
+          <li>assert response body with different modes (ignoring, whitelisting)</li>
         </ul>
         <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">is</span><span>(
   </span><span class="string-literal">&quot;&quot;&quot;
@@ -309,7 +309,7 @@
         <p>To address a root array use <code>$</code> followed by the index to access.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span>
 </span><span class="identifier">body</span><span>.</span><span class="identifier">path</span><span>(</span><span class="string-literal">&quot;$[2].name&quot;</span><span>)</span></code></pre>
-        <p>If the endpoint returns a collection, assert response body has several options (ordered, ignoring and using data table)</p>
+        <p>If the endpoint returns a collection, the response body assertion has several options (ordered, ignoring, and using data tables)</p>
         <pre><code class="nohighlight"><span class="identifier">body</span><span>.</span><span class="identifier">asArray</span><span>.</span><span class="identifier">inOrder</span><span>.</span><span class="identifier">ignoringEach</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>, </span><span class="string-literal">&quot;hasSuperpowers&quot;</span><span>, </span><span class="string-literal">&quot;publisher&quot;</span><span>).</span><span class="identifier">is</span><span>(
   </span><span class="string-literal">&quot;&quot;&quot;
   [{
@@ -368,7 +368,7 @@
         
         <h2 id="http-streams" class="section"><a class="anchor-link left" href="#http-streams"><i class="icofont-laika link">&#xef71;</i></a>HTTP streams</h2>
         <ul>
-          <li>Server-Sent-Event.</li>
+          <li>Server-Sent Events (SSE)</li>
         </ul>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">open_sse</span><span>(</span><span class="string-literal">s&quot;http://superhero.io/stream&quot;</span><span>, </span><span class="identifier">takeWithin</span><span> = </span><span class="number-literal">1</span><span>.</span><span class="identifier">seconds</span><span>).</span><span class="identifier">withParams</span><span>(</span><span class="string-literal">&quot;justName&quot;</span><span> -&gt; </span><span class="string-literal">&quot;true&quot;</span><span>)
 
@@ -382,7 +382,7 @@
         <p>SSE streams are aggregated over a period of time in an array, therefore the previous array predicates can be re-used.</p>
         
         <h2 id="graphql-support" class="section"><a class="anchor-link left" href="#graphql-support"><i class="icofont-laika link">&#xef71;</i></a>GraphQL support</h2>
-        <p>Cornichon offers an integration with the library <a href="https://github.com/sangria-graphql/sangria">Sangria</a> to propose convenient features to test GraphQL API.</p>
+        <p>Cornichon integrates with the <a href="https://github.com/sangria-graphql/sangria">Sangria</a> library to provide convenient features for testing GraphQL APIs.</p>
         <ul>
           <li>GraphQL query</li>
         </ul>
@@ -403,7 +403,7 @@
       }
     &quot;&quot;&quot;</span><span>
     )</span></code></pre>
-        <p><code>query_gql</code> can also be used for mutation query.</p>
+        <p><code>query_gql</code> can also be used for mutation queries.</p>
         <ul>
           <li>GraphQL JSON</li>
         </ul>

@@ -129,7 +129,7 @@
       <main class="content">
 
         <h1 id="wrapper-steps" class="title">Wrapper steps</h1>
-        <p>Wrapper steps allow to control the execution of a series of steps to build more powerful tests.</p>
+        <p>Wrapper steps let you control the execution of a series of steps to build more powerful tests.</p>
         <ul>
           <li>repeating a series of <code>steps</code></li>
         </ul>
@@ -191,27 +191,27 @@
     )
   }</span></code></pre>
         <ul>
-          <li>execute a series of steps &#39;times&#39; times in batches of <code>parallelism</code> in parallel and wait &#39;maxTime&#39; for completion.</li>
+          <li>execute a series of steps <code>times</code> times in batches of <code>parallelism</code> in parallel and wait <code>maxTime</code> for completion.</li>
         </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatConcurrently</span><span>(</span><span class="identifier">times</span><span> = </span><span class="number-literal">10</span><span>, </span><span class="identifier">parallelism</span><span> = </span><span class="number-literal">3</span><span>, </span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span> </span><span class="identifier">seconds</span><span>) {
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">RepeatConcurrently</span><span>(</span><span class="identifier">times</span><span> = </span><span class="number-literal">10</span><span>, </span><span class="identifier">parallelism</span><span> = </span><span class="number-literal">3</span><span>, </span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">seconds</span><span>) {
 
   </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
 
   </span><span class="type-name">Then</span><span> </span><span class="identifier">assert</span><span> </span><span class="identifier">status</span><span>.</span><span class="identifier">is</span><span>(</span><span class="number-literal">200</span><span>)
 }</span></code></pre>
         <ul>
-          <li>execute each step in parallel and wait &#39;maxTime&#39; for completion.</li>
+          <li>execute each step in parallel and wait <code>maxTime</code> for completion.</li>
         </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Concurrently</span><span>(</span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span> </span><span class="identifier">seconds</span><span>) {
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Concurrently</span><span>(</span><span class="identifier">maxTime</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">seconds</span><span>) {
 
   </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
 
   </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/superman&quot;</span><span>)
 }</span></code></pre>
         <ul>
-          <li>execute a series of steps and fails if the execution does not complete within &#39;maxDuration&#39;.</li>
+          <li>execute a series of steps and fail if the execution does not complete within <code>maxDuration</code>.</li>
         </ul>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Within</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">10</span><span> </span><span class="identifier">seconds</span><span>) {
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Within</span><span>(</span><span class="identifier">maxDuration</span><span> = </span><span class="number-literal">10</span><span>.</span><span class="identifier">seconds</span><span>) {
 
   </span><span class="type-name">When</span><span> </span><span class="type-name">I</span><span> </span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http://superhero.io/batman&quot;</span><span>)
 

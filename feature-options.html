@@ -205,10 +205,10 @@
         </div>
         <p>This execution is configurable if you have specific constraints.</p>
         <p>To run <code>scenarios</code> sequentially it is necessary to declare in your application.conf file</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">cornichon</span><span> {
-  </span><span class="identifier">executeScenariosInParallel</span><span> = </span><span class="boolean-literal">false</span><span>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="attribute-name">cornichon</span><span> {
+  </span><span class="attribute-name">executeScenariosInParallel</span><span> = </span><span class="boolean-literal">false</span><span>
 }</span></code></pre>
-        <p>The actual number of concurrent scenario is controlled via the configuration field <code>scenarioExecutionParallelismFactor</code> which defaults to 1.</p>
+        <p>The actual number of concurrent scenarios is controlled via the configuration field <code>scenarioExecutionParallelismFactor</code> which defaults to 1.</p>
         <pre><code>number of concurrent scenarios = `scenarioExecutionParallelismFactor` * number of CPU + 1</code></pre>
         <p>This means using more powerful machines will automatically trigger more scenarios.</p>
         <p>To run <code>features</code> in parallel it is necessary to manually set a flag in your SBT build file.</p>
