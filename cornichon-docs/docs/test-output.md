@@ -117,7 +117,7 @@ Eventually block succeeded after '552' retries with '1' distinct errors (8972 ms
 When it times out:
 
 ```
-Eventually block did not complete in time after having being tried '200' times
+Eventually block did not complete in time after having been tried '200' times
 ```
 
 ### Repeat block

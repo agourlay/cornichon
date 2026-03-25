@@ -70,7 +70,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
         val wrappedLogStack = report match {
           case Left(_) =>
             FailureLogInstruction(
-              s"Eventually block did not complete in time after having being tried '${retries + 1}' times",
+              s"Eventually block did not complete in time after having been tried '${retries + 1}' times",
               initialDepth,
               Some(executionTime)
             ) +: retriedRunState.logStack :+ failedTitleLog(initialDepth)

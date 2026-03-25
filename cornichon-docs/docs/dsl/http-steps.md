@@ -9,7 +9,7 @@ Cornichon has a set of built-in steps for various HTTP calls and assertions on t
 
 ## HTTP effects
 
-- GET, DELETE, HEAD, OPTIONS, POST, PUT and PATCH use the same request builder for request's body, URL parameters and headers.
+- GET, DELETE, HEAD, OPTIONS, POST, PUT, and PATCH use the same request builder for the request body, URL parameters, and headers.
 
 ```scala
 head("http://superhero.io/daredevil")
@@ -38,7 +38,7 @@ get("http://superhero.io/batman")
   .addHeaders(("X-Custom", "value"))
 ```
 
-There is a built-in support for HTTP body defined as String, if you wish to use other types please check out the section [Custom HTTP body type](#custom-http-body-type).
+There is built-in support for HTTP bodies defined as `String`. If you wish to use other types, see [Custom HTTP body type](#custom-http-body-type).
 
 ## Session keys from HTTP responses
 
@@ -101,7 +101,7 @@ headers.hasSize(3)
 save_header_value("cache-control" -> "my-cache-control-value")
 ```
 
-- assert response body comes with different flavors (ignoring, whitelisting)
+- assert response body with different modes (ignoring, whitelisting)
 
 ```scala
 body.is(
@@ -196,7 +196,7 @@ To address a root array use `$` followed by the index to access.
 body.path("$[2].name")
 ```
 
-If the endpoint returns a collection, assert response body has several options (ordered, ignoring and using data table)
+If the endpoint returns a collection, the response body assertion has several options (ordered, ignoring, and using data tables)
 
 ```scala
 body.asArray.inOrder.ignoringEach("city", "hasSuperpowers", "publisher").is(
@@ -261,7 +261,7 @@ body_raw.containsString("xml")
 
 ## HTTP streams
 
-- Server-Sent-Event.
+- Server-Sent Events (SSE)
 
 ```scala
 When I open_sse(s"http://superhero.io/stream", takeWithin = 1.seconds).withParams("justName" -> "true")
@@ -280,7 +280,7 @@ SSE streams are aggregated over a period of time in an array, therefore the prev
 
 ## GraphQL support
 
-Cornichon offers an integration with the library [Sangria](https://github.com/sangria-graphql/sangria) to propose convenient features to test GraphQL API.
+Cornichon integrates with the [Sangria](https://github.com/sangria-graphql/sangria) library to provide convenient features for testing GraphQL APIs.
 
 
 - GraphQL query
@@ -305,7 +305,7 @@ import sangria.macros._
     )
 ```
 
-`query_gql` can also be used for mutation query.
+`query_gql` can also be used for mutation queries.
 
 
 - GraphQL JSON

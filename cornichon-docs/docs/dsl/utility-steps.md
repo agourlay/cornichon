@@ -12,7 +12,7 @@ wait(500.millis)
 
 ## Debug steps
 
-- showing session and response state for debugging purpose
+- showing session and response state for debugging purposes
 
 ```scala
  And I show_session                // print all session key-value pairs

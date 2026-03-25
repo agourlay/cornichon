@@ -79,7 +79,7 @@ post("http://url.io/somethingWithAnId").withBody(
 """)
 ```
 
-If you save several times a value under the same key, the `session` will behave like a Multimap by appending the values.
+If you save a value under the same key multiple times, the `session` will behave like a Multimap by appending the values.
 
 It becomes then possible to retrieve past values:
 

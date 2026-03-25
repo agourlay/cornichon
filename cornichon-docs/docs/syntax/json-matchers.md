@@ -40,7 +40,7 @@ Here are the available matchers:
 - `*any-boolean*` : checks if the field is a boolean
 - `*any-alphanum-string*` : checks if the field is an alphanumeric String
 - `*any-date*` : checks if the field is a 'yyyy-MM-dd' date
-- `*any-date-time*` : checks if the field is a 'yyyy-MM-dd'T'HH:mm:ss.SSS'Z'' datetime
+- `*any-date-time*` : checks if the field is a `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'` datetime
 - `*any-time*` : checks if the field is a 'HH:mm:ss.SSS' time
 
 @:callout(warning)

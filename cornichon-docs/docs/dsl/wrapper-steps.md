@@ -4,7 +4,7 @@ laika.title = Wrapper steps
 
 # Wrapper steps
 
-Wrapper steps allow to control the execution of a series of steps to build more powerful tests.
+Wrapper steps let you control the execution of a series of steps to build more powerful tests.
 
 - repeating a series of `steps`
 
@@ -79,10 +79,10 @@ Eventually(maxDuration = 15.seconds, interval = 200.milliseconds) {
   }
 ```
 
-- execute a series of steps 'times' times in batches of `parallelism` in parallel and wait 'maxTime' for completion.
+- execute a series of steps `times` times in batches of `parallelism` in parallel and wait `maxTime` for completion.
 
 ```scala
-RepeatConcurrently(times = 10, parallelism = 3, maxTime = 10 seconds) {
+RepeatConcurrently(times = 10, parallelism = 3, maxTime = 10.seconds) {
 
   When I get("http://superhero.io/batman")
 
@@ -90,10 +90,10 @@ RepeatConcurrently(times = 10, parallelism = 3, maxTime = 10 seconds) {
 }
 ```
 
-- execute each step in parallel and wait 'maxTime' for completion.
+- execute each step in parallel and wait `maxTime` for completion.
 
 ```scala
-Concurrently(maxTime = 10 seconds) {
+Concurrently(maxTime = 10.seconds) {
 
   When I get("http://superhero.io/batman")
 
@@ -102,10 +102,10 @@ Concurrently(maxTime = 10 seconds) {
 ```
 
 
-- execute a series of steps and fails if the execution does not complete within 'maxDuration'.
+- execute a series of steps and fail if the execution does not complete within `maxDuration`.
 
 ```scala
-Within(maxDuration = 10 seconds) {
+Within(maxDuration = 10.seconds) {
 
   When I get("http://superhero.io/batman")
 

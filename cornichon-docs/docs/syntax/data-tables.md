@@ -25,7 +25,7 @@ A data table is a pipe-delimited string. The first row defines the column header
 - Numbers and booleans are unquoted
 - All rows must have the same number of columns as the header
 
-**Escape sequences** are supported in header values using backslash:
+**Escape sequences** are supported in cell values using backslash:
 
 | Escape | Character |
 |---|---|

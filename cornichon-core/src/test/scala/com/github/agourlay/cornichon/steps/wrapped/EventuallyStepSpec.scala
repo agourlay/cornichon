@@ -76,7 +76,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
                   |   Scenario : scenario with eventually that fails
                   |      main steps
                   |      Eventually block with maxDuration = 100 milliseconds and interval = 10 milliseconds
-                  |      Eventually block did not complete in time after having being tried '1' times""".stripMargin
+                  |      Eventually block did not complete in time after having been tried '1' times""".stripMargin
     }
   }
 

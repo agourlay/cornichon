@@ -6,7 +6,7 @@ laika.title = "CI & Deployment"
 
 ## SBT integration
 
-It is recommended to use the CLI from SBT to trigger tests:
+It is recommended to use the SBT command line to run tests:
 
 - `~test` tilde to re-run a command on change.
 - `testOnly *CornichonExamplesSpec` to run only the feature CornichonExamplesSpec.

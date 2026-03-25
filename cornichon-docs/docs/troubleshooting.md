@@ -46,7 +46,7 @@ Then assert body_raw.containsString("success")
 
 ## `Eventually` block times out
 
-**Symptom:** `Eventually block did not complete in time after having being tried 'N' times`
+**Symptom:** `Eventually block did not complete in time after having been tried 'N' times`
 
 **Causes and fixes:**
 

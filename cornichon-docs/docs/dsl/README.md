@@ -36,7 +36,7 @@ Then assert step_definition
 
 `step_definition` stands here for any object of type `Step`, those can be manually defined or simply built-in in Cornichon.
 
-# Built-in steps
+## Built-in steps
 
 - [HTTP Steps](http-steps.md) — HTTP effects, assertions, streams, and GraphQL support
 - [Session Steps](session-steps.md) — saving, reading, and asserting session values

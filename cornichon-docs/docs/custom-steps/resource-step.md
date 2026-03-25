@@ -5,8 +5,8 @@ laika.title = Resource steps
 # ScenarioResourceStep
 
 
-A `ScenarioResourceStep` is a way to acquire a resource / create some state and make sure it gets
-released / cleaned up at the end of the `Scenario` even if normal control flow is interrupted
+A `ScenarioResourceStep` is a way to acquire a resource (or create some state) and ensure it gets
+released (or cleaned up) at the end of the `Scenario` even if normal control flow is interrupted
 (by an error or a failed assertion for example).
 
 It can be implemented by a pair of `Step`s. One to acquire the resource and another to release it.

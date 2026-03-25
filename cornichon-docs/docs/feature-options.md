@@ -97,13 +97,13 @@ This execution is configurable if you have specific constraints.
 
 To run `scenarios` sequentially it is necessary to declare in your application.conf file
 
-```scala
+```hocon
 cornichon {
   executeScenariosInParallel = false
 }
 ```
 
-The actual number of concurrent scenario is controlled via the configuration field `scenarioExecutionParallelismFactor` which defaults to 1.
+The actual number of concurrent scenarios is controlled via the configuration field `scenarioExecutionParallelismFactor` which defaults to 1.
 
 ```
 number of concurrent scenarios = `scenarioExecutionParallelismFactor` * number of CPU + 1
