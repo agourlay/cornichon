@@ -290,7 +290,7 @@ lazy val docs =
 lazy val library =
   new {
     object Version {
-      val munit = "1.2.4"
+      val munit = "1.3.0"
       val cats = "2.13.0"
       val catsEffect = "3.7.0"
       val parboiled = "2.5.1"
