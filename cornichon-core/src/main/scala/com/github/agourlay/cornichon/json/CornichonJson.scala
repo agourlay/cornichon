@@ -37,23 +37,23 @@ trait CornichonJson {
   //
   // Known limitation: string values starting with '{', '[', or '|' cannot be
   // represented through this DSL — they will be interpreted as JSON or data tables.
-  private def parseDslStringJson(s: String): Either[CornichonError, Json] =
-    firstNonEmptyChar(s) match {
-      case None            => Right(Json.fromString(s))
-      case Some(firstChar) =>
-        (firstChar: @switch) match {
-          // parse object or array
-          case '{' | '[' =>
-            parseString(s)
-          // table is turned into a JArray (requires at least two pipes for a valid header row)
-          case '|' =>
-            if (s.indexOf('|', s.indexOf('|') + 1) >= 0) parseDataTableJson(s)
-            else Right(Json.fromString(s))
-          // treated as a JString
-          case _ =>
-            Right(Json.fromString(s))
-        }
-    }
+  private def parseDslStringJson(s: String): Either[CornichonError, Json] = {
+    val idx = firstNonEmptyCharIdx(s)
+    if (idx < 0) Right(Json.fromString(s))
+    else
+      (s.charAt(idx): @switch) match {
+        // parse object or array
+        case '{' | '[' =>
+          parseString(s)
+        // table is turned into a JArray (requires at least two pipes for a valid header row)
+        case '|' =>
+          if (s.indexOf('|', idx + 1) >= 0) parseDataTableJson(s)
+          else Right(Json.fromString(s))
+        // treated as a JString
+        case _ =>
+          Right(Json.fromString(s))
+      }
+  }
 
   def parseDslJson[A: Encoder: Show](input: A): Either[CornichonError, Json] = input match {
     case s: String => parseDslStringJson(s)
@@ -70,21 +70,25 @@ trait CornichonJson {
   def parseString(s: String): Either[MalformedJsonError[String], Json] =
     io.circe.parser.parse(s).leftMap(f => MalformedJsonError(s, f.message))
 
-  def isJsonString(s: String): Boolean =
-    firstNonEmptyChar(s) match {
-      case None       => false
-      case Some(head) => head != '[' && head != '{' && head != '|'
+  def isJsonString(s: String): Boolean = {
+    val idx = firstNonEmptyCharIdx(s)
+    if (idx < 0) false
+    else {
+      val head = s.charAt(idx)
+      head != '[' && head != '{' && head != '|'
     }
+  }
 
-  private def firstNonEmptyChar(s: String): Option[Char] = {
+  // Returns the index of the first non-whitespace char, or -1 if none.
+  // Sentinel-int return avoids Option[Char] allocation on every parse.
+  private def firstNonEmptyCharIdx(s: String): Int = {
     val len = s.length
     var i = 0
     while (i < len) {
-      val ch = s.charAt(i)
-      if (!ch.isWhitespace) return Some(ch)
+      if (!s.charAt(i).isWhitespace) return i
       i += 1
     }
-    None
+    -1
   }
 
   private def parseDataTableRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
