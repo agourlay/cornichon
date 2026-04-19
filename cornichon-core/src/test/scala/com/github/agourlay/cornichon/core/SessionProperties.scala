@@ -95,6 +95,16 @@ object SessionProperties extends Properties("Session") {
     s.getOpt(key, Some(1)).isEmpty
   }
 
+  property("get returns an error for a negative index") = forAll(keyGen, valueGen, Gen.negNum[Int]) { (key, value, negativeIndex) =>
+    val s = Session.newEmpty.addValueUnsafe(key, value)
+    s.get(key, Some(negativeIndex)) == Left(IndexNotFoundForKey(key, negativeIndex, Vector(value)))
+  }
+
+  property("getOpt returns None for a negative index") = forAll(keyGen, valueGen, Gen.negNum[Int]) { (key, value, negativeIndex) =>
+    val s = Session.newEmpty.addValueUnsafe(key, value)
+    s.getOpt(key, Some(negativeIndex)).isEmpty
+  }
+
   property("get proposes similar keys in Session in case of a missing key") = forAll(keyGen, valueGen, valueGen) { (key, firstValue, secondValue) =>
     val similarKey = key + "1"
     val s = Session.newEmpty.addValuesUnsafe(key -> firstValue, similarKey -> secondValue)
