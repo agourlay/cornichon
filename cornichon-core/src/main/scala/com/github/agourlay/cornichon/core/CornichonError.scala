@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import java.io.{PrintWriter, StringWriter}
 
-import cats.data.EitherT
+import cats.data.{EitherT, NonEmptyList}
 import cats.syntax.either._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -65,9 +65,13 @@ case class BeforeFeatureError(originalError: CornichonError) extends CornichonEr
   override val causedBy: List[CornichonError] = originalError :: Nil
 }
 
-case class AfterFeatureError(originalError: CornichonError) extends CornichonError {
-  lazy val baseErrorMessage = "exception thrown when executing the `afterFeature` hook"
-  override val causedBy: List[CornichonError] = originalError :: Nil
+case class AfterFeatureError(errors: NonEmptyList[CornichonError]) extends CornichonError {
+
+  lazy val baseErrorMessage =
+    if (errors.tail.isEmpty) "exception thrown when executing the `afterFeature` hook"
+    else s"${errors.size} exceptions thrown when executing `afterFeature` hooks"
+
+  override val causedBy: List[CornichonError] = errors.toList
 }
 
 case class HooksFeatureError(beforeError: CornichonError, afterError: CornichonError) extends CornichonError {

@@ -2,6 +2,7 @@ package com.github.agourlay.cornichon.core
 
 import com.github.agourlay.cornichon.dsl.BaseFeature
 import com.github.agourlay.cornichon.matchers.MatcherResolver
+import cats.data.NonEmptyList
 import cats.effect.IO
 import fs2.Stream
 
@@ -79,14 +80,14 @@ case class FeatureRunner(featureDef: FeatureDef, baseFeature: BaseFeature, expli
   }
 
   // Run all afterFeature hooks even if some fail, to ensure cleanup is thorough.
-  // Reports the first error encountered, if any.
+  // Aggregates all errors so none are silently lost.
   private def runAfterFeature(): Either[CornichonError, Done] = {
     val errors = baseFeature.afterFeature.toList.flatMap { f =>
       CornichonError.catchThrowable(f()).left.toOption
     }
-    errors.headOption match {
-      case Some(e) => Left(AfterFeatureError(e))
-      case None    => Done.rightDone
+    NonEmptyList.fromList(errors) match {
+      case Some(nel) => Left(AfterFeatureError(nel))
+      case None      => Done.rightDone
     }
   }
 
