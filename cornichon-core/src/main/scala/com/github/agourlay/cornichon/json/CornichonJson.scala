@@ -218,8 +218,21 @@ trait CornichonJson {
   }
 
   def findAllPathWithStringValue(values: Set[String], json: Json): List[(String, JsonPath)] = {
-    // Filter and collect matching string values directly during traversal to avoid buffering non-matching leaves
-    def keyValues(currentPath: String, json: Json, level: Int, acc: ListBuffer[(String, JsonPath)]): Unit =
+    // Build JsonPath operations inline during traversal: no string concat, no re-parsing.
+    // Also handles keys containing '.', '[', ']' and array-of-arrays correctly — the string form would not round-trip.
+    def descendField(ops: Vector[JsonPathOperation], field: String): Vector[JsonPathOperation] =
+      if (ops.isEmpty) Vector(RootSelection, FieldSelection(field))
+      else ops :+ FieldSelection(field)
+
+    def descendIndex(ops: Vector[JsonPathOperation], idx: Int): Vector[JsonPathOperation] =
+      if (ops.isEmpty) Vector(RootArrayElementSelection(idx))
+      else
+        ops.last match {
+          case FieldSelection(f) => ops.init :+ ArrayFieldSelection(f, idx)
+          case _                 => ops :+ RootArrayElementSelection(idx)
+        }
+
+    def keyValues(ops: Vector[JsonPathOperation], json: Json, acc: ListBuffer[(String, JsonPath)]): Unit =
       // Use Json.Folder for performance https://github.com/circe/circe/pull/656
       json.foldWith(
         new Json.Folder[Unit] {
@@ -228,27 +241,24 @@ trait CornichonJson {
           def onNumber(value: JsonNumber): Unit = ()
           def onString(value: String): Unit =
             if (values.contains(value))
-              acc += (value -> JsonPath.parse(currentPath).valueUnsafe)
+              acc += (value -> JsonPath(ops))
           def onArray(elems: Vector[Json]): Unit = {
             var index = 0
-            val nextLevel = level + 1
             while (index < elems.length) {
-              keyValues(s"$currentPath[$index]", elems(index), nextLevel, acc)
+              keyValues(descendIndex(ops, index), elems(index), acc)
               index += 1
             }
           }
-          def onObject(elems: JsonObject): Unit = {
-            val nextLevel = level + 1
+          def onObject(elems: JsonObject): Unit =
             for ((k, v) <- elems.toIterable)
-              keyValues(s"$currentPath.$k", v, nextLevel, acc)
-          }
+              keyValues(descendField(ops, k), v, acc)
         }
       )
 
     // Do not traverse the JSON if there are no values to find
     if (values.nonEmpty) {
       val acc = new ListBuffer[(String, JsonPath)]
-      keyValues(JsonPath.root, json, level = 0, acc)
+      keyValues(Vector.empty, json, acc)
       acc.result()
     } else
       Nil

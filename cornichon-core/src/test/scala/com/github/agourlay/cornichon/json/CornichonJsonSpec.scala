@@ -546,6 +546,22 @@ class CornichonJsonSpec extends FunSuite with CornichonJson {
     results.foreach { case (_, path) => assert(path.run(json).contains(Json.fromString("target"))) }
   }
 
+  test("findAllPathWithStringValue handles object keys containing '.'") {
+    val json = Json.obj("a.b" -> Json.fromString("target"))
+    val results = findAllPathWithStringValue(Set("target"), json)
+    assert(results.size == 1)
+    val (_, path) = results.head
+    assert(path.run(json).contains(Json.fromString("target")))
+  }
+
+  test("findAllPathWithStringValue handles array of arrays") {
+    val json = Json.arr(Json.arr(Json.fromString("target"), Json.fromString("other")))
+    val results = findAllPathWithStringValue(Set("target"), json)
+    assert(results.size == 1)
+    val (_, path) = results.head
+    assert(path.run(json).contains(Json.fromString("target")))
+  }
+
   // removeFieldsByPath edge cases
 
   test("removeFieldsByPath remove multiple fields") {
