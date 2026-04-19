@@ -1,6 +1,8 @@
 package com.github.agourlay.cornichon.steps.wrapped
 
+import cats.effect.IO
 import com.github.agourlay.cornichon.core._
+import com.github.agourlay.cornichon.steps.cats.EffectStep
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
 import munit.FunSuite
@@ -53,6 +55,20 @@ class WithinStepSpec extends FunSuite with CommonTestSuite {
     val s = Scenario("scenario with Within", withinStep :: Nil)
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(!res.isSuccess)
+  }
+
+  test("interrupts nested steps when maxDuration is exceeded (does not wait for nested completion)") {
+    val maxDuration = 50.millis
+    val nestedSleep = 10.seconds
+    val nested = EffectStep.fromAsync("long IO.sleep", sc => IO.sleep(nestedSleep).as(sc.session)) :: Nil
+    val withinStep = WithinStep(nested, maxDuration)
+    val s = Scenario("scenario with Within cancellation", withinStep :: Nil)
+    val start = System.nanoTime()
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    val elapsedMs = (System.nanoTime() - start) / 1_000_000
+    assert(!res.isSuccess)
+    // Should complete near maxDuration, not wait for nestedSleep. Generous slack for CI.
+    assert(elapsedMs < 2_000, s"expected Within to interrupt near $maxDuration, scenario took ${elapsedMs}ms")
   }
 
 }
