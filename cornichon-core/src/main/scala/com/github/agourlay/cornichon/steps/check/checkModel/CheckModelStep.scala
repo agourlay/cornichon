@@ -65,6 +65,12 @@ case class CheckModelStep[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTra
       .map(DuplicateTransitionsDefinitionForProperty.apply)
       .toInvalidNel(Done)
 
+    val noNegativeWeight: ValidatedNel[CornichonError, Done] = transitions
+      .find(e => e._2.exists(_._1 < 0))
+      .map(_._1.description)
+      .map(NegativeTransitionWeightForProperty.apply)
+      .toInvalidNel(Done)
+
     val sumOfWeightIsCorrect: ValidatedNel[CornichonError, Done] = transitions
       .find { e =>
         e._2.map(_._1).sum != 100
@@ -73,7 +79,7 @@ case class CheckModelStep[A, B, C, D, E, F](maxNumberOfRuns: Int, maxNumberOfTra
       .map(IncorrectTransitionsWeightDefinitionForProperty.apply)
       .toInvalidNel(Done)
 
-    emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> sumOfWeightIsCorrect
+    emptyTransitionForState *> noTransitionsForStart *> duplicateEntries *> noNegativeWeight *> sumOfWeightIsCorrect
   }
 
   private def checkModel(runState: RunState): IO[(RunState, Either[FailedStep, Done])] =
@@ -119,6 +125,10 @@ case class DuplicateTransitionsDefinitionForProperty(description: String) extend
 
 case class IncorrectTransitionsWeightDefinitionForProperty(description: String) extends CornichonError {
   def baseErrorMessage: String = s"Transitions definition from '$description' contains incorrect weight definition (less or above 100)"
+}
+
+case class NegativeTransitionWeightForProperty(description: String) extends CornichonError {
+  def baseErrorMessage: String = s"Transitions definition from '$description' contains a negative weight"
 }
 
 case class NoTransitionsDefinitionForStartingProperty(description: String) extends CornichonError {

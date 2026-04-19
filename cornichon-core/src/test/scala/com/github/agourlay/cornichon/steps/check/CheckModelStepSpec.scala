@@ -94,6 +94,31 @@ class CheckModelStepSpec extends FunSuite with CommonTestSuite {
     }
   }
 
+  test("detect negative transition weight even when weights sum to 100") {
+    val starting = dummyProperty1("starting property")
+    val otherAction = dummyProperty1("other property")
+    // Sum is still 100 so the sum-check would pass; the negative-weight check must catch it.
+    val transitions = Map(starting -> ((100, otherAction) :: Nil), otherAction -> ((150, starting) :: (-50, otherAction) :: Nil))
+    val model = Model("model with empty transition for starting", starting, transitions)
+    val modelRunner = ModelRunner.make(integerGen)(model)
+    val checkStep = CheckModelStep(10, 10, modelRunner)
+    val s = Scenario("scenario with checkStep", checkStep :: Nil)
+
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    scenarioFailsWithMessage(res) {
+      """Scenario 'scenario with checkStep' failed:
+          |
+          |at step:
+          |Checking model 'model with empty transition for starting' with maxNumberOfRuns=10 and maxNumberOfTransitions=10
+          |
+          |with error(s):
+          |Transitions definition from 'other property' contains a negative weight
+          |
+          |seed for the run was '1'
+          |""".stripMargin
+    }
+  }
+
   test("always terminates with maxNumberOfRuns") {
     val maxRun = 100
     var uglyCounter = 0
