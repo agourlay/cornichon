@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.resolver
 import java.util.concurrent.atomic.AtomicLong
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core._
-import com.github.agourlay.cornichon.json.{CornichonJson, JsonPath}
+import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
 import com.github.agourlay.cornichon.util.StringUtils
 
@@ -128,15 +128,15 @@ object PlaceholderResolver {
         .get(key, ph.index)
         .leftMap((o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o))
         .map(transform)
-    case JsonMapper(key, jsonPath, transform) =>
+    case jm: JsonMapper =>
       session
-        .get(key, ph.index)
+        .get(jm.key, ph.index)
         .leftMap((o: CornichonError) => MapperKeyNotFoundInSession(bindingKey, o))
         .flatMap { sessionValue =>
           // No placeholders in JsonMapper to avoid accidental infinite recursions.
-          JsonPath
-            .runStrict(jsonPath, sessionValue)
-            .map(json => transform(CornichonJson.jsonStringValue(json)))
+          jm.parsedJsonPath
+            .flatMap(_.runStrict(sessionValue))
+            .map(json => jm.transform(CornichonJson.jsonStringValue(json)))
         }
   }
 
