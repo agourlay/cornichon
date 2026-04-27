@@ -224,84 +224,91 @@ trait CornichonJson {
   // Early-exit scan for a marker char in any string leaf or object key of the JSON.
   // Used to skip serialization on the placeholder fast-path.
   def jsonContainsChar(json: Json, marker: Char): Boolean = {
-    var found = false
-    def walk(j: Json): Unit = {
-      if (found) return
-      j.foldWith(
-        new Json.Folder[Unit] {
-          def onNull: Unit = ()
-          def onBoolean(value: Boolean): Unit = ()
-          def onNumber(value: JsonNumber): Unit = ()
-          def onString(value: String): Unit =
-            if (value.indexOf(marker.toInt) >= 0) found = true
-          def onArray(elems: Vector[Json]): Unit = {
-            var i = 0
-            while (!found && i < elems.length) {
-              walk(elems(i))
-              i += 1
-            }
-          }
-          def onObject(elems: JsonObject): Unit = {
-            val it = elems.toIterable.iterator
-            while (!found && it.hasNext) {
-              val (k, v) = it.next()
-              if (k.indexOf(marker.toInt) >= 0) found = true
-              else walk(v)
-            }
-          }
+    val markerInt = marker.toInt
+    val folder: Json.Folder[Boolean] = new Json.Folder[Boolean] {
+      def onNull: Boolean = false
+      def onBoolean(value: Boolean): Boolean = false
+      def onNumber(value: JsonNumber): Boolean = false
+      def onString(value: String): Boolean = value.indexOf(markerInt) >= 0
+      def onArray(elems: Vector[Json]): Boolean = {
+        var i = 0
+        val n = elems.length
+        while (i < n) {
+          if (elems(i).foldWith(this)) return true
+          i += 1
         }
-      )
+        false
+      }
+      def onObject(elems: JsonObject): Boolean = {
+        val it = elems.toIterable.iterator
+        while (it.hasNext) {
+          val (k, v) = it.next()
+          if (k.indexOf(markerInt) >= 0 || v.foldWith(this)) return true
+        }
+        false
+      }
     }
-    walk(json)
-    found
+    json.foldWith(folder)
   }
 
-  def findAllPathWithStringValue(values: Set[String], json: Json): List[(String, JsonPath)] = {
+  def findAllPathWithStringValue(values: Set[String], json: Json): List[(String, JsonPath)] =
     // Build JsonPath operations inline during traversal: no string concat, no re-parsing.
     // Also handles keys containing '.', '[', ']' and array-of-arrays correctly — the string form would not round-trip.
-    def descendField(ops: Vector[JsonPathOperation], field: String): Vector[JsonPathOperation] =
-      if (ops.isEmpty) Vector(RootSelection, FieldSelection(field))
-      else ops :+ FieldSelection(field)
-
-    def descendIndex(ops: Vector[JsonPathOperation], idx: Int): Vector[JsonPathOperation] =
-      if (ops.isEmpty) Vector(RootArrayElementSelection(idx))
-      else
-        ops.last match {
-          case FieldSelection(f) => ops.init :+ ArrayFieldSelection(f, idx)
-          case _                 => ops :+ RootArrayElementSelection(idx)
-        }
-
-    def keyValues(ops: Vector[JsonPathOperation], json: Json, acc: ListBuffer[(String, JsonPath)]): Unit =
-      // Use Json.Folder for performance https://github.com/circe/circe/pull/656
-      json.foldWith(
-        new Json.Folder[Unit] {
-          def onNull: Unit = ()
-          def onBoolean(value: Boolean): Unit = ()
-          def onNumber(value: JsonNumber): Unit = ()
-          def onString(value: String): Unit =
-            if (values.contains(value))
-              acc += (value -> JsonPath(ops))
-          def onArray(elems: Vector[Json]): Unit = {
-            var index = 0
-            while (index < elems.length) {
-              keyValues(descendIndex(ops, index), elems(index), acc)
-              index += 1
-            }
-          }
-          def onObject(elems: JsonObject): Unit =
-            for ((k, v) <- elems.toIterable)
-              keyValues(descendField(ops, k), v, acc)
-        }
-      )
-
     // Do not traverse the JSON if there are no values to find
-    if (values.nonEmpty) {
+    if (values.isEmpty) Nil
+    else {
       val acc = new ListBuffer[(String, JsonPath)]
-      keyValues(Vector.empty, json, acc)
+
+      // The folder is allocated once per top-level call. The current path is threaded through the
+      // mutable `ops` field with manual save/restore at each array/object frame so recursion via
+      // foldWith(this) does not allocate a fresh Folder per node.
+      // See https://github.com/circe/circe/pull/656 for why Json.Folder is used in the first place.
+      val folder: Json.Folder[Unit] = new Json.Folder[Unit] {
+        var ops: Vector[JsonPathOperation] = Vector.empty
+
+        def onNull: Unit = ()
+        def onBoolean(value: Boolean): Unit = ()
+        def onNumber(value: JsonNumber): Unit = ()
+        def onString(value: String): Unit =
+          if (values.contains(value))
+            acc += (value -> JsonPath(ops))
+        def onArray(elems: Vector[Json]): Unit = {
+          val parentOps = ops
+          var index = 0
+          val n = elems.length
+          while (index < n) {
+            ops = descendIndex(parentOps, index)
+            elems(index).foldWith(this)
+            index += 1
+          }
+          ops = parentOps
+        }
+        def onObject(elems: JsonObject): Unit = {
+          val parentOps = ops
+          val it = elems.toIterable.iterator
+          while (it.hasNext) {
+            val (k, v) = it.next()
+            ops = descendField(parentOps, k)
+            v.foldWith(this)
+          }
+          ops = parentOps
+        }
+      }
+      json.foldWith(folder)
       acc.result()
-    } else
-      Nil
-  }
+    }
+
+  private def descendField(ops: Vector[JsonPathOperation], field: String): Vector[JsonPathOperation] =
+    if (ops.isEmpty) Vector(RootSelection, FieldSelection(field))
+    else ops :+ FieldSelection(field)
+
+  private def descendIndex(ops: Vector[JsonPathOperation], idx: Int): Vector[JsonPathOperation] =
+    if (ops.isEmpty) Vector(RootArrayElementSelection(idx))
+    else
+      ops.last match {
+        case FieldSelection(f) => ops.init :+ ArrayFieldSelection(f, idx)
+        case _                 => ops :+ RootArrayElementSelection(idx)
+      }
 
 }
 
