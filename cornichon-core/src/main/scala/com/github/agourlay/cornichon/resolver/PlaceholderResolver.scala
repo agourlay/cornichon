@@ -57,12 +57,16 @@ object PlaceholderResolver {
     resolvableInput: A
   )(session: Session, randomContext: RandomContext, customExtractors: Map[String, Mapper]): Either[CornichonError, A] = {
     val ri = Resolvable[A]
-    val resolvableForm = ri.toResolvableForm(resolvableInput)
-    fillPlaceholders(resolvableForm)(session, randomContext, customExtractors).map { resolved =>
-      // If the input did not contain placeholders,
-      // we can return the original value directly
-      // and avoid an extra transformation from the resolved form
-      if (resolved == resolvableForm) resolvableInput else ri.fromResolvableForm(resolved)
+    // Cheap pre-check: if the value cannot contain a placeholder marker, skip serialization entirely.
+    if (!ri.mayContainPlaceholders(resolvableInput)) Right(resolvableInput)
+    else {
+      val resolvableForm = ri.toResolvableForm(resolvableInput)
+      fillPlaceholders(resolvableForm)(session, randomContext, customExtractors).map { resolved =>
+        // If the input did not contain placeholders,
+        // we can return the original value directly
+        // and avoid an extra transformation from the resolved form
+        if (resolved == resolvableForm) resolvableInput else ri.fromResolvableForm(resolved)
+      }
     }
   }
 

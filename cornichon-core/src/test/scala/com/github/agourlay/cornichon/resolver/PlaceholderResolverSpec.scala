@@ -3,6 +3,7 @@ package com.github.agourlay.cornichon.resolver
 import cats.syntax.either._
 import com.github.agourlay.cornichon.core.{RandomContext, Session}
 import com.github.agourlay.cornichon.resolver.PlaceholderResolver._
+import io.circe.Json
 import munit.FunSuite
 
 class PlaceholderResolverSpec extends FunSuite {
@@ -126,6 +127,36 @@ class PlaceholderResolverSpec extends FunSuite {
     val session = Session.newEmpty.addValueUnsafe("hero", "Batman")
     val result = fillPlaceholders("""{"name": "<hero>"}""")(session, rc, Map.empty)
     assertEquals(result, Right("""{"name": "Batman"}"""))
+  }
+
+  test("fillPlaceholdersResolvable[Json] returns the exact same Json when no placeholders are present") {
+    val session = Session.newEmpty
+    val input = Json.obj("name" -> Json.fromString("Batman"), "power" -> Json.fromInt(42))
+    val result = fillPlaceholdersResolvable(input)(session, rc, noExtractor)
+    // same instance — no serialize/parse round-trip
+    assert(result.exists(_ eq input), s"expected same Json instance, got $result")
+  }
+
+  test("fillPlaceholdersResolvable[Json] resolves a placeholder inside a string value") {
+    val session = Session.newEmpty.addValueUnsafe("hero", "Batman")
+    val input = Json.obj("name" -> Json.fromString("<hero>"))
+    val expected = Json.obj("name" -> Json.fromString("Batman"))
+    val result = fillPlaceholdersResolvable(input)(session, rc, noExtractor)
+    assertEquals(result, Right(expected))
+  }
+
+  test("fillPlaceholdersResolvable[Json] treats a '<' in an object key as a potential placeholder marker") {
+    // Key contains '<' but is not a valid placeholder -> fast-path takes the serialize path, finds no valid placeholder, returns original content.
+    val session = Session.newEmpty
+    val input = Json.obj("foo<bar" -> Json.fromInt(1))
+    val result = fillPlaceholdersResolvable(input)(session, rc, noExtractor)
+    assertEquals(result, Right(input))
+  }
+
+  test("fillPlaceholdersResolvable[Int] never attempts resolution") {
+    val session = Session.newEmpty
+    val result = fillPlaceholdersResolvable(42)(session, rc, noExtractor)
+    assertEquals(result, Right(42))
   }
 
 }

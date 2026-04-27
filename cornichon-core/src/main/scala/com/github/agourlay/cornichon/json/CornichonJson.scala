@@ -221,6 +221,41 @@ trait CornichonJson {
       WhitelistingError(forbiddenPatchOps.map(_.path.show), second).asLeft
   }
 
+  // Early-exit scan for a marker char in any string leaf or object key of the JSON.
+  // Used to skip serialization on the placeholder fast-path.
+  def jsonContainsChar(json: Json, marker: Char): Boolean = {
+    var found = false
+    def walk(j: Json): Unit = {
+      if (found) return
+      j.foldWith(
+        new Json.Folder[Unit] {
+          def onNull: Unit = ()
+          def onBoolean(value: Boolean): Unit = ()
+          def onNumber(value: JsonNumber): Unit = ()
+          def onString(value: String): Unit =
+            if (value.indexOf(marker.toInt) >= 0) found = true
+          def onArray(elems: Vector[Json]): Unit = {
+            var i = 0
+            while (!found && i < elems.length) {
+              walk(elems(i))
+              i += 1
+            }
+          }
+          def onObject(elems: JsonObject): Unit = {
+            val it = elems.toIterable.iterator
+            while (!found && it.hasNext) {
+              val (k, v) = it.next()
+              if (k.indexOf(marker.toInt) >= 0) found = true
+              else walk(v)
+            }
+          }
+        }
+      )
+    }
+    walk(json)
+    found
+  }
+
   def findAllPathWithStringValue(values: Set[String], json: Json): List[(String, JsonPath)] = {
     // Build JsonPath operations inline during traversal: no string concat, no re-parsing.
     // Also handles keys containing '.', '[', ']' and array-of-arrays correctly — the string form would not round-trip.
