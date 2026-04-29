@@ -139,11 +139,11 @@
         <p>Cornichon is available for Scala 2.13 &amp; Scala 3.</p>
         <p>The library is compatible with <a href="https://www.scala-sbt.org/">SBT</a> and <a href="http://www.lihaoyi.com/mill/">Mill</a>.</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// SBT
-</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;com.github.agourlay&quot;</span><span> %% </span><span class="string-literal">&quot;cornichon-test-framework&quot;</span><span> % </span><span class="string-literal">&quot;0.23.0&quot;</span><span> % </span><span class="type-name">Test</span><span>
+</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;com.github.agourlay&quot;</span><span> %% </span><span class="string-literal">&quot;cornichon-test-framework&quot;</span><span> % </span><span class="string-literal">&quot;0.24.0&quot;</span><span> % </span><span class="type-name">Test</span><span>
 </span><span class="identifier">testFrameworks</span><span> += </span><span class="keyword">new</span><span> </span><span class="type-name">TestFramework</span><span>(</span><span class="string-literal">&quot;com.github.agourlay.cornichon.framework.CornichonFramework&quot;</span><span>)</span></code></pre>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">// Mill
 </span><span class="keyword">object</span><span> </span><span class="identifier">test</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">Tests</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(</span><span class="string-literal">ivy&quot;com.github.agourlay::cornichon-test-framework:0.23.0&quot;</span><span>)
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(</span><span class="string-literal">ivy&quot;com.github.agourlay::cornichon-test-framework:0.24.0&quot;</span><span>)
   </span><span class="keyword">def</span><span> </span><span class="declaration-name">testFrameworks</span><span> = </span><span class="type-name">Seq</span><span>(</span><span class="string-literal">&quot;com.github.agourlay.cornichon.framework.CornichonFramework&quot;</span><span>)
 }</span></code></pre>
         
