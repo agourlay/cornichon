@@ -306,7 +306,7 @@ lazy val library =
       val openPojo = "0.9.1"
       val decline = "2.6.2"
       val scalaXml = "2.4.0"
-      val typesafeConfig = "1.4.6"
+      val typesafeConfig = "1.4.7"
       val caffeine = "3.2.3"
     }
     val catsCore = "org.typelevel" %% "cats-core" % Version.cats
