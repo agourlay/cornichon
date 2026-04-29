@@ -224,7 +224,7 @@ lazy val docs =
           logo = Some(Image(InternalTarget(Root / "img" / "cornichon-logo.png"), width = Some(LengthUnit.px(150)), height = Some(LengthUnit.px(150)))),
           title = Some("Cornichon"),
           subtitle = Some("An extensible Scala DSL for testing JSON HTTP APIs."),
-          latestReleases = Seq(ReleaseInfo("Latest Release", "0.23.0")),
+          latestReleases = Seq(ReleaseInfo("Latest Release", "0.24.0")),
           license = Some("Apache-2.0"),
           titleLinks = Seq(
             ButtonLink.internal(Root / "quick-start.md", "Get Started"),

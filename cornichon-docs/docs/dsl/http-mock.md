@@ -7,7 +7,7 @@ laika.title = HTTP mock
 @:callout(info)
 This feature requires the `cornichon-http-mock` module as an additional dependency:
 ```scala
-libraryDependencies += "com.github.agourlay" %% "cornichon-http-mock" % "0.23.0" % Test
+libraryDependencies += "com.github.agourlay" %% "cornichon-http-mock" % "0.24.0" % Test
 ```
 Your feature class must also extend the `HttpMockDsl` trait.
 @:@
