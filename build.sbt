@@ -92,7 +92,8 @@ lazy val publishingSettings = Seq(
 lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
-  publishArtifact := false
+  publishArtifact := false,
+  publish / skip := true
 )
 
 // disable cats-effect IO stack traces to avoid polluting the bench/profiling results
