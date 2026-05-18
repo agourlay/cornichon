@@ -10,7 +10,8 @@ val compilerOptions = Seq(
   "-deprecation",
   "-unchecked",
   "-feature",
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-java-output-version:11" // pin bytecode target so the JDK in use can't silently change it
 )
 
 lazy val standardSettings = Seq(
@@ -22,7 +23,6 @@ lazy val standardSettings = Seq(
   Test / fork := true,
   scalacOptions ++= compilerOptions,
   Test / scalacOptions -= "-Wnonunit-statement", // too noisy with Scalacheck
-  javacOptions ++= Seq("-source", "8", "-target", "8"),
   // Additional meta-info required by maven central
   startYear := Some(2015),
   organizationHomepage := Some(url("https://github.com/agourlay/cornichon")),
