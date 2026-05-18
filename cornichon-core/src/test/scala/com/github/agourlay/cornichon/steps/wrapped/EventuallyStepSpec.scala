@@ -152,7 +152,7 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
   // execution time exceeds maxTime. The remaining time check treats
   // "success after maxDuration" as a failure, even on the first successful run.
   test("succeeds on first try even with very short maxTime".ignore) {
-    var counter = 0
+    @scala.annotation.unused var counter = 0
     val conf = EventuallyConf(maxTime = 10.millis, interval = 5.seconds)
     val nested = AssertStep(
       "count and succeed",
