@@ -83,11 +83,14 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   def addValues(tuples: (String, String)*): Either[CornichonError, Session] = {
     var resultSession = this
-    for ((k, v) <- tuples)
+    val it = tuples.iterator
+    while (it.hasNext) {
+      val (k, v) = it.next()
       resultSession.addValue(k, v) match {
         case e @ Left(_)       => return e
         case Right(newSession) => resultSession = newSession
       }
+    }
     Right(resultSession)
   }
 

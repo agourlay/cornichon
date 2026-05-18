@@ -10,8 +10,7 @@ val compilerOptions = Seq(
   "-deprecation",
   "-unchecked",
   "-feature",
-  "-language:implicitConversions",
-  "-Wconf:msg=Non local returns:s" // used intentionally in hot paths for early exit
+  "-language:implicitConversions"
 )
 
 lazy val standardSettings = Seq(

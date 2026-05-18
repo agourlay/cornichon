@@ -94,7 +94,9 @@ trait CornichonJson {
   private def parseDataTableRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
     val cells = ArraySeq.newBuilder[(String, Json)]
     cells.sizeHint(rawRow.length)
-    rawRow.foreach { case (name, rawValue) =>
+    val it = rawRow.iterator
+    while (it.hasNext) {
+      val (name, rawValue) = it.next()
       parseString(rawValue) match {
         case Right(json) => cells += (name -> json)
         case Left(e)     => return Left(e)
@@ -105,29 +107,33 @@ trait CornichonJson {
   }
 
   private def parseDataTableJson(table: String): Either[CornichonError, Json] =
-    parseDataTableRaw(table).map { rawRows =>
-      val rows = Vector.newBuilder[Json]
-      rawRows.foreach { rawRow =>
-        parseDataTableRow(rawRow) match {
-          case Right(r) => rows += Json.fromJsonObject(r)
-          case Left(e)  => return Left(e)
-        }
+    parseDataTableRaw(table).flatMap(rawRowsToJsonArray)
+
+  private def rawRowsToJsonArray(rawRows: List[List[(String, String)]]): Either[CornichonError, Json] = {
+    val rows = Vector.newBuilder[Json]
+    val it = rawRows.iterator
+    while (it.hasNext)
+      parseDataTableRow(it.next()) match {
+        case Right(r) => rows += Json.fromJsonObject(r)
+        case Left(e)  => return Left(e)
       }
-      // `fromValues` wants a Vector as a concrete type
-      Json.fromValues(rows.result())
-    }
+    // `fromValues` wants a Vector as a concrete type
+    Right(Json.fromValues(rows.result()))
+  }
 
   def parseDataTable(table: String): Either[CornichonError, List[JsonObject]] =
-    parseDataTableRaw(table).map { rawRows =>
-      val rows = new ListBuffer[JsonObject]()
-      rawRows.foreach { rawRow =>
-        parseDataTableRow(rawRow) match {
-          case Right(r) => rows += r
-          case Left(e)  => return Left(e)
-        }
+    parseDataTableRaw(table).flatMap(rawRowsToJsonObjects)
+
+  private def rawRowsToJsonObjects(rawRows: List[List[(String, String)]]): Either[CornichonError, List[JsonObject]] = {
+    val rows = new ListBuffer[JsonObject]()
+    val it = rawRows.iterator
+    while (it.hasNext)
+      parseDataTableRow(it.next()) match {
+        case Right(r) => rows += r
+        case Left(e)  => return Left(e)
       }
-      rows.result()
-    }
+    Right(rows.result())
+  }
 
   // Returns raw data with duplicates and initial ordering
   def parseDataTableRaw(table: String): Either[CornichonError, List[List[(String, String)]]] =

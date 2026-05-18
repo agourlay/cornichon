@@ -10,8 +10,9 @@ object TraverseUtils {
       case head :: Nil => f(head).map(_ :: Nil)
       case _           =>
         val listBuffer = List.newBuilder[B]
-        for (elem <- elements)
-          f(elem) match {
+        val it = elements.iterator
+        while (it.hasNext)
+          f(it.next()) match {
             case e @ Left(_) => return e.asInstanceOf[Either[E, List[B]]]
             case Right(b)    => listBuffer += b
           }
@@ -21,8 +22,8 @@ object TraverseUtils {
   def traverseIL[A, B, E](elements: Iterator[A])(f: A => Either[E, B]): Either[E, List[B]] =
     if (elements.hasNext) {
       val listBuffer = List.newBuilder[B]
-      for (elem <- elements)
-        f(elem) match {
+      while (elements.hasNext)
+        f(elements.next()) match {
           case e @ Left(_) => return e.asInstanceOf[Either[E, List[B]]]
           case Right(b)    => listBuffer += b
         }
@@ -37,8 +38,9 @@ object TraverseUtils {
       case head :: Nil => f(head).map(_ :: Nil)
       case _           =>
         val listBuffer = List.newBuilder[B]
-        for (elem <- elements)
-          f(elem) match {
+        val it = elements.iterator
+        while (it.hasNext)
+          f(it.next()) match {
             case None    => return None
             case Some(b) => listBuffer += b
           }
@@ -68,8 +70,8 @@ object TraverseUtils {
   def traverseIV[A, B, E](elements: Iterator[A])(f: A => Either[E, B]): Either[E, Vector[B]] =
     if (elements.hasNext) {
       val vectorBuilder = Vector.newBuilder[B]
-      for (e <- elements)
-        f(e) match {
+      while (elements.hasNext)
+        f(elements.next()) match {
           case e @ Left(_) => return e.asInstanceOf[Either[E, Vector[B]]]
           case Right(b)    => vectorBuilder += b
         }

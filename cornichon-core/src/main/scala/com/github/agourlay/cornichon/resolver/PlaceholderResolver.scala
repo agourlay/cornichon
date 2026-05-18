@@ -73,27 +73,33 @@ object PlaceholderResolver {
   def fillPlaceholders(
     input: String
   )(session: Session, rc: RandomContext, customExtractors: Map[String, Mapper], sessionOnlyMode: Boolean = false): Either[CornichonError, String] =
-    findPlaceholders(input).flatMap { placeholders =>
-      val len = placeholders.length
-      if (len == 0)
-        Right(input)
-      else {
-        var i = 0
-        val patterns = ArraySeq.newBuilder[(String, String)]
-        patterns.sizeHint(len)
-        while (i < len) {
-          val ph = placeholders(i)
-          val resolvedValue = resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode)
-          resolvedValue match {
-            case Right(resolved) => patterns.addOne(ph.fullKey -> resolved)
-            case Left(err)       => return Left(err)
-          }
-          i += 1
+    findPlaceholders(input).flatMap(resolveAllPlaceholders(input, _, session, rc, customExtractors, sessionOnlyMode))
+
+  private def resolveAllPlaceholders(
+    input: String,
+    placeholders: Vector[Placeholder],
+    session: Session,
+    rc: RandomContext,
+    customExtractors: Map[String, Mapper],
+    sessionOnlyMode: Boolean
+  ): Either[CornichonError, String] = {
+    val len = placeholders.length
+    if (len == 0) Right(input)
+    else {
+      var i = 0
+      val patterns = ArraySeq.newBuilder[(String, String)]
+      patterns.sizeHint(len)
+      while (i < len) {
+        val ph = placeholders(i)
+        resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode) match {
+          case Right(resolved) => patterns.addOne(ph.fullKey -> resolved)
+          case Left(err)       => return Left(err)
         }
-        val updatedInput = StringUtils.replacePatternsInOrder(input, patterns.result())
-        Right(updatedInput)
+        i += 1
       }
+      Right(StringUtils.replacePatternsInOrder(input, patterns.result()))
     }
+  }
 
   def fillPlaceholdersPairs(
     pairs: Seq[(String, String)]
@@ -102,7 +108,9 @@ object PlaceholderResolver {
       rightNil
     else {
       val acc = new ListBuffer[(String, String)]()
-      for ((name, value) <- pairs) {
+      val it = pairs.iterator
+      while (it.hasNext) {
+        val (name, value) = it.next()
         val res = for {
           resolvedName <- fillPlaceholders(name)(session, randomContext, customExtractors)
           resolvedValue <- fillPlaceholders(value)(session, randomContext, customExtractors)
