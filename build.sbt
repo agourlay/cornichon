@@ -6,63 +6,22 @@ import laika.ast.{Image, InternalTarget, LengthUnit, Path}
 import laika.ast.Path.Root
 import laika.theme.config.Color
 
-val compilerOptions_scala3 = Seq(
+val compilerOptions = Seq(
   "-deprecation",
   "-unchecked",
   "-feature",
   "-language:implicitConversions",
-  "-Wconf:msg=Non local returns:s" // used intentionally in hot paths for early exit; will migrate to boundary/break when dropping 2.13
+  "-Wconf:msg=Non local returns:s" // used intentionally in hot paths for early exit
 )
-
-val compilerOptions_scala2 = Seq(
-  "-deprecation", // Emit warning and location for usages of deprecated APIs.
-  "-encoding",
-  "utf-8", // Specify character encoding used by source files.
-  "-explaintypes", // Explain type errors in more detail.
-  "-language:existentials", // Existential types (besides wildcard types) can be written and inferred
-  "-language:experimental.macros", // Allow macro definition (besides implementation and application)
-  "-language:higherKinds", // Allow higher-kinded types
-  "-language:implicitConversions", // Allow definition of implicit functions called views
-  "-unchecked", // Enable additional warnings where generated code depends on assumptions.
-  "-Xcheckinit", // Wrap field accessors to throw an exception on uninitialized access.
-  "-Xlint:adapted-args", // Warn if an argument list is modified to match the receiver.
-  "-Xlint:constant", // Evaluation of a constant arithmetic expression results in an error.
-  "-Xlint:delayedinit-select", // Selecting member of DelayedInit.
-  "-Xlint:doc-detached", // A Scaladoc comment appears to be detached from its element.
-  "-Xlint:inaccessible", // Warn about inaccessible types in method signatures.
-  "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`.
-  "-Xlint:missing-interpolator", // A string literal appears to be missing an interpolator id.
-  "-Xlint:nullary-unit", // Warn when nullary methods return Unit.
-  "-Xlint:option-implicit", // Option.apply used implicit view.
-  "-Xlint:package-object-classes", // Class or object defined in package object. (got a macro there)
-  "-Xlint:poly-implicit-overload", // Parameterized overloaded implicit methods are not visible as view bounds.
-  "-Xlint:private-shadow", // A private field (or class parameter) shadows a superclass field.
-  "-Xlint:stars-align", // Pattern sequence wildcard must align with sequence component.
-  "-Xlint:type-parameter-shadow", // A local type parameter shadows a type already in scope.
-  "-Ywarn-dead-code", // Warn when dead code is identified.
-  "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
-  "-Ywarn-numeric-widen", // Warn when numerics are widened.
-  "-Ywarn-unused", // Warn when things are unused.
-  "-Ywarn-value-discard", // Warn when non-Unit expression results are unused.
-  "-Wnonunit-statement" // Warn when non-unit statements are discarded.
-)
-
-def compilerOptions(scalaVersion: String) =
-  CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, _)) => compilerOptions_scala2
-    case Some((3, _)) => compilerOptions_scala3
-    case _            => Seq.empty
-  }
 
 lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
   scalaVersion := "3.3.7",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.18"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   Test / fork := true,
-  scalacOptions ++= compilerOptions(scalaVersion.value),
+  scalacOptions ++= compilerOptions,
   Test / scalacOptions -= "-Wnonunit-statement", // too noisy with Scalacheck
   javacOptions ++= Seq("-source", "8", "-target", "8"),
   // Additional meta-info required by maven central

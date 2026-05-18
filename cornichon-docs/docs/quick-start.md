@@ -6,7 +6,7 @@ laika.title = Quick start
 
 ## Installation
 
-Cornichon is available for Scala 2.13 & Scala 3.
+Cornichon is available for Scala 3.
 
 The library is compatible with [SBT](https://www.scala-sbt.org/) and [Mill](http://www.lihaoyi.com/mill/).
 
