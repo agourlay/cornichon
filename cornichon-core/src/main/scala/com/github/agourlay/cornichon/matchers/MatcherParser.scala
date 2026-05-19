@@ -52,4 +52,9 @@ case class MatcherParsingError(input: String, error: String) extends CornichonEr
   lazy val baseErrorMessage = s"error '$error' thrown during matcher parsing for input $input"
 }
 
-case class MatcherKey(key: String) extends AnyVal
+opaque type MatcherKey = String
+
+object MatcherKey {
+  def apply(key: String): MatcherKey = key
+  extension (mk: MatcherKey) def key: String = mk
+}

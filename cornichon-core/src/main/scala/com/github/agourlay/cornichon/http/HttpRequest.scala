@@ -8,7 +8,12 @@ import io.circe.Encoder
 
 import scala.concurrent.duration.FiniteDuration
 
-case class HttpMethod(name: String) extends AnyVal
+opaque type HttpMethod = String
+
+object HttpMethod {
+  def apply(name: String): HttpMethod = name
+  extension (m: HttpMethod) def name: String = m
+}
 
 object HttpMethods {
   val DELETE = HttpMethod("DELETE")
@@ -124,7 +129,12 @@ trait HttpRequestsDsl {
 // Enable using the DSL without importing the trait
 object HttpRequest extends HttpRequestsDsl
 
-case class HttpStream(name: String) extends AnyVal
+opaque type HttpStream = String
+
+object HttpStream {
+  def apply(name: String): HttpStream = name
+  extension (s: HttpStream) def name: String = s
+}
 
 object HttpStreams {
   val SSE = HttpStream("Server-Sent-Event")

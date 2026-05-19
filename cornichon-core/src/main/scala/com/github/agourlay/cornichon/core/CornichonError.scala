@@ -41,7 +41,7 @@ object CornichonError {
   def catchThrowable[A](f: => A): Either[CornichonError, A] =
     Either.catchNonFatal(f).leftMap(fromThrowable)
 
-  implicit class fromEither[A](e: Either[CornichonError, A]) {
+  extension [A](e: Either[CornichonError, A]) {
     def valueUnsafe: A = e.fold(e => throw e.toException, identity)
     def futureEitherT(implicit ec: ExecutionContext): EitherT[Future, CornichonError, A] = EitherT.fromEither[Future](e)
   }

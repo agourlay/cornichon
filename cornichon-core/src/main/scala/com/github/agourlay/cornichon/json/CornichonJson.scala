@@ -320,7 +320,7 @@ trait CornichonJson {
 
 object CornichonJson extends CornichonJson {
 
-  implicit class sessionJson(val s: Session) {
+  extension (s: Session) {
 
     def getJson(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, Json] =
       for {
@@ -331,19 +331,19 @@ object CornichonJson extends CornichonJson {
 
     def getJsonStringField(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): Either[CornichonError, String] =
       for {
-        json <- getJson(key, stackingIndex, path)
+        json <- s.getJson(key, stackingIndex, path)
         field <- Either.fromOption(json.asString, NotStringFieldError(json, path))
       } yield field
 
     def getJsonStringFieldUnsafe(key: String, stackingIndex: Option[Int] = None, path: String = JsonPath.root): String =
-      getJsonStringField(key, stackingIndex, path).valueUnsafe
+      s.getJsonStringField(key, stackingIndex, path).valueUnsafe
 
     def getJsonOpt(key: String, stackingIndex: Option[Int] = None): Option[Json] =
       s.getOpt(key, stackingIndex).flatMap(s => parseDslJson(s).toOption)
 
   }
 
-  implicit class GqlHelper(val sc: StringContext) extends AnyVal {
+  extension (sc: StringContext) {
 
     def gqljson(args: Any*): GqlString = {
       val input = sc.s(args: _*)

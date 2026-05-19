@@ -5,6 +5,10 @@ import com.github.agourlay.cornichon.json.CornichonJson.parseGraphQLJson
 import com.github.agourlay.cornichon.resolver.Resolvable
 import io.circe.Encoder
 
+// GqlString must remain structurally distinct from String at runtime:
+// CornichonJson.parseDslJson dispatches via `case s: String =>` to choose
+// strict-JSON parsing vs the lenient GraphQL Encoder. An opaque-type GqlString
+// would erase to String and silently route GraphQL bodies through the strict parser.
 case class GqlString(input: String) extends AnyVal
 
 object GqlString {
