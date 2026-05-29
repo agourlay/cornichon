@@ -20,6 +20,7 @@ import org.http4s.implicits._
 import org.http4s.circe._
 import org.http4s.dsl._
 import org.http4s.server.middleware.{GZip, ResponseTiming}
+import org.typelevel.ci.CIString
 import sangria.execution._
 import sangria.parser.QueryParser
 import sangria.marshalling.circe._
@@ -152,14 +153,22 @@ class SuperHeroesHttpAPI extends Http4sDsl[IO] {
   }
 
   private val sseSuperHeroesService = HttpRoutes.of[IO] {
-    case GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) :? JustNameQueryParamMatcher(justNameOpt) =>
-      val superheroes = sm.allSuperheroes(sessionId)
-      val sse =
-        if (justNameOpt.getOrElse(false))
-          superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = Some(sh.name)))
-        else
-          superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = Some(sh.asJson.noSpaces)))
-      Ok(Stream.iterable[IO, ServerSentEvent](sse))
+    case req @ GET -> Root / "superheroes" :? SessionIdQueryParamMatcher(sessionId) :? JustNameQueryParamMatcher(justNameOpt) =>
+      // Enforce content negotiation so the client must send the correct 'Accept' header.
+      val acceptsSse = req.headers
+        .get(CIString("Accept"))
+        .exists(_.exists(_.value.contains("text/event-stream")))
+      if (!acceptsSse)
+        NotAcceptable("this endpoint requires 'Accept: text/event-stream'")
+      else {
+        val superheroes = sm.allSuperheroes(sessionId)
+        val sse =
+          if (justNameOpt.getOrElse(false))
+            superheroes.map(sh => ServerSentEvent(eventType = Some("superhero name"), data = Some(sh.name)))
+          else
+            superheroes.map(sh => ServerSentEvent(eventType = Some("superhero"), data = Some(sh.asJson.noSpaces)))
+        Ok(Stream.iterable[IO, ServerSentEvent](sse))
+      }
   }
 
   private val routes = Router(

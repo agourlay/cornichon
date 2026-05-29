@@ -135,7 +135,7 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
         }
     }
 
-  private val sseHeader = "text" -> "event-stream"
+  private val sseHeader = "Accept" -> "text/event-stream"
 
   private def runSSE(streamReq: HttpStreamedRequest, t: FiniteDuration): EitherT[IO, CornichonError, HttpResponse] =
     parseUri(streamReq.url) match {
