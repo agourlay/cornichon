@@ -1,12 +1,11 @@
 # Contributing
 
-- for general questions use the [Gitter channel](https://gitter.im/agourlay/cornichon)
+- for general questions, open a [GitHub issue](https://github.com/agourlay/cornichon/issues)
 - in case of bugs, open issues with code example as reproducer
 
 To propose a patch, fork the repository and use the following commands:
-- `sbt test` to run unit tests
-- `sbt it:test` to run integration tests interacting with external APIs
-- follow those [instructions](https://47degrees.github.io/sbt-microsites/docs/build-the-microsite) to build the documentation locally
+- `sbt test` to run the test suite
+- `sbt "docs/mdoc" "docs/laikaSite"` to build the documentation locally (output in `cornichon-docs/target/docs/site`)
 
 A PR should ideally include:
 - a clear description of the problem solved and of the solution implemented
