@@ -8,15 +8,20 @@ on:
 
 jobs:
   build:
-    name: Scala CI
+    name: Scala CI (JDK ${{ matrix.java }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 11 matches the bytecode target (-java-output-version:11), 25 is the latest LTS
+        java: [ '11', '25' ]
     steps:
       - uses: actions/checkout@v6
 
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          java-version: '25'
+          java-version: ${{ matrix.java }}
           distribution: 'temurin'
 
       - name: Setup sbt
