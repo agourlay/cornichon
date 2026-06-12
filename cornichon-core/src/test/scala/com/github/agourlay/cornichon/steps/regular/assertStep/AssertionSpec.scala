@@ -34,6 +34,11 @@ class AssertionSpec extends FunSuite {
     assert(!assertion.validated.isValid)
   }
 
+  test("Assertion.all empty is valid") {
+    val assertion = Assertion.all(Nil)
+    assert(assertion.validated.isValid)
+  }
+
   test("Assertion.any all valid is valid") {
     val assertion = Assertion.any(List(Assertion.alwaysValid, Assertion.alwaysValid))
     assert(assertion.validated.isValid)
@@ -46,6 +51,11 @@ class AssertionSpec extends FunSuite {
 
   test("Assertion.any invalid if all invalid valid") {
     val assertion = Assertion.any(List(Assertion.failWith("boom!"), Assertion.failWith("always fail!")))
+    assert(!assertion.validated.isValid)
+  }
+
+  test("Assertion.any empty is invalid") {
+    val assertion = Assertion.any(Nil)
     assert(!assertion.validated.isValid)
   }
 
