@@ -12,6 +12,7 @@ val compilerOptions = Seq(
   "-feature",
   "-language:implicitConversions",
   "-java-output-version:11", // pin bytecode target so the JDK in use can't silently change it
+  "-Yfuture-lazy-vals", // thread-safe lazy val initialization without object monitors (Scala 3.3.8+)
   "-Wunused:all",
   "-Wnonunit-statement",
   "-Wvalue-discard",
