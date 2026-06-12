@@ -52,4 +52,5 @@ object Assertion {
   def any(assertions: Seq[Assertion]): Assertion =
     if (assertions.isEmpty) failWith("Assertion.any received an empty list of assertions")
     else assertions.reduce((acc, assertion) => acc.or(assertion))
+
 }
