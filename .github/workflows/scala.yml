@@ -35,7 +35,8 @@ jobs:
             ~/.ivy2/cache
             ~/.coursier/cache/v1
             ~/.cache/coursier/v1
-          key: ${{ runner.os }}-sbt-cache-v2-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}-${{ hashFiles('project/plugins.sbt') }}
+          key: ${{ runner.os }}-sbt-cache-v2-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+          restore-keys: ${{ runner.os }}-sbt-cache-v2-
 
       - name: Check formatting
         run: sbt scalafmtCheckAll
