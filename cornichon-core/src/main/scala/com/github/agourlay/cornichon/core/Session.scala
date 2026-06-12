@@ -73,7 +73,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   def addValue(key: String, value: String): Either[CornichonError, Session] =
     if (key.isBlank)
       Left(EmptyKey)
-    else if (Session.notAllowedInKey.exists(forbidden => key.contains(forbidden)))
+    else if (Session.containsForbiddenKeyChar(key))
       Left(IllegalKey(key))
     else
       Right(Session(updateContent(content)(key, value)))
@@ -116,6 +116,27 @@ object Session {
   val newEmpty: Session = Session(HashMap.empty)
 
   val notAllowedInKey: String = "\r\n<>/ []"
+
+  // All forbidden chars are ASCII, so a table covering 0-127 suffices:
+  // chars >= 128 can never be forbidden and are filtered by a range check instead.
+  private val forbiddenKeyChars: Array[Boolean] = {
+    val table = new Array[Boolean](128)
+    notAllowedInKey.foreach(c => table(c.toInt) = true)
+    table
+  }
+
+  // Single pass over the key with O(1) lookup per char,
+  // instead of one `key.contains` scan per forbidden char.
+  private def containsForbiddenKeyChar(key: String): Boolean = {
+    var i = 0
+    val len = key.length
+    while (i < len) {
+      val c = key.charAt(i)
+      if (c < 128 && forbiddenKeyChars(c.toInt)) return true
+      i += 1
+    }
+    false
+  }
 
   implicit val monoidSession: Monoid[Session] = new Monoid[Session] {
     def empty: Session = newEmpty

@@ -20,11 +20,11 @@ class AddValuesBench {
   var insertNumber: String = ""
 
   /*
-  [info] Benchmark                 (insertNumber)   Mode  Cnt         Score       Error  Units
-  [info] AddValuesBench.addValues               1  thrpt   10  10595265.115 ± 32853.337  ops/s
-  [info] AddValuesBench.addValues               2  thrpt   10   5642418.788 ± 24496.068  ops/s
-  [info] AddValuesBench.addValues               4  thrpt   10   3074429.617 ±  4732.138  ops/s
-  [info] AddValuesBench.addValues               8  thrpt   10   2493099.455 ± 62374.398  ops/s
+  [info] Benchmark                 (insertNumber)   Mode  Cnt         Score         Error  Units
+  [info] AddValuesBench.addValues               1  thrpt   10  36314347.318 ± 1421825.878  ops/s
+  [info] AddValuesBench.addValues               2  thrpt   10  20422532.463 ±  351546.412  ops/s
+  [info] AddValuesBench.addValues               4  thrpt   10  10905179.968 ±  135103.598  ops/s
+  [info] AddValuesBench.addValues               8  thrpt   10   6372890.506 ±   68455.024  ops/s
    */
   @Benchmark
   def addValues() = {
