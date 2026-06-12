@@ -14,16 +14,15 @@ object StringUtils {
   }
 
   protected[cornichon] def printArrowPairsBuilder(params: Seq[(String, String)], builder: StringBuilder): Unit = {
-    val len = params.length
-    var i = 0
-    params.foreach { case (name, value) =>
+    val it = params.iterator
+    while (it.hasNext) {
+      val (name, value) = it.next()
       quoteInto(builder, name)
       builder.append(arrow)
       quoteInto(builder, value)
-      if (i < len - 1) {
+      if (it.hasNext) {
         builder.append(", ")
       }
-      i += 1
     }
   }
 
