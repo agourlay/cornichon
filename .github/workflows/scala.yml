@@ -16,7 +16,7 @@ jobs:
         # 11 matches the bytecode target (-java-output-version:11), 26 is the latest JDK
         java: [ '11', '26' ]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
