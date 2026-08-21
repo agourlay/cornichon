@@ -1,6 +1,6 @@
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.5")
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.5.0")
-addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.3.1")
+addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.3.2")
 addSbtPlugin("org.typelevel" % "laika-sbt" % "1.3.2")
 addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.9.1")
 addSbtPlugin("com.github.sbt" % "sbt-ghpages" % "0.10.0")
