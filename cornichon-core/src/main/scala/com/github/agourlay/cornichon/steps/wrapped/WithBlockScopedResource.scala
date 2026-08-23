@@ -20,7 +20,7 @@ case class WithBlockScopedResource(nested: List[Step], resource: BlockScopedReso
       }
       val completeSession = resourcedState.session.combine(results)
       // Manual nested merge
-      (runState.withSession(completeSession).recordLogStack(logStack).registerCleanupSteps(runState.cleanupSteps), resourcedRes)
+      (runState.withSession(completeSession).recordLogStack(logStack).registerCleanupSteps(resourcedState.cleanupSteps), resourcedRes)
     }
   }
 
