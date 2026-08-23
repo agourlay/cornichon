@@ -1,14 +1,12 @@
 package com.github.agourlay.cornichon.framework
 
-import java.util
 import cats.syntax.apply._
 import cats.effect.IO
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.framework.CornichonFeatureRunner._
 import com.monovore.decline._
-import com.openpojo.reflection.PojoClass
-import com.openpojo.reflection.impl.PojoClassFactory
+import io.github.classgraph.ClassGraph
 import fs2.Stream
 import sbt.testing.TestSelector
 
@@ -74,10 +72,20 @@ object MainRunner {
         System.exit(1)
   }
 
-  // https://stackoverflow.com/questions/492184/how-do-you-find-all-subclasses-of-a-given-class-in-java
+  // `CornichonFeature` is a trait, so on the JVM it is an interface - `getSubclasses` finds nothing here.
+  // `getStandardClasses` drops interfaces and annotations, leaving the concrete features once abstract ones are filtered out.
   private def discoverFeatureClasses(packageToExplore: String): List[Class[_]] = {
-    val classes: util.List[PojoClass] = PojoClassFactory.enumerateClassesByExtendingType(packageToExplore, classOf[CornichonFeature], null)
-    classes.iterator().asScala.collect { case pojo if pojo.isConcrete => pojo.getClazz }.toList
+    val scanResult = new ClassGraph().enableClassInfo().acceptPackages(packageToExplore).scan()
+    try
+      scanResult
+        .getClassesImplementing(classOf[CornichonFeature].getName)
+        .getStandardClasses
+        .asScala
+        .iterator
+        .filterNot(_.isAbstract)
+        .map(_.loadClass())
+        .toList
+    finally scanResult.close()
   }
 
 }

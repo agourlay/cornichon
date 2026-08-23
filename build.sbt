@@ -120,7 +120,7 @@ lazy val testFramework =
         library.sbtTest,
         library.fs2Core,
         library.catsEffect,
-        library.openPojo,
+        library.classgraph,
         library.decline,
         library.scalaXml,
         library.scalacheck % Test,
@@ -268,7 +268,7 @@ lazy val library =
       val sbtTest = "1.0"
       val http4s = "0.23.36"
       val fs2 = "3.13.0"
-      val openPojo = "0.9.1"
+      val classgraph = "4.8.193"
       val decline = "2.6.2"
       val scalaXml = "2.4.0"
       val typesafeConfig = "1.4.9"
@@ -294,7 +294,7 @@ lazy val library =
     val http4sDsl = "org.http4s" %% "http4s-dsl" % Version.http4s
     val fs2Io = "co.fs2" %% "fs2-io" % Version.fs2
     val fs2Core = "co.fs2" %% "fs2-core" % Version.fs2
-    val openPojo = "com.openpojo" % "openpojo" % Version.openPojo
+    val classgraph = "io.github.classgraph" % "classgraph" % Version.classgraph
     val decline = "com.monovore" %% "decline" % Version.decline
     val scalaXml = "org.scala-lang.modules" %% "scala-xml" % Version.scalaXml
     val typesafeConfig = "com.typesafe" % "config" % Version.typesafeConfig
