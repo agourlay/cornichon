@@ -168,4 +168,9 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
     assert(r.isSuccess)
   }
 
+  test("rejects an empty block") {
+    val e = intercept[IllegalArgumentException](EventuallyStep(Nil, EventuallyConf(10.millis, 1.millis)))
+    assert(e.getMessage.contains("eventually block must contain at least one step"))
+  }
+
 }

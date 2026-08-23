@@ -71,4 +71,9 @@ class WithinStepSpec extends FunSuite with CommonTestSuite {
     assert(elapsedMs < 2_000, s"expected Within to interrupt near $maxDuration, scenario took ${elapsedMs}ms")
   }
 
+  test("rejects an empty block") {
+    val e = intercept[IllegalArgumentException](WithinStep(Nil, 10.millis))
+    assert(e.getMessage.contains("within block must contain at least one step"))
+  }
+
 }

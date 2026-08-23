@@ -96,4 +96,9 @@ class RepeatConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
   //      assert(res.isSuccess)
   //      assert(res.session.getHistory("index").valueUnsafe == Vector.fill(repeatFactor)(Vector("1", "2", "3", "4", "5")).flatten)
   //    }
+  test("rejects an empty block") {
+    val e = intercept[IllegalArgumentException](RepeatConcurrentlyStep(times = 1, nested = Nil, parallelism = 1, maxTime = 10.millis))
+    assert(e.getMessage.contains("repeat concurrently block must contain at least one step"))
+  }
+
 }

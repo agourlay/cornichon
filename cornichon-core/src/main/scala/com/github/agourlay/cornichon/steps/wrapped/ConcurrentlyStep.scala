@@ -12,6 +12,8 @@ import scala.util.control.NonFatal
 
 case class ConcurrentlyStep(nested: List[Step], maxTime: FiniteDuration) extends WrapperStep {
 
+  require(nested.nonEmpty, "concurrently block must contain at least one step")
+
   val title = s"Concurrently block with maxTime '$maxTime'"
 
   override val stateUpdate: StepState = StateT { runState =>

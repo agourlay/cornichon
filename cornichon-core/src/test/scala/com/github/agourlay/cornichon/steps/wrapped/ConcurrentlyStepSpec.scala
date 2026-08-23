@@ -89,4 +89,9 @@ class ConcurrentlyStepSpec extends FunSuite with CommonTestSuite {
     assert(uglyCounter.intValue() == loop)
   }
 
+  test("rejects an empty block") {
+    val e = intercept[IllegalArgumentException](ConcurrentlyStep(Nil, 10.millis))
+    assert(e.getMessage.contains("concurrently block must contain at least one step"))
+  }
+
 }

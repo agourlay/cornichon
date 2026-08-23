@@ -12,6 +12,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.control.NonFatal
 
 case class RepeatConcurrentlyStep(times: Int, nested: List[Step], parallelism: Int, maxTime: FiniteDuration) extends WrapperStep {
+  require(nested.nonEmpty, "repeat concurrently block must contain at least one step")
   require(parallelism > 0, "repeat concurrently block must contain a positive 'parallelism' factor")
   require(times > 0, "repeat concurrently block must contain a positive 'times' factor")
   require(times >= parallelism, "repeat concurrently block must contain a 'parallelism' factor <= to the number of repeat 'times'")

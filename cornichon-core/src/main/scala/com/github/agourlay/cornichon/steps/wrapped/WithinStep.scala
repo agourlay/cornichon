@@ -10,6 +10,8 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 
 case class WithinStep(nested: List[Step], maxDuration: FiniteDuration) extends WrapperStep {
 
+  require(nested.nonEmpty, "within block must contain at least one step")
+
   val title = s"Within block with max duration '$maxDuration'"
 
   override val stateUpdate: StepState = StateT { runState =>

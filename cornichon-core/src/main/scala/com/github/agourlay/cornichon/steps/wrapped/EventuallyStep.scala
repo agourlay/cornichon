@@ -10,6 +10,8 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 
 case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends WrapperStep {
 
+  require(nested.nonEmpty, "eventually block must contain at least one step")
+
   val title = s"Eventually block with maxDuration = ${conf.maxTime} and interval = ${conf.interval}"
 
   override val stateUpdate: StepState = StateT { runState =>
