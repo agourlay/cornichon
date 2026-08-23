@@ -28,6 +28,9 @@ class MockHttpServer[A](label: String, interface: Option[String], port: Option[R
     else
       startServerTryPorts(randomPortOrder)
 
+  // `handleErrorWith` takes a total function: every branch below must be exhaustive over `Throwable`,
+  // otherwise anything unmatched surfaces as a `MatchError` that hides the real cause. That matters
+  // beyond start-up, because `startServer` also wraps the execution of the whole nested block.
   private def startServerTryPorts(ports: List[Int], retry: Int = 0): IO[A] =
     startServer(ports.head).handleErrorWith {
       case _: java.net.BindException if ports.length > 1 =>
@@ -36,8 +39,11 @@ class MockHttpServer[A](label: String, interface: Option[String], port: Option[R
         val sleepFor = retry + 1
         println(s"Could not start server `$label` on any of the provided port(s) on interface $selectedInterface. Retrying in $sleepFor seconds...")
         startServerTryPorts(randomPortOrder, retry = retry + 1).delayBy(sleepFor.seconds)
-      case e: java.net.BindException if retry == maxPortBindingRetries =>
+      case e: java.net.BindException =>
+        // out of ports and out of retries
         IO.raiseError(MockHttpServerStartError(e, label, maxPortBindingRetries, selectedInterface).toException)
+      case other =>
+        IO.raiseError(other)
     }
 
   private def startServer(port: Int): IO[A] =
