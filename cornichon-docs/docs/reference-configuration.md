@@ -56,7 +56,7 @@ Controls the number of concurrent scenarios: `factor * number of CPUs + 1`. Incr
 
 Default: `false`
 
-When enabled, prints the full details of every HTTP request and response to the console. Useful for debugging but very verbose.
+When enabled, prints the full details of every outgoing HTTP request to the console — method, URL, parameters, headers and body. Useful for debugging but very verbose. Responses are not printed; use `show_last_response` for that.
 
 ### warnOnDuplicateHeaders
 
