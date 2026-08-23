@@ -358,4 +358,77 @@ class JsonPathSpec extends FunSuite {
     assert(path.removeFromJson(json) == Json.obj("a" -> Json.obj("c" -> Json.fromInt(2))))
   }
 
+  private def removeFrom(path: String, rawJson: String): Json =
+    JsonPath.parse(path).toOption.get.removeFromJson(CornichonJson.parseDslJsonUnsafe(rawJson))
+
+  test("removeFromJson through a projection removes the field from every element") {
+    val json = """{ "items": [ {"a": 1, "b": 2}, {"a": 3, "b": 4}, {"a": 5, "b": 6} ] }"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "items": [ {"a": 1}, {"a": 3}, {"a": 5} ] }""")
+    assert(removeFrom("items[*].b", json) == expected)
+  }
+
+  test("removeFromJson through a root projection removes the field from every element") {
+    val json = """[ {"a": 1, "b": 2}, {"a": 3, "b": 4} ]"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""[ {"a": 1}, {"a": 3} ]""")
+    assert(removeFrom("$[*].b", json) == expected)
+  }
+
+  test("removeFromJson through nested projections") {
+    val json = """{ "rows": [ { "cells": [ {"v": 1, "k": "a"}, {"v": 2, "k": "b"} ] }, { "cells": [ {"v": 3, "k": "c"} ] } ] }"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "rows": [ { "cells": [ {"v": 1}, {"v": 2} ] }, { "cells": [ {"v": 3} ] } ] }""")
+    assert(removeFrom("rows[*].cells[*].k", json) == expected)
+  }
+
+  test("removeFromJson through a projection into a deeper object") {
+    val json = """{ "items": [ {"meta": {"id": 1, "tmp": true}}, {"meta": {"id": 2, "tmp": false}} ] }"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "items": [ {"meta": {"id": 1}}, {"meta": {"id": 2}} ] }""")
+    assert(removeFrom("items[*].meta.tmp", json) == expected)
+  }
+
+  test("removeFromJson on a terminal projection empties the array") {
+    val json = """{ "items": [ 1, 2, 3 ], "other": 1 }"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "items": [], "other": 1 }""")
+    assert(removeFrom("items[*]", json) == expected)
+  }
+
+  test("removeFromJson on an array element by index") {
+    val json = """{ "items": [ 1, 2, 3 ] }"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "items": [ 1, 3 ] }""")
+    assert(removeFrom("items[1]", json) == expected)
+  }
+
+  test("removeFromJson on a field of an array element by index") {
+    val json = """{ "items": [ {"a": 1, "b": 2}, {"a": 3, "b": 4} ] }"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "items": [ {"a": 1, "b": 2}, {"a": 3} ] }""")
+    assert(removeFrom("items[1].b", json) == expected)
+  }
+
+  test("removeFromJson is a no-op when the projected field is not an array") {
+    val json = """{ "items": { "a": 1 } }"""
+    assert(removeFrom("items[*].a", json) == CornichonJson.parseDslJsonUnsafe(json))
+  }
+
+  test("removeFromJson is a no-op when an index is out of bounds") {
+    val json = """{ "items": [ 1, 2 ] }"""
+    assert(removeFrom("items[5]", json) == CornichonJson.parseDslJsonUnsafe(json))
+  }
+
+  test("removeFromJson through a projection skips elements that lack the field") {
+    val json = """{ "items": [ {"a": 1, "b": 2}, {"a": 3} ] }"""
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "items": [ {"a": 1}, {"a": 3} ] }""")
+    assert(removeFrom("items[*].b", json) == expected)
+  }
+
+  test("removeFromJson on the root path drops the whole document") {
+    // relied upon by MatcherResolver when the matcher is the whole payload
+    assert(JsonPath.rootPath.removeFromJson(Json.obj("a" -> Json.fromInt(1))) == Json.Null)
+  }
+
+  test("removeFieldsByPath applies every path, projections included") {
+    val json = CornichonJson.parseDslJsonUnsafe("""{ "items": [ {"a": 1, "b": 2}, {"a": 3, "b": 4} ], "top": 9 }""")
+    val paths = List(JsonPath.parse("items[*].b").toOption.get, JsonPath.parse("top").toOption.get)
+    val expected = CornichonJson.parseDslJsonUnsafe("""{ "items": [ {"a": 1}, {"a": 3} ] }""")
+    assert(CornichonJson.removeFieldsByPath(json, paths) == expected)
+  }
+
 }
