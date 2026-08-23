@@ -16,11 +16,12 @@ abstract class GenericAssertStepBuilder[A: Show: Order: Diff] {
       action = s =>
         Assertion.either {
           sessionExtractor(s).map { case (asserted, source) =>
+            // both assertions take (expected, actual) in that order - `asserted` is the actual value
             source match {
               case None =>
-                GenericEqualityAssertion(asserted, expected)
+                GenericEqualityAssertion(expected, asserted)
               case Some(info) =>
-                CustomMessageEqualityAssertion(asserted, expected, () => s"'${asserted.show}' was not equal to '${expected.show}' for context\n${info()}")
+                CustomMessageEqualityAssertion(expected, asserted, () => s"'${asserted.show}' was not equal to '${expected.show}' for context\n${info()}")
             }
           }
         }
