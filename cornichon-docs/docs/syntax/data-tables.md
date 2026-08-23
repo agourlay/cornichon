@@ -87,15 +87,22 @@ WithDataInputs("""
 }
 ```
 
-For more complex inputs, [`WithJsonDataInputs`](../dsl/wrapper-steps.md) accepts a JSON array instead of a table:
+`WithDataInputs` unwraps each cell to a plain string, which is why `"200"` above reaches
+`<expected_status>` as `200`. When a value has to stay a JSON literal, use
+[`WithJsonDataInputs`](../dsl/wrapper-steps.md) instead. It reads the same data table — only the
+stored form differs:
 
 ```scala
 WithJsonDataInputs("""
-[
-  { "a": "1", "b": "3", "c": "4" },
-  { "a": "7", "b": "4", "c": "11" }
-]
+  | nickname | age  |
+  | "Bats"   | 40   |
+  | null     | null |
 """) {
-  Then assert a_plus_b_equals_c
+  When I post("/heroes").withBody("""{ "nickname": <nickname>, "age": <age> }""")
+  Then assert status.is(201)
 }
 ```
+
+With `WithDataInputs` the first row would splice in `Bats` without its quotes, and `null` would become
+an empty string — neither is valid JSON. `WithJsonDataInputs` keeps each cell exactly as written, so
+both rows produce a valid body.

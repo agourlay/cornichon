@@ -144,21 +144,25 @@ def a_plus_b_equals_c =
   AssertStep("sum of 'a' + 'b' = 'c'", sc => GenericEqualityAssertion(sc.session.getUnsafe("a").toInt + sc.session.getUnsafe("b").toInt, sc.session.getUnsafe("c").toInt))
 ```
 
-- repeat a series of steps with different inputs specified via JSON
+- repeat a series of steps over the same data table, keeping each cell in its raw JSON form
 
 ```scala
 WithJsonDataInputs(
   """
-  [
-    { "a": "1", "b": "3", "c": "4" },
-    { "a": "7", "b": "4", "c": "11" },
-    { "a": "1", "b": "-1", "c": "0" }
-  ]
+    | nickname | age  |
+    | "Bats"   | 40   |
+    | null     | null |
   """
 ) {
-  Then assert a_plus_b_equals_c
+  When I post("/heroes").withBody("""{ "nickname": <nickname>, "age": <age> }""")
+  Then assert status.is(201)
 }
 ```
+
+`WithJsonDataInputs` takes the same data table as `WithDataInputs`; only what lands in the session
+differs. `WithDataInputs` unwraps each cell to a plain string — `"Bats"` becomes `Bats` and `null`
+becomes an empty string — while `WithJsonDataInputs` keeps the raw JSON, so both stay valid JSON
+literals when spliced into a body.
 
 - WithHeaders automatically sets headers for several steps useful for an authenticated scenario.
 
