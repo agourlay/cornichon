@@ -43,6 +43,12 @@ object MainRunner {
       println("Starting feature classes discovery")
       val classes = discoverFeatureClasses(packageToScan)
       println(s"Found ${classes.size} feature classes")
+      if (classes.isEmpty) {
+        // Classpath scanning cannot tell a mistyped package from an empty one, and an empty run
+        // otherwise reports success - so a typo in `--packageToScan` would exit 0 having run nothing.
+        System.err.println(s"ERROR: no feature class found in package '$packageToScan'")
+        sys.exit(1)
+      }
       val scenarioNameFilterSet = scenarioNameFilter.toSet
       val f = Stream
         .iterable[IO, Class[_]](classes)
