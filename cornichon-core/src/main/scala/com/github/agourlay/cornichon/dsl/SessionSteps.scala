@@ -40,7 +40,7 @@ object SessionSteps {
   case class SessionStepBuilder(private val sessionKey: SessionKey, private val prettySessionKeyTitle: Option[String] = None) {
     private val key = sessionKey.name
     private val index = sessionKey.index
-    private val target = prettySessionKeyTitle.getOrElse(s"session key '$key'")
+    private val target: String = prettySessionKeyTitle.getOrElse(s"session key '$key'")
 
     def atIndex(index: Int): SessionStepBuilder = copy(sessionKey = sessionKey.copy(index = Some(index)))
 

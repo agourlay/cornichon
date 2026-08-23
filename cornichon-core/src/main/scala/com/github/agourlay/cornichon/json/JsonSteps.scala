@@ -67,7 +67,7 @@ object JsonSteps {
     private val whitelist: Boolean = false
   ) {
 
-    private val target = prettySessionKeyTitle.getOrElse(s"session key '${sessionKey.name}'")
+    private val target: String = prettySessionKeyTitle.getOrElse(s"session key '${sessionKey.name}'")
 
     def path(path: String): JsonStepBuilder = copy(jsonPath = path)
 
@@ -355,7 +355,7 @@ object JsonSteps {
     private val prettySessionKeyTitle: Option[String] = None
   ) {
 
-    private val target = prettySessionKeyTitle.getOrElse(sessionKey)
+    private val target: String = prettySessionKeyTitle.getOrElse(s"session key '${sessionKey.name}'")
 
     def inOrder: JsonArrayStepBuilder = copy(ordered = true)
 
@@ -457,12 +457,12 @@ object JsonSteps {
     }
 
     def not_contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = true, target.toString, jsonPath, elements: _*)
+      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = true, target, jsonPath, elements: _*)
       bodyContainsElements(title, elements, expected = false)
     }
 
     def contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = false, target.toString, jsonPath, elements: _*)
+      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = false, target, jsonPath, elements: _*)
       bodyContainsElements(title, elements, expected = true)
     }
 
@@ -482,7 +482,7 @@ object JsonSteps {
       )
 
     def containsExactly[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val title = jsonArrayContainsTitleBuilder(exactly = true, negate = false, target.toString, jsonPath, elements: _*)
+      val title = jsonArrayContainsTitleBuilder(exactly = true, negate = false, target, jsonPath, elements: _*)
       bodyContainsExactlyElements(title, elements)
     }
 

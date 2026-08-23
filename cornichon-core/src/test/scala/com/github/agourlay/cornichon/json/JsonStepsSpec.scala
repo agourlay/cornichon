@@ -929,4 +929,23 @@ class JsonStepsSpec extends FunSuite with CommonTestSuite {
     }
   }
 
+  // without a pretty title the builder falls back to naming the session key - it used to render the
+  // raw `SessionKey` case class because `getOrElse` widened away from String
+  test("JsonArrayStepBuilder titles name the session key when there is no pretty title") {
+    val builder = JsonStepBuilder(SessionKey("my-key")).asArray
+    assertEquals(builder.isNotEmpty.title, "session key 'my-key' array size is not empty")
+    assertEquals(builder.hasSize(3).title, "session key 'my-key' array size is '3'")
+    assertEquals(builder.size.is(3).title, "session key 'my-key' array size is '3'")
+    assertEquals(builder.contains("a").title, "session key 'my-key' array contains\na")
+    assertEquals(builder.not_contains("a").title, "session key 'my-key' array does not contain\na")
+    assertEquals(builder.containsExactly("a").title, "session key 'my-key' array contains exactly\na")
+    assertEquals(builder.is("[]").title, "session key 'my-key' array is\n[]")
+  }
+
+  test("JsonArrayStepBuilder titles use the pretty title when there is one") {
+    val builder = JsonStepBuilder(SessionKey("my-key"), Some("response body")).asArray
+    assertEquals(builder.isNotEmpty.title, "response body array size is not empty")
+    assertEquals(builder.contains("a").title, "response body array contains\na")
+  }
+
 }
