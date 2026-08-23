@@ -45,7 +45,9 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[Str
               depth,
               Some(executionTime)
             ) +: repeatedState.logStack :+ failedTitleLog(depth)
-            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries, failedStep.errors))
+            // `retries` counts completed occurrences, so the failing one is the next - which is also
+            // what the `indexName` session key held during that run
+            val artificialFailedStep = FailedStep.fromSingle(failedStep.step, RepeatBlockContainFailedSteps(retries + 1, failedStep.errors))
             (wrappedLogStack, Left(artificialFailedStep))
           },
           _ => {

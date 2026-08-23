@@ -24,7 +24,7 @@ class RepeatStepSpec extends FunSuite with CommonTestSuite {
           |always fails
           |
           |with error(s):
-          |Repeat block failed at occurrence 0
+          |Repeat block failed at occurrence 1
           |caused by:
           |expected result was:
           |'true'
@@ -83,6 +83,34 @@ class RepeatStepSpec extends FunSuite with CommonTestSuite {
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(cleanupRan.get(), "Cleanup step from inside Repeat was not executed")
+  }
+
+  test("reports the failing occurrence with the same numbering as the exposed index") {
+    val indexKeyName = "my-index"
+    val nested = AssertStep(
+      "fails on the third occurrence",
+      sc => GenericEqualityAssertion(true, sc.session.getUnsafe(indexKeyName) != "3")
+    ) :: Nil
+    val repeatStep = RepeatStep(nested, 5, Some(indexKeyName))
+    val s = Scenario("with Repeat", repeatStep :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    scenarioFailsWithMessage(res) {
+      """Scenario 'with Repeat' failed:
+          |
+          |at step:
+          |fails on the third occurrence
+          |
+          |with error(s):
+          |Repeat block failed at occurrence 3
+          |caused by:
+          |expected result was:
+          |'true'
+          |but actual result is:
+          |'false'
+          |
+          |seed for the run was '1'
+          |""".stripMargin
+    }
   }
 
 }
