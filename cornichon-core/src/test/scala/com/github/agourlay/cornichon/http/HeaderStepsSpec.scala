@@ -95,4 +95,56 @@ class HeaderStepsSpec extends FunSuite with CommonTestSuite {
     assert(res.isSuccess)
   }
 
+  // a response can legitimately carry no headers - `encodeSessionHeaders` renders that as ""
+  private def emptyHeadersSession = addHeaderToSession(Session.newEmpty)()
+
+  test("decodeSessionHeaders on an empty encoding yields no headers") {
+    assertEquals(decodeSessionHeaders(""), Right(Nil))
+  }
+
+  test("HeaderStepBuilder hasSize 0 on a response without headers") {
+    val step = HeadersStepBuilder.hasSize(0)
+    val s = Scenario("scenario with HeaderSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(emptyHeadersSession)(s))
+    assert(res.isSuccess)
+  }
+
+  test("HeadersNameStepBuilder is absent on a response without headers") {
+    val step = HeadersStepBuilder.name("test-key").isAbsent
+    val s = Scenario("scenario with HeaderSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(emptyHeadersSession)(s))
+    assert(res.isSuccess)
+  }
+
+  test("HeadersNameStepBuilder is present fails on a response without headers") {
+    val step = HeadersStepBuilder.name("test-key").isPresent
+    val s = Scenario("scenario with HeaderSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(emptyHeadersSession)(s))
+    assert(!res.isSuccess)
+  }
+
+  test("HeaderStepBuilder contain fails on a response without headers") {
+    val step = HeadersStepBuilder.contain("test-key" -> "test")
+    val s = Scenario("scenario with HeaderSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(emptyHeadersSession)(s))
+    assert(!res.isSuccess)
+  }
+
+  test("a failing status assertion renders on a response without headers") {
+    val session = emptyHeadersSession
+      .addValueUnsafe(SessionKeys.lastResponseStatusKey, "500")
+      .addValueUnsafe(SessionKeys.lastResponseBodyKey, "boom")
+      .addValueUnsafe(SessionKeys.lastResponseRequestKey, "GET /thing")
+    val step = com.github.agourlay.cornichon.http.steps.StatusSteps.StatusStepBuilder.is(200)
+    val s = Scenario("scenario with StatusSteps", step :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(session)(s))
+    // the point is that building the failure message does not blow up on the empty header encoding
+    assert(!res.isSuccess)
+    res match {
+      case f: com.github.agourlay.cornichon.core.FailureScenarioReport =>
+        assert(f.msg.contains("expected status code '200' but '500' was received"), f.msg)
+      case other => fail(s"expected a failure report but got $other")
+    }
+  }
+
 }

@@ -33,9 +33,11 @@ object HeadersSteps {
       title = s"headers size is '$expectedSize'",
       action = sc =>
         Assertion.either {
-          sc.session.get(lastResponseHeadersKey).map { sessionHeaders =>
-            CollectionSizeAssertion(sessionHeaders.split(interHeadersValueDelim), expectedSize, "headers")
-          }
+          for {
+            sessionHeaders <- sc.session.get(lastResponseHeadersKey)
+            // decode rather than split: the raw split counts one element for a header-less response
+            sessionHeadersValue <- decodeSessionHeaders(sessionHeaders)
+          } yield CollectionSizeAssertion(sessionHeadersValue.map { case (name, value) => s"$name -> $value" }, expectedSize, "headers")
         }
     )
 

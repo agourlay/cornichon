@@ -196,13 +196,17 @@ object HttpService {
   }
 
   def decodeSessionHeaders(headers: String): Either[CornichonError, List[(String, String)]] =
-    traverseIL(headers.split(interHeadersValueDelim).iterator) { header =>
-      val index = header.indexOf(headersKeyValueDelim.toInt)
-      if (index == -1)
-        Left(BadSessionHeadersEncoding(header))
-      else
-        Right(header.substring(0, index) -> header.substring(index + 1))
-    }
+    // `encodeSessionHeaders` renders no headers as "", and `"".split(delim)` yields one empty
+    // element rather than none - a response without headers is valid, not malformed encoding
+    if (headers.isEmpty) rightNil
+    else
+      traverseIL(headers.split(interHeadersValueDelim).iterator) { header =>
+        val index = header.indexOf(headersKeyValueDelim.toInt)
+        if (index == -1)
+          Left(BadSessionHeadersEncoding(header))
+        else
+          Right(header.substring(0, index) -> header.substring(index + 1))
+      }
 
   private def configureRequest[A](req: HttpRequest[A], config: Config): HttpRequest[A] = {
     if (config.traceRequests)
