@@ -18,7 +18,7 @@ import sangria.marshalling.queryAst._
 import sangria.marshalling.circe._
 
 import scala.annotation.switch
-import scala.collection.compat.immutable.ArraySeq
+import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 

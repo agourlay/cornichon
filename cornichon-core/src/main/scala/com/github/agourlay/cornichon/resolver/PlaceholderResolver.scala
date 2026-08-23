@@ -7,7 +7,7 @@ import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
 import com.github.agourlay.cornichon.util.StringUtils
 
-import scala.collection.compat.immutable.ArraySeq
+import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ListBuffer
 
 object PlaceholderResolver {
