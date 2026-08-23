@@ -46,7 +46,7 @@ object CornichonFeatureRunner {
               .runFeature(filterScenarios(scenarioNameFilter))(generateResultEvent(featureInfo, eventHandler))
               .map { results =>
                 results.foreach(printResultLogs(featureInfo.featureClass))
-                results.forall(_.isSuccess)
+                noScenarioFailed(results)
               }
               .handleError { e =>
                 val banner =
@@ -64,6 +64,12 @@ object CornichonFeatureRunner {
         featureRun
     }
   }
+
+  // Ignored and pending scenarios are not successes, but they are not failures either - only a real
+  // failure should fail the run. SBT already draws that line through `Status.Ignored` / `Status.Pending`,
+  // while `MainRunner` turns this boolean straight into its exit code.
+  private def noScenarioFailed(results: List[ScenarioReport]): Boolean =
+    !results.exists(_.isInstanceOf[FailureScenarioReport])
 
   private def filterScenarios(scenarioNameFilter: Set[String])(s: Scenario): Boolean =
     if (scenarioNameFilter.isEmpty)
