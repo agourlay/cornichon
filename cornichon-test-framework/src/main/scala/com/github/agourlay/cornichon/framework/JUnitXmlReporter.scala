@@ -6,7 +6,7 @@ import java.io.{File, PrintWriter}
 import java.net.{InetAddress, UnknownHostException}
 import java.text.SimpleDateFormat
 import java.util.Properties
-import sbt.testing.{Event, Status}
+import sbt.testing.{Event, Status, TestSelector}
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
@@ -54,7 +54,7 @@ object JUnitXmlReporter {
     val failures: Int = events.count(_.status() == Status.Failure)
 
     val testCases: List[TestCase] = events.map { e =>
-      val tc = TestCase(e.fullyQualifiedName(), e.duration())
+      val tc = TestCase(testCaseName(e), e.duration())
       e.status() match {
         case Status.Canceled => tc.copy(canceled = true)
         case Status.Failure  => tc.copy(failure = Option.apply(e.throwable().get()))
@@ -65,6 +65,14 @@ object JUnitXmlReporter {
     }
 
   }
+
+  // Scenario events all share the feature class as their `fullyQualifiedName`; the scenario name is
+  // carried by the selector, so naming test cases after the FQN would give every case the same name.
+  private def testCaseName(e: Event): String =
+    e.selector() match {
+      case ts: TestSelector => ts.testName()
+      case _                => e.fullyQualifiedName()
+    }
 
   private case class TestCase(
     name: String,
