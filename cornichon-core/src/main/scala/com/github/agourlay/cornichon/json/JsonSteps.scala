@@ -387,7 +387,7 @@ object JsonSteps {
 
     def is[A: Show: Resolvable: Encoder](expected: Either[CornichonError, A]): AssertStep = expected match {
       case Left(e) =>
-        val titleBuilder = arrayTargetTitleBuilder(target, jsonPath)
+        val titleBuilder = arrayTargetTitleBuilder(target, jsonPath, trailingSpace = false)
         AssertStep(jsonAssertionTitleBuilder(titleBuilder, ignoredEachKeys), _ => Assertion.either(e.asLeft))
       case Right(a) =>
         is(a)
@@ -509,16 +509,17 @@ object JsonSteps {
 
   // common array title preamble: the target followed by the optional JSON path focus
   // e.g. "session key 'my-key''s array 'a.b' " - the assertion specific part is appended by the caller
-  private def arrayTargetTitleBuilder(target: String, jsonPath: String): StringBuilder = {
+  // `trailingSpace` separates the preamble from that part, it is not wanted when nothing follows
+  private def arrayTargetTitleBuilder(target: String, jsonPath: String, trailingSpace: Boolean = true): StringBuilder = {
     val builder = new StringBuilder()
     builder.append(target)
     if (jsonPath == JsonPath.root)
-      builder.append(" array ")
+      builder.append(" array")
     else {
       builder.append("'s array ")
       quoteInto(builder, jsonPath)
-      builder.append(" ")
     }
+    if (trailingSpace) builder.append(" ")
     builder
   }
 
