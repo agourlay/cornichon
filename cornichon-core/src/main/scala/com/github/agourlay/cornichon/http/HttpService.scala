@@ -64,7 +64,7 @@ class HttpService(baseUrl: String, requestTimeout: FiniteDuration, client: HttpC
       tuple <- EitherT.fromEither[IO](resolveRequestParts(r.url, r.body, r.params, r.headers, ignoreFromWithHeaders)(scenarioContext))
       (url, jsonBody, params, headers) = tuple
       resolvedRequest = HttpRequest(r.method, url, jsonBody, params, headers)
-      configuredRequest = configureRequest(resolvedRequest, config)
+      configuredRequest <- EitherT.fromEither[IO](configureRequest(resolvedRequest, config))
       resp <- client.runRequest(configuredRequest, requestTimeout)
       newSession <- EitherT.fromEither[IO](handleResponse(resp, configuredRequest.detailedDescription, expectedStatus, extractor)(scenarioContext.session))
     } yield newSession
@@ -208,7 +208,7 @@ object HttpService {
           Right(header.substring(0, index) -> header.substring(index + 1))
       }
 
-  private def configureRequest[A](req: HttpRequest[A], config: Config): HttpRequest[A] = {
+  private def configureRequest[A](req: HttpRequest[A], config: Config): Either[CornichonError, HttpRequest[A]] = {
     if (config.traceRequests)
       println(DebugLogInstruction(req.detailedDescription, 1).colorized)
     if (config.warnOnDuplicateHeaders || config.failOnDuplicateHeaders) {
@@ -216,9 +216,9 @@ object HttpService {
       if (config.warnOnDuplicateHeaders && hasDuplicates)
         println(WarningLogInstruction(s"\n**Warning**\nduplicate headers detected in request:\n${req.detailedDescription}", 1).colorized)
       if (config.failOnDuplicateHeaders && hasDuplicates)
-        throw BasicError(s"duplicate headers detected in request:\n${req.detailedDescription}").toException
+        return Left(BasicError(s"duplicate headers detected in request:\n${req.detailedDescription}"))
     }
-    req
+    Right(req)
   }
 
   private def ignoreHeadersSelection(headers: Seq[(String, String)], ignore: HeaderSelection): Seq[(String, String)] =
