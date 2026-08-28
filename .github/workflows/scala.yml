@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 11 matches the bytecode target (-java-output-version:11), 26 is the latest JDK
-        java: [ '11', '26' ]
+        # 17 matches the bytecode target (-java-output-version:17), 26 is the latest JDK
+        java: [ '17', '26' ]
     steps:
       - uses: actions/checkout@v7
 

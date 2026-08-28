@@ -2,7 +2,7 @@ pull_request_rules:
   - name: automatically merge scala-steward's PRs
     conditions:
       - author=scala-steward
-      - check-success=Scala CI (JDK 11)
+      - check-success=Scala CI (JDK 17)
       - check-success=Scala CI (JDK 26)
     actions:
       merge:
@@ -10,7 +10,7 @@ pull_request_rules:
   - name: automatically merge dependabot's PRs
     conditions:
       - author=dependabot[bot]
-      - check-success=Scala CI (JDK 11)
+      - check-success=Scala CI (JDK 17)
       - check-success=Scala CI (JDK 26)
     actions:
       merge:

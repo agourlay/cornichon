@@ -11,8 +11,7 @@ val compilerOptions = Seq(
   "-unchecked",
   "-feature",
   "-language:implicitConversions",
-  "-java-output-version:11", // pin bytecode target so the JDK in use can't silently change it
-  "-Yfuture-lazy-vals", // thread-safe lazy val initialization without object monitors (Scala 3.3.8+)
+  "-java-output-version:17", // pin bytecode target so the JDK in use can't silently change it
   "-Wunused:all",
   "-Wnonunit-statement",
   "-Wvalue-discard",
@@ -24,7 +23,7 @@ lazy val standardSettings = Seq(
   organization := "com.github.agourlay",
   description := "An extensible Scala DSL for testing JSON HTTP APIs.",
   homepage := Some(url("https://github.com/agourlay/cornichon")),
-  scalaVersion := "3.3.8",
+  scalaVersion := "3.9.0",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   Test / fork := true,
   scalacOptions ++= compilerOptions,
