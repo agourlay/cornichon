@@ -71,27 +71,26 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   // Validate the key adding it to the session
   def addValue(key: String, value: String): Either[CornichonError, Session] =
-    if (key.isBlank)
-      Left(EmptyKey)
-    else if (Session.containsForbiddenKeyChar(key))
-      Left(IllegalKey(key))
-    else
-      Right(Session(updateContent(content)(key, value)))
+    Session.keyError(key) match {
+      case Some(e) => Left(e)
+      case None    => Right(Session(updateContent(content)(key, value)))
+    }
 
   def addValueUnsafe(key: String, value: String): Session =
     addValue(key, value).valueUnsafe
 
+  // Accumulates on the raw content to avoid boxing a `Session` and a `Right` per tuple
   def addValues(tuples: (String, String)*): Either[CornichonError, Session] = {
-    var resultSession = this
+    var acc = content
     val it = tuples.iterator
     while (it.hasNext) {
       val (k, v) = it.next()
-      resultSession.addValue(k, v) match {
-        case e @ Left(_)       => return e
-        case Right(newSession) => resultSession = newSession
+      Session.keyError(k) match {
+        case Some(e) => return Left(e)
+        case None    => acc = updateContent(acc)(k, v)
       }
     }
-    Right(resultSession)
+    Right(Session(acc))
   }
 
   def addValuesUnsafe(tuples: (String, String)*): Session =
@@ -124,6 +123,15 @@ object Session {
     notAllowedInKey.foreach(c => table(c.toInt) = true)
     table
   }
+
+  // `None` is a singleton so key validation stays allocation-free on the happy path
+  private def keyError(key: String): Option[CornichonError] =
+    if (key.isBlank)
+      Some(EmptyKey)
+    else if (containsForbiddenKeyChar(key))
+      Some(IllegalKey(key))
+    else
+      None
 
   // Single pass over the key with O(1) lookup per char,
   // instead of one `key.contains` scan per forbidden char.
