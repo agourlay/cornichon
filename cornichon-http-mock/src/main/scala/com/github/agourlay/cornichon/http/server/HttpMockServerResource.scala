@@ -9,7 +9,8 @@ import io.circe.Json
 case class HttpMockServerResource(interface: Option[String], label: String, portRange: Option[Range], maxPortBindingRetries: Int) extends BlockScopedResource {
 
   private val interfaceInfo = interface.fold("")(i => s" on interface `$i`")
-  private val portsInfo = portRange.fold("")(r => s" using a port in range `${r.start}..${r.end}`")
+  // `Range` is end-exclusive and `MockHttpServer` tries exactly `r.toList`, so `last` is the highest port actually attempted
+  private val portsInfo = portRange.fold("")(r => if (r.isEmpty) "" else s" using a port in range `${r.start}..${r.last}`")
 
   val sessionTarget: String = label
   val openingTitle: String = s"Starting HTTP mock server '$label'$interfaceInfo$portsInfo"
