@@ -13,13 +13,7 @@ trait Assertion { self =>
     lazy val validated = self.validated *> other.validated
   }
 
-  infix def andAll(others: Seq[Assertion]): Assertion =
-    if (others.isEmpty)
-      self
-    else
-      new Assertion {
-        lazy val validated = others.fold(self)(_ and _).validated
-      }
+  infix def andAll(others: Seq[Assertion]): Assertion = others.fold(self)(_ and _)
 
   infix def or(other: Assertion): Assertion = new Assertion {
     lazy val validated =
