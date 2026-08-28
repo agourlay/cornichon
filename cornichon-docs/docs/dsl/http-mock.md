@@ -17,7 +17,7 @@ Your feature class must also extend the `HttpMockDsl` trait.
 The API is `HttpListenTo(interface, portRange)(label)`. It is common to define a convenience alias:
 
 ```scala
-def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 8085))) _
+def HttpMock = HttpListenTo(interface = None, portRange = Some(Range(8080, 8085)))
 ```
 
 The examples below assume this alias is defined.

@@ -60,7 +60,7 @@ Usage:
 
 ```scala
 // Define once
-val coinGen = fromScalacheck("a Coin", Gen.oneOf(Head, Tail)) _
+val coinGen = fromScalacheck("a Coin", Gen.oneOf(Head, Tail))
 
 // Use in for_all or check_model
 check for_all("flip coins", 100, coinGen) { coin =>
