@@ -42,7 +42,7 @@ trait CoreDsl {
 
   sealed trait Starters extends Dynamic {
     def name: String
-    def applyDynamic(mandatoryWord: String)(step: Step): Step = step.setTitle(s"$name $mandatoryWord ${step.title}")
+    infix def applyDynamic(mandatoryWord: String)(step: Step): Step = step.setTitle(s"$name $mandatoryWord ${step.title}")
   }
 
   case object When extends Starters { val name = "When" }

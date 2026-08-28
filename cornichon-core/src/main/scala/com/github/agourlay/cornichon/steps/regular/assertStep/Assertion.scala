@@ -9,11 +9,11 @@ import com.github.agourlay.cornichon.core.Done._
 trait Assertion { self =>
   def validated: ValidatedNel[CornichonError, Done]
 
-  def and(other: Assertion): Assertion = new Assertion {
+  infix def and(other: Assertion): Assertion = new Assertion {
     lazy val validated = self.validated *> other.validated
   }
 
-  def andAll(others: Seq[Assertion]): Assertion =
+  infix def andAll(others: Seq[Assertion]): Assertion =
     if (others.isEmpty)
       self
     else
@@ -21,7 +21,7 @@ trait Assertion { self =>
         lazy val validated = others.fold(self)(_ and _).validated
       }
 
-  def or(other: Assertion): Assertion = new Assertion {
+  infix def or(other: Assertion): Assertion = new Assertion {
     lazy val validated =
       if (self.validated.isValid || other.validated.isValid)
         validDone
