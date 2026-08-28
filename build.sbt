@@ -14,9 +14,7 @@ val compilerOptions = Seq(
   "-java-output-version:17", // pin bytecode target so the JDK in use can't silently change it
   "-Wunused:all",
   "-Wnonunit-statement",
-  "-Wvalue-discard",
-  // sangria's deriveObjectType macro consumes circe-generic auto-derived implicits the compiler can't see
-  "-Wconf:msg=unused import&src=.*GraphQLSuperMicroService\\.scala:s"
+  "-Wvalue-discard"
 )
 
 lazy val standardSettings = Seq(
