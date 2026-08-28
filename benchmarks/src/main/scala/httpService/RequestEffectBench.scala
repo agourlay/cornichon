@@ -37,7 +37,7 @@ class RequestEffectBench {
 
 object RequestEffectBench {
   val client = new NoOpHttpClient
-  val httpService = new HttpService("", 2000.millis, client, Config())(cats.effect.unsafe.implicits.global)
+  val httpService = new HttpService("", 2000.millis, client, Config())(using cats.effect.unsafe.implicits.global)
 
   val scenarioContext = ScenarioContext.empty
 

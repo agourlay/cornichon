@@ -428,12 +428,12 @@ object JsonSteps {
     }
 
     def not_contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = true, target, jsonPath, elements: _*)
+      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = true, target, jsonPath, elements*)
       bodyContainsElements(title, elements, expected = false)
     }
 
     def contains[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = false, target, jsonPath, elements: _*)
+      val title = jsonArrayContainsTitleBuilder(exactly = false, negate = false, target, jsonPath, elements*)
       bodyContainsElements(title, elements, expected = true)
     }
 
@@ -453,7 +453,7 @@ object JsonSteps {
       )
 
     def containsExactly[A: Show: Resolvable: Encoder](elements: A*): AssertStep = {
-      val title = jsonArrayContainsTitleBuilder(exactly = true, negate = false, target, jsonPath, elements: _*)
+      val title = jsonArrayContainsTitleBuilder(exactly = true, negate = false, target, jsonPath, elements*)
       bodyContainsExactlyElements(title, elements)
     }
 

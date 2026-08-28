@@ -95,7 +95,7 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
   }
 
   def addValuesUnsafe(tuples: (String, String)*): Session =
-    addValues(tuples: _*).valueUnsafe
+    addValues(tuples*).valueUnsafe
 
   def removeKey(key: String): Session =
     Session(content - key)

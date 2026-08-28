@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples.propertyCheck.webShop
 
+import scala.compiletime.uninitialized
+
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.steps.check.checkModel.{Model, ModelRunner, Property1}
 import com.github.agourlay.cornichon.framework.examples.HttpServer
@@ -33,7 +35,7 @@ class WebShopCheck extends CornichonFeature {
 
   val maxIndexSyncTimeout = 1.seconds
 
-  var server: HttpServer = _
+  var server: HttpServer = uninitialized
 
   // Starts up test server
   beforeFeature {

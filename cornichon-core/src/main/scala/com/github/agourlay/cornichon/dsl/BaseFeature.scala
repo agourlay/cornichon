@@ -51,9 +51,9 @@ object BaseFeature {
     case Left(e)  => throw e
   }
 
-  private val hooks = new ConcurrentLinkedDeque[() => Future[_]]()
+  private val hooks = new ConcurrentLinkedDeque[() => Future[?]]()
 
-  def addShutdownHook(h: () => Future[_]): Unit =
+  def addShutdownHook(h: () => Future[?]): Unit =
     hooks.push(h)
 
   def shutDownGlobalResources(): Future[Unit] = {

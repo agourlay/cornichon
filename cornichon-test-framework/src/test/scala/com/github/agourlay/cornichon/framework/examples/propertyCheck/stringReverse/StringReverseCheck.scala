@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples.propertyCheck.stringReverse
 
+import scala.compiletime.uninitialized
+
 import com.github.agourlay.cornichon.CornichonFeature
 import com.github.agourlay.cornichon.core.{Generator, RandomContext, ValueGenerator}
 import com.github.agourlay.cornichon.framework.examples.HttpServer
@@ -33,7 +35,7 @@ class StringReverseCheck extends CornichonFeature {
   // CI can be slow, increase from default 2 seconds
   override lazy val requestTimeout = 5.second
 
-  var server: HttpServer = _
+  var server: HttpServer = uninitialized
 
   // Starts up test server
   beforeFeature {

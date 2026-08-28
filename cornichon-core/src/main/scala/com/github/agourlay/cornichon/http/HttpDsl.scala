@@ -31,13 +31,13 @@ import scala.collection.immutable.ArraySeq
 import scala.concurrent.duration._
 
 trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
-  this: BaseFeature with JsonDsl with CoreDsl =>
+  this: BaseFeature & JsonDsl & CoreDsl =>
 
   lazy val requestTimeout: FiniteDuration = config.requestTimeout
   lazy val baseUrl: String = config.globalBaseUrl
 
   def httpServiceByURL(baseUrl: String, timeout: FiniteDuration = requestTimeout) =
-    new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, config)(cats.effect.unsafe.implicits.global)
+    new HttpService(baseUrl, timeout, HttpDsl.globalHttpClient, config)(using cats.effect.unsafe.implicits.global)
 
   lazy val http: HttpService = httpServiceByURL(baseUrl, requestTimeout)
 
@@ -93,8 +93,8 @@ trait HttpDsl extends HttpDslOps with HttpRequestsDsl {
   implicit def queryGqlToHttpRequest(queryGQL: QueryGQL): HttpRequest[String] =
     post(queryGQL.url)
       .withBody(queryGQL.payload)
-      .withParams(queryGQL.params: _*)
-      .withHeaders(queryGQL.headers: _*)
+      .withParams(queryGQL.params*)
+      .withHeaders(queryGQL.headers*)
 
   def query_gql(url: String): QueryGQL =
     QueryGQL(url, QueryGQL.emptyDocument, None, None, Nil, Nil)

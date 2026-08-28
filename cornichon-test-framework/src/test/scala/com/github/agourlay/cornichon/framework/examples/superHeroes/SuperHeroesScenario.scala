@@ -1,5 +1,7 @@
 package com.github.agourlay.cornichon.framework.examples.superHeroes
 
+import scala.compiletime.uninitialized
+
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import com.github.agourlay.cornichon.CornichonFeature
@@ -909,7 +911,7 @@ class SuperHeroesScenario extends CornichonFeature {
   // CI can be slow, increase from default 2 seconds
   override lazy val requestTimeout = 5.second
 
-  var server: HttpServer = _
+  var server: HttpServer = uninitialized
 
   // Starts up test server
   beforeFeature {

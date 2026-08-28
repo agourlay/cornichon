@@ -44,7 +44,7 @@ object RunFeatureBench {
   private val setupSession = EffectStep.fromSyncE("setup session", _.session.addValues("v1" -> "value 1", "v2" -> "value 2", "v3" -> "title", "v4" -> "1", "v5" -> "2"))
 
   val client = new NoOpHttpClient
-  val httpService = new HttpService("", 2000.millis, client, Config())(cats.effect.unsafe.implicits.global)
+  val httpService = new HttpService("", 2000.millis, client, Config())(using cats.effect.unsafe.implicits.global)
 
   val request = HttpRequest[String](
     method = HttpMethods.GET,

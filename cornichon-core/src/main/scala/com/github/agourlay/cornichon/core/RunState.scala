@@ -23,7 +23,7 @@ case class RunState(
   lazy val upperLevelContext: RunState = copy(depth = depth - 1, logStack = Nil, cleanupSteps = Nil)
 
   def withSession(s: Session): RunState = copy(session = s)
-  def addToSession(tuples: Seq[(String, String)]): RunState = withSession(session.addValuesUnsafe(tuples: _*))
+  def addToSession(tuples: Seq[(String, String)]): RunState = withSession(session.addValuesUnsafe(tuples*))
   def addToSession(key: String, value: String): RunState = withSession(session.addValueUnsafe(key, value))
   def mergeSessions(other: Session): RunState = copy(session = session.combine(other))
 

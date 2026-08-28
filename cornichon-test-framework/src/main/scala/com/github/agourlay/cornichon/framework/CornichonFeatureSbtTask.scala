@@ -15,7 +15,7 @@ class CornichonFeatureSbtTask(task: TaskDef, scenarioNameFilter: Set[String], ex
     val fqn = task.fullyQualifiedName()
     val featureInfo = FeatureInfo(fqn, Class.forName(fqn), task.fingerprint(), task.selectors().head)
     val featureTask = loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilter)
-    val _ = Await.result(featureTask.unsafeToFuture()(cats.effect.unsafe.implicits.global), Duration.Inf)
+    val _ = Await.result(featureTask.unsafeToFuture()(using cats.effect.unsafe.implicits.global), Duration.Inf)
     Array.empty
   }
 

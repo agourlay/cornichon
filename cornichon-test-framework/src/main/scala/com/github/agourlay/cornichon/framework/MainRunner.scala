@@ -51,7 +51,7 @@ object MainRunner {
       }
       val scenarioNameFilterSet = scenarioNameFilter.toSet
       val f = Stream
-        .iterable[IO, Class[_]](classes)
+        .iterable[IO, Class[?]](classes)
         .mapAsyncUnordered(featureParallelism) { featureClass =>
           val startedAt = System.currentTimeMillis()
           val featureTypeName = featureClass.getTypeName
@@ -70,7 +70,7 @@ object MainRunner {
         }
         .compile
         .fold(true)(_ && _)
-        .unsafeToFuture()(cats.effect.unsafe.implicits.global)
+        .unsafeToFuture()(using cats.effect.unsafe.implicits.global)
 
       if (Await.result(f, Duration.Inf))
         System.exit(0)
@@ -80,7 +80,7 @@ object MainRunner {
 
   // `CornichonFeature` is a trait, so on the JVM it is an interface - `getSubclasses` finds nothing here.
   // `getStandardClasses` drops interfaces and annotations, leaving the concrete features once abstract ones are filtered out.
-  private def discoverFeatureClasses(packageToExplore: String): List[Class[_]] = {
+  private def discoverFeatureClasses(packageToExplore: String): List[Class[?]] = {
     val scanResult = new ClassGraph().enableClassInfo().acceptPackages(packageToExplore).scan()
     try
       scanResult

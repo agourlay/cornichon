@@ -50,7 +50,7 @@ object ScenarioRunner {
     context.isIgnored(scenario) match {
       case Some(reason) =>
         IO.pure(IgnoreScenarioReport(scenario.name, reason, session))
-      case None if context isPending scenario =>
+      case None if context.isPending(scenario) =>
         IO.pure(PendingScenarioReport(scenario.name, session))
       case _ =>
         val stages = for {

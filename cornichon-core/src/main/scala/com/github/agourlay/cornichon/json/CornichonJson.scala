@@ -346,7 +346,7 @@ object CornichonJson extends CornichonJson {
   extension (sc: StringContext) {
 
     def gqljson(args: Any*): GqlString = {
-      val input = sc.s(args: _*)
+      val input = sc.s(args*)
       GqlString(input)
     }
 

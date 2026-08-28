@@ -38,7 +38,7 @@ class ModelSpec extends FunSuite {
   test("equallyDistributed weights sum to 100") {
     for (n <- 1 to 6) {
       val props = (1 to n).map(i => Property0(description = s"P$i", invariant = () => NoOpStep): PropertyN[NoValue, NoValue, NoValue, NoValue, NoValue, NoValue])
-      val result = Model.equallyDistributed(props: _*)
+      val result = Model.equallyDistributed(props*)
       assertEquals(result.map(_._1).sum, 100, s"weights don't sum to 100 for $n properties")
     }
   }

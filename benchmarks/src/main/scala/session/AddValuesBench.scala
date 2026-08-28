@@ -34,7 +34,7 @@ class AddValuesBench {
       case "4" => fourEntries
       case "8" => eightEntries
     }
-    val s2 = Session.newEmpty.addValues(values: _*)
+    val s2 = Session.newEmpty.addValues(values*)
     assert(s2.isRight)
   }
 

@@ -77,7 +77,7 @@ object CornichonFeatureRunner {
     else
       scenarioNameFilter.contains(s.name)
 
-  private def replayCommand(featureClass: Class[_], scenarioName: String, seed: Long): String =
+  private def replayCommand(featureClass: Class[?], scenarioName: String, seed: Long): String =
     s"""testOnly *${featureClass.getSimpleName} -- "$scenarioName" "--seed=$seed""""
 
   private def generateResultEvent(featureInfo: FeatureInfo, eventHandler: EventHandler)(sr: ScenarioReport): ScenarioReport = {
@@ -85,7 +85,7 @@ object CornichonFeatureRunner {
     sr
   }
 
-  private def printResultLogs(featureClass: Class[_])(sr: ScenarioReport): Unit = sr match {
+  private def printResultLogs(featureClass: Class[?])(sr: ScenarioReport): Unit = sr match {
     case s: SuccessScenarioReport =>
       val msg = s"- ${s.scenarioName} [${s.duration.toMillis} ms]"
       println(SuccessLogInstruction(msg, 0).colorized)
@@ -112,7 +112,7 @@ object CornichonFeatureRunner {
       println(DebugLogInstruction(msg, 0).colorized)
   }
 
-  private def failureErrorMessage(featureClass: Class[_], f: FailureScenarioReport): String =
+  private def failureErrorMessage(featureClass: Class[?], f: FailureScenarioReport): String =
     s"""|- **failed** ${f.scenarioName} [${f.duration.toMillis} ms]
         |
         |  ${f.msg.split('\n').iterator.mkString("\n  ")}
@@ -151,4 +151,4 @@ object CornichonFeatureRunner {
 
 }
 
-case class FeatureInfo(fullyQualifiedName: String, featureClass: Class[_], fingerprint: Fingerprint, selector: Selector)
+case class FeatureInfo(fullyQualifiedName: String, featureClass: Class[?], fingerprint: Fingerprint, selector: Selector)

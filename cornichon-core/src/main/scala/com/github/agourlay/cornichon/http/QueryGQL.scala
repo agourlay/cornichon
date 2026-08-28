@@ -31,7 +31,7 @@ case class QueryGQL(
 
   def withVariables(newVariables: (String, VarValue)*): QueryGQL = {
     val vars = newVariables.iterator
-      .map { case (k, v) => k -> parseDslJsonUnsafe(v.value)(v.encoder, v.show) }
+      .map { case (k, v) => k -> parseDslJsonUnsafe(v.value)(using v.encoder, v.show) }
 
     copy(variables = variables.fold(Some(vars.toMap))(v => Some(v ++ vars)))
   }

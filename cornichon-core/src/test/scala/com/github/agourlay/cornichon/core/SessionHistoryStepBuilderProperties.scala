@@ -17,7 +17,7 @@ class SessionHistoryStepBuilderProperties extends Properties("SessionHistoryStep
   property("containsExactly matches regardless of insertion order") = forAll(listAndReverseOrder) { case (list: List[String], reverse: Boolean) =>
     val inputs = if (reverse) list.reverse else list
     val session = inputs.foldLeft(Session.newEmpty) { case (s, input) => s.addValuesUnsafe(testKey -> input) }
-    val step = sessionHistoryStepBuilder.containsExactly(list: _*)
+    val step = sessionHistoryStepBuilder.containsExactly(list*)
     val s = Scenario("scenario with SessionHistorySteps", step :: Nil)
     val t = awaitIO(ScenarioRunner.runScenario(session)(s))
     t.isSuccess

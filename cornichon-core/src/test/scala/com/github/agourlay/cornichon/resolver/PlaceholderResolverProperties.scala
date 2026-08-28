@@ -57,7 +57,7 @@ class PlaceholderResolverProperties extends Properties("PlaceholderResolver") {
 
   property("fillPlaceholders take the right value in session depending on the index") = forAll(keyGen, Gen.nonEmptyListOf(valueGen)) { (key, values) =>
     val input = values.map(v => (key, v))
-    val s = Session.newEmpty.addValuesUnsafe(input: _*)
+    val s = Session.newEmpty.addValuesUnsafe(input*)
     val (lastKey, lastValue) = input.last
     val content = s"<$lastKey[${input.size - 1}]>"
     fillPlaceholders(content)(s, rc, noExtractor) == Right(lastValue)
