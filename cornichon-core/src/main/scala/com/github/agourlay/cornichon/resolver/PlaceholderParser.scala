@@ -30,7 +30,7 @@ object PlaceholderParser {
   private val allowedCharsInPlaceholdersPredicate: CharPredicate = CharPredicate.Visible -- Session.notAllowedInKey
 
   def parse(input: String): Either[CornichonError, Vector[Placeholder]] =
-    if (!input.contains("<"))
+    if (input.indexOf('<') < 0)
       // No need to parse the whole thing
       noPlaceholders
     else {

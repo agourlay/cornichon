@@ -59,6 +59,21 @@ object StringUtils {
     *   - avoid multiple passes on the input string
     *   - avoid creating intermediate strings
     */
+  // Specialisation of `replacePatternsInOrder` for the common case of a single placeholder:
+  // skips the pattern collection entirely and sizes the builder exactly.
+  def replaceSinglePattern(inString: String, pattern: String, newValue: String): String = {
+    val index = inString.indexOf(pattern)
+    if (index == -1) {
+      // this should never happen by contract
+      throw new IllegalArgumentException(s"pattern '$pattern' not found in input string '$inString'")
+    }
+    val sb = new java.lang.StringBuilder(inString.length - pattern.length + newValue.length)
+    sb.append(inString, 0, index)
+    sb.append(newValue)
+    sb.append(inString, index + pattern.length, inString.length)
+    sb.toString
+  }
+
   def replacePatternsInOrder(inString: String, patternsWithReplacement: IndexedSeq[(String, String)]): String = {
     val patternsLen = patternsWithReplacement.length
     if (patternsLen == 0) return inString

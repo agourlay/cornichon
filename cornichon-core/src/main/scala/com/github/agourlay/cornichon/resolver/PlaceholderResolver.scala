@@ -85,7 +85,14 @@ object PlaceholderResolver {
   ): Either[CornichonError, String] = {
     val len = placeholders.length
     if (len == 0) Right(input)
-    else {
+    else if (len == 1) {
+      // fast path: no pattern collection to build, which is the shape of most inputs
+      val ph = placeholders(0)
+      resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode) match {
+        case Right(resolved) => Right(StringUtils.replaceSinglePattern(input, ph.fullKey, resolved))
+        case Left(err)       => Left(err)
+      }
+    } else {
       var i = 0
       val patterns = ArraySeq.newBuilder[(String, String)]
       patterns.sizeHint(len)

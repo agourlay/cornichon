@@ -27,7 +27,7 @@ object MatcherParser {
   private val allowedCharsInMatcher: CharPredicate = CharPredicate.Visible -- MatcherParser.notAllowedInMatchers
 
   def parse(input: String): Either[CornichonError, Vector[MatcherKey]] =
-    if (!input.contains("*"))
+    if (input.indexOf('*') < 0)
       // No need to parse the whole thing
       noMatchers
     else {

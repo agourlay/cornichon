@@ -94,8 +94,13 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
       listBuffer.toList
     }
 
-  private def fromHttp4sHeaders(headers: Headers): ArraySeq[(String, String)] =
-    headers.headers.iterator.map(h => (h.name.toString, h.value)).to(ArraySeq)
+  private val noHeaders: ArraySeq[(String, String)] = ArraySeq.unsafeWrapArray(new Array[(String, String)](0))
+
+  private def fromHttp4sHeaders(headers: Headers): ArraySeq[(String, String)] = {
+    val hs = headers.headers
+    if (hs.isEmpty) noHeaders
+    else headers.headers.iterator.map(h => (h.name.toString, h.value)).to(ArraySeq)
+  }
 
   def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =
     if (moreParams.isEmpty)
