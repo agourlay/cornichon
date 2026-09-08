@@ -267,7 +267,7 @@ lazy val library =
       val fs2 = "3.14.0"
       val classgraph = "4.8.195"
       val decline = "2.6.2"
-      val scalaXml = "2.4.0"
+      val scalaXml = "2.5.0"
       val typesafeConfig = "1.4.9"
       val caffeine = "3.2.4"
     }
