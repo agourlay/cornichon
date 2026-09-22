@@ -269,7 +269,7 @@ lazy val library =
       val decline = "2.6.2"
       val scalaXml = "2.5.0"
       val typesafeConfig = "1.4.9"
-      val caffeine = "3.2.4"
+      val caffeine = "3.3.0"
     }
     val catsCore = "org.typelevel" %% "cats-core" % Version.cats
     val catsEffect = "org.typelevel" %% "cats-effect" % Version.catsEffect
