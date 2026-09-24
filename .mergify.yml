@@ -3,7 +3,7 @@ pull_request_rules:
     conditions:
       - author=scala-steward
       - check-success=Scala CI (JDK 17)
-      - check-success=Scala CI (JDK 26)
+      - check-success=Scala CI (JDK 27)
     actions:
       merge:
         method: merge
@@ -11,7 +11,7 @@ pull_request_rules:
     conditions:
       - author=dependabot[bot]
       - check-success=Scala CI (JDK 17)
-      - check-success=Scala CI (JDK 26)
+      - check-success=Scala CI (JDK 27)
     actions:
       merge:
         method: merge
