@@ -6,6 +6,7 @@ import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.json.CornichonJson
 import com.github.agourlay.cornichon.resolver.PlaceholderGenerator._
 import com.github.agourlay.cornichon.util.StringUtils
+import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ListBuffer
@@ -32,8 +33,14 @@ object PlaceholderResolver {
   private val placeholderGeneratorsByLabel: Map[String, PlaceholderGenerator] =
     builtInPlaceholderGenerators.groupBy(_.key).map { case (k, values) => (k, values.head) } // we know it is not empty
 
+  // The same templates (URLs, bodies, titles) are parsed on every run of a step, cache the parsing result.
+  private val placeholdersCache: Cache[String, Either[CornichonError, Vector[Placeholder]]] = Caffeine.newBuilder().maximumSize(1_000).build()
+
   def findPlaceholders(input: String): Either[CornichonError, Vector[Placeholder]] =
-    PlaceholderParser.parse(input)
+    if (input.indexOf('<') < 0)
+      PlaceholderParser.parse(input) // fast path without placeholders, don't fill the cache with useless entries
+    else
+      placeholdersCache.get(input, PlaceholderParser.parse)
 
   private def resolvePlaceholder(
     ph: Placeholder
