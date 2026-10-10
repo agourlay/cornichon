@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.http
 import cats.Show
 import cats.syntax.show._
 import com.github.agourlay.cornichon.resolver.Resolvable
-import com.github.agourlay.cornichon.util.StringUtils.printArrowPairsBuilder
+import com.github.agourlay.cornichon.util.StringUtils.{printArrowPairsBuilder, printArrowPairsLength}
 import io.circe.Encoder
 
 import scala.concurrent.duration.FiniteDuration
@@ -73,7 +73,16 @@ case class HttpRequest[A: Show: Resolvable: Encoder](method: HttpMethod, url: St
   }
 
   def detailedDescription: String = {
-    val builder = new StringBuilder()
+    // computed for every request: size the builder exactly to avoid growing it while appending
+    val paramsSize = if (params.isEmpty) 18 else 16 + printArrowPairsLength(params) // "without parameters" or "with parameters " + pairs
+    val headersSize = if (headers.isEmpty) 15 else 13 + printArrowPairsLength(headers) // "without headers" or "with headers " + pairs
+    val bodySize = bodyAsString match {
+      case Some(b) => 10 + b.length // "with body\n" + body
+      case None    => 12 // "without body"
+    }
+    // "HTTP " + method + " request to " + url + 3 line breaks
+    val size = 5 + method.name.length + 12 + url.length + 3 + paramsSize + headersSize + bodySize
+    val builder = new StringBuilder(size)
     builder.append("HTTP ")
 
     // method

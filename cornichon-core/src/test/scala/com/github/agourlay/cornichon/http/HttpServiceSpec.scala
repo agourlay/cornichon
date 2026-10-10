@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.http
 
 import cats.effect.unsafe.IORuntime
 import com.github.agourlay.cornichon.core.{Config, ScenarioContext, Session}
-import com.github.agourlay.cornichon.http.HttpMethods.GET
+import com.github.agourlay.cornichon.http.HttpMethods.{GET, POST}
 import com.github.agourlay.cornichon.http.client.Http4sClient
 import munit.FunSuite
 
@@ -71,6 +71,30 @@ class HttpServiceSpec extends FunSuite {
     val encoded = HttpService.encodeSessionHeaders(headers)
     val decoded = HttpService.decodeSessionHeaders(encoded)
     assert(decoded == Right(headers.toList))
+  }
+
+  // the description is visible to users through the `last-response-request` session key
+  test("describe a request in detail") {
+    val request = HttpRequest[String](POST, "http://a/b", Some("""{ "k": "v" }"""), List("p1" -> "v1", "p2" -> "v2"), List("h1" -> "v1"))
+    assertEquals(
+      request.detailedDescription,
+      """HTTP POST request to http://a/b
+        |with parameters 'p1' -> 'v1', 'p2' -> 'v2'
+        |with headers 'h1' -> 'v1'
+        |with body
+        |{ "k": "v" }""".stripMargin
+    )
+  }
+
+  test("describe a request without parameters, headers nor body in detail") {
+    val request = HttpRequest[String](GET, "http://a/b", None, Nil, Nil)
+    assertEquals(
+      request.detailedDescription,
+      """HTTP GET request to http://a/b
+        |without parameters
+        |without headers
+        |without body""".stripMargin
+    )
   }
 
   // the encoded form is visible to users through the `last-response-headers` session key

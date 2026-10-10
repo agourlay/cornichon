@@ -45,4 +45,8 @@ class StringsUtilsProperties extends Properties("StringsUtil") {
     result == s"This project is $value and $value"
   }
 
+  property("printArrowPairsLength is the length of printArrowPairs") = forAll(Gen.listOf(Gen.zip(Gen.asciiStr, Gen.asciiStr))) { pairs =>
+    StringUtils.printArrowPairsLength(pairs) == StringUtils.printArrowPairs(pairs).length
+  }
+
 }

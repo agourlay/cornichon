@@ -13,6 +13,19 @@ object StringUtils {
     builder.result()
   }
 
+  // exact length of what `printArrowPairsBuilder` appends
+  protected[cornichon] def printArrowPairsLength(params: Seq[(String, String)]): Int = {
+    var size = 0
+    var count = 0
+    val it = params.iterator
+    while (it.hasNext) {
+      val (name, value) = it.next()
+      size += name.length + value.length + 4 + arrow.length // two quoted strings around the arrow
+      count += 1
+    }
+    if (count > 1) size + 2 * (count - 1) else size // ", " separators
+  }
+
   protected[cornichon] def printArrowPairsBuilder(params: Seq[(String, String)], builder: StringBuilder): Unit = {
     val it = params.iterator
     while (it.hasNext) {
