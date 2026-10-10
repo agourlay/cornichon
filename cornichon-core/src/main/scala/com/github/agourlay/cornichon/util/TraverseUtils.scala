@@ -52,7 +52,7 @@ object TraverseUtils {
     if (len == 0) {
       rightVecEmpty
     } else if (len == 1) {
-      f(elements(0)).map(Vector(_))
+      f(elements(0)).map(Vector.empty.appended(_))
     } else {
       val vectorBuilder = Vector.newBuilder[B]
       var i = 0

@@ -61,7 +61,8 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
 
   private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
     c1.get(key) match {
-      case None         => c1.updated(key, Vector(value))
+      // `Vector(value)` resolves `ClassTag(classOf[String])` in `Vector.from`, whose weak cache entry is cleared by every GC and then contends
+      case None         => c1.updated(key, Vector.empty.appended(value))
       case Some(values) => c1.updated(key, values :+ value)
     }
 

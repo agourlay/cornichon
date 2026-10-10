@@ -94,17 +94,18 @@ object PlaceholderResolver {
       }
     } else {
       var i = 0
-      val patterns = ArraySeq.newBuilder[(String, String)]
-      patterns.sizeHint(len)
+      // typed array over `ArraySeq.newBuilder`, which summons `ClassTag(classOf[Tuple2])`: its weak cache entry
+      // is cleared by every GC and then contends on the `ClassValue` lock
+      val patterns = new Array[(String, String)](len)
       while (i < len) {
         val ph = placeholders(i)
         resolvePlaceholder(ph)(session, rc, customExtractors, sessionOnlyMode) match {
-          case Right(resolved) => patterns.addOne(ph.fullKey -> resolved)
+          case Right(resolved) => patterns(i) = ph.fullKey -> resolved
           case Left(err)       => return Left(err)
         }
         i += 1
       }
-      Right(StringUtils.replacePatternsInOrder(input, patterns.result()))
+      Right(StringUtils.replacePatternsInOrder(input, ArraySeq.unsafeWrapArray(patterns)))
     }
   }
 

@@ -99,7 +99,20 @@ class Http4sClient(addAcceptGzipByDefault: Boolean, disableCertificateVerificati
   private def fromHttp4sHeaders(headers: Headers): ArraySeq[(String, String)] = {
     val hs = headers.headers
     if (hs.isEmpty) noHeaders
-    else headers.headers.iterator.map(h => (h.name.toString, h.value)).to(ArraySeq)
+    else {
+      // fill a typed array directly: `.to(ArraySeq)` summons `ClassTag.apply(classOf[Tuple2])` per call,
+      // whose weakly cached entry is cleared by every GC and then contends on the `ClassValue` lock
+      val arr = new Array[(String, String)](hs.length)
+      var i = 0
+      var rest = hs
+      while (rest.nonEmpty) {
+        val h = rest.head
+        arr(i) = (h.name.toString, h.value)
+        i += 1
+        rest = rest.tail
+      }
+      ArraySeq.unsafeWrapArray(arr)
+    }
   }
 
   def addQueryParams(uri: Uri, moreParams: Seq[(String, String)]): Uri =

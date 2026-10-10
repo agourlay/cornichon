@@ -92,18 +92,20 @@ trait CornichonJson {
   }
 
   private def parseDataTableRow(rawRow: List[(String, String)]): Either[MalformedJsonError[String], JsonObject] = {
-    val cells = ArraySeq.newBuilder[(String, Json)]
-    cells.sizeHint(rawRow.length)
+    // typed array over `ArraySeq.newBuilder` to avoid a `ClassTag` lookup (see `PlaceholderResolver.resolveAllPlaceholders`)
+    val cells = new Array[(String, Json)](rawRow.length)
+    var i = 0
     val it = rawRow.iterator
     while (it.hasNext) {
       val (name, rawValue) = it.next()
       parseString(rawValue) match {
-        case Right(json) => cells += (name -> json)
+        case Right(json) => cells(i) = name -> json
         case Left(e)     => return Left(e)
       }
+      i += 1
     }
     // `fromIterable` is faster than `fromMap`
-    Right(JsonObject.fromIterable(cells.result()))
+    Right(JsonObject.fromIterable(ArraySeq.unsafeWrapArray(cells)))
   }
 
   private def parseDataTableJson(table: String): Either[CornichonError, Json] =
@@ -305,11 +307,12 @@ trait CornichonJson {
     }
 
   private def descendField(ops: Vector[JsonPathOperation], field: String): Vector[JsonPathOperation] =
-    if (ops.isEmpty) Vector(RootSelection, FieldSelection(field))
+    // `appended` over `Vector(...)` avoids a `ClassTag` lookup in `Vector.from` (see `Session.updateContent`)
+    if (ops.isEmpty) Vector.empty.appended(RootSelection).appended(FieldSelection(field))
     else ops :+ FieldSelection(field)
 
   private def descendIndex(ops: Vector[JsonPathOperation], idx: Int): Vector[JsonPathOperation] =
-    if (ops.isEmpty) Vector(RootArrayElementSelection(idx))
+    if (ops.isEmpty) Vector.empty.appended(RootArrayElementSelection(idx))
     else
       ops.last match {
         case FieldSelection(f) => ops.init :+ ArrayFieldSelection(f, idx)
