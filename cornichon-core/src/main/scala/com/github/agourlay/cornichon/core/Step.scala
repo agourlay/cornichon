@@ -5,7 +5,7 @@ import cats.effect.IO
 import com.github.agourlay.cornichon.core.Done._
 import com.github.agourlay.cornichon.steps.wrapped.{AttachStep, FlatMapStep}
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 sealed trait Step {
   def title: String
@@ -19,6 +19,12 @@ sealed trait Step {
 
 object Step {
   def eval(f: => Step): Step = AttachStep(_ => f :: Nil)
+
+  // `IO.timed` is `map3(monotonic, fa, monotonic)` plus a result tuple: chaining the two clock reads directly
+  // builds fewer IO nodes, closures and tuples on every step
+  private[cornichon] inline def timedMap[A, B](io: IO[A])(inline f: (FiniteDuration, A) => B): IO[B] =
+    IO.monotonic.flatMap(start => io.flatMap(a => IO.monotonic.map(end => f(end - start, a))))
+
 }
 
 object NoOpStep extends Step {
@@ -37,15 +43,17 @@ trait SessionValueStep extends Step {
   def logOnSuccess(result: Session, runState: RunState, executionTime: Duration): LogInstruction
 
   override val stateUpdate: StepState = StateT { runState =>
-    runSessionValueStep(runState).timed.map {
-      case (executionTime, Left(errors)) =>
-        val (logs, failedStep) = onError(errors, runState, executionTime)
-        (runState.recordLog(logs), Left(failedStep))
+    Step.timedMap(runSessionValueStep(runState)) { (executionTime, result) =>
+      result match {
+        case Left(errors) =>
+          val (logs, failedStep) = onError(errors, runState, executionTime)
+          (runState.recordLog(logs), Left(failedStep))
 
-      case (executionTime, Right(session)) =>
-        val log = logOnSuccess(session, runState, executionTime)
-        val logSessionState = runState.recordLog(log).withSession(session)
-        (logSessionState, rightDone)
+        case Right(session) =>
+          val log = logOnSuccess(session, runState, executionTime)
+          val logSessionState = runState.recordLog(log).withSession(session)
+          (logSessionState, rightDone)
+      }
     }
   }
 
@@ -61,15 +69,17 @@ trait LogValueStep[A] extends Step {
   def logOnSuccess(result: A, runState: RunState, executionTime: Duration): LogInstruction
 
   override val stateUpdate: StepState = StateT { rs =>
-    runLogValueStep(rs).timed.map {
-      case (executionTime, Left(errors)) =>
-        val (logStack, failedStep) = onError(errors, rs, executionTime)
-        (rs.recordLog(logStack), Left(failedStep))
+    Step.timedMap(runLogValueStep(rs)) { (executionTime, result) =>
+      result match {
+        case Left(errors) =>
+          val (logStack, failedStep) = onError(errors, rs, executionTime)
+          (rs.recordLog(logStack), Left(failedStep))
 
-      case (executionTime, Right(value)) =>
-        val log = logOnSuccess(value, rs, executionTime)
-        val logState = rs.recordLog(log)
-        (logState, rightDone)
+        case Right(value) =>
+          val log = logOnSuccess(value, rs, executionTime)
+          val logState = rs.recordLog(log)
+          (logState, rightDone)
+      }
     }
   }
 
@@ -86,14 +96,16 @@ trait LogDecoratorStep extends Step {
 
   override val stateUpdate: StepState = StateT { rs =>
     val steps = nestedToRun(rs.session)
-    ScenarioRunner.runStepsShortCircuiting(steps, rs.nestedContext).timed.map {
-      case (executionTime, (resState, l @ Left(_))) =>
-        val decoratedLogs = logStackOnNestedError(resState.logStack, rs.depth, executionTime)
-        (rs.mergeNested(resState, decoratedLogs), l)
+    Step.timedMap(ScenarioRunner.runStepsShortCircuiting(steps, rs.nestedContext)) { (executionTime, result) =>
+      result match {
+        case (resState, l @ Left(_)) =>
+          val decoratedLogs = logStackOnNestedError(resState.logStack, rs.depth, executionTime)
+          (rs.mergeNested(resState, decoratedLogs), l)
 
-      case (executionTime, (resState, r @ Right(_))) =>
-        val decoratedLogs = logStackOnNestedSuccess(resState.logStack, rs.depth, executionTime)
-        (rs.mergeNested(resState, decoratedLogs), r)
+        case (resState, r @ Right(_)) =>
+          val decoratedLogs = logStackOnNestedSuccess(resState.logStack, rs.depth, executionTime)
+          (rs.mergeNested(resState, decoratedLogs), r)
+      }
     }
   }
 
@@ -116,14 +128,16 @@ trait SimpleWrapperStep extends Step {
 
   override val stateUpdate: StepState = StateT { rs =>
     val init = if (indentLog) rs.nestedContext else rs.sameLevelContext
-    ScenarioRunner.runStepsShortCircuiting(nestedToRun, init).timed.map {
-      case (executionTime, (resState, Left(failedStep))) =>
-        val (finalState, fs) = onNestedError(failedStep, resState, rs, executionTime)
-        (finalState, Left(fs))
+    Step.timedMap(ScenarioRunner.runStepsShortCircuiting(nestedToRun, init)) { (executionTime, result) =>
+      result match {
+        case (resState, Left(failedStep)) =>
+          val (finalState, fs) = onNestedError(failedStep, resState, rs, executionTime)
+          (finalState, Left(fs))
 
-      case (executionTime, (resState, Right(_))) =>
-        val finalState = onNestedSuccess(resState, rs, executionTime)
-        (finalState, rightDone)
+        case (resState, Right(_)) =>
+          val finalState = onNestedSuccess(resState, rs, executionTime)
+          (finalState, rightDone)
+      }
     }
   }
 

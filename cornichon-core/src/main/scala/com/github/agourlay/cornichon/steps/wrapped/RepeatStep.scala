@@ -14,22 +14,28 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[Str
   override val stateUpdate: StepState = StateT { runState =>
     def repeatSuccessSteps(retriesNumber: Int, runState: RunState): IO[(Int, RunState, Either[FailedStep, Done])] = {
       // reset logs at each loop to have the possibility to not aggregate in failure case
-      val rs = runState.resetLogStack
+      // (only the first occurrence can carry logs, the following ones start from an empty log stack: skip the copy)
+      val rs = if (runState.logStack.isEmpty) runState else runState.resetLogStack
       val runStateWithIndex = indexName.fold(rs)(in => rs.addToSession(in, (retriesNumber + 1).toString))
       ScenarioRunner.runStepsShortCircuiting(nested, runStateWithIndex).flatMap { case (onceMoreRunState, stepResult) =>
         stepResult.fold(
           failed =>
             // In case of failure only the logs of the last run are shown to avoid giant traces.
             IO.pure((retriesNumber, onceMoreRunState, Left(failed))),
-          _ => {
-            val successState = runState
-              .withSession(onceMoreRunState.session)
-              .recordLogStack(onceMoreRunState.logStack)
-              .registerCleanupSteps(onceMoreRunState.cleanupSteps)
+          _ =>
             // only show last successful run to avoid giant traces.
-            if (retriesNumber == occurrence - 1) IO.pure((retriesNumber, successState, rightDone))
-            else repeatSuccessSteps(retriesNumber + 1, runState.withSession(onceMoreRunState.session).registerCleanupSteps(onceMoreRunState.cleanupSteps))
-          }
+            if (retriesNumber == occurrence - 1) {
+              val successState = runState.copy(
+                session = onceMoreRunState.session,
+                logStack = onceMoreRunState.logStack ++ runState.logStack,
+                cleanupSteps = onceMoreRunState.cleanupSteps ::: runState.cleanupSteps
+              )
+              IO.pure((retriesNumber, successState, rightDone))
+            } else {
+              // single copy carrying the session and cleanup steps forward, logs of this occurrence are dropped
+              val nextState = runState.copy(session = onceMoreRunState.session, cleanupSteps = onceMoreRunState.cleanupSteps ::: runState.cleanupSteps)
+              repeatSuccessSteps(retriesNumber + 1, nextState)
+            }
         )
       }
     }
