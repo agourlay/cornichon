@@ -4,7 +4,8 @@ import java.net.NetworkInterface
 import cats.effect.IO
 import com.comcast.ip4s.{Host, Port}
 import com.github.agourlay.cornichon.core.CornichonError
-import org.http4s.HttpRoutes
+import org.http4s.{HttpApp, HttpRoutes}
+import org.http4s.headers.Connection
 import org.http4s.server.Router
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
@@ -12,6 +13,7 @@ import org.http4s.server.middleware.ResponseTiming
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.util.Random
+import org.typelevel.ci._
 
 class MockHttpServer[A](label: String, interface: Option[String], port: Option[Range], mockService: HttpRoutes[IO], maxPortBindingRetries: Int)(
   useFromAddress: String => IO[A]
@@ -20,7 +22,12 @@ class MockHttpServer[A](label: String, interface: Option[String], port: Option[R
   private val selectedInterface = interface.getOrElse(bestInterface())
   private val randomPortOrder = port.fold(0 :: Nil)(r => Random.shuffle(r.toList))
 
-  private val mockRouter = Router("/" -> mockService).orNotFound
+  // `Connection: close` keeps the clients from pooling connections to a server that only lives for the duration of a block:
+  // left idle in a shared pool after the server stopped, they fill its idle capacity and evict the connections to other hosts.
+  private val mockRouter = {
+    val router = Router("/" -> mockService).orNotFound
+    HttpApp[IO](req => router(req).map(_.putHeaders(Connection(ci"close"))))
+  }
 
   def useServer(): IO[A] =
     if (randomPortOrder.isEmpty)

@@ -29,6 +29,7 @@ By default, the mock server:
 - responds with **201** to any POST request
 - responds with **200** to all other requests (GET, PUT, DELETE, etc.)
 - records all incoming requests for later assertions
+- closes each connection after its response (`Connection: close` header), so clients don't keep pooled connections to a server that stops at the end of its block
 - the server URL is available as the placeholder `<label-url>` (e.g. `<awesome-server-url>`)
 
 ## Example
