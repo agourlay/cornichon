@@ -198,7 +198,7 @@ object HttpService {
       builder.append(headersKeyValueDelim)
       builder.append(value)
       if (i < len - 1)
-        builder.append(interHeadersValueDelim)
+        builder.append(interHeadersValueDelim): Unit
       i += 1
     }
     builder.toString
