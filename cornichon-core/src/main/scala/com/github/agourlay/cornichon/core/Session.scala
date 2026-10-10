@@ -59,12 +59,15 @@ case class Session(content: Map[String, Vector[String]]) extends AnyVal {
       case Some(value) => Right(value)
     }
 
-  private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] =
-    c1.get(key) match {
+  private def updateContent(c1: Map[String, Vector[String]])(key: String, value: String): Map[String, Vector[String]] = {
+    // `getOrElse` over `get`: `HashMap` looks the key up without allocating a `Some` for every existing key
+    val values = c1.getOrElse(key, null)
+    if (values == null)
       // `Vector(value)` resolves `ClassTag(classOf[String])` in `Vector.from`, whose weak cache entry is cleared by every GC and then contends
-      case None         => c1.updated(key, Vector.empty.appended(value))
-      case Some(values) => c1.updated(key, values :+ value)
-    }
+      c1.updated(key, Vector.empty.appended(value))
+    else
+      c1.updated(key, values :+ value)
+  }
 
   // No need for key validation when used with built-in keys
   protected[cornichon] def addValueInternal(key: String, value: String): Session =
