@@ -180,7 +180,16 @@ object HttpService {
 
   def encodeSessionHeaders(headers: ArraySeq[(String, String)]): String = {
     val len = headers.length
-    val builder = new StringBuilder(len * 10)
+    if (len == 0) return ""
+    // exact size: no intermediate buffer growth and copies while appending
+    var size = len * 2 - 1 // one key-value delimiter per header and the inter-header delimiters
+    var j = 0
+    while (j < len) {
+      val (name, value) = headers(j)
+      size += name.length + value.length
+      j += 1
+    }
+    val builder = new java.lang.StringBuilder(size)
     var i = 0
     while (i < len) {
       val (name, value) = headers(i)

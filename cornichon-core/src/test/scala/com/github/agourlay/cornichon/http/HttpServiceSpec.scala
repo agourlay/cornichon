@@ -73,6 +73,16 @@ class HttpServiceSpec extends FunSuite {
     assert(decoded == Right(headers.toList))
   }
 
+  // the encoded form is visible to users through the `last-response-headers` session key
+  test("encode headers in the session format") {
+    val headers = ArraySeq("Content-Type" -> "application/json", "Authorization" -> "Bearer token123", "X-Empty" -> "")
+    assertEquals(HttpService.encodeSessionHeaders(headers), "Content-Type→application/json¦Authorization→Bearer token123¦X-Empty→")
+  }
+
+  test("encode no headers as an empty string") {
+    assertEquals(HttpService.encodeSessionHeaders(ArraySeq.empty), "")
+  }
+
   test("header value containing the key-value delimiter roundtrips correctly") {
     val headers = ArraySeq("X-Custom" -> "value→with→arrows")
     val encoded = HttpService.encodeSessionHeaders(headers)
