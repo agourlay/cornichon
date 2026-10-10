@@ -18,7 +18,9 @@ case class WithDataInputStep(nested: List[Step], where: String, rawJson: Boolean
       else {
         val currentInputs = inputs.head
         val runInfo = InfoLogInstruction(s"Run with inputs ${printArrowPairs(currentInputs)}", runState.depth)
-        val bootstrapFilledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
+        val filledInput = runState.addToSession(currentInputs).withLog(runInfo).goDeeper
+        // start without the cleanup steps of the previous inputs, they are merged back after the run
+        val bootstrapFilledInput = if (filledInput.cleanupSteps.isEmpty) filledInput else filledInput.resetCleanupSteps
         ScenarioRunner.runStepsShortCircuiting(nested, bootstrapFilledInput).flatMap { case (filledState, stepsResult) =>
           stepsResult.fold(
             failedStep =>

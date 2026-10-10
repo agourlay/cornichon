@@ -36,6 +36,14 @@ case class RunState(
   def registerCleanupSteps(add: List[Step]): RunState = copy(cleanupSteps = add ::: cleanupSteps)
   lazy val resetCleanupSteps: RunState = copy(cleanupSteps = Nil)
 
+  // Context for one iteration of a looping step: like a nested run it starts without logs nor cleanup steps,
+  // the loop merges them back. Starting from the accumulated cleanup steps would register them once more per iteration.
+  def iterationContext: RunState = if (logStack.isEmpty && cleanupSteps.isEmpty) this else sameLevelContext
+
+  // For a loop exit returning an iteration's state directly: carry the cleanup steps accumulated by the previous iterations
+  def withPreviousCleanupSteps(previous: List[Step]): RunState =
+    if (previous.isEmpty) this else copy(cleanupSteps = cleanupSteps ::: previous)
+
   // Helpers to propagate info from nested computation
   def mergeNested(r: RunState): RunState = mergeNested(r, r.logStack)
 

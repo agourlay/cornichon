@@ -18,7 +18,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
 
     def repeatStepsDuring(runState: RunState, duration: FiniteDuration, retriesNumber: Long): IO[(Long, RunState, Either[FailedStep, Done])] =
       ScenarioRunner
-        .runStepsShortCircuiting(nested, runState.resetLogStack) // reset logs at each loop to have the possibility to not aggregate in failure case
+        .runStepsShortCircuiting(nested, runState.iterationContext) // reset logs and cleanup steps at each loop to have the possibility to not aggregate in failure case
         .timed
         .flatMap { case (executionTime, run) =>
           val (repeatedOnceMore, res) = run
@@ -26,7 +26,7 @@ case class RepeatDuringStep(nested: List[Step], duration: FiniteDuration) extend
           res.fold(
             failedStep =>
               // In case of failure only the logs of the last run are shown to avoid giant traces.
-              IO.pure((retriesNumber, repeatedOnceMore, Left(failedStep))),
+              IO.pure((retriesNumber, repeatedOnceMore.withPreviousCleanupSteps(runState.cleanupSteps), Left(failedStep))),
             _ => {
               val successState = runState.mergeNested(repeatedOnceMore)
               if (remainingTime.gt(FiniteDuration(0, TimeUnit.MILLISECONDS)))

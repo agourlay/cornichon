@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
+import com.github.agourlay.cornichon.testHelpers.{CommonTestSuite, CountingResource}
 import io.circe.parser
 import munit.FunSuite
 import java.util.concurrent.atomic.AtomicBoolean
@@ -200,6 +200,39 @@ class WithDataInputStepSpec extends FunSuite with CommonTestSuite {
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(cleanupRan.get(), "Cleanup step from inside WithDataInput was not executed")
+  }
+
+  test("releases each scenario resource acquired inside the block exactly once") {
+    val resource = new CountingResource
+    val inputs =
+      """
+        | a |
+        | 1 |
+        | 2 |
+        | 3 |
+      """
+    val s = Scenario("data inputs with resource", WithDataInputStep(resource.step :: Nil, inputs) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+    assertEquals(resource.acquired.get, 3)
+    assertEquals(resource.released.get, 3)
+  }
+
+  test("releases each scenario resource acquired before a failing input exactly once") {
+    val resource = new CountingResource
+    val inputs =
+      """
+        | a |
+        | 1 |
+        | 2 |
+        | 3 |
+      """
+    val nested = resource.step :: AssertStep("fails on the second input", sc => GenericEqualityAssertion(true, sc.session.getUnsafe("a") != "2")) :: Nil
+    val s = Scenario("data inputs with resource", WithDataInputStep(nested, inputs) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(!res.isSuccess)
+    assertEquals(resource.acquired.get, 2)
+    assertEquals(resource.released.get, 2)
   }
 
 }

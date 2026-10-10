@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
+import com.github.agourlay.cornichon.testHelpers.{CommonTestSuite, CountingResource}
 import munit.FunSuite
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -119,6 +119,26 @@ class RetryMaxStepSpec extends FunSuite with CommonTestSuite {
     val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
     assert(res.isSuccess)
     assert(cleanupRan.get(), "Cleanup step from failed retry inside RetryMax was not executed")
+  }
+
+  test("releases each scenario resource acquired by the retried runs exactly once") {
+    val resource = new CountingResource
+    val nested = resource.step :: CountingResource.failingFirst(2) :: Nil
+    val s = Scenario("retryMax with resource", RetryMaxStep(nested, 5) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+    assertEquals(resource.acquired.get, 3)
+    assertEquals(resource.released.get, 3)
+  }
+
+  test("releases each scenario resource acquired by the retried runs exactly once when the limit is reached") {
+    val resource = new CountingResource
+    val nested = resource.step :: CountingResource.failingFirst(10) :: Nil
+    val s = Scenario("retryMax with resource", RetryMaxStep(nested, 3) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(!res.isSuccess)
+    assertEquals(resource.acquired.get, 4)
+    assertEquals(resource.released.get, 4)
   }
 
 }

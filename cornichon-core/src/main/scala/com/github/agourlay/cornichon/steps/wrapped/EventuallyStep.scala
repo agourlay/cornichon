@@ -22,7 +22,7 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
       lastErrorState: Option[RunState]
     ): IO[(Long, RunState, Either[FailedStep, Done])] =
       ScenarioRunner
-        .runStepsShortCircuiting(nested, runState)
+        .runStepsShortCircuiting(nested, runState.iterationContext) // cleanup steps of failed attempts are accumulated in `runState`
         .delayBy(if (retriesNumber == 0) Duration.Zero else conf.interval)
         .timed
         .flatMap { case (executionTime, (newRunState, res)) =>
@@ -37,24 +37,24 @@ case class EventuallyStep(nested: List[Step], conf: EventuallyConf) extends Wrap
               else {
                 // no time for another loop
                 // return last state fully because intermediate states were discarded
-                IO.pure((retriesNumber, newRunState, failedStep.asLeft))
+                IO.pure((retriesNumber, newRunState.withPreviousCleanupSteps(runState.cleanupSteps), failedStep.asLeft))
               }
 
             case Right(_) =>
               if (remainingTime.gt(Duration.Zero)) {
                 lastErrorState match {
                   case Some(prevErrorState) =>
-                    // only show the last error
-                    val mergedState = prevErrorState.mergeNested(newRunState)
+                    // only show the last error, `runState` already holds the cleanup steps of `prevErrorState`
+                    val mergedState = prevErrorState.mergeNested(newRunState).copy(cleanupSteps = newRunState.cleanupSteps ::: runState.cleanupSteps)
                     IO.pure((retriesNumber, mergedState, Done.rightDone))
                   case _ =>
                     // return last state fully
-                    IO.pure((retriesNumber, newRunState, rightDone))
+                    IO.pure((retriesNumber, newRunState.withPreviousCleanupSteps(runState.cleanupSteps), rightDone))
                 }
               } else {
                 // Run was a success but the time is up.
                 val failedStep = FailedStep.fromSingle(nested.last, EventuallyBlockSucceedAfterMaxDuration)
-                IO.pure((retriesNumber, newRunState, failedStep.asLeft))
+                IO.pure((retriesNumber, newRunState.withPreviousCleanupSteps(runState.cleanupSteps), failedStep.asLeft))
               }
           }
         }

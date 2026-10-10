@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
-import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
+import com.github.agourlay.cornichon.testHelpers.{CommonTestSuite, CountingResource}
 import munit.FunSuite
 
 import scala.concurrent.duration._
@@ -71,6 +71,25 @@ class RepeatDuringStepSpec extends FunSuite with CommonTestSuite {
     assert(executionTime.gt(50.millis))
     // empiric values for the upper bound here
     assert(executionTime.lt(150.millis))
+  }
+
+  test("releases each scenario resource acquired inside the block exactly once") {
+    val resource = new CountingResource
+    val s = Scenario("repeatDuring with resource", RepeatDuringStep(resource.step :: Nil, 20.millis) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+    assert(resource.acquired.get > 1)
+    assertEquals(resource.released.get, resource.acquired.get)
+  }
+
+  test("releases each scenario resource acquired before a failing run exactly once") {
+    val resource = new CountingResource
+    val failingAfterTwoRuns = resource.step :: AssertStep("fails on the third run", _ => GenericEqualityAssertion(true, resource.acquired.get < 3)) :: Nil
+    val s = Scenario("repeatDuring with resource", RepeatDuringStep(failingAfterTwoRuns, 1.second) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(!res.isSuccess)
+    assertEquals(resource.acquired.get, 3)
+    assertEquals(resource.released.get, 3)
   }
 
 }

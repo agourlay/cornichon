@@ -2,7 +2,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, Assertion, GenericEqualityAssertion}
-import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
+import com.github.agourlay.cornichon.testHelpers.{CommonTestSuite, CountingResource}
 import munit.FunSuite
 
 import scala.concurrent.duration._
@@ -171,6 +171,26 @@ class EventuallyStepSpec extends FunSuite with CommonTestSuite {
   test("rejects an empty block") {
     val e = intercept[IllegalArgumentException](EventuallyStep(Nil, EventuallyConf(10.millis, 1.millis)))
     assert(e.getMessage.contains("eventually block must contain at least one step"))
+  }
+
+  test("releases each scenario resource acquired by the retried runs exactly once") {
+    val resource = new CountingResource
+    val nested = resource.step :: CountingResource.failingFirst(2) :: Nil
+    val s = Scenario("eventually with resource", EventuallyStep(nested, EventuallyConf(5.seconds, 1.millis)) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+    assertEquals(resource.acquired.get, 3)
+    assertEquals(resource.released.get, 3)
+  }
+
+  test("releases each scenario resource acquired by the retried runs exactly once when the time is up") {
+    val resource = new CountingResource
+    val nested = resource.step :: CountingResource.failingFirst(Int.MaxValue) :: Nil
+    val s = Scenario("eventually with resource", EventuallyStep(nested, EventuallyConf(50.millis, 5.millis)) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(!res.isSuccess)
+    assert(resource.acquired.get > 1)
+    assertEquals(resource.released.get, resource.acquired.get)
   }
 
 }

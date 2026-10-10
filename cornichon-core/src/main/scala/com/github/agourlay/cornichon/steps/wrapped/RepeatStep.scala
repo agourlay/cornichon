@@ -13,15 +13,14 @@ case class RepeatStep(nested: List[Step], occurrence: Int, indexName: Option[Str
 
   override val stateUpdate: StepState = StateT { runState =>
     def repeatSuccessSteps(retriesNumber: Int, runState: RunState): IO[(Int, RunState, Either[FailedStep, Done])] = {
-      // reset logs at each loop to have the possibility to not aggregate in failure case
-      // (only the first occurrence can carry logs, the following ones start from an empty log stack: skip the copy)
-      val rs = if (runState.logStack.isEmpty) runState else runState.resetLogStack
+      // reset logs and cleanup steps at each loop to have the possibility to not aggregate in failure case
+      val rs = runState.iterationContext
       val runStateWithIndex = indexName.fold(rs)(in => rs.addToSession(in, (retriesNumber + 1).toString))
       ScenarioRunner.runStepsShortCircuiting(nested, runStateWithIndex).flatMap { case (onceMoreRunState, stepResult) =>
         stepResult.fold(
           failed =>
             // In case of failure only the logs of the last run are shown to avoid giant traces.
-            IO.pure((retriesNumber, onceMoreRunState, Left(failed))),
+            IO.pure((retriesNumber, onceMoreRunState.withPreviousCleanupSteps(runState.cleanupSteps), Left(failed))),
           _ =>
             // only show last successful run to avoid giant traces.
             if (retriesNumber == occurrence - 1) {

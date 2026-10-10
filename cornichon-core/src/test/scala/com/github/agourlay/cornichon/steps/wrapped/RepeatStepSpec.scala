@@ -3,7 +3,7 @@ package com.github.agourlay.cornichon.steps.wrapped
 import com.github.agourlay.cornichon.core._
 import com.github.agourlay.cornichon.steps.regular.assertStep.{AssertStep, GenericEqualityAssertion}
 import com.github.agourlay.cornichon.steps.cats.EffectStep
-import com.github.agourlay.cornichon.testHelpers.CommonTestSuite
+import com.github.agourlay.cornichon.testHelpers.{CommonTestSuite, CountingResource}
 import munit.FunSuite
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -111,6 +111,25 @@ class RepeatStepSpec extends FunSuite with CommonTestSuite {
           |seed for the run was '1'
           |""".stripMargin
     }
+  }
+
+  test("releases each scenario resource acquired inside the repeat block exactly once") {
+    val resource = new CountingResource
+    val s = Scenario("repeat with resource", RepeatStep(resource.step :: Nil, 5, None) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(res.isSuccess)
+    assertEquals(resource.acquired.get, 5)
+    assertEquals(resource.released.get, 5)
+  }
+
+  test("releases each scenario resource acquired before a failing occurrence exactly once") {
+    val resource = new CountingResource
+    val nested = resource.step :: AssertStep("fails on the third occurrence", sc => GenericEqualityAssertion(true, sc.session.getUnsafe("index") != "3")) :: Nil
+    val s = Scenario("repeat with resource", RepeatStep(nested, 5, Some("index")) :: Nil)
+    val res = awaitIO(ScenarioRunner.runScenario(Session.newEmpty)(s))
+    assert(!res.isSuccess)
+    assertEquals(resource.acquired.get, 3)
+    assertEquals(resource.released.get, 3)
   }
 
 }

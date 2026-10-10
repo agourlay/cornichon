@@ -18,14 +18,14 @@ case class RepeatWithStep(nested: List[Step], elements: List[String], elementNam
         case Nil =>
           IO.pure((runState, rightDone))
         case element :: tail =>
-          // reset logs at each loop to have the possibility to not aggregate in failure case
-          val rs = runState.resetLogStack
+          // reset logs and cleanup steps at each loop to have the possibility to not aggregate in failure case
+          val rs = runState.iterationContext
           val runStateWithIndex = rs.addToSession(elementName, element)
           ScenarioRunner.runStepsShortCircuiting(nested, runStateWithIndex).flatMap { case (onceMoreRunState, stepResult) =>
             stepResult.fold(
               failed =>
                 // In case of failure only the logs of the last run are shown to avoid giant traces.
-                IO.pure((onceMoreRunState, Left((element, failed)))),
+                IO.pure((onceMoreRunState.withPreviousCleanupSteps(runState.cleanupSteps), Left((element, failed)))),
               _ => {
                 val successState = runState.mergeNested(onceMoreRunState)
                 repeatSuccessSteps(tail, successState)
