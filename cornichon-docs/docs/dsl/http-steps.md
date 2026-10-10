@@ -51,7 +51,7 @@ After every HTTP request, cornichon automatically saves the response into the [s
 | `last-response-headers` | Response headers (encoded) | `headers.name(...)`, `headers.contain(...)` |
 | `last-response-request` | Description of the request that produced this response | — |
 
-These keys are overwritten on each HTTP request, so the `status`, `body`, and `headers` assertions always refer to the most recent response.
+Each HTTP request appends a new value to these keys, like any other session key. The `status`, `body`, and `headers` assertions always read the latest value, so they refer to the most recent response, while earlier responses stay reachable through indexed [placeholders](../syntax/placeholders.md) such as `<last-response-body[0]>`.
 
 ### Saving values from the response
 
