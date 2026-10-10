@@ -5,6 +5,7 @@ import cats.syntax.option._
 import com.github.agourlay.cornichon.core.CornichonError
 import com.github.agourlay.cornichon.json.CornichonJson._
 import com.github.agourlay.cornichon.util.TraverseUtils.traverseLO
+import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 import io.circe.{ACursor, Json}
 import scala.collection.mutable.ListBuffer
 
@@ -105,6 +106,8 @@ object JsonPath {
   protected[cornichon] val root = "$"
   protected[cornichon] val rootPath = JsonPath(Vector.empty)
   private val rightEmptyJsonPath = Right(rootPath)
+  // The same paths are parsed on every run of a step, cache the parsing result.
+  private val operationsCache: Cache[String, Either[CornichonError, Vector[JsonPathOperation]]] = Caffeine.newBuilder().maximumSize(1_000).build()
 
   implicit val show: Show[JsonPath] = Show.show[JsonPath] { p =>
     p.operations.iterator
@@ -123,7 +126,7 @@ object JsonPath {
     if (path == root)
       rightEmptyJsonPath
     else
-      JsonPathParser.parseJsonPath(path).map(JsonPath(_))
+      operationsCache.get(path, JsonPathParser.parseJsonPath).map(JsonPath(_))
 
   def run(path: String, json: Json): Either[CornichonError, Option[Json]] =
     JsonPath.parse(path).map(_.run(json))
