@@ -61,6 +61,33 @@ RepeatConcurrently(times = 50, parallelism = 10, maxTime = 30.seconds) {
 
 Both are documented in the [DSL wrapper steps](dsl/wrapper-steps.md).
 
+## Disabling cats-effect tracing
+
+Cornichon runs on [cats-effect](https://typelevel.org/cats-effect/), which by default records a trace of every fiber to enrich error stack traces. This bookkeeping is paid on every effect cornichon runs. On cornichon's own stress suite, disabling it cuts CPU time and total run time by about 30%.
+
+Disable it with a JVM system property. In SBT, it only applies to a forked test JVM:
+
+```scala
+Test / fork := true
+Test / javaOptions += "-Dcats.effect.tracing.mode=none"
+```
+
+In Mill, test modules are forked by default:
+
+```scala
+object test extends Tests {
+  def forkArgs = Seq("-Dcats.effect.tracing.mode=none")
+}
+```
+
+When using the [CLI runner](misc.md), pass it to `java`:
+
+```
+java -Dcats.effect.tracing.mode=none -cp ... com.github.agourlay.cornichon.framework.MainRunner ...
+```
+
+The tradeoff: errors raised by your own effectful code, for instance in custom steps, no longer carry the fiber trace. Remove the property while debugging such an error.
+
 ## Request timeout
 
 The default HTTP request timeout is `2 seconds`. If your test target is slow, individual requests may time out and trigger retries or failures. Adjust it per feature:
