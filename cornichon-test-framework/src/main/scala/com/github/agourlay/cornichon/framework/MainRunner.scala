@@ -18,10 +18,10 @@ object MainRunner {
 
   private val packageToScanOpts = Opts.option[String]("packageToScan", help = "Package containing the feature files.")
 
-  private val reportsOutputDirOpts = Opts.option[String]("reportsOutputDir", help = "Output directory for junit.xml files (default to current).").withDefault(".")
+  private val reportsOutputDirOpts = Opts.option[String]("reportsOutputDir", help = "Output directory for junit.xml files (defaults to current).").withDefault(".")
 
   private val featureParallelismOpts = Opts
-    .option[Int]("featureParallelism", help = "Number of feature running in parallel (default=1).")
+    .option[Int]("featureParallelism", help = "Number of features running in parallel (default=1).")
     .validate("must be positive")(_ > 0)
     .withDefault(1)
 
@@ -36,8 +36,14 @@ object MainRunner {
 
   def main(args: Array[String]): Unit = mainRunnerCommand.parse(args.toSeq, sys.env) match {
     case Left(help) =>
-      System.err.println(help)
-      sys.exit(1)
+      // decline also returns `Left` for an explicit `--help`, which carries no error
+      if (help.errors.isEmpty) {
+        println(help)
+        sys.exit(0)
+      } else {
+        System.err.println(help)
+        sys.exit(1)
+      }
     case Right((packageToScan, reportsOutputDir, featureParallelism, explicitSeed, scenarioNameFilter)) =>
       JUnitXmlReporter.checkReportsFolder(reportsOutputDir)
       println("Starting feature classes discovery")
@@ -59,23 +65,29 @@ object MainRunner {
           val eventHandler = new RecordEventHandler()
           loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilterSet).timed
             .map { case (duration, res) =>
-              JUnitXmlReporter.writeJunitReport(reportsOutputDir, featureTypeName, duration, startedAt, eventHandler.recorded) match {
+              val recorded = eventHandler.recorded
+              JUnitXmlReporter.writeJunitReport(reportsOutputDir, featureTypeName, duration, startedAt, recorded) match {
                 case Left(e) =>
                   println(s"ERROR: Could not generate JUnit xml report for $featureTypeName due to\n${CornichonError.genStacktrace(e)}")
                 case Right(_) =>
                   ()
               }
-              res
+              (res, recorded.nonEmpty)
             }
         }
         .compile
-        .fold(true)(_ && _)
+        .fold((true, false)) { case ((allOk, anyRan), (ok, ran)) => (allOk && ok, anyRan || ran) }
         .unsafeToFuture()(using cats.effect.unsafe.implicits.global)
 
-      if (Await.result(f, Duration.Inf))
-        System.exit(0)
-      else
-        System.exit(1)
+      val (allOk, anyRan) = Await.result(f, Duration.Inf)
+      // A filter matching no scenario name would otherwise exit 0 having run nothing.
+      scenarioNameFilter match {
+        case Some(name) if !anyRan =>
+          System.err.println(s"ERROR: no scenario named '$name' found in package '$packageToScan'")
+          System.exit(1)
+        case _ =>
+          System.exit(if (allOk) 0 else 1)
+      }
   }
 
   // `CornichonFeature` is a trait, so on the JVM it is an interface - `getSubclasses` finds nothing here.
