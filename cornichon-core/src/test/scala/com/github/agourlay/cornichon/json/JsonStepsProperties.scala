@@ -5,7 +5,7 @@ import com.github.agourlay.cornichon.json.JsonSteps.JsonStepBuilder
 import com.github.agourlay.cornichon.testHelpers.IOSpec
 import io.circe.{Json, JsonObject}
 import io.circe.testing.ArbitraryInstances
-import org.scalacheck.Properties
+import org.scalacheck.{Arbitrary, Gen, Properties}
 import org.scalacheck.Prop._
 
 class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstances with IOSpec {
@@ -13,7 +13,13 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
   private val testKey = "test-key"
   private val jsonStepBuilder = JsonStepBuilder(SessionKey(testKey), Some("test body"))
 
-  property("JsonStepBuild is value") = forAll { (input: String) =>
+  // The DSL parses strings whose first non-whitespace char is '[' or '{' as JSON, so exclude them
+  private val plainStringGen: Gen[String] =
+    Arbitrary.arbitrary[String].filter { s =>
+      s.dropWhile(_.isWhitespace).headOption.forall(c => c != '[' && c != '{')
+    }
+
+  property("JsonStepBuild is value") = forAll(plainStringGen) { (input: String) =>
     val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
     val step = jsonStepBuilder.is(input)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -21,7 +27,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     t.isSuccess
   }
 
-  property("JsonStepBuild is value fail") = forAll { (input: String) =>
+  property("JsonStepBuild is value fail") = forAll(plainStringGen) { (input: String) =>
     val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
     val step = jsonStepBuilder.is(input + "42")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -29,7 +35,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     !t.isSuccess
   }
 
-  property("JsonStepBuild isNot value") = forAll { (input: String) =>
+  property("JsonStepBuild isNot value") = forAll(plainStringGen) { (input: String) =>
     val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
     val step = jsonStepBuilder.isNot(input + "42")
     val s = Scenario("scenario with JsonSteps", step :: Nil)
@@ -37,7 +43,7 @@ class JsonStepsProperties extends Properties("JsonSteps") with ArbitraryInstance
     t.isSuccess
   }
 
-  property("JsonStepBuild isNot value fail") = forAll { (input: String) =>
+  property("JsonStepBuild isNot value fail") = forAll(plainStringGen) { (input: String) =>
     val session = Session.newEmpty.addValuesUnsafe(testKey -> input)
     val step = jsonStepBuilder.isNot(input)
     val s = Scenario("scenario with JsonSteps", step :: Nil)
