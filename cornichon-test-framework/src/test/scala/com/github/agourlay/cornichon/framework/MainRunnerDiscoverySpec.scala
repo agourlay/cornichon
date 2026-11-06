@@ -23,4 +23,14 @@ class MainRunnerDiscoverySpec extends FunSuite {
     assertEquals(MainRunner.discoverFeatureClasses("com.github.agourlay.cornichon.framework.discovery.missing"), Nil)
   }
 
+  test("replay command uses the MainRunner arguments and points to the feature's package") {
+    val replay = MainRunner.mainRunnerReplayCommand(classOf[NestedFeature], "my scenario", 42L)
+    assertEquals(
+      replay,
+      s"""com.github.agourlay.cornichon.framework.MainRunner --packageToScan "$fixturesPackage.nested" --scenarioNameFilter "my scenario" --seed 42"""
+    )
+    // the printed main class is the real one
+    assertEquals(replay.takeWhile(_ != ' '), MainRunner.getClass.getName.stripSuffix("$"))
+  }
+
 }

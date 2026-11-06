@@ -63,7 +63,7 @@ object MainRunner {
           val featureTypeName = featureClass.getTypeName
           val featureInfo = FeatureInfo(featureTypeName, featureClass, CornichonFingerprint, new TestSelector(featureTypeName))
           val eventHandler = new RecordEventHandler()
-          loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilterSet).timed
+          loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilterSet, mainRunnerReplayCommand).timed
             .map { case (duration, res) =>
               val recorded = eventHandler.recorded
               JUnitXmlReporter.writeJunitReport(reportsOutputDir, featureTypeName, duration, startedAt, recorded) match {
@@ -89,6 +89,10 @@ object MainRunner {
           System.exit(if (allOk) 0 else 1)
       }
   }
+
+  // Arguments to append to the `java -cp ...` invocation; scanning the feature's own package is enough to find it again
+  private[framework] val mainRunnerReplayCommand: ReplayCommand = (featureClass, scenarioName, seed) =>
+    s"""com.github.agourlay.cornichon.framework.MainRunner --packageToScan "${featureClass.getPackageName}" --scenarioNameFilter "$scenarioName" --seed $seed"""
 
   // `CornichonFeature` is a trait, so on the JVM it is an interface - `getSubclasses` finds nothing here.
   // `getStandardClasses` drops interfaces and annotations, leaving the concrete features once abstract ones are filtered out.

@@ -14,7 +14,7 @@ class CornichonFeatureSbtTask(task: TaskDef, scenarioNameFilter: Set[String], ex
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
     val fqn = task.fullyQualifiedName()
     val featureInfo = FeatureInfo(fqn, Class.forName(fqn), task.fingerprint(), task.selectors().head)
-    val featureTask = loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilter)
+    val featureTask = loadAndExecute(featureInfo, eventHandler, explicitSeed, scenarioNameFilter, sbtReplayCommand)
     val _ = Await.result(featureTask.unsafeToFuture()(using cats.effect.unsafe.implicits.global), Duration.Inf)
     Array.empty
   }

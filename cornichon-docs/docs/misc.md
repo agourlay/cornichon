@@ -67,7 +67,7 @@ Notes:
 
 - `--packageToScan` also scans its sub-packages. Use `--packageToScan ""` for features declared without a package.
 - `--scenarioNameFilter` takes the exact scenario name, like `testOnly` does.
-- The replay command printed after a run uses the sbt syntax. Without sbt, pass the same values to `--scenarioNameFilter` and `--seed`.
+- The replay command printed for a scenario gives the main class and arguments to rerun it with the same seed, to use with the same `java -cp ...` prefix.
 - The process exits with `0` when all scenarios succeed and `1` otherwise. It also exits with `1` when the arguments are invalid, when no feature is found in the package, or when `--scenarioNameFilter` matches no scenario.
 
 ## Packaging tests in a Docker container
